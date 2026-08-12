@@ -22,8 +22,10 @@ Before starting:
    followed by
    `pwsh -NoProfile -File .\\powertoys-dashboard-skills\\Install-Skills.ps1`.
    Then reload skills or restart Copilot CLI before continuing.
-4. Locate or clone `https://github.com/MuyuanMS/powertoys-triage-board`, enter
-   that checkout, and preserve unrelated local changes.
+4. Locate or clone both the action-artifact source
+   `https://github.com/MuyuanMS/powertoys-triage-board` and the PowerToys Pulse
+   repository/preview branch you are authorized to update. Preserve unrelated
+   local changes in both checkouts.
 5. Verify the authenticated operator has read access to
    `microsoft/PowerToys`, write access to their PowerToys fork and the dashboard
    repository, and Microsoft project 2445 access if project synchronization is
@@ -42,7 +44,12 @@ rules. In particular:
 - validate all newly processed artifacts and scan generated JSON for secrets;
 - regenerate `data/index.json`, `data/index.js`, and per-number artifacts;
 - synchronize project state when permissions are available;
-- commit and push only dashboard/skill data to the dashboard repository.
+- commit and push only action-artifact data to the artifact repository;
+- synchronize those artifacts into PowerToys Pulse with
+  `scripts/sync-triage-artifacts.mjs`, then lint/build Pulse;
+- publish or dispatch the approved Pulse preview/Pages workflow. Treat Pulse as
+  the user-facing dashboard and the triage-board repository as its artifact
+  transport, not as the final preview.
 
 Do not post reviews or comments, open pull requests against
 `microsoft/PowerToys`, or modify upstream issue metadata without explicit human

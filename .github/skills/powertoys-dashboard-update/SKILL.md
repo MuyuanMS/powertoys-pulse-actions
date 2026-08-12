@@ -36,6 +36,10 @@ skills:
 5. Every run must regenerate and publish `data/index.json`, `data/index.js`, and
    `data/items/<number>.json` to the configured board repository after the
    agent work completes.
+6. PowerToys Pulse is the user-facing dashboard. After publishing artifacts,
+   synchronize and validate Pulse, then deploy only an approved Pulse branch or
+   workflow. Do not substitute the artifact repository's Pages site as the
+   final preview.
 
 ## Configuration
 
@@ -74,6 +78,8 @@ $BoardUrl = if ($env:POWERTOYS_BOARD_URL) {
 } else {
   "https://$($BoardOwner.ToLowerInvariant()).github.io/$BoardName/"
 }
+$Pulse = if ($env:POWERTOYS_PULSE_REPO) { $env:POWERTOYS_PULSE_REPO } else { 'gim-home/powertoys-pulse' }
+$PulsePreview = if ($env:POWERTOYS_PULSE_PREVIEW_REPO) { $env:POWERTOYS_PULSE_PREVIEW_REPO } else { 'MuyuanMS/powertoys-pulse-action-private' }
 ```
 
 On the first run, verify:
@@ -366,7 +372,7 @@ Rank candidates using:
 Run only the bounded top candidates through the relevant sub-skill. Report the
 remaining candidates without starting them.
 
-## Phase 4 — Emit and publish the board
+## Phase 4 — Emit artifacts and update PowerToys Pulse
 
 Run the v3 generator after all fork-side work:
 
@@ -439,6 +445,31 @@ Verify the deployment:
 Invoke-WebRequest $BoardUrl -UseBasicParsing
 Invoke-WebRequest "${BoardUrl}data/index.json" -UseBasicParsing
 ```
+
+The board repository is the static action-artifact transport. Synchronize the
+same data into a PowerToys Pulse checkout before claiming the dashboard is
+updated:
+
+```powershell
+Set-Location $PulseCheckout
+$env:TRIAGE_DATA_SOURCE_DIR = Join-Path $Dashboard 'data'
+node .\scripts\sync-triage-artifacts.mjs
+npm run lint
+npm run build
+```
+
+If local dependency installation is blocked, push the Pulse feature branch to
+the authorized private validation repository and require its validation
+workflow to pass. For an approved official data refresh, dispatch Pulse after
+the artifact push:
+
+```powershell
+gh workflow run "Sync + Build + Deploy to Pages" -R $Pulse
+```
+
+Never push the official Pulse `main` branch without explicit approval. A
+preview is complete only when the Pulse UI or its private build artifact shows
+the newly processed item actions.
 
 ## Phase 5 — Report
 

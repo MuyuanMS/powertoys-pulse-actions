@@ -1,7 +1,9 @@
 # PowerToys dashboard skills
 
-Public, reusable Copilot skill suite for maintaining the
-[PowerToys triage dashboard](https://muyuanms.github.io/powertoys-triage-board/).
+Public, reusable Copilot skill suite for maintaining the action-oriented layer
+inside PowerToys Pulse. The public
+[triage-board repository](https://github.com/MuyuanMS/powertoys-triage-board)
+is the static artifact transport; Pulse is the user-facing dashboard.
 
 The updater is an orchestrator and requires all four checked-in skills:
 
@@ -59,12 +61,14 @@ https://github.com/MuyuanMS/powertoys-dashboard-skills and run:
 pwsh -NoProfile -File .\\powertoys-dashboard-skills\\Install-Skills.ps1
 Then reload skills or restart Copilot CLI.
 
-Locate or clone https://github.com/MuyuanMS/powertoys-triage-board and run the
-powertoys-dashboard-update skill as the orchestrator. Follow all freshness,
-dependency, validation, publication, and approval rules. Review every eligible
-PR lacking a current clean result for its latest head; judge every new or
-changed bug issue; run the bounded highest-confidence issue batch through
-detailed design; preserve existing fork work; validate and publish the board.
+Locate or clone both https://github.com/MuyuanMS/powertoys-triage-board and the
+PowerToys Pulse repository or private preview branch you are authorized to
+update. Run powertoys-dashboard-update as the orchestrator. Follow all
+freshness, dependency, validation, publication, and approval rules. Review
+every eligible PR lacking a current clean result for its latest head; judge
+every new or changed bug issue; run the bounded highest-confidence issue batch
+through detailed design; preserve existing fork work; publish the artifacts,
+synchronize them into Pulse, and validate/deploy the approved Pulse preview.
 
 Never post or modify anything in microsoft/PowerToys without explicit human
 approval. At completion report coverage, issue judgments/designs, workflow
