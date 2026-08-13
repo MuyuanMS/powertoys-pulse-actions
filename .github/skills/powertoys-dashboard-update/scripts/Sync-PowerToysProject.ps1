@@ -95,7 +95,7 @@ function Get-LiveIssue {
 }
 
 function Get-ReviewerLogin {
-  param($Live, [datetime]$Since)
+  param($Live, $Since)
   $known = @{}
   foreach ($reviewer in $RecognizedReviewers) {
     if (-not [string]::IsNullOrWhiteSpace($reviewer)) {
