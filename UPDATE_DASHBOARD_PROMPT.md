@@ -17,13 +17,13 @@ Before starting:
    - powertoys-issue-to-design
    - powertoys-design-to-pr
 3. If any skill is missing, obtain the complete suite from
-   https://github.com/MuyuanMS/powertoys-dashboard-skills and install it:
-   `git clone https://github.com/MuyuanMS/powertoys-dashboard-skills.git`
+   https://github.com/MuyuanMS/powertoys-pulse-actions and install it:
+   `git clone https://github.com/MuyuanMS/powertoys-pulse-actions.git`
    followed by
-   `pwsh -NoProfile -File .\\powertoys-dashboard-skills\\Install-Skills.ps1`.
+   `pwsh -NoProfile -File .\\powertoys-pulse-actions\\Install-Skills.ps1`.
    Then reload skills or restart Copilot CLI before continuing.
-4. Locate or clone both the action-artifact source
-   `https://github.com/MuyuanMS/powertoys-triage-board` and the PowerToys Pulse
+4. Use `https://github.com/MuyuanMS/powertoys-pulse-actions` as both the
+   skill suite and action-artifact source. Locate or clone the PowerToys Pulse
    repository/preview branch you are authorized to update. Preserve unrelated
    local changes in both checkouts.
 5. Verify the authenticated operator has read access to
@@ -48,8 +48,8 @@ rules. In particular:
 - synchronize those artifacts into PowerToys Pulse with
   `scripts/sync-triage-artifacts.mjs`, then lint/build Pulse;
 - publish or dispatch the approved Pulse preview/Pages workflow. Treat Pulse as
-  the user-facing dashboard and the triage-board repository as its artifact
-  transport, not as the final preview.
+  the user-facing dashboard and this skills repository's `data/` directory as
+  its artifact transport, not as the final preview.
 
 Do not post reviews or comments, open pull requests against
 `microsoft/PowerToys`, or modify upstream issue metadata without explicit human

@@ -32,7 +32,8 @@ skills:
    allowed. Preserve each sub-skill's approval gates.
 3. Never duplicate existing fork work. Resume the existing mirror issue or
    fork PR after checking its current state.
-4. Do not publish PATs, tokens, local paths, or private notes to the board repo.
+4. Do not publish PATs, tokens, local paths, or private notes to the artifact
+   repository.
 5. Every run must regenerate and publish `data/index.json`, `data/index.js`, and
    `data/items/<number>.json` to the configured board repository after the
    agent work completes.
@@ -73,10 +74,10 @@ $RunStartedAt = (Get-Date).ToUniversalTime().ToString('o')
 $ProjectOwner = if ($env:POWERTOYS_PROJECT_OWNER) { $env:POWERTOYS_PROJECT_OWNER } else { 'microsoft' }
 $ProjectNumber = if ($env:POWERTOYS_PROJECT_NUMBER) { [int]$env:POWERTOYS_PROJECT_NUMBER } else { 2445 }
 $BoardOwner, $BoardName = $Board -split '/', 2
-$BoardUrl = if ($env:POWERTOYS_BOARD_URL) {
-  $env:POWERTOYS_BOARD_URL.TrimEnd('/') + '/'
+$ArtifactBaseUrl = if ($env:POWERTOYS_ARTIFACT_BASE_URL) {
+  $env:POWERTOYS_ARTIFACT_BASE_URL.TrimEnd('/')
 } else {
-  "https://$($BoardOwner.ToLowerInvariant()).github.io/$BoardName/"
+  "https://raw.githubusercontent.com/$BoardOwner/$BoardName/main/data"
 }
 $Pulse = if ($env:POWERTOYS_PULSE_REPO) { $env:POWERTOYS_PULSE_REPO } else { 'gim-home/powertoys-pulse' }
 $PulsePreview = if ($env:POWERTOYS_PULSE_PREVIEW_REPO) { $env:POWERTOYS_PULSE_PREVIEW_REPO } else { 'MuyuanMS/powertoys-pulse-action-private' }
@@ -95,9 +96,10 @@ Run this skill from the board repository root, or set
 under `.github\skills`. Personal overrides are environment variables so no
 account-specific configuration or token is committed.
 
-The board repository may be public when its GitHub plan does not support
-private Pages. Never place secrets or information that must remain private in
-its data.
+The configured repository is both the reusable skill suite and canonical
+artifact feed. Generated files belong only in its root `data/` directory, not
+inside `.github\skills`. Never place secrets or information that must remain
+private in the public feed.
 
 ## Phase 0 — Sync and load prior state
 
@@ -378,13 +380,15 @@ Run the v3 generator after all fork-side work:
 
 ```powershell
 pwsh -NoProfile -File "$Dashboard\emit.ps1"
+pwsh -NoProfile -File "$Dashboard\Sanitize-ActionData.ps1"
 ```
 
 The generator preserves valid per-number artifacts written by review workers;
 it must not delete worker output merely because an item is not in the
-hand-authored overlay. Run it only after worker writes are complete when
-possible, and verify the resulting `artifact_numbers` includes every completed
-review from the run.
+hand-authored overlay. The sanitizer removes internal-only fields and
+normalizes local checkout paths before publication. Run both only after worker
+writes are complete when possible, and verify the resulting `artifact_numbers`
+includes every completed review from the run.
 
 Then synchronize project state after artifacts are written:
 
@@ -408,6 +412,8 @@ present:
 Get-ChildItem "$Dashboard\data\items\*.json"
 Select-String -Path "$Dashboard\data\*.json" -Pattern 'ghp_|github_pat_|token' `
   -SimpleMatch
+Select-String -Path "$Dashboard\data\items\*.json" `
+  -Pattern '[A-Za-z]:\\|internal_evidence|internalEvidence|worktree|evidenceDirectory'
 ```
 
 Validate every artifact written or substantively updated during this run. Pass
@@ -431,7 +437,7 @@ Publish only the board data and UI:
 
 ```powershell
 Set-Location $Dashboard
-git add index.html README.md SCHEMA.md data
+git add README.md SCHEMA.md UPDATE_DASHBOARD_PROMPT.md emit.ps1 data
 git diff --cached --check
 if (-not (git diff --cached --quiet)) {
   git commit -m "Update PowerToys triage dashboard"
@@ -442,13 +448,12 @@ if (-not (git diff --cached --quiet)) {
 Verify the deployment:
 
 ```powershell
-Invoke-WebRequest $BoardUrl -UseBasicParsing
-Invoke-WebRequest "${BoardUrl}data/index.json" -UseBasicParsing
+Invoke-WebRequest "$ArtifactBaseUrl/index.json" -UseBasicParsing
 ```
 
-The board repository is the static action-artifact transport. Synchronize the
-same data into a PowerToys Pulse checkout before claiming the dashboard is
-updated:
+This repository's root `data/` directory is the static action-artifact
+transport. Synchronize the same data into a PowerToys Pulse checkout before
+claiming the dashboard is updated:
 
 ```powershell
 Set-Location $PulseCheckout

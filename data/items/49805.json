@@ -1,0 +1,169 @@
+{
+  "number": 49805,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "status": {
+    "glyph": "🎯",
+    "label": "Design ready — needs approval",
+    "detail": "The investigator/adversary loop converged after two rounds. The fix consumes handled bare-Space keydowns in Peek and adds focused regression coverage."
+  },
+  "next_action": {
+    "glyph": "🎯",
+    "label": "Approve the design and build the fork fix",
+    "reason": "The production and test symbols are identified and no missing evidence blocks implementation."
+  },
+  "actions": [
+    {
+      "id": "approve-design-49805",
+      "type": "approve_design",
+      "label": "Start fixing",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "fork_issue",
+        "number": 324,
+        "body": "Design approved — proceed to build the fix PR in the fork."
+      },
+      "note": "Posts approval only to the fork mirror; opening an upstream PR remains separately gated."
+    },
+    {
+      "id": "hold-49805",
+      "type": "hold",
+      "label": "Not now"
+    }
+  ],
+  "confidence": "High",
+  "design": {
+    "root_cause": "Peek::on_hotkey handles an eligible bare-Space activation, signals Peek, and then returns false. PowertoyModuleIface::on_hotkey defines true as consuming the key, so CentralizedKeyboardHook lets the handled keydown continue. Foreground activation or hide timing can deliver that key to the newly focused or closing Peek window, where the initially focused PinButton invokes TitleBar.Pin and toggles the pinned state.",
+    "fix_plan": "Return true after every eligible, successfully handled Peek activation while retaining false for disabled or ineligible paths. Add a bare-Space UI regression that alternates differently sized images and proves repeated open/close cycles never retain pinned bounds.",
+    "evidence": [
+      "Peek::on_hotkey currently returns false only for the handled bare-Space branch.",
+      "PowertoyModuleIface::on_hotkey and CentralizedKeyboardHook::KeyboardHookProc use true to swallow keydown.",
+      "PinButton invokes TitleBar.Pin, which toggles the Pinned state.",
+      "Peek's MainWindow.Toggle path can close the visible window on Space, making the leak possible on both open and close timing."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/peek/peek/dllmain.cpp",
+        "purpose": "Correct handled-hotkey consumption.",
+        "symbols": "Peek::on_hotkey"
+      },
+      {
+        "path": "src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs",
+        "purpose": "Add isolated bare-Space regression coverage.",
+        "symbols": [
+          "PeekFilePreviewTests",
+          "OpenPeekWindow",
+          "SendPeekHotkeyWithRetry",
+          "MoveWindowBy",
+          "GetWindowBounds",
+          "TestBareSpaceActivationDoesNotTogglePinWindowSize"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/peek/peek/dllmain.cpp",
+        "symbols": "Peek::on_hotkey",
+        "current_behavior": "Handled bare-Space activation returns false, while other handled Peek shortcuts return true.",
+        "change": "Return true after every eligible and successfully handled activation; retain false for disabled or ineligible paths.",
+        "code_block": "if (eligible)\n{\n    if (!is_viewer_running())\n    {\n        launch_process();\n    }\n\n    SetEvent(m_hInvokeEvent);\n    Trace::PeekInvoked();\n    return true;\n}\n\nreturn false;",
+        "edge_cases": [
+          "Keyup still propagates, but without the swallowed keydown it must not invoke a WinUI button.",
+          "Each auto-repeat keydown is independently handled and swallowed.",
+          "Eligibility, process lifetime, event signaling, and telemetry remain unchanged."
+        ],
+        "tests": [
+          "Add the new bare-Space UI regression.",
+          "Retain existing Ctrl+Space activation and pinning coverage."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs",
+        "symbols": [
+          "OpenPeekWindow",
+          "SendPeekHotkeyWithRetry"
+        ],
+        "current_behavior": "The UI helpers hard-code Ctrl+Space and their diagnostics assume that activation mode.",
+        "change": "Parameterize the activation chord while retaining Ctrl+Space defaults. Add a settings snapshot, runner restart, window-gone wait, and diagnostics reflecting the active mode.",
+        "code_block": "private Session OpenPeekWindow(string path) =>\n    OpenPeekWindow(path, Key.Ctrl, Key.Space);\n\nprivate Session OpenPeekWindow(string path, params Key[] chord)\n{\n    OpenExplorerAndSelect(path);\n    return SendPeekHotkeyWithRetry(path, chord);\n}",
+        "edge_cases": [
+          "Wait explicitly for Peek to disappear between cycles.",
+          "Use discrete taps instead of held keys.",
+          "Restore the exact prior Peek settings even when the test fails."
+        ],
+        "tests": [
+          "Existing Ctrl+Space tests continue through the default overload.",
+          "Diagnostics identify whether Ctrl+Space or bare Space was sent."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs",
+        "symbols": "TestBareSpaceActivationDoesNotTogglePinWindowSize",
+        "current_behavior": "There is no automated test proving that repeated bare-Space activation cannot toggle Pin Window Size.",
+        "change": "Temporarily enable bare-Space mode and restart PowerToys. Alternate differently sized images for eight rapid Space open/close cycles, move each open window, and assert each subsequent unpinned preview recenters or resizes instead of retaining the previous bounds. Restore settings and restart in finally.",
+        "code_block": "[TestMethod(\"Peek.SpaceActivation.DoesNotTogglePinWindowSize\")]\npublic void TestBareSpaceActivationDoesNotTogglePinWindowSize()\n{\n    using var snapshot = SettingsConfigHelper.PreserveModuleSettings(\"Peek\");\n    try\n    {\n        ConfigurePeekActivation(useBareSpace: true);\n        RestartRunnerForPeekSettings();\n        // Alternate 8.png and 2.jpg; assert bounds change after every reopen.\n    }\n    finally\n    {\n        CloseTestWindows(preservePeekProcess: false);\n        snapshot.Dispose();\n        RestartRunnerForPeekSettings();\n    }\n}",
+        "edge_cases": [
+          "Use files with reliably different preview dimensions.",
+          "Close stale Explorer and Peek windows between iterations.",
+          "Run on both Windows 10 and Windows 11 because focus timing can differ."
+        ],
+        "tests": [
+          "Run the focused Peek.SpaceActivation.DoesNotTogglePinWindowSize test on x64 Windows 10.",
+          "Run the same focused test on x64 Windows 11."
+        ]
+      }
+    ],
+    "verify": [
+      "Build x64 Debug with: pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\peek\\peek",
+      "Build the UI tests with: pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\peek\\Peek.UITests.Next",
+      "Run Peek.UITests.Next.exe with filter Name=Peek.SpaceActivation.DoesNotTogglePinWindowSize on x64 Windows 10 and Windows 11.",
+      "Run the unfiltered Peek.UITests.Next suite on Windows 10 and Windows 11.",
+      "Manually alternate differently sized images through at least ten rapid bare-Space open/close cycles and confirm pin state never changes.",
+      "Confirm Ctrl+Space mode still leaves plain Space available for audio/video controls."
+    ],
+    "risks": [
+      "Eligible bare-Space presses no longer propagate to Explorer or Peek controls; this is intended shortcut ownership.",
+      "Interactive foreground timing requires VM UI testing on both supported Windows versions.",
+      "Auto-repeat may still toggle Peek repeatedly, but it can no longer leak repeated keydowns into Peek controls."
+    ],
+    "alternatives": [
+      "Clearing focus fixes only the current control and allows another focusable control to receive the leaked key.",
+      "Disabling PinButton tab focus would introduce an accessibility regression.",
+      "Changing centralized keyup handling creates global cross-module risk.",
+      "Swallowing only while opening still permits the closing Peek window to receive the key."
+    ],
+    "adversary": {
+      "rounds": 2,
+      "status": "signed_off",
+      "blocking_objections": 0
+    }
+  },
+  "fork_issue": {
+    "number": 324,
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/324"
+  },
+  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "source_updated_at": "2026-08-10T18:19:06Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The investigator/adversary loop converged after two rounds. The fix consumes handled bare-Space keydowns in Peek and adds focused regression coverage.",
+    "evidence": [
+      "The investigator/adversary loop converged after two rounds. The fix consumes handled bare-Space keydowns in Peek and adds focused regression coverage.",
+      "Peek::on_hotkey currently returns false only for the handled bare-Space branch.",
+      "PowertoyModuleIface::on_hotkey and CentralizedKeyboardHook::KeyboardHookProc use true to swallow keydown.",
+      "PinButton invokes TitleBar.Pin, which toggles the Pinned state.",
+      "Peek's MainWindow.Toggle path can close the visible window on Space, making the leak possible on both open and close timing."
+    ],
+    "recommended_action": "The production and test symbols are identified and no missing evidence blocks implementation.",
+    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "source_updated_at": "2026-08-10T18:19:06Z"
+  }
+}

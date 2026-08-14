@@ -1,0 +1,170 @@
+{
+  "number": 30764,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "status": {
+    "glyph": "🎯",
+    "label": "Design ready — needs approval",
+    "detail": "Enumerated batch renames collide with still-existing source names, so the shell auto-suffixes \"(2)\" instead of shifting the chain."
+  },
+  "next_action": {
+    "glyph": "🎯",
+    "label": "Approve the implementation-grade design",
+    "reason": "Exact files, symbols, steps, tests, and risks are now captured in the artifact."
+  },
+  "actions": [
+    {
+      "id": "design-30764",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+    },
+    {
+      "id": "hold-30764",
+      "type": "hold",
+      "label": "Not now"
+    }
+  ],
+  "confidence": "High",
+  "design": {
+    "root_cause": "PowerRename computes the desired enumerated names correctly, but the rename worker queues exactly one IFileOperation::RenameItem per selected item in current order. There is no dependency graph or staging pass for same-directory rename chains. When bill-01-23.pdf is renamed to bill-02-23.pdf while the original bill-02-23.pdf still exists and has not yet been moved, the shell resolves the collision by creating bill-02-23 (2).pdf instead of waiting for the later rename. That makes enumeration-based shifts unstable whenever final names overlap current names.",
+    "evidence": [
+      "Issue #30764 shows a pure rename-chain repro where every final target except the last is occupied by another selected source file.",
+      "CPowerRenameManager::s_renameWorkerThread groups items only by depth and then calls spFileOp->RenameItem(spShellItem, newName, nullptr) once per item; there is no same-directory collision planning or two-phase rename.",
+      "Renaming.cpp already calculates the desired final names before execution, so the incorrect (2) suffix is not a regex/enumerator generation bug.",
+      "Helpers.cpp contains GetEnumeratedFileName / unique-name utilities, which shows the codebase already distinguishes name-planning from rename execution/collision handling."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/PowerRename/lib/PowerRenameManager.cpp",
+        "purpose": "Queues and executes the shell rename operations.",
+        "symbols": "CPowerRenameManager::s_renameWorkerThread"
+      },
+      {
+        "path": "src/modules/PowerRename/lib/Helpers.cpp",
+        "purpose": "Provides unique-name helpers reusable for temporary staging names.",
+        "symbols": "GetEnumeratedFileName"
+      },
+      {
+        "path": "src/modules/PowerRename/lib/PowerRenameItem.cpp",
+        "purpose": "Allows staged-path bookkeeping when the UI stays open after rename.",
+        "symbols": [
+          "CPowerRenameItem::PutPath",
+          "CPowerRenameItem::PutOriginalName",
+          "CPowerRenameItem::PutNewName"
+        ]
+      },
+      {
+        "path": "src/modules/PowerRename/unittests/PowerRenameManagerTests.cpp",
+        "purpose": "End-to-end rename regression coverage for chained and cyclic rename collisions.",
+        "symbols": [
+          "PowerRenameManagerTests::SimpleTests::RenameHelper",
+          "PowerRenameManagerTests::SimpleTests::VerifyEnumeratedRenameChainPreservesIntendedTargets",
+          "PowerRenameManagerTests::SimpleTests::VerifySwapRenameUsesTemporaryStaging"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/PowerRename/lib/PowerRenameManager.cpp",
+        "symbols": "CPowerRenameManager::s_renameWorkerThread",
+        "current_behavior": "The worker adds pending renames in depth-first order only. If a destination path is still occupied by another selected source item, the shell treats it as a collision and auto-uniquifies the first rename.",
+        "change": "Before queuing RenameItem calls, build a per-directory rename plan containing each item's current full path and desired full path. Detect blocking overlaps where a desired full path equals another selected item's current path or where the plan contains cycles.",
+        "code_block": "struct PlannedRename { UINT index; std::wstring currentPath; std::wstring finalPath; };\\nauto plan = BuildRenamePlanForDepth(matrix[v]);\\nauto [staged, direct] = PartitionBlockingRenames(plan);",
+        "edge_cases": [
+          "Keep the existing parent/child depth ordering so child paths are still renamed before parents.",
+          "Treat case-insensitive path comparisons as equal on Windows.",
+          "Do not stage items whose final name is unchanged or whose collision is only with a non-selected external file."
+        ],
+        "tests": [
+          "Add a chain-shift regression covering bill-01 -> bill-02, ..., bill-11 -> bill-12.",
+          "Add a two-item swap regression so cycles are covered as well."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/PowerRename/lib/PowerRenameManager.cpp",
+        "symbols": [
+          "CPowerRenameManager::s_renameWorkerThread",
+          "GetEnumeratedFileName",
+          "CPowerRenameItem::PutPath",
+          "CPowerRenameItem::PutOriginalName",
+          "CPowerRenameItem::PutNewName"
+        ],
+        "current_behavior": "Conflicting items are renamed directly to their final names, leaving collision handling entirely to the shell.",
+        "change": "Add a first staging pass for blocking/cyclic items: rename them to unique temporary names in the same directory, commit that operation, then refresh item bookkeeping (or reacquire shell items from the staged paths) before a second pass renames them to the final planned names.",
+        "code_block": "std::wstring tempName = MakePowerRenameTempName(currentPath);\\nstagingOp->RenameItem(shellItem, fs::path(tempName).filename().c_str(), nullptr);\\n...\\nfinalOp->RenameItem(refreshedShellItem, fs::path(finalPath).filename().c_str(), nullptr);",
+        "edge_cases": [
+          "If the UI remains open, update item path/original-name bookkeeping after the staging and final passes so preview rows stay accurate.",
+          "Temporary names must stay in the same directory/volume to keep rename semantics cheap and atomic at the shell level.",
+          "Handle partial failure by surfacing the error and avoiding orphaned in-memory paths that no longer match disk."
+        ],
+        "tests": [
+          "Verify staged chains land on the exact intended final names with no (2) suffixes.",
+          "Verify cyclic swaps (A<->B) complete without data loss or unexpected suffixes."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/PowerRename/unittests/PowerRenameManagerTests.cpp",
+        "symbols": [
+          "PowerRenameManagerTests::SimpleTests::VerifyEnumeratedRenameChainPreservesIntendedTargets",
+          "PowerRenameManagerTests::SimpleTests::VerifySwapRenameUsesTemporaryStaging"
+        ],
+        "current_behavior": "Existing rename-manager tests verify straightforward rename success, but not overlapping rename chains or cycles.",
+        "change": "Add focused integration-style tests that create real files in the test helper directory, run RenameHelper with enumeration-based replacements, and assert that only the intended final file names exist afterward.",
+        "code_block": "rename_pairs renamePairs[] = {\\n    { L\\\"bill-01-23.pdf\\\", L\\\"bill-02-23.pdf\\\", true, true, 0 },\\n    ...\\n    { L\\\"bill-11-23.pdf\\\", L\\\"bill-12-23.pdf\\\", true, true, 0 },\\n};\\nRenameHelper(renamePairs, ARRAYSIZE(renamePairs), L\\\"bill-(.*?)-23\\\", L\\\"bill-${start=2,padding=2}-23\\\", fileTime, DEFAULT_FLAGS);",
+        "edge_cases": [
+          "Assert that no unexpected  (2) files exist after rename.",
+          "Add a swap case (foo.txt <-> bar.txt) to ensure temp staging handles cycles, not just descending chains.",
+          "Keep folder-depth coverage unchanged so the fix does not regress parent/child ordering."
+        ],
+        "tests": [
+          "Run VerifyEnumeratedRenameChainPreservesIntendedTargets.",
+          "Run VerifySwapRenameUsesTemporaryStaging.",
+          "Run the broader PowerRenameManagerTests suite for rename execution regressions."
+        ]
+      }
+    ],
+    "verify": [
+      "Build PowerRename library: pwsh .\\\\tools\\\\build\\\\build.ps1 -Platform x64 -Configuration Debug -Path .\\\\src\\\\modules\\\\PowerRename\\\\lib\\\\PowerRenameLib.vcxproj",
+      "Build PowerRename unit tests: pwsh .\\\\tools\\\\build\\\\build.ps1 -Platform x64 -Configuration Debug -Path .\\\\src\\\\modules\\\\PowerRename\\\\unittests\\\\PowerRenameLibUnitTests.vcxproj",
+      "Run the focused C++ tests with vstest.console.exe against PowerRenameLibUnitTests.dll and filters for VerifyEnumeratedRenameChainPreservesIntendedTargets and VerifySwapRenameUsesTemporaryStaging.",
+      "Run the broader PowerRenameManagerTests suite after the focused tests pass.",
+      "Manual E2E: in Explorer, select bill-01-23.pdf through bill-11-23.pdf, run PowerRename with search bill-(.*?)-23 and replace bill-${start=2,padding=2}-23, and confirm the final files are bill-02-23.pdf through bill-12-23.pdf with no (2) suffixes."
+    ],
+    "risks": [
+      "A two-phase rename briefly creates temporary names; interruption between passes needs clean error handling and sensible user-visible failure states.",
+      "Path bookkeeping must stay correct if the UI window remains open after rename.",
+      "Case-only renames and mixed folder/file depths still need to respect existing shell rename semantics."
+    ],
+    "alternatives": [
+      "Sorting the chain in descending order can fix the example repro but still fails swaps and more general cycles.",
+      "Leaving collision handling to the shell preserves the current incorrect (2) suffix behavior and defeats PowerRename's enumeration workflow.",
+      "Rejecting overlapping rename graphs would avoid suffixes but would unnecessarily block valid rename operations that can be completed safely with staging."
+    ]
+  },
+  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "source_updated_at": "2026-07-29T15:30:18Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Enumerated batch renames collide with still-existing source names, so the shell auto-suffixes \"(2)\" instead of shifting the chain.",
+    "evidence": [
+      "Enumerated batch renames collide with still-existing source names, so the shell auto-suffixes \"(2)\" instead of shifting the chain.",
+      "Issue #30764 shows a pure rename-chain repro where every final target except the last is occupied by another selected source file.",
+      "CPowerRenameManager::s_renameWorkerThread groups items only by depth and then calls spFileOp->RenameItem(spShellItem, newName, nullptr) once per item; there is no same-directory collision planning or two-phase rename.",
+      "Renaming.cpp already calculates the desired final names before execution, so the incorrect (2) suffix is not a regex/enumerator generation bug.",
+      "Helpers.cpp contains GetEnumeratedFileName / unique-name utilities, which shows the codebase already distinguishes name-planning from rename execution/collision handling."
+    ],
+    "recommended_action": "Exact files, symbols, steps, tests, and risks are now captured in the artifact.",
+    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "source_updated_at": "2026-07-29T15:30:18Z"
+  }
+}

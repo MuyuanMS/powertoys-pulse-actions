@@ -1,0 +1,143 @@
+{
+  "number": 49617,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "status": {
+    "glyph": "🎯",
+    "label": "Design ready — needs approval",
+    "detail": "The crash path is narrowed to a cross-thread Shortcut Guide visibility check during Win-key release."
+  },
+  "next_action": {
+    "glyph": "🎯",
+    "label": "Approve the design and build the fix",
+    "reason": "Approve the UI-thread visibility-state fix and implement it before more crash dumps or user repro rounds are collected."
+  },
+  "actions": [
+    {
+      "id": "rerun-49617",
+      "type": "rerun",
+      "label": "Queue implementation follow-up"
+    },
+    {
+      "id": "hold-49617",
+      "type": "hold",
+      "label": "Not now"
+    }
+  ],
+  "confidence": "High",
+  "design": {
+    "root_cause": "ShortcutGuide.App installs a low-level keyboard hook callback that reads OverlayWindow.AppWindow.IsVisible directly from the hook thread when Win is released. AppWindow is a WinUI/COM object owned by the UI thread; touching it from the native keyboard-hook thread while the overlay is hiding or switching panes can fault across the C++/WinRT boundary, which matches the fully reproducible crash when taskbar Win+number shortcuts are pressed while the taskbar pane is visible.",
+    "evidence": [
+      "The issue is a fully reproducible crash in PowerToys.ShortcutGuide.exe whenever Win+number is pressed while taskbar labels are shown.",
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs reads OverlayWindow.AppWindow.IsVisible inside the low-level Win-key-up callback rather than on the UI thread.",
+      "The same file already marshals CloseAnimated back to OverlayWindow.DispatcherQueue, showing the code expects window operations to happen on the UI thread.",
+      "OverlayWindow.xaml.cs owns the show/hide lifecycle through ShowOverlay(), CloseAnimated(), and OnCloseTimerTick(), so a UI-thread visibility flag can replace cross-thread AppWindow property reads."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs",
+        "purpose": "Stop the hook thread from dereferencing AppWindow and use a UI-safe visibility signal instead.",
+        "symbols": [
+          "App.OnLaunched",
+          "_winKeyUpKeyboardHook",
+          "ListenForLaunchedEvents"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs",
+        "purpose": "Publish a UI-owned overlay-visible state that is updated in the show/hide lifecycle.",
+        "symbols": [
+          "OverlayWindow.ShowOverlay",
+          "OverlayWindow.CloseAnimated",
+          "OverlayWindow.OnCloseTimerTick"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.UnitTests/OverlayVisibilityStateTests.cs",
+        "purpose": "Add narrow regression coverage for the new visibility-state decision logic without needing a full WinUI window in tests.",
+        "symbols": "OverlayVisibilityStateTests"
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs",
+        "symbols": [
+          "OverlayWindow.ShowOverlay",
+          "OverlayWindow.OnCloseTimerTick"
+        ],
+        "current_behavior": "Only AppWindow.Show()/Hide() reflects visibility, so non-UI code must read AppWindow.IsVisible to know whether the overlay is on screen.",
+        "change": "Add a lightweight UI-thread-owned visibility flag/property that is set true immediately before/after ShowOverlay and set false in the hide-timer completion path before AppWindow.Hide().",
+        "code_block": "internal volatile int _overlayVisible;\r\ninternal bool IsOverlayVisibleForHooks => Volatile.Read(ref _overlayVisible) == 1;\r\n\r\npublic void ShowOverlay()\r\n{\r\n    Volatile.Write(ref _overlayVisible, 1);\r\n    this.AppWindow.Show();\r\n    ...\r\n}\r\n\r\nprivate void OnCloseTimerTick(...)\r\n{\r\n    Volatile.Write(ref _overlayVisible, 0);\r\n    this.AppWindow.Hide();\r\n}",
+        "tests": [
+          "Add OverlayVisibilityStateTests covering show/hide transitions.",
+          "Manual Win+number crash repro after the flag is introduced."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs",
+        "symbols": [
+          "App.OnLaunched",
+          "_winKeyUpKeyboardHook",
+          "ListenForLaunchedEvents"
+        ],
+        "current_behavior": "The Win-key-up hook callback and show-event listener branch on OverlayWindow.AppWindow.IsVisible from non-UI threads.",
+        "change": "Replace every non-UI AppWindow.IsVisible check with the new OverlayWindow.IsOverlayVisibleForHooks flag, and keep all real UI work inside DispatcherQueue.TryEnqueue().",
+        "code_block": "if (OverlayWindow.IsOverlayVisibleForHooks)\r\n{\r\n    OverlayWindow.DispatcherQueue.TryEnqueue(() => OverlayWindow.CloseAnimated());\r\n    SendSingleKeyboardInput((short)key, 0x2);\r\n}\r\nelse\r\n{\r\n    SendSingleKeyboardInput((short)key, 0x2);\r\n}",
+        "tests": [
+          "Add a unit test or extracted helper test that verifies the close/no-close decision is based only on the flag.",
+          "Manual taskbar-pane + Win+number regression repro."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.UnitTests/OverlayVisibilityStateTests.cs",
+        "symbols": "OverlayVisibilityStateTests",
+        "current_behavior": "There is no regression coverage for the show/hide state used by the keyboard hook, so cross-thread visibility regressions are easy to reintroduce.",
+        "change": "Add a focused unit-test surface for the extracted visibility/close-decision helper so the hook path can be validated without instantiating a real WinUI AppWindow.",
+        "code_block": "[TestMethod]\r\npublic void WinKeyUp_WhenOverlayFlagIsSet_RequestsCloseWithoutReadingAppWindow()\r\n{\r\n    // Assert that the decision path uses the UI-safe flag only.\r\n}",
+        "tests": [
+          "Add unit coverage for visible vs hidden hook decisions.",
+          "Keep existing Shortcut Guide converter/unit tests green."
+        ]
+      }
+    ],
+    "verify": [
+      "Build Shortcut Guide.Ui and ShortcutGuide.UnitTests in x64 Debug or Release using the repo build scripts.",
+      "Run the new ShortcutGuide.UnitTests visibility-state tests.",
+      "Manually reproduce: open Shortcut Guide, wait for Win+number taskbar labels, press Win+1/Win+2/Win+3 repeatedly, and confirm the target app activates without crashing ShortcutGuide.exe or producing a dump.",
+      "Verify ordinary long-press Win, Esc close, and click-outside close behavior still work after the visibility flag change."
+    ],
+    "risks": [
+      "If any show/hide path forgets to update the new flag, the overlay may stop closing on Win release or may close when it should remain visible.",
+      "The close animation timer means visibility transitions are intentionally asynchronous; the flag must represent “hook-visible” semantics, not just AppWindow current state.",
+      "Hook-thread logic must continue to avoid feedback loops when injected key-up events are replayed."
+    ],
+    "alternatives": [
+      "Catching the crash around AppWindow.IsVisible is not viable because access violations and apartment violations can terminate the process before managed catch logic helps.",
+      "Marshalling every visibility query back to the UI thread adds latency on the hook path and still races the taskbar Win+number gesture.",
+      "Disabling Win+number handling while Shortcut Guide is open would avoid the crash but would regress a legitimate Windows shortcut."
+    ]
+  },
+  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "source_updated_at": "2026-08-02T18:41:11Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The crash path is narrowed to a cross-thread Shortcut Guide visibility check during Win-key release.",
+    "evidence": [
+      "The crash path is narrowed to a cross-thread Shortcut Guide visibility check during Win-key release.",
+      "The issue is a fully reproducible crash in PowerToys.ShortcutGuide.exe whenever Win+number is pressed while taskbar labels are shown.",
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs reads OverlayWindow.AppWindow.IsVisible inside the low-level Win-key-up callback rather than on the UI thread.",
+      "The same file already marshals CloseAnimated back to OverlayWindow.DispatcherQueue, showing the code expects window operations to happen on the UI thread.",
+      "OverlayWindow.xaml.cs owns the show/hide lifecycle through ShowOverlay(), CloseAnimated(), and OnCloseTimerTick(), so a UI-thread visibility flag can replace cross-thread AppWindow property reads."
+    ],
+    "recommended_action": "Approve the UI-thread visibility-state fix and implement it before more crash dumps or user repro rounds are collected.",
+    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "source_updated_at": "2026-08-02T18:41:11Z"
+  }
+}

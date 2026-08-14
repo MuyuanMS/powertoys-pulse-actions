@@ -1,9 +1,8 @@
-# PowerToys dashboard skills
+# PowerToys Pulse actions
 
 Public, reusable Copilot skill suite for maintaining the action-oriented layer
-inside PowerToys Pulse. The public
-[triage-board repository](https://github.com/MuyuanMS/powertoys-triage-board)
-is the static artifact transport; Pulse is the user-facing dashboard.
+inside PowerToys Pulse. This repository is also the canonical static artifact
+transport; Pulse is the user-facing dashboard.
 
 The updater is an orchestrator and requires all four checked-in skills:
 
@@ -17,14 +16,14 @@ The updater is an orchestrator and requires all four checked-in skills:
 ## Install
 
 ```powershell
-git clone https://github.com/MuyuanMS/powertoys-dashboard-skills.git
-pwsh -NoProfile -File .\powertoys-dashboard-skills\Install-Skills.ps1
+git clone https://github.com/MuyuanMS/powertoys-pulse-actions.git
+pwsh -NoProfile -File .\powertoys-pulse-actions\Install-Skills.ps1
 ```
 
 Use `-Update` to replace previously installed copies:
 
 ```powershell
-pwsh -NoProfile -File .\powertoys-dashboard-skills\Install-Skills.ps1 -Update
+pwsh -NoProfile -File .\powertoys-pulse-actions\Install-Skills.ps1 -Update
 ```
 
 Repository-level use is also supported: copy the four directories from
@@ -57,13 +56,14 @@ First confirm gh/git/PowerShell and GitHub authentication. Check that
 powertoys-dashboard-update, powertoys-pr-review, powertoys-issue-to-design, and
 powertoys-design-to-pr exist in `.github/skills` or `$HOME/.copilot/skills`.
 If any are missing, clone
-https://github.com/MuyuanMS/powertoys-dashboard-skills and run:
-pwsh -NoProfile -File .\\powertoys-dashboard-skills\\Install-Skills.ps1
+https://github.com/MuyuanMS/powertoys-pulse-actions and run:
+pwsh -NoProfile -File .\\powertoys-pulse-actions\\Install-Skills.ps1
 Then reload skills or restart Copilot CLI.
 
-Locate or clone both https://github.com/MuyuanMS/powertoys-triage-board and the
+Locate or clone https://github.com/MuyuanMS/powertoys-pulse-actions and the
 PowerToys Pulse repository or private preview branch you are authorized to
-update. Run powertoys-dashboard-update as the orchestrator. Follow all
+update. Run powertoys-dashboard-update from the skills repository root as the
+orchestrator. Follow all
 freshness, dependency, validation, publication, and approval rules. Review
 every eligible PR lacking a current clean result for its latest head; judge
 every new or changed bug issue; run the bounded highest-confidence issue batch
@@ -82,7 +82,20 @@ For the complete copyable version, use
 
 Dashboard action feedback is stored as GitHub Issues in this repository.
 Use the dashboard's thumbs-up/down controls or
-[open feedback manually](https://github.com/MuyuanMS/powertoys-dashboard-skills/issues/new?template=action-feedback.yml).
+[open feedback manually](https://github.com/MuyuanMS/powertoys-pulse-actions/issues/new?template=action-feedback.yml).
+
+## Action data
+
+The updater stores the shared dashboard feed in this repository:
+
+- `data/index.json` and `data/index.js` contain the generated manifest.
+- `data/items/<number>.json` contains each issue or PR judgment and action.
+- `emit.ps1` regenerates the manifest while preserving worker artifacts.
+- `Sanitize-ActionData.ps1` removes internal-only fields and local paths before
+  publication.
+
+Pulse synchronizes from:
+`https://raw.githubusercontent.com/MuyuanMS/powertoys-pulse-actions/main/data`.
 
 ## Validation
 
@@ -91,5 +104,6 @@ pwsh -NoProfile -File .\Test-SkillSuite.ps1
 pwsh -NoProfile -File .\.github\skills\powertoys-pr-review\tests\Test-ReviewPayloads.ps1
 ```
 
-The suite must not contain generated dashboard artifacts, credentials, approval
-decisions, or machine-specific run state.
+Generated action data belongs only in the repository-root `data/` directory.
+The packaged `.github/skills` directories must not contain generated artifacts,
+credentials, approval decisions, or machine-specific run state.

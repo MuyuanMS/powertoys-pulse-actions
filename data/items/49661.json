@@ -1,0 +1,75 @@
+{
+  "number": 49661,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "status": {
+    "glyph": "📝",
+    "label": "Review ready — blocking fixes drafted",
+    "detail": "Phase 0 cleared. The current-head fork review converged after five Copilot passes with zero new published comments and zero unresolved Copilot threads. The x64 Debug runner, Settings, Shortcut Guide module-interface, and Shortcut Guide UI builds passed; 12/12 targeted Settings tests and 7/7 Shortcut Guide tests passed. Two author-facing companion comments cover the remaining activation-source/lifecycle and settings-normalization defects."
+  },
+  "next_action": {
+    "glyph": "📝",
+    "label": "Review the two drafted change requests",
+    "reason": "The current upstream head can misclassify the configured shortcut as a Windows-key hold and does not reliably persist or parse normalized hold settings."
+  },
+  "actions": [
+    {
+      "id": "post-review-49661",
+      "type": "post_review",
+      "label": "Post selected comments as a review",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "pr": 49661,
+        "body_prefix": "Thanks for the comprehensive Shortcut Guide update and validation. The Settings/UI direction looks good, but the Windows-key activation path still has correctness gaps that can break the normal activation shortcut and leave hold state or timers stale. Please address the two items below before merge."
+      }
+    },
+    {
+      "id": "hold-review-49661",
+      "type": "hold",
+      "label": "Not now"
+    }
+  ],
+  "confidence": "High",
+  "head_sha": "d15ef79f566baad0930c77180ae43968d96621e6",
+  "proposed_comments": [
+    {
+      "id": "separate-win-key-hold-source",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Separate Windows-key holds from the configured shortcut",
+      "body": "### Separate Windows-key holds from the configured shortcut\n\n**Severity:** `high`\n\nThe configured shortcut and the Windows-key hold callback both currently invoke `OnHotkeyEx` and signal the same event. Because the default shortcut itself contains Win, live key-state detection misclassifies it: `Off` can suppress the regular shortcut, while `TaskbarIndicators` can open only the indicator pane instead of the full guide. Route holds through a distinct source/event, keep the configured shortcut on the full-guide path, and make the release lifecycle handle both left and right Win keys, a release that occurs before the UI hook is installed, and only overlays actually opened by a hold. When refreshing the hold registration, clear and cancel only this module's pressed-key timers rather than deleting its normal centralized hotkeys, and skip the timers entirely when the action is `Off`.",
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs",
+      "line": 209,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "persist-and-validate-hold-settings",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Persist normalized hold settings and validate before conversion",
+      "body": "### Persist normalized hold settings and validate before conversion\n\n**Severity:** `medium`\n\nThe ViewModel clamps both `win_key_action` and `press_time`, but its normalization notification only tracks the action value. A duration-only correction is therefore changed in memory without being saved or sent to Runner, so the invalid value is loaded again. Track both corrections, persist/send the normalized settings once, and extend the existing test to assert both serialized values. In the module interface, clamp the raw numeric duration before converting it to `UINT` and accept only the exact integral action values so negative, fractional, or corrupted JSON cannot select an unintended mode or delay.",
+      "path": "src/settings-ui/Settings.UI/ViewModels/ShortcutGuideViewModel.cs",
+      "line": 57,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "upstream_pr": {
+    "number": 49661,
+    "url": "https://github.com/microsoft/PowerToys/pull/49661"
+  },
+  "fork_pr": {
+    "number": 329,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/329"
+  },
+  "fork_branch": "pr-iterate/49661-v4"
+}

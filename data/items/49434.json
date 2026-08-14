@@ -1,0 +1,201 @@
+{
+  "number": 49434,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "status": {
+    "glyph": "🎯",
+    "label": "Design ready — needs approval",
+    "detail": "The Keyboard Manager editor issue already has two user reports plus logs showing native dependency startup failure. The fallback and launch paths are concrete enough to design a fix without waiting on more upstream triage."
+  },
+  "next_action": {
+    "glyph": "🎯",
+    "label": "Approve the detailed design",
+    "reason": "Repository files, implementation steps, and verification are specific enough to start the fork-side fix when desired."
+  },
+  "actions": {
+    "id": "hold-49434",
+    "type": "hold",
+    "label": "Not now"
+  },
+  "confidence": "High",
+  "design": {
+    "root_cause": "When the native Keyboard Manager wrapper DLL (or one of its native dependencies) is unavailable, the editor startup path does not honor its own read-only fallback. `SettingsManager` already catches `DllNotFoundException` and says the editor can run in standalone mode from JSON settings, but `MainPage` immediately creates `KeyboardMappingService` again, catches the failure, and returns before presenting a recovery UI. The module launcher only checks that `PowerToys.KeyboardManagerEditorUI.exe` started, so the user sees a brief process and then nothing useful.",
+    "evidence": [
+      "Issue #49434 includes logs showing `Powertoys.KeyboardManagerEditorLibraryWrapper.dll` (or one of its dependencies) could not be loaded, followed by `MainPage.xaml.cs` logging `Failed to initialize mapping service`.",
+      "A second user reported the same silent-exit symptom after seeing a missing Windows App Runtime prompt and installing Windows App SDK 2.3.1 manually.",
+      "`src/modules/keyboardmanager/KeyboardManagerEditorUI/Settings/SettingsManager.cs` catches `DllNotFoundException` and explicitly documents a standalone/read-only fallback when the native service is unavailable.",
+      "`src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs` still constructs `new KeyboardMappingService()` in the page constructor and returns early on failure, which bypasses the JSON-backed fallback already loaded by `SettingsManager`.",
+      "`src/modules/keyboardmanager/dll/dllmain.cpp` launches `WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe` and treats process creation as success, without surfacing dependency-health diagnostics if the child exits immediately."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Settings/SettingsManager.cs",
+        "purpose": "Owns the native-wrapper probe and the JSON-backed fallback settings model that should remain usable when the DLL load fails.",
+        "symbols": [
+          "SettingsManager",
+          "IsNativeServiceAvailable",
+          "LoadSettings",
+          "CreateSettingsFromKeyboardManagerService"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml",
+        "purpose": "Contains the service-down InfoBar and command surface that should reflect native-unavailable read-only mode instead of a silent exit.",
+        "symbols": [
+          "ServiceDownBanner",
+          "NewRemappingBtn",
+          "MainContentControl"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs",
+        "purpose": "Creates `KeyboardMappingService`, loads mappings, and should gate edit/save flows when the native service is unavailable.",
+        "symbols": [
+          "MainPage",
+          "MainPage()",
+          "LoadAllMappings",
+          "UpdateServiceBannerVisibility"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI.UnitTests/SettingsManagerFallbackTests.cs",
+        "purpose": "Adds focused regression coverage for native-unavailable startup and read-only fallback behavior.",
+        "symbols": [
+          "SettingsManagerFallbackTests",
+          "MainPageFallbackTests"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/dll/dllmain.cpp",
+        "purpose": "Launches the WinUI editor process and should emit clearer diagnostics when startup dependencies are unhealthy.",
+        "symbols": [
+          "KeyboardManager::OpenEditor",
+          "ShellExecuteExW"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Settings/SettingsManager.cs",
+        "symbols": [
+          "SettingsManager",
+          "IsNativeServiceAvailable",
+          "LoadSettings"
+        ],
+        "current_behavior": "The settings layer can already fall back to JSON when the native wrapper fails to load, but it only exposes a boolean and the UI startup path does not consume a richer failure reason.",
+        "change": "Promote native-service probing into a first-class startup status (for example `NativeServiceStartupState`) that records whether the wrapper is available, why it failed, and whether JSON-only fallback data was loaded successfully.",
+        "code_block": "internal enum NativeServiceStartupState\r\n{\r\n    Available,\r\n    MissingWrapperOrDependency,\r\n    JsonFallbackOnly,\r\n}\r\n\r\ninternal static NativeServiceStartupState StartupState { get; private set; }",
+        "edge_cases": [
+          "Distinguish “wrapper missing” from “settings JSON corrupt” so the UI can show the right banner and avoid overwriting good data.",
+          "Keep `LoadSettings()` resilient when both the native wrapper and the JSON file are unavailable.",
+          "Do not attempt to regenerate JSON settings from the native service when the wrapper probe already failed."
+        ],
+        "tests": [
+          "Add `SettingsManagerFallbackTests` that simulate missing native DLL load and assert `StartupState` becomes JSON-fallback-only instead of throwing.",
+          "Add a test that corrupt JSON still returns an empty settings model without crashing the editor."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml",
+        "symbols": [
+          "ServiceDownBanner",
+          "NewRemappingBtn",
+          "MainContentControl"
+        ],
+        "current_behavior": "The page contains a service-down InfoBar, but the constructor exits before the banner is configured when the native wrapper cannot be loaded, and the add/edit surface remains designed for fully writable mode.",
+        "change": "Bind the banner text and command enablement to the new startup state so the page opens in explicit read-only mode, disables add/edit entry points, and tells the user which dependency is missing plus how to recover.",
+        "code_block": "<InfoBar\r\n    x:Name=\"ServiceDownBanner\"\r\n    IsOpen=\"{x:Bind IsNativeFallbackMode, Mode=OneWay}\"\r\n    Message=\"Keyboard Manager started in read-only mode because the native editor dependencies are unavailable.\" />\r\n\r\n<Button x:Name=\"NewRemappingBtn\" IsEnabled=\"{x:Bind CanEditMappings, Mode=OneWay}\" />",
+        "edge_cases": [
+          "Read-only mode must still allow scrolling and inspecting existing mappings loaded from JSON.",
+          "Banner text should cover both missing wrapper DLL and missing Windows App Runtime dependency cases.",
+          "Do not expose save-capable controls when native edits cannot be persisted safely."
+        ],
+        "tests": [
+          "Add `MainPageFallbackTests` that assert the add button is disabled and the banner is open when startup state is fallback-only.",
+          "Manual verification: launch the editor with the native DLL unavailable and confirm the window stays open with a readable error banner."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs",
+        "symbols": [
+          "MainPage",
+          "MainPage()",
+          "LoadAllMappings",
+          "UpdateServiceBannerVisibility"
+        ],
+        "current_behavior": "The constructor creates `KeyboardMappingService` directly, catches any exception, marks `IsServiceRunning = false`, and returns before loading the fallback mappings that `SettingsManager` already prepared.",
+        "change": "Use `SettingsManager.StartupState` / `IsNativeServiceAvailable` as the single startup authority. Only create `KeyboardMappingService` when native startup succeeded; otherwise load the JSON-backed collections, set the page into read-only mode, and guard every edit/save/delete entry point against `_mappingService` being null.",
+        "code_block": "public MainPage()\r\n{\r\n    InitializeComponent();\r\n\r\n    if (SettingsManager.IsNativeServiceAvailable)\r\n    {\r\n        _mappingService = new KeyboardMappingService();\r\n    }\r\n    else\r\n    {\r\n        IsNativeFallbackMode = true;\r\n    }\r\n\r\n    LoadAllMappings();\r\n    UpdateBannerAndCommandState();\r\n}",
+        "edge_cases": [
+          "Existing methods that call `_mappingService!` must short-circuit in fallback mode instead of null-forgiving into another crash.",
+          "`ParseKeyCodes` should keep its current `VK <code>` fallback for missing display-name services.",
+          "Periodic service checks must not overwrite the startup-state banner into a misleading “engine down” message."
+        ],
+        "tests": [
+          "Add unit tests covering `LoadAllMappings()` with `_mappingService == null` and confirming the existing `EditorSettings` data still populates collections.",
+          "Manual repro: rename or remove `PowerToys.KeyboardManagerEditorLibraryWrapper.dll` from a debug output folder, launch the editor, and confirm it stays open in read-only mode instead of exiting silently."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/keyboardmanager/dll/dllmain.cpp",
+        "symbols": [
+          "KeyboardManager::OpenEditor",
+          "ShellExecuteExW"
+        ],
+        "current_behavior": "The launcher logs only shell-execute failure. If the editor process starts and then dies immediately because of dependency issues, the parent path has no clearer diagnostics than the child log file.",
+        "change": "Add launch-side diagnostics for rapid child-process exit and, if needed, a follow-up build assertion in the editor project that verifies the wrapper DLL is present in `WinUI3Apps` before packaging.",
+        "code_block": "if (ShellExecuteExW(&sei) && sei.hProcess)\r\n{\r\n    if (WaitForSingleObject(sei.hProcess, 1000) == WAIT_OBJECT_0)\r\n    {\r\n        Logger::warn(L\"Keyboard Manager editor exited immediately after launch; inspect WinUI3Apps dependency health.\");\r\n    }\r\n}",
+        "edge_cases": [
+          "Do not block normal startup by waiting too long on the child process.",
+          "Keep the hotkey launch path responsive; diagnostics should be lightweight and best-effort.",
+          "Avoid false positives when the editor is intentionally reusing an existing process instead of staying in the new one."
+        ],
+        "tests": [
+          "Build the Keyboard Manager editor projects and verify `PowerToys.KeyboardManagerEditorLibraryWrapper.dll` is present in the `WinUI3Apps` output.",
+          "Manual launch from PowerToys should still reuse or open the editor normally when dependencies are healthy."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the editor UI project: `pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\keyboardmanager\\KeyboardManagerEditorUI\\KeyboardManagerEditorUI.csproj`",
+      "Build the editor UI tests: `pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\keyboardmanager\\KeyboardManagerEditorUI.UnitTests\\KeyboardManagerEditorUI.UnitTests.csproj` and run the focused fallback tests with VS Test Explorer or `vstest.console.exe`.",
+      "Confirm the debug `WinUI3Apps` output contains `PowerToys.KeyboardManagerEditorLibraryWrapper.dll` next to `PowerToys.KeyboardManagerEditorUI.exe`.",
+      "Manual healthy-path check: launch Keyboard Manager editor from PowerToys and confirm it opens and remains editable.",
+      "Manual fallback-path check: temporarily rename the wrapper DLL in a debug output copy, launch the editor, and confirm the window stays open in read-only mode with a dependency banner instead of exiting silently."
+    ],
+    "risks": [
+      "Opening in read-only fallback mode can confuse users if edit actions still appear enabled, so command gating must be complete.",
+      "JSON-only fallback may show raw `VK <code>` names when the native display-name service is unavailable; that is acceptable but should be explained.",
+      "Rapid-exit launch diagnostics are heuristic and must not misclassify intentional process reuse as a failure."
+    ],
+    "alternatives": [
+      "Showing a message box and exiting would surface the dependency problem, but it would discard the existing JSON-backed fallback the codebase already intends to support.",
+      "Removing the standalone fallback entirely would simplify startup but make transient packaging/runtime failures harder for users to diagnose.",
+      "Packaging-only fixes help future builds but do not explain or mitigate already-deployed broken installs."
+    ]
+  },
+  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "source_updated_at": "2026-08-09T14:25:35Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The Keyboard Manager editor issue already has two user reports plus logs showing native dependency startup failure. The fallback and launch paths are concrete enough to design a fix without waiting on more upstream triage.",
+    "evidence": [
+      "The Keyboard Manager editor issue already has two user reports plus logs showing native dependency startup failure. The fallback and launch paths are concrete enough to design a fix without waiting on more upstream triage.",
+      "Issue #49434 includes logs showing `Powertoys.KeyboardManagerEditorLibraryWrapper.dll` (or one of its dependencies) could not be loaded, followed by `MainPage.xaml.cs` logging `Failed to initialize mapping service`.",
+      "A second user reported the same silent-exit symptom after seeing a missing Windows App Runtime prompt and installing Windows App SDK 2.3.1 manually.",
+      "`src/modules/keyboardmanager/KeyboardManagerEditorUI/Settings/SettingsManager.cs` catches `DllNotFoundException` and explicitly documents a standalone/read-only fallback when the native service is unavailable.",
+      "`src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs` still constructs `new KeyboardMappingService()` in the page constructor and returns early on failure, which bypasses the JSON-backed fallback already loaded by `SettingsManager`."
+    ],
+    "recommended_action": "Repository files, implementation steps, and verification are specific enough to start the fork-side fix when desired.",
+    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "source_updated_at": "2026-08-09T14:25:35Z"
+  }
+}
