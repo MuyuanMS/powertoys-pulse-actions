@@ -79,6 +79,20 @@ try {
 
 # ---- helpers -------------------------------------------------------------
 function Obj { param($h) [pscustomobject]$h }   # hashtable -> object
+function Test-PublishableArtifact {
+  param($Artifact)
+
+  if ($null -eq $Artifact) {
+    return $false
+  }
+
+  if ($Artifact -is [System.Collections.IDictionary]) {
+    return $Artifact.Contains('actions')
+  } else {
+    $property = $Artifact.PSObject.Properties['actions']
+    return $null -ne $property
+  }
+}
 
 # ---- tracked-item overlay ------------------------------------------------
 # Keyed by upstream number. Only fields that augment the v2 base item.
@@ -558,7 +572,10 @@ foreach ($it in $src.items) {
   # freshness, judgment, review, or design evidence.
   $writeArtifact =
     (-not $standaloneMode -and -not $existingArtifacts.ContainsKey($n) -and $OV.ContainsKey($n))
-  $hasArtifact = ($o -ne $null)
+  # Pulse publishes only artifacts with an explicit actions array. Historical
+  # traces without an executable/monitor action remain useful for stage hints,
+  # but must not enter the downloadable artifact manifest.
+  $hasArtifact = Test-PublishableArtifact $o
   $track = if ($o -and $o.track) { $o.track } elseif ($it.track) { $it.track } else { $null }
   $stage = if ($o -and $o.stage) { $o.stage } else { $it.stage }
 

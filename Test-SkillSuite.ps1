@@ -39,6 +39,18 @@ if (Test-Path $indexPath) {
       $artifactPath = Join-Path $itemsPath "$number.json"
       if (-not (Test-Path $artifactPath)) {
         $errors.Add("Manifest artifact is missing: $artifactPath")
+        continue
+      }
+      try {
+        $artifactText = Get-Content $artifactPath -Raw
+        $artifact = $artifactText | ConvertFrom-Json
+        if ($artifact.number -ne $number -or
+            $artifact.kind -notin @('issue', 'pr') -or
+            $artifactText -notmatch '"actions"\s*:\s*\[') {
+          $errors.Add("Manifest artifact has an invalid Pulse action schema: $artifactPath")
+        }
+      } catch {
+        $errors.Add("Invalid manifest artifact $artifactPath`: $($_.Exception.Message)")
       }
     }
   } catch {

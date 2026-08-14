@@ -41,17 +41,23 @@
       {
         "path": "src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp",
         "purpose": "Clamp the realized snapped window rectangle back inside the monitor work area after Windows applies min-size constraints.",
-        "symbols": "FancyZonesWindowUtils::SizeWindowToRect"
+        "symbols": [
+          "FancyZonesWindowUtils::SizeWindowToRect"
+        ]
       },
       {
         "path": "src/modules/fancyzones/FancyZonesLib/WorkArea.cpp",
         "purpose": "Keep the snap path using the clamped placement helper without changing zone-history behavior.",
-        "symbols": "WorkArea::Snap"
+        "symbols": [
+          "WorkArea::Snap"
+        ]
       },
       {
         "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/WorkArea.Spec.cpp",
         "purpose": "Add a regression for a right-edge zone and a window that reports a minimum width larger than the zone width.",
-        "symbols": "WhenWindowIsResizablePlacingItIntoTheZoneShouldResizeIt"
+        "symbols": [
+          "WhenWindowIsResizablePlacingItIntoTheZoneShouldResizeIt"
+        ]
       },
       {
         "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/Util.cpp",
@@ -66,7 +72,9 @@
       {
         "order": 1,
         "file": "src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp",
-        "symbols": "FancyZonesWindowUtils::SizeWindowToRect",
+        "symbols": [
+          "FancyZonesWindowUtils::SizeWindowToRect"
+        ],
         "current_behavior": "SizeWindowToRect writes the requested placement twice but never checks whether the final realized rect overflowed the monitor after Windows enforced the window's minimum width.",
         "change": "After the second SetWindowPlacement, read the actual window rect, compute the monitor work area with MonitorFromRect/GetMonitorInfo, and if the realized rect overflows right/left/top/bottom, shift the entire rect back inside the work area without shrinking it.",
         "code_block": "RECT actual{};\r\nGetWindowRect(window, &actual);\r\nMONITORINFO mi{ sizeof(mi) };\r\nGetMonitorInfoW(MonitorFromRect(&actual, MONITOR_DEFAULTTONEAREST), &mi);\r\nLONG dx = 0;\r\nif (actual.right > mi.rcWork.right) dx = mi.rcWork.right - actual.right;\r\nif (actual.left + dx < mi.rcWork.left) dx = mi.rcWork.left - actual.left;\r\nOffsetRect(&actual, dx, 0);\r\nplacement.rcNormalPosition = actual;\r\nSetWindowPlacement(window, &placement);",
@@ -93,7 +101,9 @@
       {
         "order": 3,
         "file": "src/modules/fancyzones/FancyZonesTests/UnitTests/WorkArea.Spec.cpp",
-        "symbols": "WhenWindowIsResizablePlacingItIntoTheZoneShouldResizeIt",
+        "symbols": [
+          "WhenWindowIsResizablePlacingItIntoTheZoneShouldResizeIt"
+        ],
         "current_behavior": "Current tests assert that a resizable window takes on the zone rect, but they do not exercise the case where Windows expands the window beyond the zone due to minimum-width constraints.",
         "change": "Add a regression that snaps the custom large-min-width window into a right-side grid zone and asserts the resulting rect stays fully within the work area while remaining at least the minimum width.",
         "code_block": "Assert::IsTrue(workArea->Snap(window, { 1 }, true));\r\nstd::this_thread::sleep_for(std::chrono::milliseconds(10));\r\nRECT rect{}; GetWindowRect(window, &rect);\r\nAssert::IsTrue(rect.right <= m_workAreaRect.right);\r\nAssert::IsTrue((rect.right - rect.left) >= 1200);",

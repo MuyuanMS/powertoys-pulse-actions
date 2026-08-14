@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-14T09:10:17.8719262+08:00",
+  "generated_at": "2026-08-14T14:50:52.9749269+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -81,15 +81,15 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 123,
-    "open_issues": 7336,
-    "community": 6811,
-    "artifacts": 387
+    "open_prs": 121,
+    "open_issues": 7338,
+    "community": 6814,
+    "artifacts": 386
   },
   "impact": {
-    "as_of": "2026-08-14T09:10:17.8719262+08:00",
+    "as_of": "2026-08-14T14:50:52.9749269+08:00",
     "issues_helped": 10,
-    "prs_iterated": 45,
+    "prs_iterated": 44,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
@@ -145,7 +145,6 @@ window.BOARD_INDEX = {
     48755,
     48700,
     48658,
-    48631,
     48627,
     48602,
     48592,
@@ -551,38 +550,6 @@ window.BOARD_INDEX = {
         "fork_branch": "pr-iterate/49867-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/384"
       }
-    },
-    {
-      "id": "pr-49865",
-      "kind": "pr",
-      "number": 49865,
-      "url": "https://github.com/microsoft/PowerToys/pull/49865",
-      "title": "[CmdPal] Settings UX tweaks",
-      "author": "niels9001",
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": {
-        "type": "start_review",
-        "label": "Start review"
-      },
-      "labels": [
-        "Product-Command Palette",
-        "0.101"
-      ],
-      "created_at": "2026-08-13T11:47:33Z",
-      "updated_at": "2026-08-13T23:28:45Z",
-      "comments": 0,
-      "priority": null
     },
     {
       "id": "pr-49863",
@@ -1107,7 +1074,7 @@ window.BOARD_INDEX = {
       },
       "labels": [],
       "created_at": "2026-08-07T19:10:39Z",
-      "updated_at": "2026-08-07T19:10:48Z",
+      "updated_at": "2026-08-14T03:10:42Z",
       "comments": 0,
       "priority": null,
       "mirror": {
@@ -1463,7 +1430,7 @@ window.BOARD_INDEX = {
       },
       "labels": [],
       "created_at": "2026-08-06T08:32:02Z",
-      "updated_at": "2026-08-07T08:54:16Z",
+      "updated_at": "2026-08-14T06:21:36Z",
       "comments": 0,
       "priority": null
     },
@@ -1628,7 +1595,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-13T16:39:55Z",
+      "waiting_since": "2026-08-14T06:36:38Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -1639,7 +1606,7 @@ window.BOARD_INDEX = {
         "0.101"
       ],
       "created_at": "2026-08-03T14:27:27Z",
-      "updated_at": "2026-08-13T16:39:55Z",
+      "updated_at": "2026-08-14T06:36:38Z",
       "comments": 0,
       "priority": null,
       "mirror": {
@@ -3421,11 +3388,11 @@ window.BOARD_INDEX = {
       "priority": 60,
       "mirror": {
         "kind": "pr",
-        "fork_number": 333,
+        "fork_number": 385,
         "fork_title": "[PR 48904] Mouse Without Borders reject remote ClipboardHelper paths",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/48904-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/333"
+        "fork_branch": "pr-iterate/48904-v3",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/385"
       }
     },
     {
@@ -3734,48 +3701,6 @@ window.BOARD_INDEX = {
       "updated_at": "2026-08-09T18:39:13Z",
       "comments": 0,
       "priority": 60
-    },
-    {
-      "id": "pr-48631",
-      "kind": "pr",
-      "number": 48631,
-      "url": "https://github.com/microsoft/PowerToys/pull/48631",
-      "title": "Add native CLI shims for PowerToys command-line tools",
-      "author": "moooyo",
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": {
-        "type": "monitor",
-        "label": "Owned elsewhere"
-      },
-      "labels": [
-        "Area-Setup/Install",
-        "Product-FancyZones",
-        "Product-Image Resizer",
-        "Product-File Locksmith"
-      ],
-      "created_at": "2026-06-15T06:17:28Z",
-      "updated_at": "2026-08-13T23:46:32Z",
-      "comments": 0,
-      "priority": 60,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 353,
-        "fork_title": "[PR 48631] Add native CLI shims for PowerToys command-line tools",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/48631-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/353"
-      }
     },
     {
       "id": "pr-48627",
@@ -4649,6 +4574,98 @@ window.BOARD_INDEX = {
         "fork_branch": "pr-iterate/41003-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/378"
       }
+    },
+    {
+      "id": "issue-49883",
+      "kind": "issue",
+      "number": 49883,
+      "url": "https://github.com/microsoft/PowerToys/issues/49883",
+      "title": "Keyboard Remapper",
+      "author": "wynhopkins",
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "start_triage",
+        "label": "Start triage"
+      },
+      "labels": [
+        "Needs-Triage"
+      ],
+      "created_at": "2026-08-14T06:30:41Z",
+      "updated_at": "2026-08-14T06:30:41Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-49882",
+      "kind": "issue",
+      "number": 49882,
+      "url": "https://github.com/microsoft/PowerToys/issues/49882",
+      "title": "Desktop right-click hangs after S3 sleep/wake; shell frozen and restarted by winlogon (Event 1002), recurring since May — suspect context-menu extensions",
+      "author": "xinyulan810",
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "start_triage",
+        "label": "Start triage"
+      },
+      "labels": [],
+      "created_at": "2026-08-14T04:10:28Z",
+      "updated_at": "2026-08-14T04:10:28Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-49880",
+      "kind": "issue",
+      "number": 49880,
+      "url": "https://github.com/microsoft/PowerToys/issues/49880",
+      "title": "Turn on the environment variable function to flash back",
+      "author": "Fakeboxs",
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "start_triage",
+        "label": "Check bug"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "created_at": "2026-08-14T02:14:48Z",
+      "updated_at": "2026-08-14T02:14:48Z",
+      "comments": 0,
+      "priority": null
     },
     {
       "id": "issue-49878",
@@ -8139,13 +8156,13 @@ window.BOARD_INDEX = {
       "labels": [
         "Issue-Bug",
         "Resolution-Duplicate",
-        "Needs-Author-Feedback",
         "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Command Palette"
       ],
       "created_at": "2026-07-31T06:07:58Z",
-      "updated_at": "2026-08-07T15:35:43Z",
-      "comments": 2,
+      "updated_at": "2026-08-14T04:50:51Z",
+      "comments": 6,
       "priority": 60
     },
     {
@@ -16293,8 +16310,8 @@ window.BOARD_INDEX = {
         "Product-Environment Variables"
       ],
       "created_at": "2026-06-28T02:26:46Z",
-      "updated_at": "2026-08-11T05:21:36Z",
-      "comments": 4,
+      "updated_at": "2026-08-14T04:57:31Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -16606,7 +16623,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "start_triage",
-        "label": "Start triage"
+        "label": "Check bug"
       },
       "labels": [
         "Issue-Bug",
@@ -16615,8 +16632,8 @@ window.BOARD_INDEX = {
         "Product-File Locksmith"
       ],
       "created_at": "2026-06-27T11:14:09Z",
-      "updated_at": "2026-07-06T07:08:30Z",
-      "comments": 1,
+      "updated_at": "2026-08-14T04:09:07Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -20685,38 +20702,6 @@ window.BOARD_INDEX = {
       ],
       "created_at": "2026-06-15T07:22:57Z",
       "updated_at": "2026-06-15T07:22:57Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-48634",
-      "kind": "issue",
-      "number": 48634,
-      "url": "https://github.com/microsoft/PowerToys/issues/48634",
-      "title": "Centralize all PowerToys cli tools into one folder",
-      "author": "moooyo",
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": {
-        "type": "start_triage",
-        "label": "Start triage"
-      },
-      "labels": [
-        "Needs-Triage",
-        "Product-Environment Variables"
-      ],
-      "created_at": "2026-06-15T07:21:10Z",
-      "updated_at": "2026-06-15T08:58:27Z",
       "comments": 0,
       "priority": null
     },
@@ -90476,7 +90461,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "start_triage",
-        "label": "Start triage"
+        "label": "Check bug"
       },
       "labels": [
         "Issue-Bug",
@@ -90484,8 +90469,8 @@ window.BOARD_INDEX = {
         "Product-General"
       ],
       "created_at": "2025-07-04T05:25:50Z",
-      "updated_at": "2026-04-18T14:57:14Z",
-      "comments": 2,
+      "updated_at": "2026-08-14T04:10:32Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -96137,7 +96122,7 @@ window.BOARD_INDEX = {
         "Product-Peek"
       ],
       "created_at": "2025-05-23T00:23:46Z",
-      "updated_at": "2026-08-11T07:54:38Z",
+      "updated_at": "2026-08-14T05:16:30Z",
       "comments": 2,
       "priority": null
     },
@@ -153097,7 +153082,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "start_triage",
-        "label": "Start triage"
+        "label": "Check bug"
       },
       "labels": [
         "Issue-Bug",
@@ -153105,8 +153090,8 @@ window.BOARD_INDEX = {
         "Product-Quick Accent"
       ],
       "created_at": "2024-03-19T09:26:44Z",
-      "updated_at": "2025-12-11T13:03:25Z",
-      "comments": 10,
+      "updated_at": "2026-08-14T06:13:57Z",
+      "comments": 13,
       "priority": null
     },
     {

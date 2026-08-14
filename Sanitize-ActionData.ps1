@@ -47,7 +47,11 @@ function Convert-PublicValue {
   }
 
   if ($Value -is [System.Collections.IEnumerable]) {
-    return @($Value | ForEach-Object { Convert-PublicValue $_ })
+    $items = [System.Collections.Generic.List[object]]::new()
+    foreach ($item in $Value) {
+      $items.Add((Convert-PublicValue $item))
+    }
+    return ,$items.ToArray()
   }
 
   return $Value

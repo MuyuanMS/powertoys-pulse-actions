@@ -16,12 +16,14 @@
     "label": "Queue code investigation",
     "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
   },
-  "actions": {
-    "id": "design-47359",
-    "type": "hold",
-    "label": "Queue full design investigation",
-    "note": "Local-only dashboard signal; no upstream action is posted."
-  },
+  "actions": [
+    {
+      "id": "design-47359",
+      "type": "hold",
+      "label": "Queue full design investigation",
+      "note": "Local-only dashboard signal; no upstream action is posted."
+    }
+  ],
   "confidence": "High",
   "design": {
     "root_cause": "Awake hard-codes the expirable tray tooltip to `MMM d, h:mm tt` in `Manager.SetModeShellIcon`, so users with 24-hour regional settings still see a 12-hour time string.",
@@ -34,12 +36,16 @@
       {
         "path": "src/modules/awake/Awake/Core/Manager.cs",
         "purpose": "Builds the tray tooltip text for each Awake mode.",
-        "symbols": "Manager.SetModeShellIcon"
+        "symbols": [
+          "Manager.SetModeShellIcon"
+        ]
       },
       {
         "path": "src/modules/awake/Awake.ModuleServices/AwakeTrayTextFormatter.cs",
         "purpose": "New pure helper that formats expiration text with the active culture so it can be unit-tested.",
-        "symbols": "AwakeTrayTextFormatter.FormatExpirationTooltip"
+        "symbols": [
+          "AwakeTrayTextFormatter.FormatExpirationTooltip"
+        ]
       },
       {
         "path": "src/modules/awake/Awake.ModuleServices.UnitTests/AwakeTrayTextFormatterTests.cs",
@@ -54,7 +60,9 @@
       {
         "order": 1,
         "file": "src/modules/awake/Awake.ModuleServices/AwakeTrayTextFormatter.cs",
-        "symbols": "AwakeTrayTextFormatter.FormatExpirationTooltip",
+        "symbols": [
+          "AwakeTrayTextFormatter.FormatExpirationTooltip"
+        ],
         "current_behavior": "Formatting logic is embedded inline inside `Manager.SetModeShellIcon`, so the tray path always emits a fixed `h:mm tt` pattern and cannot be unit-tested.",
         "change": "Extract a small formatter that composes the localized short-time pattern from `CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern`.",
         "code_block": "internal static string FormatExpirationTooltip(DateTimeOffset expiration, CultureInfo culture)\r\n{\r\n    var timePattern = culture.DateTimeFormat.ShortTimePattern;\r\n    return $\"{Resources.AWAKE_TRAY_UNTIL} {expiration.ToString($\"MMM d, {timePattern}\", culture)}\";\r\n}",
@@ -71,7 +79,9 @@
       {
         "order": 2,
         "file": "src/modules/awake/Awake/Core/Manager.cs",
-        "symbols": "Manager.SetModeShellIcon",
+        "symbols": [
+          "Manager.SetModeShellIcon"
+        ],
         "current_behavior": "Expirable mode concatenates `Resources.AWAKE_TRAY_UNTIL` with `ExpireAt:MMM d, h:mm tt`.",
         "change": "Replace the inline format string with the shared formatter.",
         "code_block": "case AwakeMode.EXPIRABLE:\r\n    iconText = $\"{Constants.FullAppName}\\n{AwakeTrayTextFormatter.FormatExpirationTooltip(ExpireAt, CultureInfo.CurrentCulture)}\\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}\";\r\n    icon = TrayHelper.ExpirableIcon;\r\n    break;",
@@ -87,7 +97,9 @@
       {
         "order": 3,
         "file": "src/modules/awake/Awake.ModuleServices.UnitTests/AwakeTrayTextFormatterTests.cs",
-        "symbols": "AwakeTrayTextFormatterTests",
+        "symbols": [
+          "AwakeTrayTextFormatterTests"
+        ],
         "current_behavior": "There is no automated regression coverage for tray expiration formatting.",
         "change": "Add focused tests that call the extracted formatter directly under both 12-hour and 24-hour cultures.",
         "code_block": "[TestMethod]\r\npublic void FormatsExpirationWithCurrentCulture()\r\n{\r\n    var expiration = new DateTimeOffset(2030, 1, 2, 13, 30, 0, TimeSpan.Zero);\r\n    var text = AwakeTrayTextFormatter.FormatExpirationTooltip(expiration, new CultureInfo(\"sv-SE\"));\r\n    StringAssert.Contains(text, \"13:30\");\r\n}",
@@ -95,7 +107,9 @@
           "Tests must restore any culture override they apply.",
           "Use a fixed DateTimeOffset so daylight-savings changes cannot make the test flaky."
         ],
-        "tests": "Run the Awake module services unit tests and confirm both culture-specific cases pass."
+        "tests": [
+          "Run the Awake module services unit tests and confirm both culture-specific cases pass."
+        ]
       }
     ],
     "verify": [
