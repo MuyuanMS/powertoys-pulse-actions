@@ -1,0 +1,179 @@
+{
+  "number": 49663,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "status": {
+    "glyph": "🎯",
+    "label": "Actionable bug candidate",
+    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
+  },
+  "next_action": {
+    "glyph": "🛠️",
+    "label": "Queue code investigation",
+    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
+  },
+  "actions": [
+    {
+      "id": "design-49663",
+      "type": "hold",
+      "label": "Queue full design investigation",
+      "note": "Local-only dashboard signal; no upstream action is posted."
+    }
+  ],
+  "confidence": "High",
+  "design": {
+    "root_cause": "Advanced Paste injects synthetic Ctrl/V input that the centralized runner hook ignores, but Keyboard Manager does not. The paste keystrokes therefore get remapped (for example Ctrl→Win or Ctrl→2), so the Advanced Paste window closes without sending a real paste sequence.",
+    "evidence": [
+      "Issue #49663 provides a current repro on 0.100.2: remap Left Ctrl in Keyboard Manager, open Advanced Paste, choose an item, and nothing is pasted; remapping Ctrl to `2` even produces `2v`.",
+      "The issue includes a bug-report ZIP and a second concrete symptom (`2v` is typed) showing that Keyboard Manager is re-processing Advanced Paste's synthetic keystrokes.",
+      "In `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, the injected `Ctrl` keydown/keyup events are sent without the Keyboard Manager injected flag, and the `V` events only carry `CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG`.",
+      "In `src/modules/AdvancedPaste/AdvancedPaste/Helpers/ClipboardHelper.cs`, `SendSingleKeyboardInput` uses a private `0x5555` tag that Keyboard Manager never checks.",
+      "In `src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp`, Keyboard Manager skips only events whose `dwExtraInfo` contains `CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG`."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+        "purpose": "Injects the native Ctrl+V sequence for plain-text and direct-hotkey paste.",
+        "symbols": [
+          "try_to_paste_as_plain_text"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/ClipboardHelper.cs",
+        "purpose": "Injects the managed Ctrl+V sequence after the Advanced Paste UI chooses a format.",
+        "symbols": [
+          "ClipboardHelper.TryCopyPasteAsync",
+          "ClipboardHelper.SendSingleKeyboardInput"
+        ]
+      },
+      {
+        "path": "src/runner/centralized_kb_hook.cpp",
+        "purpose": "Filters PowerToys-generated keystrokes before they re-trigger global shortcuts.",
+        "symbols": [
+          "KeyboardHookProc"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+        "purpose": "Defines which injected events Keyboard Manager ignores during remap processing.",
+        "symbols": [
+          "GeneratedByKBM",
+          "HandleSingleKeyRemapEvent",
+          "HandleShortcutRemapEvent"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/UITest-AdvancedPaste/AdvancedPasteUITest.cs",
+        "purpose": "Existing UI automation coverage for paste actions; extend it with a Keyboard Manager remap regression.",
+        "symbols": [
+          "AdvancedPasteUITest"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/runner/centralized_kb_hook.cpp",
+        "symbols": [
+          "KeyboardHookProc"
+        ],
+        "current_behavior": "The centralized hook ignores only events whose `dwExtraInfo` is exactly `CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG`.",
+        "change": "Treat the centralized-hook marker as a bitmask so one synthetic event can carry both the centralized marker and the Keyboard Manager injected flag.",
+        "code_block": "if ((keyPressInfo.dwExtraInfo & PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG)\r\n    == PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG)\r\n{\r\n    return CallNextHookEx(hHook, nCode, wParam, lParam);\r\n}",
+        "edge_cases": [
+          "Existing 0x110-tagged callers must keep working unchanged.",
+          "Do not broaden the check so far that unrelated third-party `dwExtraInfo` values are ignored accidentally."
+        ],
+        "tests": [
+          "Regression-test an existing centralized-hook feature such as PowerAccent so its injected keys still bypass the runner hook."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+        "symbols": [
+          "try_to_paste_as_plain_text"
+        ],
+        "current_behavior": "The plain-text paste path releases modifiers and injects Ctrl+V, but those events either have no `dwExtraInfo` or only carry the centralized-hook marker, so Keyboard Manager reprocesses them.",
+        "change": "Tag every synthetic key event used for the paste sequence with a combined PowerToys-injected marker that includes `CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG`.",
+        "code_block": "const ULONG_PTR advancedPasteInjected =\r\n    PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG |\r\n    CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;\r\n\r\ninput_event.ki.dwExtraInfo = advancedPasteInjected;",
+        "edge_cases": [
+          "Injected modifier restores must keep their original left/right key identity.",
+          "Tag key-up events too, or Keyboard Manager can still mutate the release path and strand modifiers."
+        ],
+        "tests": [
+          "Manual: with `Left Ctrl -> Left Win`, choose a clipboard item from Advanced Paste and confirm the target app receives paste content rather than the Start menu.",
+          "Manual: with `Left Ctrl -> 2`, confirm no literal `2v` is typed."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/ClipboardHelper.cs",
+        "symbols": [
+          "ClipboardHelper.SendSingleKeyboardInput"
+        ],
+        "current_behavior": "The managed paste path uses a private `0x5555` tag that the keyboard stack does not interpret as a PowerToys-injected event.",
+        "change": "Replace the ad-hoc constant with the same combined injected marker used by the native Advanced Paste path.",
+        "code_block": "private const nuint AdvancedPasteInjectedTag = 0x111; // 0x110 centralized hook + 0x1 keyboard manager\r\n...\r\ndwExtraInfo = AdvancedPasteInjectedTag,",
+        "edge_cases": [
+          "Keep the helper deterministic across x64 and Arm64 by using `nuint`/`UIntPtr` consistently.",
+          "The managed and native tags must stay in sync."
+        ],
+        "tests": [
+          "Exercise both the plain-text hotkey path and the Advanced Paste UI selection path under the same Keyboard Manager remap."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/AdvancedPaste/UITest-AdvancedPaste/AdvancedPasteUITest.cs",
+        "symbols": [
+          "AdvancedPasteUITest"
+        ],
+        "current_behavior": "Existing Advanced Paste UI tests verify ordinary Ctrl+1 / button-driven paste flows, but none enable a Keyboard Manager remap before invoking paste.",
+        "change": "Add a regression test that turns on a `Left Ctrl` remap, opens Advanced Paste, selects a paste option, and asserts the destination app receives pasted content rather than literal keystrokes.",
+        "code_block": "EnableKeyboardManagerRemap(\"Left Ctrl\", \"Left Win\");\r\nOpenAdvancedPaste();\r\nSelectPlainTextPaste();\r\nAssert.AreEqual(expectedClipboardText, targetDocument.Text);",
+        "edge_cases": [
+          "The test must clean up the remap afterward.",
+          "Cover both keyboard selection and mouse-click selection because the issue repro mentions either path."
+        ],
+        "tests": [
+          "Run the Advanced Paste UI test project with the new remap regression."
+        ]
+      }
+    ],
+    "verify": [
+      "pwsh -NoProfile -File tools\\build\\build.ps1 -Platform x64 -Configuration Debug",
+      "Run the existing Advanced Paste UI test project after adding the Keyboard Manager remap regression.",
+      "Manual repro: map `Ctrl (Left)` to `Win (Left)`, open Advanced Paste, choose an item, and confirm the target app receives pasted text.",
+      "Manual repro: map `Ctrl (Left)` to `2`, choose an Advanced Paste item, and confirm no literal `2v` is typed into the target app."
+    ],
+    "risks": [
+      "Changing the centralized-hook comparison from equality to bitmask must not accidentally ignore unrelated synthetic events.",
+      "If any injected key in the paste sequence is left untagged, mixed remap states can still strand modifiers or partially re-trigger Keyboard Manager."
+    ],
+    "alternatives": [
+      "Temporarily disable Keyboard Manager while Advanced Paste is open. Rejected because it is global and race-prone.",
+      "Special-case Advanced Paste inside Keyboard Manager. Rejected because the injected-event flag already exists as the intended cross-module contract."
+    ]
+  },
+  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "source_updated_at": "2026-08-04T15:13:46Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "evidence": [
+      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+      "Issue #49663 provides a current repro on 0.100.2: remap Left Ctrl in Keyboard Manager, open Advanced Paste, choose an item, and nothing is pasted; remapping Ctrl to `2` even produces `2v`.",
+      "The issue includes a bug-report ZIP and a second concrete symptom (`2v` is typed) showing that Keyboard Manager is re-processing Advanced Paste's synthetic keystrokes.",
+      "In `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, the injected `Ctrl` keydown/keyup events are sent without the Keyboard Manager injected flag, and the `V` events only carry `CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG`.",
+      "In `src/modules/AdvancedPaste/AdvancedPaste/Helpers/ClipboardHelper.cs`, `SendSingleKeyboardInput` uses a private `0x5555` tag that Keyboard Manager never checks."
+    ],
+    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
+    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "source_updated_at": "2026-08-04T15:13:46Z"
+  }
+}
