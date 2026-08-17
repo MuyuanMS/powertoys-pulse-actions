@@ -1,0 +1,82 @@
+{
+  "number": 48658,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "evaluated_at": "2026-08-14T00:19:14Z",
+  "source_updated_at": "2026-08-06T02:23:56Z",
+  "status": {
+    "glyph": "⏳",
+    "label": "Waiting on author — two fixes already requested",
+    "detail": "Upstream remains at 46a9c4f28bb5fce1f8516be607b49d8edadcba3d. Fork PR 345 is rebased on main 29471231dd4efdb4433163be135c839177287cdc; its final freshly requested Copilot review at 2026-08-13T10:18:27Z generated no comments, and all fork review threads are resolved. Existing upstream suggestions cover the termination loop and Burn version literals."
+  },
+  "next_action": {
+    "glyph": "⏳",
+    "label": "Wait for the author to update the PR",
+    "reason": "The current upstream head still has the no-op delay, error-masking termination path, and untyped Burn version sentinels addressed by the two existing inline suggestions."
+  },
+  "actions": [
+    {
+      "id": "rerun-48658",
+      "type": "rerun",
+      "label": "Recheck after an author update",
+      "primary": true,
+      "note": "If the upstream head or substantive discussion changes after 2026-08-06T02:23:56Z, refresh the mirror, reconverge, and rebuild before any further review action."
+    },
+    {
+      "id": "hold-48658",
+      "type": "hold",
+      "label": "Keep waiting on the author"
+    }
+  ],
+  "confidence": "High",
+  "head_sha": "46a9c4f28bb5fce1f8516be607b49d8edadcba3d",
+  "proposed_comments": [
+    {
+      "id": "report-real-termination-outcome",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Bound the graceful shutdown and report the actual result",
+      "body": "`ping -n 1` returns almost immediately, so this loop can spin without giving PowerToys time to close. Tightening the retry window and re-checking the process list on each pass keeps graceful shutdown responsive without masking a failed terminate.\n\n**Severity:** `high`\n\n```suggestion\n@REM We loop here until PowerToys.exe is no longer running. We can't use the /F flag inside the loop,\n@REM because a forced kill does not let PowerToys.exe clean up first. Instead we send WM_CLOSE\n@REM (taskkill without /F), which is caught by the message loops in PowerToys.exe, closing its windows\n@REM one by one. We re-check with tasklist each iteration rather than trusting taskkill's exit code,\n@REM so a transient failure (e.g. \"Access is denied\") is not mistaken for \"process not found\".\nfor /l %%x in (1, 1, 10) do (\n    tasklist /FI \"IMAGENAME eq PowerToys.exe\" 2>NUL | find /I \"PowerToys.exe\" >NUL\n    if errorlevel 1 exit /b 0\n    taskkill /IM PowerToys.exe 1>NUL 2>NUL\n    if errorlevel 1 goto force_kill\n    @REM ping -n 2 waits about one second, giving the app time to shut down.\n    ping -n 2 127.0.0.1 >NUL 2>NUL\n)\n\n@REM Force kill if graceful close failed after all attempts, then report the actual outcome.\n:force_kill\ntaskkill /F /IM PowerToys.exe 1>NUL 2>NUL\ntasklist /FI \"IMAGENAME eq PowerToys.exe\" 2>NUL | find /I \"PowerToys.exe\" >NUL\nif errorlevel 1 exit /b 0\nexit /b 1\n```",
+      "path": "installer/PowerToysSetupVNext/terminate_powertoys.cmd",
+      "line": 21,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "posted",
+      "posted_at": "2026-08-06T02:18:15Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/48658#discussion_r3725444338"
+    },
+    {
+      "id": "use-burn-version-literals",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Keep the detect condition in version space",
+      "body": "Burn version variables are typed, so comparing them to an untyped `0.0.0.0` literal can fall back to string semantics. Prefixing the sentinel with `v` keeps the detect condition in version space and preserves the intended skip logic.\n\n**Severity:** `high`\n\n```suggestion\n            <ExePackage DisplayName=\"Closing PowerToys application\" Name=\"terminate_powertoys.cmd\" Cache=\"remove\" Compressed=\"yes\" Id=\"TerminatePowerToys\" SourceFile=\"terminate_powertoys.cmd\" DetectCondition=\"DetectedPowerToysVersion = v0.0.0.0 AND DetectedPowerToysUserVersion = v0.0.0.0\" Permanent=\"yes\" PerMachine=\"$(var.PerMachineYesNo)\" Vital=\"no\">\n```",
+      "path": "installer/PowerToysSetupVNext/PowerToys.wxs",
+      "line": 57,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "posted",
+      "posted_at": "2026-08-06T02:18:16Z",
+      "url": "https://github.com/microsoft/PowerToys/pull/48658#discussion_r3725444407"
+    }
+  ],
+  "upstream_pr": {
+    "number": 48658,
+    "url": "https://github.com/microsoft/PowerToys/pull/48658"
+  },
+  "fork_pr": {
+    "number": 345,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/345",
+    "state": "OPEN",
+    "updated_at": "2026-08-13T10:18:27Z",
+    "head_sha": "8272da12d5d46cd70875476f3452fd12152b9799",
+    "base_sha": "29471231dd4efdb4433163be135c839177287cdc",
+    "commit_count": 5,
+    "changed_file_count": 3
+  },
+  "fork_branch": "pr-iterate/48658-v4"
+}

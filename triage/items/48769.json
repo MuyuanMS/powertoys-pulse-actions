@@ -1,0 +1,106 @@
+{
+  "number": 48769,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "evaluated_at": "2026-08-14T00:19:14Z",
+  "source_updated_at": "2026-08-06T14:58:58Z",
+  "status": {
+    "glyph": "📝",
+    "label": "Review ready — three fixes drafted",
+    "detail": "Upstream remains at 5ef900fd124241607d42c4624ea768961f9316db. Fork PR 346 is rebased onto main 29471231dd4efdb4433163be135c839177287cdc; its latest fresh Copilot review at 2026-08-13T10:22:04Z generated no comments and all Copilot threads are resolved. x64 Debug essentials, Mouse Without Borders module interface, app, and unit tests built successfully; 16 tests passed and one existing dump-generation test was skipped."
+  },
+  "next_action": {
+    "glyph": "📝",
+    "label": "Review the three drafted fixes",
+    "reason": "A deferred stream-close failure can leave an incomplete staging file, and two concurrency tests can strand worker tasks when their startup assertions time out."
+  },
+  "actions": [
+    {
+      "id": "post-review-48769",
+      "type": "post_review",
+      "label": "Post selected comments as a review",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "pr": 48769,
+        "head_sha": "5ef900fd124241607d42c4624ea768961f9316db",
+        "body_prefix": "Thanks for the thorough received-file staging, impersonation cleanup, and regression coverage. Please address the staging cleanup gap and the two test-lifetime issues below. If applying both suggestions in the test file individually, apply the later one first or batch them so line shifts do not invalidate the second target."
+      },
+      "note": "Mandatory: refresh the upstream head and conversation, validate the pinned payload, and require explicit approval before publishing."
+    },
+    {
+      "id": "rerun-48769",
+      "type": "rerun",
+      "label": "Recheck live PR state",
+      "note": "If the upstream head or substantive discussion changed after 2026-08-06T14:58:58Z, refresh the mirror and reconverge before posting."
+    },
+    {
+      "id": "hold-review-48769",
+      "type": "hold",
+      "label": "Not now"
+    }
+  ],
+  "confidence": "High",
+  "head_sha": "5ef900fd124241607d42c4624ea768961f9316db",
+  "proposed_comments": [
+    {
+      "id": "cleanup-staging-after-dispose-error",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Delete incomplete staging files even when stream disposal fails",
+      "body": "### Delete incomplete staging files even when stream disposal fails\n\n**Severity:** `medium`\n\n`FileStream.Dispose()` can surface a deferred flush or write error. When that happens here, control skips `deleteFile`, leaving an incomplete `.partial` file in the destination directory. Run cleanup from a `finally` block so deletion is still attempted while the original disposal failure continues to propagate.\n\n```suggestion\n        try\n        {\n            Stream.Dispose();\n        }\n        finally\n        {\n            if (!completed)\n            {\n                deleteFile(stagingPath);\n            }\n        }\n```",
+      "path": "src/modules/MouseWithoutBorders/App/Core/ReceivedDestinationFile.cs",
+      "start_line": 42,
+      "line": 47,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "release-sequential-worker-on-timeout",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Release the sequential-transfer worker when startup times out",
+      "body": "### Release the sequential-transfer worker when startup times out\n\n**Severity:** `low`\n\nIf this startup assertion times out on a loaded test host, execution never enters the `finally`, so `firstReceive` remains blocked and the event can be disposed underneath it. Move the wait inside the protected region so every failure path releases and awaits the worker.\n\n```suggestion\n        try\n        {\n            Assert.IsTrue(firstTransferCompleted.Wait(millisecondsTimeout: 1000));\n\n```",
+      "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UnitTests/Core/ReceivedDestinationFileTests.cs",
+      "start_line": 98,
+      "line": 101,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "release-overlap-worker-on-timeout",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Release the overlapping-transfer worker when startup times out",
+      "body": "### Release the overlapping-transfer worker when startup times out\n\n**Severity:** `low`\n\nThis assertion has the same lifetime problem: a timeout occurs before the `finally`, leaving the first worker blocked while it holds the static clipboard receive gate. Put the startup wait inside the `try` so cleanup always signals and awaits that worker, preventing cascading failures in later tests.\n\n```suggestion\n        try\n        {\n            Assert.IsTrue(firstReceiveStarted.Wait(millisecondsTimeout: 1000));\n\n```",
+      "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UnitTests/Core/ReceivedDestinationFileTests.cs",
+      "start_line": 129,
+      "line": 132,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    }
+  ],
+  "upstream_pr": {
+    "number": 48769,
+    "url": "https://github.com/microsoft/PowerToys/pull/48769"
+  },
+  "fork_pr": {
+    "number": 346,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/346",
+    "state": "OPEN",
+    "updated_at": "2026-08-13T10:23:58Z",
+    "head_sha": "5a6efc419da43e4f8c961400fd790c0571cf226d",
+    "base_sha": "29471231dd4efdb4433163be135c839177287cdc",
+    "commit_count": 3,
+    "changed_file_count": 4
+  },
+  "fork_branch": "pr-iterate/48769-v4"
+}
