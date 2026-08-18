@@ -86,12 +86,15 @@ function Test-PublishableArtifact {
     return $false
   }
 
-  if ($Artifact -is [System.Collections.IDictionary]) {
-    return $Artifact.Contains('actions')
+  $hasActions = if ($Artifact -is [System.Collections.IDictionary]) {
+    $Artifact.Contains('actions')
   } else {
-    $property = $Artifact.PSObject.Properties['actions']
-    return $null -ne $property
+    $null -ne $Artifact.PSObject.Properties['actions']
   }
+  $hasFreshness = $Artifact.generated_at -and
+    $Artifact.evaluated_at -and
+    $Artifact.source_updated_at
+  return $hasActions -and $hasFreshness
 }
 
 # ---- tracked-item overlay ------------------------------------------------
@@ -662,6 +665,8 @@ foreach ($it in $src.items) {
   $art = [ordered]@{
     number=$n; kind=$it.kind; track=$track; stage=$stage; owes=$owes
     pending_author=($owes -eq 'author'); generated_at=$now
+    evaluated_at=if ($o.evaluated_at) { $o.evaluated_at } else { $now }
+    source_updated_at=if ($o.source_updated_at) { $o.source_updated_at } else { $it.updated_at }
     status     = Obj $o.status
     next_action= if ($o.next_action) { Obj $o.next_action } elseif ($it.next_action) { Obj @{ glyph=$it.next_action.glyph; label=$it.next_action.label; reason=$it.next_action.reason } } else { $null }
     actions    = @($o.actions | ForEach-Object { Obj $_ })
