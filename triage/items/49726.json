@@ -1,0 +1,96 @@
+{
+  "number": 49726,
+  "kind": "pr",
+  "track": "review",
+  "stage": "review_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "evaluated_at": "2026-08-14T00:19:14Z",
+  "source_updated_at": "2026-08-06T19:23:46Z",
+  "status": {
+    "glyph": "📝",
+    "label": "Review ready — two fixes drafted",
+    "detail": "Upstream remains at 5ae8eb6106d2268261813ed494cef1fa2d842768. Fork PR 356 is rebased onto main 5193a1e49729bf8d9a8553e352e7c0c285e50188; its fresh review at 2026-08-13T12:55:28Z generated no new comments and all Copilot threads are resolved. The complete x64 Debug runner/settings, module interface, app, and test chain succeeded."
+  },
+  "next_action": {
+    "glyph": "📝",
+    "label": "Review the two drafted fixes",
+    "reason": "An exception thrown by the identity-restoration retry path can still reach the broad caller catch and return normally while impersonation remains active; the paired test prevents regression."
+  },
+  "actions": [
+    {
+      "id": "post-review-49726",
+      "type": "post_review",
+      "label": "Post selected comments as a review",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "pr": 49726,
+        "head_sha": "5ae8eb6106d2268261813ed494cef1fa2d842768",
+        "body_prefix": "Thanks for the focused impersonation hardening and regression coverage. Please address the cleanup-exception gap and add the paired throwing-delay test below so identity restoration cannot fall back to an ordinary error return."
+      },
+      "note": "Mandatory: refresh the upstream head and conversation, validate the pinned payload, and require explicit approval before publishing."
+    },
+    {
+      "id": "rerun-49726",
+      "type": "rerun",
+      "label": "Recheck live PR state",
+      "note": "If the upstream head or substantive discussion changes after 2026-08-06T19:23:46Z, refresh the mirror and reconverge before posting."
+    },
+    {
+      "id": "hold-review-49726",
+      "type": "hold",
+      "label": "Not now"
+    }
+  ],
+  "confidence": "High",
+  "head_sha": "5ae8eb6106d2268261813ed494cef1fa2d842768",
+  "proposed_comments": [
+    {
+      "id": "fatal-cleanup-exceptions",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Keep cleanup exceptions on the fatal path",
+      "body": "### Keep cleanup exceptions on the fatal path\n\n**Severity:** `high`\n\nIf a retry delay or another cleanup callback throws before `Environment.FailFast` runs, the exception reaches the broad caller catch and is converted into a normal `false` result. The thread can therefore continue while its impersonation token is still active, defeating the identity-restoration guarantee this change is intended to provide. Route every restoration exception through the fatal handler and preserve the original exception for diagnostics.\n\n```suggestion\ninternal sealed class FatalImpersonationException : Exception\n{\n    internal FatalImpersonationException(string message, Exception innerException = null)\n        : base(message, innerException)\n    {\n    }\n}\n\ninternal static class ImpersonationHelper\n{\n    internal const int RevertToSelfAttempts = 3;\n    internal const int RevertToSelfRetryDelayMilliseconds = 10;\n\n    internal static bool TryRevertToSelf(Func<bool> revertToSelf, Action<int> delay)\n    {\n        ArgumentNullException.ThrowIfNull(revertToSelf);\n        ArgumentNullException.ThrowIfNull(delay);\n\n        for (int attempt = 0; attempt < RevertToSelfAttempts; attempt++)\n        {\n            if (revertToSelf())\n            {\n                return true;\n            }\n\n            if (attempt + 1 < RevertToSelfAttempts)\n            {\n                delay(RevertToSelfRetryDelayMilliseconds);\n            }\n        }\n\n        return false;\n    }\n\n    internal static void RevertToSelfOrFailFast(\n        Func<bool> revertToSelf,\n        Action<int> delay,\n        Action<string> failFast,\n        Func<string> failureMessageFactory)\n    {\n        ArgumentNullException.ThrowIfNull(failFast);\n        ArgumentNullException.ThrowIfNull(failureMessageFactory);\n\n        try\n        {\n            if (TryRevertToSelf(revertToSelf, delay))\n            {\n                return;\n            }\n        }\n        catch (Exception exception)\n        {\n            FailFastAndThrow(failFast, CreateFailureMessage(failureMessageFactory, exception), exception);\n        }\n\n        FailFastAndThrow(failFast, CreateFailureMessage(failureMessageFactory));\n    }\n\n    private static string CreateFailureMessage(Func<string> failureMessageFactory, Exception cleanupException = null)\n    {\n        string failureMessage;\n        try\n        {\n            failureMessage = failureMessageFactory();\n        }\n        catch (Exception exception)\n        {\n            failureMessage = $\"Unable to restore the process identity. Failure message creation failed with {exception.GetType().Name}.\";\n        }\n\n        return cleanupException is null\n            ? failureMessage\n            : string.Concat(failureMessage, \" Cleanup failed with \", cleanupException.GetType().Name, \".\");\n    }\n\n    private static void FailFastAndThrow(Action<string> failFast, string failureMessage, Exception innerException = null)\n    {\n        try\n        {\n            failFast(failureMessage);\n        }\n        catch (Exception exception)\n        {\n            throw new FatalImpersonationException(failureMessage, exception);\n        }\n\n        // Environment.FailFast never returns. This throw protects test hooks and\n        // any future failure handler from allowing the impersonated thread to continue.\n        throw new FatalImpersonationException(failureMessage, innerException);\n    }\n}\n```",
+      "path": "src/modules/MouseWithoutBorders/App/Core/ImpersonationHelper.cs",
+      "start_line": 9,
+      "line": 64,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "throwing-delay-regression",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cover exceptions raised during retry cleanup",
+      "body": "### Cover exceptions raised during retry cleanup\n\n**Severity:** `medium`\n\nThe existing tests cover a normal retry exhaustion, but not an exception thrown between attempts. Add a regression case that interrupts the delay callback and verifies the fatal path still runs, so this security boundary cannot silently regress back to the ordinary error return.\n\n```suggestion\n    [TestMethod]\n    public void RevertToSelfOrFailFast_FailsFastWhenRetryDelayThrows()\n    {\n        bool failFastCalled = false;\n\n        FatalImpersonationException exception = Assert.ThrowsException<FatalImpersonationException>(() =>\n            ImpersonationHelper.RevertToSelfOrFailFast(\n                () => false,\n                _ => throw new System.Threading.ThreadInterruptedException(),\n                _ => failFastCalled = true,\n                () => \"Unable to restore the process identity.\"));\n\n        Assert.IsTrue(failFastCalled);\n        StringAssert.Contains(exception.Message, nameof(System.Threading.ThreadInterruptedException));\n    }\n}\n```",
+      "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UnitTests/Core/ImpersonationHelperTests.cs",
+      "start_line": 68,
+      "line": 68,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    }
+  ],
+  "upstream_pr": {
+    "number": 49726,
+    "url": "https://github.com/microsoft/PowerToys/pull/49726",
+    "state": "OPEN"
+  },
+  "fork_pr": {
+    "number": 356,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/356",
+    "state": "OPEN",
+    "updated_at": "2026-08-13T12:59:09Z",
+    "head_sha": "a3fe7551bf45d1f9eae73e312331421c01184027",
+    "base_sha": "5193a1e49729bf8d9a8553e352e7c0c285e50188",
+    "commit_count": 2,
+    "changed_file_count": 3,
+    "additions": 231,
+    "deletions": 9
+  },
+  "fork_branch": "pr-iterate/49726-v3"
+}

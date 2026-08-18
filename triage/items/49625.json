@@ -1,0 +1,151 @@
+{
+  "number": 49625,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "evaluated_at": "2026-08-14T00:19:14Z",
+  "source_updated_at": "2026-08-04T16:39:34Z",
+  "status": {
+    "glyph": "📝",
+    "label": "Review ready — seven fixes drafted",
+    "detail": "Upstream remains at 795c8b0f305e4d9d189ba545ae8a37a9dcff0033. Fork PR 348 converged after five fresh Copilot passes: 5 published comments were fixed and resolved, important suppressed correctness findings through pass five were addressed, the latest pass at 2026-08-13T11:18:29Z generated no new comments, and all review threads are resolved. x64 Debug essentials, Settings, LightSwitchService, and LightSwitchModuleInterface builds passed; targeted Settings UI and PowerDisplay serialization tests passed 8/8."
+  },
+  "next_action": {
+    "glyph": "📝",
+    "label": "Review the seven drafted change requests",
+    "reason": "The upstream head still has duplicated module settings that do not understand the new mode, WMI lifecycle and shared-state hazards, manual-override and profile-feedback correctness gaps, and missing threshold UI/serialization alignment."
+  },
+  "actions": [
+    {
+      "id": "post-review-49625",
+      "type": "post_review",
+      "label": "Post selected comments as a review",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "pr": 49625,
+        "head_sha": "795c8b0f305e4d9d189ba545ae8a37a9dcff0033",
+        "body_prefix": "Thanks for updating the description and for adding the recording and local validation. The new mode's core UX is clear, but the current head leaves the duplicated module settings out of sync and has lifecycle and integration gaps that can hang shutdown, stop recovering after WMI failures, undo manual theme overrides, or oscillate with PowerDisplay profiles. Please address the selected items below before merge."
+      },
+      "note": "Mandatory: refresh the upstream head and conversation, validate the pinned payload, and require explicit approval before publishing."
+    },
+    {
+      "id": "rerun-49625",
+      "type": "rerun",
+      "label": "Recheck live PR state",
+      "note": "If the upstream head or substantive discussion changed after 2026-08-04T16:39:34Z, refresh the mirror and reconverge before posting."
+    },
+    {
+      "id": "hold-review-49625",
+      "type": "hold",
+      "label": "Not now"
+    }
+  ],
+  "confidence": "High",
+  "head_sha": "795c8b0f305e4d9d189ba545ae8a37a9dcff0033",
+  "proposed_comments": [
+    {
+      "id": "complete-module-interface-contract",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Mirror the new mode and threshold in the module interface",
+      "body": "### Mirror the new mode and threshold in the module interface\n\n**Severity:** `high`\n\nLightSwitch has a second settings contract in `LightSwitchModuleInterface/dllmain.cpp`, but its `ScheduleMode`, string conversion, choice list, and `ModuleSettings` still stop at `FollowNightLight` and omit `brightnessThreshold`. Runner configuration round-trips can therefore parse the selected mode as `Off` and serialize a payload without the threshold. Add `FollowBrightness` to both conversions and the choice group, expose a 0–100 threshold with the same default, and load and clamp it in both `set_config` and `init_settings`.",
+      "path": "src/modules/LightSwitch/LightSwitchModuleInterface/dllmain.cpp",
+      "line": 42,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "bound-and-recover-wmi-observer",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep WMI polling stoppable and recoverable",
+      "body": "### Keep WMI polling stoppable and recoverable\n\n**Severity:** `high`\n\n`Stop()` synchronously joins the observer, while the current connection and enumeration path can block indefinitely or terminate permanently after a transient setup failure. A later query failure also leaves the observer polling a dead proxy, and each ambient-light fluctuation writes duplicate info-level logs. Bound connection and enumeration waits, retry setup and reconnect after transport failures, link the configuration-appropriate COM support library, and keep the five-second polling path quiet so mode changes and service shutdown stay responsive.",
+      "path": "src/modules/LightSwitch/LightSwitchService/BrightnessObserver.h",
+      "line": 1,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-brightness-manual-override",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve manual theme overrides in Follow Brightness mode",
+      "body": "### Preserve manual theme overrides in Follow Brightness mode\n\n**Severity:** `high`\n\n`DetectAndHandleExternalThemeChange` returns immediately for the new mode, so a theme changed through Windows Settings never enters manual-override state. The next brightness update on the same side of the threshold can therefore undo the user's choice even though the new callback only clears overrides when the threshold is crossed. Derive the expected theme from the latest brightness sample and serialize external-change detection with brightness-driven transitions so the scheduler cannot misclassify its own update as a manual override.",
+      "path": "src/modules/LightSwitch/LightSwitchService/LightSwitchService.cpp",
+      "line": 176,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "prevent-powerdisplay-feedback",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Prevent brightness-profile feedback loops",
+      "body": "### Prevent brightness-profile feedback loops\n\n**Severity:** `high`\n\nA brightness-triggered theme change signals PowerDisplay to apply the selected light or dark profile, and those profiles can change the same monitor brightness. If the applied value lands on the opposite side of the threshold, the next poll flips the theme and applies the opposite profile, creating a persistent oscillation. Suppress profile notifications while `FollowBrightness` is active, or carry enough origin information across the integration to ignore profile-originated brightness changes.",
+      "path": "src/modules/LightSwitch/LightSwitchService/LightSwitchStateManager.cpp",
+      "line": 325,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "synchronize-and-invalidate-brightness-state",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Synchronize settings reads and invalidate stale samples",
+      "body": "### Synchronize settings reads and invalidate stale samples\n\n**Severity:** `medium`\n\nThe observer callback reads `brightnessThreshold` while the service can update the live settings object, and several consumers retain references after the settings mutex is released. The cached brightness also survives observer shutdown, so returning to this mode can apply a theme from an old sample before WMI reports the current value. Read immutable settings snapshots under the existing mutex, expose state through synchronized operations, and reset the cached brightness whenever the observer stops.",
+      "path": "src/modules/LightSwitch/LightSwitchService/LightSwitchStateManager.cpp",
+      "line": 102,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "align-threshold-slider-range",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Match the slider to the persisted threshold range",
+      "body": "### Match the slider to the persisted threshold range\n\n**Severity:** `medium`\n\nThe view model, service, and new clamping test all accept a 0–100 threshold, but this slider starts at 1. A persisted value of 0 can therefore be coerced or displayed inconsistently, and users cannot select every supported value. Use the same lower bound as the settings contract.\n\n```suggestion\n                                            Minimum=\"0\"\n```",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/LightSwitchPage.xaml",
+      "line": 198,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "cover-threshold-serialization",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Add threshold serialization compatibility coverage",
+      "body": "### Add threshold serialization compatibility coverage\n\n**Severity:** `medium`\n\nThis adds a persisted property without extending the repository's all-properties serialization test. A naming or default-value regression could silently drop a user's threshold or break older settings files. Extend `LightSwitchSettings_ToJsonString_RoundTripsAllKnownProperties` to verify a non-default value under the `brightnessThreshold` JSON name, and verify that a legacy payload without the property retains the default of 90.",
+      "path": "src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/LightSwitchProfileIdTests.cs",
+      "line": 69,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "upstream_pr": {
+    "number": 49625,
+    "url": "https://github.com/microsoft/PowerToys/pull/49625"
+  },
+  "fork_pr": {
+    "number": 348,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/348",
+    "state": "OPEN",
+    "updated_at": "2026-08-13T11:18:29Z",
+    "head_sha": "42709eaceffee148c17496fd31ca1cfce3e00499",
+    "base_sha": "29471231dd4efdb4433163be135c839177287cdc",
+    "commit_count": 10,
+    "changed_file_count": 18
+  },
+  "fork_branch": "pr-iterate/49625-v2"
+}

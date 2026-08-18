@@ -1,0 +1,91 @@
+{
+  "number": 49427,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "evaluated_at": "2026-08-14T00:19:14Z",
+  "source_updated_at": "2026-08-06T15:03:45Z",
+  "status": {
+    "glyph": "📝",
+    "label": "Review ready — two grouped requests drafted",
+    "detail": "Upstream remains at 13eaa74a18b52b6372451c9b670a2c81989a01e9. Fork PR 344 converged with a clean Copilot review at 2026-08-13T09:33:30Z and zero unresolved fork threads. x64 Debug essentials and DSC projects built successfully; 100/100 DSC tests passed."
+  },
+  "next_action": {
+    "glyph": "📝",
+    "label": "Review the two grouped change requests",
+    "reason": "The current implementation can damage or misreport persisted profiles on write/export edge cases; the existing upstream shared-model ownership thread also needs a maintainer decision."
+  },
+  "actions": [
+    {
+      "id": "post-review-49427",
+      "type": "post_review",
+      "label": "Post the selected requests as a review",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "pr": 49427,
+        "head_sha": "13eaa74a18b52b6372451c9b670a2c81989a01e9",
+        "body_prefix": "Thanks for the substantial implementation and for applying the earlier suggestions. Before merge, please address these persistence and round-trip correctness cases, and align the shared-model ownership question with the Keyboard Manager/DSC maintainers."
+      },
+      "note": "Mandatory: refresh the upstream head and conversation, validate the pinned payload, and require explicit approval before publishing."
+    },
+    {
+      "id": "rerun-49427",
+      "type": "rerun",
+      "label": "Recheck live PR state",
+      "note": "If the upstream head or substantive discussion changed after 2026-08-06T15:03:45Z, refresh the mirror and reconverge before posting."
+    },
+    {
+      "id": "hold-review-49427",
+      "type": "hold",
+      "label": "Not now"
+    }
+  ],
+  "confidence": "High",
+  "head_sha": "13eaa74a18b52b6372451c9b670a2c81989a01e9",
+  "proposed_comments": [
+    {
+      "id": "make-profile-application-failure-safe",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make profile application non-destructive and failure-safe",
+      "body": "### Make profile application non-destructive and failure-safe\n\n**Severity:** `high`\n\nThe profile path is user state, but the current write goes through an API that swallows I/O exceptions and writes the destination directly. A failed or partial write can therefore damage the existing remappings before the later verification reports failure. Write the complete JSON to a same-directory temporary file and atomically replace the destination only after that succeeds; do not signal a reload until the replacement is complete. Keep reads non-mutating for missing, null, or corrupt settings/profile documents, validate the active configuration before deriving a path, and isolate the tests from the real user settings directory and machine-wide event with an injected filesystem and signal callback.",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/ProfileFunctionData.cs",
+      "line": 185,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-engine-profile-semantics",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve engine semantics across profile export and import",
+      "body": "### Preserve engine semantics across profile export and import\n\n**Severity:** `high`\n\nThe engine decodes both shortcut sections from the same `operationType` and target fields, accepts persisted `ProgramAlreadyRunningAction` value 5, and can load valid chord key orders that canonical formatting changes. Exporting these states as unconditional text, omitting value 5, or reordering the stored source changes behavior when the export is applied. Decode actions independently of the storage section, preserve engine-valid chord meaning, and surface a warning whenever malformed or unsupported stored entries must be skipped. When filtering an invalid export entry, revalidate after each removal so a later valid overlapping remap is not discarded with it; add round-trip tests for cross-section actions, noncanonical chords, `closeAndEndTask`, warning propagation, and overlapping entries.",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/KeyboardManager/KbmProfileConverter.cs",
+      "line": 407,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "upstream_pr": {
+    "number": 49427,
+    "url": "https://github.com/microsoft/PowerToys/pull/49427"
+  },
+  "fork_pr": {
+    "number": 344,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/344",
+    "state": "OPEN",
+    "updated_at": "2026-08-13T09:34:25Z",
+    "head_sha": "76ee04d861df71e494c0a40237a58452aa9df74c",
+    "base_sha": "29471231dd4efdb4433163be135c839177287cdc",
+    "commit_count": 27,
+    "changed_file_count": 28
+  },
+  "fork_branch": "pr-iterate/49427-v8"
+}
