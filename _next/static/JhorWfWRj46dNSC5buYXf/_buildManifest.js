@@ -1,7 +1,12 @@
 self.__BUILD_MANIFEST = {
   "__rewrites": {
     "afterFiles": [],
-    "beforeFiles": [],
+    "beforeFiles": [
+      {
+        "source": "/powertoys-pulse-actions//_next/:path+",
+        "destination": "/powertoys-pulse-actions/_next/:path+"
+      }
+    ],
     "fallback": []
   },
   "sortedPages": [
