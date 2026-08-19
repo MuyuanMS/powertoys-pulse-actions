@@ -48,6 +48,7 @@ function Convert-LiveItem {
   [ordered]@{
     id = "$Kind-$($Raw.number)"; kind = $Kind; number = [int]$Raw.number
     url = $Raw.html_url; title = $Raw.title; author = $author
+    state = $Raw.state
     is_community = [bool]$community; mine = ($author -ieq $ME)
     is_cmdpal = (($labels -join '|') -match '(?i)Command Palette|CmdPal')
     labels = $labels; created_at = $Raw.created_at; updated_at = $Raw.updated_at
@@ -62,8 +63,16 @@ $previousByNumber = @{}
 foreach ($old in @($src.items)) { $previousByNumber[[int]$old.number] = $old }
 try {
   $livePrs = Get-LiveCollection "repos/$UP/pulls?state=open&per_page=100"
-  $liveIssues = Get-LiveCollection "repos/$UP/issues?state=open&per_page=100" |
+  $liveOpenIssues = Get-LiveCollection "repos/$UP/issues?state=open&per_page=100" |
     Where-Object { -not $_.pull_request }
+  $issueSince = (Get-Date).ToUniversalTime().AddDays(-180).ToString('o')
+  $liveRecentIssues = Get-LiveCollection "repos/$UP/issues?state=all&since=$([uri]::EscapeDataString($issueSince))&per_page=100" |
+    Where-Object { -not $_.pull_request }
+  $issueByNumber = @{}
+  foreach ($issue in @($liveOpenIssues) + @($liveRecentIssues)) {
+    $issueByNumber[[int]$issue.number] = $issue
+  }
+  $liveIssues = @($issueByNumber.Values)
   $liveItems = New-Object System.Collections.Generic.List[object]
   foreach ($raw in $livePrs) {
     $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'pr' $previousByNumber[[int]$raw.number]))
@@ -72,7 +81,7 @@ try {
     $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[[int]$raw.number]))
   }
   $src.items = $liveItems.ToArray()
-  "live upstream backlog loaded: prs=$($livePrs.Count) issues=$($liveIssues.Count)"
+  "live upstream backlog loaded: prs=$($livePrs.Count) openIssues=$($liveOpenIssues.Count) recentIssues=$($liveIssues.Count)"
 } catch {
   Write-Warning "live upstream backlog load failed; using previous snapshot: $($_.Exception.Message)"
 }
@@ -631,7 +640,7 @@ foreach ($it in $src.items) {
       }
       $primary = [ordered]@{ type=$action.type; label=$label }
     }
-  } elseif (-not ($iowes -eq 'author')) {
+  } elseif ($it.state -ne 'closed' -and -not ($iowes -eq 'author')) {
     $primary = if ($it.kind -eq 'pr') {
       [ordered]@{ type=if ($mt) { 'rerun' } else { 'start_review' }; label=if ($mt) { 'Resume review' } else { 'Start review' } }
     } else {
@@ -646,6 +655,7 @@ foreach ($it in $src.items) {
   }
   $entry = [ordered]@{
     id=$it.id; kind=$it.kind; number=$n; url=$it.url; title=$it.title; author=$it.author
+    state=$it.state
     is_community=[bool]$it.is_community; mine=[bool]$it.mine; is_cmdpal=[bool]$it.is_cmdpal
     track=$track; stage=$stage; owes=$iowes; pending_author=($iowes -eq 'author')
     waiting_since=if ($o -and $o.waiting_since) { $o.waiting_since } elseif ($iowes -eq 'author') { $it.updated_at } else { $null }
