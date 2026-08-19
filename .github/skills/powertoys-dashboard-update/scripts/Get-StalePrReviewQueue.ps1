@@ -60,14 +60,32 @@ function Get-Artifact {
     return Get-Content $path -Raw | ConvertFrom-Json
 }
 
-function Test-HasProposedReviewAction {
-    param($Artifact)
+function Test-HasApplicableReviewAction {
+    param($Artifact, [string]$LiveHead)
     if (-not $Artifact) {
         return $false
     }
 
+    $artifactHead = [string]$Artifact.head_sha
+    if ([string]::IsNullOrWhiteSpace($artifactHead) -or $artifactHead -ne $LiveHead) {
+        return $false
+    }
+
+    if ([string]$Artifact.stage -eq 'review_ready' -and @($Artifact.proposed_comments).Count -eq 0) {
+        return $true
+    }
+
     foreach ($action in @($Artifact.actions)) {
-        if ($action.type -eq 'post_review' -and $action.review -and $action.review.head_sha) {
+        if ($action.type -eq 'post_review' -and $action.review) {
+            $reviewHead = [string]$action.review.head_sha
+            if ([string]::IsNullOrWhiteSpace($reviewHead)) {
+                $reviewHead = $artifactHead
+            }
+            if ($reviewHead -eq $LiveHead) {
+                return $true
+            }
+        }
+        if ($action.type -eq 'hold' -and [string]$Artifact.stage -eq 'review_ready') {
             return $true
         }
     }
@@ -122,11 +140,16 @@ foreach ($pr in $pullRequests) {
         continue
     }
 
-    $hasProposedReview = Test-HasProposedReviewAction $artifact
     $artifactHead = if ($artifact) { [string]$artifact.head_sha } else { '' }
     $liveHead = [string]$pr.headRefOid
-    $reviewHead = if ($hasProposedReview) {
-        [string](@($artifact.actions | Where-Object { $_.type -eq 'post_review' -and $_.review.head_sha })[0].review.head_sha)
+    $hasApplicableReview = Test-HasApplicableReviewAction $artifact $liveHead
+    $reviewHead = if ($artifact) {
+        $reviewAction = @($artifact.actions | Where-Object { $_.type -eq 'post_review' -and $_.review }) | Select-Object -First 1
+        if ($reviewAction -and $reviewAction.review.head_sha) {
+            [string]$reviewAction.review.head_sha
+        } else {
+            ''
+        }
     } else {
         ''
     }
@@ -135,8 +158,8 @@ foreach ($pr in $pullRequests) {
     if (-not $artifact) {
         $reasons.Add('missing_artifact')
     }
-    if (-not $hasProposedReview) {
-        $reasons.Add('missing_proposed_review_action')
+    if (-not $hasApplicableReview) {
+        $reasons.Add('missing_current_review_action')
     }
     if ([string]::IsNullOrWhiteSpace($artifactHead)) {
         $reasons.Add('missing_artifact_head_sha')
@@ -144,7 +167,7 @@ foreach ($pr in $pullRequests) {
     elseif ($artifactHead -ne $liveHead) {
         $reasons.Add('new_commits_since_artifact_head')
     }
-    if ($hasProposedReview -and $reviewHead -ne $liveHead) {
+    if (-not [string]::IsNullOrWhiteSpace($reviewHead) -and $reviewHead -ne $liveHead) {
         $reasons.Add('new_commits_since_proposed_review')
     }
 

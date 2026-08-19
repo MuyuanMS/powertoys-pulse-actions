@@ -200,8 +200,9 @@ The queue contains every open, non-draft, non-CmdPal PR that is not explicitly
 waiting on the author, owned elsewhere, dropped, awaiting a maintainer
 direction/close/takeover decision, or excluded, and that either:
 
-- has no dashboard artifact with a `post_review` action pinned to the live
-  upstream head; or
+- has no dashboard artifact with a current review action for the live upstream
+  head (`post_review` for drafted findings, or `review_ready`/no-comment action
+  for a clean looped review); or
 - has a prior proposed review, but the live head SHA differs from the artifact
   or review action head SHA.
 
@@ -272,6 +273,20 @@ freshly requested Copilot review has zero new comments, zero unresolved threads,
 and the required local build has passed. A Copilot-clean result with a pending
 build, context review, spelling check, or timed-out fresh request remains
 `review_in_progress` and must get a `Re-run review`/`Continue review` action.
+
+### Incremental publication during long PR loops
+
+Long-running PR reviews should not block completed review data from reaching the
+dashboard. After any batch of PR workers emits validated artifacts, publish
+those completed artifacts immediately while the remaining workers continue.
+Regenerate and sanitize the feed, validate the completed PR numbers, run the
+stale-review queue check without `-FailOnStale`, and commit/push the completed
+artifacts plus index updates. The dashboard must show still-running PRs as
+queued/running review, not as current.
+
+When a long-running worker finishes later, repeat the same incremental publish
+for that worker's artifact. Run the `-FailOnStale` gate only when claiming the
+full PR review queue is complete.
 
 Issue **judgment** is exhaustive for new/changed bugs, while full design work is
 bounded. Rank `actionable_design` judgments by confidence, reproducibility,
@@ -429,6 +444,11 @@ If the gate fails, return to Phase 2 and run/resume `powertoys-pr-review` for
 the listed PRs. Do not repair the failure by copying timestamps or head SHAs
 into artifacts; only a completed looped review, author-waiting classification,
 owned-elsewhere classification, or explicit exclusion clears a PR.
+
+For incremental publication while review workers are still running, run the
+same queue command without `-FailOnStale`, include the remaining stale/running
+PR list in the report, and publish only artifacts that have already passed
+validation and sanitization.
 
 Then synchronize project state after artifacts are written:
 

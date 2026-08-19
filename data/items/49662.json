@@ -5,18 +5,18 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:19:14Z",
-  "source_updated_at": "2026-08-12T07:15:42Z",
+  "generated_at": "2026-08-19T15:56:00+08:00",
+  "evaluated_at": "2026-08-19T07:56:00Z",
+  "source_updated_at": "2026-08-15T13:34:25Z",
   "status": {
     "glyph": "📝",
-    "label": "Review ready — demo and two fixes drafted",
-    "detail": "The current-head fork review was rebased onto latest main and converged after four current-PR Copilot passes, with the latest fresh pass producing zero new comments and zero unresolved threads. The x64 Debug runner and Settings builds passed, and all 185 Settings unit tests passed. A short behavior recording and two ShortcutControl correctness fixes remain drafted for maintainer approval."
+    "label": "Review ready — three fixes drafted",
+    "detail": "Fork PR 390 resumed on the live upstream head 6506202361e35cd7baacc3e06418e5466457999c and converged after four Copilot review rounds. The latest fresh Copilot pass produced zero new comments, unresolved Copilot threads are 0, and the serialized x64 Debug runner plus Settings UI build passed."
   },
   "next_action": {
     "glyph": "📝",
-    "label": "Review the demo request and two suggested fixes",
-    "reason": "The PR addresses a visible flicker without a recording, and its equality guard still refreshes every non-null assignment while treating differently ordered key lists as equal."
+    "label": "Post the three requested fixes as a review",
+    "reason": "The author added the requested before/after recordings and CLA is green, but the current ShortcutControl change still re-runs conflict handling on held-key repeats and has two key-list equality issues."
   },
   "actions": [
     {
@@ -28,7 +28,8 @@
       "review": {
         "event": "REQUEST_CHANGES",
         "pr": 49662,
-        "body_prefix": "Thanks for tackling the repeated-key flicker and for including manual validation steps. Before merge, could you attach a short screen recording showing both the held non-modifier and Windows-key cases? Please also address the two correctness issues below so equal assignments are actually suppressed without hiding ordered key changes."
+        "head_sha": "6506202361e35cd7baacc3e06418e5466457999c",
+        "body_prefix": "Thanks for adding the before/after recordings; they make the intended behavior clear. Before merge, please address the ShortcutControl correctness issues below so held-key repeats do not keep refreshing the conflict UI and equivalent-key suppression does not hide legitimate key-list changes."
       }
     },
     {
@@ -38,16 +39,47 @@
     }
   ],
   "confidence": "High",
-  "head_sha": "61dc0a31e4b4b9aad5e9961c478be15a899100c7",
+  "head_sha": "6506202361e35cd7baacc3e06418e5466457999c",
+  "review_loop": {
+    "fork_pr": 390,
+    "rounds": 4,
+    "latest_copilot_review_at": "2026-08-19T03:47:13Z",
+    "unresolved_copilot_threads": 0,
+    "latest_review_had_new_comments": false
+  },
+  "build_result": {
+    "status": "passed",
+    "configuration": "x64 Debug",
+    "commands": [
+      "tools\\build\\build-essentials.cmd",
+      "src\\settings-ui\\Settings.UI\\..\\..\\..\\tools\\build\\build.cmd"
+    ],
+    "outputs": [
+      "x64\\Debug\\PowerToys.exe",
+      "x64\\Debug\\WinUI3Apps\\PowerToys.Settings.exe"
+    ]
+  },
   "proposed_comments": [
     {
-      "id": "guard-all-key-assignments",
-      "kind": "inline",
+      "id": "debounce-repeated-keydown-state",
+      "kind": "companion",
       "severity": "high",
-      "title": "Guard every key-list assignment with the equality check",
-      "body": "### Guard every key-list assignment with the equality check\n\n**Severity:** `high`\n\nOnce `Keys` is non-null, the left side of this `||` is always true, so every subsequent assignment still calls `SetValue` and recreates the bound key visuals. That defeats the duplicate-update guard on the normal non-null path and can leave the reported held-key flicker unfixed. Let the helper handle all null and non-null combinations before updating the dependency property.\n\n```suggestion\n            set\n            {\n                if (!JudgeIfKeyValueSame(value))\n                {\n                    SetValue(KeysProperty, value);\n                }\n            }\n```",
+      "title": "Skip unchanged repeated key-down events before conflict handling",
+      "body": "### Skip unchanged repeated key-down events before conflict handling\n\n**Severity:** `high`\n\nThe current guard only suppresses the `Keys` assignment. When the user holds the same non-modifier or Windows key, `Hotkey_KeyDown` still clears `HasConflict`, clears the conflict message, and calls `CheckForConflicts`; the asynchronous response can set the conflict state back to true on every auto-repeat, so the reported blinking can continue and repeated conflict checks keep being queued. Track the last key-down hotkey state and return before the conflict reset/check path when the repeated key did not change `internalSettings`; reset that cached state on key-up and when the dialog opens.",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs",
+      "line": 513,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "keep-keys-setter-semantic",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Keep the dependency-property setter as a real assignment",
+      "body": "### Keep the dependency-property setter as a real assignment\n\n**Severity:** `medium`\n\nMoving the equality guard into the `Keys` dependency-property setter changes the setter's semantics: assigning an equal-but-different list leaves the old list instance in the property, so callers can read back or mutate a value different from the one they assigned. Keep the setter as the normal `SetValue` wrapper and apply duplicate-update suppression at the hotkey repeat call sites instead.\n\n```suggestion\n            get => (List<object>)GetValue(KeysProperty);\n            set => SetValue(KeysProperty, value);\n```\n\n> If applying multiple suggestions in this file individually, apply the lower-line suggestion first or batch the suggestions so line shifts do not stale the later range.",
       "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutDialogContentControl.xaml.cs",
-      "start_line": 70,
+      "start_line": 68,
       "line": 76,
       "side": "RIGHT",
       "in_diff": true,
@@ -72,8 +104,8 @@
     "url": "https://github.com/microsoft/PowerToys/pull/49662"
   },
   "fork_pr": {
-    "number": 331,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/331"
+    "number": 390,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/390"
   },
-  "fork_branch": "pr-iterate/49662-v3"
+  "fork_branch": "pr-iterate/49662-v4"
 }

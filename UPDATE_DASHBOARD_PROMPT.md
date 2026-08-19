@@ -46,6 +46,10 @@ rules. In particular:
 - preserve and resume existing fork work instead of duplicating it;
 - validate all newly processed artifacts and scan generated JSON for secrets;
 - regenerate `data/index.json`, `data/index.js`, and per-number artifacts;
+- publish completed review artifacts incrementally when other PR review workers
+  are still waiting on Copilot/builds, while clearly leaving unfinished PRs
+  queued/running and reserving the failing stale-review gate for the final
+  completion claim;
 - synchronize project state when permissions are available;
 - commit and push only action-artifact data to the artifact repository;
 - synchronize those artifacts into PowerToys Pulse with
