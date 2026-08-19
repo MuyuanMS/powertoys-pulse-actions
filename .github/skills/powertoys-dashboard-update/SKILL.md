@@ -186,6 +186,30 @@ Never skip an eligible PR merely because it is old or absent from the recent
 activity query. Never re-review an unchanged, converged head with no newer
 relevant activity.
 
+### Mandatory stale-review queue gate
+
+Before publishing, run the stale-review queue check:
+
+```powershell
+pwsh -NoProfile -File `
+  "$SkillRoot\scripts\Get-StalePrReviewQueue.ps1" `
+  -Dashboard $Dashboard -Upstream $Upstream -AsJson
+```
+
+The queue contains every open, non-draft, non-CmdPal PR that is not explicitly
+waiting on the author, owned elsewhere, or excluded, and that either:
+
+- has no dashboard artifact with a `post_review` action pinned to the live
+  upstream head; or
+- has a prior proposed review, but the live head SHA differs from the artifact
+  or review action head SHA.
+
+Every PR in this queue **must** be sent through or resumed in
+`powertoys-pr-review` during the same run. A metadata-only refresh is not a
+valid substitute for the looped review. After workers finish and artifacts are
+regenerated, rerun the gate with `-FailOnStale`; do not commit or push while it
+reports any applicable PRs still stale.
+
 ### Fast issue judgment
 
 Every open `Issue-Bug` issue with no `judgment`, or with live `updatedAt` newer
@@ -266,7 +290,9 @@ skill itself, using a general-purpose worker when parallel background execution
 is needed.
 
 - PR: `powertoys-pr-review` must reach zero new Copilot comments and zero
-  unresolved Copilot threads before a new artifact is emitted.
+  unresolved Copilot threads before a new artifact is emitted. For stale-review
+  queue items, the emitted artifact must include `head_sha` and any
+  `post_review` action `review.head_sha` pinned to the live upstream head.
 - Issue: `powertoys-issue-to-design` must reach a converged adversary-reviewed
   implementation-grade design and stop at approval.
 - Approved design: `powertoys-design-to-pr` may build/review the fork PR but
@@ -389,6 +415,19 @@ hand-authored overlay. The sanitizer removes internal-only fields and
 normalizes local checkout paths before publication. Run both only after worker
 writes are complete when possible, and verify the resulting `artifact_numbers`
 includes every completed review from the run.
+
+Then enforce the stale-review queue gate:
+
+```powershell
+pwsh -NoProfile -File `
+  "$SkillRoot\scripts\Get-StalePrReviewQueue.ps1" `
+  -Dashboard $Dashboard -Upstream $Upstream -FailOnStale
+```
+
+If the gate fails, return to Phase 2 and run/resume `powertoys-pr-review` for
+the listed PRs. Do not repair the failure by copying timestamps or head SHAs
+into artifacts; only a completed looped review, author-waiting classification,
+owned-elsewhere classification, or explicit exclusion clears a PR.
 
 Then synchronize project state after artifacts are written:
 

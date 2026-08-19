@@ -36,6 +36,9 @@ dependency, freshness, artifact-schema, validation, publication, and approval
 rules. In particular:
 - examine every eligible open non-draft non-CmdPal PR and review any PR without
   a current clean result for its latest head;
+- before publishing, run the stale PR review queue gate and send every PR that
+  lacks a proposed review for the live head, or whose proposed review predates
+  new commits, through the looped `powertoys-pr-review` workflow;
 - give every new or changed bug issue a lightweight explicit judgment and
   action;
 - run only the bounded highest-confidence issue batch through the detailed
