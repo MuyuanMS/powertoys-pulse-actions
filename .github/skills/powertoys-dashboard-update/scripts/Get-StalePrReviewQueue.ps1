@@ -89,6 +89,12 @@ function Test-IsHoldState {
     return $stage -in @(
         'awaiting_author',
         'waiting_on_author',
+        'awaiting_close_decision',
+        'awaiting_maintainer_alignment',
+        'awaiting_maintainer_direction',
+        'awaiting_maintainer_direction_and_review_approval',
+        'awaiting_maintainer_takeover_approval',
+        'dropped',
         'owned_elsewhere',
         'excluded',
         'ineligible'

@@ -197,7 +197,8 @@ pwsh -NoProfile -File `
 ```
 
 The queue contains every open, non-draft, non-CmdPal PR that is not explicitly
-waiting on the author, owned elsewhere, or excluded, and that either:
+waiting on the author, owned elsewhere, dropped, awaiting a maintainer
+direction/close/takeover decision, or excluded, and that either:
 
 - has no dashboard artifact with a `post_review` action pinned to the live
   upstream head; or
