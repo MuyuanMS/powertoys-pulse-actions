@@ -53,14 +53,24 @@ function Get-ProjectItems {
 function Get-ProjectStatusField {
   $result = Invoke-GhJson @('project', 'field-list', "$ProjectNumber", '--owner', $Owner,
     '--format', 'json')
+  $project = Invoke-GhJson @('project', 'view', "$ProjectNumber", '--owner', $Owner,
+    '--format', 'json')
   $field = @($result.fields | Where-Object { $_.name -eq 'Status' }) | Select-Object -First 1
   if (-not $field) { throw "Project $Owner/$ProjectNumber has no Status field." }
-  $field | Add-Member -NotePropertyName project_id -NotePropertyValue $field.projectId -Force
+  $field | Add-Member -NotePropertyName project_id -NotePropertyValue $project.id -Force
   return $field
 }
 
 function Get-StatusOption {
   param($Field, [string]$Name)
+  $aliases = @{
+    'To triage' = 'Pending triage'
+    'To manually review' = 'Pending code review'
+    'In Review' = 'Pending code review'
+  }
+  if ($aliases.ContainsKey($Name)) {
+    $Name = $aliases[$Name]
+  }
   $option = @($Field.options | Where-Object { $_.name -ieq $Name }) | Select-Object -First 1
   if (-not $option) {
     $option = @($Field.options | Where-Object { $_.name -ilike "$Name*" }) | Select-Object -First 1

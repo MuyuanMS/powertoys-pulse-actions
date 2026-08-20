@@ -49,6 +49,7 @@ function Convert-LiveItem {
     id = "$Kind-$($Raw.number)"; kind = $Kind; number = [int]$Raw.number
     url = $Raw.html_url; title = $Raw.title; author = $author
     state = $Raw.state
+    is_draft = [bool]$Raw.draft
     is_community = [bool]$community; mine = ($author -ieq $ME)
     is_cmdpal = (($labels -join '|') -match '(?i)Command Palette|CmdPal')
     labels = $labels; created_at = $Raw.created_at; updated_at = $Raw.updated_at
@@ -656,6 +657,7 @@ foreach ($it in $src.items) {
   $entry = [ordered]@{
     id=$it.id; kind=$it.kind; number=$n; url=$it.url; title=$it.title; author=$it.author
     state=$it.state
+    is_draft=[bool]$it.is_draft
     is_community=[bool]$it.is_community; mine=[bool]$it.mine; is_cmdpal=[bool]$it.is_cmdpal
     track=$track; stage=$stage; owes=$iowes; pending_author=($iowes -eq 'author')
     waiting_since=if ($o -and $o.waiting_since) { $o.waiting_since } elseif ($iowes -eq 'author') { $it.updated_at } else { $null }

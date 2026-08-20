@@ -20,8 +20,12 @@ function Convert-PublicValue {
   if ($Value -is [string]) {
     return $Value `
       -replace 'C:\\PowerToys-[^\\]+\\', '<PowerToysCheckout>\' `
+      -replace 'C:\\PowerToys-[^\s"''\\]+', '<PowerToysCheckout>' `
+      -replace 'C:\\\\PowerToys-[^\\]+\\\\', '<PowerToysCheckout>\\' `
       -replace 'C:\\PowerToys\\', '<PowerToysCheckout>\' `
-      -replace 'C:\\powertoys-triage-board-source\\[^"''\r\n]*', '<local-artifact>'
+      -replace 'C:\\Users\\muyuanli\\\.copilot\\[^"''\r\n]*', '<local-artifact>' `
+      -replace 'C:\\powertoys-triage-board-source\\[^"''\r\n]*', '<local-artifact>' `
+      -replace '(?i)\bworktree\b', 'local checkout'
   }
 
   if ($Value -is [System.Collections.IDictionary]) {
