@@ -81,6 +81,8 @@ $ArtifactBaseUrl = if ($env:POWERTOYS_ARTIFACT_BASE_URL) {
 }
 $Pulse = if ($env:POWERTOYS_PULSE_REPO) { $env:POWERTOYS_PULSE_REPO } else { 'gim-home/powertoys-pulse' }
 $PulsePreview = if ($env:POWERTOYS_PULSE_PREVIEW_REPO) { $env:POWERTOYS_PULSE_PREVIEW_REPO } else { 'MuyuanMS/powertoys-pulse-action-private' }
+$NotifyChannel = if ($env:POWERTOYS_DASHBOARD_NOTIFY) { $env:POWERTOYS_DASHBOARD_NOTIFY } else { 'outlook' }
+$NotifyTeamsChatId = $env:POWERTOYS_DASHBOARD_NOTIFY_TEAMS_CHAT_ID
 ```
 
 On the first run, verify:
@@ -100,6 +102,44 @@ The configured repository is both the reusable skill suite and canonical
 artifact feed. Generated files belong only in its root `data/` directory, not
 inside `.github\skills`. Never place secrets or information that must remain
 private in the public feed.
+
+### Scheduled-run status notifications
+
+Scheduled runs are hard to observe from the CLI, so send compact status
+notifications when M365/WorkIQ tools are available. `POWERTOYS_DASHBOARD_NOTIFY`
+controls delivery:
+
+| Value | Behavior |
+| --- | --- |
+| `outlook` or unset | Send Outlook mail to the signed-in user. |
+| `teams` | Send a Teams/chat message to `POWERTOYS_DASHBOARD_NOTIFY_TEAMS_CHAT_ID`. |
+| `both` | Send both Outlook and Teams/chat messages. |
+| `none` | Disable external notifications. |
+
+For Outlook, read `/me?$select=mail,userPrincipalName` and send to
+`mail ?? userPrincipalName` via `/me/sendMail`. For Teams, create a message at
+`/me/chats/{chat-id}/messages` using `POWERTOYS_DASHBOARD_NOTIFY_TEAMS_CHAT_ID`;
+do not guess or create a chat unless the user explicitly asks for that setup.
+If M365 tools are unavailable, the chat id is missing, or delivery fails, record
+that in the final report and continue the dashboard run.
+
+Send at least:
+
+1. **Started** — after the live queue is enumerated, with eligible PR count,
+   stale PR count, and top stale PR numbers.
+2. **Incremental publish** — whenever completed artifacts are pushed while
+   other PR reviews keep running, with commit, completed PRs, and remaining
+   queue count.
+3. **Completed** — after validation and deployment verification, with commit,
+   PR coverage, stale queue count, artifact count, and whether any upstream
+   public action occurred.
+4. **Blocked/failed** — before stopping on an unrecoverable failure, with the
+   failing command/phase and the next manual action needed.
+
+Keep notification bodies public-safe: no PATs, local checkout paths, fork-only
+implementation provenance, private evidence, or internal worktree details.
+These notifications are status messages only and do not authorize posting
+reviews/comments to `microsoft/PowerToys`.
 
 ## Phase 0 — Sync and load prior state
 
@@ -543,7 +583,8 @@ Return one concise report containing:
 3. stale workflows resumed/rerun and their resulting stages;
 4. closed/superseded/author-waiting items;
 5. counts in the regenerated board and the published Pages URL;
-6. explicit confirmation that no upstream public action was taken.
+6. status notification delivery result, or why delivery was skipped;
+7. explicit confirmation that no upstream public action was taken.
 
 ## Important limitation: shared action updates
 

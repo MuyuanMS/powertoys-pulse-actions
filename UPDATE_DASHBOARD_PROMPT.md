@@ -50,6 +50,11 @@ rules. In particular:
   are still waiting on Copilot/builds, while clearly leaving unfinished PRs
   queued/running and reserving the failing stale-review gate for the final
   completion claim;
+- send scheduled-run status notifications when M365/WorkIQ tools are available:
+  use `POWERTOYS_DASHBOARD_NOTIFY` (`outlook`, `teams`, `both`, or `none`),
+  default to Outlook mail to the signed-in user, use
+  `POWERTOYS_DASHBOARD_NOTIFY_TEAMS_CHAT_ID` for Teams/chat delivery, and send
+  started, incremental-publish, completed, and blocked/failed updates;
 - synchronize project state when permissions are available;
 - commit and push only action-artifact data to the artifact repository;
 - synchronize those artifacts into PowerToys Pulse with
@@ -64,6 +69,6 @@ approval. Fork-side work and dashboard publication are allowed under the
 skills' existing gates.
 
 At completion, report PR coverage, issue judgments/designs, resumed workflows,
-closed/waiting items, generated counts, deployment URL, and explicitly confirm
-whether any upstream public action occurred.
+closed/waiting items, generated counts, deployment URL, notification delivery
+status, and explicitly confirm whether any upstream public action occurred.
 ```
