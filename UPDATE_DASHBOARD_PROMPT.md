@@ -50,11 +50,11 @@ rules. In particular:
   are still waiting on Copilot/builds, while clearly leaving unfinished PRs
   queued/running and reserving the failing stale-review gate for the final
   completion claim;
-- send scheduled-run status notifications when M365/WorkIQ tools are available:
-  use `POWERTOYS_DASHBOARD_NOTIFY` (`outlook`, `teams`, `both`, or `none`),
-  default to Outlook mail to the signed-in user, use
-  `POWERTOYS_DASHBOARD_NOTIFY_TEAMS_CHAT_ID` for Teams/chat delivery, and send
-  started, incremental-publish, completed, and blocked/failed updates;
+- send brief Outlook-only scheduled-run status notifications when M365/WorkIQ
+  tools are available: default to mail to the signed-in user, disable only with
+  `POWERTOYS_DASHBOARD_NOTIFY=none`, include the PR/issue sets selected for
+  this run in the started email, and reply to that original email at completion
+  or at the 30-minute mark if the run is still active;
 - synchronize project state when permissions are available;
 - commit and push only action-artifact data to the artifact repository;
 - synchronize those artifacts into PowerToys Pulse with
