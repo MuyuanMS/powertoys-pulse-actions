@@ -3,7 +3,7 @@
     Find PowerToys PRs that must go through the looped review before publishing.
 .DESCRIPTION
     Enumerates all live open upstream PRs and compares them with dashboard
-    artifacts. A PR is queued when it is open, non-draft, non-CmdPal, not in an
+    artifacts. A PR is queued when it is open, non-draft, not in an
     author/owner/excluded hold state, and either has no publishable proposed
     review action for the live head or has new commits since the artifact head.
 
@@ -41,13 +41,6 @@ function Invoke-GhJson {
     }
 
     return ($raw -join "`n" | ConvertFrom-Json)
-}
-
-function Test-IsCmdPal {
-    param($PullRequest)
-    $labels = @($PullRequest.labels | ForEach-Object { $_.name })
-    $text = "$($PullRequest.title) $($labels -join ' ')"
-    return $text -match '(?i)(CmdPal|Command Palette|PowerToys\.CommandPalette|CommandPalette)'
 }
 
 function Get-Artifact {
@@ -131,9 +124,6 @@ foreach ($pr in $pullRequests) {
     $artifact = Get-Artifact $number
 
     if ($pr.isDraft) {
-        continue
-    }
-    if (Test-IsCmdPal $pr) {
         continue
     }
     if (Test-IsHoldState $artifact) {

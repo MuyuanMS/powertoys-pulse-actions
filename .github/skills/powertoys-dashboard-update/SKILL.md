@@ -139,7 +139,7 @@ branches, review PRs, worktrees, round counts, and unresolved-thread state.
 4. Synchronize the PowerToys project board with
    `$SkillRoot\scripts\Sync-PowerToysProject.ps1`. The script is safe to run with
    `-DryRun` while project permissions are being configured. It adds open,
-   non-draft, non-CmdPal PRs that are not already in project 2445 and updates
+   non-draft PRs that are not already in project 2445 and updates
    existing items:
 
    - agent-produced review artifacts with suggested comments → `To manually review`;
@@ -149,9 +149,7 @@ branches, review PRs, worktrees, round counts, and unresolved-thread state.
    - closed or merged items → `Done`.
 
    Items with no recognized decision remain in their current project status,
-   normally `To triage`. CmdPal classification uses labels and title signals;
-   ambiguous PRs are not added automatically and must be reviewed by the agent
-   before inclusion. Project synchronization never posts upstream content.
+   normally `To triage`. Project synchronization never posts upstream content.
 
 ## Phase 1 — Build the complete freshness queue
 
@@ -162,7 +160,7 @@ number.
 
 ### PR freshness
 
-Every open, non-draft, non-CmdPal PR must end the run in exactly one state:
+Every open, non-draft PR must end the run in exactly one state:
 
 - **current clean review** — artifact `head_sha` exactly matches the live head,
   the latest freshly requested Copilot pass has zero new comments and zero
@@ -172,7 +170,7 @@ Every open, non-draft, non-CmdPal PR must end the run in exactly one state:
 - **waiting on author** — a posted/requested change is still outstanding and
   the author has not pushed or replied;
 - **owned elsewhere** — a recognized maintainer is actively reviewing it;
-- **excluded** — draft, CmdPal, closed, or otherwise outside this workflow.
+- **excluded** — draft, closed, or otherwise outside this workflow.
 
 A **full re-review is mandatory** when the live head SHA differs from
 `head_sha`, `head_sha` is missing, or there is no clean artifact. If the head is
@@ -196,7 +194,7 @@ pwsh -NoProfile -File `
   -Dashboard $Dashboard -Upstream $Upstream -AsJson
 ```
 
-The queue contains every open, non-draft, non-CmdPal PR that is not explicitly
+The queue contains every open, non-draft PR that is not explicitly
 waiting on the author, owned elsewhere, dropped, awaiting a maintainer
 direction/close/takeover decision, or excluded, and that either:
 
@@ -262,7 +260,7 @@ Classify unfinished workflow state:
 ## Phase 2 — Resume or rerun workflows
 
 PR coverage is exhaustive by default: every open, non-draft PR that is not
-waiting on the author, owned elsewhere, or CmdPal must have a current result or
+waiting on the author or owned elsewhere must have a current result or
 be resumed/sent through `powertoys-pr-review` in the fork. Process PRs in
 parallel batches of 3–5 to overlap Copilot polling and builds, while preserving
 each fork's independent convergence state. Prioritize missing/stale heads, then
@@ -401,10 +399,9 @@ Candidate rules:
 
 - Issues: consume the Phase 1 fast judgments. Only `actionable_design` enters
   the full-design queue; the other statuses already have explicit actions.
-- PRs: community-authored, non-draft, non-CmdPal, and no meaningful
-  maintainer/reviewer ownership or existing fork trace. If labels do not
-  identify the area, inspect the title, changed files, linked issue, and
-  description before deciding whether it is CmdPal-related.
+- PRs: community-authored, non-draft, and no meaningful maintainer/reviewer
+  ownership or existing fork trace. If labels do not identify the area, inspect
+  the title, changed files, linked issue, and description before routing it.
 
 Rank candidates using:
 

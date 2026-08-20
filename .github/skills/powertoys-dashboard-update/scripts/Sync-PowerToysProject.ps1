@@ -75,13 +75,6 @@ function Get-ItemNumber {
   return $null
 }
 
-function Get-IsCmdPal {
-  param($Item)
-  $labels = @($Item.labels | ForEach-Object { $_.name })
-  $text = "$($Item.title) $($labels -join ' ')"
-  return $text -match '(?i)(CmdPal|Command Palette|PowerToys\.CommandPalette|CommandPalette)'
-}
-
 function Get-LivePullRequest {
   param([int]$Number)
   return Invoke-GhJson @('pr', 'view', "$Number", '-R', $Upstream,
@@ -159,13 +152,12 @@ foreach ($name in $statusNames) {
   if ($option) { $statusOptions[$name] = $option.name }
 }
 
-# Add eligible open, non-draft, non-CmdPal PRs that are not already tracked.
+# Add eligible open, non-draft PRs that are not already tracked.
 $trackedNumbers = @($items | ForEach-Object { Get-ItemNumber $_ } | Where-Object { $_ })
 $openPrs = @(Invoke-GhJson @('pr', 'list', '-R', $Upstream, '--state', 'open',
   '--json', 'number,title,isDraft,labels,url', '--limit', "$Limit"))
 foreach ($pr in $openPrs) {
   if ($pr.isDraft -or ($trackedNumbers -contains [int]$pr.number)) { continue }
-  if ((Get-IsCmdPal $pr)) { continue }
   $url = "https://github.com/$Upstream/pull/$($pr.number)"
   Invoke-GhMutation @('project', 'item-add', "$ProjectNumber", '--owner', $Owner, '--url', $url) | Out-Null
   Write-Host "added PR #$($pr.number)"

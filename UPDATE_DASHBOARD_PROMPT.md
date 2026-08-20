@@ -34,7 +34,7 @@ Before starting:
 Use the `powertoys-dashboard-update` skill as the orchestrator. Follow all its
 dependency, freshness, artifact-schema, validation, publication, and approval
 rules. In particular:
-- examine every eligible open non-draft non-CmdPal PR and review any PR without
+- examine every eligible open non-draft PR and review any PR without
   a current clean result for its latest head;
 - before publishing, run the stale PR review queue gate and send every PR that
   lacks a proposed review for the live head, or whose proposed review predates
