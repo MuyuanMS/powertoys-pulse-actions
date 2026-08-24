@@ -185,6 +185,59 @@ if (-not (Test-Path $checkpointScript)) {
   }
 }
 
+$artifactValidator = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Test-DashboardArtifacts.ps1'
+if (-not (Test-Path $artifactValidator)) {
+  $errors.Add("Missing dashboard artifact validator: $artifactValidator")
+} else {
+  $artifactRoot = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-artifact-$PID"
+  try {
+    New-Item -ItemType Directory -Force -Path (Join-Path $artifactRoot 'data\items') | Out-Null
+    @{
+      number = 34567
+      kind = 'pr'
+      track = 'review'
+      stage = 'awaiting_review_approval'
+      generated_at = '2026-08-24T00:00:00Z'
+      evaluated_at = '2026-08-24T00:00:00Z'
+      source_updated_at = '2026-08-24T00:00:00Z'
+      head_sha = ('d' * 40)
+      proposed_comments = @(
+        @{
+          id = 'inline-fix'
+          kind = 'inline'
+          disposition = 'proposed'
+          path = 'src/Test.cs'
+          line = 2
+          side = 'RIGHT'
+          body = "### Fix value`n`n**Severity:** ``medium```n`nUse the corrected value.`n`n``````suggestion`nvalue = 2;`n``````"
+        }
+      )
+      actions = @(
+        @{ type = 'post_review'; label = 'Post inline suggestion' }
+      )
+    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
+
+    $invalidArtifact = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw |
+      ConvertFrom-Json
+    $invalidArtifact.proposed_comments[0].body = 'Prose without a suggestion block.'
+    $invalidArtifact | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted inline prose without a suggestion block.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+  } catch {
+    $errors.Add("Dashboard artifact review validation failed: $($_.Exception.Message)")
+  } finally {
+    Remove-Item $artifactRoot -Recurse -Force -ErrorAction SilentlyContinue
+  }
+}
+
 if ($errors.Count -gt 0) {
   $errors | ForEach-Object { Write-Error $_ -ErrorAction Continue }
   throw "Skill suite validation failed with $($errors.Count) error(s)."

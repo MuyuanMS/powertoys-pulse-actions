@@ -429,6 +429,14 @@ apply-ready suggestion block; architectural or out-of-diff findings belong in
 body comments. Keep fork/worktree provenance in internal evidence, never in
 public upstream comment text.
 
+Do not collapse every concrete code fix into broad companion notes. When the
+converged fork contains a localized fix on a current upstream diff line, emit
+an `inline`/`in_diff: true` item with the exact range and apply-ready
+`suggestion` block. If a review legitimately contains only architectural or
+out-of-diff companion notes, its action label or note must explicitly say
+`general review notes — no inline suggestions`; never present it as though the
+user is about to post inline comments.
+
 ### Required issue-design artifact
 
 A completed design is not acceptable when it only says “change component X.”

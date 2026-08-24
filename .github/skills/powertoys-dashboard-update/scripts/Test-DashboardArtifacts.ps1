@@ -75,6 +75,42 @@ foreach ($path in @($paths)) {
 
   if ($artifact.kind -eq 'pr' -and $artifact.track -eq 'review') {
     Require-Text $artifact.head_sha 'head_sha' $prefix
+
+    $proposedComments = @(
+      $artifact.proposed_comments |
+        Where-Object { $_.disposition -eq 'proposed' }
+    )
+    $inlineComments = @(
+      $proposedComments |
+        Where-Object {
+          $_.kind -eq 'inline' -or
+          ($null -eq $_.kind -and $_.in_diff -eq $true)
+        }
+    )
+    foreach ($comment in $inlineComments) {
+      Require-Text $comment.path 'proposed_comments[].path' $prefix
+      Require-Text $comment.body 'proposed_comments[].body' $prefix
+      if ([int]$comment.line -lt 1) {
+        $errors.Add("$prefix inline comment '$($comment.id)' has an invalid line")
+      }
+      if ($comment.side -and $comment.side -ne 'RIGHT') {
+        $errors.Add("$prefix inline comment '$($comment.id)' must target side RIGHT")
+      }
+      if (([regex]::Matches([string]$comment.body, '(?s)```suggestion\s*\r?\n.+?\r?\n```')).Count -ne 1) {
+        $errors.Add("$prefix inline comment '$($comment.id)' must contain exactly one non-empty suggestion block")
+      }
+    }
+
+    $reviewAction = @(
+      $artifact.actions |
+        Where-Object { $_.type -eq 'post_review' }
+    ) | Select-Object -First 1
+    if ($reviewAction -and $proposedComments.Count -gt 0 -and $inlineComments.Count -eq 0) {
+      $presentationText = "$($reviewAction.label) $($reviewAction.note)"
+      if ($presentationText -notmatch '(?i)general|no inline|text block') {
+        $errors.Add("$prefix companion-only review action must disclose that it posts general notes with no inline suggestions")
+      }
+    }
   }
 
   if ($artifact.kind -ne 'issue') {

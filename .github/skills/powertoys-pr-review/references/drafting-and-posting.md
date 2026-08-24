@@ -80,6 +80,14 @@ Each suggestion must use the exact ` ```suggestion ` format, reference the corre
 - **`companion`** — readable review-body guidance for architectural, multi-file, or out-of-diff work that cannot honestly use an apply button.
 - **obsolete** — omit it from `publicPayload`; keep any audit note under `internalEvidence`.
 
+Do not group localized, apply-ready fixes into a companion item merely because
+the overall finding spans several files. Split each exact current-diff edit
+that can be safely applied on its own into an `inline` item, and keep only the
+cross-file coordination or out-of-diff remainder as a companion. If no inline
+item is possible, label the approval action clearly as general review notes
+with no inline suggestions so the maintainer knows GitHub will render one
+review-body text block.
+
 Store author-facing text only in `publicPayload`. Store fork links, worktrees, build evidence, internal thread URLs, and convergence notes only in `internalEvidence`. Never concatenate internal evidence into a public body.
 
 Before presenting the dashboard, run:
