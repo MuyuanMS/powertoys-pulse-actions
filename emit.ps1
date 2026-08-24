@@ -17,6 +17,11 @@
   items get a hand-authored overlay ($OV) with drafted agent content.
 #>
 
+[CmdletBinding()]
+param(
+  [switch]$AllowStaleReviewQueue
+)
+
 $ErrorActionPreference = 'Stop'
 $here   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $v2json = Join-Path $here '..\dashboard\data\latest.json'
@@ -748,3 +753,15 @@ $ij = $index | ConvertTo-Json -Depth 20
 [System.IO.File]::WriteAllText((Join-Path $outDir 'index.js'), ("window.BOARD_INDEX = " + $ij + ";"), $enc)
 
 "index.json written: items=$($indexList.Count)  artifacts=$($artifactNumbers.Count) [$(( $artifactNumbers | Sort-Object ) -join ', ')]"
+
+if (-not $AllowStaleReviewQueue) {
+  $staleQueueGate = Join-Path $here '.github\skills\powertoys-dashboard-update\scripts\Get-StalePrReviewQueue.ps1'
+  if (-not (Test-Path $staleQueueGate)) {
+    throw "Stale PR review queue gate not found: $staleQueueGate"
+  }
+
+  & pwsh -NoProfile -File $staleQueueGate -Dashboard $here -Upstream $UP -FailOnStale
+  if ($LASTEXITCODE -ne 0) {
+    throw "Stale PR review queue gate failed with exit code $LASTEXITCODE."
+  }
+}

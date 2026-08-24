@@ -64,11 +64,17 @@ Locate or clone https://github.com/MuyuanMS/powertoys-pulse-actions and the
 PowerToys Pulse repository or private preview branch you are authorized to
 update. Run powertoys-dashboard-update from the skills repository root as the
 orchestrator. Follow all
-freshness, dependency, validation, publication, and approval rules. Review
-every eligible PR lacking a current clean result for its latest head; judge
-every new or changed bug issue; run the bounded highest-confidence issue batch
-through detailed design; preserve existing fork work; publish the artifacts,
+freshness, dependency, validation, publication, and approval rules. Inventory
+every eligible PR, then process a resumable batch of at most five stale PRs
+with at most two concurrent workers; judge every new or changed bug issue;
+run the bounded highest-confidence issue batch through detailed design;
+preserve existing fork work; publish the inventory and completed artifacts,
 synchronize them into Pulse, and validate/deploy the approved Pulse preview.
+
+PR workers release their slot when they reach an external Copilot-review wait.
+The updater checkpoints that stage in `data/items/<number>.json` and resumes it
+on a later scheduler pass instead of spending the session polling. Progress is
+published after two stage transitions, ten minutes, or a completed artifact.
 
 Never post or modify anything in microsoft/PowerToys without explicit human
 approval. At completion report coverage, issue judgments/designs, workflow

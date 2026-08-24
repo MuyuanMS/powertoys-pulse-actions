@@ -34,11 +34,16 @@ Before starting:
 Use the `powertoys-dashboard-update` skill as the orchestrator. Follow all its
 dependency, freshness, artifact-schema, validation, publication, and approval
 rules. In particular:
-- examine every eligible open non-draft PR and review any PR without
-  a current clean result for its latest head;
-- before publishing, run the stale PR review queue gate and send every PR that
-  lacks a proposed review for the live head, or whose proposed review predates
-  new commits, through the looped `powertoys-pr-review` workflow;
+- examine every eligible open non-draft PR, but use the skill's bounded run
+  planner to select at most five stale PRs for a normal invocation;
+- process no more than two PR review workers concurrently, prohibit nested
+  agents, and require each worker to stop cleanly before the run deadline;
+- when a worker reaches a cloud Copilot wait, checkpoint that stage and release
+  the slot instead of polling; resume it in the next scheduler pass;
+- publish the fresh inventory before launching review workers and leave
+  unselected PRs explicitly queued for later scheduled runs;
+- checkpoint every durable PR stage locally and push refreshed JSON after two
+  transitions, ten minutes, or a completed review, whichever comes first;
 - give every new or changed bug issue a lightweight explicit judgment and
   action;
 - run only the bounded highest-confidence issue batch through the detailed
@@ -46,10 +51,9 @@ rules. In particular:
 - preserve and resume existing fork work instead of duplicating it;
 - validate all newly processed artifacts and scan generated JSON for secrets;
 - regenerate `data/index.json`, `data/index.js`, and per-number artifacts;
-- publish completed review artifacts incrementally when other PR review workers
-  are still waiting on Copilot/builds, while clearly leaving unfinished PRs
-  queued/running and reserving the failing stale-review gate for the final
-  completion claim;
+- publish completed review artifacts incrementally and finish the run with
+  unfinished PRs queued/running; require a zero stale queue only when
+  `POWERTOYS_DASHBOARD_DRAIN_QUEUE=1` was explicitly requested;
 - send brief Outlook-only scheduled-run status notifications when M365/WorkIQ
   tools are available: default to mail to the signed-in user, disable only with
   `POWERTOYS_DASHBOARD_NOTIFY=none`, include the PR/issue sets selected for

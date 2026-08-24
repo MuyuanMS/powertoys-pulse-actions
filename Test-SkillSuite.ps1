@@ -100,6 +100,82 @@ foreach ($script in $scripts) {
   }
 }
 
+$runPlanScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-PrReviewRunPlan.ps1'
+if (-not (Test-Path $runPlanScript)) {
+  $errors.Add("Missing bounded PR run planner: $runPlanScript")
+} else {
+  $fixturePath = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-run-plan-$PID.json"
+  try {
+    @{
+      stale_prs = @(
+        @{ number = 1; artifact_stage = ''; updated_at = '2026-08-01T00:00:00Z'; reasons = @('missing_artifact') }
+        @{ number = 2; artifact_stage = 'review_in_progress'; updated_at = '2026-08-02T00:00:00Z'; reasons = @('new_commits_since_artifact_head') }
+        @{ number = 3; artifact_stage = ''; updated_at = '2026-08-03T00:00:00Z'; reasons = @('new_commits_since_proposed_review') }
+        @{ number = 4; artifact_stage = ''; updated_at = '2026-08-04T00:00:00Z'; reasons = @('missing_artifact') }
+        @{ number = 5; artifact_stage = ''; updated_at = '2026-08-05T00:00:00Z'; reasons = @('missing_current_review_action') }
+      )
+    } | ConvertTo-Json -Depth 5 | Set-Content $fixturePath
+    $plan = & $runPlanScript -Dashboard $PSScriptRoot -QueueJsonPath $fixturePath `
+      -BatchSize 3 -MaxConcurrency 2 -RunBudgetMinutes 45 -AsJson |
+      ConvertFrom-Json
+    if ($plan.selected_count -ne 3 -or $plan.deferred_count -ne 2) {
+      $errors.Add('Bounded PR run planner did not enforce the requested batch size.')
+    }
+    if ($plan.policy.max_concurrency -ne 2 -or $plan.policy.run_budget_minutes -ne 45 -or
+        $plan.policy.publish_interval_minutes -ne 10 -or $plan.policy.publish_transition_count -ne 2) {
+      $errors.Add('Bounded PR run planner did not preserve concurrency, budget, or publish policy.')
+    }
+    if (@($plan.selected_prs)[0].number -ne 2) {
+      $errors.Add('Bounded PR run planner did not prioritize resumable review work.')
+    }
+  } catch {
+    $errors.Add("Bounded PR run planner validation failed: $($_.Exception.Message)")
+  } finally {
+    Remove-Item $fixturePath -Force -ErrorAction SilentlyContinue
+  }
+}
+
+$checkpointScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Set-PrReviewCheckpoint.ps1'
+if (-not (Test-Path $checkpointScript)) {
+  $errors.Add("Missing PR review checkpoint writer: $checkpointScript")
+} else {
+  $checkpointRoot = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-checkpoint-$PID"
+  try {
+    New-Item -ItemType Directory -Force -Path (Join-Path $checkpointRoot 'data\items') | Out-Null
+    & $checkpointScript -Dashboard $checkpointRoot -Number 12345 `
+      -HeadSha ('a' * 40) -SourceUpdatedAt '2026-08-24T00:00:00Z' `
+      -Phase waiting_copilot -Detail 'Waiting for a test review.'
+    $checkpoint = Get-Content (Join-Path $checkpointRoot 'data\items\12345.json') -Raw |
+      ConvertFrom-Json
+    if ($checkpoint.stage -ne 'review_in_progress' -or
+        $checkpoint.workflow.phase -ne 'waiting_copilot' -or
+        @($checkpoint.actions).Count -ne 1) {
+      $errors.Add('PR review checkpoint writer produced an invalid resumable artifact.')
+    }
+
+    @{
+      number = 23456
+      stage = 'review_ready'
+      pending_author = $false
+      head_sha = ('b' * 40)
+    } | ConvertTo-Json | Set-Content (Join-Path $checkpointRoot 'data\items\23456.json')
+    try {
+      & $checkpointScript -Dashboard $checkpointRoot -Number 23456 `
+        -HeadSha ('b' * 40) -SourceUpdatedAt '2026-08-24T00:00:00Z' `
+        -Phase queued -Detail 'Must not overwrite.'
+      $errors.Add('PR review checkpoint writer replaced a completed artifact.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Refusing to replace protected PR*') {
+        throw
+      }
+    }
+  } catch {
+    $errors.Add("PR review checkpoint validation failed: $($_.Exception.Message)")
+  } finally {
+    Remove-Item $checkpointRoot -Recurse -Force -ErrorAction SilentlyContinue
+  }
+}
+
 if ($errors.Count -gt 0) {
   $errors | ForEach-Object { Write-Error $_ -ErrorAction Continue }
   throw "Skill suite validation failed with $($errors.Count) error(s)."
