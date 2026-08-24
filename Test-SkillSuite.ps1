@@ -169,6 +169,15 @@ if (-not (Test-Path $checkpointScript)) {
         throw
       }
     }
+
+    & $checkpointScript -Dashboard $checkpointRoot -Number 23456 `
+      -HeadSha ('c' * 40) -SourceUpdatedAt '2026-08-25T00:00:00Z' `
+      -Phase queued -Detail 'A newer live head must start a new review.'
+    $requeued = Get-Content (Join-Path $checkpointRoot 'data\items\23456.json') -Raw |
+      ConvertFrom-Json
+    if ($requeued.stage -ne 'review_in_progress' -or $requeued.head_sha -ne ('c' * 40)) {
+      $errors.Add('PR review checkpoint writer did not resume a completed artifact for a new head.')
+    }
   } catch {
     $errors.Add("PR review checkpoint validation failed: $($_.Exception.Message)")
   } finally {

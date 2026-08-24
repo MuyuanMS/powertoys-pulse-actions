@@ -50,12 +50,16 @@ $existing = if (Test-Path $artifactPath) {
 } else {
     $null
 }
+$sameHead = $existing -and ([string]$existing.head_sha -eq $HeadSha)
 
-if ($existing -and -not $Force) {
+if ($sameHead -and -not $Force) {
     $protectedStage = [string]$existing.stage
     if ($existing.pending_author -eq $true -or $protectedStage -in @(
+        'ready',
+        'review_drafted',
         'review_ready',
         'review_posted',
+        'awaiting_review_approval',
         'awaiting_author',
         'waiting_on_author',
         'owned_elsewhere',
@@ -64,9 +68,8 @@ if ($existing -and -not $Force) {
         throw "Refusing to replace protected PR $Number artifact at stage '$protectedStage'."
     }
 }
-
 $now = (Get-Date).ToUniversalTime().ToString('o')
-$sameHead = $existing -and ([string]$existing.head_sha -eq $HeadSha)
+$now = (Get-Date).ToUniversalTime().ToString('o')
 $artifact = [ordered]@{
     number = $Number
     kind = 'pr'
