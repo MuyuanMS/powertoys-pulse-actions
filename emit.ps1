@@ -45,7 +45,7 @@ function Get-LiveCollection {
   @($pages | ForEach-Object { @($_) })
 }
 function Convert-LiveItem {
-  param($Raw, [string]$Kind, $Previous)
+  param($Raw, [string]$Kind, $Previous, [int]$CommentCount)
   $labels = @($Raw.labels | ForEach-Object { $_.name })
   $author = if ($Raw.user.login) { $Raw.user.login } else { 'unknown' }
   $association = [string]$Raw.author_association
@@ -58,7 +58,7 @@ function Convert-LiveItem {
     is_community = [bool]$community; mine = ($author -ieq $ME)
     is_cmdpal = (($labels -join '|') -match '(?i)Command Palette|CmdPal')
     labels = $labels; created_at = $Raw.created_at; updated_at = $Raw.updated_at
-    comments = [int]$Raw.comments
+    comments = $CommentCount
     track = if ($Previous) { $Previous.track } else { $null }
     stage = if ($Previous) { $Previous.stage } else { $null }
     owes = if ($Previous) { $Previous.owes } else { 'us' }
@@ -69,8 +69,12 @@ $previousByNumber = @{}
 foreach ($old in @($src.items)) { $previousByNumber[[int]$old.number] = $old }
 try {
   $livePrs = Get-LiveCollection "repos/$UP/pulls?state=open&per_page=100"
-  $liveOpenIssues = Get-LiveCollection "repos/$UP/issues?state=open&per_page=100" |
-    Where-Object { -not $_.pull_request }
+  $liveOpenEntries = Get-LiveCollection "repos/$UP/issues?state=open&per_page=100"
+  $liveOpenIssues = @($liveOpenEntries | Where-Object { -not $_.pull_request })
+  $openPrIssueByNumber = @{}
+  foreach ($entry in $liveOpenEntries | Where-Object { $_.pull_request }) {
+    $openPrIssueByNumber[[int]$entry.number] = $entry
+  }
   $issueSince = (Get-Date).ToUniversalTime().AddDays(-180).ToString('o')
   $liveRecentIssues = Get-LiveCollection "repos/$UP/issues?state=all&since=$([uri]::EscapeDataString($issueSince))&per_page=100" |
     Where-Object { -not $_.pull_request }
@@ -81,10 +85,15 @@ try {
   $liveIssues = @($issueByNumber.Values)
   $liveItems = New-Object System.Collections.Generic.List[object]
   foreach ($raw in $livePrs) {
-    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'pr' $previousByNumber[[int]$raw.number]))
+    $discussionCount = if ($openPrIssueByNumber.ContainsKey([int]$raw.number)) {
+      [int]$openPrIssueByNumber[[int]$raw.number].comments
+    } else {
+      0
+    }
+    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'pr' $previousByNumber[[int]$raw.number] $discussionCount))
   }
   foreach ($raw in $liveIssues) {
-    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[[int]$raw.number]))
+    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[[int]$raw.number] ([int]$raw.comments)))
   }
   $src.items = $liveItems.ToArray()
   "live upstream backlog loaded: prs=$($livePrs.Count) openIssues=$($liveOpenIssues.Count) recentIssues=$($liveIssues.Count)"
