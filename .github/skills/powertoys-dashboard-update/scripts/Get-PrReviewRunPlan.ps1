@@ -14,11 +14,11 @@ param(
         Join-Path $PSScriptRoot '..\..\..\..'
     }),
     [string]$Upstream = 'microsoft/PowerToys',
-    [ValidateRange(1, 5)]
+    [ValidateRange(1, 10)]
     [int]$BatchSize = $(if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) {
         [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE
     } else {
-        5
+        8
     }),
     [ValidateRange(1, 3)]
     [int]$MaxConcurrency = $(if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) {
@@ -30,7 +30,7 @@ param(
     [int]$RunBudgetMinutes = $(if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) {
         [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES
     } else {
-        45
+        50
     }),
     [string]$QueueJsonPath,
     [switch]$AsJson
@@ -81,8 +81,8 @@ $plan = [pscustomobject]@{
         batch_size = $BatchSize
         max_concurrency = [Math]::Min($MaxConcurrency, $BatchSize)
         run_budget_minutes = $RunBudgetMinutes
-        worker_stop_minutes = [Math]::Max(10, $RunBudgetMinutes - 15)
-        publish_interval_minutes = 10
+        worker_stop_minutes = [Math]::Max(10, $RunBudgetMinutes - 10)
+        publish_interval_minutes = 8
         publish_transition_count = 2
     }
     stale_count = $ranked.Count

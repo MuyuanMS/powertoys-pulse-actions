@@ -60,6 +60,10 @@ $reviewData = [pscustomobject]@{
                         id = 'fix-value'
                         kind = 'inline'
                         severity = 'high'
+                        confidence = [pscustomobject]@{
+                            score = 96
+                            rationale = 'The changed branch directly returns the unstable value.'
+                        }
                         title = 'Keep the value stable'
                         path = 'src/Test.cs'
                         startLine = 2
@@ -71,6 +75,10 @@ $reviewData = [pscustomobject]@{
                         id = 'companion-tests'
                         kind = 'companion'
                         severity = 'medium'
+                        confidence = [pscustomobject]@{
+                            score = 82
+                            rationale = 'The missing regression test leaves the identified upgrade path uncovered.'
+                        }
                         title = 'Add regression coverage'
                         body = "### Add regression coverage`n`n**Severity:** ``medium```n`nPlease add a regression test that verifies the persisted value during upgrade."
                     }
@@ -105,6 +113,16 @@ Assert-True ($errors.Count -eq 0) "Valid review data should pass: $($errors -joi
 
 $errors = @(Test-ReviewDataDocument -Document $reviewData -CheckGitHub -LiveData $liveData)
 Assert-True ($errors.Count -eq 0) "Valid current diff range should pass: $($errors -join '; ')"
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].publicPayload.items[0].confidence.score = 49
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'confidence.score must be an integer from 50 to 100') 'Low-confidence public findings must fail.'
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].publicPayload.items[0].PSObject.Properties.Remove('confidence')
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'missing confidence metadata') 'Public findings without confidence metadata must fail.'
 
 $invalid = Copy-JsonObject $reviewData
 $invalid.prs[0].publicPayload.items[0].body = 'Prose without an apply-ready block.'

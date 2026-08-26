@@ -409,6 +409,20 @@ function Test-ReviewDataDocument {
                 $errors.Add("$label has invalid severity '$($item.severity)'.")
             }
 
+            if ($null -eq $item.confidence) {
+                $errors.Add("$label is missing confidence metadata.")
+            }
+            else {
+                $confidenceScore = 0
+                if (-not [int]::TryParse([string]$item.confidence.score, [ref]$confidenceScore) -or
+                    $confidenceScore -lt 50 -or $confidenceScore -gt 100) {
+                    $errors.Add("$label confidence.score must be an integer from 50 to 100.")
+                }
+                if ([string]::IsNullOrWhiteSpace([string]$item.confidence.rationale)) {
+                    $errors.Add("$label is missing confidence.rationale.")
+                }
+            }
+
             if ([string]::IsNullOrWhiteSpace([string]$item.title)) {
                 $errors.Add("$label is missing a title.")
             }

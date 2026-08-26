@@ -160,6 +160,10 @@ The page treats `stage` as a label; **actionability** is driven by
   "proposed_comments": [        // review track
     {
       "id": "c-m5", "title": "…", "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "Directly confirmed by the changed control flow."
+      },
       "path": "src/…/ValidationHelper.cs", "line": 334, "side": "RIGHT",
       "in_diff": true,           // committable inline suggestion vs body-only
       "body": "markdown (may contain a ```suggestion block)",

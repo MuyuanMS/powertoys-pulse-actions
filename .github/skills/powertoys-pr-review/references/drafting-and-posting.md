@@ -43,6 +43,34 @@ Quality guidelines:
 - **`medium`** — a correctness issue in edge cases, missing validation, or poor error handling.
 - **`low`** — style, naming, minor optimization, or defensive coding.
 
+### Confidence for each finding
+
+Store confidence as review metadata beside each public item, never inside its
+author-facing `body`:
+
+```jsonc
+"confidence": {
+  "score": 92,
+  "rationale": "The failing branch is directly exercised by the changed code and the replacement matches the existing lifetime pattern."
+}
+```
+
+- Score **85–100**: high confidence — direct code-path evidence, reproducible
+  behavior, or an established repository invariant.
+- Score **70–84**: medium confidence — strong evidence with one meaningful
+  assumption or environment-dependent edge.
+- Score **50–69**: low confidence — plausible concern that needs maintainer
+  confirmation before posting.
+- Below **50**: do not propose it publicly; keep it only in `internalEvidence`
+  or investigate further.
+
+Confidence answers “how likely is this finding valid and necessary to
+address?” Severity answers “how harmful is the problem if valid?” Do not
+inflate confidence merely because severity is high. Keep the rationale
+specific and evidence-based. The approval dashboards may display confidence,
+but the publisher must send only the author-facing body so the PR author never
+sees the score or rationale.
+
 ### Good example
 
 ````markdown
@@ -107,7 +135,7 @@ Before marking a PR `ready`, run with `-CheckGitHub` so every pinned head and in
    - **Phase 0 verdict** — which gates (P1–P9) tripped, the disposition (proceed / ask / align-first / recommend-close), and who owes the next action.
    - **Drafted context messages** (batched asks, redirect/close text) for community PRs.
    - Summary of code changes made and number of review iterations.
-   - List of all suggested code fixes with **severity label** and file/line references.
+   - List of all suggested code fixes with **severity**, **confidence score**, confidence rationale, and file/line references.
    - The worktree path and **end-to-end testing instructions** (Step 7b) so the user can verify.
    - A **multi-suggestion warning** if there are 2+ suggestions on the same file.
 

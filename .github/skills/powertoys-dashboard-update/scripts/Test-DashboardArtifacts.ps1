@@ -93,6 +93,14 @@ foreach ($path in @($paths)) {
       if ([int]$comment.line -lt 1) {
         $errors.Add("$prefix inline comment '$($comment.id)' has an invalid line")
       }
+      foreach ($comment in $proposedComments | Where-Object { $null -ne $_.confidence }) {
+        $confidenceScore = 0
+        if (-not [int]::TryParse([string]$comment.confidence.score, [ref]$confidenceScore) -or
+            $confidenceScore -lt 50 -or $confidenceScore -gt 100) {
+          $errors.Add("$prefix comment '$($comment.id)' confidence.score must be an integer from 50 to 100")
+        }
+        Require-Text $comment.confidence.rationale 'proposed_comments[].confidence.rationale' $prefix
+      }
       if ($comment.side -and $comment.side -ne 'RIGHT') {
         $errors.Add("$prefix inline comment '$($comment.id)' must target side RIGHT")
       }
