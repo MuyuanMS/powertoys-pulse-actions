@@ -49,6 +49,28 @@ if (Test-Path $indexPath) {
             $artifactText -notmatch '"actions"\s*:\s*\[') {
           $errors.Add("Manifest artifact has an invalid Pulse action schema: $artifactPath")
         }
+        $actions = @($artifact.actions)
+        if (@($actions | Where-Object { $_.type -eq 'hold' -or $_.label -match '(?i)^not now$' }).Count -gt 0) {
+          $errors.Add("Manifest artifact exposes a non-actionable hold/Not now action: $artifactPath")
+        }
+        $allowedActionTypes = if ($artifact.kind -eq 'pr') {
+          @('approve', 'post_review', 'request_changes')
+        } else {
+          @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+        }
+        foreach ($action in $actions) {
+          if ($action.type -notin $allowedActionTypes) {
+            $errors.Add("Manifest artifact exposes unsupported $($artifact.kind) action '$($action.type)': $artifactPath")
+          }
+        }
+        if ($artifact.kind -eq 'issue') {
+          $issueAction = @($actions | Where-Object {
+            $_.type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+          }) | Select-Object -First 1
+          if (-not $issueAction) {
+            $errors.Add("Issue manifest artifact has no meaningful maintainer action: $artifactPath")
+          }
+        }
       } catch {
         $errors.Add("Invalid manifest artifact $artifactPath`: $($_.Exception.Message)")
       }

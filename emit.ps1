@@ -116,6 +116,35 @@ try {
 
 # ---- helpers -------------------------------------------------------------
 function Obj { param($h) [pscustomobject]$h }   # hashtable -> object
+function Get-PropertyValue {
+  param($Object, [string]$Name)
+  if ($null -eq $Object) { return $null }
+  if ($Object -is [System.Collections.IDictionary]) {
+    if ($Object.Contains($Name)) { return $Object[$Name] }
+    return $null
+  }
+  $property = $Object.PSObject.Properties[$Name]
+  if ($property) { return $property.Value }
+  return $null
+}
+function Test-MeaningfulAction {
+  param($Artifact, $Action)
+
+  if ($null -eq $Action) {
+    return $false
+  }
+
+  $type = [string](Get-PropertyValue $Action 'type')
+  if ([string]::IsNullOrWhiteSpace($type) -or $type -eq 'hold') {
+    return $false
+  }
+
+  if ([string](Get-PropertyValue $Artifact 'kind') -eq 'issue') {
+    return $type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+  }
+
+  return $type -in @('approve', 'post_review', 'request_changes')
+}
 function Test-PublishableArtifact {
   param($Artifact)
 
@@ -131,7 +160,16 @@ function Test-PublishableArtifact {
   $hasFreshness = $Artifact.generated_at -and
     $Artifact.evaluated_at -and
     $Artifact.source_updated_at
-  return $hasActions -and $hasFreshness
+  $hasMeaningfulAction = $false
+  if ($hasActions) {
+    foreach ($action in @(Get-PropertyValue $Artifact 'actions')) {
+      if (Test-MeaningfulAction $Artifact $action) {
+        $hasMeaningfulAction = $true
+        break
+      }
+    }
+  }
+  return $hasFreshness -and $hasMeaningfulAction
 }
 
 # ---- tracked-item overlay ------------------------------------------------
@@ -613,9 +651,23 @@ foreach ($it in $src.items) {
   $writeArtifact =
     (-not $standaloneMode -and -not $existingArtifacts.ContainsKey($n) -and $OV.ContainsKey($n))
   # Pulse publishes only artifacts with an explicit actions array. Historical
-  # traces without an executable/monitor action remain useful for stage hints,
+  # traces without a concrete maintainer action remain useful for stage hints,
   # but must not enter the downloadable artifact manifest.
   $hasArtifact = Test-PublishableArtifact $o
+  $issueNeedsRevalidation = $false
+  if ($it.kind -eq 'issue' -and $hasArtifact) {
+    try {
+      $issueNeedsRevalidation =
+        $o.source_updated_at -and
+        $it.updated_at -and
+        ([datetime]$it.updated_at -gt [datetime]$o.source_updated_at)
+    } catch {
+      $issueNeedsRevalidation = $true
+    }
+  }
+  if ($issueNeedsRevalidation) {
+    $hasArtifact = $false
+  }
   $track = if ($o -and $o.track) { $o.track } elseif ($it.track) { $it.track } else { $null }
   $stage = if ($o -and $o.stage) { $o.stage } else { $it.stage }
 
@@ -644,18 +696,18 @@ foreach ($it in $src.items) {
   }
   $primary = $null
   if ($hasArtifact -and $stage -eq 'owned_elsewhere') {
-    $primary = [ordered]@{ type='monitor'; label='Owned elsewhere' }
+    $primary = $null
   } elseif ($hasArtifact -and $stage -eq 'ci_blocked') {
-    $primary = [ordered]@{ type='monitor'; label='Wait for CI' }
-  } elseif ($hasArtifact -and $o.needs_revalidation) {
-    $primary = [ordered]@{ type='rerun'; label=if ($it.kind -eq 'pr') { 'Re-run review' } else { 'Re-run triage' } }
+    $primary = $null
+  } elseif ($hasArtifact -and ($o.needs_revalidation -or $issueNeedsRevalidation)) {
+    $primary = $null
   } elseif ($hasArtifact -and $it.kind -eq 'pr') {
     if ($stage -eq 'review_ready' -and $proposedOpen -eq 0) {
       $primary = [ordered]@{ type='approve'; label='Approve' }
     } elseif ($proposedOpen -gt 0) {
-      $primary = [ordered]@{ type='review'; label='Post comments' }
+      $primary = [ordered]@{ type='post_review'; label='Post comments' }
     } elseif ($o.actions) {
-      $action = @($o.actions | Where-Object { $_.type -in @('continue_review', 'review_summary', 'hold', 'rerun', 'post_review', 'post_comment') }) | Select-Object -First 1
+      $action = @($o.actions | Where-Object { Test-MeaningfulAction $o $_ }) | Select-Object -First 1
       if ($action) {
         $primary = [ordered]@{ type=$action.type; label=$action.label }
       } elseif ($iowes -ne 'author') {
@@ -665,9 +717,10 @@ foreach ($it in $src.items) {
       $primary = [ordered]@{ type='approve'; label='Approve' }
     }
   } elseif ($hasArtifact -and $o.actions) {
-    $action = @($o.actions | Where-Object { $_.type -eq 'request_info' }) | Select-Object -First 1
-    if (-not $action) { $action = @($o.actions | Where-Object { $_.type -eq 'open_upstream_pr' }) | Select-Object -First 1 }
-    if (-not $action) { $action = @($o.actions | Where-Object { $_.type -eq 'approve_design' }) | Select-Object -First 1 }
+    $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'request_info' }) | Select-Object -First 1
+    if (-not $action) { $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'open_upstream_pr' }) | Select-Object -First 1 }
+    if (-not $action) { $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'approve_design' }) | Select-Object -First 1 }
+    if (-not $action) { $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'post_comment' }) | Select-Object -First 1 }
     if ($action) {
       $label = switch ($action.type) {
         'request_info' { 'Reply with suggested comments' }
@@ -717,9 +770,9 @@ foreach ($it in $src.items) {
     source_updated_at=if ($o.source_updated_at) { $o.source_updated_at } else { $it.updated_at }
     status     = Obj $o.status
     next_action= if ($o.next_action) { Obj $o.next_action } elseif ($it.next_action) { Obj @{ glyph=$it.next_action.glyph; label=$it.next_action.label; reason=$it.next_action.reason } } else { $null }
-    actions    = @($o.actions | ForEach-Object { Obj $_ })
+    actions    = @($o.actions | Where-Object { Test-MeaningfulAction $o $_ } | ForEach-Object { Obj $_ })
   }
-  if ($o.needs_revalidation) { $art.needs_revalidation = $true }
+  if ($o.needs_revalidation -or $issueNeedsRevalidation) { $art.needs_revalidation = $true }
   if ($o.confidence)  { $art.confidence  = $o.confidence }
   if ($o.head_sha)    { $art.head_sha    = $o.head_sha }        # staleness anchor vs live PR head
   if ($o.design)      { $art.design      = Obj $o.design }

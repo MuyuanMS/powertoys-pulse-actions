@@ -109,6 +109,31 @@ artifact feed. Generated files belong only in its root `data/` directory, not
 inside `.github\skills`. Never place secrets or information that must remain
 private in the public feed.
 
+### Dashboard action taxonomy
+
+Pulse action proposals are maintainer-facing actions only. Status, freshness,
+queue state, validation gaps, and "wait/do nothing" choices remain metadata and
+must not appear as clickable action proposals.
+
+Update this table when a new action type is intentionally introduced, then
+update `emit.ps1`, `Sanitize-ActionData.ps1`, Pulse's triage action filter, and
+the dashboard artifact validators in the same change.
+
+| Item | Allowed action type | Dashboard meaning | Must contain | Not allowed as an action |
+| --- | --- | --- | --- | --- |
+| PR | `approve` | Submit/choose approval for a review-clean PR. | Current `head_sha`, covered `source_updated_at`, no unresolved agent findings. | Native validation still pending, queued review, owned elsewhere, re-run prompt. |
+| PR | `post_review` | Post selected code suggestions or review comments. | Proposed comments pinned to the current head; inline comments use current RIGHT-side ranges when possible. | General "keep checking", "complete validation", or product-direction reminders without a publishable review body. |
+| PR | `request_changes` | Post selected blocking review comments as a request-changes review. | Same evidence and current-head requirements as `post_review`. | A standalone request to run the review loop again. |
+| Issue | `request_info` | Ask the reporter for specific missing evidence. | A concrete upstream issue comment body naming the exact logs, repro, screenshots, version, or confirmation needed. | "Not now", wait, monitor, or generic "needs info" with no concrete ask. |
+| Issue | `approve_design` | Approve/start a fork-side fix plan after design convergence. | Detailed design artifact and fork issue/trace for the fix workflow. | A speculative or incomplete design. |
+| Issue | `post_comment` | Post a close, duplicate, handled, out-of-scope, or maintainer-direction comment. | Specific rationale and linked duplicate/fix/ownership evidence when applicable. | Silent close, vague "won't fix", or no-op status comments. |
+| Issue | `open_upstream_pr` | Open the completed fork fix upstream. | Fork PR/head, implementation evidence, and approval gate. | Opening without explicit approval or without a reviewed fork fix. |
+
+Forbidden action types in public artifacts include `hold`, `rerun`,
+`continue_review`, `review_summary`, `monitor`, `start_review`, and
+`start_triage`. These may be retained as internal workflow/status metadata, but
+Pulse must not render them as executable action proposals.
+
 ### Reliability contract
 
 Normal runs are bounded and resumable. They must finish within the configured
@@ -131,7 +156,11 @@ run budget instead of trying to drain an arbitrarily large review queue:
   completed artifact without waiting for the full queue;
 - checkpoint every durable transition locally and publish after two transitions,
   after eight minutes, or at run completion, whichever comes first;
-- leave unselected or unfinished items explicitly queued for the next run.
+- leave unselected or unfinished items explicitly queued for the next run;
+- ensure every open, non-draft PR that is not waiting on the author is either
+  backed by an allowed PR action from the taxonomy above, explicitly marked as
+  pending author feedback, or shown as queued/internal status without a
+  clickable Pulse action.
 
 `POWERTOYS_DASHBOARD_DRAIN_QUEUE=1` is an exceptional operator-requested mode.
 Only drain mode may continue through additional batches and require the stale
@@ -322,6 +351,20 @@ root cause during the fast pass. When evidence is insufficient, prefer
 Older unchanged bugs do not need to be re-read every run, but they must retain
 their prior explicit judgment/action in the board. The 30-day window controls
 full-design priority, not whether changed issues receive a judgment.
+
+Issue action freshness is anchored to the latest upstream issue activity, with
+latest comments being the decisive signal. A proposed issue action is current
+only when `source_updated_at` covers the live issue `updatedAt`/latest comment
+time. If a newer comment exists, do not expose the old request-info, close, or
+fix action as actionable; mark the item for triage revalidation and publish
+that queued state instead.
+
+Do not emit placeholder issue controls. Issue artifacts should only include
+concrete maintainer actions that can be executed from Pulse: request a specific
+piece of information, post a close/dedupe/out-of-scope comment, approve/start a
+fix design, or open an upstream PR from a completed fork fix. Do not include
+`hold`/`Not now` actions, and do not publish issue artifacts whose only action
+is to wait.
 
 For every artifact and mapped fork trace, also detect:
 

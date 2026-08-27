@@ -66,6 +66,26 @@ function Convert-PublicValue {
   return $Value
 }
 
+function Get-PublicActions {
+  param($Artifact)
+
+  $kind = [string]$Artifact.kind
+  $allowedTypes = if ($kind -eq 'pr') {
+    @('approve', 'post_review', 'request_changes')
+  } elseif ($kind -eq 'issue') {
+    @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+  } else {
+    @()
+  }
+
+  @($Artifact.actions | Where-Object {
+    $_ -and
+    $_.type -in $allowedTypes -and
+    $_.type -ne 'hold' -and
+    $_.label -notmatch '(?i)^not now$'
+  })
+}
+
 $itemsPath = Join-Path $DataPath 'items'
 if (-not (Test-Path $itemsPath)) {
   throw "Action-data items directory not found: $itemsPath"
@@ -75,6 +95,9 @@ $encoding = [System.Text.UTF8Encoding]::new($false)
 $count = 0
 foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
   $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json
+  if ($artifact.PSObject.Properties['actions']) {
+    $artifact.actions = @(Get-PublicActions $artifact)
+  }
   $publicArtifact = Convert-PublicValue $artifact
   $json = $publicArtifact | ConvertTo-Json -Depth 30
   [System.IO.File]::WriteAllText($path.FullName, $json, $encoding)

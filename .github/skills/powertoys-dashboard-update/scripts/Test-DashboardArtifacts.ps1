@@ -72,6 +72,19 @@ foreach ($path in @($paths)) {
   Require-Date $artifact.generated_at 'generated_at' $prefix
   Require-Date $artifact.evaluated_at 'evaluated_at' $prefix
   Require-Date $artifact.source_updated_at 'source_updated_at' $prefix
+  foreach ($action in @($artifact.actions)) {
+    if ($action.type -eq 'hold' -or $action.label -match '(?i)^not now$') {
+      $errors.Add("$prefix exposes a non-actionable hold/Not now action")
+    }
+    $allowedActionTypes = if ($artifact.kind -eq 'pr') {
+      @('approve', 'post_review', 'request_changes')
+    } else {
+      @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+    }
+    if ($action.type -notin $allowedActionTypes) {
+      $errors.Add("$prefix exposes unsupported $($artifact.kind) action '$($action.type)'")
+    }
+  }
 
   if ($artifact.kind -eq 'pr' -and $artifact.track -eq 'review') {
     Require-Text $artifact.head_sha 'head_sha' $prefix
@@ -123,6 +136,13 @@ foreach ($path in @($paths)) {
 
   if ($artifact.kind -ne 'issue') {
     continue
+  }
+
+  $issueAction = @($artifact.actions | Where-Object {
+    $_.type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+  }) | Select-Object -First 1
+  if (-not $issueAction -and -not $artifact.pending_author) {
+    $errors.Add("$prefix issue artifact has no meaningful maintainer action")
   }
 
   if (-not $artifact.judgment) {
