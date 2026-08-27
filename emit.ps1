@@ -152,24 +152,14 @@ function Test-PublishableArtifact {
     return $false
   }
 
-  $hasActions = if ($Artifact -is [System.Collections.IDictionary]) {
-    $Artifact.Contains('actions')
-  } else {
-    $null -ne $Artifact.PSObject.Properties['actions']
-  }
   $hasFreshness = $Artifact.generated_at -and
     $Artifact.evaluated_at -and
     $Artifact.source_updated_at
-  $hasMeaningfulAction = $false
-  if ($hasActions) {
-    foreach ($action in @(Get-PropertyValue $Artifact 'actions')) {
-      if (Test-MeaningfulAction $Artifact $action) {
-        $hasMeaningfulAction = $true
-        break
-      }
-    }
-  }
-  return $hasFreshness -and $hasMeaningfulAction
+  # A valid review artifact must remain addressable even when it has no
+  # executable maintainer action: clean reviews, author-waiting records, and
+  # externally blocked reviews still contain the status and evidence that
+  # Pulse needs to display. Action filtering remains in Test-MeaningfulAction.
+  return $hasFreshness
 }
 
 # ---- tracked-item overlay ------------------------------------------------
@@ -650,9 +640,9 @@ foreach ($it in $src.items) {
   # freshness, judgment, review, or design evidence.
   $writeArtifact =
     (-not $standaloneMode -and -not $existingArtifacts.ContainsKey($n) -and $OV.ContainsKey($n))
-  # Pulse publishes only artifacts with an explicit actions array. Historical
-  # traces without a concrete maintainer action remain useful for stage hints,
-  # but must not enter the downloadable artifact manifest.
+  # Publish every fresh artifact so Pulse can display its durable review
+  # status and evidence. Only Test-MeaningfulAction may create a clickable
+  # maintainer action below.
   $hasArtifact = Test-PublishableArtifact $o
   $issueNeedsRevalidation = $false
   if ($it.kind -eq 'issue' -and $hasArtifact) {
@@ -705,10 +695,6 @@ foreach ($it in $src.items) {
     $explicitPrAction = @($o.actions | Where-Object { Test-MeaningfulAction $o $_ }) | Select-Object -First 1
     if ($explicitPrAction) {
       $primary = [ordered]@{ type=$explicitPrAction.type; label=$explicitPrAction.label }
-    } elseif ($stage -eq 'review_ready' -and $proposedOpen -eq 0) {
-      $primary = [ordered]@{ type='approve'; label='Approve' }
-    } elseif ($proposedOpen -gt 0) {
-      $primary = [ordered]@{ type='post_review'; label='Post comments' }
     }
   } elseif ($hasArtifact -and $o.actions) {
     $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'request_info' }) | Select-Object -First 1
@@ -723,18 +709,6 @@ foreach ($it in $src.items) {
         default { $action.label }
       }
       $primary = [ordered]@{ type=$action.type; label=$label }
-    }
-  } elseif ($it.state -ne 'closed' -and -not ($iowes -eq 'author')) {
-    $primary = if ($it.kind -eq 'pr') {
-      [ordered]@{ type=if ($mt) { 'rerun' } else { 'start_review' }; label=if ($mt) { 'Resume review' } else { 'Start review' } }
-    } else {
-      $recentBug = $false
-      try { $recentBug = ($issueType -eq 'bug' -and ([datetime]$it.updated_at -ge (Get-Date).ToUniversalTime().AddDays(-30))) } catch {}
-      [ordered]@{
-        type=if ($mt) { 'rerun' } else { 'start_triage' }
-        label=if ($mt) { if ($recentBug) { 'Resume bug triage' } else { 'Resume triage' } }
-              else { if ($recentBug) { 'Check bug' } else { 'Start triage' } }
-      }
     }
   }
   $entry = [ordered]@{
