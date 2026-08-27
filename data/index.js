@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-27T14:27:09.3996556+08:00",
+  "generated_at": "2026-08-27T15:27:48.9175596+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 3208
   },
   "impact": {
-    "as_of": "2026-08-27T14:27:09.3996556+08:00",
+    "as_of": "2026-08-27T15:27:48.9175596+08:00",
     "issues_helped": 10,
     "prs_iterated": 49,
     "constructive_comments_posted": 3,
@@ -3331,15 +3331,15 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Complete required native validation"
       },
       "labels": [
         "Product-PowerToys Run",
         "Ready for review"
       ],
       "created_at": "2026-08-27T01:10:20Z",
-      "updated_at": "2026-08-27T01:10:39Z",
-      "comments": 2,
+      "updated_at": "2026-08-27T07:06:47Z",
+      "comments": 4,
       "priority": null,
       "mirror": {
         "kind": "pr",
@@ -3373,7 +3373,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Design adaptive-card theme refresh"
       },
       "labels": [
         "Product-Command Palette"
@@ -3414,7 +3414,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Assess full-history patch equivalence"
       },
       "labels": [
         "Ready for review"
@@ -3455,7 +3455,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Provide native dependency and validate"
       },
       "labels": [
         "Product-Cursor Wrap"
@@ -3496,7 +3496,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Resolve manifest schema and matcher design"
       },
       "labels": [
         "Ready for review"
@@ -3661,7 +3661,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Validate required package asset"
       },
       "labels": [
         "Ready for review"
@@ -3743,7 +3743,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Provide package dependency and validate"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -3829,7 +3829,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Complete required native validation"
       },
       "labels": [
         "0.102"
@@ -3952,7 +3952,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Run UI-test account provisioning"
       },
       "labels": [
         "Ready for review"
@@ -4072,7 +4072,7 @@ window.BOARD_INDEX = {
         "Product-Keyboard Manager"
       ],
       "created_at": "2026-08-17T15:20:42Z",
-      "updated_at": "2026-08-18T05:07:34Z",
+      "updated_at": "2026-08-27T07:08:33Z",
       "comments": 0,
       "priority": null
     },
@@ -4140,7 +4140,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Complete runtime and UI validation"
       },
       "labels": [
         "Area-User Interface",
@@ -4622,7 +4622,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Resolve activation and authorization design"
       },
       "labels": [
         "Product-Command Palette",
@@ -4705,7 +4705,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Complete required native validation"
       },
       "labels": [
         "Product-Command Palette",
@@ -5002,7 +5002,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Review current-head changes"
       },
       "labels": [
         "Ready for review"
@@ -5430,7 +5430,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Resolve cached-child lifecycle"
       },
       "labels": [
         "Product-Command Palette",
@@ -5757,7 +5757,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Validate current source head"
       },
       "labels": [
         "Product-File Explorer",
@@ -5829,7 +5829,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Perform manual review"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -5872,7 +5872,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Prepare isolated remediation"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -5915,7 +5915,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Resolve disabled-extension lifecycle"
       },
       "labels": [
         "Product-Command Palette",
@@ -5957,7 +5957,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Establish ownership and resolve findings"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -6000,7 +6000,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Run transport validation"
       },
       "labels": [
         "Product-Command Palette",
@@ -6594,7 +6594,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Review formatter and timer lifecycle"
       },
       "labels": [
         "Product-Command Palette"
@@ -6879,7 +6879,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Validate required package assets"
       },
       "labels": [
         "Product-Command Palette"
@@ -7006,7 +7006,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "review_summary",
-        "label": "Review findings and determine disposition"
+        "label": "Resolve restore assets and merge conflicts"
       },
       "labels": [
         "Needs-Author-Feedback",

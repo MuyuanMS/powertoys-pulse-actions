@@ -426,19 +426,28 @@ is needed. That worker must not delegate to another agent.
 If a workflow is waiting on an author or user approval, do not rerun it just to
 make activity; preserve that status. A queued item must retain an explicit
 fork trace or dashboard action even when its execution is deferred.
-When drafting review payloads, follow the review skill's schema rules: inline
-suggestions must target an exact current RIGHT-side diff range and contain an
-apply-ready suggestion block; architectural or out-of-diff findings belong in
-body comments. Keep fork/worktree provenance in internal evidence, never in
-public upstream comment text.
+Draft every supported, current-head review finding as a proposed upstream
+review comment. Prefer an inline suggestion when the finding is localized to a
+current RIGHT-side diff range and can contain one apply-ready `suggestion`
+block. Do not require an inline anchor to draft the review: architectural,
+cross-file, out-of-diff, validation, or coordination findings belong in normal
+body comments and must still produce a pinned `post_review` action.
 
 Do not collapse every concrete code fix into broad companion notes. When the
 converged fork contains a localized fix on a current upstream diff line, emit
 an `inline`/`in_diff: true` item with the exact range and apply-ready
-`suggestion` block. If a review legitimately contains only architectural or
-out-of-diff companion notes, its action label or note must explicitly say
-`general review notes — no inline suggestions`; never present it as though the
-user is about to post inline comments.
+`suggestion` block. For every other supported finding, emit a non-inline
+proposed comment that explains the concern, its impact, and the required
+follow-up; never replace it with a generic local `review_summary` action
+merely because an inline suggestion is unavailable. Label companion-only
+reviews `Post general review notes` and disclose `general review notes — no
+inline suggestions`.
+
+Use a local manual-review or validation action only when no defensible
+author-facing comment can be drafted from the current head—for example, the
+review lacks sufficient evidence, the finding was superseded, or maintainers
+must first choose product direction. The iteration cap ends automated loops;
+it does not end drafting supported inline or normal review comments.
 
 ### Required issue-design artifact
 
