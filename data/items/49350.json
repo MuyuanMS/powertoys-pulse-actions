@@ -2,114 +2,37 @@
   "number": 49350,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_iteration_cap_reached",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:19:14Z",
-  "source_updated_at": "2026-08-11T14:32:49Z",
+  "generated_at": "2026-08-27T03:26:19.6565827Z",
+  "evaluated_at": "2026-08-27T03:26:19.6565827Z",
+  "source_updated_at": "2026-08-26T09:18:32Z",
+  "head_sha": "bc719e734184e769aa22ead5f737fe2895222af3",
+  "title": "Add File Explorer thumbnail support for 3MF files",
+  "url": "https://github.com/microsoft/PowerToys/pull/49350",
   "status": {
-    "glyph": "📝",
-    "label": "Review ready — four blocking fixes drafted",
-    "detail": "The upstream head is unchanged at 0f91226c3e7040335aff57f4c960123ab752cc79. Fork PR 332 converged after five fresh Copilot reviews: 8 published comments were fixed and resolved, the latest review generated no new comments, and all review threads are resolved. Required x64 Debug builds passed; provider tests passed 13/13, the targeted Settings test passed 1/1, and ModulesRegistry tests passed 18/18."
+    "glyph": "!",
+    "label": "Review iteration limit reached",
+    "detail": "The current source head changed after the previous review baseline through a merge that updates policy-version metadata and spell-check exclusions. The existing automated review history has five submitted reviews and zero unresolved threads, exceeding the three-iteration limit. No additional review was requested; the new source head is not marked converged and requires fresh validation before any review disposition."
   },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Review the four drafted change requests",
-    "reason": "Explorer processes 3MF files automatically, so the current unbounded parser, incomplete production-model traversal, and indefinite native worker handoff should be corrected before merge."
-  },
+  "next_action": "Manually validate the current source head before any upstream review disposition.",
+  "proposed_comments": [],
   "actions": [
     {
-      "id": "post-review-49350",
-      "type": "post_review",
-      "label": "Post selected comments as a review",
-      "primary": true,
-      "confirm": true,
-      "review": {
-        "event": "REQUEST_CHANGES",
-        "pr": 49350,
-        "head_sha": "0f91226c3e7040335aff57f4c960123ab752cc79",
-        "body_prefix": "Thanks for the thorough 3MF implementation, screenshots, and validation. The feature direction is solid, but Explorer invokes thumbnail providers on untrusted files automatically, and the current parser and native handoff still have correctness and resource-safety gaps. Please address the four items below before merge."
-      },
-      "note": "Mandatory: refresh the upstream head and conversation, validate the pinned payload, and require explicit approval before publishing."
-    },
-    {
-      "id": "rerun-49350",
-      "type": "rerun",
-      "label": "Recheck live PR state",
-      "note": "If the head or substantive discussion changed after 2026-08-11T14:32:49Z, refresh the mirror and reconverge before posting."
-    },
-    {
-      "id": "hold-review-49350",
+      "id": "review-iteration-cap-49350",
       "type": "hold",
-      "label": "Not now"
+      "label": "Review iteration limit reached",
+      "primary": false,
+      "note": "No upstream review action is proposed until the current head is manually validated."
     }
   ],
-  "confidence": "High",
-  "head_sha": "0f91226c3e7040335aff57f4c960123ab752cc79",
-  "proposed_comments": [
-    {
-      "id": "bound-untrusted-3mf-input",
-      "kind": "companion",
-      "severity": "critical",
-      "title": "Bound all package, XML, image, and geometry work",
-      "body": "### Bound all package, XML, image, and geometry work\n\n**Severity:** `critical`\n\nExplorer requests thumbnails automatically for files it enumerates, but the current loader copies embedded images and parses package XML and geometry without complete resource limits. A crafted 3MF can use oversized or highly compressed entries, huge decoded image dimensions, external-entity XML, deep component graphs, or very large mesh collections to exhaust memory or stall the thumbnail process. Please enforce per-entry and aggregate package limits, safe XML readers with DTD processing prohibited, decoded-image dimension limits, bounded vertices/triangles/components/depth, and preserve indexed vertices rather than duplicating three coordinates for every triangle.",
-      "path": "src/modules/previewpane/ThreeMfThumbnailProvider/ThreeMfModelLoader.cs",
-      "line": 45,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "resolve-production-model-graph",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Resolve the declared root model and reachable component graph",
-      "body": "### Resolve the declared root model and reachable component graph\n\n**Severity:** `high`\n\nLoading every `.model` entry as an independent root renders referenced production parts twice, includes unreachable parts, and can let an unused malformed part suppress the thumbnail. Objects defined through `<components>` are also skipped because only direct meshes are indexed, while relative `p:path` references and per-part units can place or scale cross-part geometry incorrectly. Resolve the OPC root-model relationship, traverse only reachable build items and components recursively with cycle detection, resolve paths relative to the containing part, compose transforms, and normalize every part to a common unit.",
-      "path": "src/modules/previewpane/ThreeMfThumbnailProvider/ThreeMfModelLoader.cs",
-      "line": 69,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "harden-native-thumbnail-host",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Make the native worker handoff fail safely and terminate",
-      "body": "### Make the native worker handoff fail safely and terminate\n\n**Severity:** `high`\n\n`GetThumbnail` can currently report `S_OK` without a valid bitmap, consume an uninitialized read count after an `IStream::Read` failure, wait forever for the managed worker, and leak process or stream handles on failure paths. A malformed file can therefore block Explorer thumbnail generation for subsequent files or expose invalid output state. Validate and initialize both output parameters at entry, propagate stream and file errors, use scoped ownership for COM and process handles, impose a finite worker timeout with cleanup, verify the produced bitmap, and return a failing HRESULT whenever no valid `HBITMAP` is produced.",
-      "path": "src/modules/previewpane/ThreeMfThumbnailProviderCpp/ThreeMfThumbnailProvider.cpp",
-      "line": 92,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "support-nonseekable-and-regressions",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Handle non-seekable inputs in one bounded pass",
-      "body": "### Handle non-seekable inputs in one bounded pass\n\n**Severity:** `medium`\n\nThe embedded-thumbnail probe consumes a non-seekable stream, and the mesh fallback cannot rewind it before opening the package again, so valid mesh-only content returns no thumbnail. Buffer a non-seekable input once with the same package-size cap, or inspect the thumbnail and model through a single archive pass. Please add deterministic coverage for mesh-only non-seekable streams, root relationships, recursive and cross-part components, relative paths, unit conversion, malformed inputs, and a fuzz target for the untrusted package boundary.",
-      "path": "src/modules/previewpane/ThreeMfThumbnailProvider/ThreeMfThumbnailProvider.cs",
-      "line": 83,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    }
-  ],
-  "upstream_pr": {
-    "number": 49350,
-    "url": "https://github.com/microsoft/PowerToys/pull/49350"
+  "workflow": {
+    "phase": "review_iteration_cap_reached",
+    "checkpoint_at": "2026-08-27T03:26:19.6565827Z"
   },
-  "fork_pr": {
-    "number": 332,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/332",
-    "state": "OPEN",
-    "updated_at": "2026-08-13T09:11:32Z",
-    "head_sha": "78ad761a6981373987216061172d6fd2ad6efe57",
-    "base_sha": "29471231dd4efdb4433163be135c839177287cdc",
-    "commit_count": 15,
-    "changed_file_count": 52
-  },
-  "fork_branch": "pr-iterate/49350-v4"
+  "freshness": {
+    "queued_at": "2026-08-27T03:26:19.6565827Z",
+    "checkpoint_at": "2026-08-27T03:26:19.6565827Z"
+  }
 }

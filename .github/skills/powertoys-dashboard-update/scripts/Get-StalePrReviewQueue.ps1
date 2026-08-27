@@ -105,6 +105,8 @@ function Test-IsHoldState {
         'awaiting_maintainer_direction',
         'awaiting_maintainer_direction_and_review_approval',
         'awaiting_maintainer_takeover_approval',
+        'review_blocked',
+        'review_iteration_cap_reached',
         'dropped',
         'owned_elsewhere',
         'excluded',

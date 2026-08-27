@@ -2,91 +2,37 @@
   "number": 49136,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_iteration_cap_reached",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:19:14Z",
-  "source_updated_at": "2026-08-07T16:02:43Z",
+  "generated_at": "2026-08-27T03:30:01Z",
+  "evaluated_at": "2026-08-27T03:30:01Z",
+  "source_updated_at": "2026-08-24T03:02:34Z",
+  "head_sha": "1eb022b1d52658d61317098f14a5a877ceb56ad1",
+  "title": "Keyboard Manager dual-key tap condition for single-key remaps",
+  "url": "https://github.com/microsoft/PowerToys/pull/49136",
   "status": {
-    "glyph": "📝",
-    "label": "Review ready — two fixes drafted",
-    "detail": "Upstream remains at 896aed8f501965e1300f4928407b282f0884e09a. Fork PR 343 completed eight Copilot passes; eight published findings were processed, the latest fresh pass generated no new comments, and all threads are resolved. x64 Debug essentials and the full Keyboard Manager engine/editor chain built successfully; Engine tests passed 119/119, Editor tests 89/89, and Editor UI tests 9/9."
+    "glyph": "!",
+    "label": "Review iteration limit reached",
+    "detail": "The three-iteration automated review limit had already been exceeded before this policy took effect: nine reviews were submitted. Four confirmed findings remain unresolved: native boolean-result marshaling, resetting a hidden editor condition, publishing reload-state reset before leaving reload bypass, and resolving numpad key release by scan identity during reload. Validation is incomplete; this review has not converged."
   },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Review the two drafted change requests",
-    "reason": "Promoted tap-alone sources can still become stuck or stale across reload/editor/injection edge cases, and duplicate repair can preserve an inactive row while deleting the active copy."
-  },
+  "next_action": "Maintainer decision required: hold the review at the iteration cap or authorize a separately scoped follow-up.",
+  "proposed_comments": [],
   "actions": [
-    {
-      "id": "post-review-49136",
-      "type": "post_review",
-      "label": "Post selected comments as a review",
-      "primary": true,
-      "confirm": true,
-      "review": {
-        "event": "REQUEST_CHANGES",
-        "pr": 49136,
-        "head_sha": "896aed8f501965e1300f4928407b282f0884e09a",
-        "body_prefix": "Thanks for the extensive validation, demo, and careful follow-ups. The tap-alone behavior is in good shape overall, but two correctness gaps remain around promoted-key lifetime and duplicate-store repair. Please address the items below before merge."
-      },
-      "note": "Requires explicit approval plus a final live head/conversation check. The current external-fork Azure build still needs a maintainer-triggered run."
-    },
-    {
-      "id": "rerun-ci-49136",
-      "type": "rerun",
-      "label": "Recheck head and trigger current Azure validation",
-      "note": "The author fixed the prior XAML-formatting failure on the current head. Azure Pipelines does not auto-run for external forks, so a maintainer must trigger it before merge."
-    },
     {
       "id": "hold-review-49136",
       "type": "hold",
-      "label": "Not now"
+      "label": "Hold at review cap",
+      "primary": true,
+      "note": "The three-iteration cap prohibits further automated review requests."
     }
   ],
-  "confidence": "High",
-  "head_sha": "896aed8f501965e1300f4928407b282f0884e09a",
-  "proposed_comments": [
-    {
-      "id": "harden-alone-runtime-lifecycle",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Keep promoted source-key lifetime independent of settings changes",
-      "body": "### Keep promoted source-key lifetime independent of settings changes\n\n**Severity:** `high`\n\nOnce an Alone source is promoted, its original key-down has already been injected and must receive exactly one matching release. The current runtime bookkeeping can be cleared or bypassed by a settings reload, editor capture, mapping removal, a numpad identity change, or a blocked key-up injection; those paths can leave a modifier/key logically stuck or leave stale state that swallows the next press. Please retain promoted-key identity independently of the current mapping table (including numpad scan identity), clear pending versus promoted state separately on the hook thread, resolve promoted key-ups before consulting reloaded mappings, and let the physical key-up pass through when the injected release fails. Regression coverage should include reload/removal, editor suspension, numpad Shift/NumLock identity changes, hook teardown, and blocked release injection.",
-      "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp",
-      "line": 102,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "preserve-active-duplicate",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Preserve active state while repairing duplicate rows",
-      "body": "### Preserve active state while repairing duplicate rows\n\n**Severity:** `medium`\n\nThe cleanup keeps the first equal mapping without considering `IsActive`. If an inactive row appears before an active duplicate, the active row is deleted and later service correlation never turns the retained row back on, so the editor reports an active engine mapping as disabled. Merge the active state into the retained entry while collecting duplicate IDs.\n\n```suggestion\n        // Removes editor-store entries whose mapping value is an exact duplicate of one already kept,\n        // repairing stores that drifted before the duplicate guard existed. Returns true if anything\n        // was removed. The first occurrence of each distinct mapping is preserved, but remains active\n        // if any duplicate was active.\n        private static bool RemoveDuplicateMappings()\n        {\n            var retainedMappings = new Dictionary<ShortcutKeyMapping, ShortcutSettings>();\n            var duplicateIds = new List<string>();\n\n            foreach (var kvp in EditorSettings.ShortcutSettingsDictionary)\n            {\n                if (retainedMappings.TryGetValue(kvp.Value.Shortcut, out ShortcutSettings? retained))\n                {\n                    retained.IsActive |= kvp.Value.IsActive;\n                    duplicateIds.Add(kvp.Key);\n                }\n                else\n                {\n                    retainedMappings.Add(kvp.Value.Shortcut, kvp.Value);\n                }\n            }\n```",
-      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Settings/SettingsManager.cs",
-      "start_line": 281,
-      "line": 295,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed"
-    }
-  ],
-  "upstream_pr": {
-    "number": 49136,
-    "url": "https://github.com/microsoft/PowerToys/pull/49136"
+  "workflow": {
+    "phase": "review_iteration_cap_reached",
+    "checkpoint_at": "2026-08-27T03:30:01Z"
   },
-  "fork_pr": {
-    "number": 343,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/343",
-    "state": "OPEN",
-    "updated_at": "2026-08-13T10:24:37Z",
-    "head_sha": "f0e3d0eef8355a37677cc573f13dd5cd9010aeb1",
-    "base_sha": "29471231dd4efdb4433163be135c839177287cdc",
-    "commit_count": 21,
-    "changed_file_count": 29
-  },
-  "fork_branch": "pr-iterate/49136-v5"
+  "freshness": {
+    "queued_at": "2026-08-24T03:02:34Z",
+    "checkpoint_at": "2026-08-27T03:30:01Z"
+  }
 }

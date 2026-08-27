@@ -39,6 +39,17 @@ $UP  = 'microsoft/PowerToys'
 $src = Get-Content $v2json -Raw | ConvertFrom-Json
 $FORK= if ($src.fork) { $src.fork } else { 'MuyuanMS/PowerToys' }
 $ME  = if ($src.me)   { $src.me }   else { 'MuyuanMS' }
+$stageLabels = [ordered]@{}
+if ($src.stage_labels) {
+  foreach ($property in $src.stage_labels.psobject.Properties) {
+    $stageLabels[$property.Name] = $property.Value
+  }
+}
+$stageLabels['review_ready'] = 'Review ready'
+$stageLabels['review_blocked'] = 'Review blocked'
+$stageLabels['review_iteration_cap_reached'] = 'Review iteration limit reached'
+$stageLabels['upstream_merged_before_review_converged'] = 'Merged before review converged'
+$src.stage_labels = [pscustomobject]$stageLabels
 function Get-LiveCollection {
   param([string]$Endpoint)
   $pages = gh api --paginate --slurp $Endpoint 2>$null | ConvertFrom-Json
@@ -639,6 +650,13 @@ foreach ($it in $src.items) {
   } elseif ($hasArtifact -and $it.kind -eq 'pr') {
     if ($proposedOpen -gt 0) {
       $primary = [ordered]@{ type='review'; label='Post comments' }
+    } elseif ($o.actions) {
+      $action = @($o.actions | Where-Object { $_.type -in @('continue_review', 'hold', 'rerun', 'post_review') }) | Select-Object -First 1
+      if ($action) {
+        $primary = [ordered]@{ type=$action.type; label=$action.label }
+      } elseif ($iowes -ne 'author') {
+        $primary = [ordered]@{ type='approve'; label='Approve' }
+      }
     } elseif ($iowes -ne 'author') {
       $primary = [ordered]@{ type='approve'; label='Approve' }
     }
