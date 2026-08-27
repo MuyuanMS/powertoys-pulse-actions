@@ -1,0 +1,89 @@
+{
+  "number": 50029,
+  "kind": "pr",
+  "track": "review",
+  "stage": "review_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-27T09:30:53.513Z",
+  "evaluated_at": "2026-08-27T09:30:53.513Z",
+  "source_updated_at": "2026-08-20T14:08:59Z",
+  "head_sha": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
+  "title": "Add setting to disable cursor wrap in Game Mode (full screen D3D application).",
+  "url": "https://github.com/microsoft/PowerToys/pull/50029",
+  "status": {
+    "glyph": "...",
+    "label": "Review in progress",
+    "detail": "Draft ready; final local builds pass. Fresh Copilot review remains unavailable on protected-branch replacement PR."
+  },
+  "next_action": "Maintainer review of the drafted actions; do not post until explicitly approved, then re-check the upstream head and threads.",
+  "proposed_comments": [
+    {
+      "id": "game-mode-thread-start-failure",
+      "title": "Avoid terminating the runner when polling cannot start",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "std::thread construction can throw from the changed StartGameModePolling path, and the call runs on the event thread without a catch."
+      },
+      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
+      "line": 389,
+      "start_line": 383,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Avoid terminating the runner when polling cannot start\n\n**Severity:** `high`\n\n`std::thread` construction can throw `std::system_error` when the system cannot create another thread. In this path the exception escapes the event thread and calls `std::terminate`, which can take down the PowerToys runner instead of cleanly disabling the optional polling feature. Catch the construction failure, close the stop event, clear the handle, and return `false` so startup fails safely.\n\n```suggestion\n        try\n        {\n            m_gameModePollThread = std::thread([this, stopEvent]() {\n                while (WaitForSingleObject(stopEvent, GAME_MODE_POLL_MS) == WAIT_TIMEOUT)\n                {\n                    RefreshGameModeState();\n                }\n            });\n        }\n        catch (const std::system_error& error)\n        {\n            Logger::error(\"Failed to start CursorWrap Game Mode polling thread: {}\", error.what());\n            CloseHandle(m_gameModePollStopEvent);\n            m_gameModePollStopEvent = nullptr;\n            return false;\n        }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "cursor-wrap-settings-version-migration",
+      "title": "Version the settings migration",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "CursorWrapProperties constructs all members before deserialization, so null checks cannot detect omitted properties; the current constructor also keeps new settings at version 1.0."
+      },
+      "path": "src/settings-ui/Settings.UI.Library/CursorWrapSettings.cs",
+      "line": 76,
+      "start_line": 74,
+      "side": "RIGHT",
+      "in_diff": false,
+      "body": "### Version the settings migration\n\n**Severity:** `medium`\n\n`CursorWrapProperties` initializes every property before JSON is applied, so older settings files that omit `disable_cursor_wrap_in_game_mode` still deserialize with a non-null default and never trigger `UpgradeSettingsConfiguration`. Bump the current settings version and migrate `Version == \"1.0\"` to `1.1`, explicitly persisting the new default; this preserves existing settings while ensuring the new schema is written.",
+      "disposition": "proposed",
+      "reason": "Companion guidance: the safe fix spans the constructor version and migration method, so one self-contained inline suggestion would be unsafe."
+    }
+  ],
+  "actions": [
+    {
+      "type": "post_review",
+      "label": "Post drafted review after explicit approval",
+      "event": "REQUEST_CHANGES",
+      "primary": true,
+      "note": "Pinned to upstream head 40a0e8b21d39cb624edb1312dc2d6b9eca975a8e; validate freshness before posting."
+    }
+  ],
+  "workflow": {
+    "phase": "review_in_progress",
+    "checkpoint_at": "2026-08-27T09:30:53.513Z"
+  },
+  "freshness": {
+    "checkpoint_at": "2026-08-27T09:30:53.513Z",
+    "upstream_head": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e"
+  },
+  "fork_pr": {
+    "number": 477,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/477"
+  },
+  "fork_branch": "pr-iterate/50029-v6",
+  "confidence": "high",
+  "summary": "Member-authored PR; upstream CI and CLA are green. The fork review loop fixed four valid issues across two rounds, and final local Debug builds pass; fresh Copilot re-review is blocked because reviewer requests are unavailable on the replacement protected-branch PR.",
+  "fork": {
+    "pr": 477,
+    "branch": "pr-iterate/50029-v6",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/477"
+  },
+  "verify": [
+    "Debug essentials, CursorWrap.vcxproj, and Settings.UI.Library.csproj all exited 0 with POWERTOYS_DISABLE_SPECTRE=1.",
+    "Verified <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe exists.",
+    "Launch the built executable, enable CursorWrap and Disable in Game Mode, run a fullscreen D3D app, verify wrapping is suppressed, then exit Game Mode and verify wrapping resumes."
+  ]
+}

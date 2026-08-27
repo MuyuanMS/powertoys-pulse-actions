@@ -1,0 +1,123 @@
+{
+  "number": 48746,
+  "kind": "pr",
+  "track": "review",
+  "stage": "review_blocked",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-27T11:10:00Z",
+  "evaluated_at": "2026-08-27T11:10:00Z",
+  "source_updated_at": "2026-08-26T21:19:18Z",
+  "head_sha": "a08915f5ae1a93504b2f76fd7a754e48e9261566",
+  "title": "Fix CmdPal extension installed state detection for Store-only package…",
+  "url": "https://github.com/microsoft/PowerToys/pull/48746",
+  "summary": "Community CmdPal PR has a valid demo, linked issue, CLA, and reported successful Azure builds, but the live pr-intake check is failing. Fork-side review found two independent failure-isolation bugs and missing direct coverage; the runtime fixes build successfully, while Copilot convergence remains blocked by two unresolved test-coverage findings and no fresh review after the fixes.",
+  "status": {
+    "glyph": "!",
+    "label": "Review blocked — Copilot convergence incomplete",
+    "detail": "Fork PR 484 is at c070fd3c3. Three runtime/edge-case findings were fixed and rebuilt; two test-coverage findings remain unresolved. The fresh review request returned no requested reviewer, so a zero-comment current-head review cannot be obtained."
+  },
+  "next_action": "Enable Copilot code review on the fork or complete the remaining direct service/gallery coverage, then request a fresh review before any upstream action.",
+  "proposed_comments": [
+    {
+      "id": "isolate-store-id-lookup-failures",
+      "kind": "inline",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The fork Copilot finding reproduces the Task.WhenAll failure path, and the upstream lambda has no per-ID exception boundary."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.Common/WinGet/Services/WinGetPackageManagerService.cs",
+      "line": 258,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Isolate independent Store ID lookup failures\n\n**Severity:** `high`\n\nA COM or invalid-operation failure from one `FindPackages` task faults `Task.WhenAll`, causing the outer handler to discard successful results for every other Store ID. Catch the expected per-ID failures inside the task and return a null package for only that ID; cancellation should still propagate.\n\n```suggestion\n                    try\n                    {\n                        var findResult = await Task.Run(() => catalog.FindPackages(options), cancellationToken).ConfigureAwait(false);\n                        if (findResult.Status != FindPackagesResultStatus.Ok)\n                        {\n                            CoreLogger.LogWarning($\"Microsoft Store package lookup failed for '{id}': {findResult.Status}\");\n                            return (id, (CatalogPackage?)null);\n                        }\n\n                        if (findResult.Matches.Count > 0)\n                        {\n                            return (id, findResult.Matches[0].CatalogPackage);\n                        }\n\n                        return (id, (CatalogPackage?)null);\n                    }\n                    catch (OperationCanceledException)\n                    {\n                        throw;\n                    }\n                    catch (Exception ex) when (ex is COMException or InvalidOperationException)\n                    {\n                        CoreLogger.LogWarning($\"Microsoft Store package lookup failed for '{id}': {ex.Message}\");\n                        return (id, (CatalogPackage?)null);\n                    }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "isolate-store-status-inspection",
+      "kind": "inline",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "The upstream pass-level catch surrounds the entire snapshot loop, so one package inspection exception can skip all later entries."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Gallery/ExtensionGalleryViewModel.cs",
+      "line": 495,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Isolate Store package status inspection\n\n**Severity:** `high`\n\n`InstalledVersion` is not refreshed before it is read, and an inspection failure for one package is handled only by the outer pass-level catch. Refresh and isolate each package inspection so one failing Store package does not prevent later extensions from being evaluated; cancellation should still propagate.\n\n```suggestion\n                                try\n                                {\n                                    await catalogPackage.CheckInstalledStatusAsync();\n                                    entry.IsInstalled = catalogPackage.InstalledVersion is not null;\n                                    entry.IsInstalledStateKnown = true;\n                                }\n                                catch (OperationCanceledException)\n                                {\n                                    throw;\n                                }\n                                catch (Exception ex)\n                                {\n                                    LogCheckWinGetPackageStatusError(_logger, ex);\n                                }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "add-store-lookup-coverage",
+      "kind": "companion",
+      "severity": "medium",
+      "body": "### Add direct coverage for Store lookup behavior\n\n**Severity:** `medium`\n\nThe added gallery test verifies only that a Store ID is dispatched to a mock. Please add focused coverage for the service implementation and the gallery state mutation, including case-insensitive normalization and de-duplication, one failed lookup alongside a successful lookup, installed versus not-installed packages, and an inspection failure. This can be a follow-up if an injectable WinGet catalog seam is needed.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [],
+  "safe_actions": [
+    "Hold all upstream posting until Copilot review is enabled and the fork loop reaches zero new comments and zero unresolved threads.",
+    "Do not approve or modify microsoft/PowerToys from this artifact.",
+    "After the remaining coverage work, re-request review against the exact live head and revalidate all comment ranges."
+  ],
+  "phase0": {
+    "author": "namdpran8",
+    "author_association": "CONTRIBUTOR",
+    "bar": "full community-contributor process review",
+    "disposition": "Ask",
+    "gates_tripped": [
+      "P4"
+    ],
+    "note": "The PR links issue 48433, includes three recordings and manual validation steps, and has a successful CLA check. The live pr-intake check is failing even though the reported Azure build jobs and dependency checks are successful; the failure should be reconciled before merge. No duplicate, scope, provenance, draft-state, or compound-quality issue was found."
+  },
+  "verification": {
+    "result": "partial",
+    "configuration": "x64 Debug",
+    "summary": "Essentials, CmdPal module interface, Common, ViewModels, and the changed unit-test project build successfully after the fork fixes. The targeted VSTest invocation is blocked because the build output does not include a testhost/runtime assembly.",
+    "builds": [
+      "tools\\build\\build-essentials.cmd",
+      "src\\modules\\cmdpal\\CmdPalModuleInterface\\CmdPalModuleInterface.vcxproj",
+      "src\\modules\\cmdpal\\Microsoft.CmdPal.Common\\Microsoft.CmdPal.Common.csproj",
+      "src\\modules\\cmdpal\\Microsoft.CmdPal.UI.ViewModels\\Microsoft.CmdPal.UI.ViewModels.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj"
+    ],
+    "tests": [
+      {
+        "suite": "Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "result": "blocked",
+        "reason": "VSTest could not find testhost for the built assembly; only obj\\x64\\Debug outputs were produced."
+      },
+      {
+        "suite": "Patch validation",
+        "command": "git diff --check",
+        "result": "passed"
+      }
+    ],
+    "outputs": [
+      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll"
+    ]
+  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and navigate to the Extension Gallery.",
+    "Verify a Store-only extension with a Store ID is shown as Installed when present, while an unavailable package remains not installed.",
+    "Exercise multiple Store-only entries where one catalog lookup or status inspection fails and verify other entries still receive an independent status."
+  ],
+  "upstream_pr": {
+    "number": 48746,
+    "url": "https://github.com/microsoft/PowerToys/pull/48746"
+  },
+  "fork_pr": {
+    "number": 484,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/484",
+    "state": "OPEN",
+    "head_sha": "038621e911dcd33cf855e27c45a6a9bd7ad63bab",
+    "base_sha": "d7ff9f452a69039c947107eed825a4bac4d00509",
+    "branch": "pr-iterate/48746-v2"
+  }
+}

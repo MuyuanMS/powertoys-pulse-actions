@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 3,
+  "id": "pr-49963",
+  "number": 49963,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-27T09:15:00Z",
+  "evaluated_at": "2026-08-27T09:15:00Z",
+  "source_updated_at": "2026-08-21T07:50:46Z",
+  "url": "https://github.com/microsoft/PowerToys/pull/49963",
+  "title": "[Peek] Enable reusable previewers for Peek to fix flicker",
+  "author": "daverayment",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Area-User Interface",
+    "Product-Peek"
+  ],
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
+  "summary": "Fork review converged at the current upstream head with zero new published Copilot comments and zero unresolved Copilot threads. Peek essentials, module interface, UI, previewer, and targeted reuse tests all build successfully; two inline fixes and one companion note are drafted for maintainer approval.",
+  "status": {
+    "glyph": "📝",
+    "label": "Review ready — comments drafted",
+    "detail": "Two apply-ready inline suggestions and one companion note are pinned to upstream head 4c4c3a66d200e23b0496240dbbec1c7d890da2e6."
+  },
+  "next_action": "Approve, edit, or hold the drafted upstream review actions.",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "c-image-thumbnail-fallback",
+      "title": "Always try the cached thumbnail after a full-quality decode fails",
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "The reusable previewer keeps Preview non-null from the prior item, so the current condition skips the documented thumbnail fallback on image-to-image navigation."
+      },
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+      "line": 115,
+      "start_line": 112,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve thumbnail fallback during previewer reuse\n\n**Severity:** `medium`\n\nWhen a reused image previewer fails to decode the next file at full quality, `Preview` can still contain the previous image. Checking `Preview is null` therefore skips the cached-thumbnail fallback and sends otherwise previewable files to the error path. Attempt the thumbnail fallback whenever the full-quality load fails; the double buffer keeps the old frame visible until the replacement is ready.\n\n```suggestion\n            if (!loaded)\n            {\n                loaded = await LoadThumbnailAsync(cancellationToken);\n            }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "c-image-size-cancellation",
+      "title": "Discard canceled image-size results before updating shared state",
+      "severity": "medium",
+      "confidence": {
+        "score": 86,
+        "rationale": "GetPreviewSizeAsync performs uncancellable background size work; without a post-await cancellation check, an older navigation can overwrite ImageSize for the current preview."
+      },
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+      "line": 98,
+      "start_line": 93,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Do not publish stale image dimensions after navigation\n\n**Severity:** `medium`\n\nThe size lookup runs on a background task and can finish after navigation has canceled the request. Updating `ImageSize` without rechecking cancellation lets an older request overwrite the dimensions used by the current preview, causing incorrect scaling. Check cancellation immediately after the await and before mutating the shared properties.\n\n```suggestion\n            cancellationToken.ThrowIfCancellationRequested();\n\n            if (State == PreviewState.Loaded)\n            {\n                ImageSize = size;\n            }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "c-unsupported-generation",
+      "title": "Guard unsupported-file async callbacks against rebinding",
+      "severity": "high",
+      "confidence": {
+        "score": 90,
+        "rationale": "Content-type, icon, and folder-size operations outlive cancellation in several paths; a reused previewer needs an item-generation check before every shared Preview or State mutation."
+      },
+      "in_diff": false,
+      "body": "### Ignore asynchronous results from a previous unsupported-file binding\n\n**Severity:** `high`\n\nRebinding an unsupported-file previewer clears the displayed metadata, but the previous item’s content-type, icon, folder-size, or exception completion can still arrive later and write into the same preview object. Track a binding generation (or equivalent item identity) and validate it before every asynchronous result, progress callback, and error-state update so rapid navigation cannot mix metadata between files. This should cover both successful completions and exceptions from non-cancelable awaits.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "review-49963",
+      "type": "post_review",
+      "label": "Post drafted review actions",
+      "primary": true,
+      "note": "Posts only selected public-safe comments to microsoft/PowerToys PR 49963 after explicit approval and freshness re-check."
+    }
+  ],
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-27T09:15:00Z",
+    "copilot_rounds": 3,
+    "latest_copilot_review_at": "2026-08-20T10:04:01Z",
+    "unresolved_copilot_threads": 0
+  },
+  "freshness": {
+    "queued_at": "2026-08-27T09:15:00Z",
+    "checkpoint_at": "2026-08-27T09:15:00Z",
+    "source_updated_at": "2026-08-21T07:50:46Z",
+    "source_head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
+    "latest_upstream_check_at": "2026-08-27T09:15:00Z"
+  },
+  "phase0": {
+    "verdict": "proceed",
+    "disposition": "Proceed",
+    "author": "daverayment",
+    "author_association": "COLLABORATOR",
+    "bar": "member/collaborator Phase 0: skip routine process nags",
+    "owes_after_post": "maintainer",
+    "processAsks": [],
+    "summary": "No process blocker. The collaborator-authored PR is open, non-draft, has a complete description, successful visible CI and CLA checks, and focused scope.",
+    "gateEvidence": {
+      "P1_cla": {
+        "status": "pass",
+        "evidence": "license/cla completed successfully."
+      },
+      "P2_demo": {
+        "status": "skipped_member",
+        "evidence": "Routine demo requests are skipped for collaborator-authored PRs."
+      },
+      "P3_author_validation": {
+        "status": "skipped_member",
+        "evidence": "Routine self-validation asks are skipped for collaborator-authored PRs."
+      },
+      "P4_ci": {
+        "status": "pass",
+        "evidence": "Visible upstream CI, x64 release, ARM64 release, dependency review, and CLA checks succeeded."
+      },
+      "P5_provenance": {
+        "status": "pass",
+        "evidence": "No provenance concern identified."
+      },
+      "P6_duplicate": {
+        "status": "pass",
+        "evidence": "Focused Peek previewer reuse change."
+      },
+      "P7_scope": {
+        "status": "pass",
+        "evidence": "Changed files are confined to Peek previewer/UI and related tests."
+      },
+      "P8_draft": {
+        "status": "pass",
+        "evidence": "PR is open and non-draft."
+      },
+      "P9_template": {
+        "status": "pass",
+        "evidence": "Description includes summary and validation details."
+      }
+    }
+  }
+}
