@@ -702,19 +702,13 @@ foreach ($it in $src.items) {
   } elseif ($hasArtifact -and ($o.needs_revalidation -or $issueNeedsRevalidation)) {
     $primary = $null
   } elseif ($hasArtifact -and $it.kind -eq 'pr') {
-    if ($stage -eq 'review_ready' -and $proposedOpen -eq 0) {
+    $explicitPrAction = @($o.actions | Where-Object { Test-MeaningfulAction $o $_ }) | Select-Object -First 1
+    if ($explicitPrAction) {
+      $primary = [ordered]@{ type=$explicitPrAction.type; label=$explicitPrAction.label }
+    } elseif ($stage -eq 'review_ready' -and $proposedOpen -eq 0) {
       $primary = [ordered]@{ type='approve'; label='Approve' }
     } elseif ($proposedOpen -gt 0) {
       $primary = [ordered]@{ type='post_review'; label='Post comments' }
-    } elseif ($o.actions) {
-      $action = @($o.actions | Where-Object { Test-MeaningfulAction $o $_ }) | Select-Object -First 1
-      if ($action) {
-        $primary = [ordered]@{ type=$action.type; label=$action.label }
-      } elseif ($iowes -ne 'author') {
-        $primary = [ordered]@{ type='approve'; label='Approve' }
-      }
-    } elseif ($iowes -ne 'author') {
-      $primary = [ordered]@{ type='approve'; label='Approve' }
     }
   } elseif ($hasArtifact -and $o.actions) {
     $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'request_info' }) | Select-Object -First 1
