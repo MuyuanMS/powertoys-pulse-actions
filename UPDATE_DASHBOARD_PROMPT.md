@@ -34,20 +34,24 @@ Before starting:
 Use the `powertoys-dashboard-update` skill as the orchestrator. Follow all its
 dependency, freshness, artifact-schema, validation, publication, and approval
 rules. In particular:
-- examine every eligible open non-draft PR, but use the skill's bounded run
-  planner to select at most five stale PRs for a normal invocation;
-- process no more than two PR review workers concurrently, prohibit nested
-  agents, and require each worker to stop cleanly before the run deadline;
+- examine every eligible open non-draft PR, but use the skill's run planner to
+  select at most sixteen stale PRs for a normal invocation, or every stale PR
+  when `POWERTOYS_DASHBOARD_DRAIN_QUEUE=1` is explicitly requested;
+- process no more than three PR review workers concurrently in normal mode, or
+  six in drain mode; prohibit nested agents, and require normal-mode workers to
+  stop cleanly before the run deadline;
 - when a worker reaches a cloud Copilot wait, checkpoint that stage and release
   the slot instead of polling; resume it in the next scheduler pass;
 - publish the fresh inventory before launching review workers and leave
   unselected PRs explicitly queued for later scheduled runs;
 - checkpoint every durable PR stage locally and push refreshed JSON after two
-  transitions, ten minutes, or a completed review, whichever comes first;
+  transitions, eight minutes in normal mode, five minutes in drain mode, or a
+  completed review, whichever comes first;
 - give every new or changed bug issue a lightweight explicit judgment and
   action;
 - run only the bounded highest-confidence issue batch through the detailed
-  design workflow;
+  design workflow in normal mode; in drain mode, process all actionable issue
+  designs with the same checkpoint and publish guarantees;
 - preserve and resume existing fork work instead of duplicating it;
 - validate all newly processed artifacts and scan generated JSON for secrets;
 - regenerate `data/index.json`, `data/index.js`, and per-number artifacts;

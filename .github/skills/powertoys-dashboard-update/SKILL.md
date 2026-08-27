@@ -1,6 +1,6 @@
 ---
 name: powertoys-dashboard-update
-description: "Reliable resumable PowerToys triage-dashboard updater. Exhaustively inventories freshness, processes a bounded PR/design batch per run, checkpoints completed work, and republishes the dashboard while leaving unfinished work explicitly queued. Does not post upstream reviews/comments or open upstream PRs without explicit approval."
+description: "Reliable resumable PowerToys triage-dashboard updater. Exhaustively inventories freshness, processes bounded normal updates or uncapped drain-mode work, checkpoints completed work, and republishes periodically so finished work survives crashes. Does not post upstream reviews/comments or open upstream PRs without explicit approval."
 ---
 
 # PowerToys Dashboard Update
@@ -70,11 +70,11 @@ $Fork = if ($env:POWERTOYS_FORK_REPO) {
 $Board = 'MuyuanMS/powertoys-pulse-actions'
 $Since = (Get-Date).AddDays(-2).ToUniversalTime().ToString('o')
 $IssueWindowDays = 30
-$DesignBatchSize = if ($env:POWERTOYS_DESIGN_BATCH_SIZE) { [int]$env:POWERTOYS_DESIGN_BATCH_SIZE } else { 4 }
-$PrReviewBatchSize = if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) { [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE } else { 16 }
-$PrReviewConcurrency = if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) { [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY } else { 3 }
-$RunBudgetMinutes = if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) { [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES } else { 75 }
 $DrainReviewQueue = $env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1'
+$DesignBatchSize = if ($env:POWERTOYS_DESIGN_BATCH_SIZE) { [int]$env:POWERTOYS_DESIGN_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 4 }
+$PrReviewBatchSize = if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) { [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 16 }
+$PrReviewConcurrency = if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) { [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY } elseif ($DrainReviewQueue) { 6 } else { 3 }
+$RunBudgetMinutes = if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) { [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES } elseif ($DrainReviewQueue) { 0 } else { 50 }
 $RunStartedAt = (Get-Date).ToUniversalTime().ToString('o')
 $ProjectOwner = if ($env:POWERTOYS_PROJECT_OWNER) { $env:POWERTOYS_PROJECT_OWNER } else { 'microsoft' }
 $ProjectNumber = if ($env:POWERTOYS_PROJECT_NUMBER) { [int]$env:POWERTOYS_PROJECT_NUMBER } else { 2445 }
@@ -136,8 +136,8 @@ Pulse must not render them as executable action proposals.
 
 ### Reliability contract
 
-Normal runs are bounded and resumable. They must finish within the configured
-run budget instead of trying to drain an arbitrarily large review queue:
+Normal runs are bounded and resumable. They must finish within the 50-minute
+default run budget instead of trying to drain an arbitrarily large review queue:
 
 - inventory every eligible PR and changed bug, but select at most
   `$PrReviewBatchSize` PRs and `$DesignBatchSize` full designs for execution;
@@ -163,9 +163,15 @@ run budget instead of trying to drain an arbitrarily large review queue:
   clickable Pulse action.
 
 `POWERTOYS_DASHBOARD_DRAIN_QUEUE=1` is an exceptional operator-requested mode.
-Only drain mode may continue through additional batches and require the stale
-queue to reach zero. Do not use drain mode in scheduled or ordinary manual
-runs.
+Drain mode intentionally removes the PR selection limit, issue design cap, and
+run deadline. It selects every stale PR, runs up to six PR workers at once by
+default, processes all actionable issue designs, and continues until the stale
+queue is empty or an unrecoverable blocker is published. Drain mode still must
+checkpoint every durable fork/mirror/review transition immediately and publish
+after two transitions, after five minutes, or after any completed artifact,
+whichever comes first, so completed work and resumable fork traces survive a
+frozen or crashed session. Do not use drain mode in scheduled or ordinary manual
+runs unless the operator explicitly requested it.
 
 ### Scheduled-run status notifications
 
@@ -187,7 +193,9 @@ Keep messages brief and clear. Send:
 
 1. **Started** — after the live queue and bounded run plan are enumerated.
    Include selected PRs, deferred PR count, changed/new bug issues, selected
-   full-design issues, the concurrency cap, and the UTC deadline.
+   full-design issues, the concurrency cap, and the UTC deadline. In drain
+   mode, state that the deadline, PR selection limit, and issue design cap are
+   disabled, and include the higher worker count.
 2. **30-minute checkpoint** — if the run is still active 30 minutes after the
    started email, reply to the original with completed PRs/issues, currently
    running PRs/issues, remaining queue count, and next expected milestone.
@@ -310,22 +318,29 @@ direction/close/takeover decision, or excluded, and that either:
 - has a prior proposed review, but the live head SHA differs from the artifact
   or review action head SHA.
 
-The queue is exhaustive, but execution is bounded. Build the run plan:
+The queue is exhaustive. Build the run plan:
 
 ```powershell
-pwsh -NoProfile -File `
-  "$SkillRoot\scripts\Get-PrReviewRunPlan.ps1" `
-  -Dashboard $Dashboard -Upstream $Upstream `
-  -BatchSize $PrReviewBatchSize `
-  -MaxConcurrency $PrReviewConcurrency `
-  -RunBudgetMinutes $RunBudgetMinutes -AsJson
+$runPlanArgs = @(
+  '-NoProfile', '-File', "$SkillRoot\scripts\Get-PrReviewRunPlan.ps1",
+  '-Dashboard', $Dashboard, '-Upstream', $Upstream,
+  '-BatchSize', $PrReviewBatchSize,
+  '-MaxConcurrency', $PrReviewConcurrency,
+  '-RunBudgetMinutes', $RunBudgetMinutes,
+  '-AsJson'
+)
+if ($DrainReviewQueue) { $runPlanArgs += '-DrainQueue' }
+pwsh @runPlanArgs
 ```
 
-Send only `selected_prs` through or resume them in `powertoys-pr-review`.
-Publish `deferred_prs` as queued work for later runs. A metadata-only refresh
-is still insufficient: every run must either advance its selected batch or
-honestly retain durable in-progress state. Use `-FailOnStale` only in explicit
-drain mode.
+In normal mode, send only `selected_prs` through or resume them in
+`powertoys-pr-review`; publish `deferred_prs` as queued work for later runs. In
+drain mode, `selected_prs` is the full stale queue and `deferred_prs` must be
+empty unless an unrecoverable blocker is published. A metadata-only refresh is
+still insufficient: every run must either advance its selected work or honestly
+retain durable in-progress state. Use `-FailOnStale` only in explicit drain
+mode after all selected work has either completed or reached a durable blocked
+state.
 
 ### Fast issue judgment
 
@@ -390,12 +405,14 @@ Classify unfinished workflow state:
 
 ## Phase 2 — Resume or rerun workflows
 
-PR inventory is exhaustive, but normal execution is bounded to the run plan.
-Process only the selected batch, with at most two active workers by default.
-The default batch contains eight PRs so cloud waits can release slots and let
-other PRs advance without increasing local build concurrency. Never launch all
-stale PRs in one conversation. Prioritize resumable in-progress reviews, stale
-proposed reviews, stale artifact heads, then missing artifacts.
+PR inventory is exhaustive. Normal execution is bounded to the run plan:
+process only the selected batch, with at most three active workers by default.
+The default batch contains sixteen PRs so cloud waits can release slots and let
+other PRs advance without increasing local build concurrency. Drain mode is the
+only mode that may select every stale PR in one conversation; it runs up to six
+active workers by default and relies on checkpointed fork branches plus
+incremental publication instead of a time cap. Prioritize resumable in-progress
+reviews, stale proposed reviews, stale artifact heads, then missing artifacts.
 Do not re-review an unchanged head that already has a current clean fork result
 and no relevant newer activity.
 Do not call a PR review complete, approval-ready, or "clean" unless the latest
@@ -404,10 +421,14 @@ and the required local build has passed. A Copilot-clean result with a pending
 build, context review, spelling check, or timed-out fresh request remains
 `review_in_progress` and must get a `Re-run review`/`Continue review` action.
 
-Each worker receives the run-plan deadline and must stop initiating new review
-rounds or builds 10 minutes before it. If it cannot converge, it writes durable
-`review_in_progress` state and returns. Do not keep polling simply to make the
-current run look complete. Do not launch nested agents from a PR worker.
+In normal mode, each worker receives the run-plan deadline and must stop
+initiating new review rounds or builds 10 minutes before it. If it cannot
+converge, it writes durable `review_in_progress` state and returns. In drain
+mode, workers do not receive a stop deadline; they still must checkpoint every
+fork, mirror, review-request, finding, and build transition so a later run can
+resume from the fork branch or dashboard artifact after a crash. Do not keep
+polling simply to make the current run look complete. Do not launch nested
+agents from a PR worker.
 
 Use `Set-PrReviewCheckpoint.ps1` after each durable transition:
 
@@ -430,26 +451,31 @@ ready, it checkpoints and returns instead of polling.
 
 Long-running PR reviews must not block fresh dashboard data. Before launching
 workers, regenerate and publish the inventory with `-AllowStaleReviewQueue`.
-Checkpoint every stage transition locally immediately. After two checkpoint
-transitions, ten elapsed minutes, or any completed artifact, regenerate,
-sanitize, validate, commit, and push without waiting for remaining selected
-PRs.
+Checkpoint every stage transition locally immediately. In normal mode, after
+two checkpoint transitions, eight elapsed minutes, or any completed artifact,
+regenerate, sanitize, validate, commit, and push without waiting for remaining
+selected PRs. In drain mode, use the same transition/completion triggers and a
+five-minute maximum publish interval.
 Regenerate and sanitize the feed, validate the completed PR numbers, run the
 stale-review queue check without `-FailOnStale`, and commit/push the completed
 artifacts plus index updates. The dashboard must show still-running PRs as
 queued/running review, not as current.
 
-At the run deadline, publish completed/in-progress state and stop cleanly.
-Report selected, completed, in-progress, and deferred counts. Run the
-`-FailOnStale` gate only in explicit drain mode.
+At the normal-mode run deadline, publish completed/in-progress state and stop
+cleanly. In drain mode, continue through additional work until the stale queue
+is empty or a published blocker remains. Report selected, completed,
+in-progress, and deferred counts. Run the `-FailOnStale` gate only in explicit
+drain mode after the drain attempt finishes.
 
-Issue **judgment** is exhaustive for new/changed bugs, while full design work is
-bounded. Rank `actionable_design` judgments by confidence, reproducibility,
-scope, recency, and lack of existing ownership. Run at most
-`$DesignBatchSize` (default 4) through `powertoys-issue-to-design`; leave the
-rest queued with explicit `Design fix` actions. Prefer issues updated in the
-last `$IssueWindowDays`, then consume older actionable issues as capacity
-allows.
+Issue **judgment** is exhaustive for new/changed bugs. Normal-mode full design
+work is bounded: rank `actionable_design` judgments by confidence,
+reproducibility, scope, recency, and lack of existing ownership, then run at
+most `$DesignBatchSize` (default 4) through `powertoys-issue-to-design`; leave
+the rest queued with explicit `Design fix` actions. Drain mode removes this
+design cap and processes every actionable issue design, still checkpointing and
+publishing after each durable transition or completed artifact. Prefer issues
+updated in the last `$IssueWindowDays`, then consume older actionable issues as
+capacity allows.
 
 For each queued item, invoke the corresponding skill with the upstream number
 and complete its fork-side loop. Do not bypass its gates:
@@ -584,8 +610,11 @@ Rank candidates using:
 - issues: easy reproduction/verification, low risk, small scope, and clear
   acceptance criteria.
 
-Run only the bounded top candidates through the relevant sub-skill. Report the
-remaining candidates without starting them.
+In normal mode, run only the bounded top candidates through the relevant
+sub-skill and report the remaining candidates without starting them. In drain
+mode, keep consuming candidates until no selected PRs or actionable issue
+designs remain, while preserving the higher worker cap and incremental publish
+requirements.
 
 ## Phase 4 — Emit artifacts and update PowerToys Pulse
 
@@ -605,8 +634,10 @@ writes are complete when possible, and verify the resulting `artifact_numbers`
 includes every completed review from the run. `emit.ps1` runs the stale-review
 queue gate itself and fails by default when any applicable PR lacks a current
 looped review for its live head. Normal bounded runs therefore use
-`-AllowStaleReviewQueue` for both initial and final publication. Omit that
-switch only in explicit drain mode.
+`-AllowStaleReviewQueue` for both initial and final publication. In drain mode,
+use `-AllowStaleReviewQueue` for intermediate publishes while work remains, and
+omit it only for the final gate after all selected work has reached a durable
+completed, author-waiting, owned-elsewhere, excluded, or blocked state.
 
 In drain mode only, enforce the stale-review queue gate:
 

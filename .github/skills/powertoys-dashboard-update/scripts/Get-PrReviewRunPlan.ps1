@@ -1,10 +1,12 @@
 <#
 .SYNOPSIS
-    Build a bounded, resumable PR review plan for one dashboard update run.
+    Build a resumable PR review plan for one dashboard update run.
 .DESCRIPTION
-    Reads the live stale PR queue, prioritizes resumable and stale-head work,
-    and selects only the configured number of PRs for this invocation. The
-    remaining PRs stay in the durable stale queue for later scheduled runs.
+    Reads the live stale PR queue and prioritizes resumable and stale-head work.
+    Normal mode selects only the configured number of PRs for this invocation,
+    leaving the rest in the durable stale queue. Drain mode selects the entire
+    queue, removes the run deadline, and relies on checkpoints plus incremental
+    publication to make progress durable if the session stops.
 #>
 [CmdletBinding()]
 param(
@@ -14,24 +16,31 @@ param(
         Join-Path $PSScriptRoot '..\..\..\..'
     }),
     [string]$Upstream = 'microsoft/PowerToys',
-    [ValidateRange(1, 20)]
+    [ValidateRange(1, 2147483647)]
     [int]$BatchSize = $(if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) {
         [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE
+    } elseif ($env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1') {
+        [int]::MaxValue
     } else {
         16
     }),
-    [ValidateRange(1, 3)]
+    [ValidateRange(1, 8)]
     [int]$MaxConcurrency = $(if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) {
         [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY
+    } elseif ($env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1') {
+        6
     } else {
         3
     }),
-    [ValidateRange(20, 90)]
+    [ValidateRange(0, 90)]
     [int]$RunBudgetMinutes = $(if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) {
         [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES
+    } elseif ($env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1') {
+        0
     } else {
-        75
+        50
     }),
+    [switch]$DrainQueue,
     [string]$QueueJsonPath,
     [switch]$AsJson
 )
@@ -43,6 +52,18 @@ if (Test-Path (Join-Path $Dashboard '.git')) {
         -Dashboard $Dashboard | Out-Null
 }
 $plannedAt = (Get-Date).ToUniversalTime()
+$isDrainMode = $DrainQueue -or $env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1'
+if ($isDrainMode) {
+    if (-not $PSBoundParameters.ContainsKey('BatchSize') -and -not $env:POWERTOYS_PR_REVIEW_BATCH_SIZE) {
+        $BatchSize = [int]::MaxValue
+    }
+    if (-not $PSBoundParameters.ContainsKey('MaxConcurrency') -and -not $env:POWERTOYS_PR_REVIEW_CONCURRENCY) {
+        $MaxConcurrency = 6
+    }
+    if (-not $PSBoundParameters.ContainsKey('RunBudgetMinutes') -and -not $env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) {
+        $RunBudgetMinutes = 0
+    }
+}
 
 if ($QueueJsonPath) {
     $queueResult = Get-Content (Resolve-Path $QueueJsonPath) -Raw | ConvertFrom-Json
@@ -76,17 +97,21 @@ $ranked = @(
 
 $selected = @($ranked | Select-Object -First $BatchSize)
 $deferred = @($ranked | Select-Object -Skip $BatchSize)
+$deadlineUtc = if ($RunBudgetMinutes -gt 0) { $plannedAt.AddMinutes($RunBudgetMinutes).ToString('o') } else { $null }
+$workerStopMinutes = if ($RunBudgetMinutes -gt 0) { [Math]::Max(10, $RunBudgetMinutes - 10) } else { $null }
+$publishIntervalMinutes = if ($isDrainMode) { 5 } else { 8 }
 $plan = [pscustomobject]@{
     planned_at = $plannedAt.ToString('o')
-    deadline_utc = $plannedAt.AddMinutes($RunBudgetMinutes).ToString('o')
+    deadline_utc = $deadlineUtc
     upstream = $Upstream
     dashboard = $Dashboard
     policy = [pscustomobject]@{
+        drain_mode = $isDrainMode
         batch_size = $BatchSize
         max_concurrency = [Math]::Min($MaxConcurrency, $BatchSize)
         run_budget_minutes = $RunBudgetMinutes
-        worker_stop_minutes = [Math]::Max(10, $RunBudgetMinutes - 10)
-        publish_interval_minutes = 8
+        worker_stop_minutes = $workerStopMinutes
+        publish_interval_minutes = $publishIntervalMinutes
         publish_transition_count = 2
     }
     stale_count = $ranked.Count
@@ -101,5 +126,9 @@ if ($AsJson) {
 } else {
     Write-Host "PR review run plan: selected=$($selected.Count) deferred=$($deferred.Count)"
     $selected | Format-Table number, artifact_stage, reasons, title -AutoSize
-    Write-Host "Deadline (UTC): $($plan.deadline_utc)"
+    if ($plan.deadline_utc) {
+        Write-Host "Deadline (UTC): $($plan.deadline_utc)"
+    } else {
+        Write-Host "Deadline (UTC): none (drain mode)"
+    }
 }

@@ -177,6 +177,20 @@ if (-not (Test-Path $runPlanScript)) {
     if (@($plan.selected_prs)[0].number -ne 2) {
       $errors.Add('Bounded PR run planner did not prioritize resumable review work.')
     }
+
+    $drainPlan = & $runPlanScript -Dashboard $PSScriptRoot -QueueJsonPath $fixturePath `
+      -DrainQueue -AsJson |
+      ConvertFrom-Json
+    if ($drainPlan.selected_count -ne 5 -or $drainPlan.deferred_count -ne 0) {
+      $errors.Add('Drain PR run planner did not select the full stale queue.')
+    }
+    if (-not $drainPlan.policy.drain_mode -or $null -ne $drainPlan.deadline_utc -or
+        $drainPlan.policy.max_concurrency -ne 6 -or
+        $drainPlan.policy.run_budget_minutes -ne 0 -or
+        $null -ne $drainPlan.policy.worker_stop_minutes -or
+        $drainPlan.policy.publish_interval_minutes -ne 5) {
+      $errors.Add('Drain PR run planner did not remove the deadline or apply drain publish/concurrency policy.')
+    }
   } catch {
     $errors.Add("Bounded PR run planner validation failed: $($_.Exception.Message)")
   } finally {
