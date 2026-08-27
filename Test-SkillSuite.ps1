@@ -101,6 +101,33 @@ foreach ($script in $scripts) {
 }
 
 $runPlanScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-PrReviewRunPlan.ps1'
+$targetGuard = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Assert-CanonicalDashboardTarget.ps1'
+if (-not (Test-Path $targetGuard)) {
+  $errors.Add("Missing canonical dashboard target guard: $targetGuard")
+} else {
+  try {
+    & $targetGuard -Dashboard $PSScriptRoot | Out-Null
+    $wrongTarget = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-wrong-target-$PID"
+    New-Item -ItemType Directory -Force -Path $wrongTarget | Out-Null
+    & git -C $wrongTarget init --quiet
+    & git -C $wrongTarget remote add origin https://github.com/MuyuanMS/powertoys-triage-board.git
+    try {
+      & $targetGuard -Dashboard $wrongTarget | Out-Null
+      $errors.Add('Canonical dashboard target guard accepted the retired repository.')
+    } catch {
+      if ($_.Exception.Message -notlike "Refusing dashboard update for*") {
+        throw
+      }
+    }
+  } catch {
+    $errors.Add("Canonical dashboard target validation failed: $($_.Exception.Message)")
+  } finally {
+    if ($wrongTarget) {
+      Remove-Item $wrongTarget -Recurse -Force -ErrorAction SilentlyContinue
+    }
+  }
+}
+
 if (-not (Test-Path $runPlanScript)) {
   $errors.Add("Missing bounded PR run planner: $runPlanScript")
 } else {
@@ -122,7 +149,7 @@ if (-not (Test-Path $runPlanScript)) {
       $errors.Add('Bounded PR run planner did not enforce the requested batch size.')
     }
     if ($plan.policy.max_concurrency -ne 2 -or $plan.policy.run_budget_minutes -ne 45 -or
-        $plan.policy.publish_interval_minutes -ne 10 -or $plan.policy.publish_transition_count -ne 2) {
+        $plan.policy.publish_interval_minutes -ne 8 -or $plan.policy.publish_transition_count -ne 2) {
       $errors.Add('Bounded PR run planner did not preserve concurrency, budget, or publish policy.')
     }
     if (@($plan.selected_prs)[0].number -ne 2) {

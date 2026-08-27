@@ -42,6 +42,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Dashboard = (Resolve-Path $Dashboard).Path
+if (Test-Path (Join-Path $Dashboard '.git')) {
+    & (Join-Path $PSScriptRoot 'Assert-CanonicalDashboardTarget.ps1') `
+        -Dashboard $Dashboard | Out-Null
+}
 $itemsPath = Join-Path $Dashboard 'data\items'
 New-Item -ItemType Directory -Force -Path $itemsPath | Out-Null
 $artifactPath = Join-Path $itemsPath "$Number.json"

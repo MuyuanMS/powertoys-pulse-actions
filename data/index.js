@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-27T15:27:48.9175596+08:00",
+  "generated_at": "2026-08-27T15:38:33.9204509+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 118,
     "open_issues": 12506,
     "community": 11639,
-    "artifacts": 3208
+    "artifacts": 3209
   },
   "impact": {
-    "as_of": "2026-08-27T15:27:48.9175596+08:00",
+    "as_of": "2026-08-27T15:38:33.9204509+08:00",
     "issues_helped": 10,
     "prs_iterated": 49,
     "constructive_comments_posted": 3,
@@ -104,6 +104,7 @@ window.BOARD_INDEX = {
     50114,
     50100,
     50098,
+    50093,
     50082,
     50081,
     50054,
@@ -3568,18 +3569,18 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "rerun",
-        "label": "Resume review"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Ready for review"
@@ -7307,7 +7308,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_ready",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -7316,8 +7317,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "continue_review",
-        "label": "Continue review loop"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Needs-Review",

@@ -3,6 +3,11 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$dashboardRoot = Split-Path -Parent (Resolve-Path $DataPath).Path
+if (Test-Path (Join-Path $dashboardRoot '.git')) {
+  & (Join-Path $dashboardRoot '.github\skills\powertoys-dashboard-update\scripts\Assert-CanonicalDashboardTarget.ps1') `
+    -Dashboard $dashboardRoot | Out-Null
+}
 $blockedProperties = @(
   'internal_evidence',
   'internalEvidence',

@@ -27,6 +27,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Dashboard = (Resolve-Path $Dashboard).Path
+if (Test-Path (Join-Path $Dashboard '.git')) {
+    & (Join-Path $PSScriptRoot 'Assert-CanonicalDashboardTarget.ps1') `
+        -Dashboard $Dashboard | Out-Null
+}
 $itemsPath = Join-Path $Dashboard 'data\items'
 
 function Invoke-GhJson {

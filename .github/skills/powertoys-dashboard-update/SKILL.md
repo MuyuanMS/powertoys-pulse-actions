@@ -41,6 +41,11 @@ skills:
    synchronize and validate Pulse, then deploy only an approved Pulse branch or
    workflow. Do not substitute the artifact repository's Pages site as the
    final preview.
+7. The only canonical skill and action-data repository is
+   `MuyuanMS/powertoys-pulse-actions`. Before reading or writing checkpoints,
+   generating data, or publishing, run
+   `scripts/Assert-CanonicalDashboardTarget.ps1`. Never update or push
+   `MuyuanMS/powertoys-triage-board`; it is a retired standalone prototype.
 
 ## Configuration
 
@@ -62,11 +67,7 @@ $Fork = if ($env:POWERTOYS_FORK_REPO) {
 } else {
   "$ForkOwner/PowerToys"
 }
-$Board = if ($env:POWERTOYS_BOARD_REPO) {
-  $env:POWERTOYS_BOARD_REPO
-} else {
-  (gh repo view --json nameWithOwner --jq '.nameWithOwner').Trim()
-}
+$Board = 'MuyuanMS/powertoys-pulse-actions'
 $Since = (Get-Date).AddDays(-2).ToUniversalTime().ToString('o')
 $IssueWindowDays = 30
 $DesignBatchSize = if ($env:POWERTOYS_DESIGN_BATCH_SIZE) { [int]$env:POWERTOYS_DESIGN_BATCH_SIZE } else { 2 }
@@ -93,13 +94,15 @@ On the first run, verify:
 ```powershell
 gh auth status
 gh repo view $Fork
-gh repo view $Board
+pwsh -NoProfile -File `
+  "$SkillRoot\scripts\Assert-CanonicalDashboardTarget.ps1" `
+  -Dashboard $Dashboard
 ```
 
-Run this skill from the board repository root, or set
-`POWERTOYS_DASHBOARD_PATH`. The other three skills must be present beside it
-under `.github\skills`. Personal overrides are environment variables so no
-account-specific configuration or token is committed.
+Run this skill from the `MuyuanMS/powertoys-pulse-actions` repository root, or
+set `POWERTOYS_DASHBOARD_PATH` to a checkout of that exact repository. The
+other three skills must be present beside it under `.github\skills`. The target
+repository is intentionally not overrideable.
 
 The configured repository is both the reusable skill suite and canonical
 artifact feed. Generated files belong only in its root `data/` directory, not

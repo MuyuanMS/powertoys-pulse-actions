@@ -24,6 +24,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $here   = Split-Path -Parent $MyInvocation.MyCommand.Path
+& (Join-Path $here '.github\skills\powertoys-dashboard-update\scripts\Assert-CanonicalDashboardTarget.ps1') `
+  -Dashboard $here | Out-Null
 $v2json = Join-Path $here '..\dashboard\data\latest.json'
 $currentIndex = Join-Path $here 'data\index.json'
 $standaloneMode = -not (Test-Path $v2json) -and (Test-Path $currentIndex)
