@@ -70,10 +70,10 @@ $Fork = if ($env:POWERTOYS_FORK_REPO) {
 $Board = 'MuyuanMS/powertoys-pulse-actions'
 $Since = (Get-Date).AddDays(-2).ToUniversalTime().ToString('o')
 $IssueWindowDays = 30
-$DesignBatchSize = if ($env:POWERTOYS_DESIGN_BATCH_SIZE) { [int]$env:POWERTOYS_DESIGN_BATCH_SIZE } else { 2 }
-$PrReviewBatchSize = if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) { [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE } else { 8 }
-$PrReviewConcurrency = if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) { [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY } else { 2 }
-$RunBudgetMinutes = if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) { [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES } else { 50 }
+$DesignBatchSize = if ($env:POWERTOYS_DESIGN_BATCH_SIZE) { [int]$env:POWERTOYS_DESIGN_BATCH_SIZE } else { 4 }
+$PrReviewBatchSize = if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) { [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE } else { 16 }
+$PrReviewConcurrency = if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) { [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY } else { 3 }
+$RunBudgetMinutes = if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) { [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES } else { 75 }
 $DrainReviewQueue = $env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1'
 $RunStartedAt = (Get-Date).ToUniversalTime().ToString('o')
 $ProjectOwner = if ($env:POWERTOYS_PROJECT_OWNER) { $env:POWERTOYS_PROJECT_OWNER } else { 'microsoft' }
@@ -142,9 +142,9 @@ run budget instead of trying to drain an arbitrarily large review queue:
 - inventory every eligible PR and changed bug, but select at most
   `$PrReviewBatchSize` PRs and `$DesignBatchSize` full designs for execution;
 - run at most `$PrReviewConcurrency` PR workers at once;
-- select up to eight PRs by default so workers that checkpoint an external
-  Copilot wait release their slots to additional queued PRs without increasing
-  heavy local concurrency;
+- select up to sixteen PRs by default so workers that checkpoint an external
+  Copilot wait release their slots to additional queued PRs while still capping
+  active heavy local work;
 - treat cloud-review waiting as a persisted queue stage, not an active worker:
   request the review, checkpoint `waiting_copilot`, return the worker slot, and
   inspect the result on the next scheduler pass;
@@ -446,7 +446,7 @@ Report selected, completed, in-progress, and deferred counts. Run the
 Issue **judgment** is exhaustive for new/changed bugs, while full design work is
 bounded. Rank `actionable_design` judgments by confidence, reproducibility,
 scope, recency, and lack of existing ownership. Run at most
-`$DesignBatchSize` (default 2) through `powertoys-issue-to-design`; leave the
+`$DesignBatchSize` (default 4) through `powertoys-issue-to-design`; leave the
 rest queued with explicit `Design fix` actions. Prefer issues updated in the
 last `$IssueWindowDays`, then consume older actionable issues as capacity
 allows.

@@ -14,23 +14,23 @@ param(
         Join-Path $PSScriptRoot '..\..\..\..'
     }),
     [string]$Upstream = 'microsoft/PowerToys',
-    [ValidateRange(1, 10)]
+    [ValidateRange(1, 20)]
     [int]$BatchSize = $(if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) {
         [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE
     } else {
-        8
+        16
     }),
     [ValidateRange(1, 3)]
     [int]$MaxConcurrency = $(if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) {
         [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY
     } else {
-        2
+        3
     }),
-    [ValidateRange(20, 55)]
+    [ValidateRange(20, 90)]
     [int]$RunBudgetMinutes = $(if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) {
         [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES
     } else {
-        50
+        75
     }),
     [string]$QueueJsonPath,
     [switch]$AsJson
