@@ -91,8 +91,33 @@ try {
   $issueSince = (Get-Date).ToUniversalTime().AddDays(-180).ToString('o')
   $liveRecentIssues = Get-LiveCollection "repos/$UP/issues?state=all&since=$([uri]::EscapeDataString($issueSince))&per_page=100" |
     Where-Object { -not $_.pull_request }
+  # The general open-items listing can lag newly created or recently edited
+  # issues. Merge the explicitly update-sorted open page so current triage
+  # artifacts cannot disappear from the manifest during that window.
+  $liveRecentlyUpdatedOpenIssues = Get-LiveCollection "repos/$UP/issues?state=open&sort=updated&direction=desc&per_page=100" |
+    Where-Object { -not $_.pull_request }
+  $liveCliRecentlyUpdatedOpenIssues = @(
+    gh issue list -R $UP --state open --limit 100 `
+      --json number,url,title,author,labels,createdAt,updatedAt,comments 2>$null |
+      ConvertFrom-Json |
+      ForEach-Object {
+        [pscustomobject]@{
+          number = $_.number
+          html_url = $_.url
+          title = $_.title
+          user = [pscustomobject]@{ login = $_.author.login }
+          state = 'open'
+          draft = $false
+          labels = $_.labels
+          created_at = $_.createdAt
+          updated_at = $_.updatedAt
+          comments = @($_.comments).Count
+          pull_request = $null
+        }
+      }
+  )
   $issueByNumber = @{}
-  foreach ($issue in @($liveOpenIssues) + @($liveRecentIssues)) {
+  foreach ($issue in @($liveOpenIssues) + @($liveRecentIssues) + @($liveRecentlyUpdatedOpenIssues) + @($liveCliRecentlyUpdatedOpenIssues)) {
     $issueByNumber[[int]$issue.number] = $issue
   }
   $liveIssues = @($issueByNumber.Values)
@@ -619,6 +644,30 @@ foreach ($path in Get-ChildItem $itemsDir -Filter '*.json' -ErrorAction Silently
     }
   } catch {
     Write-Warning "Ignoring invalid existing artifact $($path.Name): $($_.Exception.Message)"
+  }
+}
+
+# GitHub's list endpoints can briefly omit a just-created or just-updated item.
+# Reconcile only recent durable issue artifacts through their individual live
+# endpoint, so an already reviewed current issue is never hidden by that delay.
+$liveNumbers = @{}
+foreach ($item in @($src.items)) {
+  $liveNumbers[[int]$item.number] = $true
+}
+$recentArtifactCutoff = (Get-Date).ToUniversalTime().AddDays(-2)
+foreach ($artifact in $existingArtifacts.Values) {
+  if ([string](Get-PropertyValue $artifact 'kind') -ne 'issue') { continue }
+  $number = [int](Get-PropertyValue $artifact 'number')
+  if ($liveNumbers.ContainsKey($number)) { continue }
+  try {
+    if ([datetime](Get-PropertyValue $artifact 'source_updated_at') -lt $recentArtifactCutoff) { continue }
+    $raw = gh api "repos/$UP/issues/$number" 2>$null | ConvertFrom-Json
+    if ($raw.state -eq 'open' -and -not $raw.pull_request) {
+      $src.items += [pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[$number] ([int]$raw.comments))
+      $liveNumbers[$number] = $true
+    }
+  } catch {
+    Write-Warning "Could not reconcile recent artifact issue ${number}: $($_.Exception.Message)"
   }
 }
 
