@@ -648,10 +648,12 @@ foreach ($it in $src.items) {
   } elseif ($hasArtifact -and $o.needs_revalidation) {
     $primary = [ordered]@{ type='rerun'; label=if ($it.kind -eq 'pr') { 'Re-run review' } else { 'Re-run triage' } }
   } elseif ($hasArtifact -and $it.kind -eq 'pr') {
-    if ($proposedOpen -gt 0) {
+    if ($stage -eq 'review_ready' -and $proposedOpen -eq 0) {
+      $primary = [ordered]@{ type='approve'; label='Approve' }
+    } elseif ($proposedOpen -gt 0) {
       $primary = [ordered]@{ type='review'; label='Post comments' }
     } elseif ($o.actions) {
-      $action = @($o.actions | Where-Object { $_.type -in @('continue_review', 'hold', 'rerun', 'post_review') }) | Select-Object -First 1
+      $action = @($o.actions | Where-Object { $_.type -in @('continue_review', 'review_summary', 'hold', 'rerun', 'post_review', 'post_comment') }) | Select-Object -First 1
       if ($action) {
         $primary = [ordered]@{ type=$action.type; label=$action.label }
       } elseif ($iowes -ne 'author') {

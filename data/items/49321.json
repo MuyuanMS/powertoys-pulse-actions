@@ -2,37 +2,61 @@
   "number": 49321,
   "kind": "pr",
   "track": "review",
-  "stage": "review_iteration_cap_reached",
+  "stage": "review_drafted",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-27T03:30:43.5854570Z",
-  "evaluated_at": "2026-08-27T03:30:43.5854570Z",
-  "source_updated_at": "2026-08-21T00:03:58.0000000Z",
+  "generated_at": "2026-08-27T06:08:08Z",
+  "evaluated_at": "2026-08-27T06:08:08Z",
+  "source_updated_at": "2026-08-21T00:03:58Z",
   "head_sha": "6fa225e04b4568e6c1e5ea89212f4cfa0a195e20",
   "title": "CmdPal JS/TS Extensions - Phase 1: TypeScript SDK",
   "url": "https://github.com/microsoft/PowerToys/pull/49321",
   "status": {
-    "glyph": "!",
-    "label": "Review iteration limit reached",
-    "detail": "Two confirmed findings remain: EOF finalization can race serialized requests, and generated form IDs can collide with explicit IDs. A safe, isolated correction and validation are still required."
+    "glyph": "📝",
+    "label": "Review drafted",
+    "detail": "The review iteration cap has been reached. One current, apply-ready suggestion prevents EOF finalization from racing an in-flight serialized request. Generated form IDs can also collide with explicit IDs, but that concern requires a broader collector design and is retained as a manual note."
   },
-  "next_action": "Prepare and validate an isolated remediation before any upstream action.",
-  "proposed_comments": [],
+  "next_action": "Recheck the upstream head, then post the selected suggestion only if the maintainer agrees; manually assess the remaining form-ID concern.",
+  "proposed_comments": [
+    {
+      "id": "await-serialized-requests-before-eof-finalization",
+      "kind": "inline",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current EOF handler invokes finalization without awaiting the serialized request chain, which can dispose provider state during an accepted request."
+      },
+      "path": "src/modules/cmdpal/ts-sdk/src/runtime/server.ts",
+      "startLine": 160,
+      "line": 162,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Await queued requests before finalizing EOF",
+      "body": "### Await queued requests before finalizing EOF\n\n**Severity:** `high`\n\nEOF can arrive while an already-received request is still queued in `chain`. Finalizing immediately disposes the provider concurrently with that request, so it can fail after the host has supplied all of its bytes. Wait for the serialized chain to settle before shutdown.\n\n```suggestion\n  process.stdin.on('end', () => {\n    void chain.finally(() => finalize(0));\n  });\n```",
+      "disposition": "proposed"
+    }
+  ],
   "actions": [
     {
-      "id": "review-iteration-cap-49321",
-      "type": "hold",
-      "label": "Review iteration limit reached",
-      "primary": false,
-      "note": "No upstream review action is proposed until the remaining findings have an isolated, validated correction."
+      "id": "post-eof-finalization-review-49321",
+      "type": "post_review",
+      "label": "Post EOF finalization suggestion",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "pr": 49321,
+        "head_sha": "6fa225e04b4568e6c1e5ea89212f4cfa0a195e20",
+        "body_prefix": "Thanks for the TypeScript SDK foundation. One shutdown race remains in the current implementation; the selected suggestion preserves serialized request handling through EOF."
+      }
     }
   ],
   "workflow": {
-    "phase": "review_iteration_cap_reached",
-    "checkpoint_at": "2026-08-27T03:30:43.5854570Z"
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-27T06:08:08Z"
   },
   "freshness": {
-    "queued_at": "2026-08-27T03:30:43.5854570Z",
-    "checkpoint_at": "2026-08-27T03:30:43.5854570Z"
+    "queued_at": "2026-08-21T00:03:58Z",
+    "checkpoint_at": "2026-08-27T06:08:08Z"
   }
 }

@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-27T13:59:09.5972630+08:00",
+  "generated_at": "2026-08-27T14:27:09.3996556+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 3208
   },
   "impact": {
-    "as_of": "2026-08-27T13:59:09.5972630+08:00",
+    "as_of": "2026-08-27T14:27:09.3996556+08:00",
     "issues_helped": 10,
     "prs_iterated": 49,
     "constructive_comments_posted": 3,
@@ -3330,8 +3330,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-PowerToys Run",
@@ -3372,8 +3372,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Command Palette"
@@ -3413,8 +3413,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Ready for review"
@@ -3454,8 +3454,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Cursor Wrap"
@@ -3495,8 +3495,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Ready for review"
@@ -3619,8 +3619,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "No public action pending"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Needs-Author-Feedback"
@@ -3660,8 +3660,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Ready for review"
@@ -3701,8 +3701,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review complete"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Ready for review"
@@ -3742,8 +3742,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -3828,8 +3828,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "0.102"
@@ -3869,8 +3869,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "rerun",
-        "label": "Recheck live PR state"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Ready for review"
@@ -3951,8 +3951,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Ready for review"
@@ -3992,8 +3992,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "rerun",
-        "label": "Recheck live PR state"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Product-Command Palette",
@@ -4139,8 +4139,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Area-User Interface",
@@ -4338,8 +4338,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "rerun",
-        "label": "Recheck live PR state"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Ready for review"
@@ -4379,8 +4379,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "rerun",
-        "label": "Recheck live PR state"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [],
       "created_at": "2026-08-14T11:45:37Z",
@@ -4418,8 +4418,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "No public action pending"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "dependencies",
@@ -4621,8 +4621,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Command Palette",
@@ -4704,8 +4704,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Command Palette",
@@ -5001,8 +5001,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Ready for review"
@@ -5312,7 +5312,7 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
+        "type": "review_summary",
         "label": "Close manually as superseded"
       },
       "labels": [
@@ -5429,8 +5429,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Command Palette",
@@ -5714,8 +5714,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review complete"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Product-Command Palette",
@@ -5756,8 +5756,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-File Explorer",
@@ -5828,8 +5828,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Manual review required"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -5871,8 +5871,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -5914,8 +5914,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Command Palette",
@@ -5956,8 +5956,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review blocked"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -5999,8 +5999,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Manual review required"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Command Palette",
@@ -6033,17 +6033,17 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_iteration_cap_reached",
+      "stage": "review_drafted",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 1,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review",
+        "label": "Post comments"
       },
       "labels": [
         "Product-Command Palette",
@@ -6506,17 +6506,17 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_iteration_cap_reached",
+      "stage": "review_drafted",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 4,
       "primary_action": {
-        "type": "hold",
-        "label": "Hold at review cap"
+        "type": "review",
+        "label": "Post comments"
       },
       "labels": [
         "Needs-Triage",
@@ -6593,8 +6593,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Command Palette"
@@ -6878,8 +6878,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Product-Command Palette"
@@ -7005,8 +7005,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Review iteration limit reached"
+        "type": "review_summary",
+        "label": "Review findings and determine disposition"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -7275,8 +7275,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Wait for author changes"
+        "type": "approve",
+        "label": "Approve"
       },
       "labels": [
         "Product-File Explorer"
@@ -7538,8 +7538,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Hold for maintainer alignment"
+        "type": "review_summary",
+        "label": "Choose architecture and Windows support target"
       },
       "labels": [
         "Idea-New PowerToy",
@@ -7809,8 +7809,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "hold",
-        "label": "Hold without posting"
+        "type": "post_comment",
+        "label": "Reply that maintainers can take over"
       },
       "labels": [
         "Product-FancyZones"
@@ -51303,12 +51303,11 @@ window.BOARD_INDEX = {
       },
       "labels": [
         "Issue-Bug",
-        "Needs-Author-Feedback",
         "Needs-Triage",
         "Product-Window Hopper"
       ],
       "created_at": "2026-08-27T05:45:40Z",
-      "updated_at": "2026-08-27T05:50:32Z",
+      "updated_at": "2026-08-27T06:19:22Z",
       "comments": 1,
       "priority": null
     },

@@ -2,37 +2,114 @@
   "number": 49136,
   "kind": "pr",
   "track": "review",
-  "stage": "review_iteration_cap_reached",
+  "stage": "review_drafted",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-27T03:30:01Z",
-  "evaluated_at": "2026-08-27T03:30:01Z",
+  "generated_at": "2026-08-27T06:08:08Z",
+  "evaluated_at": "2026-08-27T06:08:08Z",
   "source_updated_at": "2026-08-24T03:02:34Z",
   "head_sha": "1eb022b1d52658d61317098f14a5a877ceb56ad1",
   "title": "Keyboard Manager dual-key tap condition for single-key remaps",
   "url": "https://github.com/microsoft/PowerToys/pull/49136",
   "status": {
-    "glyph": "!",
-    "label": "Review iteration limit reached",
-    "detail": "The three-iteration automated review limit had already been exceeded before this policy took effect: nine reviews were submitted. Four confirmed findings remain unresolved: native boolean-result marshaling, resetting a hidden editor condition, publishing reload-state reset before leaving reload bypass, and resolving numpad key release by scan identity during reload. Validation is incomplete; this review has not converged."
+    "glyph": "DRAFT",
+    "label": "Review drafted",
+    "detail": "The review iteration cap has already been exceeded. Four current, apply-ready suggestions address native boolean marshaling and hidden editor-condition state. Two reload-state concerns remain manual notes because their fixes require edits outside current diff ranges."
   },
-  "next_action": "Maintainer decision required: hold the review at the iteration cap or authorize a separately scoped follow-up.",
-  "proposed_comments": [],
+  "next_action": "Recheck the upstream head, then post the selected suggestions only if the maintainer agrees; manually assess the remaining reload-state concerns.",
+  "proposed_comments": [
+    {
+      "id": "marshal-alone-remap-lookup-as-native-bool",
+      "kind": "inline",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The native export returns C++ bool, while the surrounding native-bool wrapper declarations use I1."
+      },
+      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardManagerInterop.cs",
+      "startLine": 53,
+      "line": 55,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Marshal the native bool lookup result as I1",
+      "body": "### Marshal the native bool lookup result as I1\n\n**Severity:** `high`\n\nThis export returns a C++ `bool`, not a four-byte Win32 `BOOL`. Matching the adjacent native-bool declarations prevents a failed lookup from being interpreted as success and exposing an uninitialized mapping.\n\n```suggestion\n        [DllImport(DllName, CallingConvention = Convention)]\n        [return: MarshalAs(UnmanagedType.I1)]\n        internal static extern bool GetSingleKeyAloneRemap(IntPtr config, int index, ref SingleKeyMapping mapping);\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "marshal-alone-key-remap-add-result-as-native-bool",
+      "kind": "inline",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The native add export returns C++ bool and the existing parallel add declarations marshal native bool as I1."
+      },
+      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardManagerInterop.cs",
+      "startLine": 91,
+      "line": 93,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Marshal the native key-remap add result as I1",
+      "body": "### Marshal the native key-remap add result as I1\n\n**Severity:** `high`\n\nThe native method returns a C++ `bool`. Using `I1` preserves a rejected add result instead of allowing the editor to treat a failed mapping insertion as successful.\n\n```suggestion\n        [DllImport(DllName, CallingConvention = Convention)]\n        [return: MarshalAs(UnmanagedType.I1)]\n        internal static extern bool AddSingleKeyAloneRemap(IntPtr config, int originalKey, int targetKey);\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "marshal-alone-shortcut-add-result-as-native-bool",
+      "kind": "inline",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The native shortcut add export returns C++ bool and has the same ABI contract as its neighboring native-bool declarations."
+      },
+      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardManagerInterop.cs",
+      "startLine": 95,
+      "line": 97,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Marshal the native shortcut-remap add result as I1",
+      "body": "### Marshal the native shortcut-remap add result as I1\n\n**Severity:** `high`\n\nThis native method also returns C++ `bool`, so it needs one-byte `I1` marshaling. That lets the editor reliably surface a rejected shortcut-valued Alone mapping.\n\n```suggestion\n        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]\n        [return: MarshalAs(UnmanagedType.I1)]\n        internal static extern bool AddSingleKeyAloneToShortcutRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetKeys);\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "reset-hidden-single-key-condition-to-always",
+      "kind": "inline",
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "A collapsed condition control retains its prior selection, while the condition is only valid for visible single-key mappings."
+      },
+      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Controls/UnifiedMappingControl.xaml.cs",
+      "startLine": 816,
+      "line": 817,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Return Always when the condition control is hidden",
+      "body": "### Return Always when the condition control is hidden\n\n**Severity:** `medium`\n\nWhen a single-key trigger changes into a shortcut, the collapsed control retains its previous `Alone` selection. Returning `Always` while it is hidden prevents that stale value from being saved on a mapping type that does not support the condition.\n\n```suggestion\n        public KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition GetCondition() =>\n            ConditionComboBox?.Visibility == Visibility.Visible\n                ? (KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition)(ConditionComboBox.SelectedIndex ?? 0)\n                : KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition.Always;\n```",
+      "disposition": "proposed"
+    }
+  ],
   "actions": [
     {
-      "id": "hold-review-49136",
-      "type": "hold",
-      "label": "Hold at review cap",
+      "id": "post-review-49136",
+      "type": "post_review",
+      "label": "Post four request-changes suggestions",
       "primary": true,
-      "note": "The three-iteration cap prohibits further automated review requests."
+      "confirm": true,
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "pr": 49136,
+        "head_sha": "1eb022b1d52658d61317098f14a5a877ceb56ad1",
+        "body_prefix": "Thanks for adding the Alone condition for single-key remaps. The current diff still has a few focused interop and editor-state issues; the selected suggestions below keep native return values and hidden-condition state consistent."
+      }
     }
   ],
   "workflow": {
-    "phase": "review_iteration_cap_reached",
-    "checkpoint_at": "2026-08-27T03:30:01Z"
+    "phase": "review_drafted",
+    "review_iterations": 9,
+    "iteration_limit": 3,
+    "checkpoint_at": "2026-08-27T06:08:08Z"
   },
   "freshness": {
-    "queued_at": "2026-08-24T03:02:34Z",
-    "checkpoint_at": "2026-08-27T03:30:01Z"
+    "queued_at": "2026-08-27T06:08:08Z",
+    "checkpoint_at": "2026-08-27T06:08:08Z"
   }
 }
