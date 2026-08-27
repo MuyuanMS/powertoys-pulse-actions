@@ -73,7 +73,7 @@ function Test-HasApplicableReviewAction {
     }
 
     foreach ($action in @($Artifact.actions)) {
-        if ($action.type -eq 'post_review' -and $action.review) {
+        if ($action.type -in @('post_review', 'request_changes') -and $action.review) {
             $reviewHead = [string]$action.review.head_sha
             if ([string]::IsNullOrWhiteSpace($reviewHead)) {
                 $reviewHead = $artifactHead
@@ -140,7 +140,9 @@ foreach ($pr in $pullRequests) {
     $liveHead = [string]$pr.headRefOid
     $hasApplicableReview = Test-HasApplicableReviewAction $artifact $liveHead
     $reviewHead = if ($artifact) {
-        $reviewAction = @($artifact.actions | Where-Object { $_.type -eq 'post_review' -and $_.review }) | Select-Object -First 1
+        $reviewAction = @($artifact.actions | Where-Object {
+            $_.type -in @('post_review', 'request_changes') -and $_.review
+        }) | Select-Object -First 1
         if ($reviewAction -and $reviewAction.review.head_sha) {
             [string]$reviewAction.review.head_sha
         } else {
