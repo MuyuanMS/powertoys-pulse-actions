@@ -2,29 +2,294 @@
   "number": 50182,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T09:11:42.6165471Z",
-  "evaluated_at": "2026-08-28T09:11:42.6165471Z",
+  "generated_at": "2026-08-28T10:56:00Z",
+  "evaluated_at": "2026-08-28T10:56:00Z",
   "source_updated_at": "2026-08-28T08:52:18Z",
   "head_sha": "fd4244ede74a41c082ad0795cd2e194fb52ef744",
-  "title": "",
+  "title": "CmdPal: Icons (2/n) - Separate dispatcher delay from icon UI-thread work",
   "url": "https://github.com/microsoft/PowerToys/pull/50182",
+  "summary": "Fork-side review converged after correcting dispatcher classification, cache accounting and concurrency, bounded outlier retention, and ETW session lifecycle. 13 current-head inline suggestions are drafted.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "New PR discovered during issue-prioritized expansion; queued for the next PR review batch."
+    "glyph": "⚠️",
+    "label": "Review comments drafted",
+    "detail": "13 inline suggestions are pinned to the current upstream head after zero unresolved Copilot threads and passing focused validation."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review drafted comments",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "classify-string-materialization-call",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify string icon materialization before queuing dispatcher work",
+      "confidence": {
+        "score": 94,
+        "rationale": "Direct production path evidence shows all string-backed dispatcher work used Unknown before this change."
+      },
+      "body": "### Classify string icon materialization before queuing dispatcher work\n\n**Severity:** `medium`\n\nString-backed icons currently enter dispatcher diagnostics as `Unknown`, so the new per-materialization report cannot distinguish URI, binary, or glyph work for the main production path. Classifying the string before the dispatcher wait starts keeps wait, callback, and completion samples under the same concrete materialization bucket.\n\n```suggestion\n            var materializationKind = IconDispatcherMaterializationKind.Glyph;\n            var iconPath = iconString.AsSpan();\n            var comma = iconPath.IndexOf(',');\n            if (comma >= 0)\n            {\n                iconPath = iconPath[..comma];\n            }\n\n            if ((iconPath.EndsWith(\".exe\", StringComparison.Ordinal)\n                    || iconPath.EndsWith(\".dll\", StringComparison.Ordinal)\n                    || iconPath.EndsWith(\".lnk\", StringComparison.Ordinal))\n                && (comma < 0 || int.TryParse(iconString.AsSpan()[(comma + 1)..], out _)))\n            {\n                materializationKind = IconDispatcherMaterializationKind.Binary;\n            }\n            else if (Uri.TryCreate(iconString, UriKind.Absolute, out var uri))\n            {\n                materializationKind = uri.AbsolutePath.EndsWith(\".svg\", StringComparison.OrdinalIgnoreCase)\n                    ? IconDispatcherMaterializationKind.SvgUri\n                    : IconDispatcherMaterializationKind.BitmapUri;\n            }\n\n            var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(materializationKind) ?? 0;\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoaderService.cs",
+      "start_line": 195,
+      "line": 196,
+      "side": "RIGHT"
+    },
+    {
+      "id": "cache-lookup-occupancy",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Record cache occupancy on lookup observations",
+      "confidence": {
+        "score": 92,
+        "rationale": "A cache hit proves at least one entry exists, but the original hit path never updates the occupancy observation."
+      },
+      "body": "### Record cache occupancy on lookup observations\n\n**Severity:** `medium`\n\nA diagnostics session that only observes cache hits currently reports zero first, last, and maximum entries because lookup observations do not include the cache count. Passing the approximate count for both hits and misses makes hit-only sessions report occupancy consistent with the observed cache activity.\n\n```suggestion\n        if (_cache.TryGet(key, out var existingTask))\n        {\n            IconLoadDiagnostics.RecordCacheLookup(_iconSize, _cacheSize, hit: true, _cache.ApproximateCount);\n            diagnostics.RecordProviderResolution(IconProviderResolution.CacheHit, existingTask);\n            return existingTask;\n        }\n\n        IconLoadDiagnostics.RecordCacheLookup(_iconSize, _cacheSize, hit: false, _cache.ApproximateCount);\n        return GetOrCreateSlowPath(key, icon, scale, diagnostics);\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/CachedIconSourceProvider.cs",
+      "start_line": 41,
+      "line": 49,
+      "side": "RIGHT"
+    },
+    {
+      "id": "cache-lookup-api",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Pass lookup counts through the diagnostics facade",
+      "confidence": {
+        "score": 91,
+        "rationale": "This is the direct API plumbing needed for the cache provider fix."
+      },
+      "body": "### Pass lookup counts through the diagnostics facade\n\n**Severity:** `medium`\n\nThe provider can sample the current cache count, but the diagnostics facade currently drops that information. Passing the count through lets the session update first, last, and maximum entry observations for lookup-only sessions.\n\n```suggestion\n    internal static void RecordCacheLookup(Size iconSize, int capacity, bool hit, int entryCount)\n    {\n        GetCurrentSession()?.RecordCacheLookup(iconSize, capacity, hit, entryCount);\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnostics.cs",
+      "start_line": 109,
+      "line": 112,
+      "side": "RIGHT"
+    },
+    {
+      "id": "cache-lookup-session",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Update cache occupancy from lookup samples",
+      "confidence": {
+        "score": 91,
+        "rationale": "This routes the new count value to the measurement object that owns occupancy tracking."
+      },
+      "body": "### Update cache occupancy from lookup samples\n\n**Severity:** `medium`\n\n`RecordLookup` currently increments hit/miss counters without updating the observed entry count. Feeding the sampled count into the same observation path used by add/remove makes cache occupancy accurate even when a session sees only lookups.\n\n```suggestion\n    internal void RecordCacheLookup(Size iconSize, int capacity, bool hit, int entryCount)\n    {\n        GetCacheMeasurements(iconSize, capacity).RecordLookup(hit, entryCount);\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs",
+      "start_line": 161,
+      "line": 164,
+      "side": "RIGHT"
+    },
+    {
+      "id": "cache-lookup-measurement",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Record cache count inside lookup measurements",
+      "confidence": {
+        "score": 91,
+        "rationale": "This preserves hit and miss behavior while updating the existing occupancy counters."
+      },
+      "body": "### Record cache count inside lookup measurements\n\n**Severity:** `medium`\n\nThe hit and miss counters are correct, but the occupancy fields remain at their sentinel when no add/remove occurs during the session. Recording the observed count before updating hit or miss counters fixes those first, last, and maximum entry values.\n\n```suggestion\n        public void RecordLookup(bool hit, int entryCount)\n        {\n            RecordObservation(entryCount);\n            if (hit)\n            {\n                Interlocked.Increment(ref _hits);\n            }\n            else\n            {\n                Interlocked.Increment(ref _misses);\n            }\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs",
+      "start_line": 1725,
+      "line": 1736,
+      "side": "RIGHT"
+    },
+    {
+      "id": "bound-outlier-fields",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Bound dispatcher outlier storage",
+      "confidence": {
+        "score": 93,
+        "rationale": "The original queue is unbounded; the replacement retains only the samples needed for reporting."
+      },
+      "body": "### Bound dispatcher outlier storage\n\n**Severity:** `high`\n\nThe outlier queue retains every slow dispatcher sample even though the report renders only ten entries. Keeping a bounded top-N list and a separate total counter prevents long diagnostic sessions from growing memory without bound.\n\n```suggestion\n    private readonly object _dispatcherOutliersLock = new();\n    private readonly List<DispatcherOutlierSample> _dispatcherOutliers = [];\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs",
+      "start_line": 50,
+      "line": 50,
+      "side": "RIGHT"
+    },
+    {
+      "id": "bound-outlier-counter",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Track total outlier samples separately",
+      "confidence": {
+        "score": 93,
+        "rationale": "The retained list is capped, so total count must be tracked independently."
+      },
+      "body": "### Track total outlier samples separately\n\n**Severity:** `high`\n\nAfter bounding retained outliers, the report still needs the total number of slow samples observed. A separate counter preserves that total without retaining every sample object.\n\n```suggestion\n    private long _dispatcherWaitFailures;\n    private long _dispatcherOutlierSamples;\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs",
+      "start_line": 113,
+      "line": 113,
+      "side": "RIGHT"
+    },
+    {
+      "id": "snapshot-bounded-outliers",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Report bounded outliers with the total observed count",
+      "confidence": {
+        "score": 92,
+        "rationale": "This avoids full-history allocation and sort while preserving the displayed sample total."
+      },
+      "body": "### Report bounded outliers with the total observed count\n\n**Severity:** `high`\n\nReport generation currently copies and sorts the complete outlier history, which becomes expensive for long sessions. Snapshotting the bounded retained samples under a lock and printing the total counter keeps the report accurate without depending on an unbounded collection.\n\n```suggestion\n        DispatcherOutlierSample[] outliers;\n        lock (_dispatcherOutliersLock)\n        {\n            outliers = _dispatcherOutliers.ToArray();\n        }\n\n        Array.Sort(outliers, static (left, right) => right.ElapsedTicks.CompareTo(left.ElapsedTicks));\n        builder.AppendLine(\"  Dispatcher outliers (>=16 ms, top 10 by duration)\");\n        AppendValue(builder, \"Samples captured\", Volatile.Read(ref _dispatcherOutlierSamples), \"    \");\n        if (outliers.Length == 0)\n        {\n            builder.AppendLine(\"    no samples\");\n        }\n        else\n        {\n            for (var i = 0; i < Math.Min(10, outliers.Length); i++)\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs",
+      "start_line": 1079,
+      "line": 1089,
+      "side": "RIGHT"
+    },
+    {
+      "id": "retain-top-outliers",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Retain only the ten slowest dispatcher outliers",
+      "confidence": {
+        "score": 93,
+        "rationale": "The insertion path bounds retained samples while retaining the ten longest outliers for the existing report."
+      },
+      "body": "### Retain only the ten slowest dispatcher outliers\n\n**Severity:** `high`\n\nEach slow dispatcher phase currently enqueues a new sample forever. This keeps only the ten longest samples needed by the report and drops shorter samples once the retained set is full.\n\n```suggestion\n        Interlocked.Increment(ref _dispatcherOutlierSamples);\n        var sample = new DispatcherOutlierSample(\n            loadId,\n            inputKind,\n            materializationKind,\n            phase,\n            isDemanded,\n            startedAt,\n            elapsedTicks);\n\n        lock (_dispatcherOutliersLock)\n        {\n            if (_dispatcherOutliers.Count < 10)\n            {\n                _dispatcherOutliers.Add(sample);\n                return;\n            }\n\n            var smallestIndex = 0;\n            var smallestElapsedTicks = _dispatcherOutliers[0].ElapsedTicks;\n            for (var i = 1; i < _dispatcherOutliers.Count; i++)\n            {\n                if (_dispatcherOutliers[i].ElapsedTicks < smallestElapsedTicks)\n                {\n                    smallestIndex = i;\n                    smallestElapsedTicks = _dispatcherOutliers[i].ElapsedTicks;\n                }\n            }\n\n            if (elapsedTicks > smallestElapsedTicks)\n            {\n                _dispatcherOutliers[smallestIndex] = sample;\n            }\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs",
+      "start_line": 1590,
+      "line": 1597,
+      "side": "RIGHT"
+    },
+    {
+      "id": "hidden-etw-session-creation",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Do not keep a hidden session after ETW disables",
+      "confidence": {
+        "score": 80,
+        "rationale": "This addresses the creation race by rechecking IsEnabled immediately after the hidden session is published."
+      },
+      "body": "### Do not keep a hidden session after ETW disables\n\n**Severity:** `medium`\n\nA listener can detach after the enabled check but before the hidden session is published, leaving a session rooted even though no listener remains. Revalidating after publication lets the disabled path atomically remove and stop the candidate before returning it.\n\n```suggestion\n            var candidate = new IconLoadDiagnosticsSession(\n                Interlocked.Increment(ref _nextSessionId),\n                retainCompletedLoadDemandStates: false);\n            etwSession = Interlocked.CompareExchange(ref _etwSession, candidate, null);\n            if (etwSession is null)\n            {\n                etwSession = candidate;\n                if (!IconLoadEventSource.Log.IsEnabled() &&\n                    ReferenceEquals(Interlocked.CompareExchange(ref _etwSession, null, candidate), candidate))\n                {\n                    candidate.Stop();\n                    return null;\n                }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnostics.cs",
+      "start_line": 178,
+      "line": 183,
+      "side": "RIGHT"
+    },
+    {
+      "id": "replace-cache-entry-atomically",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Replace cache entries atomically",
+      "confidence": {
+        "score": 87,
+        "rationale": "TryUpdate prevents replacement notifications and writes when cleanup has already removed or replaced the entry."
+      },
+      "body": "### Replace cache entries atomically\n\n**Severity:** `high`\n\nThe replacement path mutates a cache entry obtained from a non-atomic lookup, so cleanup can remove and recycle that entry before the replacement callback and `SetValue` run. Publishing a replacement entry with `TryUpdate` makes the write conditional on the dictionary still mapping the key to the same entry, and the removal notification is emitted only after that update succeeds.\n\n```suggestion\n            var replacement = new CacheEntry();\n            replacement.Initialize(key, value, existing.GetFrequency() + 1.0, tick);\n            if (_map.TryUpdate(key, replacement, existing))\n            {\n                _removalCallback?.Invoke(\n                    key,\n                    existing.Value,\n                    AdaptiveCacheRemovalReason.Replaced,\n                    ApproximateCount,\n                    _capacity);\n                existing.Clear();\n                _pool.Push(existing);\n            }\n            else\n            {\n                Add(key, value);\n            }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/AdaptiveCache`2.cs",
+      "start_line": 121,
+      "line": 127,
+      "side": "RIGHT"
+    },
+    {
+      "id": "cleanup-remove-exact-entry-helper",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Support exact-entry cache removal",
+      "confidence": {
+        "score": 86,
+        "rationale": "ConcurrentDictionary implements atomic exact pair removal through ICollection<KeyValuePair<TKey,TValue>>."
+      },
+      "body": "### Support exact-entry cache removal\n\n**Severity:** `high`\n\nCleanup scores the enumerated entry, but a concurrent replacement can publish a fresh entry for the same key before the key-only remove runs. Adding an exact key-entry removal path lets cleanup remove only the entry it actually scored.\n\n```suggestion\n    private bool TryRemove(TKey key, AdaptiveCacheRemovalReason reason) => TryRemove(key, expectedEntry: null, reason);\n\n    private bool TryRemove(TKey key, CacheEntry? expectedEntry, AdaptiveCacheRemovalReason reason)\n    {\n        CacheEntry? evicted = expectedEntry;\n        var removed = expectedEntry is null\n            ? _map.TryRemove(key, out evicted)\n            : ((ICollection<KeyValuePair<TKey, CacheEntry>>)_map).Remove(new KeyValuePair<TKey, CacheEntry>(key, expectedEntry));\n\n        if (removed && evicted is not null)\n        {\n            Interlocked.Decrement(ref _entryCount);\n            _removalCallback?.Invoke(key, evicted.Value, reason, ApproximateCount, _capacity);\n            evicted.Clear();\n            _pool.Push(evicted);\n            return true;\n        }\n\n        return false;\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/AdaptiveCache`2.cs",
+      "start_line": 154,
+      "line": 167,
+      "side": "RIGHT"
+    },
+    {
+      "id": "cleanup-remove-exact-entry-call",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Remove only the cleanup-scored cache entry",
+      "confidence": {
+        "score": 86,
+        "rationale": "The call uses the scored key-entry pair so concurrent replacements remain in the cache."
+      },
+      "body": "### Remove only the cleanup-scored cache entry\n\n**Severity:** `high`\n\nCleanup should pass the enumerated entry into the exact-removal helper. Otherwise a fresh replacement for the same key can be evicted based on stale score data from an older entry.\n\n```suggestion\n            var overCapacity = ApproximateCount > _capacity;\n            if (score < 0.1 || overCapacity)\n            {\n                TryRemove(\n                    key,\n                    entry,\n                    overCapacity ? AdaptiveCacheRemovalReason.Capacity : AdaptiveCacheRemovalReason.LowScore);\n            }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/AdaptiveCache`2.cs",
+      "start_line": 215,
+      "line": 223,
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50182",
+      "type": "request_changes",
+      "label": "Post 13 review comments and request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head inline suggestions; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50182,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "fd4244ede74a41c082ad0795cd2e194fb52ef744",
+        "body_prefix": "Thanks for the CmdPal icon diagnostics work. I found a few correctness issues in the diagnostics accounting that are worth addressing before this lands."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "The review found correctness and bounded-resource issues in the new diagnostics and cache paths. All supported fixes were validated on the fork, with no later Copilot findings and zero unresolved threads.",
+    "evidence": [
+      "String-backed dispatcher work is classified as Unknown on the upstream head.",
+      "Cache hit-only sessions omit occupancy observations.",
+      "Dispatcher outlier storage grows without bound although the report needs only ten samples.",
+      "AdaptiveCache replacement and cleanup can act on stale entries during concurrent mutation.",
+      "The ETW hidden-session creation path can retain a session after the listener disables.",
+      "Focused CmdPal builds and 30/30 unit tests passed on the converged fork."
+    ],
+    "recommended_action": "After explicit approval and a current-head freshness check, post the 13 drafted suggestions as a request-changes review.",
+    "evaluated_at": "2026-08-28T10:56:00Z",
+    "source_updated_at": "2026-08-28T08:52:18Z"
+  },
+  "fork_pr": {
+    "number": 497,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/497"
+  },
+  "fork_branch": "pr-iterate/50182",
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-08-28T09:11:42.6165471Z"
-  },
-  "freshness": {
-    "queued_at": "2026-08-28T09:11:42.6165471Z",
-    "checkpoint_at": "2026-08-28T09:11:42.6165471Z"
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-28T10:56:00Z",
+    "fork_head_sha": "c6f8f459b3009b353be75fb585ad654d05b75476",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "30/30 passed"
   }
 }

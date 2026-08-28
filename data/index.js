@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-28T18:59:56.0016909+08:00",
+  "generated_at": "2026-08-28T19:48:37.9963838+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 134,
-    "open_issues": 12539,
-    "community": 11686,
-    "artifacts": 3231
+    "open_issues": 12542,
+    "community": 11688,
+    "artifacts": 3232
   },
   "impact": {
-    "as_of": "2026-08-28T18:59:56.0016909+08:00",
+    "as_of": "2026-08-28T19:48:37.9963838+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -100,6 +100,7 @@ window.BOARD_INDEX = {
   "artifact_numbers": [
     50201,
     50198,
+    50185,
     50184,
     50183,
     50182,
@@ -467,6 +468,7 @@ window.BOARD_INDEX = {
     32931,
     32916,
     24882,
+    49785,
     32879,
     32877,
     32871,
@@ -613,7 +615,6 @@ window.BOARD_INDEX = {
     49789,
     49788,
     32268,
-    49785,
     49784,
     49776,
     32254,
@@ -2568,6 +2569,7 @@ window.BOARD_INDEX = {
     22175,
     39693,
     39690,
+    39687,
     39683,
     39673,
     39668,
@@ -3125,7 +3127,6 @@ window.BOARD_INDEX = {
     36464,
     36462,
     18941,
-    39687,
     36451,
     36442,
     18899,
@@ -3491,7 +3492,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette"
       ],
       "created_at": "2026-08-27T22:09:56Z",
-      "updated_at": "2026-08-27T22:14:55Z",
+      "updated_at": "2026-08-28T11:05:27Z",
       "comments": 0,
       "priority": null
     },
@@ -3521,7 +3522,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette"
       ],
       "created_at": "2026-08-27T22:09:32Z",
-      "updated_at": "2026-08-27T22:14:49Z",
+      "updated_at": "2026-08-28T11:04:16Z",
       "comments": 0,
       "priority": null
     },
@@ -3653,27 +3654,39 @@ window.BOARD_INDEX = {
       "title": "CmdPal: Icons (5/n) - Move icon conversion helpers from C++ to C#",
       "author": "jiripolasek",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
-        "Product-Command Palette"
+        "Product-Command Palette",
+        "Ready for review"
       ],
       "created_at": "2026-08-27T22:08:02Z",
-      "updated_at": "2026-08-27T22:13:32Z",
+      "updated_at": "2026-08-28T11:09:46Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 499,
+        "fork_title": "[PR 50185] CmdPal: Icons (5/n) - Move icon conversion helpers from C++ to C#",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50185",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/499"
+      }
     },
     {
       "id": "pr-50184",
@@ -3772,15 +3785,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_drafted",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 13,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Post 13 review comments and request changes"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -44885,6 +44901,41 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-49785",
+      "kind": "issue",
+      "number": 49785,
+      "url": "https://github.com/microsoft/PowerToys/issues/49785",
+      "title": "Always On Top: Border detaches and persists on desktop after minimizing with Win + D",
+      "author": "zperel-2nd-account",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "triaging",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Product-Always On Top",
+        "Needs-Triage"
+      ],
+      "created_at": "2026-08-09T03:50:09Z",
+      "updated_at": "2026-08-09T12:28:02Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-31580",
       "kind": "issue",
       "number": 31580,
@@ -46761,37 +46812,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-32266",
-      "kind": "issue",
-      "number": 32266,
-      "url": "https://github.com/microsoft/PowerToys/issues/32266",
-      "title": "Recommendation, Please create a Tool that recognizes all software in your Windows PC using specific KEYS -or- Set of KEYS -or- Combination of KEYS",
-      "author": "jmorenony",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Idea-New PowerToy",
-        "Needs-Triage"
-      ],
-      "created_at": "2024-04-05T12:37:47Z",
-      "updated_at": "2024-04-06T11:20:48Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-40862",
       "kind": "issue",
       "number": 40862,
@@ -48584,6 +48604,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50206",
+      "kind": "issue",
+      "number": 50206,
+      "url": "https://github.com/microsoft/PowerToys/issues/50206",
+      "title": "Shortcut Guide V2's Win long-press activation breaks FancyZones Win+Arrow window cycling",
+      "author": "jrobbins-LiveData",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "created_at": "2026-08-28T11:36:17Z",
+      "updated_at": "2026-08-28T11:42:05Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-32686",
       "kind": "issue",
       "number": 32686,
@@ -48617,13 +48668,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-1758",
+      "id": "issue-50204",
       "kind": "issue",
-      "number": 1758,
-      "url": "https://github.com/microsoft/PowerToys/issues/1758",
-      "title": "Memorized clipboard entries",
-      "author": "eisenpony",
-      "state": "closed",
+      "number": 50204,
+      "url": "https://github.com/microsoft/PowerToys/issues/50204",
+      "title": "[Add feature] Keyboard Manager_Rearrange Rows",
+      "author": "Mored4u",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -48639,11 +48690,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-New PowerToy"
+        "Needs-Triage",
+        "Product-Keyboard Manager"
       ],
-      "created_at": "2020-03-27T20:46:51Z",
-      "updated_at": "2026-04-19T12:59:21Z",
-      "comments": 25,
+      "created_at": "2026-08-28T11:27:41Z",
+      "updated_at": "2026-08-28T11:33:16Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -55034,7 +55086,7 @@ window.BOARD_INDEX = {
       "author": "moooyo",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -60341,37 +60393,33 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-49785",
+      "id": "issue-32266",
       "kind": "issue",
-      "number": 49785,
-      "url": "https://github.com/microsoft/PowerToys/issues/49785",
-      "title": "Always On Top: Border detaches and persists on desktop after minimizing with Win + D",
-      "author": "zperel-2nd-account",
+      "number": 32266,
+      "url": "https://github.com/microsoft/PowerToys/issues/32266",
+      "title": "Recommendation, Please create a Tool that recognizes all software in your Windows PC using specific KEYS -or- Set of KEYS -or- Combination of KEYS",
+      "author": "jmorenony",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "triaging",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
-      "issue_type": "bug",
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Product-Always On Top",
+        "Idea-New PowerToy",
         "Needs-Triage"
       ],
-      "created_at": "2026-08-09T03:50:09Z",
-      "updated_at": "2026-08-09T12:28:02Z",
+      "created_at": "2024-04-05T12:37:47Z",
+      "updated_at": "2024-04-06T11:20:48Z",
       "comments": 0,
       "priority": null
     },
@@ -77743,15 +77791,7 @@ window.BOARD_INDEX = {
       "created_at": "2026-07-04T09:34:41Z",
       "updated_at": "2026-07-07T20:49:08Z",
       "comments": 7,
-      "priority": null,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 85,
-        "fork_title": "[CmdPal] Match polyphonic pinyin readings in fuzzy search (#49129)",
-        "fork_state": "OPEN",
-        "fork_branch": "fix/49129-pinyin-polyphonic",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/85"
-      }
+      "priority": null
     },
     {
       "id": "issue-31609",
@@ -201077,6 +201117,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-1758",
+      "kind": "issue",
+      "number": 1758,
+      "url": "https://github.com/microsoft/PowerToys/issues/1758",
+      "title": "Memorized clipboard entries",
+      "author": "eisenpony",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-New PowerToy"
+      ],
+      "created_at": "2020-03-27T20:46:51Z",
+      "updated_at": "2026-04-19T12:59:21Z",
+      "comments": 25,
+      "priority": null
+    },
+    {
       "id": "issue-27059",
       "kind": "issue",
       "number": 27059,
@@ -278522,8 +278592,8 @@ window.BOARD_INDEX = {
         "CmdPal - All Apps"
       ],
       "created_at": "2025-08-30T23:01:42Z",
-      "updated_at": "2026-08-25T17:03:31Z",
-      "comments": 11,
+      "updated_at": "2026-08-28T11:42:30Z",
+      "comments": 12,
       "priority": null
     },
     {
@@ -295759,6 +295829,37 @@ window.BOARD_INDEX = {
       "created_at": "2021-12-27T00:08:27Z",
       "updated_at": "2024-10-13T12:38:48Z",
       "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-50205",
+      "kind": "issue",
+      "number": 50205,
+      "url": "https://github.com/microsoft/PowerToys/issues/50205",
+      "title": "[Mouse Pointer Crosshairs] Gliding cursor - additional settings to improve accessibility and convenience",
+      "author": "Ded10c",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-Mouse Pointer Crosshairs"
+      ],
+      "created_at": "2026-08-28T11:29:46Z",
+      "updated_at": "2026-08-28T11:36:42Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -315664,36 +315765,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-22168",
+      "id": "issue-39687",
       "kind": "issue",
-      "number": 22168,
-      "url": "https://github.com/microsoft/PowerToys/issues/22168",
-      "title": "Maximum shaking distance option - Mous tool -> Find my mous",
-      "author": "Nostres25",
+      "number": 39687,
+      "url": "https://github.com/microsoft/PowerToys/issues/39687",
+      "title": "PowerToys Run showing wrong icons for MS Store apps",
+      "author": "akamienski",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "feature",
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Needs-Triage",
-        "Product-Mouse Utilities",
-        "Product-Find My Mouse"
+        "Issue-Bug",
+        "Product-PowerToys Run",
+        "Needs-Triage"
       ],
-      "created_at": "2022-11-18T19:23:04Z",
-      "updated_at": "2025-08-25T12:26:13Z",
-      "comments": 0,
+      "created_at": "2025-05-23T13:04:18Z",
+      "updated_at": "2026-04-18T15:02:46Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -381253,38 +381353,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-39687",
-      "kind": "issue",
-      "number": 39687,
-      "url": "https://github.com/microsoft/PowerToys/issues/39687",
-      "title": "PowerToys Run showing wrong icons for MS Store apps",
-      "author": "akamienski",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Product-PowerToys Run",
-        "Needs-Triage"
-      ],
-      "created_at": "2025-05-23T13:04:18Z",
-      "updated_at": "2026-04-18T15:02:46Z",
-      "comments": 2,
-      "priority": null
-    },
-    {
       "id": "issue-36451",
       "kind": "issue",
       "number": 36451,
@@ -382987,6 +383055,39 @@ window.BOARD_INDEX = {
       "created_at": "2021-09-24T05:23:36Z",
       "updated_at": "2026-03-04T20:46:45Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-22168",
+      "kind": "issue",
+      "number": 22168,
+      "url": "https://github.com/microsoft/PowerToys/issues/22168",
+      "title": "Maximum shaking distance option - Mous tool -> Find my mous",
+      "author": "Nostres25",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Needs-Triage",
+        "Product-Mouse Utilities",
+        "Product-Find My Mouse"
+      ],
+      "created_at": "2022-11-18T19:23:04Z",
+      "updated_at": "2025-08-25T12:26:13Z",
+      "comments": 0,
       "priority": null
     },
     {
