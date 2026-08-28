@@ -6,43 +6,251 @@
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+  "evaluated_at": "2026-08-28T08:15:20Z",
   "source_updated_at": "2026-08-20T14:41:45Z",
   "title": "[Shortcut Guide] Tab order enters unnamed panes and cannot reach shortcut rows",
   "url": "https://github.com/microsoft/PowerToys/issues/50031",
-  "summary": "The report provides a precise keyboard-only reproduction, expected focus behavior, the observed focus sequence, and a clear accessibility impact. The behavior is sufficiently scoped for a design investigation without needing to infer a root cause.",
+  "summary": "The report's keyboard sequence is consistent with two structural controls that are explicitly present in the current XAML and have no focus suppression, while the row template has no explicit focus owner. A small XAML-only change can remove the structural tab stops and make the existing Pin/Unpin context flyout keyboard reachable without changing shortcut data, rail selection, search, or overlay lifetime.",
   "status": {
     "glyph": "🔧",
-    "label": "actionable design",
-    "detail": "Start an accessibility-focused design investigation covering Tab-stop ownership, accessible names, realized shortcut-row focusability, and keyboard access to Pin/Unpin actions."
+    "label": "Detailed design ready",
+    "detail": "Make ContentFrame and the page ScrollViewer non-tab-stop structural hosts. Make ShortcutItemView itself the named focusable row and own its existing ContextFlyout, so Shift+F10/Menu opens Pin or Unpin for the focused row. Confirm UIA output before merge; do not alter NavigationView's existing rail keyboard behavior."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report provides a precise keyboard-only reproduction, expected focus behavior, the observed focus sequence, and a clear accessibility impact. The behavior is sufficiently scoped for a design investigation without needing to infer a root cause.",
+    "rationale": "The report's keyboard sequence is consistent with two structural controls that are explicitly present in the current XAML and have no focus suppression, while the row template has no explicit focus owner. A small XAML-only change can remove the structural tab stops and make the existing Pin/Unpin context flyout keyboard reachable without changing shortcut data, rail selection, search, or overlay lifetime.",
     "evidence": [
-      "The issue specifies PowerToys 0.101.2312.0 and the Shortcut Guide accessibility surface.",
-      "The reporter documents the exact Tab sequence, including two unnamed Pane stops.",
-      "Shortcut rows are present in the UI Automation tree but are not reachable through keyboard focus.",
-      "The report separately confirms that application-rail Up/Down navigation works, narrowing the affected behavior to focus order and row reachability.",
-      "The issue has Area-Accessibility and Product-Shortcut Guide labels and no visible assignee or linked work."
+      {
+        "kind": "fact",
+        "source": "https://github.com/microsoft/PowerToys/issues/50031",
+        "detail": "The reporter observed Search shortcuts, Close, selected application rail item, Settings, two unnamed Pane stops, then Search shortcuts; no shortcut row receives keyboard focus. The report also confirms Up/Down navigation and selected-state exposure in the application rail, and a single polite no-results live-region event."
+      },
+      {
+        "kind": "fact",
+        "source": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/MainPaneControl.xaml",
+        "detail": "ContentFrame is an unnamed Frame in NavigationView.Content and has neither IsTabStop=False nor an automation accessibility-view override."
+      },
+      {
+        "kind": "fact",
+        "source": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Pages/ShortcutsPage.xaml",
+        "detail": "The current page contains an unnamed ScrollViewer wrapping MainItemsRepeater, likewise without IsTabStop=False. Its shortcut data template creates ShortcutItemView."
+      },
+      {
+        "kind": "fact",
+        "source": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/ShortcutItemView.xaml",
+        "detail": "A row is a UserControl containing a Grid, text, non-interactive ItemsControls, KeyVisual elements deliberately removed from tab order, and a Grid.ContextFlyout with PinMenuItem. No row-level IsTabStop, accessible name, or keyboard invocation surface is declared."
+      },
+      {
+        "kind": "fact",
+        "source": "commits 346b498fb (#48683), 549fd8775, a0632f853, 446bb9f24 (#49639)",
+        "detail": "#48683 replaced separate MainWindow and TaskbarWindow hosts with OverlayWindow, MainPaneControl, and TaskbarPaneControl. The later accessibility changes added AutomationIds and localized rail labels, while #49639 added the search focus, Ctrl+F, Escape, and polite no-results behavior. No Shortcut Guide UI automation test project exists; ShortcutGuide.UnitTests contains activation, converter, and search matcher tests."
+      },
+      {
+        "kind": "inference",
+        "source": "reported UIA control type and current XAML hierarchy",
+        "detail": "The two reported unnamed Pane tab stops are most likely ContentFrame and the ShortcutsPage ScrollViewer: both are visible structural controls in the content route, map to Pane in WinUI UIA, and are the two unnamed controls between the rail footer and the tab-cycle restart. Inspect.exe/Accessibility Insights must confirm their AutomationId/runtime-id mapping before landing."
+      }
     ],
-    "recommended_action": "Start an accessibility-focused design investigation covering Tab-stop ownership, accessible names, realized shortcut-row focusability, and keyboard access to Pin/Unpin actions.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Make ContentFrame and the page ScrollViewer non-tab-stop structural hosts. Make ShortcutItemView itself the named focusable row and own its existing ContextFlyout, so Shift+F10/Menu opens Pin or Unpin for the focused row. Confirm UIA output before merge; do not alter NavigationView's existing rail keyboard behavior.",
+    "evaluated_at": "2026-08-28T08:15:20Z",
     "source_updated_at": "2026-08-20T14:41:45Z"
   },
   "actions": [
     {
       "id": "approve-design-50031",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve accessibility design and start fork implementation",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Approve a focused design investigation for this recent issue.",
+      "note": "Review the inferred pane identities and require Inspect.exe confirmation before implementation.",
       "issue": {
         "number": 50031,
         "repository": "microsoft/PowerToys"
       }
     }
-  ]
+  ],
+  "design": {
+    "root_cause": "summary: Structural content hosts consume keyboard focus, while the virtualized ItemsRepeater's ShortcutItemView template does not publish a focusable row that owns the Pin/Unpin context flyout. facts: MainPaneControl.xaml declares ContentFrame without focus suppression. facts: ShortcutsPage.xaml declares the only main-content ScrollViewer without focus suppression. facts: ShortcutItemView.xaml attaches the context flyout to an inner Grid rather than to an explicitly focusable row control. facts: KeyVisual and KeyCharPresenter intentionally set IsTabStop=False and AccessibilityView=Raw; key labels are decorative and must remain outside the tab order. inference: ContentFrame and the page ScrollViewer correspond to the two anonymous Pane stops. Explicitly removing both from tab navigation, rather than changing NavigationView or the application rail, targets the observed sequence without regressing the working Up/Down rail behavior.",
+    "evidence": [
+      {
+        "fact": "Rail navigation is intentionally customized in Styles/CustomNavigationViewStyle.xaml: RailNavigationViewStyle sets NavigationView.IsTabStop=False while its NavigationViewItems remain content controls. The report confirms those items are already keyboard operable.",
+        "implication": "Do not change RailNavigationViewStyle, WindowSelector_SelectionChanged, or dynamic NavigationViewItem construction."
+      },
+      {
+        "fact": "MainPaneControl.WindowSelector_SelectionChanged reuses/navigates ContentFrame to ShortcutsPage and calls ShortcutsPage.SetShortcuts. ShortcutsPage.RebuildRows produces Header, Subtitle, EmptyText, and Shortcut view-model items.",
+        "implication": "Only ShortcutListItemKind.Shortcut must receive a tab target; headers, subtitles, empty text, and key-label visuals stay passive."
+      },
+      {
+        "fact": "OverlayWindow.OnContentPreviewKeyDown handles Escape before focused controls. MainPaneControl.TryClearSearch focuses SearchBox after clearing a nonempty query; Ctrl+F calls FocusSearch.",
+        "implication": "A focused row must not consume Escape, Ctrl+F, or standard Context Menu/Shift+F10 before the overlay/page receives those commands."
+      }
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/MainPaneControl.xaml",
+        "purpose": "Hosts the title controls, application NavigationView rail, and Frame containing ShortcutsPage.",
+        "symbols": [
+          "ShortcutGuide.Controls.MainPaneControl",
+          "ContentFrame",
+          "WindowSelector"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Pages/ShortcutsPage.xaml",
+        "purpose": "Defines the virtualized main shortcut-row view and no-results live region.",
+        "symbols": [
+          "ShortcutGuide.Pages.ShortcutsPage",
+          "MainItemsRepeater",
+          "ShortcutTemplate",
+          "NoResultsTextBlock"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/ShortcutItemView.xaml",
+        "purpose": "Defines the visible shortcut row and its existing Pin/Unpin context flyout.",
+        "symbols": [
+          "ShortcutGuide.Controls.ShortcutItemView",
+          "PinMenuItem",
+          "PinFlyout_Opening",
+          "Pin_Click"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/ShortcutItemView.xaml.cs",
+        "purpose": "Supplies the row dependency property and existing pin/unpin behavior; expected to remain code-unchanged unless runtime testing proves keyboard context-menu routing requires an explicit handler.",
+        "symbols": [
+          "ShortcutProperty",
+          "Shortcut",
+          "PinFlyout_Opening",
+          "Pin_Click"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuide.UnitTests/ShortcutGuide.UnitTests.csproj",
+        "purpose": "Existing MSTest project for non-UI logic; it cannot by itself exercise WinUI focus/UIA behavior.",
+        "symbols": [
+          "ShortcutGuide.UnitTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/MainPaneControl.xaml",
+        "symbols": [
+          "ContentFrame"
+        ],
+        "current_behavior": "The unnamed Frame is eligible to be an intermediary Pane tab stop between the NavigationView rail and its ShortcutsPage content.",
+        "change": "Set ContentFrame.IsTabStop to False. Do not set a user-facing name: the Frame is only a host, and all meaningful descendants remain exposed.",
+        "code_block": "<Frame\n    x:Name=\"ContentFrame\"\n    IsTabStop=\"False\"\n    Background=\"{ThemeResource LayerFillColorDefaultBrush}\"\n    BorderBrush=\"{ThemeResource CardStrokeColorDefaultBrush}\"\n    BorderThickness=\"1,1,0,0\"\n    CornerRadius=\"8,0,0,0\" />",
+        "edge_cases": [
+          "Confirm child focus navigation still enters a realized row after the footer Settings item.",
+          "Do not add IsTabStop=False to WindowSelector or rail NavigationViewItems; the selected rail item must remain reachable and retain Up/Down traversal."
+        ],
+        "tests": [
+          "UIA tab audit: ContentFrame must not receive keyboard focus or appear as a tab stop.",
+          "Keyboard: selected rail item still receives Tab and Up/Down changes selection."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Pages/ShortcutsPage.xaml",
+        "symbols": [
+          "ShortcutsPage root ScrollViewer",
+          "MainItemsRepeater"
+        ],
+        "current_behavior": "The unnamed ScrollViewer is a structural scroll host and is eligible to receive a Pane focus stop before the repeater's passive templates.",
+        "change": "Set the ScrollViewer's IsTabStop to False. Keep MainItemsRepeater and its row-level virtualization unchanged.",
+        "code_block": "<ScrollViewer IsTabStop=\"False\">\n    <ItemsRepeater\n        x:Name=\"MainItemsRepeater\"\n        Margin=\"0,0,0,24\"\n        ElementClearing=\"MainItemsRepeater_ElementClearing\"\n        ItemTemplate=\"{StaticResource RowTemplateSelector}\"\n        ItemsSource=\"{x:Bind Rows, Mode=OneWay}\" />\n</ScrollViewer>",
+        "edge_cases": [
+          "With a no-match query, there are no shortcut rows; Tab must skip this host rather than creating an unnamed stop, and NoResultsTextBlock remains a polite live region rather than a tab target.",
+          "With enough rows to virtualize, verify focus can advance through realized rows and the ScrollViewer brings the next row into view as WinUI realizes it."
+        ],
+        "tests": [
+          "UIA tab audit: the page ScrollViewer must not receive keyboard focus or appear as a tab stop.",
+          "Search regression: Ctrl+F focuses SearchBox; first Escape clears a nonempty query and returns focus to SearchBox; the next Escape closes the overlay; no-results produces one polite LiveRegionChanged event."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/ShortcutItemView.xaml",
+        "symbols": [
+          "ShortcutItemView",
+          "PinMenuItem",
+          "Grid.ContextFlyout"
+        ],
+        "current_behavior": "A shortcut row displays text and decorative key visuals, but has no explicit focusable, named row control. Its context flyout belongs to an inner Grid, so a keyboard-only user has no documented focused owner from which to invoke Pin/Unpin.",
+        "change": "Make the existing UserControl the sole tab stop for a shortcut row, bind its UIA Name to Shortcut.Name, bind HelpText to Shortcut.Description when present, and move the unchanged MenuFlyout from the inner Grid to UserControl.ContextFlyout. Keep all child text and KeyVisual presentation intact. Do not turn headers, subtitles, or empty-state items into controls.",
+        "code_block": "<UserControl\n    x:Class=\"ShortcutGuide.Controls.ShortcutItemView\"\n    IsTabStop=\"True\"\n    AutomationProperties.Name=\"{x:Bind Shortcut.Name, Mode=OneWay}\"\n    AutomationProperties.HelpText=\"{x:Bind Shortcut.Description, Mode=OneWay}\">\n    <UserControl.ContextFlyout>\n        <MenuFlyout Opening=\"PinFlyout_Opening\">\n            <MenuFlyoutItem x:Name=\"PinMenuItem\" Click=\"Pin_Click\" />\n        </MenuFlyout>\n    </UserControl.ContextFlyout>\n    <Grid\n        Padding=\"16,8,16,8\"\n        BorderBrush=\"{ThemeResource DividerStrokeColorDefaultBrush}\"\n        BorderThickness=\"0,0,0,1\">\n        <!-- existing row content, without Grid.ContextFlyout -->\n    </Grid>\n</UserControl>",
+        "edge_cases": [
+          "A row without Description must expose its shortcut name and must not expose a literal binding/null artifact as HelpText.",
+          "PinFlyout_Opening must continue to calculate Pin versus Unpin from App.CurrentAppName and the current Shortcut after rows are recycled.",
+          "The standard Context Menu key and Shift+F10 must open the flyout for the focused row; Enter and Space must not silently pin/unpin unless an intentional accessible activation design is separately approved.",
+          "Verify the focused-row outline is visible against both light and dark acrylic backgrounds. If UserControl focus visuals are not sufficiently perceptible, add a focused VisualState/Border only after confirming the platform behavior; do not substitute an unstyled Button because that would alter row appearance and activation semantics.",
+          "If Inspect.exe shows the row control type as Pane, that is acceptable only when it is named, focusable, and its context menu is keyboard invocable. Prefer retaining the current control type over an unrelated ListView migration."
+        ],
+        "tests": [
+          "UIA: each realized shortcut row exposes IsKeyboardFocusable=True, HasKeyboardFocus when selected, a nonempty Name equal to its shortcut name, and a keyboard-invocable context menu containing exactly Pin or Unpin as determined by current pinned state.",
+          "Keyboard: Tab from Settings reaches the first realized shortcut row; Shift+Tab reverses to Settings; repeated Tab does not land on unnamed Pane controls; Shift+F10/Menu opens the row menu; Esc closes that menu before applying the overlay's search/close Escape behavior.",
+          "Pin regression: invoke Pin, verify the pinned section updates; invoke Unpin, verify it returns to the non-pinned section; change application rail selection and verify the flyout operates on the newly selected app's row."
+        ]
+      }
+    ],
+    "verify": [
+      "targeted build and test: Build src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuide.Ui.csproj with the repository-supported tools\\build\\build.cmd or tools\\build\\build.ps1 from its project directory.",
+      "targeted build and test: Build src/modules/ShortcutGuide/ShortcutGuide.UnitTests/ShortcutGuide.UnitTests.csproj, then run its existing MSTest assembly with vstest.console.exe. Existing tests cover activation/search helpers only; no claim of automated focus coverage should be made.",
+      "targeted build and test: If an existing PowerToys UI-test harness can launch the overlay on an interactive desktop, add a narrowly scoped UIA regression test there. Otherwise document the manual UIA validation below as the required regression coverage.",
+      "manual keyboard validation: Open the full guide on a single-monitor interactive desktop with the Windows/default-shell application selected and enough shortcuts for several realized rows.",
+      "manual keyboard validation: Starting at Search shortcuts, Tab through the cycle and record Name, ControlType, IsKeyboardFocusable, and HasKeyboardFocus after each key. Expected meaningful sequence is Search shortcuts -> Close -> selected app rail item -> Settings -> first realized shortcut row -> subsequent realized shortcut rows; no unnamed Pane may receive focus. The exact number of rail items depends on installed/current applications.",
+      "manual keyboard validation: Use Up/Down after focusing the rail. Expected: app items traverse and selected state updates exactly as before; Tab returns to the normal sequence.",
+      "manual keyboard validation: On a focused row, use Shift+F10 and the Context Menu key. Expected: the row's menu opens, contains Pin or Unpin, can be invoked with keyboard, and focus returns to the row when dismissed. Repeat after pinning/unpinning and after changing rail selection.",
+      "manual keyboard validation: Run Ctrl+F and both Escape cases: Ctrl+F focuses search, first Escape clears a nonempty query and keeps/focuses search, second Escape closes. With a no-results query, receive one polite live-region announcement and no phantom row/pane tab stop.",
+      "manual keyboard validation: Repeat with the taskbar-indicator surface visible, both shortcut-guide left/right alignment values, light/dark/system theme, and a long list. Taskbar indicators remain passive; overlay click-outside close, close button, and focus visibility must remain intact.",
+      "accessibility audit: Use Accessibility Insights for Windows or Inspect.exe to identify each reported Pane by runtime id, AutomationId, ControlType, Name, IsKeyboardFocusable, and HasKeyboardFocus before and after the change. This confirms rather than assumes that ContentFrame and the page ScrollViewer were the two offending nodes.",
+      "accessibility audit: Use the tool's keyboard navigation/focus-order audit to confirm all reachable stops are visible and named and that no unrelated control becomes a focus target.",
+      "accessibility audit: Inspect a realized row's Name, HelpText, control type, bounding rectangle, focusability, and ContextMenu pattern/keyboard menu exposure. Confirm key-label descendants remain raw/non-tab-stop to avoid duplicate narration.",
+      "accessibility audit: Capture the no-results LiveRegionChanged event and confirm it remains one polite event per transition to visible."
+    ],
+    "risks": [
+      {
+        "risk": "WinUI focus navigation may not automatically realize off-screen ItemsRepeater items after the last currently realized row.",
+        "mitigation": "Test a list longer than the viewport. If traversal stops at the realized range, add focused-row/BringIntoView handling only after reproducing; do not preemptively replace ItemsRepeater with ListView."
+      },
+      {
+        "risk": "Moving ContextFlyout from Grid to UserControl could change pointer target routing.",
+        "mitigation": "Test right-click/touch context invocation on row whitespace, name, description, and key labels as well as Shift+F10/Menu. The same flyout instance and handlers remain unchanged."
+      },
+      {
+        "risk": "A focusable UserControl may expose a Pane control type and default focus visual may be weak.",
+        "mitigation": "Require the named/focusable UIA and visible-focus audit. Add a minimal focused visual state only if manual verification proves the platform default is insufficient."
+      },
+      {
+        "risk": "Binding AutomationProperties.HelpText directly to an optional description may produce an empty property.",
+        "mitigation": "Treat empty HelpText as acceptable only if Inspect.exe reports it empty/absent, not as a literal null string. If the binding is unsuitable, omit HelpText rather than introduce an unlocalized fallback."
+      }
+    ],
+    "alternatives": [
+      {
+        "option": "Replace ItemsRepeater with ListView and use ListViewItem containers.",
+        "decision": "Reject for this fix.",
+        "reason": "It would provide conventional item focus semantics but changes virtualization, layout, selection behavior, and likely the row/context-menu contract. The current flat ItemsRepeater was intentionally introduced for row-level virtualization."
+      },
+      {
+        "option": "Make the inner row Grid focusable and leave the ContextFlyout on it.",
+        "decision": "Reject.",
+        "reason": "Grid is structural and does not communicate an intentional row focus contract as clearly as ShortcutItemView. Owning the flyout on the focused UserControl directly ties keyboard context-menu invocation to the UIA row."
+      },
+      {
+        "option": "Only set IsTabStop=False on the two structural hosts.",
+        "decision": "Reject.",
+        "reason": "It removes the anonymous stops but still leaves no keyboard-reachable row from which to invoke Pin/Unpin."
+      },
+      {
+        "option": "Change the NavigationView template or rail tab behavior.",
+        "decision": "Reject.",
+        "reason": "The rail is confirmed working with Up/Down and selection exposure. Its customized style already suppresses the NavigationView container as a tab stop while retaining its item controls."
+      }
+    ]
+  }
 }
