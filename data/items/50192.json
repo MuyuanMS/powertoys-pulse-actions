@@ -1,0 +1,116 @@
+{
+  "number": 50192,
+  "kind": "pr",
+  "track": "review",
+  "stage": "post_review",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-28T19:48:45Z",
+  "evaluated_at": "2026-08-28T19:48:45Z",
+  "source_updated_at": "2026-08-28T17:01:34Z",
+  "head_sha": "37575e7e9e6af32ecbe0b1af0da7b11f054da4c7",
+  "title": "CmdPal: Icons (12/n) - Share Shell icons by identity and display file-type previews",
+  "url": "https://github.com/microsoft/PowerToys/pull/50192",
+  "summary": "The reconciled review found four shell-icon cache and diagnostics issues: shared-alias poisoning after failed type lookup, caching empty images, replacing useful provisional icons with generic fallback, and a misleading avoidance percentage.",
+  "status": {
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "Four inline suggestions are pinned to the current upstream head."
+  },
+  "next_action": "Review and selectively post the drafted request-changes comments.",
+  "proposed_comments": [
+    {
+      "id": "shell-filetype-fallback-alias",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Avoid caching a failed file-type lookup under the shared alias",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellIconLocationResolver.cs",
+      "start_line": 99,
+      "line": 101,
+      "side": "RIGHT",
+      "body": "### Avoid caching a failed file-type lookup under the shared alias\n\n**Severity:** `medium`\n\nWhen a provisional file-type lookup fails, the fallback identity is path-specific but can still be cached through the type-wide alias. That lets one unavailable or unusual file poison previews for every item with the same extension. Keep the fallback identity usable for the current request, but do not store it under the shared file-type alias.\n\n```suggestion\n        return new LocatedShellIcon(\n            request,\n            ShellIconIdentity.FromItemPath(request.ItemPath, request.Jumbo),\n            request.LocationMode != ShellItemIconLocationMode.FileType);\n```",
+      "confidence": 94
+    },
+    {
+      "id": "shell-empty-image-fallback",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Do not cache an empty materialized shell image",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoaderService.cs",
+      "start_line": 351,
+      "line": 358,
+      "side": "RIGHT",
+      "body": "### Do not cache an empty materialized shell image\n\n**Severity:** `medium`\n\nThe extraction path can return a non-null `ImageIconSource` whose `ImageSource` is still null after bitmap materialization fails. Because later cache code treats that as a successful icon, the blank source can be cached and reused instead of falling back. Convert empty materialized images to the existing Shell fallback before completing the load.\n\n```suggestion\n                if (extractionResult.TakeSoftwareBitmap() is { } softwareBitmap)\n                {\n                    result = await CreateSoftwareBitmapIconSourceAsync(softwareBitmap, diagnostics).ConfigureAwait(false);\n                    if (result is ImageIconSource { ImageSource: null })\n                    {\n                        result = await GetShellItemFallbackSourceAsync(diagnostics).ConfigureAwait(false);\n                    }\n                }\n                else if (extractionResult.BitmapStream is { } bitmapStream)\n                {\n                    result = await CreateImageIconSourceAsync(bitmapStream, scaledSize, diagnostics).ConfigureAwait(false);\n                    if (result is ImageIconSource { ImageSource: null })\n                    {\n                        result = await GetShellItemFallbackSourceAsync(diagnostics).ConfigureAwait(false);\n                    }\n                }\n```",
+      "confidence": 91
+    },
+    {
+      "id": "shell-progressive-preserve-type-icon",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Preserve the provisional type icon when exact extraction falls back",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/CachedIconSourceProvider.cs",
+      "start_line": 264,
+      "line": 264,
+      "side": "RIGHT",
+      "body": "### Preserve the provisional type icon when exact extraction falls back\n\n**Severity:** `medium`\n\nThe progressive path can publish a useful file-type preview and then replace it with the generic Shell fallback when exact extraction cannot produce item-specific content. Keep the exact icon only when it contains real content; otherwise preserve the intermediate source.\n\n```suggestion\n                return exact is not null && !ShellItemIconFallback.IsFallback(exact)\n                    ? exact\n                    : intermediate ?? exact;\n```",
+      "confidence": 93
+    },
+    {
+      "id": "shell-diagnostics-remove-avoidance-rate",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Remove the misleading extraction-avoidance percentage",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs",
+      "start_line": 1803,
+      "line": 1806,
+      "side": "RIGHT",
+      "body": "### Remove the misleading extraction-avoidance percentage\n\n**Severity:** `low`\n\nA progressive Shell request can do both provisional and exact extraction, so extraction count is not bounded by request count. Keep the concrete counters and route breakdown instead of deriving a misleading percentage from mismatched units.\n\n```suggestion\n        builder.AppendLine(\"    Extraction routes\");\n        AppendEnumCounts<ShellIconIdentityKind>(builder, _shellIconExtractionKinds, \"      \");\n        builder.AppendLine(\"    Direct system image-list extraction\");\n```",
+      "confidence": 88
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50192",
+      "type": "request_changes",
+      "label": "Request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "head_sha": "37575e7e9e6af32ecbe0b1af0da7b11f054da4c7",
+        "event": "REQUEST_CHANGES",
+        "body": "Thanks for the PR. I found four edge-case icon caching issues that should be addressed before merging."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The current head can poison shared aliases after a failed file-type lookup, cache blank materialized images, regress from useful provisional icons to generic fallback, and report a percentage derived from incompatible request and extraction counts.",
+    "evidence": [
+      "FileType failures construct a path-specific fallback identity but can still cache it through an extension-wide alias.",
+      "Image materialization can return a non-null icon source with a null ImageSource that downstream caching accepts.",
+      "Progressive exact extraction can replace an existing type preview with the explicit generic fallback sentinel.",
+      "A progressive request may perform multiple extractions, invalidating the reported avoidance percentage.",
+      "The review was reconciled onto the exact reviewed PR 50191 fork head.",
+      "The final fork audit found zero unresolved Copilot threads.",
+      "The reconciled CmdPal UI and affected test projects built successfully; 124 targeted tests passed."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected suggestions as a request-changes review.",
+    "evaluated_at": "2026-08-28T19:48:45Z",
+    "source_updated_at": "2026-08-28T17:01:34Z"
+  },
+  "fork_pr": {
+    "number": 520,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/520"
+  },
+  "fork_branch": "pr-iterate/50192",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-28T19:48:45Z",
+    "fork_head_sha": "a9a952326b67706d5cacbb16b6abfbbb8ab2163f",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "124 targeted tests passed"
+  }
+}
