@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-28T12:33:33.6537047+08:00",
+  "generated_at": "2026-08-28T13:19:05.3232374+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 3196
   },
   "impact": {
-    "as_of": "2026-08-28T12:33:33.6537047+08:00",
+    "as_of": "2026-08-28T13:19:05.3232374+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -54585,8 +54585,8 @@ window.BOARD_INDEX = {
         "Product-Keyboard Manager"
       ],
       "created_at": "2026-08-18T04:38:31Z",
-      "updated_at": "2026-08-19T14:44:23Z",
-      "comments": 4,
+      "updated_at": "2026-08-28T05:01:05Z",
+      "comments": 6,
       "priority": null
     },
     {
