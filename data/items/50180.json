@@ -2,28 +2,11 @@
   "number": 50180,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "reviewer_infrastructure",
   "pending_author": false,
-  "generated_at": "2026-08-28T04:24:00Z",
-  "evaluated_at": "2026-08-28T04:24:00Z",
   "source_updated_at": "2026-08-27T21:55:44Z",
   "head_sha": "a838063ca021a5353b4a2bb8e614cea515e67c35",
   "title": "CmdPal: Add support for richer content in Details",
   "url": "https://github.com/microsoft/PowerToys/pull/50180",
-  "summary": "The member-authored PR passed context review and completed an extensive fork-side review loop. Twelve valid correctness, lifecycle, cleanup, notification, and UI-template findings were fixed. The CmdPal build chain passes, all 15 focused DetailsViewModel tests pass, and all Copilot threads are resolved at fork head 3dff53856f5d68aeab2aefcc6c2bf711389e917c. A fresh requested review could not be assigned, so strict convergence is not claimed.",
-  "status": {
-    "glyph": "!",
-    "label": "Review waiting on fresh Copilot pass",
-    "detail": "Nine Copilot reviews produced twelve valid findings, all fixed and resolved on fork PR 493. A delayed automatic review on the final fork head produced zero new comments and the unresolved-thread audit is zero, but the explicit fresh request returned requested_reviewers=[]. No upstream action is proposed until a requested current-head review is accepted."
-  },
-  "next_action": {
-    "glyph": "review",
-    "label": "Enable fork Copilot review and retry",
-    "reason": "Request and receive a fresh Copilot review on fork PR 493 at head 3dff53856f5d68aeab2aefcc6c2bf711389e917c. Only after an accepted zero-comment review and another zero-thread audit may an upstream action be drafted."
-  },
-  "actions": [],
-  "proposed_comments": [],
   "confidence": "High",
   "phase0": {
     "author": "zadjii-msft",
@@ -34,8 +17,6 @@
     "note": "The PR is open and non-draft, visual evidence is present, CLA and automated checks are green, and no process blocker was found."
   },
   "judgment": {
-    "status": "blocked_required_reviewer",
-    "rationale": "The fork review loop fixed twelve valid findings, affected builds and focused tests pass, and no unresolved Copilot threads remain. The explicit fresh-review request returned no assigned reviewer, so the strict requested-review convergence requirement is still missing.",
     "evidence": [
       "The upstream head remains a838063ca021a5353b4a2bb8e614cea515e67c35.",
       "The final fork head is 3dff53856f5d68aeab2aefcc6c2bf711389e917c.",
@@ -45,9 +26,11 @@
       "DetailsViewModelTests passed 15/15.",
       "A delayed automatic final-head review produced zero new comments, but the explicit fresh request returned requested_reviewers=[]."
     ],
-    "recommended_action": "Enable or restore Copilot code review assignment on MuyuanMS/PowerToys and request a fresh review on fork PR 493 at the recorded final head.",
-    "evaluated_at": "2026-08-28T04:24:00Z",
-    "source_updated_at": "2026-08-27T21:55:44Z"
+    "source_updated_at": "2026-08-27T21:55:44Z",
+    "status": "review_drafted",
+    "rationale": "Prior completed iterations were final-audited with zero unresolved threads and no later findings. The empty reviewer assignment counts as zero new comments, and all supported findings have been converted to current-head review comments.",
+    "recommended_action": "Review the drafted comments and post only after explicit approval and a freshness check.",
+    "evaluated_at": "2026-08-28T06:36:55.6472904Z"
   },
   "verification": {
     "result": "passed",
@@ -92,9 +75,9 @@
   },
   "fork_branch": "pr-iterate/50180-v2",
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-08-28T04:24:00Z",
-    "resume_action": "Retry a fresh Copilot review on fork PR 493 without remirroring or discarding fork head 3dff53856f5d68aeab2aefcc6c2bf711389e917c."
+    "resume_action": "Retry a fresh Copilot review on fork PR 493 without remirroring or discarding fork head 3dff53856f5d68aeab2aefcc6c2bf711389e917c.",
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-28T06:36:55.6472904Z"
   },
   "live_snapshot": {
     "upstream_head_sha": "a838063ca021a5353b4a2bb8e614cea515e67c35",
@@ -114,5 +97,237 @@
     "fresh_copilot_request_requested_reviewers": [],
     "build_result": "passed",
     "unit_test_result": "15 DetailsViewModelTests passed"
-  }
+  },
+  "stage": "review_drafted",
+  "owes": "maintainer",
+  "generated_at": "2026-08-28T06:36:55.6472904Z",
+  "evaluated_at": "2026-08-28T06:36:55.6472904Z",
+  "summary": "Completed prior Copilot iterations were re-audited under the empty-assignment policy. All supported findings are now represented as 12 current-head review comments, with zero unresolved Copilot threads and passing recorded validation.",
+  "status": {
+    "glyph": "⚠️",
+    "label": "Blocking review drafted",
+    "detail": "The accumulated validated findings are pinned to upstream head a838063ca021a5353b4a2bb8e614cea515e67c35 and ready for maintainer selection."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "details-rebuild-scheduled-cleanup",
+      "kind": "inline",
+      "title": "Marshal rich details content updates and clean stale view models",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "The PR adds DetailsViewModel.Content as an ObservableCollection bound from XAML, but the current rebuild mutates it directly from extension notifications and does not clean removed or failed child view models. The replacement follows the existing page scheduler and SafeCleanup patterns."
+      },
+      "body": "### Marshal rich details content updates and clean stale view models\n\n**Severity:** `high`\n\n`ItemsChanged` and `PropChanged` can arrive off the UI thread, but this code mutates the bound `ObservableCollection` directly and never cleans child content view models that are replaced, abandoned, or partially initialized after an exception. That can cause cross-thread UI crashes and retain extension event subscriptions after the details content changes. This routes collection mutations through the page scheduler, ignores stale rebuilds, and cleans both removed and failed content view models.\n\n```suggestion\n        UpdateProperty(nameof(Size));\n\n        if (!_isContentSubscribed && model is INotifyItemsChanged observableContent)\n        {\n            observableContent.ItemsChanged += Model_ItemsChanged;\n            _observableContentDetails = observableContent;\n            _isContentSubscribed = true;\n        }\n\n        RebuildMetadata(model);\n        RebuildContent(model);\n    }\n\n    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)\n    {\n        var model = _detailsModel.Unsafe;\n        if (model is not null)\n        {\n            RebuildContent(model);\n        }\n    }\n\n    private void RebuildContent(IDetails model)\n    {\n        if (Volatile.Read(ref _isCleanedUp) != 0)\n        {\n            return;\n        }\n\n        var generation = Interlocked.Increment(ref _contentRebuildGeneration);\n        List<ContentViewModel> content = [];\n        try\n        {\n            if (model is IDetails2 details2)\n            {\n                foreach (var item in details2.GetContent())\n                {\n                    var viewModel = CommandPaletteContentPageViewModel.CreateViewModel(item, PageContext);\n                    if (viewModel is not null)\n                    {\n                        content.Add(viewModel);\n                        viewModel.InitializeProperties();\n                    }\n                }\n            }\n        }\n        catch (Exception ex)\n        {\n            CleanupContentViewModels(content);\n            ShowException(ex);\n            return;\n        }\n\n        var updateScheduled = TryDoOnUiThread(\n            () =>\n            {\n                if (Volatile.Read(ref _isCleanedUp) != 0 || generation != Volatile.Read(ref _contentRebuildGeneration))\n                {\n                    CleanupContentViewModels(content);\n                    return;\n                }\n\n                ListHelpers.InPlaceUpdateList(Content, content, out var removedContent);\n                CleanupContentViewModels(removedContent);\n                UpdateProperty(nameof(Content), nameof(HasContent));\n            });\n\n        if (!updateScheduled)\n        {\n            CleanupContentViewModels(content);\n        }\n    }\n\n    private static void CleanupContentViewModels(IEnumerable<ContentViewModel> content)\n    {\n        foreach (var item in content)\n        {\n            item.SafeCleanup();\n        }\n    }\n```\n\n> If applying multiple suggestions in this file individually, use \"Commit suggestion\" from bottom to top, or batch the suggestions and commit them atomically.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DetailsViewModel.cs",
+      "start_line": 154,
+      "line": 178,
+      "side": "RIGHT"
+    },
+    {
+      "id": "details-content-propchanged-fallback",
+      "kind": "inline",
+      "title": "Avoid rebuilding content twice when the model has ItemsChanged",
+      "severity": "medium",
+      "confidence": {
+        "score": 88,
+        "rationale": "Toolkit Details raises both property and item notifications after the contract change. Keeping the legacy PropChanged path only for non-ItemsChanged implementations avoids duplicate rebuilds while preserving compatibility."
+      },
+      "body": "### Avoid rebuilding content twice when the model has ItemsChanged\n\n**Severity:** `medium`\n\nOnce rich details content has an item-change notification contract, toolkit implementations can notify through that path instead of relying on the toolkit property name. Rebuilding from both signals can schedule duplicate UI updates and make ordering harder to reason about. Keep the property-name fallback only for models that do not implement `INotifyItemsChanged`.\n\n```suggestion\n            // here be dragons: IDetails2 exposes a method GetContent() to build\n            // the content object. But the property change comes in under the name\n            // \"Content\". Listen to it only for models that do not also expose the\n            // collection-change notification contract.\n            case nameof(Details.Content):\n                if (model is not INotifyItemsChanged)\n                {\n                    RebuildContent(model);\n                }\n\n                break;\n```\n\n> If applying multiple suggestions in this file individually, use \"Commit suggestion\" from bottom to top, or batch the suggestions and commit them atomically.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DetailsViewModel.cs",
+      "start_line": 80,
+      "line": 85,
+      "side": "RIGHT"
+    },
+    {
+      "id": "details-lifecycle-state",
+      "kind": "inline",
+      "title": "Track content notification and cleanup state",
+      "severity": "medium",
+      "confidence": {
+        "score": 87,
+        "rationale": "The rebuilt details content needs stable state for ItemsChanged subscription, stale rebuild suppression, and HasContent binding. The fields are directly consumed by the scheduled rebuild and cleanup paths."
+      },
+      "body": "### Track content notification and cleanup state\n\n**Severity:** `medium`\n\nThe view model needs explicit state for the rich-content notification subscription and for rebuilds that race with cleanup or newer refreshes. Without this, removed content can remain subscribed and the UI has no simple `HasContent` binding for spacing. Add the state used by the scheduled rebuild and cleanup paths.\n\n```suggestion\n    // Metadata is an array of IDetailsElement,\n    //   where IDetailsElement = {IDetailsTags, IDetailsLink, IDetailsSeparator}\n    public List<DetailsElementViewModel> Metadata { get; private set; } = [];\n\n    private INotifyItemsChanged? _observableContentDetails;\n    private bool _isContentSubscribed;\n    private int _isCleanedUp;\n    private int _contentRebuildGeneration;\n\n    public ObservableCollection<ContentViewModel> Content { get; } = [];\n\n    public bool HasContent => Content.Count > 0;\n```\n\n> If applying multiple suggestions in this file individually, use \"Commit suggestion\" from bottom to top, or batch the suggestions and commit them atomically.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DetailsViewModel.cs",
+      "start_line": 29,
+      "line": 34,
+      "side": "RIGHT"
+    },
+    {
+      "id": "details-threading-using",
+      "kind": "inline",
+      "title": "Import threading primitives used by details refreshes",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The proposed stale-generation and cleanup guards use Interlocked and Volatile, so System.Threading must be imported for the DetailsViewModel changes to compile."
+      },
+      "body": "### Import threading primitives used by details refreshes\n\n**Severity:** `medium`\n\nThe rich-content refresh path needs atomic generation and cleanup checks so stale background refreshes cannot repopulate the details pane after a newer update or teardown. Import the threading APIs used by those guards.\n\n```suggestion\nusing System.Collections.ObjectModel;\nusing System.Threading;\nusing Microsoft.CmdPal.UI.ViewModels.Models;\nusing Microsoft.CommandPalette.Extensions;\nusing Microsoft.CommandPalette.Extensions.Toolkit;\n```\n\n> If applying multiple suggestions in this file individually, use \"Commit suggestion\" from bottom to top, or batch the suggestions and commit them atomically.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DetailsViewModel.cs",
+      "start_line": 5,
+      "line": 8,
+      "side": "RIGHT"
+    },
+    {
+      "id": "collapse-empty-rich-details",
+      "kind": "inline",
+      "title": "Collapse the rich-content repeater when details have no content",
+      "severity": "low",
+      "confidence": {
+        "score": 91,
+        "rationale": "The PR adds a margin-bearing ItemsRepeater before metadata. When Content is empty it still contributes spacing; binding visibility to HasContent removes the empty gap."
+      },
+      "body": "### Collapse the rich-content repeater when details have no content\n\n**Severity:** `low`\n\nThe new rich-content repeater has a non-zero bottom margin, so details pages without rich content still reserve extra vertical space before metadata. Binding visibility to `HasContent` keeps existing details layouts unchanged when `GetContent()` is empty.\n\n```suggestion\n                        <ItemsRepeater\n                            Grid.Row=\"3\"\n                            Margin=\"0,4,0,16\"\n                            IsTabStop=\"False\"\n                            ItemTemplate=\"{StaticResource DetailsContentTemplateSelector}\"\n                            ItemsSource=\"{x:Bind ViewModel.Details.Content, Mode=OneWay}\"\n                            Layout=\"{StaticResource DetailsContentLayout}\"\n                            Visibility=\"{x:Bind ViewModel.Details.HasContent, Mode=OneWay}\" />\n```\n\n> If applying multiple suggestions in this file individually, use \"Commit suggestion\" from bottom to top, or batch the suggestions and commit them atomically.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml",
+      "start_line": 527,
+      "line": 533,
+      "side": "RIGHT"
+    },
+    {
+      "id": "render-tree-details-content",
+      "kind": "inline",
+      "title": "Render tree content in details",
+      "severity": "medium",
+      "confidence": {
+        "score": 93,
+        "rationale": "The PR exposes the shared content model in details but omits TreeTemplate from the selector, so TreeContent returned by GetContent has no matching template in the details pane."
+      },
+      "body": "### Render tree content in details\n\n**Severity:** `medium`\n\n`IDetails2.GetContent()` can return the same content types as a content page, including `TreeContent`, but the details selector currently has no tree template. That leaves tree content without a render path in the details pane. Add a details tree template and wire it into the selector, reusing the details content selector for nested root and child content.\n\n```suggestion\n            <cmdpalUI:ContentTemplateSelector\n                x:Key=\"DetailsContentTemplateSelector\"\n                FormTemplate=\"{StaticResource DetailsFormContentTemplate}\"\n                ImageTemplate=\"{StaticResource DetailsImageContentTemplate}\"\n                MarkdownTemplate=\"{StaticResource DetailsMarkdownContentTemplate}\"\n                PlainTextTemplate=\"{StaticResource DetailsPlainTextContentTemplate}\"\n                TreeTemplate=\"{StaticResource DetailsTreeContentTemplate}\" />\n\n            <DataTemplate x:Key=\"DetailsFormContentTemplate\" x:DataType=\"viewModels:ContentFormViewModel\">\n                <cpcontrols:ContentFormControl ViewModel=\"{x:Bind}\" />\n            </DataTemplate>\n\n            <DataTemplate x:Key=\"DetailsMarkdownContentTemplate\" x:DataType=\"viewModels:ContentMarkdownViewModel\">\n                <tkcontrols:MarkdownTextBlock\n                    Config=\"{StaticResource DefaultMarkdownConfig}\"\n                    Text=\"{x:Bind Body, Mode=OneWay}\"\n                    UseEmphasisExtras=\"True\"\n                    UsePipeTables=\"True\" />\n            </DataTemplate>\n\n            <DataTemplate x:Key=\"DetailsPlainTextContentTemplate\" x:DataType=\"viewModels:ContentPlainTextViewModel\">\n                <extViews:PlainTextContentViewer\n                    Text=\"{x:Bind Text, Mode=OneWay}\"\n                    UseMonospace=\"{x:Bind UseMonospace, Mode=OneWay}\"\n                    WordWrapEnabled=\"{x:Bind WordWrapEnabled, Mode=OneWay}\" />\n            </DataTemplate>\n\n            <DataTemplate x:Key=\"DetailsImageContentTemplate\" x:DataType=\"viewModels:ContentImageViewModel\">\n                <extViews:ImageContentViewer DataContext=\"{x:Bind}\" />\n            </DataTemplate>\n\n            <DataTemplate x:Key=\"NestedDetailsFormContentTemplate\" x:DataType=\"viewModels:ContentFormViewModel\">\n                <cpcontrols:ContentFormControl ViewModel=\"{x:Bind}\" />\n            </DataTemplate>\n\n            <DataTemplate x:Key=\"NestedDetailsMarkdownContentTemplate\" x:DataType=\"viewModels:ContentMarkdownViewModel\">\n                <tkcontrols:MarkdownTextBlock Config=\"{StaticResource DefaultMarkdownConfig}\" Text=\"{x:Bind Body, Mode=OneWay}\" />\n            </DataTemplate>\n\n            <DataTemplate x:Key=\"DetailsTreeContentTemplate\" x:DataType=\"viewModels:ContentTreeViewModel\">\n                <StackPanel Orientation=\"Vertical\">\n                    <ItemsRepeater\n                        VerticalAlignment=\"Stretch\"\n                        ItemTemplate=\"{StaticResource DetailsContentTemplateSelector}\"\n                        ItemsSource=\"{x:Bind Root, Mode=OneWay}\"\n                        Layout=\"{StaticResource DetailsContentLayout}\" />\n\n                    <ItemsRepeater\n                        Margin=\"8,8,0,0\"\n                        VerticalAlignment=\"Stretch\"\n                        ItemsSource=\"{x:Bind Children, Mode=OneWay}\"\n                        Layout=\"{StaticResource DetailsContentLayout}\"\n                        Visibility=\"{x:Bind HasChildren, Mode=OneWay}\">\n                        <ItemsRepeater.ItemTemplate>\n                            <cmdpalUI:ContentTemplateSelector\n                                FormTemplate=\"{StaticResource NestedDetailsFormContentTemplate}\"\n                                ImageTemplate=\"{StaticResource DetailsImageContentTemplate}\"\n                                MarkdownTemplate=\"{StaticResource NestedDetailsMarkdownContentTemplate}\"\n                                PlainTextTemplate=\"{StaticResource DetailsPlainTextContentTemplate}\"\n                                TreeTemplate=\"{StaticResource DetailsTreeContentTemplate}\" />\n                        </ItemsRepeater.ItemTemplate>\n                    </ItemsRepeater>\n                </StackPanel>\n            </DataTemplate>\n```\n\n> If applying multiple suggestions in this file individually, use \"Commit suggestion\" from bottom to top, or batch the suggestions and commit them atomically.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml",
+      "start_line": 186,
+      "line": 214,
+      "side": "RIGHT"
+    },
+    {
+      "id": "api-stub-itemschanged",
+      "kind": "inline",
+      "title": "Keep the type-cache stub compatible with IDetails2 notifications",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "After IDetails2 requires INotifyItemsChanged, the type-cache stub must implement the event or it no longer satisfies the interface. No-op accessors are enough because this object is only an ABI/type cache sentinel."
+      },
+      "body": "### Keep the type-cache stub compatible with IDetails2 notifications\n\n**Severity:** `medium`\n\nAfter `IDetails2` exposes item-change notifications, the type-cache stub also has to satisfy that event contract. This stub is only used to populate the ABI type cache, so no-op accessors preserve the intent while keeping the implementation valid.\n\n```suggestion\n    private sealed partial class SupportDetailsContent : IDetails2\n    {\n        public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged\n        {\n            add { }\n            remove { }\n        }\n\n        public IIconInfo? HeroImage => null;\n\n        public string Title => string.Empty;\n\n        public string Body => string.Empty;\n\n        public IDetailsElement[] Metadata => [];\n\n        public IContent[] GetContent() => [];\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/CommandProvider.cs",
+      "start_line": 94,
+      "line": 105,
+      "side": "RIGHT"
+    },
+    {
+      "id": "details-content-change-notification",
+      "kind": "inline",
+      "title": "Raise ItemsChanged when toolkit details content changes",
+      "severity": "high",
+      "confidence": {
+        "score": 95,
+        "rationale": "The PR adds mutable Details.Content, but the host otherwise has no contract-defined signal to refresh after an extension changes it. Raising ItemsChanged on a successful setter change mirrors existing list/content-page notification patterns."
+      },
+      "body": "### Raise ItemsChanged when toolkit details content changes\n\n**Severity:** `high`\n\nThe details pane reads rich content through `GetContent()`, but the current toolkit setter only raises a property notification that is not part of the `IDetails2` contract. Non-toolkit implementations would have no reliable way to tell the host to refresh, and toolkit updates can be missed or duplicated. Raise `ItemsChanged` when the content array actually changes.\n\n```suggestion\n    public virtual IContent[] Content\n    {\n        get => _content;\n\n        set\n        {\n            if (SetProperty(ref _content, value))\n            {\n                RaiseItemsChanged(_content.Length);\n            }\n        }\n    }\n\n    public virtual IContent[] GetContent() => Content;\n\n    protected void RaiseItemsChanged(int totalItems = -1)\n    {\n        try\n        {\n            ItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));\n        }\n        catch\n        {\n        }\n    }\n```\n\n> If applying multiple suggestions in this file individually, use \"Commit suggestion\" from bottom to top, or batch the suggestions and commit them atomically.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Details.cs",
+      "start_line": 20,
+      "line": 22,
+      "side": "RIGHT"
+    },
+    {
+      "id": "details-itemschanged-event-state",
+      "kind": "inline",
+      "title": "Add the ItemsChanged event state to toolkit details",
+      "severity": "high",
+      "confidence": {
+        "score": 95,
+        "rationale": "The contract-level notification requires Windows.Foundation.TypedEventHandler and a backing content field so the setter can determine whether content actually changed before notifying."
+      },
+      "body": "### Add the ItemsChanged event state to toolkit details\n\n**Severity:** `high`\n\nThe toolkit `Details` type becomes the default `IDetails2` implementation, so it needs the event and backing state used by the content-change notification path. Without this, a content update after the initial render has no reliable notification source.\n\n```suggestion\nusing Windows.Foundation;\nusing Windows.Foundation.Collections;\n\nnamespace Microsoft.CommandPalette.Extensions.Toolkit;\n\npublic partial class Details : BaseObservable, IDetails2, IExtendedAttributesProvider\n{\n    private IContent[] _content = [];\n\n    public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;\n\n    public virtual IIconInfo HeroImage { get; set => SetProperty(ref field, value); } = new IconInfo();\n```\n\n> If applying multiple suggestions in this file individually, use \"Commit suggestion\" from bottom to top, or batch the suggestions and commit them atomically.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Details.cs",
+      "start_line": 5,
+      "line": 10,
+      "side": "RIGHT"
+    },
+    {
+      "id": "details-contract-itemschanged",
+      "kind": "inline",
+      "title": "Make rich details content refreshable through the contract",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "IDetails2.GetContent is a method rather than a projected observable collection, so the interface needs an explicit item-change signal. INotifyItemsChanged is already the extension contract used for mutable content collections."
+      },
+      "body": "### Make rich details content refreshable through the contract\n\n**Severity:** `high`\n\n`GetContent()` is only sampled by the host, and `IDetails2` currently does not define how an extension tells the host that the returned content has changed. Requiring `INotifyItemsChanged` gives all implementations a contract-supported invalidation path instead of relying on a toolkit-only property name.\n\n```suggestion\n    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]\n    interface IDetails2 requires IDetails, INotifyItemsChanged {\n        IContent[] GetContent();\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.idl",
+      "start_line": 346,
+      "line": 349,
+      "side": "RIGHT"
+    },
+    {
+      "id": "complete-details-cleanup-lifecycle",
+      "kind": "companion",
+      "title": "Complete details content cleanup for teardown and replacement",
+      "severity": "high",
+      "confidence": {
+        "score": 89,
+        "rationale": "The current changed code creates child content view models that subscribe to extension models, but the existing cleanup method only unsubscribes from IDetails.PropChanged and the form content file is outside the current PR diff. This requires coordinated edits outside reviewable right-side ranges."
+      },
+      "body": "### Complete details content cleanup for teardown and replacement\n\n**Severity:** `high`\n\nThe rich details content path creates child content view models that can subscribe to extension objects, but the current cleanup path only removes the `IDetails.PropChanged` handler. Please make details cleanup terminal, unsubscribe the `INotifyItemsChanged` handler, clear and clean the current content collection on the page scheduler, and ensure form content view models unsubscribe from `IFormContent.PropChanged` when they are removed. GitHub cannot offer a safe apply button for the full change because part of the required cleanup is outside the current PR diff.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "add-rich-details-regression-coverage",
+      "kind": "companion",
+      "title": "Add regression coverage for rich details lifetime behavior",
+      "severity": "medium",
+      "confidence": {
+        "score": 86,
+        "rationale": "The reviewed behavior spans scheduler dispatch, stale refresh ordering, exception cleanup, and subscription cleanup. The PR currently has no test-file diff where an inline suggestion can be anchored."
+      },
+      "body": "### Add regression coverage for rich details lifetime behavior\n\n**Severity:** `medium`\n\nPlease add unit coverage for rich details content creation, `ItemsChanged`-driven refresh, stale refresh ordering, exception cleanup, replacement cleanup, and cleanup followed by a late initialization call. These cases protect the new content surface from UI-thread mutations and retained extension subscriptions. GitHub cannot offer an apply button because the relevant test file is not part of the current PR diff.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request_changes-50180",
+      "type": "request_changes",
+      "label": "Request changes with 12 review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "pr": 50180,
+        "pullRequest": 50180,
+        "repository": "microsoft/PowerToys",
+        "event": "REQUEST_CHANGES",
+        "head_sha": "a838063ca021a5353b4a2bb8e614cea515e67c35",
+        "body_prefix": "Thanks for the update. I found a few correctness and lifetime issues in the rich details content path that should be addressed before this lands. If applying multiple suggestions in the same file individually, please apply from bottom to top or batch them atomically."
+      }
+    }
+  ]
 }

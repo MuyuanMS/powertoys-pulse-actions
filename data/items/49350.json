@@ -2,23 +2,11 @@
   "number": 49350,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "reviewer_infrastructure",
   "pending_author": false,
-  "generated_at": "2026-08-28T05:23:00Z",
-  "evaluated_at": "2026-08-28T05:23:00Z",
   "source_updated_at": "2026-08-26T09:18:32Z",
   "head_sha": "bc719e734184e769aa22ead5f737fe2895222af3",
   "title": "Add File Explorer thumbnail support for 3MF files",
   "url": "https://github.com/microsoft/PowerToys/pull/49350",
-  "status": {
-    "glyph": "...",
-    "label": "Copilot review unavailable",
-    "detail": "Fork PR 332 includes the complete review fixes through head f968b0bcffad87411c8500840ffd18c409e81e00. The latest delayed finding was fixed with a relationship-free package test proving Metadata/thumbnail.png is selected by the compatibility fallback. All Copilot threads are resolved, affected projects build, 21 focused ThreeMF tests pass, and the new fallback test passes 1/1. The final fresh request again returned requested_reviewers=[], so no current-head zero-comment pass exists and clean convergence cannot be claimed."
-  },
-  "next_action": "Retry a fresh Copilot review only after the fork accepts the reviewer assignment; until then, retain this explicit convergence blocker.",
-  "proposed_comments": [],
-  "actions": [],
   "validation": {
     "completed_at": "2026-08-28T05:23:00Z",
     "configuration": "Debug x64",
@@ -30,7 +18,6 @@
     ]
   },
   "workflow": {
-    "phase": "waiting_copilot",
     "fork_head_sha": "f968b0bcffad87411c8500840ffd18c409e81e00",
     "latest_copilot_review_commit": "b4247d3dd6a756adc3c144b3aa00d024cfa616e6",
     "latest_copilot_published_inline_comments": 1,
@@ -39,7 +26,8 @@
     "unresolved_other_threads": 1,
     "copilot_requested_at": "2026-08-28T05:22:53Z",
     "copilot_requested_reviewers": [],
-    "checkpoint_at": "2026-08-28T05:23:00Z"
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-28T06:36:55.5553987Z"
   },
   "freshness": {
     "queued_at": "08/27/2026 10:51:07",
@@ -51,5 +39,202 @@
     "head_sha": "f968b0bcffad87411c8500840ffd18c409e81e00",
     "source_updated_at": "2026-08-28T05:22:53Z"
   },
-  "fork_branch": "pr-iterate/49350-v4"
+  "fork_branch": "pr-iterate/49350-v4",
+  "stage": "review_drafted",
+  "owes": "maintainer",
+  "generated_at": "2026-08-28T06:36:55.5553987Z",
+  "evaluated_at": "2026-08-28T06:36:55.5553987Z",
+  "summary": "Completed prior Copilot iterations were re-audited under the empty-assignment policy. All supported findings are now represented as 11 current-head review comments, with zero unresolved Copilot threads and passing recorded validation.",
+  "status": {
+    "glyph": "⚠️",
+    "label": "Review comments drafted",
+    "detail": "The accumulated validated findings are pinned to upstream head bc719e734184e769aa22ead5f737fe2895222af3 and ready for maintainer selection."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review drafted comments",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "loader-thumbnail-precedence",
+      "kind": "inline",
+      "title": "Honor the package thumbnail relationship before heuristics",
+      "severity": "high",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current implementation applies filename heuristics before package relationships, while the package relationship is the authoritative thumbnail declaration."
+      },
+      "body": "### Honor the package thumbnail relationship first\n**Severity:** `high`\n\nResolve the package-declared thumbnail before applying filename heuristics. Otherwise a package that contains both a relationship target and an unrelated `thumbnail*.png` can render the wrong image.\n\n```suggestion\n        private static ZipArchiveEntry FindThumbnailEntry(ZipArchive archive)\n        {\n            foreach (var target in GetThumbnailTargetsFromRelationships(archive))\n            {\n                var entry = archive.GetEntry(target) ??\n                            archive.Entries.FirstOrDefault(e =>\n                                string.Equals(e.FullName.Replace('\\\\', '/'), target.TrimStart('/'), StringComparison.OrdinalIgnoreCase));\n\n                if (entry != null)\n                {\n                    return entry;\n                }\n            }\n\n            ZipArchiveEntry namedThumbnail = null;\n            ZipArchiveEntry metadataFallback = null;\n\n            foreach (var entry in archive.Entries)\n            {\n                var name = entry.FullName.Replace('\\\\', '/');\n                var fileName = name.Contains('/') ? name[(name.LastIndexOf('/') + 1)..] : name;\n\n                if (ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) &&\n                    fileName.Contains(\"thumbnail\", StringComparison.OrdinalIgnoreCase))\n                {\n                    namedThumbnail ??= entry;\n                    continue;\n                }\n\n                if (metadataFallback == null &&\n                    name.Contains(\"Metadata/\", StringComparison.OrdinalIgnoreCase) &&\n                    ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))\n                {\n                    metadataFallback = entry;\n                }\n            }\n\n            return namedThumbnail ?? metadataFallback;\n        }\n```\n",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/previewpane/ThreeMfThumbnailProvider/ThreeMfModelLoader.cs",
+      "start_line": 104,
+      "line": 149,
+      "side": "RIGHT"
+    },
+    {
+      "id": "loader-transform-whitespace",
+      "kind": "inline",
+      "title": "Accept XML whitespace in transform attributes",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "ST_Transform values are XML whitespace-separated; the current separator array accepts only literal spaces."
+      },
+      "body": "### Accept all XML whitespace in transforms\n**Severity:** `medium`\n\n`ST_Transform` is whitespace-separated, not space-separated. Include tabs, carriage returns, and line feeds so valid XML formatting does not silently invalidate the transform.\n\n```suggestion\n        private static readonly char[] TransformSeparators = { ' ', '\\t', '\\r', '\\n' };\n```\n",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/previewpane/ThreeMfThumbnailProvider/ThreeMfModelLoader.cs",
+      "line": 20,
+      "side": "RIGHT"
+    },
+    {
+      "id": "provider-resize-safety",
+      "kind": "inline",
+      "title": "Do not enlarge fitting thumbnails or retain disposed stream backing",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current scale calculation can enlarge already-fitting images, and returning a bitmap backed by a disposed source stream risks later image access failures."
+      },
+      "body": "### Keep fitting images at their size and detach returned bitmaps\n**Severity:** `medium`\n\nDo not upscale a fitting image, and return a bitmap that is independent of any source stream whose lifetime is ending.\n\n```suggestion\n        public static Bitmap ResizeImage(Bitmap image, uint maxSize)\n        {\n            if (image == null || maxSize == 0 || maxSize > MaxThumbnailSize)\n            {\n                return null;\n            }\n\n            if (image.Width <= maxSize && image.Height <= maxSize && image.PixelFormat == PixelFormat.Format32bppArgb)\n            {\n                var detachedImage = new Bitmap(image);\n                image.Dispose();\n                return detachedImage;\n            }\n\n            float scale = Math.Min(1f, Math.Min((float)maxSize / image.Width, (float)maxSize / image.Height));\n            int scaleWidth = (int)(image.Width * scale);\n            int scaleHeight = (int)(image.Height * scale);\n\n            if (scaleWidth <= 0 || scaleHeight <= 0)\n            {\n                return null;\n            }\n\n            Bitmap destImage = new Bitmap(scaleWidth, scaleHeight, PixelFormat.Format32bppArgb);\n            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);\n\n            using (var graphics = Graphics.FromImage(destImage))\n            {\n                graphics.CompositingMode = CompositingMode.SourceCopy;\n                graphics.CompositingQuality = CompositingQuality.HighQuality;\n                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;\n                graphics.SmoothingMode = SmoothingMode.HighQuality;\n                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;\n                graphics.DrawImage(image, 0, 0, scaleWidth, scaleHeight);\n            }\n\n            image.Dispose();\n            return destImage;\n        }\n```\n",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/previewpane/ThreeMfThumbnailProvider/ThreeMfThumbnailProvider.cs",
+      "start_line": 145,
+      "line": 180,
+      "side": "RIGHT"
+    },
+    {
+      "id": "worker-output-path",
+      "kind": "inline",
+      "title": "Use extension-aware PNG output",
+      "severity": "medium",
+      "confidence": {
+        "score": 98,
+        "rationale": "String replacement changes unrelated path components containing '.3mf' and emits BMP data even though the native host expects the new PNG output."
+      },
+      "body": "### Derive the output path from the file extension\n**Severity:** `medium`\n\nReplace only the input extension and keep the output format consistent with the provider contract. A path component can legitimately contain `.3mf` and must not be rewritten.\n\n```suggestion\n// Copyright (c) Microsoft Corporation\n// The Microsoft Corporation licenses this file to you under the MIT license.\n// See the LICENSE file in the project root for more information.\nusing System.Globalization;\nusing System.IO;\n\nnamespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf\n{\n    internal static class Program\n    {\n        private static ThreeMfThumbnailProvider _thumbnailProvider;\n\n        [STAThread]\n        public static void Main(string[] args)\n        {\n            ApplicationConfiguration.Initialize();\n            if (args != null)\n            {\n                if (args.Length == 2)\n                {\n                    string filePath = args[0];\n                    uint cx = Convert.ToUInt32(args[1], 10);\n\n                    _thumbnailProvider = new ThreeMfThumbnailProvider(filePath);\n                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);\n                    if (thumbnail != null)\n                    {\n                        filePath = Path.ChangeExtension(filePath, \".png\");\n                        thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);\n                    }\n                }\n                else\n                {\n                    MessageBox.Show(\"ThreeMf thumbnail - wrong number of args: \" + args.Length.ToString(CultureInfo.InvariantCulture));\n                }\n            }\n        }\n    }\n}\n```\n",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/previewpane/ThreeMfThumbnailProvider/Program.cs",
+      "start_line": 1,
+      "line": 41,
+      "side": "RIGHT"
+    },
+    {
+      "id": "powerpreview-state-logging",
+      "kind": "companion",
+      "title": "Log the resolved state without dereferencing an optional setting",
+      "severity": "medium",
+      "confidence": {
+        "score": 95,
+        "rationale": "The existing trace and error paths dereference an optional setting value, which is absent when policy supplies the state during upgrades."
+      },
+      "body": "### Use the resolved state for policy-controlled modules\n**Severity:** `medium`\n\nWhen policy provides the state, the setting value can be absent. Capture the prior applied state and log `module_new_state` instead of dereferencing `toggle` in the state-change and failure telemetry paths.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "adml-well-formedness",
+      "kind": "inline",
+      "title": "Close the supported-version XML element",
+      "severity": "high",
+      "confidence": {
+        "score": 100,
+        "rationale": "The current XML string element is missing its closing angle bracket, so the policy resource file is not well formed."
+      },
+      "body": "### Keep the policy resource XML well formed\n**Severity:** `high`\n\nClose this string element so Group Policy can parse the resource file and load the supported-version metadata.\n\n```suggestion\n      <string id=\"SUPPORTED_POWERTOYS_0_101_0\">PowerToys version 0.101.0 or later</string>\n```\n",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/gpo/assets/en-US/PowerToys.adml",
+      "line": 42,
+      "side": "RIGHT"
+    },
+    {
+      "id": "loader-package-boundaries",
+      "kind": "companion",
+      "title": "Bound all untrusted package parsing and geometry work",
+      "severity": "critical",
+      "confidence": {
+        "score": 98,
+        "rationale": "The parser consumes untrusted ZIP/XML/image data and the current implementation lacks the package-wide size, XML, relationship, decoded-pixel, vertex, triangle, instance, and resolution bounds needed to make those operations bounded."
+      },
+      "body": "### Bound untrusted package parsing and geometry work\n**Severity:** `critical`\n\nThe provider runs in response to Explorer opening an untrusted file. Apply package-wide limits before decompression and XML/image materialization, disable DTD and external entity resolution, and share vertex, triangle, decoded-pixel, model-byte, instance, and object-resolution budgets across the complete package. The limits must be enforced on actual bytes read rather than only trusting ZIP central-directory lengths.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "loader-opc-and-production-resolution",
+      "kind": "companion",
+      "title": "Resolve the designated root and Production Extension graph safely",
+      "severity": "high",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current loader treats every model part as a root, resolves relationship targets loosely, and does not fully resolve package-root Production Extension component references with cycle and depth protection."
+      },
+      "body": "### Resolve only the intended model graph\n**Severity:** `high`\n\nUse the package-level 3D-model relationship to select the root part, with an explicit compatibility fallback only when that relationship is absent. Match relationship types exactly, normalize and percent-decode URI targets, reject external targets, and resolve Production Extension `p:path` references relative to the package root. Filter core-namespace objects and components, preserve an explicit empty `<build/>`, support direct-mesh fallback only when no build exists, and enforce cycle, depth, part-count, instance, and resolution budgets while composing transforms and unit scales.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "provider-and-native-host-lifetime",
+      "kind": "companion",
+      "title": "Make the managed/native handoff failure-safe",
+      "severity": "high",
+      "confidence": {
+        "score": 98,
+        "rationale": "The managed and native layers need coordinated stream, process, handle, HRESULT, timeout, output initialization, bitmap-alpha, and cleanup behavior for Explorer-hosted untrusted input."
+      },
+      "body": "### Make the managed/native handoff failure-safe\n**Severity:** `high`\n\nHandle non-seekable input by buffering it once, check every stream read and process-launch result, initialize output pointers and alpha values before returning, enforce a finite worker timeout, close process and stream handles on every path, and return a failure HRESULT when no bitmap was produced. Validate the generated bitmap and preserve alpha explicitly instead of assuming BMP loading retains transparent pixels.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "gpo-abi-order",
+      "kind": "companion",
+      "title": "Preserve the existing WinRT ABI slot order",
+      "severity": "high",
+      "confidence": {
+        "score": 100,
+        "rationale": "Adding a static WinRT method in the middle of the existing interface changes the ABI slot of every following method and can break already-compiled consumers."
+      },
+      "body": "### Preserve the existing WinRT ABI slot order\n**Severity:** `high`\n\nAppend the new `GetConfiguredThreeMfThumbnailsEnabledValue` method after the existing final accessor rather than inserting it between established methods. The generated static interface is an ABI contract, so existing slots must remain unchanged.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "regression-and-fuzz-coverage",
+      "kind": "companion",
+      "title": "Add focused coverage for the new package and policy paths",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The feature needs focused coverage for relationship-free thumbnail fallback, transforms and unit conversion, component graphs, policy callbacks, Explorer activation/error markers, and fuzz-target resource exhaustion."
+      },
+      "body": "### Cover the security and compatibility boundaries\n**Severity:** `medium`\n\nAdd focused tests for relationship-free `thumbnail*` and `Metadata/` fallback, exact relationship matching and URI normalization, malformed XML and oversized entries, empty builds, cross-part components, cycle/depth and geometry budgets, whitespace-separated transforms, unit conversion, non-seekable streams, output-path derivation, policy-controlled settings callbacks, and Explorer success/failure log markers. Keep the fuzz target linked to the shared SDL work item and avoid catching memory-exhaustion failures as ordinary invalid input.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post_review-49350",
+      "type": "post_review",
+      "label": "Post 11 review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "pr": 49350,
+        "pullRequest": 49350,
+        "repository": "microsoft/PowerToys",
+        "event": "COMMENT",
+        "head_sha": "bc719e734184e769aa22ead5f737fe2895222af3",
+        "body_prefix": "This review consolidates 11 supported findings from the completed fork-side review iterations. Inline suggestions and general review notes are pinned to the current upstream head."
+      }
+    }
+  ]
 }
