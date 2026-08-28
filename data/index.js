@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-28T18:46:28.0398214+08:00",
+  "generated_at": "2026-08-28T18:59:56.0016909+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 134,
     "open_issues": 12539,
     "community": 11686,
-    "artifacts": 3230
+    "artifacts": 3231
   },
   "impact": {
-    "as_of": "2026-08-28T18:46:28.0398214+08:00",
+    "as_of": "2026-08-28T18:59:56.0016909+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -100,6 +100,7 @@ window.BOARD_INDEX = {
   "artifact_numbers": [
     50201,
     50198,
+    50184,
     50183,
     50182,
     50181,
@@ -3686,23 +3687,26 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
       ],
       "created_at": "2026-08-27T22:02:16Z",
-      "updated_at": "2026-08-28T09:53:55Z",
-      "comments": 1,
+      "updated_at": "2026-08-28T10:49:59Z",
+      "comments": 2,
       "priority": null,
       "mirror": {
         "kind": "pr",
@@ -3726,15 +3730,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_drafted",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 2,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Post 2 review comments and request changes"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3864,7 +3871,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-08-27T21:55:19Z",
-      "updated_at": "2026-08-27T21:55:44Z",
+      "updated_at": "2026-08-28T10:46:40Z",
       "comments": 1,
       "priority": null,
       "mirror": {
