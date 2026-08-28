@@ -141,7 +141,11 @@ foreach ($path in @($paths)) {
   $issueAction = @($artifact.actions | Where-Object {
     $_.type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
   }) | Select-Object -First 1
-  if (-not $issueAction -and -not $artifact.pending_author) {
+  $allowsNoAction = $artifact.judgment.status -in @(
+    'duplicate_or_handled',
+    'not_actionable'
+  ) -or $artifact.stage -eq 'design_in_progress'
+  if (-not $issueAction -and -not $artifact.pending_author -and -not $allowsNoAction) {
     $errors.Add("$prefix issue artifact has no meaningful maintainer action")
   }
 
