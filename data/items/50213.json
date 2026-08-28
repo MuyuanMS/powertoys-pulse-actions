@@ -1,0 +1,104 @@
+{
+  "number": 50213,
+  "kind": "pr",
+  "track": "review",
+  "stage": "post_review",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-28T19:35:00Z",
+  "evaluated_at": "2026-08-28T19:35:00Z",
+  "source_updated_at": "2026-08-28T18:22:33Z",
+  "head_sha": "5e83b036c9045a8cfd586ddd583bc23b02e11ba6",
+  "title": "[Peek] Update folder preview to be more robust, show more info, include scanning status and report errors",
+  "url": "https://github.com/microsoft/PowerToys/pull/50213",
+  "summary": "The fork review found four folder-scan presentation and correctness gaps: delayed initial scanning state, inaccessible subtrees reported as complete, hard-coded summary composition, and missing final-state coverage.",
+  "status": {
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "One inline suggestion and three general notes are pinned to the current upstream head."
+  },
+  "next_action": "Review and selectively post the drafted request-changes comments.",
+  "proposed_comments": [
+    {
+      "id": "report-scanning-before-enumeration",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Show scanning status before the first entry arrives",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
+      "start_line": 136,
+      "line": 136,
+      "side": "RIGHT",
+      "body": "### Show scanning status before the first entry arrives\n\n**Severity:** `medium`\n\nThe scanning indicator is only reported after the enumeration has produced an entry and the update interval has elapsed. A slow folder open or first entry therefore leaves the new status row blank even though scanning is already underway. Report the initial state before starting the worker so the progress ring and localized status are visible for the full operation.\n\n```suggestion\n                sizeProgress.Report(new FolderScanProgress(0, 0, 0, FolderScanState.Scanning));\n                await Task.Run(() => CalculateFolderSizeWithProgress(Item.Path, sizeProgress, cancellationToken), cancellationToken);\n```",
+      "confidence": 96
+    },
+    {
+      "id": "preserve-partial-status-for-inaccessible-subtrees",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Mark inaccessible subtree omissions as incomplete",
+      "body": "### Mark inaccessible subtree omissions as incomplete\n\n**Severity:** `high`\n\n`IgnoreInaccessible` skips denied descendants without surfacing an exception, so the current final state can report completed counts that omit part of the tree. Enumerate directories independently, continue after an inaccessible subtree, and retain a partial-error flag for the final progress update. This spans separate changed hunks and should be applied as one coordinated change.",
+      "confidence": 94
+    },
+    {
+      "id": "localize-folder-summary-composition",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Localize the complete folder summary",
+      "body": "### Localize the complete folder summary\n\n**Severity:** `medium`\n\nThe current implementation hard-codes the order and punctuation joining the localized file and folder fragments, preventing translators from choosing a locale-appropriate sentence structure. Put both the complete and incomplete composite formats in resources and format them with the localized count fragments. This requires coordinated changes to the helper and resource file.",
+      "confidence": 91
+    },
+    {
+      "id": "cover-final-folder-summary",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Add regression coverage for folder scan states",
+      "body": "### Add regression coverage for folder scan states\n\n**Severity:** `medium`\n\nThe new scan state and count presentation have no assertion in the existing folder preview scenario, so regressions can leave the UI stuck or report incomplete totals as complete. Extend the Peek folder preview coverage to wait for the final Contains summary and add deterministic coverage for initial scanning, inaccessible-subtree partial results, and cancellation. The relevant test file is outside this pull request diff, so GitHub cannot provide an apply button.",
+      "confidence": 86
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50213",
+      "type": "request_changes",
+      "label": "Request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "head_sha": "5e83b036c9045a8cfd586ddd583bc23b02e11ba6",
+        "event": "REQUEST_CHANGES",
+        "body": "The folder preview needs accurate partial-result reporting, immediate scan state, fully localizable summary composition, and final-state regression coverage before merging."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The new folder scan UI can remain blank before the first entry, can claim complete results after silently skipped inaccessible subtrees, fixes sentence structure in code rather than resources, and lacks final-state regression coverage.",
+    "evidence": [
+      "The first Scanning report occurs inside the enumeration loop after throttling.",
+      "IgnoreInaccessible can omit denied descendants without setting the partial-error state.",
+      "C# fixes the order, separator, and incomplete decoration around localized fragments.",
+      "Existing UI coverage does not assert counts, completed state, partial-error state, or cancellation.",
+      "Five fork Copilot findings were addressed and resolved; the final audit found zero unresolved threads and no later findings.",
+      "Debug essentials, Peek.FilePreviewer, Peek.UI, and Peek.UITests.Next builds passed.",
+      "The targeted UI run was blocked by its existing Explorer-selection setup before Peek launched."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected comments as a request-changes review.",
+    "evaluated_at": "2026-08-28T19:35:00Z",
+    "source_updated_at": "2026-08-28T18:22:33Z"
+  },
+  "fork_pr": {
+    "number": 521,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/521"
+  },
+  "fork_branch": "pr-iterate/50213",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-28T19:35:00Z",
+    "fork_head_sha": "bfed8af7b1c85bf7161a0a72171747e94ecfa0e5",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "UI test blocked by existing Explorer-selection setup failure"
+  }
+}
