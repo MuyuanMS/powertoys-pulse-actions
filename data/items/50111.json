@@ -2,48 +2,279 @@
   "number": 50111,
   "kind": "issue",
   "track": "triage",
-  "stage": "design_queued",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+  "generated_at": "2026-08-28T09:24:00Z",
+  "evaluated_at": "2026-08-28T09:24:00Z",
   "source_updated_at": "2026-08-25T13:44:22Z",
   "title": "Failed to remove PowerToys folder when updating from stable to Preview",
   "url": "https://github.com/microsoft/PowerToys/issues/50111",
-  "summary": "The issue has a clear upgrade path, installation scope, error message, screenshot, and a collaborator confirming the behavior across multiple versions. It is sufficiently scoped for a full installer design investigation without claiming the failure mechanism.",
+  "summary": "The per-user upgrade custom action deletes every task under the PowerToys Task Scheduler folder and then deletes the folder, but deletion is fragile around live collection reindexing, retained COM references, and legacy ACLs. Snapshotting task names, retrying access-denied cleanup after a secure ACL repair, and applying the same secure ACL to newly created folders addresses the recurring warning without weakening installer scope guards.",
   "status": {
     "glyph": "🔧",
-    "label": "Design queued",
-    "detail": "Queue a full installer design investigation covering scheduled-task cleanup during stable-to-Preview per-user upgrades."
+    "label": "Detailed design ready",
+    "detail": "Approve robust scheduled-task cleanup with stable task enumeration, one-shot secure ACL repair, precise logging, and secure folder ACL creation for future installs."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue has a clear upgrade path, installation scope, error message, screenshot, and a collaborator confirming the behavior across multiple versions. It is sufficiently scoped for a full installer design investigation without claiming the failure mechanism.",
+    "rationale": "The exact warning maps to RemoveScheduledTasksCA, and the reported stable-to-Preview per-user path reaches that cleanup through the existing matching upgrade code. Current code has concrete deletion and permission weaknesses that can be fixed without changing upgrade detection.",
     "evidence": [
-      "Labels include Issue-Bug, Area-Setup/Install, and Needs-Triage.",
-      "The body specifies WinGet per-user stable installation followed by an x64 Preview installer upgrade.",
-      "The exact reported error concerns removal of the PowerToys folder from a scheduled task.",
-      "A screenshot documents the installer failure.",
-      "A collaborator reports seeing the same behavior for multiple versions and offers a machine for reproduction.",
-      "Keyword search found no obvious duplicate with the same scheduled-task upgrade failure."
+      "The body specifies a WinGet per-user stable install followed by an x64 Preview installer and shows the scheduled-task folder removal warning.",
+      "RemoveScheduledTasksCA opens the PowerToys task folder, deletes tasks while enumerating its COM collection, then immediately calls DeleteFolder.",
+      "The custom action emits the issue's exact warning text when its final HRESULT fails.",
+      "The custom action is deferred, non-impersonating, Return=ignore, and scheduled after RemoveFiles.",
+      "Runtime task creation applies a secure task ACL to SYSTEM, Administrators, and the current user, but creates the containing folder with an empty security descriptor.",
+      "A collaborator reports seeing the same install/uninstall warning over multiple versions."
     ],
-    "recommended_action": "Queue a full installer design investigation covering scheduled-task cleanup during stable-to-Preview per-user upgrades.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Approve robust cleanup and secure task-folder ACL handling while preserving existing stable/Preview and per-user/per-machine upgrade detection.",
+    "evaluated_at": "2026-08-28T09:24:00Z",
     "source_updated_at": "2026-08-25T13:44:22Z"
   },
   "actions": [
     {
       "id": "approve-design-50111",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve design and start fork implementation",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Approve a focused design investigation for this recent issue.",
+      "note": "Review the cleanup, permission, rollback, and upgrade validation plan before approving implementation.",
       "issue": {
         "number": 50111,
         "repository": "microsoft/PowerToys"
       }
     }
-  ]
+  ],
+  "design": {
+    "root_cause": "RemoveScheduledTasksCA obtains the PowerToys Task Scheduler folder, enumerates its live COM task collection, deletes each indexed task, and then deletes the folder. A live collection may reindex as tasks are removed, retained task/collection references can keep folder state observable during DeleteFolder, and legacy per-user folder ACLs may deny the non-impersonating custom action even though newer task objects grant SYSTEM and Administrators access. The forward runtime path also creates the folder with an empty descriptor rather than explicitly aligning folder permissions with the hardened task ACL. The stable-to-Preview bundle and per-user MSI upgrade codes already match, so changing install-scope detection is neither necessary nor desirable.",
+    "evidence": [
+      {
+        "path": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+        "symbols": [
+          "RemoveScheduledTasksCA"
+        ],
+        "finding": "The function enumerates and deletes tasks, calls DeleteFolder, and emits the reported warning on a failed final HRESULT."
+      },
+      {
+        "path": "installer/PowerToysSetupVNext/Product.wxs",
+        "symbols": [
+          "RemovePowerToysSchTasks",
+          "InstallExecuteSequence"
+        ],
+        "finding": "Cleanup runs deferred, non-impersonating, after RemoveFiles, and is best-effort through Return=ignore."
+      },
+      {
+        "path": "src/runner/auto_start_helper.cpp",
+        "symbols": [
+          "get_auto_start_task_sddl",
+          "create_auto_start_task_for_this_user"
+        ],
+        "finding": "Task ACLs grant SYSTEM, Administrators, and the current user, while folder creation passes an empty security descriptor."
+      },
+      {
+        "path": "installer/PowerToysSetupVNext/Common.wxi",
+        "symbols": [
+          "PerUser",
+          "InstallScope",
+          "UpgradeCodeGUID"
+        ],
+        "finding": "Per-user and per-machine packages intentionally use separate roots, registry scopes, and upgrade codes."
+      },
+      {
+        "path": "installer/PowerToysSetupVNext/PowerToys.wxs",
+        "symbols": [
+          "Bundle UpgradeCode",
+          "SearchInstalledPowerToysUserVersion",
+          "MsiProperty BUNDLEINFO"
+        ],
+        "finding": "The Preview bundle already discovers and forwards the existing per-user installation context."
+      }
+    ],
+    "affected_files": [
+      {
+        "path": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+        "purpose": "Harden task enumeration, deletion, ACL repair, retry, and error logging.",
+        "symbols": [
+          "RemoveScheduledTasksCA"
+        ]
+      },
+      {
+        "path": "src/runner/auto_start_helper.cpp",
+        "purpose": "Create future PowerToys task folders with a secure explicit ACL.",
+        "symbols": [
+          "get_auto_start_task_sddl",
+          "create_auto_start_task_for_this_user"
+        ]
+      },
+      {
+        "path": "installer/PowerToysSetupVNext/Product.wxs",
+        "purpose": "Retain current sequencing and Return=ignore unless validation proves an ordering or silent-UI adjustment is required.",
+        "symbols": [
+          "RemovePowerToysSchTasks"
+        ]
+      },
+      {
+        "path": "installer/PowerToysSetupVNext/Common.wxi",
+        "purpose": "Validation-only dependency for per-user/per-machine isolation.",
+        "symbols": [
+          "UpgradeCodeGUID",
+          "InstallScope"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/runner/auto_start_helper.cpp",
+        "symbols": [
+          "get_auto_start_task_sddl",
+          "create_auto_start_task_for_this_user"
+        ],
+        "current_behavior": "The task object receives a hardened descriptor, but the PowerToys folder is created with an empty descriptor.",
+        "change": "Build a folder SDDL with SYSTEM, Administrators, and the current user SID and pass it to ITaskFolder::CreateFolder. If the current SID cannot be resolved, fail and log instead of creating a folder the per-user owner may be unable to manage. Never restore Everyone or Authenticated Users write access.",
+        "code_block": "auto folderSddl = get_auto_start_folder_sddl();\nif (folderSddl.empty())\n{\n    Logger::error(L\"Unable to resolve the current user SID for task folder ACL\");\n    return false;\n}\n\nwinrt::check_hresult(pRootFolder->CreateFolder(\n    _bstr_t(L\"\\\\PowerToys\"),\n    _variant_t(folderSddl.c_str()),\n    &pTaskFolder));",
+        "edge_cases": [
+          "Preserve the security boundary introduced by PR #48739.",
+          "Handle an existing folder without recreating or broadening it.",
+          "Log SID and HRESULT failures using existing conventions without adding private diagnostics to dashboard data."
+        ],
+        "tests": [
+          "Create a per-user task and verify SYSTEM, Administrators, and the owner can manage it.",
+          "Verify a standard unrelated user cannot modify the folder or task."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+        "symbols": [
+          "RemoveScheduledTasksCA"
+        ],
+        "current_behavior": "The function deletes tasks while iterating the COM collection and retains the collection until folder deletion.",
+        "change": "First copy task names into a vector, releasing each task immediately. Release the collection before deletion, then delete the snapshot names. Continue after individual failures while preserving the first failed HRESULT. Treat task/folder not-found results as successful idempotent cleanup and verify the folder is empty before deleting it.",
+        "code_block": "std::vector<std::wstring> taskNames = SnapshotTaskNames(pTaskFolder);\npTaskCollection.Reset();\nHRESULT firstFailure = S_OK;\nfor (const auto& taskName : taskNames)\n{\n    const HRESULT deleteHr = pTaskFolder->DeleteTask(_bstr_t(taskName.c_str()), 0);\n    if (FAILED(deleteHr) && !IsNotFound(deleteHr) && SUCCEEDED(firstFailure))\n    {\n        firstFailure = deleteHr;\n    }\n}\n\n// Re-enumerate for observability, release the folder, then delete it.",
+        "edge_cases": [
+          "Multiple legacy tasks must not be skipped through collection reindexing.",
+          "A previously removed task or folder is success, not a warning.",
+          "Log remaining public task names when the folder is still non-empty."
+        ],
+        "tests": [
+          "Delete two or more test tasks and assert the folder is empty.",
+          "Run cleanup twice and verify the second run is idempotent.",
+          "Inject one task deletion failure and verify later tasks are still attempted."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+        "symbols": [
+          "RemoveScheduledTasksCA"
+        ],
+        "current_behavior": "Access-denied cleanup falls through to the generic warning with no legacy ACL repair.",
+        "change": "On access denied, apply a cleanup-only descriptor granting SYSTEM and Administrators full access plus the interactive/current user when resolvable, then retry task and folder deletion exactly once. Log original and retry HRESULTs. Keep failure visible in logs and do not loop or return a false success.",
+        "code_block": "if (IsAccessDenied(cleanupHr))\n{\n    const auto repairSddl = BuildCleanupFolderSddl();\n    const HRESULT aclHr = pTaskFolder->SetSecurityDescriptor(\n        _bstr_t(repairSddl.c_str()), 0);\n    LogCleanupRetry(cleanupHr, aclHr);\n    if (SUCCEEDED(aclHr))\n    {\n        cleanupHr = DeleteTasksAndFolderOnce(...);\n    }\n}",
+        "edge_cases": [
+          "SYSTEM may encounter a legacy owner-specific descriptor.",
+          "If SID resolution or ACL repair fails, preserve the original failure and continue the best-effort install.",
+          "Do not modify unrelated Task Scheduler folders."
+        ],
+        "tests": [
+          "Upgrade from a release that created the legacy folder ACL.",
+          "Verify repair and retry are attempted only after access denied.",
+          "Verify an unrecoverable ACL failure is precisely logged."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "installer/PowerToysSetupVNext/Product.wxs",
+        "symbols": [
+          "RemovePowerToysSchTasks"
+        ],
+        "current_behavior": "Cleanup is Return=ignore and may emit an interactive warning even during a silent WinGet upgrade.",
+        "change": "Keep Return=ignore so stale startup cleanup cannot block installation. Emit the existing warning only after snapshot deletion, idempotent handling, ACL repair, and retry fail. If VM testing confirms the message interrupts silent installs, gate it on MSI UI level and rely on detailed logs in silent mode.",
+        "code_block": "// Preserve Return=\"ignore\".\n// In the custom action:\nif (FAILED(finalHr) && IsInteractiveMsiSession(hInstall))\n{\n    MsiProcessMessage(hInstall, INSTALLMESSAGE_WARNING, &record);\n}",
+        "edge_cases": [
+          "Silent WinGet upgrade must not appear hung or failed because of a modal warning.",
+          "Interactive installs should retain actionable warning behavior after all recovery attempts fail.",
+          "Do not move sequencing without evidence that After=RemoveFiles contributes to the failure."
+        ],
+        "tests": [
+          "Run both silent and full-UI upgrades with forced cleanup failure.",
+          "Verify silent mode logs the failure without a dialog.",
+          "Verify full UI shows one warning only after retry failure."
+        ]
+      },
+      {
+        "order": 5,
+        "file": "installer/PowerToysSetupVNext/Common.wxi",
+        "symbols": [
+          "UpgradeCodeGUID",
+          "InstallScope"
+        ],
+        "current_behavior": "Stable and Preview share bundle/MSI detection while per-user and per-machine packages remain intentionally isolated.",
+        "change": "Make no product-code, upgrade-code, registry-scope, or install-root change. Add upgrade-matrix validation proving per-user stable-to-Preview reuses the prior per-user path and that mixed-scope replacement guards remain unchanged.",
+        "code_block": "// Validation-only step: no identifier or scope changes.\n// Per-user UpgradeCode remains D8B559DB-4C98-487A-A33F-50A8EEE42726.\n// Per-machine UpgradeCode remains 42B84BF7-5FBF-473B-9C8B-049DC16F7708.",
+        "edge_cases": [
+          "Per-machine stable must not be replaced by per-user Preview.",
+          "Per-user stable must not be replaced by per-machine Preview.",
+          "Existing INSTALLFOLDER detection must remain intact."
+        ],
+        "tests": [
+          "Exercise same-scope stable-to-Preview upgrades.",
+          "Exercise both mixed-scope guard directions.",
+          "Verify install files and settings remain in their prior expected roots."
+        ]
+      }
+    ],
+    "verify": [
+      "Build installer/PowerToysSetup.slnx for Release x64 and the PowerToysSetupCustomActionsVNext target in the Visual Studio MSBuild environment.",
+      "Build the per-user x64 Preview installer with tools/build/build-installer.ps1 -Platform x64 -Configuration Release -PerUser true -Force.",
+      "In a clean Windows 11 VM, install stable through WinGet with per-user scope, launch PowerToys, enable Run at startup, and upgrade with the fixed Preview installer.",
+      "Verify all old tasks are removed and the folder is deleted before relaunch, or contains only the newly created current-user autorun task after relaunch.",
+      "Repeat with a legacy release and inspect installer logs for successful deletion or the one-shot ACL repair and retry.",
+      "Create multiple disposable tasks under the PowerToys folder and verify snapshot deletion removes every task without skipping an index.",
+      "Run the per-machine non-regression and both mixed-scope upgrade guard cases.",
+      "Inspect installer logs for cleanup start, attempted task names, original and retry HRESULTs, ACL repair, and final status."
+    ],
+    "risks": [
+      {
+        "risk": "A broad ACL could reintroduce the local privilege escalation fixed by PR #48739.",
+        "mitigation": "Grant access only to SYSTEM, Administrators, and the owning/current user; never use Everyone or Authenticated Users write access."
+      },
+      {
+        "risk": "The installer might delete a user-created task placed inside the PowerToys-owned folder.",
+        "mitigation": "Preserve existing folder ownership semantics and log task names; consider a known-name restriction only as a separately reviewed product decision."
+      },
+      {
+        "risk": "Changing custom-action sequencing could affect major-upgrade file cleanup.",
+        "mitigation": "Harden the cleanup implementation first and change sequencing only with VM log evidence."
+      },
+      {
+        "risk": "A modal warning could interfere with silent WinGet upgrades.",
+        "mitigation": "Gate the warning by MSI UI level if silent-upgrade validation reproduces the interruption."
+      }
+    ],
+    "alternatives": [
+      {
+        "option": "Suppress the warning without fixing cleanup.",
+        "decision": "Reject.",
+        "reason": "It leaves stale tasks and the reported folder state."
+      },
+      {
+        "option": "Run the custom action only as the interactive user.",
+        "decision": "Reject.",
+        "reason": "It can regress per-machine cleanup and cannot reliably remove tasks owned by other users."
+      },
+      {
+        "option": "Invoke schtasks.exe instead of Task Scheduler COM.",
+        "decision": "Reject.",
+        "reason": "It adds command parsing and localization risks without solving ACL ownership more precisely."
+      },
+      {
+        "option": "Create a separate Preview task folder.",
+        "decision": "Reject.",
+        "reason": "It avoids the collision while leaving stable cleanup broken and changes Task Scheduler layout."
+      }
+    ]
+  }
 }

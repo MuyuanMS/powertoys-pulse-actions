@@ -2,47 +2,220 @@
   "number": 50071,
   "kind": "issue",
   "track": "triage",
-  "stage": "design_queued",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+  "generated_at": "2026-08-28T09:29:00Z",
+  "evaluated_at": "2026-08-28T09:29:00Z",
   "source_updated_at": "2026-08-23T07:50:14Z",
   "title": "[Keyboard Manager] KM Editor Language stuck in Italian While PowerToys is in English.",
   "url": "https://github.com/microsoft/PowerToys/issues/50071",
-  "summary": "The report identifies the affected editor, expected English language, observed Italian language, Windows version, locale context, and a diagnostic archive. The reproduction is sufficiently scoped for a localization/settings investigation, although the exact language-resolution path still needs confirmation during design work.",
+  "summary": "KeyboardManagerEditorUI is a separate WinUI 3 process that initializes XAML without applying the persisted PowerToys language override. Settings and other standalone WinUI utilities load language.json and set ApplicationLanguages.PrimaryLanguageOverride before InitializeComponent. Mirroring that startup sequence makes explicit PowerToys English win over Italian Windows fallback without changing regional formatting or keyboard layout.",
   "status": {
     "glyph": "🔧",
-    "label": "Design queued",
-    "detail": "Approve a focused localization design investigation covering locale resolution, resource selection, and editor startup behavior."
+    "label": "Detailed design ready",
+    "detail": "Approve a surgical editor-startup fix that applies the persisted PowerToys language before WinUI loads XAML and ResourceLoader strings."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report identifies the affected editor, expected English language, observed Italian language, Windows version, locale context, and a diagnostic archive. The reproduction is sufficiently scoped for a localization/settings investigation, although the exact language-resolution path still needs confirmation during design work.",
+    "rationale": "The reported PowerToys-English/Windows-Italian mismatch matches a concrete omission in the new editor's startup path. Established PowerToys WinUI applications already use the required ordering, so the fix is small and low risk.",
     "evidence": [
-      "The body identifies Keyboard Manager, PowerToys v0.101.2323 Beta, Windows 10 Pro 22H2, and the expected English UI.",
-      "The reported region is Italy while the primary operating-system language is English.",
-      "The issue includes a screenshot and a PowerToys report ZIP.",
-      "The automated triage comment marks reproduction as sufficient.",
-      "No assignee or related duplicate/fix is identified in the public issue data."
+      "KeyboardManagerEditorUI.App calls InitializeComponent without loading ManagedCommon.LanguageHelper or setting ApplicationLanguages.PrimaryLanguageOverride.",
+      "Settings.UI.App loads language.json, sets the override when non-empty, and only then initializes XAML.",
+      "The runner persists the General settings language selection to the shared PowerToys language.json file.",
+      "The editor has its own PRI and localized x:Uid/ResourceLoader strings, so its process language context must be initialized independently.",
+      "The report identifies PowerToys English, Windows region Italy, and an editor rendered in Italian."
     ],
-    "recommended_action": "Approve a focused localization design investigation covering locale resolution, resource selection, and editor startup behavior.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Approve applying the shared PowerToys language override before KeyboardManagerEditorUI.InitializeComponent.",
+    "evaluated_at": "2026-08-28T09:29:00Z",
     "source_updated_at": "2026-08-23T07:50:14Z"
   },
   "actions": [
     {
       "id": "approve-design-50071",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve design and start fork implementation",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Approve a focused design investigation for this recent issue.",
+      "note": "Review the startup-order and multi-locale validation plan before approving implementation.",
       "issue": {
         "number": 50071,
         "repository": "microsoft/PowerToys"
       }
     }
-  ]
+  ],
+  "design": {
+    "root_cause": "KeyboardManagerEditorUI is a self-contained WinUI 3 process with its own PRI. Its App constructor initializes XAML before loading the global PowerToys language selection, so MRT resource lookup uses the process's Windows language list and regional fallback. With PowerToys explicitly set to English but an Italian-capable Windows language/region configuration, the editor can resolve Italian resources. Settings.UI and multiple other WinUI utilities avoid this by reading language.json through ManagedCommon.LanguageHelper and setting Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride before InitializeComponent.",
+    "evidence": [
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/KeyboardManagerEditorXAML/App.xaml.cs",
+        "symbols": [
+          "KeyboardManagerEditorUI.App.App"
+        ],
+        "finding": "The constructor initializes logging and immediately calls InitializeComponent; it never applies the PowerToys language override."
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/SettingsXAML/App.xaml.cs",
+        "symbols": [
+          "Microsoft.PowerToys.Settings.UI.App.App"
+        ],
+        "finding": "Settings loads LanguageHelper.LoadLanguage, sets PrimaryLanguageOverride when non-empty, and then initializes XAML."
+      },
+      {
+        "path": "src/common/ManagedCommon/LanguageHelper.cs",
+        "symbols": [
+          "LanguageHelper.LoadLanguage",
+          "LanguageHelper.SettingsFilePath"
+        ],
+        "finding": "The shared helper reads the persisted language property from the PowerToys language.json file and returns empty for Windows-default behavior."
+      },
+      {
+        "path": "src/runner/settings_window.cpp",
+        "symbols": [
+          "dispatch_json_message_to_settings_window"
+        ],
+        "finding": "The runner writes the Settings language IPC payload to the shared language.json location."
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Helpers/ResourceHelper.cs",
+        "symbols": [
+          "ResourceHelper.GetString"
+        ],
+        "finding": "Code-behind uses WinUI ResourceLoader and should follow the application override when set before loaders and UI are constructed."
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml",
+        "symbols": [
+          "x:Uid localized controls"
+        ],
+        "finding": "Visible editor controls are localized during the first XAML load, making startup ordering decisive."
+      }
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/KeyboardManagerEditorXAML/App.xaml.cs",
+        "purpose": "Apply the persisted PowerToys language before WinUI resource initialization.",
+        "symbols": [
+          "KeyboardManagerEditorUI.App.App"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Helpers/ResourceHelper.cs",
+        "purpose": "Validation-only follow-up if code-behind strings do not honor the app override.",
+        "symbols": [
+          "ResourceHelper.GetString"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI.UnitTests",
+        "purpose": "Add a narrow language-initialization seam only if automated startup coverage requires it.",
+        "symbols": [
+          "KeyboardManagerEditorUI language tests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEditorUI/KeyboardManagerEditorXAML/App.xaml.cs",
+        "symbols": [
+          "KeyboardManagerEditorUI.App.App"
+        ],
+        "current_behavior": "The constructor initializes logging and XAML before applying any PowerToys-specific language context.",
+        "change": "Immediately after logger initialization, call ManagedCommon.LanguageHelper.LoadLanguage. When the returned language tag is non-empty, assign it to Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride. Perform both operations before InitializeComponent. Preserve SettingsManager correlation and all other startup ordering after XAML initialization.",
+        "code_block": "public App()\n{\n    Logger.InitializeLogger(\"\\\\Keyboard Manager\\\\WinUI3Editor\\\\Logs\");\n\n    string appLanguage = LanguageHelper.LoadLanguage();\n    if (!string.IsNullOrEmpty(appLanguage))\n    {\n        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;\n    }\n\n    InitializeComponent();\n    UnhandledException += App_UnhandledException;\n    SettingsManager.CorrelateServiceAndEditorMappings();\n}",
+        "edge_cases": [
+          "An empty or missing language value must leave the override unset and preserve Windows-default fallback.",
+          "Do not set Thread.CurrentCulture or CurrentUICulture; regional formatting and key serialization must remain unchanged.",
+          "Changing language while the editor is open does not require live relocalization; the next editor process picks up the persisted value.",
+          "If invalid tags can throw, catch only the specific assignment exception, log it, and continue with Windows default consistently with the chosen shared policy."
+        ],
+        "tests": [
+          "With language.json set to en-US and Windows configured with Italian fallback, launch the editor and assert English accessible names.",
+          "With language.json set to it-IT, assert Italian strings to prove the fix is not hardcoded.",
+          "With an empty language value, verify Windows-default behavior."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Helpers/ResourceHelper.cs",
+        "symbols": [
+          "ResourceHelper.GetString"
+        ],
+        "current_behavior": "The default ResourceLoader is created lazily for code-behind strings.",
+        "change": "Do not modify ResourceHelper in the primary patch. Validate dialogs, banners, and validation messages after the startup override. Only if these strings still resolve from the wrong PRI, use the editor's explicit PRI in a separate narrowly tested follow-up.",
+        "code_block": "// Preferred primary patch: no ResourceHelper change.\n// Follow-up only if validation proves necessary:\n_resourceLoader = new ResourceLoader(\"PowerToys.KeyboardManagerEditorUI.pri\");",
+        "edge_cases": [
+          "Avoid broad resource-loading refactors for a startup-order bug.",
+          "Verify both x:Uid strings and code-behind strings before considering the follow-up.",
+          "Missing localized keys should continue falling back to en-US rather than exposing resource IDs."
+        ],
+        "tests": [
+          "Verify New remapping, Trigger, Action, dialogs, validation text, and InfoBar strings use one language.",
+          "Verify a missing localized key falls back normally."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEditorUI.UnitTests",
+        "symbols": [
+          "KeyboardManagerEditorUI language tests"
+        ],
+        "current_behavior": "Existing tests cover editor helpers but not process language initialization.",
+        "change": "Prefer multi-locale UI validation for this process-level ordering. If a unit test is required, extract only a small helper that applies a non-empty loaded tag through an injectable setter; keep production behavior identical to the established Settings pattern.",
+        "code_block": "internal static void ApplyLanguageOverride(string language, Action<string> apply)\n{\n    if (!string.IsNullOrEmpty(language))\n    {\n        apply(language);\n    }\n}",
+        "edge_cases": [
+          "Do not make tests mutate the developer's real language.json.",
+          "Restore any temporary test language file.",
+          "Do not introduce a new test framework."
+        ],
+        "tests": [
+          "Non-empty tags invoke the override setter once.",
+          "Empty values do not invoke it.",
+          "The app-level UI test remains responsible for proving pre-XAML ordering."
+        ]
+      }
+    ],
+    "verify": [
+      "Build src/modules/keyboardmanager/KeyboardManagerEditorUI for Debug x64 with the repository build script.",
+      "Build and run KeyboardManagerEditorUI.UnitTests through the Visual Studio test environment if a helper test is added.",
+      "Set language.json to en-US, configure Windows region/language fallback for Italian, restart PowerToys, and launch the editor from Settings; verify all visible and accessible strings are English.",
+      "Launch through the runner/tray/hotkey path and verify the fresh editor process is also English.",
+      "Set language.json to it-IT, restart, and verify both launch paths intentionally use Italian.",
+      "Select Windows default/empty language and verify existing Windows fallback behavior.",
+      "Verify create, edit, save, cancel, and delete remapping flows and keyboard-layout names are unchanged."
+    ],
+    "risks": [
+      {
+        "risk": "Applying the override after XAML initialization would leave existing resources in the wrong language.",
+        "mitigation": "Place the assignment before InitializeComponent and MainWindow construction."
+      },
+      {
+        "risk": "Changing thread culture could alter parsing, formatting, or key serialization.",
+        "mitigation": "Set only ApplicationLanguages.PrimaryLanguageOverride."
+      },
+      {
+        "risk": "Code-behind ResourceLoader strings might use a different PRI context.",
+        "mitigation": "Validate them explicitly and change ResourceHelper only if the primary fix is insufficient."
+      }
+    ],
+    "alternatives": [
+      {
+        "option": "Pass the language as a command-line argument from every editor launch path.",
+        "decision": "Reject.",
+        "reason": "The shared persisted language is already the cross-process source of truth and launch paths should not duplicate it."
+      },
+      {
+        "option": "Set CurrentCulture and CurrentUICulture.",
+        "decision": "Reject.",
+        "reason": "The bug concerns WinUI resource selection, and changing culture has wider formatting and serialization effects."
+      },
+      {
+        "option": "Refactor all module apps into a new shared startup abstraction.",
+        "decision": "Reject.",
+        "reason": "It is broader than this issue; matching the established Settings pattern is safer and reviewable."
+      }
+    ]
+  }
 }
