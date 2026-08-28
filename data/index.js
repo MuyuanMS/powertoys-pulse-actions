@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-28T10:52:54.9528213+08:00",
+  "generated_at": "2026-08-28T11:59:46.2078405+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 3195
   },
   "impact": {
-    "as_of": "2026-08-28T10:52:54.9528213+08:00",
+    "as_of": "2026-08-28T11:59:46.2078405+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -3673,7 +3673,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3686,7 +3686,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-27T21:55:19Z",
       "updated_at": "2026-08-27T21:55:44Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 493,
+        "fork_title": "[PR 50180] CmdPal: Add support for richer content in Details",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50180-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/493"
+      }
     },
     {
       "id": "pr-50178",
@@ -6031,7 +6039,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "review",
       "stage": "review_in_progress",
-      "owes": "us",
+      "owes": "reviewer_infrastructure",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -6271,15 +6279,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "Product-Command Palette",
         "0.102",
