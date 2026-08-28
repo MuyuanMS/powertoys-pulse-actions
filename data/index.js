@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-29T02:09:26.3407810+08:00",
+  "generated_at": "2026-08-29T02:19:56.1415906+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 135,
+    "open_prs": 136,
     "open_issues": 12541,
-    "community": 11688,
-    "artifacts": 3232
+    "community": 11689,
+    "artifacts": 3233
   },
   "impact": {
-    "as_of": "2026-08-29T02:09:26.3407810+08:00",
+    "as_of": "2026-08-29T02:19:56.1415906+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -102,6 +102,7 @@ window.BOARD_INDEX = {
     50210,
     50203,
     50201,
+    50190,
     50188,
     50187,
     50186,
@@ -3333,6 +3334,37 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-50212",
+      "kind": "pr",
+      "number": 50212,
+      "url": "https://github.com/microsoft/PowerToys/pull/50212",
+      "title": "[PowerAccent] Hide stuck accent toolbar when focus leaves the window",
+      "author": "amail80",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Quick Accent",
+        "Ready for review"
+      ],
+      "created_at": "2026-08-28T18:05:17Z",
+      "updated_at": "2026-08-28T18:10:01Z",
+      "comments": 3,
+      "priority": null
+    },
+    {
       "id": "pr-50211",
       "kind": "pr",
       "number": 50211,
@@ -3525,11 +3557,11 @@ window.BOARD_INDEX = {
       "priority": null,
       "mirror": {
         "kind": "pr",
-        "fork_number": 511,
+        "fork_number": 514,
         "fork_title": "[PR 50192] CmdPal: Icons (12/n) - Share Shell icons by identity and display file-type previews",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50192",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/511"
+        "fork_branch": "pr-iterate/50192-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/514"
       }
     },
     {
@@ -3583,16 +3615,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "post_review",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -6534,7 +6569,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-28T00:49:06Z",
+      "waiting_since": "2026-08-28T18:09:22Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6549,7 +6584,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-07-15T04:38:04Z",
-      "updated_at": "2026-08-28T00:49:06Z",
+      "updated_at": "2026-08-28T18:09:22Z",
       "comments": 2,
       "priority": 60,
       "mirror": {
@@ -6577,7 +6612,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-27T21:34:11Z",
+      "waiting_since": "2026-08-28T18:09:42Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6592,7 +6627,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-07-15T03:48:43Z",
-      "updated_at": "2026-08-27T21:34:11Z",
+      "updated_at": "2026-08-28T18:09:42Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -6635,7 +6670,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-07-15T02:40:33Z",
-      "updated_at": "2026-08-27T19:37:03Z",
+      "updated_at": "2026-08-28T18:06:01Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -6678,7 +6713,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-07-15T00:25:55Z",
-      "updated_at": "2026-08-21T00:03:58Z",
+      "updated_at": "2026-08-28T18:02:10Z",
       "comments": 2,
       "priority": 60,
       "mirror": {
