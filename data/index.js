@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-29T02:47:12.1511394+08:00",
+  "generated_at": "2026-08-29T02:59:14.3203044+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 137,
     "open_issues": 12541,
     "community": 11689,
-    "artifacts": 3234
+    "artifacts": 3235
   },
   "impact": {
-    "as_of": "2026-08-29T02:47:12.1511394+08:00",
+    "as_of": "2026-08-29T02:59:14.3203044+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50212,
     50211,
     50210,
     50203,
@@ -3377,16 +3378,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "Product-Quick Accent",
         "Ready for review"
@@ -6411,7 +6415,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-28T17:28:15Z",
+      "waiting_since": "2026-08-28T18:44:52Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6426,7 +6430,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-07-16T21:04:00Z",
-      "updated_at": "2026-08-28T17:28:15Z",
+      "updated_at": "2026-08-28T18:44:52Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -6526,7 +6530,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-28T18:30:14Z",
+      "waiting_since": "2026-08-28T18:45:23Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6541,7 +6545,7 @@ window.BOARD_INDEX = {
         "0.102"
       ],
       "created_at": "2026-07-15T07:02:59Z",
-      "updated_at": "2026-08-28T18:30:14Z",
+      "updated_at": "2026-08-28T18:45:23Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
