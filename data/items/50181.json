@@ -2,29 +2,119 @@
   "number": 50181,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T09:11:42.7556075Z",
-  "evaluated_at": "2026-08-28T09:11:42.7556075Z",
-  "source_updated_at": "2026-08-28T08:53:06Z",
+  "generated_at": "2026-08-28T10:31:56.114506Z",
+  "evaluated_at": "2026-08-28T10:31:56.114506Z",
+  "source_updated_at": "2026-08-28T09:14:16Z",
   "head_sha": "bbaaad001b5d96735f09223dc3ca0433e4a05a76",
-  "title": "",
+  "title": "CmdPal: Icons (1/n) - Add opt-in icon loading diagnostics",
   "url": "https://github.com/microsoft/PowerToys/pull/50181",
+  "summary": "Fork-side review converged after three correctness fixes. Three current-head comments cover provider failure classification, same-key stale request prevention, and stopped-session mutation guards.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "New PR discovered during issue-prioritized expansion; queued for the next PR review batch."
+    "glyph": "⚠️",
+    "label": "Review comments drafted",
+    "detail": "Three comments are pinned to the current upstream head after zero unresolved Copilot threads and passing focused validation."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review drafted comments",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "provider-failure-state",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Preserve provider failure state",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/SourceRequestedEventArgs.cs",
+      "start_line": 21,
+      "line": 26,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Preserve provider failure state\n\n**Severity:** `medium`\n\nWhen the provider throws, the catch path leaves only `Value = null`, so diagnostics cannot distinguish a failed load from a genuinely empty icon. Carry an explicit failure bit in the request arguments, set it in `IconProvider.SourceRequestedCore`, and have `IconBox` complete the measurement as `Failed` while clearing the icon.\n\n```suggestion\n    public ElementTheme Theme => requestedTheme;\n\n    public double Scale => scale;\n\n    internal bool Failed { get; set; }\n\n    internal IconRequestMeasurement Diagnostics { get; set; }\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The provider catch path converts exceptions to null on the reviewed head, leaving no failure signal."
+      }
+    },
+    {
+      "id": "stale-version-and-failed-completion",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Reject stale same-key completions",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs",
+      "start_line": 416,
+      "line": 426,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Reject stale same-key completions\n\n**Severity:** `high`\n\nTheme, scale, or loading refreshes can reuse the same `SourceKey`, so reference equality alone allows an older request to overwrite a newer result. Check the captured request version as well, and report provider failures separately from empty results.\n\n```suggestion\n            if (requestVersion != iconBox._requestVersion || !ReferenceEquals(sourceKey, iconBox.SourceKey))\n            {\n                diagnostics.Complete(IconRequestStatus.Stale, eventArgs.Value);\n                return;\n            }\n\n            if (eventArgs.Failed)\n            {\n                iconBox.Source = null;\n                diagnostics.Complete(IconRequestStatus.Failed);\n                return;\n            }\n\n            iconBox.Source = eventArgs.Value;\n            diagnostics.Complete(\n                eventArgs.Value is null ? IconRequestStatus.Empty : IconRequestStatus.Applied,\n                eventArgs.Value);\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "The request version changes for every refresh, but the upstream stale guard checks only SourceKey identity."
+      }
+    },
+    {
+      "id": "stopped-session-mutation-guards",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Freeze diagnostics after the session stops",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Freeze diagnostics after the session stops\n\n**Severity:** `medium`\n\n`Stop()` captures the report end time, but retained request, load, and UI-probe objects can still mutate counters afterward. Add an atomic stopped-state check to `IconLoadDiagnosticsSession` entry points and to `IconRequestMeasurement`/`IconLoadMeasurement` update and completion paths. Late work should be ignored, and a worker waiting for an enqueue state must still be released rather than left blocked.",
+      "confidence": {
+        "score": 90,
+        "rationale": "The measurement objects retain the session and currently have mutation paths that do not check its stopped state."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50181",
+      "type": "request_changes",
+      "label": "Post 3 review comments and request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50181,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "bbaaad001b5d96735f09223dc3ca0433e4a05a76",
+        "body_prefix": "Thanks for adding the CmdPal icon diagnostics. I found three correctness issues that should be addressed before this ships: provider failures are reported as empty results, same-key refresh races can apply stale icons, and stopped sessions remain mutable through outstanding measurements."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "Three valid correctness findings were fixed and validated on the fork. The final audit found no newer Copilot findings and zero unresolved Copilot threads; the supported findings remain applicable to the upstream head.",
+    "evidence": [
+      "Provider exceptions are indistinguishable from empty icon results on the upstream head.",
+      "The stale-result guard checks SourceKey identity but not the request version, allowing same-key refresh races.",
+      "Stopped diagnostics sessions remain mutable through retained request, load, and UI-probe objects.",
+      "Focused CmdPal builds and 23/23 Microsoft.CmdPal.UI unit tests passed on the converged fork.",
+      "The fork Copilot thread audit reports zero unresolved threads."
+    ],
+    "recommended_action": "After explicit approval and a current-head freshness check, post the three drafted comments as a request-changes review.",
+    "evaluated_at": "2026-08-28T10:31:56.114506Z",
+    "source_updated_at": "2026-08-28T09:14:16Z"
+  },
+  "fork_pr": {
+    "number": 496,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/496"
+  },
+  "fork_branch": "pr-iterate/50181",
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-08-28T09:11:42.7556075Z"
-  },
-  "freshness": {
-    "queued_at": "2026-08-28T09:11:42.7556075Z",
-    "checkpoint_at": "2026-08-28T09:11:42.7556075Z"
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-28T10:31:56.114506Z",
+    "fork_head_sha": "46c6e6ed96c6b1a64225a6445dd4f56ca71a42c2",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "23/23 passed"
   }
 }
