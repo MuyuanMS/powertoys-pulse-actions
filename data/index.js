@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-29T01:58:16.3612376+08:00",
+  "generated_at": "2026-08-29T02:09:26.3407810+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 135,
     "open_issues": 12541,
     "community": 11688,
-    "artifacts": 3231
+    "artifacts": 3232
   },
   "impact": {
-    "as_of": "2026-08-29T01:58:16.3612376+08:00",
+    "as_of": "2026-08-29T02:09:26.3407810+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -100,6 +100,7 @@ window.BOARD_INDEX = {
   "artifact_numbers": [
     50211,
     50210,
+    50203,
     50201,
     50188,
     50187,
@@ -3431,22 +3432,24 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "post_review",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes"
+      },
       "labels": [
-        "Needs-Author-Feedback",
         "Product-Command Palette"
       ],
       "created_at": "2026-08-28T09:49:27Z",
-      "updated_at": "2026-08-28T17:01:50Z",
+      "updated_at": "2026-08-28T17:48:57Z",
       "comments": 1,
       "priority": null,
       "mirror": {
@@ -3600,11 +3603,11 @@ window.BOARD_INDEX = {
       "priority": null,
       "mirror": {
         "kind": "pr",
-        "fork_number": 507,
+        "fork_number": 513,
         "fork_title": "[PR 50190] CmdPal: generated swatch and Unicode initials icons",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50190",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/507"
+        "fork_branch": "pr-iterate/50190-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/513"
       }
     },
     {
