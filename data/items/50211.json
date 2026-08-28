@@ -1,0 +1,152 @@
+{
+  "number": 50211,
+  "kind": "pr",
+  "track": "review",
+  "stage": "post_review",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-28T17:05:15Z",
+  "evaluated_at": "2026-08-28T17:05:15Z",
+  "source_updated_at": "2026-08-28T16:04:14Z",
+  "head_sha": "fc2e1cf645816060bd19eaf8d3a8a0c8036bfdd2",
+  "title": "CmdPal: add an in-place adaptive card updater",
+  "url": "https://github.com/microsoft/PowerToys/pull/50211",
+  "summary": "The fork review found a latest-wins completion contract bug, a documentation mismatch, missing renderer integration coverage, and an unrelated contributor-policy addition. Eight current-head review comments are ready.",
+  "status": {
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "Six inline suggestions and two general review notes are pinned to the current upstream head."
+  },
+  "next_action": "Review and selectively post the drafted request-changes comments.",
+  "proposed_comments": [
+    {
+      "id": "cancel-superseded-update",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cancel superseded updates instead of completing them",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/LatestWinsUpdateQueue.cs",
+      "start_line": 39,
+      "line": 39,
+      "side": "RIGHT",
+      "body": "### Cancel superseded updates instead of completing them\n\n**Severity:** `medium`\n\nWhen a newer card replaces a pending update, the older pending `UpdateAsync` task currently completes successfully even though that card was never processed or displayed. Canceling the superseded task preserves the latest-wins behavior while letting callers distinguish a dropped render from one that actually ran. Apply this together with the related caller-handling and test suggestions.\n\n```suggestion\n        superseded?.Cancel(CancellationToken.None);\n```",
+      "confidence": 92
+    },
+    {
+      "id": "cancel-cleared-pending-update",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cancel cleared pending updates",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/LatestWinsUpdateQueue.cs",
+      "start_line": 57,
+      "line": 57,
+      "side": "RIGHT",
+      "body": "### Cancel cleared pending updates\n\n**Severity:** `medium`\n\n`ClearPending` drops the pending work item without ever invoking the processor, so completing that task as successful reports an update that did not happen. Canceling it matches the supersession path and gives callers a consistent signal for discarded work.\n\n```suggestion\n        pending?.Cancel(CancellationToken.None);\n```",
+      "confidence": 90
+    },
+    {
+      "id": "ignore-expected-render-cancellation",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Do not log expected supersession cancellation as a render failure",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContentFormControl.xaml.cs",
+      "start_line": 135,
+      "line": 140,
+      "side": "RIGHT",
+      "body": "### Do not log expected supersession cancellation as a render failure\n\n**Severity:** `medium`\n\nOnce superseded pending updates are canceled, rapid card refreshes can naturally cancel an older `DisplayCardAsync` call. Handling `OperationCanceledException` before the general error path avoids logging expected latest-wins behavior as an Adaptive Card update failure.\n\n```suggestion\n            await _cardUpdater.UpdateAsync(card);\n            AttachRenderedCard(_cardUpdater.RenderedCard);\n        }\n        catch (OperationCanceledException)\n        {\n        }\n        catch (Exception ex)\n        {\n            Logger.LogError(\"Failed to update an Adaptive Card\", ex);\n```",
+      "confidence": 88
+    },
+    {
+      "id": "assert-superseded-task-canceled",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Assert superseded tasks are canceled",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.UnitTests/LatestWinsUpdateQueueTests.cs",
+      "start_line": 34,
+      "line": 34,
+      "side": "RIGHT",
+      "body": "### Assert superseded tasks are canceled\n\n**Severity:** `medium`\n\nThe latest-wins behavior needs regression coverage that the discarded pending update does not report success. This keeps the test aligned with the API contract change above.\n\n```suggestion\n        await Assert.ThrowsExactlyAsync<TaskCanceledException>(async () => await superseded);\n```",
+      "confidence": 89
+    },
+    {
+      "id": "assert-cleared-pending-task-canceled",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Assert cleared pending tasks are canceled",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.UnitTests/LatestWinsUpdateQueueTests.cs",
+      "start_line": 66,
+      "line": 66,
+      "side": "RIGHT",
+      "body": "### Assert cleared pending tasks are canceled\n\n**Severity:** `medium`\n\n`ClearPending` removes work that will never be applied, so the regression test should assert cancellation instead of successful completion. This prevents future changes from reintroducing success-shaped completion for discarded updates.\n\n```suggestion\n        await Assert.ThrowsExactlyAsync<TaskCanceledException>(async () => await pending);\n```",
+      "confidence": 89
+    },
+    {
+      "id": "document-atomic-svg-application",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Document atomic SVG image application",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/README.md",
+      "start_line": 48,
+      "line": 48,
+      "side": "RIGHT",
+      "body": "### Document atomic SVG image application\n\n**Severity:** `low`\n\nThe implementation waits for all changed SVG images with `Task.WhenAll` before applying any image source, so the current wording incorrectly says each image is committed as soon as its decode completes. Updating the text avoids documenting behavior that the updater deliberately does not provide.\n\n```suggestion\nThe updater applies the complete image group after every SVG decode succeeds.\n```",
+      "confidence": 96
+    },
+    {
+      "id": "add-renderer-integration-coverage",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Add renderer integration coverage for in-place and fallback paths",
+      "body": "### Add renderer integration coverage for in-place and fallback paths\n\n**Severity:** `medium`\n\nThe new tests cover the queue, semantic fingerprint, and abstract diff planner, but the behavior being introduced depends on the Adaptive Cards renderer's concrete WinUI tree. Please add focused coverage that renders real cards and proves text/SVG-only updates retain the visible root while unsupported changes replace it; otherwise renderer tree changes or incorrect target selection can regress without a failing test.",
+      "confidence": 78
+    },
+    {
+      "id": "split-cmdpal-instructions-policy",
+      "kind": "companion",
+      "severity": "low",
+      "title": "Split the CmdPal build guidance into a separate change",
+      "body": "### Split the CmdPal build guidance into a separate change\n\n**Severity:** `low`\n\nThe new CmdPal build/deploy instruction file changes contributor guidance for every future CmdPal edit, while the rest of this PR adds the adaptive-card updater. Please move that policy/documentation change to a separate PR so this one stays atomic and the guidance can be reviewed on its own merits.",
+      "confidence": 82
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50211",
+      "type": "request_changes",
+      "label": "Request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "head_sha": "fc2e1cf645816060bd19eaf8d3a8a0c8036bfdd2",
+        "event": "REQUEST_CHANGES",
+        "body": "Thanks for the CmdPal update. I found one latest-wins API contract issue, a documentation mismatch, and two review-readiness gaps that should be addressed before merging."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The fork review fixed and validated the concrete latest-wins cancellation behavior, audited the final Copilot state to zero new findings and zero unresolved threads, and translated the supported current-head concerns into six inline suggestions and two general notes.",
+    "evidence": [
+      "Superseded and cleared pending updates currently complete successfully despite never being processed.",
+      "The caller logs all exceptions, so expected latest-wins cancellation needs a distinct path.",
+      "The README describes per-image application while the implementation applies the complete image group after Task.WhenAll.",
+      "Current tests do not render the concrete Adaptive Cards WinUI tree.",
+      "The contributor instruction file is independent of the adaptive-card updater implementation.",
+      "The adaptive-card unit tests passed 20/20 and the CmdPal UI Debug x64 build passed.",
+      "The final fork audit found zero new Copilot comments and zero unresolved threads."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected comments as a request-changes review.",
+    "evaluated_at": "2026-08-28T17:05:15Z",
+    "source_updated_at": "2026-08-28T16:04:14Z"
+  },
+  "fork_branch": "pr-iterate/50211",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-28T17:05:15Z",
+    "fork_head_sha": "cb45e8d3d489e577d078c43acb57208154369119",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "20/20 passed"
+  }
+}

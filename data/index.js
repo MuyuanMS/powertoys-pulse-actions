@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-28T23:22:35.8687524+08:00",
+  "generated_at": "2026-08-29T01:18:35.3944473+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,21 +85,22 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 134,
-    "open_issues": 12540,
-    "community": 11687,
-    "artifacts": 3231
+    "open_prs": 135,
+    "open_issues": 12541,
+    "community": 11688,
+    "artifacts": 3230
   },
   "impact": {
-    "as_of": "2026-08-28T23:22:35.8687524+08:00",
+    "as_of": "2026-08-29T01:18:35.3944473+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50211,
+    50210,
     50201,
-    50198,
     50187,
     50186,
     50185,
@@ -502,7 +503,6 @@ window.BOARD_INDEX = {
     32668,
     32661,
     50175,
-    50172,
     50170,
     50168,
     50167,
@@ -1508,7 +1508,6 @@ window.BOARD_INDEX = {
     46369,
     46364,
     46363,
-    46362,
     46349,
     46342,
     28814,
@@ -3332,14 +3331,102 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-50211",
+      "kind": "pr",
+      "number": 50211,
+      "url": "https://github.com/microsoft/PowerToys/pull/50211",
+      "title": "CmdPal: add an in-place adaptive card updater",
+      "author": "zadjii-msft",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "review",
+      "stage": "post_review",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes"
+      },
+      "labels": [
+        "Needs-Author-Feedback",
+        "Product-Command Palette",
+        "CmdPal-HostUX",
+        "CmdPal - Dock",
+        "CmdPal - Performance monitor",
+        "0.102"
+      ],
+      "created_at": "2026-08-28T16:03:48Z",
+      "updated_at": "2026-08-28T16:04:14Z",
+      "comments": 1,
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 503,
+        "fork_title": "[PR 50211] CmdPal: add an in-place adaptive card updater",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50211",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/503"
+      }
+    },
+    {
+      "id": "pr-50210",
+      "kind": "pr",
+      "number": 50210,
+      "url": "https://github.com/microsoft/PowerToys/pull/50210",
+      "title": "CmdPal: Restore content viewer spec and regenerate IDL",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "created_at": "2026-08-28T15:59:11Z",
+      "updated_at": "2026-08-28T16:02:55Z",
+      "comments": 2,
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 505,
+        "fork_title": "[PR 50210] CmdPal: Restore content viewer spec and regenerate IDL",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50210",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/505"
+      }
+    },
+    {
       "id": "pr-50203",
       "kind": "pr",
       "number": 50203,
       "url": "https://github.com/microsoft/PowerToys/pull/50203",
-      "title": "Prioritize initialization of CmdPal list items in that are used",
+      "title": "CmdPal: Prioritize initialization of CmdPal list items in that are used",
       "author": "jiripolasek",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
@@ -3349,17 +3436,26 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Author-Feedback",
         "Product-Command Palette"
       ],
       "created_at": "2026-08-28T09:49:27Z",
-      "updated_at": "2026-08-28T10:24:10Z",
-      "comments": 0,
-      "priority": null
+      "updated_at": "2026-08-28T17:01:50Z",
+      "comments": 1,
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 508,
+        "fork_title": "[PR 50203] CmdPal: Prioritize initialization of used list items",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50203",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/508"
+      }
     },
     {
       "id": "pr-50201",
@@ -3389,51 +3485,9 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-08-28T08:53:20Z",
-      "updated_at": "2026-08-28T08:53:49Z",
+      "updated_at": "2026-08-28T15:25:07Z",
       "comments": 2,
       "priority": null
-    },
-    {
-      "id": "pr-50198",
-      "kind": "pr",
-      "number": 50198,
-      "url": "https://github.com/microsoft/PowerToys/pull/50198",
-      "title": "[Settings] Fix Simplified Chinese Quick Access translation",
-      "author": "moooyo",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_drafted",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with 1 inline suggestion"
-      },
-      "labels": [
-        "Product-Settings",
-        "Ready for review"
-      ],
-      "created_at": "2026-08-28T06:42:27Z",
-      "updated_at": "2026-08-28T06:47:14Z",
-      "comments": 0,
-      "priority": null,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 494,
-        "fork_title": "[PR 50198] [Settings] Fix Simplified Chinese Quick Access translation",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50198",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/494"
-      }
     },
     {
       "id": "pr-50192",
@@ -3443,7 +3497,7 @@ window.BOARD_INDEX = {
       "title": "CmdPal: Icons (12/n) - Share Shell icons by identity and display file-type previews",
       "author": "jiripolasek",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
@@ -3458,11 +3512,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Author-Feedback",
         "Product-Command Palette"
       ],
       "created_at": "2026-08-27T22:10:06Z",
-      "updated_at": "2026-08-27T22:15:01Z",
-      "comments": 0,
+      "updated_at": "2026-08-28T17:01:34Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -3473,7 +3528,7 @@ window.BOARD_INDEX = {
       "title": "CmdPal: Icons (11/n) - Add plain and theme-aware SVG icon protocols",
       "author": "jiripolasek",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
@@ -3483,17 +3538,26 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Command Palette"
+        "Product-Command Palette",
+        "Ready for review"
       ],
       "created_at": "2026-08-27T22:09:56Z",
-      "updated_at": "2026-08-28T11:05:27Z",
+      "updated_at": "2026-08-28T16:56:52Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 509,
+        "fork_title": "[PR 50191] CmdPal: Icons (11/n) - Add plain and theme-aware SVG icon protocols",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50191",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/509"
+      }
     },
     {
       "id": "pr-50190",
@@ -3503,7 +3567,7 @@ window.BOARD_INDEX = {
       "title": "CmdPal: Icons (10/n) - Add generated swatch and Unicode initials icons",
       "author": "jiripolasek",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
@@ -3513,17 +3577,26 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Command Palette"
+        "Product-Command Palette",
+        "Ready for review"
       ],
       "created_at": "2026-08-27T22:09:32Z",
-      "updated_at": "2026-08-28T11:04:16Z",
+      "updated_at": "2026-08-28T16:55:05Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 507,
+        "fork_title": "[PR 50190] CmdPal: generated swatch and Unicode initials icons",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50190",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/507"
+      }
     },
     {
       "id": "pr-50189",
@@ -3533,7 +3606,7 @@ window.BOARD_INDEX = {
       "title": "CmdPal: Icons (9/n) - Prevent stale recycled icons and reuse image presenters",
       "author": "jiripolasek",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
@@ -3543,17 +3616,26 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Author-Feedback",
         "Product-Command Palette"
       ],
       "created_at": "2026-08-27T22:09:21Z",
-      "updated_at": "2026-08-27T22:14:43Z",
-      "comments": 0,
-      "priority": null
+      "updated_at": "2026-08-28T16:51:54Z",
+      "comments": 1,
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 510,
+        "fork_title": "[PR 50189] CmdPal: Icons (9/n) - Prevent stale recycled icons and reuse image presenters",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50189",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/510"
+      }
     },
     {
       "id": "pr-50188",
@@ -3563,7 +3645,7 @@ window.BOARD_INDEX = {
       "title": "CmdPal: Icons (8/n) - Add icon protocols and defer app icon extraction",
       "author": "jiripolasek",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
@@ -3573,17 +3655,26 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Command Palette"
+        "Product-Command Palette",
+        "Ready for review"
       ],
       "created_at": "2026-08-27T22:09:11Z",
-      "updated_at": "2026-08-27T22:14:23Z",
+      "updated_at": "2026-08-28T16:14:17Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 506,
+        "fork_title": "[PR 50188] CmdPal: Icons (8/n) - Add icon protocols and defer app icon extraction",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50188-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/506"
+      }
     },
     {
       "id": "pr-50187",
@@ -4115,7 +4206,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-08-24T18:41:42Z",
-      "updated_at": "2026-08-24T20:29:51Z",
+      "updated_at": "2026-08-28T15:30:38Z",
       "comments": 3,
       "priority": null,
       "mirror": {
@@ -6385,7 +6476,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-28T00:52:01Z",
+      "waiting_since": "2026-08-28T16:23:17Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6400,7 +6491,7 @@ window.BOARD_INDEX = {
         "0.102"
       ],
       "created_at": "2026-07-15T05:30:46Z",
-      "updated_at": "2026-08-28T00:52:01Z",
+      "updated_at": "2026-08-28T16:23:17Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -49557,7 +49648,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/50172",
       "title": "An Error Chinese Translation",
       "author": "ChenghanMan",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -49567,14 +49658,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_comment",
-        "label": "Post localization routing note"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Area-Localization",
@@ -49582,7 +49670,7 @@ window.BOARD_INDEX = {
         "Issue-Translation"
       ],
       "created_at": "2026-08-27T16:37:45Z",
-      "updated_at": "2026-08-27T16:43:31Z",
+      "updated_at": "2026-08-28T15:27:23Z",
       "comments": 3,
       "priority": null
     },
@@ -78301,12 +78389,12 @@ window.BOARD_INDEX = {
       "comments": 0,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 123,
-        "fork_title": "Fix Advanced Paste hang/crash: clipboard history APIs must run on STA thread",
+        "kind": "issue",
+        "fork_number": 93,
+        "fork_title": "[Issue 49114] Advance Paste crashing",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-49114-advance-paste-crashing",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/123"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/93"
       }
     },
     {
@@ -99370,12 +99458,12 @@ window.BOARD_INDEX = {
       "comments": 0,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 125,
-        "fork_title": "Fix Monaco Preview Handler crash on WebView2 COMException 0x800700AA",
+        "kind": "issue",
+        "fork_number": 95,
+        "fork_title": "[Issue 48365] PowerToys Monaco Preview Handler crashes with WebView2 COMException (0x800700AA)",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-48365-fix-monaco-preview-handler-crash",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/125"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/95"
       }
     },
     {
@@ -155232,8 +155320,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -155245,7 +155333,7 @@ window.BOARD_INDEX = {
         "CmdPal - Performance monitor"
       ],
       "created_at": "2026-03-21T06:58:28Z",
-      "updated_at": "2026-03-21T09:08:47Z",
+      "updated_at": "2026-08-28T16:03:52Z",
       "comments": 0,
       "priority": null
     },
@@ -213594,12 +213682,12 @@ window.BOARD_INDEX = {
       "comments": 2,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 124,
-        "fork_title": "PowerDisplay: Refresh brightness from hardware when flyout opens",
+        "kind": "issue",
+        "fork_number": 94,
+        "fork_title": "[Issue 48888] Power Display brightness slider stays on the same level even when brightness was changed by another method",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-48888-fix-brightness-slider",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/124"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/94"
       }
     },
     {
@@ -213859,12 +213947,12 @@ window.BOARD_INDEX = {
       "comments": 1,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 92,
-        "fork_title": "Harden the runner against silent crashes with persistent crash diagnostics",
+        "kind": "issue",
+        "fork_number": 91,
+        "fork_title": "[Issue 49208] PowerToys randomly and unexpectedly quits/crashes without any error",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-49208-fix-power-toys-crash",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/92"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/91"
       }
     },
     {
@@ -287738,13 +287826,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-41098",
+      "id": "issue-50209",
       "kind": "issue",
-      "number": 41098,
-      "url": "https://github.com/microsoft/PowerToys/issues/41098",
-      "title": "Add a 'Toast Notification' Utility",
-      "author": "SchulteDev",
-      "state": "closed",
+      "number": 50209,
+      "url": "https://github.com/microsoft/PowerToys/issues/50209",
+      "title": "Power Display flyout poorly placed when taskbar on the left",
+      "author": "Erwan1974",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -287756,16 +287844,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-New PowerToy",
-        "Needs-Triage"
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-PowerDisplay"
       ],
-      "created_at": "2025-08-12T09:54:52Z",
-      "updated_at": "2026-03-26T21:37:49Z",
-      "comments": 3,
+      "created_at": "2026-08-28T15:49:34Z",
+      "updated_at": "2026-08-28T15:56:12Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -304830,6 +304920,37 @@ window.BOARD_INDEX = {
       "created_at": "2025-06-25T15:22:28Z",
       "updated_at": "2026-04-19T09:58:40Z",
       "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-41098",
+      "kind": "issue",
+      "number": 41098,
+      "url": "https://github.com/microsoft/PowerToys/issues/41098",
+      "title": "Add a 'Toast Notification' Utility",
+      "author": "SchulteDev",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-New PowerToy",
+        "Needs-Triage"
+      ],
+      "created_at": "2025-08-12T09:54:52Z",
+      "updated_at": "2026-03-26T21:37:49Z",
+      "comments": 3,
       "priority": null
     },
     {
