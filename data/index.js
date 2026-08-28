@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-29T01:18:35.3944473+08:00",
+  "generated_at": "2026-08-29T01:58:16.3612376+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 135,
     "open_issues": 12541,
     "community": 11688,
-    "artifacts": 3230
+    "artifacts": 3231
   },
   "impact": {
-    "as_of": "2026-08-29T01:18:35.3944473+08:00",
+    "as_of": "2026-08-29T01:58:16.3612376+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -101,6 +101,7 @@ window.BOARD_INDEX = {
     50211,
     50210,
     50201,
+    50188,
     50187,
     50186,
     50185,
@@ -3406,8 +3407,8 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-08-28T15:59:11Z",
-      "updated_at": "2026-08-28T16:02:55Z",
-      "comments": 2,
+      "updated_at": "2026-08-28T17:45:41Z",
+      "comments": 4,
       "priority": null,
       "mirror": {
         "kind": "pr",
@@ -3507,7 +3508,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3518,7 +3519,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-27T22:10:06Z",
       "updated_at": "2026-08-28T17:01:34Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 511,
+        "fork_title": "[PR 50192] CmdPal: Icons (12/n) - Share Shell icons by identity and display file-type previews",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50192",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/511"
+      }
     },
     {
       "id": "pr-50191",
@@ -3621,20 +3630,19 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback",
         "Product-Command Palette"
       ],
       "created_at": "2026-08-27T22:09:21Z",
-      "updated_at": "2026-08-28T16:51:54Z",
+      "updated_at": "2026-08-28T17:48:26Z",
       "comments": 1,
       "priority": null,
       "mirror": {
         "kind": "pr",
-        "fork_number": 510,
+        "fork_number": 512,
         "fork_title": "[PR 50189] CmdPal: Icons (9/n) - Prevent stale recycled icons and reuse image presenters",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50189",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/510"
+        "fork_branch": "pr-iterate/50189-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/512"
       }
     },
     {
@@ -3649,16 +3657,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "post_review",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -6319,7 +6330,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-27T18:20:57Z",
+      "waiting_since": "2026-08-28T17:28:15Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6330,10 +6341,11 @@ window.BOARD_INDEX = {
       },
       "labels": [
         "Product-Command Palette",
-        "0.102"
+        "0.102",
+        "Ready for review"
       ],
       "created_at": "2026-07-16T21:04:00Z",
-      "updated_at": "2026-08-27T18:20:57Z",
+      "updated_at": "2026-08-28T17:28:15Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -6433,7 +6445,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-28T00:51:43Z",
+      "waiting_since": "2026-08-28T17:24:25Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6448,7 +6460,7 @@ window.BOARD_INDEX = {
         "0.102"
       ],
       "created_at": "2026-07-15T07:02:59Z",
-      "updated_at": "2026-08-28T00:51:43Z",
+      "updated_at": "2026-08-28T17:24:25Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -29562,6 +29574,37 @@ window.BOARD_INDEX = {
       "created_at": "2024-07-12T19:22:35Z",
       "updated_at": "2026-05-21T02:00:03Z",
       "comments": 5,
+      "priority": null
+    },
+    {
+      "id": "issue-598",
+      "kind": "issue",
+      "number": 598,
+      "url": "https://github.com/microsoft/PowerToys/issues/598",
+      "title": "Installation as zip, portable installation",
+      "author": "per-oestergaard",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Area-Setup/Install"
+      ],
+      "created_at": "2019-10-30T12:14:19Z",
+      "updated_at": "2026-08-28T17:52:16Z",
+      "comments": 21,
       "priority": null
     },
     {
@@ -110824,12 +110867,12 @@ window.BOARD_INDEX = {
       "comments": 2,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 129,
-        "fork_title": "Power Display: clamp contrast minimum to 1 to prevent black screen",
+        "kind": "issue",
+        "fork_number": 99,
+        "fork_title": "[Issue 47953] Power Display: Setting contrast to 0 causes black screen",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-47953-fix-contrast-slider-black-screen",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/129"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/99"
       }
     },
     {
@@ -176899,36 +176942,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-02-13T00:01:20Z",
       "updated_at": "2026-04-18T13:55:26Z",
       "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-45573",
-      "kind": "issue",
-      "number": 45573,
-      "url": "https://github.com/microsoft/PowerToys/issues/45573",
-      "title": "Add QR scanning capability to Text Extractor",
-      "author": "Eiernase",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Triage"
-      ],
-      "created_at": "2026-02-12T21:12:03Z",
-      "updated_at": "2026-03-01T17:25:51Z",
-      "comments": 4,
       "priority": null
     },
     {
@@ -302761,12 +302774,12 @@ window.BOARD_INDEX = {
       "comments": 0,
       "priority": 2,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 128,
-        "fork_title": "CmdPal: Fix ObjectDisposedException crash in ExtensionGalleryViewModel.ResetCancellation",
+        "kind": "issue",
+        "fork_number": 98,
+        "fork_title": "[Issue 47969] CmdPal: Extension gallery crash in ExtensionGalleryViewModel.ResetCancellation",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-47969-fix-extension-gallery-crash",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/128"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/98"
       }
     },
     {

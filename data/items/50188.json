@@ -1,0 +1,109 @@
+{
+  "number": 50188,
+  "kind": "pr",
+  "track": "review",
+  "stage": "post_review",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-28T17:44:30Z",
+  "evaluated_at": "2026-08-28T17:44:30Z",
+  "source_updated_at": "2026-08-28T16:14:17Z",
+  "head_sha": "630e72317e952d2eb5dca7d1853e3ee09e3b97a3",
+  "title": "CmdPal: Icons (8/n) - Add icon protocols and defer app icon extraction",
+  "url": "https://github.com/microsoft/PowerToys/pull/50188",
+  "summary": "The fork review found five fallback-correctness issues in the new app-icon protocol path. Current-head general review comments are ready for failed jumbo lookups, candidate ordering, unusable prepared fallbacks, loading placeholders, and terminal generic fallback.",
+  "status": {
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "Five general review notes are pinned to the current upstream head."
+  },
+  "next_action": "Review and selectively post the drafted request-changes comments.",
+  "proposed_comments": [
+    {
+      "id": "return-null-when-jumbo-shell-lookup-fails",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Do not treat failed jumbo shell lookups as successful icons",
+      "body": "### Do not treat failed jumbo shell lookups as successful icons\n\n**Severity:** `high`\n\nWhen SHGetFileInfo fails for a jumbo candidate, ThumbnailHelper.GetLargestIcon can still use the zero-initialized image-list index and return an unrelated system icon. That makes a missing primary candidate look successful and prevents valid later fallbacks from being tried. Please return IntPtr.Zero/null when the shell lookup fails, and cover the missing-primary jumbo path.",
+      "confidence": 94
+    },
+    {
+      "id": "preserve-app-icon-candidate-order",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve app-icon candidate order across thumbnail and ordinary icon parsing",
+      "body": "### Preserve app-icon candidate order across thumbnail and ordinary icon parsing\n\n**Severity:** `high`\n\nThe processor tries thumbnail extraction for every candidate before allowing the loader to parse an earlier candidate as an indexed icon, URI, or glyph. A later executable thumbnail can therefore win before an earlier explicit candidate is evaluated. Please process each candidate in order: try the appropriate thumbnail path, then ordinary icon conversion/materialization for that same candidate before moving to the next fallback.",
+      "confidence": 93
+    },
+    {
+      "id": "continue-past-unusable-prepared-fallbacks",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Continue past unusable prepared fallback candidates",
+      "body": "### Continue past unusable prepared fallback candidates\n\n**Severity:** `high`\n\nFallback resolution currently stops once a candidate can be syntactically prepared, even if it cannot produce an icon. Missing local file URIs, non-image shell/protocol URIs, binary references with no bitmap, and the invalid-glyph marker can all suppress a later valid fallback. Please validate prepared fallback candidates before accepting them and continue to the next ordered candidate when the prepared value is not usable.",
+      "confidence": 92
+    },
+    {
+      "id": "preserve-generic-app-placeholder",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Keep the generic app icon visible while deferred app icons load",
+      "body": "### Keep the generic app icon visible while deferred app icons load\n\n**Severity:** `medium`\n\nReplacing the Installed Apps row icon immediately with an unresolved protocol request can leave cold rows blank, or make a virtualized row keep a recycled icon until the async request completes. Please publish GenericAppIcon as the immediate row/command placeholder and swap in the protocol request only after the deferred load starts.",
+      "confidence": 90
+    },
+    {
+      "id": "add-terminal-generic-app-fallback",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Add the generic app glyph as the terminal app-icon fallback",
+      "body": "### Add the generic app glyph as the terminal app-icon fallback\n\n**Severity:** `medium`\n\nFor apps whose IcoPath/ExePath candidates cannot produce an icon, the protocol request can still resolve to an empty icon source and replace the generic placeholder with a blank row or hero image. Please append the existing generic app glyph as the terminal candidate for both row and jumbo/hero app-icon requests, and add regression coverage for the exhausted-candidate case.",
+      "confidence": 89
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50188",
+      "type": "request_changes",
+      "label": "Request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "head_sha": "630e72317e952d2eb5dca7d1853e3ee09e3b97a3",
+        "event": "REQUEST_CHANGES",
+        "body": "Thanks for continuing the CmdPal icon-loading series. I found several fallback correctness issues in the new app-icon protocol path that should be addressed before merging: missing candidates can stop ordered fallback resolution, deferred rows can lose their generic app placeholder, and ordinary invalid candidates can be accepted before later valid fallbacks."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The current upstream delta introduces five reproducible app-icon fallback failures. Fork-only fixes resolved each issue, all Copilot threads were closed, and focused builds and tests passed.",
+    "evidence": [
+      "A failed jumbo SHGetFileInfo lookup can use image-list index zero and return an unrelated icon.",
+      "The processor attempts all thumbnail candidates before ordinary parsing, violating documented candidate order.",
+      "Syntactically prepared but unusable candidates can suppress later valid fallbacks.",
+      "Deferred Installed Apps icons can lose the immediate generic placeholder.",
+      "Exhausted app-icon candidates can replace the placeholder with an empty source.",
+      "Focused UI, Apps, toolkit, and module-interface builds passed.",
+      "Focused tests passed across 36 UI, 8 Apps, and 22 toolkit cases.",
+      "The final fork audit found zero unresolved Copilot threads."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected comments as a request-changes review.",
+    "evaluated_at": "2026-08-28T17:44:30Z",
+    "source_updated_at": "2026-08-28T16:14:17Z"
+  },
+  "fork_pr": {
+    "number": 506,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/506"
+  },
+  "fork_branch": "pr-iterate/50188-v2",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-28T17:44:30Z",
+    "fork_head_sha": "13a1b3a758bb637bd4f406224d9320e712df20f3",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "66 focused tests passed"
+  }
+}
