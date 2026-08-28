@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-29T02:59:14.3203044+08:00",
+  "generated_at": "2026-08-29T03:14:36.9850898+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 137,
     "open_issues": 12541,
     "community": 11689,
-    "artifacts": 3235
+    "artifacts": 3236
   },
   "impact": {
-    "as_of": "2026-08-29T02:59:14.3203044+08:00",
+    "as_of": "2026-08-29T03:14:36.9850898+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -103,6 +103,7 @@ window.BOARD_INDEX = {
     50210,
     50203,
     50201,
+    50191,
     50190,
     50189,
     50188,
@@ -3353,7 +3354,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3364,7 +3365,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-28T18:21:02Z",
       "updated_at": "2026-08-28T18:22:33Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 521,
+        "fork_title": "[PR 50213] Peek folder preview scanning status and robust enumeration",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50213-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/521"
+      }
     },
     {
       "id": "pr-50212",
@@ -3601,11 +3610,11 @@ window.BOARD_INDEX = {
       "priority": null,
       "mirror": {
         "kind": "pr",
-        "fork_number": 514,
+        "fork_number": 520,
         "fork_title": "[PR 50192] CmdPal: Icons (12/n) - Share Shell icons by identity and display file-type previews",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50192-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/514"
+        "fork_branch": "pr-iterate/50192-v3",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/520"
       }
     },
     {
@@ -3620,16 +3629,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "post_review",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -6415,7 +6427,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-28T18:44:52Z",
+      "waiting_since": "2026-08-28T18:53:11Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6430,7 +6442,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-07-16T21:04:00Z",
-      "updated_at": "2026-08-28T18:44:52Z",
+      "updated_at": "2026-08-28T18:53:11Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -6699,7 +6711,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "post_review",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6708,8 +6720,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve",
-        "label": "Approve"
+        "type": "request_changes",
+        "label": "Request changes"
       },
       "labels": [
         "Product-Command Palette",
@@ -6722,11 +6734,11 @@ window.BOARD_INDEX = {
       "priority": 60,
       "mirror": {
         "kind": "pr",
-        "fork_number": 518,
-        "fork_title": "[PR 49323] CmdPal JS/TS Extensions - Phase 2: JSON-RPC transport + manifest (refresh)",
+        "fork_number": 519,
+        "fork_title": "[PR 49323] CmdPal JS/TS Extensions - Phase 2: JSON-RPC transport + manifest (reconciled)",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49323-v5",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/518"
+        "fork_branch": "pr-iterate/49323-v6",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/519"
       }
     },
     {
@@ -132615,12 +132627,12 @@ window.BOARD_INDEX = {
       "comments": 6,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 132,
-        "fork_title": "fix(FileLocksmith): replace async void WatchProcess with async Task to prevent crash on reload/close",
+        "kind": "issue",
+        "fork_number": 102,
+        "fork_title": "[Issue 47200] FileLocksmith runs for 5 sec and then crashes",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-47200-fix-filelocksmith-crash",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/132"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/102"
       }
     },
     {

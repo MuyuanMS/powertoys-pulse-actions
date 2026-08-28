@@ -2,106 +2,107 @@
   "number": 49323,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
+  "stage": "post_review",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T02:59:16.313856Z",
-  "evaluated_at": "2026-08-28T02:59:16.313856Z",
-  "source_updated_at": "2026-08-27T19:37:03Z",
-  "head_sha": "3735918a71bf006206e9f49d7fcfc7614157c856",
+  "generated_at": "2026-08-28T19:05:00Z",
+  "evaluated_at": "2026-08-28T19:05:00Z",
+  "source_updated_at": "2026-08-28T18:59:52Z",
+  "head_sha": "c4af287862eaec6926980796db56c8182089f0cc",
   "title": "CmdPal JS/TS Extensions - Phase 2: JSON-RPC transport + manifest",
   "url": "https://github.com/microsoft/PowerToys/pull/49323",
+  "summary": "The refreshed stacked review found five current robustness issues: the notification channel reader contract, bare-CR stderr framing, unbounded inbound frames, unbounded request concurrency, and fail-open manifest containment races.",
   "status": {
-    "glyph": "OK",
-    "label": "Review ready - clean",
-    "detail": "Fork PR 466 and branch pr-iterate/49323-v3 mirror the live 18-file upstream scope at 6daa892dea4261b037fd51126cd74bd5fdf24d1c. All nine Copilot findings were fixed, replied to, and resolved; the final Copilot review on that exact fork head generated zero new comments, and the current focused builds and 68 tests pass."
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "Five general review notes are pinned to the refreshed upstream head."
   },
-  "next_action": "The current-head clean review is ready for a maintainer approval decision; recheck the upstream head before acting.",
-  "proposed_comments": [],
-  "actions": [
+  "next_action": "Review and selectively post the drafted request-changes comments.",
+  "proposed_comments": [
     {
-      "id": "approve-review-49323",
-      "type": "approve",
-      "label": "Approve",
-      "primary": true,
-      "note": "The current-head review found no remaining comments. This is a maintainer decision only; no upstream approval is submitted automatically."
+      "id": "notification-queue-reader-contract",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep notification queue reads safe under producer pressure",
+      "body": "### Keep notification queue reads safe under producer pressure\n\n**Severity:** `high`\n\nThe bounded notification queue removes the oldest item from a producer path while the consumer is also reading. Configure the channel for multiple readers, or move eviction behind the sole consumer, so the declared channel contract matches the actual concurrent access pattern.",
+      "confidence": 95
+    },
+    {
+      "id": "stderr-bare-carriage-return",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Treat standalone carriage returns as stderr line terminators",
+      "body": "### Treat standalone carriage returns as stderr line terminators\n\n**Severity:** `medium`\n\nA bare `\\r` must emit and reset the current stderr line. Otherwise progress-style output is concatenated into one record and can consume the line and volume budgets unexpectedly.",
+      "confidence": 99
+    },
+    {
+      "id": "bounded-inbound-json-rpc-frame",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Bound inbound JSON-RPC frames before allocation",
+      "body": "### Bound inbound JSON-RPC frames before allocation\n\n**Severity:** `high`\n\nReject oversized `Content-Length` declarations and oversized headers before allocating the payload buffer. The transport must not allow an extension to make the host buffer an unbounded or multi-gigabyte inbound message.",
+      "confidence": 92
+    },
+    {
+      "id": "bounded-inbound-request-concurrency",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Apply bounded admission control to inbound requests",
+      "body": "### Apply bounded admission control to inbound requests\n\n**Severity:** `high`\n\nWith a null synchronization context, inbound requests can execute concurrently. Gate request dispatch with a finite capacity and return the defined `ServerBusy` error when that capacity is exhausted, while retaining enough capacity for reentrant callbacks.",
+      "confidence": 90
+    },
+    {
+      "id": "manifest-containment-fail-closed",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Fail closed when a manifest path segment disappears",
+      "body": "### Fail closed when a manifest path segment disappears\n\n**Severity:** `high`\n\nIf a file or directory disappears between existence and attribute checks, treat the segment as untrusted rather than as a confirmed non-reparse point. Containment validation must not succeed without successfully validating every path segment.",
+      "confidence": 97
     }
   ],
-  "phase0": {
-    "verdict": "proceed",
-    "disposition": "Proceed",
-    "author": "michaeljolley",
-    "author_association": "MEMBER",
-    "bar": "member contribution; community process nags skipped",
-    "gates_tripped": [],
-    "summary": "The live intake check passes, CLA and dependency review pass, and no visual evidence is required for this additive non-UI change. The intake bot recommends a closing issue link but does not block review."
-  },
-  "validation": {
-    "completed_at": "2026-08-28T02:59:16.313856Z",
-    "configuration": "Debug x64",
-    "results": [
-      "The live upstream and fork PR scopes match exactly: 18 changed files, with no extra v4 legacy transport files.",
-      "Microsoft.CmdPal.UI.ViewModels Debug x64 build passed on the final fork source.",
-      "Microsoft.CmdPal.UI.ViewModels.UnitTests Debug x64 build passed on the final fork source.",
-      "Focused manifest, JSON-RPC, notification, frame-bound, and bounded-stderr tests passed: 68/68.",
-      "Fork diff validation passed with no whitespace errors.",
-      "Fork Copilot thread audit passed: 0 unresolved Copilot threads."
+  "actions": [
+    {
+      "id": "request-changes-49323",
+      "type": "request_changes",
+      "label": "Request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "head_sha": "c4af287862eaec6926980796db56c8182089f0cc",
+        "event": "REQUEST_CHANGES",
+        "body": "The refreshed implementation should fail closed and remain bounded under malformed or adversarial extension traffic."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The refreshed transport and manifest implementation still has concurrency-contract, framing, allocation-bound, admission-control, and path-validation failures that were reproduced and fixed on the reconciled fork branch.",
+    "evidence": [
+      "The producer path calls Reader.TryRead while the consumer also reads a channel declared for a single reader.",
+      "The stderr parser discards standalone carriage returns without emitting or resetting the buffered line.",
+      "The header-delimited JSON-RPC handler lacks application-level header and payload bounds before allocation.",
+      "Inbound dispatch can execute concurrently while the defined ServerBusy error remains unused.",
+      "A missing path segment after an existence check is treated as a trusted non-reparse result.",
+      "All five prior Copilot threads were replied to and resolved; the final audit found no new published findings.",
+      "The reconciled x64 Debug ViewModels build passed, and the focused pre-reconciliation run passed 168 tests."
     ],
-    "fork_fixes": [
-      "Declare multiple notification-channel readers because the producer-side drop-oldest path also reads from the queue.",
-      "Treat bare carriage returns as stderr line terminators and cover CR-only input.",
-      "Serialize same-method StreamJsonRpc registration so AddLocalRpcMethod executes exactly once under concurrent handler registration.",
-      "Fail closed when manifest entry-point segments disappear during containment validation.",
-      "Require strict package.json syntax, validate debug ports, and terminate a timed-out junction helper process.",
-      "Bound concurrent inbound request handlers and return ServerBusy when saturated.",
-      "Cap inbound Content-Length before StreamJsonRpc buffers a frame and reject invalid request timeout configuration.",
-      "Cap queued notification payloads at 8 MiB aggregate and preserve parameterless notifications."
-    ],
-    "upstream_checks": [
-      "Command Palette Toolkit SDK build passed.",
-      "CLA, dependency review, intake, and telemetry checks passed.",
-      "Upstream Command Palette Toolkit SDK, x64 release, arm64 release, and aggregate PowerToys CI builds passed."
-    ]
-  },
-  "workflow": {
-    "phase": "review_ready",
-    "review_iterations": 8,
-    "iteration_limit": 8,
-    "checkpoint_at": "2026-08-28T02:59:16.313856Z",
-    "fork_pr": 466,
-    "fork_branch": "pr-iterate/49323-v3",
-    "fork_head_sha": "6daa892dea4261b037fd51126cd74bd5fdf24d1c",
-    "mirrored_upstream_head_sha": "3735918a71bf006206e9f49d7fcfc7614157c856",
-    "latest_copilot_review_commit": "6daa892dea4261b037fd51126cd74bd5fdf24d1c",
-    "latest_copilot_review_at": "2026-08-27T20:54:58Z",
-    "latest_copilot_published_inline_comments": 0,
-    "addressed_copilot_threads": 9,
-    "unresolved_copilot_threads": 0,
-    "fresh_review_after_final_head": true,
-    "copilot_request_accepted": true,
-    "copilot_requested_reviewers": [
-      "copilot-pull-request-reviewer"
-    ],
-    "blocker": null
-  },
-  "freshness": {
-    "queued_at": "2026-08-27T11:40:00Z",
-    "checkpoint_at": "2026-08-28T02:59:16.313856Z"
-  },
-  "upstream_status": {
-    "state": "OPEN",
-    "draft": false,
-    "review_decision": "REVIEW_REQUIRED",
-    "head_sha": "3735918a71bf006206e9f49d7fcfc7614157c856",
-    "updated_at": "2026-08-27T19:37:03Z",
-    "latest_activity": "The author refreshed the stacked branch history. The phase-2 patch IDs and 18-file scope are unchanged from the stale reviewed source; all upstream checks now pass."
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected notes as a request-changes review.",
+    "evaluated_at": "2026-08-28T19:05:00Z",
+    "source_updated_at": "2026-08-28T18:59:52Z"
   },
   "fork_pr": {
-    "number": 466,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/466",
-    "state": "OPEN",
-    "updated_at": "2026-08-27T20:50:44Z",
-    "head_sha": "6daa892dea4261b037fd51126cd74bd5fdf24d1c"
+    "number": 519,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/519"
   },
-  "fork_branch": "pr-iterate/49323-v3"
+  "fork_branch": "pr-iterate/49323-v6",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-28T19:05:00Z",
+    "fork_head_sha": "c5ff9c150ddf58f31a9be670f8f95c94b4d8f79c",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "168 focused tests passed before parent-base reconciliation"
+  }
 }

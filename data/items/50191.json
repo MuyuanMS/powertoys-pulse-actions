@@ -1,0 +1,152 @@
+{
+  "number": 50191,
+  "kind": "pr",
+  "track": "review",
+  "stage": "post_review",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-28T18:41:00Z",
+  "evaluated_at": "2026-08-28T18:41:00Z",
+  "source_updated_at": "2026-08-28T16:56:52Z",
+  "head_sha": "78f8e335b66d532a4544915d1ec0867ae9f7f355",
+  "title": "CmdPal: Icons (11/n) - Add plain and theme-aware SVG icon protocols",
+  "url": "https://github.com/microsoft/PowerToys/pull/50191",
+  "summary": "The reconciled review found unbounded file-backed and inline SVG materialization plus missing size, encoding, and spelling regression coverage. Seven apply-ready current-head suggestions are available.",
+  "status": {
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "Seven inline suggestions are pinned to the current upstream head."
+  },
+  "next_action": "Review and selectively post the drafted request-changes comments.",
+  "proposed_comments": [
+    {
+      "id": "bound-themed-svg-file-reads",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Bound themed SVG file materialization",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/SvgFileTextReader.cs",
+      "start_line": 9,
+      "line": 54,
+      "side": "RIGHT",
+      "body": "### Bound themed SVG file materialization\n\n**Severity:** `high`\n\nThe themed path reads an extension-provided SVG into a string without a size limit, then creates more full-size copies during substitution and UTF-8 encoding. A large file can therefore exhaust Command Palette memory; reject files over a bounded protocol limit before allocation and decode the bounded byte array.\n\n```suggestion\ninternal static class SvgFileTextReader\n{\n    internal const int MaximumSvgFileSize = 1024 * 1024;\n    private const int MaximumXmlDeclarationByteCount = 1024;\n    private const int ReaderBufferSize = 1024;\n\n    private static readonly Encoding Utf32LittleEndian = new UTF32Encoding(\n        bigEndian: false,\n        byteOrderMark: false);\n\n    private static readonly Encoding Utf32BigEndian = new UTF32Encoding(\n        bigEndian: true,\n        byteOrderMark: false);\n\n    public static bool TryRead(string path, out string text)\n    {\n        text = string.Empty;\n        if (!TryReadBytes(path, out var bytes))\n        {\n            return false;\n        }\n\n        using var stream = new MemoryStream(bytes, writable: false);\n        Span<byte> prefix = stackalloc byte[MaximumXmlDeclarationByteCount];\n        var prefixLength = stream.ReadAtLeast(prefix, prefix.Length, throwOnEndOfStream: false);\n        if (!TryGetEncoding(prefix[..prefixLength], out var encoding))\n        {\n            return false;\n        }\n\n        stream.Position = 0;\n        using var reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: ReaderBufferSize);\n        text = reader.ReadToEnd();\n        return true;\n    }\n\n    public static bool TryReadBytes(string path, out byte[] bytes)\n    {\n        bytes = [];\n        using var stream = File.OpenRead(path);\n        if (stream.Length is <= 0 or > MaximumSvgFileSize)\n        {\n            return false;\n        }\n\n        bytes = new byte[(int)stream.Length];\n        stream.ReadExactly(bytes);\n        return true;\n    }\n```\n",
+      "confidence": 96
+    },
+    {
+      "id": "bound-plain-svg-file-reads",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Use the bounded reader for plain SVG files",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/SvgIconProtocol.cs",
+      "start_line": 195,
+      "line": 199,
+      "side": "RIGHT",
+      "body": "### Use the bounded reader for plain SVG files\n\n**Severity:** `high`\n\nThe plain-file path also reads the entire extension-provided SVG with no limit. Route it through the same bounded reader as the themed path so both variants reject oversized files consistently.\n\n```suggestion\n        return SvgFileTextReader.TryReadBytes(payload, out svg);\n```",
+      "confidence": 96
+    },
+    {
+      "id": "test-oversized-svg-files",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cover oversized plain and themed SVG files",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/SvgIconProtocolTests.cs",
+      "start_line": 91,
+      "line": 91,
+      "side": "RIGHT",
+      "body": "### Cover oversized plain and themed SVG files\n\n**Severity:** `medium`\n\nThe new file-size boundary needs coverage for both protocol variants.\n\n```suggestion\n    [DataTestMethod]\n    [DataRow(\"|Svg|\")]\n    [DataRow(\"|ThemedSvg|\")]\n    public void OversizedSvgFilesAreRejected(string prefix)\n    {\n        var path = Path.Combine(Path.GetTempPath(), $\"CmdPal-{Guid.NewGuid():N}.svg\");\n        try\n        {\n            using (var stream = File.Create(path))\n            {\n                stream.SetLength(SvgFileTextReader.MaximumSvgFileSize + 1);\n            }\n\n            Assert.IsFalse(SvgIconProtocol.TryCreateSvg(prefix + path, ElementTheme.Light, out var svg));\n            Assert.AreEqual(0, svg.Length);\n        }\n        finally\n        {\n            File.Delete(path);\n        }\n    }\n```",
+      "confidence": 95
+    },
+    {
+      "id": "bound-inline-svg-payloads",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Bound inline SVG payloads before materialization",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/SvgIconProtocol.cs",
+      "start_line": 181,
+      "line": 222,
+      "side": "RIGHT",
+      "body": "### Bound inline SVG payloads before materialization\n\n**Severity:** `high`\n\nThe file-backed limit does not constrain inline extension input. Check both inline routes against the same UTF-8 byte limit before encoding or transforming them.\n\n```suggestion\n        if (IsInline(payload))\n        {\n            if (!IsWithinSvgSizeLimit(payload))\n            {\n                return false;\n            }\n\n            svg = Encoding.UTF8.GetBytes(RemoveXmlDeclaration(payload));\n            return true;\n        }\n\n        if (!IsSvgPath(payload))\n        {\n            return false;\n        }\n\n        return SvgFileTextReader.TryReadBytes(payload, out svg);\n    }\n\n    private static bool TryCreateThemedSvg(string value, ElementTheme theme, out byte[] svg)\n    {\n        svg = [];\n        if (!TryParseThemedPayload(value, theme, out var payload, out var accentColor))\n        {\n            return false;\n        }\n\n        string template;\n        if (IsInline(payload))\n        {\n            if (!IsWithinSvgSizeLimit(payload))\n            {\n                return false;\n            }\n\n            template = payload;\n```",
+      "confidence": 97
+    },
+    {
+      "id": "test-oversized-inline-svg",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cover oversized inline SVG payloads",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/SvgIconProtocolTests.cs",
+      "start_line": 113,
+      "line": 124,
+      "side": "RIGHT",
+      "body": "### Cover oversized inline SVG payloads\n\n**Severity:** `medium`\n\nAdd coverage for both inline protocol variants so oversized extension input is rejected before materialization.\n\n```suggestion\n    [DataTestMethod]\n    [DataRow(\"|Svg|\")]\n    [DataRow(\"|ThemedSvg|\")]\n    public void OversizedInlineSvgIsRejected(string prefix)\n    {\n        var payload = \"<svg>\" + new string(' ', SvgFileTextReader.MaximumSvgFileSize) + \"</svg>\";\n\n        Assert.IsFalse(SvgIconProtocol.TryCreateSvg(prefix + payload, ElementTheme.Light, out var svg));\n        Assert.AreEqual(0, svg.Length);\n    }\n```",
+      "confidence": 96
+    },
+    {
+      "id": "byte-order-mark-test-name",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Use a spell-check-compatible test name",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/SvgIconProtocolTests.cs",
+      "start_line": 206,
+      "line": 206,
+      "side": "RIGHT",
+      "body": "### Use a spell-check-compatible test name\n\n**Severity:** `low`\n\nThe new test identifier contains \"Bomless\", which is reported by the repository spelling check.\n\n```suggestion\n    public void ThemedSvgFileHonorsXmlEncodingDeclarationWithoutByteOrderMark()\n```",
+      "confidence": 98
+    },
+    {
+      "id": "test-bomless-utf32-svg-files",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cover both BOM-less UTF-32 decoder branches",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/SvgIconProtocolTests.cs",
+      "start_line": 235,
+      "line": 235,
+      "side": "RIGHT",
+      "body": "### Cover both BOM-less UTF-32 decoder branches\n\n**Severity:** `medium`\n\nCover both byte orders so decoder regressions do not silently break themed SVG files.\n\n```suggestion\n    [DataTestMethod]\n    [DataRow(false)]\n    [DataRow(true)]\n    public void ThemedSvgFileHonorsUtf32EncodingWithoutByteOrderMark(bool bigEndian)\n    {\n        var path = Path.Combine(Path.GetTempPath(), $\"CmdPal-{Guid.NewGuid():N}.svg\");\n        try\n        {\n            var encoding = new UTF32Encoding(bigEndian, byteOrderMark: false);\n            File.WriteAllBytes(path, encoding.GetBytes(Template));\n\n            Assert.IsTrue(SvgIconProtocol.TryCreateSvg($\"|ThemedSvg|success|{path}\", ElementTheme.Dark, out var svg));\n\n            var resolved = Encoding.UTF8.GetString(svg);\n            StringAssert.Contains(resolved, \"id=\\\"theme\\\" fill=\\\"#FFFFFF\\\"\");\n            StringAssert.Contains(resolved, \"id=\\\"accent\\\" fill=\\\"#6CCB5F\\\"\");\n        }\n        finally\n        {\n            File.Delete(path);\n        }\n    }\n```",
+      "confidence": 94
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50191",
+      "type": "request_changes",
+      "label": "Request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "head_sha": "78f8e335b66d532a4544915d1ec0867ae9f7f355",
+        "event": "REQUEST_CHANGES",
+        "body": "The SVG protocols need bounded file and inline materialization plus focused encoding and boundary regression coverage before merging."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "Extension-controlled file and inline SVG inputs are materialized without a shared size bound, and the new encoding branches lack complete regression coverage.",
+    "evidence": [
+      "Plain and themed file paths materialize extension-controlled SVG content without a size limit.",
+      "Plain and themed inline paths bypass the file-backed limit and can allocate arbitrarily large payloads.",
+      "BOM-less UTF-32 little- and big-endian branches lacked direct public-path coverage.",
+      "The repository spelling check rejects the new Bomless identifier.",
+      "The review was reconciled onto the exact reviewed PR 50190 fork head.",
+      "The final Copilot pass generated zero new findings and zero unresolved threads.",
+      "CmdPal UI, SamplePages, and unit-test projects built successfully; 52 focused SVG tests passed."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected suggestions as a request-changes review.",
+    "evaluated_at": "2026-08-28T18:41:00Z",
+    "source_updated_at": "2026-08-28T16:56:52Z"
+  },
+  "fork_pr": {
+    "number": 515,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/515"
+  },
+  "fork_branch": "pr-iterate/50191-v2",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-28T18:41:00Z",
+    "fork_head_sha": "f90c43570b85e745ac9eea2aff0dc1e562907a03",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "52 focused tests passed"
+  }
+}
