@@ -2,61 +2,90 @@
   "number": 49321,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "post_review",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-27T06:08:08Z",
-  "evaluated_at": "2026-08-27T06:08:08Z",
-  "source_updated_at": "2026-08-21T00:03:58Z",
-  "head_sha": "6fa225e04b4568e6c1e5ea89212f4cfa0a195e20",
+  "generated_at": "2026-08-28T18:35:00Z",
+  "evaluated_at": "2026-08-28T18:35:00Z",
+  "source_updated_at": "2026-08-28T18:02:10Z",
+  "head_sha": "d6db4472cc3bbb3573699e0dd312fb2183b52f57",
   "title": "CmdPal JS/TS Extensions - Phase 1: TypeScript SDK",
   "url": "https://github.com/microsoft/PowerToys/pull/49321",
+  "summary": "The refreshed current-head review found two high-severity runtime ordering and form-routing issues. Both have apply-ready inline suggestions; 125 SDK tests plus typecheck, lint, build, and package verification passed on the fork fixes.",
   "status": {
-    "glyph": "📝",
-    "label": "Review drafted",
-    "detail": "The review iteration cap has been reached. One current, apply-ready suggestion prevents EOF finalization from racing an in-flight serialized request. Generated form IDs can also collide with explicit IDs, but that concern requires a broader collector design and is retained as a manual note."
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "Two inline suggestions are pinned to the refreshed upstream head."
   },
-  "next_action": "Recheck the upstream head, then post the selected suggestion only if the maintainer agrees; manually assess the remaining form-ID concern.",
+  "next_action": "Review and selectively post the drafted request-changes comments.",
   "proposed_comments": [
     {
-      "id": "await-serialized-requests-before-eof-finalization",
+      "id": "await-queued-requests-before-shutdown",
       "kind": "inline",
       "severity": "high",
-      "confidence": {
-        "score": 94,
-        "rationale": "The current EOF handler invokes finalization without awaiting the serialized request chain, which can dispose provider state during an accepted request."
-      },
+      "title": "Wait for queued requests before shutdown",
       "path": "src/modules/cmdpal/ts-sdk/src/runtime/server.ts",
-      "startLine": 160,
-      "line": 162,
+      "start_line": 149,
+      "line": 149,
       "side": "RIGHT",
-      "in_diff": true,
-      "title": "Await queued requests before finalizing EOF",
-      "body": "### Await queued requests before finalizing EOF\n\n**Severity:** `high`\n\nEOF can arrive while an already-received request is still queued in `chain`. Finalizing immediately disposes the provider concurrently with that request, so it can fail after the host has supplied all of its bytes. Wait for the serialized chain to settle before shutdown.\n\n```suggestion\n  process.stdin.on('end', () => {\n    void chain.finally(() => finalize(0));\n  });\n```",
-      "disposition": "proposed"
+      "body": "### Wait for queued requests before shutdown\n\n**Severity:** `high`\n\nWhen stdin reaches EOF, finalization starts immediately even if previously received requests are still running in the serialized request chain. That can dispose the provider and tear down the protocol bridge before those requests finish, dropping responses or notifications. Wait for the queue to settle before finalizing so EOF shutdown preserves the ordering guarantees of the request pipeline.\n\n```suggestion\n    void chain.then(() => finalize(0));\n```",
+      "confidence": 96
+    },
+    {
+      "id": "reserve-form-identifiers",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Reserve generated form identifiers",
+      "path": "src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts",
+      "start_line": 851,
+      "line": 860,
+      "side": "RIGHT",
+      "body": "### Reserve generated form identifiers\n\n**Severity:** `high`\n\nThe collector generates `form-0`, `form-1`, and so on without accounting for explicit IDs supplied by the author. An explicit `form-0` followed by an omitted ID therefore registers two handlers under the same key, and the later handler replaces the first one. Track allocated and registered IDs together, skip every reserved ID when generating a new one, and reject duplicate explicit registrations so nested forms cannot route submissions to the wrong handler.\n\n```suggestion\nfunction createFormCollector(scope: PageScope): FormCollector {\n  let counter = 0;\n  const allocatedIds = new Set<string>();\n  const registeredIds = new Set<string>();\n  return {\n    nextId(): string {\n      while (allocatedIds.has(`form-${String(counter)}`) || registeredIds.has(`form-${String(counter)}`)) {\n        counter += 1;\n      }\n      const id = `form-${String(counter)}`;\n      counter += 1;\n      allocatedIds.add(id);\n      return id;\n    },\n    register(formId: string, handler: FormSubmitHandler): void {\n      if (registeredIds.has(formId)) {\n        throw new Error(`Duplicate form id: ${formId}`);\n      }\n      if (allocatedIds.has(formId)) {\n        allocatedIds.delete(formId);\n      }\n      registeredIds.add(formId);\n      scope.forms.set(formId, handler);\n    },\n  };\n}\n```",
+      "confidence": 98
     }
   ],
   "actions": [
     {
-      "id": "post-eof-finalization-review-49321",
-      "type": "post_review",
-      "label": "Post EOF finalization suggestion",
+      "id": "request-changes-49321",
+      "type": "request_changes",
+      "label": "Request changes",
       "primary": true,
       "confirm": true,
+      "requiresApproval": true,
       "review": {
+        "head_sha": "d6db4472cc3bbb3573699e0dd312fb2183b52f57",
         "event": "REQUEST_CHANGES",
-        "pr": 49321,
-        "head_sha": "6fa225e04b4568e6c1e5ea89212f4cfa0a195e20",
-        "body_prefix": "Thanks for the TypeScript SDK foundation. One shutdown race remains in the current implementation; the selected suggestion preserves serialized request handling through EOF."
+        "body": "The refreshed TypeScript SDK head still has request-shutdown ordering and form-ID collision issues that can drop responses or route submissions to the wrong handler."
       }
     }
   ],
-  "workflow": {
-    "phase": "review_drafted",
-    "checkpoint_at": "2026-08-27T06:08:08Z"
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The current head finalizes immediately at EOF despite a serialized request queue, and its generated form identifiers do not reserve explicit IDs. Both failures were fixed and validated on the resumed fork review.",
+    "evidence": [
+      "The EOF handler invokes asynchronous finalization without awaiting the existing request chain.",
+      "The form collector overwrites map entries when an explicit ID collides with a generated form-N identifier.",
+      "The existing durable fork review was refreshed rather than remirrored.",
+      "All prior and refreshed Copilot threads were replied to and resolved.",
+      "The final audit reports zero unresolved Copilot threads.",
+      "The SDK passed 125 tests, typecheck, lint, build, and package verification."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post both suggestions as a request-changes review.",
+    "evaluated_at": "2026-08-28T18:35:00Z",
+    "source_updated_at": "2026-08-28T18:02:10Z"
   },
-  "freshness": {
-    "queued_at": "2026-08-21T00:03:58Z",
-    "checkpoint_at": "2026-08-27T06:08:08Z"
+  "fork_pr": {
+    "number": 429,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/429"
+  },
+  "fork_branch": "pr-iterate/49321-v2",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-28T18:35:00Z",
+    "fork_head_sha": "3ecdb2c164ae81b0926864b3cc61c0709ab629e7",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "125 tests passed"
   }
 }
