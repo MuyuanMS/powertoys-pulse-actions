@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-28T15:30:45.6876509+08:00",
+  "generated_at": "2026-08-28T15:43:38.3314319+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 3196
   },
   "impact": {
-    "as_of": "2026-08-28T15:30:45.6876509+08:00",
+    "as_of": "2026-08-28T15:43:38.3314319+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -7547,7 +7547,7 @@ window.BOARD_INDEX = {
       "stage": "review_ready",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-07-25T16:55:33Z",
+      "waiting_since": "2026-08-28T07:31:45Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -7557,10 +7557,11 @@ window.BOARD_INDEX = {
         "label": "Approve"
       },
       "labels": [
-        "Product-File Explorer"
+        "Product-File Explorer",
+        "Ready for review"
       ],
       "created_at": "2026-05-30T16:24:53Z",
-      "updated_at": "2026-07-25T16:55:33Z",
+      "updated_at": "2026-08-28T07:31:45Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -54863,7 +54864,7 @@ window.BOARD_INDEX = {
         "Product-Keyboard Manager"
       ],
       "created_at": "2026-08-17T15:19:52Z",
-      "updated_at": "2026-08-28T07:09:00Z",
+      "updated_at": "2026-08-28T07:36:10Z",
       "comments": 1,
       "priority": null
     },
