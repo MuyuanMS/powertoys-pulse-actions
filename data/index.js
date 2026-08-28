@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-29T03:59:02.7624261+08:00",
+  "generated_at": "2026-08-29T07:50:01.6868717+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,23 +85,24 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 137,
-    "open_issues": 12541,
-    "community": 11689,
-    "artifacts": 3238
+    "open_prs": 139,
+    "open_issues": 12543,
+    "community": 11690,
+    "artifacts": 3239
   },
   "impact": {
-    "as_of": "2026-08-29T03:59:02.7624261+08:00",
+    "as_of": "2026-08-29T07:50:01.6868717+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50218,
+    50217,
     50213,
     50212,
     50211,
-    50210,
     50203,
     50201,
     50192,
@@ -117,7 +118,6 @@ window.BOARD_INDEX = {
     50182,
     50181,
     50180,
-    50178,
     50151,
     50132,
     50114,
@@ -144,6 +144,7 @@ window.BOARD_INDEX = {
     49826,
     49825,
     49793,
+    49786,
     49759,
     49751,
     49736,
@@ -2566,7 +2567,7 @@ window.BOARD_INDEX = {
     39723,
     39720,
     39719,
-    22195,
+    39714,
     46417,
     39704,
     39702,
@@ -2653,7 +2654,6 @@ window.BOARD_INDEX = {
     39227,
     39218,
     39207,
-    39714,
     39205,
     39196,
     21676,
@@ -2669,6 +2669,7 @@ window.BOARD_INDEX = {
     39113,
     39112,
     39106,
+    22195,
     39104,
     39090,
     39083,
@@ -3339,6 +3340,123 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-50218",
+      "kind": "pr",
+      "number": 50218,
+      "url": "https://github.com/microsoft/PowerToys/pull/50218",
+      "title": "fix(common): handle packaged context menu servicing shutdown",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "review",
+      "stage": "review_drafted",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 3,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with 3 general review notes"
+      },
+      "labels": [
+        "Product-PowerRename",
+        "Product-Image Resizer",
+        "Product-File Locksmith",
+        "Product-New+",
+        "Ready for review"
+      ],
+      "created_at": "2026-08-28T21:20:45Z",
+      "updated_at": "2026-08-28T21:21:07Z",
+      "comments": 2,
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 526,
+        "fork_title": "[PR 50218] fix(common): handle packaged context menu servicing shutdown",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50218-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/526"
+      }
+    },
+    {
+      "id": "pr-50217",
+      "kind": "pr",
+      "number": 50217,
+      "url": "https://github.com/microsoft/PowerToys/pull/50217",
+      "title": "fix(file-locksmith): isolate handle enumeration",
+      "author": "crutkas",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "review",
+      "stage": "review_drafted",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 6,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with 6 review comments"
+      },
+      "labels": [
+        "Needs-Author-Feedback",
+        "Product-File Locksmith"
+      ],
+      "created_at": "2026-08-28T21:20:37Z",
+      "updated_at": "2026-08-28T21:21:02Z",
+      "comments": 2,
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 527,
+        "fork_title": "[PR 50217] fix(file-locksmith): isolate handle enumeration",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50217",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/527"
+      }
+    },
+    {
+      "id": "pr-50216",
+      "kind": "pr",
+      "number": 50216,
+      "url": "https://github.com/microsoft/PowerToys/pull/50216",
+      "title": "CmdPal: IDetails2 update proposal [DO NOT MERGE]",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette"
+      ],
+      "created_at": "2026-08-28T20:46:53Z",
+      "updated_at": "2026-08-28T21:00:21Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "pr-50213",
       "kind": "pr",
       "number": 50213,
@@ -3466,48 +3584,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50211",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/503"
-      }
-    },
-    {
-      "id": "pr-50210",
-      "kind": "pr",
-      "number": 50210,
-      "url": "https://github.com/microsoft/PowerToys/pull/50210",
-      "title": "CmdPal: Restore content viewer spec and regenerate IDL",
-      "author": "jiripolasek",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": {
-        "type": "approve",
-        "label": "Approve"
-      },
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "created_at": "2026-08-28T15:59:11Z",
-      "updated_at": "2026-08-28T17:45:41Z",
-      "comments": 4,
-      "priority": null,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 505,
-        "fork_title": "[PR 50210] CmdPal: Restore content viewer spec and regenerate IDL",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50210",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/505"
       }
     },
     {
@@ -4105,10 +4181,10 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 12,
+      "proposed_open": 13,
       "primary_action": {
         "type": "request_changes",
-        "label": "Request changes with 12 review comments"
+        "label": "Request changes with 13 review comments"
       },
       "labels": [
         "Product-Command Palette",
@@ -4117,60 +4193,16 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-08-27T21:55:19Z",
-      "updated_at": "2026-08-28T14:52:57Z",
+      "updated_at": "2026-08-28T21:58:02Z",
       "comments": 2,
       "priority": null,
       "mirror": {
         "kind": "pr",
-        "fork_number": 493,
+        "fork_number": 528,
         "fork_title": "[PR 50180] CmdPal: Add support for richer content in Details",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50180-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/493"
-      }
-    },
-    {
-      "id": "pr-50178",
-      "kind": "pr",
-      "number": 50178,
-      "url": "https://github.com/microsoft/PowerToys/pull/50178",
-      "title": "CmdPal: Add IFormContent2 support",
-      "author": "zadjii-msft",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "review",
-      "stage": "review_drafted",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 3,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with 3 review comments"
-      },
-      "labels": [
-        "Product-Command Palette",
-        "CmdPal-API",
-        "0.102",
-        "Ready for review"
-      ],
-      "created_at": "2026-08-27T20:48:53Z",
-      "updated_at": "2026-08-28T14:53:57Z",
-      "comments": 1,
-      "priority": null,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 491,
-        "fork_title": "[PR 50178] CmdPal: Add IFormContent2 support",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50178-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/491"
+        "fork_branch": "pr-iterate/50180-v4",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/528"
       }
     },
     {
@@ -5420,6 +5452,45 @@ window.BOARD_INDEX = {
       }
     },
     {
+      "id": "pr-49786",
+      "kind": "pr",
+      "number": 49786,
+      "url": "https://github.com/microsoft/PowerToys/pull/49786",
+      "title": "Set title bar preferred theme across PowerToys",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "review",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Keyboard Shortcut Manager",
+        "Product-Settings",
+        "Product-Image Resizer",
+        "Product-Hosts File Editor",
+        "Product-File Locksmith",
+        "Product-Registry Preview",
+        "Product-Environment Variables",
+        "Product-Command Palette",
+        "Product-Keyboard Manager",
+        "Ready for review"
+      ],
+      "created_at": "2026-08-09T12:26:14Z",
+      "updated_at": "2026-08-28T22:51:41Z",
+      "comments": 5,
+      "priority": null
+    },
+    {
       "id": "pr-49759",
       "kind": "pr",
       "number": 49759,
@@ -6435,7 +6506,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-28T19:35:43Z",
+      "waiting_since": "2026-08-28T21:51:05Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6450,7 +6521,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-07-16T21:04:00Z",
-      "updated_at": "2026-08-28T19:35:43Z",
+      "updated_at": "2026-08-28T21:51:05Z",
       "comments": 1,
       "priority": 60,
       "mirror": {
@@ -8919,6 +8990,40 @@ window.BOARD_INDEX = {
       "created_at": "2024-09-22T22:21:52Z",
       "updated_at": "2026-07-22T18:01:39Z",
       "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-18972",
+      "kind": "issue",
+      "number": 18972,
+      "url": "https://github.com/microsoft/PowerToys/issues/18972",
+      "title": "FancyZones - Resize splits to effect both windows.",
+      "author": "ChadThomsen",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "FancyZones-Layouts",
+        "Product-FancyZones",
+        "Needs-Triage",
+        "Needs-Team-Response"
+      ],
+      "created_at": "2022-06-21T13:41:56Z",
+      "updated_at": "2026-04-19T14:21:51Z",
+      "comments": 15,
       "priority": null
     },
     {
@@ -39996,13 +40101,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-30906",
+      "id": "issue-50215",
       "kind": "issue",
-      "number": 30906,
-      "url": "https://github.com/microsoft/PowerToys/issues/30906",
-      "title": "Screens are maximized instead of pinned into the zone",
-      "author": "gjoostrum",
-      "state": "closed",
+      "number": 50215,
+      "url": "https://github.com/microsoft/PowerToys/issues/50215",
+      "title": "[Text Extractor] Captures mirrored screen area (X-axis inversion) when Windows display language is Arabic (RTL)",
+      "author": "yahyaabohashemstu",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -40019,14 +40124,11 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
-        "FancyZones-Dragging&UI",
-        "Product-FancyZones",
         "Needs-Triage"
       ],
-      "created_at": "2024-01-12T08:19:30Z",
-      "updated_at": "2026-04-11T20:49:15Z",
-      "comments": 1,
+      "created_at": "2026-08-28T20:16:04Z",
+      "updated_at": "2026-08-28T20:16:04Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -43269,15 +43371,15 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-45836",
+      "id": "issue-50214",
       "kind": "issue",
-      "number": 45836,
-      "url": "https://github.com/microsoft/PowerToys/issues/45836",
-      "title": "CmdPal: Multi-monitor support for dock",
-      "author": "michaeljolley",
-      "state": "closed",
+      "number": 50214,
+      "url": "https://github.com/microsoft/PowerToys/issues/50214",
+      "title": "[Feature Request] Add width customization, centered compact layout, and rounded corners for Command Palette / Shortcut Bar",
+      "author": "AinloDiven",
+      "state": "open",
       "is_draft": false,
-      "is_community": false,
+      "is_community": true,
       "mine": false,
       "is_cmdpal": true,
       "track": null,
@@ -43291,13 +43393,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Resolution-Duplicate",
-        "Product-Command Palette",
-        "CmdPal - Dock"
+        "Needs-Triage",
+        "Product-Command Palette"
       ],
-      "created_at": "2026-02-27T18:58:24Z",
-      "updated_at": "2026-08-10T08:43:05Z",
-      "comments": 3,
+      "created_at": "2026-08-28T20:07:41Z",
+      "updated_at": "2026-08-28T22:06:39Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -55216,7 +55317,7 @@ window.BOARD_INDEX = {
       "author": "jiripolasek",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": null,
@@ -155443,12 +155544,12 @@ window.BOARD_INDEX = {
       "comments": 0,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 134,
-        "fork_title": "Fix Dock layout shifts when metric values change",
+        "kind": "issue",
+        "fork_number": 104,
+        "fork_title": "[Issue 46363] Layout shifts in Dock when values change",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-46363-fix-layout-shifts-dock",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/134"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/104"
       }
     },
     {
@@ -161550,12 +161651,12 @@ window.BOARD_INDEX = {
       "comments": 0,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 135,
-        "fork_title": "CmdPal: Fix RPC_E_CANTCALLOUT_ININPUTSYNCCALL crash on summon via low-level hotkey",
+        "kind": "issue",
+        "fork_number": 105,
+        "fork_title": "[Issue 46158] CmdPal: Crash on summon",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-46158-crash-on-summon",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/135"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/105"
       }
     },
     {
@@ -166528,12 +166629,12 @@ window.BOARD_INDEX = {
       "comments": 0,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 136,
-        "fork_title": "Always on Top: Add separate toggle to disable opacity-change sounds",
+        "kind": "issue",
+        "fork_number": 106,
+        "fork_title": "[Issue 45985] Always on top: Should add an option to disable the sound when rise change the window opacity",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-45985-disable-opacity-sound",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/136"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/106"
       }
     },
     {
@@ -259789,17 +259890,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-42372",
+      "id": "issue-45836",
       "kind": "issue",
-      "number": 42372,
-      "url": "https://github.com/microsoft/PowerToys/issues/42372",
-      "title": "PowerToys Bug",
-      "author": "vanquish66",
+      "number": 45836,
+      "url": "https://github.com/microsoft/PowerToys/issues/45836",
+      "title": "CmdPal: Multi-monitor support for dock",
+      "author": "michaeljolley",
       "state": "closed",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -259807,17 +259908,16 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
         "Resolution-Duplicate",
-        "duplicate",
-        "Product-General"
+        "Product-Command Palette",
+        "CmdPal - Dock"
       ],
-      "created_at": "2025-10-16T01:12:17Z",
-      "updated_at": "2026-04-30T09:55:42Z",
+      "created_at": "2026-02-27T18:58:24Z",
+      "updated_at": "2026-08-10T08:43:05Z",
       "comments": 3,
       "priority": null
     },
@@ -315354,12 +315454,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-22195",
+      "id": "issue-39714",
       "kind": "issue",
-      "number": 22195,
-      "url": "https://github.com/microsoft/PowerToys/issues/22195",
-      "title": "Replace \"V240\" between \"ctrl\" by \"Keyboard Manager\"",
-      "author": "SeizoOkamura",
+      "number": 39714,
+      "url": "https://github.com/microsoft/PowerToys/issues/39714",
+      "title": "Updating Office 16 Click-to-Run Extensibility and Licensing Component is causing PowerToys to crash",
+      "author": "peppermintsodaa",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -315377,12 +315477,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Product-Keyboard Shortcut Manager",
-        "Needs-Repro"
+        "Area-Runner",
+        "Needs-Triage",
+        "Product-General"
       ],
-      "created_at": "2022-11-20T13:19:27Z",
-      "updated_at": "2024-02-26T00:17:43Z",
-      "comments": 6,
+      "created_at": "2025-05-25T03:09:23Z",
+      "updated_at": "2026-04-18T15:02:15Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -325476,39 +325577,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-39714",
-      "kind": "issue",
-      "number": 39714,
-      "url": "https://github.com/microsoft/PowerToys/issues/39714",
-      "title": "Updating Office 16 Click-to-Run Extensibility and Licensing Component is causing PowerToys to crash",
-      "author": "peppermintsodaa",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Area-Runner",
-        "Needs-Triage",
-        "Product-General"
-      ],
-      "created_at": "2025-05-25T03:09:23Z",
-      "updated_at": "2026-04-18T15:02:15Z",
-      "comments": 3,
-      "priority": null
-    },
-    {
       "id": "issue-39205",
       "kind": "issue",
       "number": 39205,
@@ -327487,37 +327555,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-18972",
+      "id": "issue-22195",
       "kind": "issue",
-      "number": 18972,
-      "url": "https://github.com/microsoft/PowerToys/issues/18972",
-      "title": "FancyZones - Resize splits to effect both windows.",
-      "author": "ChadThomsen",
-      "state": "closed",
+      "number": 22195,
+      "url": "https://github.com/microsoft/PowerToys/issues/22195",
+      "title": "Replace \"V240\" between \"ctrl\" by \"Keyboard Manager\"",
+      "author": "SeizoOkamura",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "feature",
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "FancyZones-Layouts",
-        "Product-FancyZones",
-        "Needs-Triage",
-        "Needs-Team-Response"
+        "Issue-Bug",
+        "Product-Keyboard Shortcut Manager",
+        "Needs-Repro"
       ],
-      "created_at": "2022-06-21T13:41:56Z",
-      "updated_at": "2026-04-19T14:21:51Z",
-      "comments": 15,
+      "created_at": "2022-11-20T13:19:27Z",
+      "updated_at": "2024-02-26T00:17:43Z",
+      "comments": 6,
       "priority": null
     },
     {
@@ -380487,6 +380553,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-30906",
+      "kind": "issue",
+      "number": 30906,
+      "url": "https://github.com/microsoft/PowerToys/issues/30906",
+      "title": "Screens are maximized instead of pinned into the zone",
+      "author": "gjoostrum",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "FancyZones-Dragging&UI",
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "created_at": "2024-01-12T08:19:30Z",
+      "updated_at": "2026-04-11T20:49:15Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-36504",
       "kind": "issue",
       "number": 36504,
@@ -406198,6 +406298,39 @@ window.BOARD_INDEX = {
       "created_at": "2024-10-02T17:55:11Z",
       "updated_at": "2026-07-19T03:56:29Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-42372",
+      "kind": "issue",
+      "number": 42372,
+      "url": "https://github.com/microsoft/PowerToys/issues/42372",
+      "title": "PowerToys Bug",
+      "author": "vanquish66",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "duplicate",
+        "Product-General"
+      ],
+      "created_at": "2025-10-16T01:12:17Z",
+      "updated_at": "2026-04-30T09:55:42Z",
+      "comments": 3,
       "priority": null
     },
     {

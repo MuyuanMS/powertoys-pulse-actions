@@ -1,0 +1,151 @@
+{
+  "number": 50218,
+  "kind": "pr",
+  "track": "review",
+  "pending_author": false,
+  "source_updated_at": "2026-08-28T21:21:07Z",
+  "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
+  "title": "fix(common): handle packaged context menu servicing shutdown",
+  "url": "https://github.com/microsoft/PowerToys/pull/50218",
+  "confidence": "High",
+  "phase0": {
+    "author": "crutkas",
+    "author_association": "MEMBER",
+    "bar": "member-authored; process nags skipped",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "The author is a member, so community-contributor process asks do not apply. CLA and automated intake checks passed.",
+    "evidence": [
+      "The live upstream head is 1e2e18d8725145d012d0b0d55e4ed5251febba51.",
+      "The author association is MEMBER."
+    ]
+  },
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "The current-head review found a retry-safety issue in lifecycle initialization, missing direct activity-drain coverage, and missing privacy documentation for new telemetry events. Fork review threads are resolved and native compile/link validation passed.",
+    "recommended_action": "Review the three drafted general comments and post only after explicit approval and a freshness check.",
+    "evaluated_at": "2026-08-28T22:06:40.2993539Z",
+    "source_updated_at": "2026-08-28T21:21:07Z",
+    "evidence": [
+      "A failed or timed-out monitor initialization can complete INIT_ONCE before a servicing target exists, making later activation use invalid lifecycle state.",
+      "The added test covers idle WM_CLOSE shutdown but not activity admission, drain, rejection, or grace-period behavior.",
+      "Four new ServicingWindowInitialization telemetry events are absent from DATA_AND_PRIVACY.md.",
+      "All fork review threads were resolved and the final audit found zero unresolved Copilot threads.",
+      "Relevant native projects compile and link successfully.",
+      "The Explorer-driven UI test was blocked by non-interactive foreground setup before reaching the servicing assertions.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ]
+  },
+  "verification": {
+    "result": "passed_with_environment_limitation",
+    "configuration": "x64 Debug",
+    "builds": [
+      "tools\\build\\build-essentials.cmd",
+      "File Locksmith context-menu projects",
+      "PowerRename context-menu projects",
+      "Image Resizer context-menu projects",
+      "New+ context-menu projects",
+      "FileLocksmith.UITests compile/link"
+    ],
+    "tests": [
+      {
+        "suite": "Fork Copilot thread audit",
+        "result": "passed",
+        "unresolved": 0
+      },
+      {
+        "suite": "FileLocksmith.ContextMenu.ServicingShutdown",
+        "result": "environment_blocked",
+        "detail": "Explorer foreground stabilization failed before servicing assertions in the non-interactive desktop."
+      }
+    ],
+    "build_note": "Package pre-build was disabled because MakeAppx outputs were locked; the changed native code compiled and linked."
+  },
+  "upstream_pr": {
+    "number": 50218,
+    "url": "https://github.com/microsoft/PowerToys/pull/50218",
+    "state": "OPEN",
+    "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
+    "updated_at": "2026-08-28T21:21:07Z"
+  },
+  "workflow": {
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-28T22:06:40.2993539Z",
+    "unresolved_copilot_threads": 0
+  },
+  "stage": "review_drafted",
+  "owes": "maintainer",
+  "status": {
+    "glyph": "⚠️",
+    "label": "Blocking review drafted",
+    "detail": "Three current-head general review notes are ready for maintainer selection."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "retry-safe-lifecycle-initialization",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make lifecycle initialization retry-safe",
+      "body": "### Make lifecycle initialization retry-safe\n\n**Severity:** `high`\n\nIf the monitor thread times out or the wait fails, the current code stores the monitor and completes `INIT_ONCE` before a servicing window is known to exist. A later activation can then accept activity against a monitor with no shutdown target, and concurrent failed retries can race on the shared initialization result. Please keep the result synchronization-safe, commit the monitor only after the initialization event confirms success, and leave failed attempts retryable.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 93,
+        "rationale": "The timeout branch stores the monitor before confirmed window creation, and failed InitOnce attempts can be retried concurrently."
+      }
+    },
+    {
+      "id": "activity-drain-coverage",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Add direct coverage for activity-drain shutdown",
+      "body": "### Add direct coverage for activity-drain shutdown\n\n**Severity:** `medium`\n\nThe new UI test proves an idle surrogate exits on `WM_CLOSE`, but it does not exercise the helper's core admission and drain contract. Please add focused coverage that an operation admitted before shutdown delays termination up to the grace period, new activity is rejected after shutdown starts, and releasing the last active operation lets shutdown proceed.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 86,
+        "rationale": "No test exercises begin_activity/end_activity ordering, rejection after shutdown, or the grace-period drain path."
+      }
+    },
+    {
+      "id": "document-servicing-telemetry",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Document the new telemetry events",
+      "body": "### Document the new telemetry events\n\n**Severity:** `medium`\n\nThis change adds four new `*_ServicingWindowInitialization` telemetry events, but `DATA_AND_PRIVACY.md` still lists only the existing events. Please document these events, or confirm in the PR that they are intentionally covered by an existing entry, so the privacy documentation stays aligned with the emitted telemetry.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 95,
+        "rationale": "The diff adds four servicing-window initialization events with no matching privacy documentation entries."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request_changes-50218",
+      "type": "request_changes",
+      "label": "Request changes with 3 general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "General review notes — no inline suggestions. Explicit approval and freshness recheck are required before posting.",
+      "review": {
+        "pr": 50218,
+        "pullRequest": 50218,
+        "repository": "microsoft/PowerToys",
+        "event": "REQUEST_CHANGES",
+        "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
+        "body_prefix": "Thanks for the servicing fix. Please address the lifecycle retry-safety issue, add direct activity-drain coverage, and align the privacy documentation with the new telemetry events."
+      }
+    }
+  ],
+  "generated_at": "2026-08-28T22:06:40.2993539Z",
+  "evaluated_at": "2026-08-28T22:06:40.2993539Z",
+  "summary": "The current-head review contains three general notes covering retry-safe lifecycle initialization, activity-drain regression coverage, and telemetry privacy documentation."
+}

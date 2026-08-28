@@ -1,0 +1,218 @@
+{
+  "number": 50217,
+  "kind": "pr",
+  "track": "review",
+  "pending_author": false,
+  "source_updated_at": "2026-08-28T21:21:02Z",
+  "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
+  "title": "fix(file-locksmith): isolate handle enumeration",
+  "url": "https://github.com/microsoft/PowerToys/pull/50217",
+  "confidence": "High",
+  "phase0": {
+    "author": "crutkas",
+    "author_association": "MEMBER",
+    "bar": "member-authored; process nags skipped",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "The author is a member, so community-contributor process asks do not apply. CLA and x64/ARM64 CI passed.",
+    "evidence": [
+      "The live upstream head is 36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd.",
+      "The author association is MEMBER."
+    ]
+  },
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "The worker-process direction protects the UI, but normal CLI enumeration remains in-process. Five additional protocol, cleanup, and regression-coverage findings are pinned to the current head. The final Copilot pass produced zero comments, all threads are resolved, and focused validation passed.",
+    "recommended_action": "Review the six drafted comments and post only after explicit approval and a freshness check.",
+    "evaluated_at": "2026-08-28T23:05:34.8471939Z",
+    "source_updated_at": "2026-08-28T21:21:02Z",
+    "evidence": [
+      "Normal FileLocksmithCLI commands still execute potentially blocking native enumeration in-process.",
+      "Malformed worker responses can omit pid or contain null process/file entries.",
+      "Worker termination can race with native process exit.",
+      "Invalid UTF-8 can escape the worker's malformed-input handling.",
+      "Caller cancellation and structured malformed protocol responses lack focused cleanup coverage.",
+      "The final post-fix Copilot review contained zero comments and all 11 threads are resolved.",
+      "Debug tests passed 23/23 and Release tests passed 22/22.",
+      "Focused File Locksmith and common builds passed.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ]
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug and Release tests",
+    "builds": [
+      "File Locksmith UI",
+      "File Locksmith CLI",
+      "File Locksmith interop",
+      "File Locksmith shell extension",
+      "File Locksmith context-menu project",
+      "PowerToys essentials"
+    ],
+    "tests": [
+      {
+        "suite": "File Locksmith managed tests Debug",
+        "result": "passed",
+        "passed": 23,
+        "failed": 0
+      },
+      {
+        "suite": "File Locksmith managed tests Release",
+        "result": "passed",
+        "passed": 22,
+        "failed": 0
+      },
+      {
+        "suite": "Fork Copilot thread audit",
+        "result": "passed",
+        "unresolved": 0
+      }
+    ]
+  },
+  "upstream_pr": {
+    "number": 50217,
+    "url": "https://github.com/microsoft/PowerToys/pull/50217",
+    "state": "OPEN",
+    "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
+    "updated_at": "2026-08-28T21:21:02Z"
+  },
+  "workflow": {
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-28T23:05:34.8471939Z",
+    "unresolved_copilot_threads": 0
+  },
+  "stage": "review_drafted",
+  "owes": "maintainer",
+  "status": {
+    "glyph": "⚠️",
+    "label": "Blocking review drafted",
+    "detail": "Six validated current-head findings are ready for maintainer selection."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "isolate-direct-cli-enumeration",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Isolate enumeration for normal CLI commands",
+      "body": "### Isolate enumeration for normal CLI commands\n\n**Severity:** `high`\n\nThe hidden worker protects the UI, but normal `FileLocksmithCLI.exe` commands still construct `RealProcessFinder` and execute the potentially blocking native enumeration in the CLI process. A kernel query hang therefore still hangs `--json`, `--kill`, and `--wait --timeout`, so the timeout cannot be honored. Route every normal enumeration through a contained child `--worker-json` process with redirected BOM-free UTF-8 pipes, a finite wait, complete stdout draining, and explicit failure propagation. Also cover a deliberately blocked worker and verify that no child is orphaned.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "Normal commands still invoke the native finder directly, so a blocking kernel query can hang the CLI indefinitely."
+      }
+    },
+    {
+      "id": "require-worker-pid",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Require the worker PID field",
+      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
+      "start_line": 259,
+      "line": 271,
+      "side": "RIGHT",
+      "body": "### Require the worker PID field\n\n**Severity:** `medium`\n\nAn omitted `pid` currently deserializes as `0`, so a malformed worker response is accepted as a valid process. Mark the field as required and model array entries as nullable so protocol validation can reject missing or null entries explicitly.\n\n```suggestion\n        private sealed class WorkerResponse\n        {\n            [JsonPropertyName(\"processes\")]\n            public WorkerProcessInfo?[]? Processes { get; init; }\n        }\n\n        private sealed class WorkerProcessInfo\n        {\n            [JsonPropertyName(\"name\")]\n            public string? Name { get; init; }\n\n            [JsonRequired]\n            [JsonPropertyName(\"pid\")]\n            public uint Pid { get; init; }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "System.Text.Json defaults an absent non-nullable uint to zero, and arrays may contain null entries."
+      }
+    },
+    {
+      "id": "handle-worker-exit-race",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Handle the native process-exit race",
+      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
+      "start_line": 237,
+      "line": 243,
+      "side": "RIGHT",
+      "body": "### Handle the native process-exit race\n\n**Severity:** `medium`\n\nThe worker can exit after the `HasExited` check but before `Kill`, and Windows may report that race as `Win32Exception`. Treat it as benign only when the process is confirmed exited.\n\n```suggestion\n            try\n            {\n                process.Kill(entireProcessTree: true);\n            }\n            catch (InvalidOperationException) when (process.HasExited)\n            {\n            }\n            catch (Win32Exception) when (process.HasExited)\n            {\n            }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 91,
+        "rationale": "Process.Kill can raise Win32Exception when the worker exits between the check and kill call."
+      }
+    },
+    {
+      "id": "validate-worker-process-entries",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Reject malformed process entries",
+      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
+      "start_line": 163,
+      "line": 178,
+      "side": "RIGHT",
+      "body": "### Reject malformed process entries\n\n**Severity:** `medium`\n\nA syntactically valid response can contain a null process entry or null file element. Validate the complete entry before constructing the UI model.\n\n```suggestion\n                    var processes = new List<FileLocksmithProcessInfo>(response.Processes.Length);\n                    foreach (var processInfo in response.Processes)\n                    {\n                        if (processInfo is null ||\n                            processInfo.Name is null ||\n                            processInfo.User is null ||\n                            processInfo.Files is null ||\n                            Array.Exists(processInfo.Files, static file => file is null))\n                        {\n                            return MalformedOutput();\n                        }\n\n                        processes.Add(new FileLocksmithProcessInfo(\n                            processInfo.Name,\n                            processInfo.Pid,\n                            processInfo.User,\n                            processInfo.Files));\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "Null process and file entries can currently become crashes or invalid UI state."
+      }
+    },
+    {
+      "id": "reject-invalid-worker-utf8",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Treat invalid UTF-8 as malformed input",
+      "path": "src/modules/FileLocksmith/FileLocksmithCLI/main.cpp",
+      "start_line": 62,
+      "line": 94,
+      "side": "RIGHT",
+      "body": "### Treat invalid UTF-8 as malformed input\n\n**Severity:** `medium`\n\n`winrt::to_hstring(input)` can throw before the current exception handler begins, terminating the worker instead of returning the documented malformed-request exit code. Move parsing and conversion inside the guarded block.\n\n```suggestion\n        try\n        {\n            json::JsonObject request;\n            if (!json::JsonObject::TryParse(winrt::to_hstring(input), request) || !request.HasKey(L\"paths\"))\n            {\n                return std::nullopt;\n            }\n\n            std::vector<std::wstring> paths;\n            const auto json_paths = request.GetNamedArray(L\"paths\");\n            paths.reserve(json_paths.Size());\n\n            for (const auto& path : json_paths)\n            {\n                if (path.ValueType() != json::JsonValueType::String)\n                {\n                    return std::nullopt;\n                }\n\n                paths.emplace_back(path.GetString());\n            }\n\n            if (paths.empty())\n            {\n                return std::nullopt;\n            }\n\n            return paths;\n        }\n        catch (const winrt::hresult_error&)\n        {\n            return std::nullopt;\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "UTF-8 conversion occurs before the current try block and can escape the malformed-input path."
+      }
+    },
+    {
+      "id": "cover-malformed-and-cancel-cleanup",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cover structured protocol failures and caller cancellation",
+      "path": "src/modules/FileLocksmith/Tests/FileLocksmithUI.UnitTests/FileLocksmithQueryServiceTests.cs",
+      "start_line": 37,
+      "line": 74,
+      "side": "RIGHT",
+      "body": "### Cover structured protocol failures and caller cancellation\n\n**Severity:** `medium`\n\nThe existing malformed-output test covers only syntax errors, while null entries, missing required fields, and null file elements exercise different branches. Caller cancellation also follows a different cleanup path from timeout. Add focused tests for those structured responses and verify cancellation propagates while terminating the worker.\n\n```suggestion\n        [TestMethod]\n        public async Task FindProcessesAsyncReportsMalformedWorkerOutput()\n        {\n            var service = CreateService(\"[Console]::Out.Write('not-json')\");\n\n            var result = await service.FindProcessesAsync(SelectedPaths, CancellationToken.None);\n\n            Assert.AreEqual(FileLocksmithQueryStatus.MalformedOutput, result.Status);\n            Assert.IsEmpty(result.Processes);\n        }\n\n        [DataTestMethod]\n        [DataRow(\"\"\"{\"processes\":[null]}\"\"\")]\n        [DataRow(\"\"\"{\"processes\":[{\"name\":\"process.exe\",\"user\":\"user\",\"files\":[\"C:\\\\file.txt\"]}]}\"\"\")]\n        [DataRow(\"\"\"{\"processes\":[{\"pid\":123,\"name\":\"process.exe\",\"user\":\"user\",\"files\":[null]}]}\"\"\")]\n        public async Task FindProcessesAsyncReportsMalformedStructuredWorkerOutput(string output)\n        {\n            var service = CreateService($\"[Console]::Out.Write('{output}')\");\n\n            var result = await service.FindProcessesAsync(SelectedPaths, CancellationToken.None);\n\n            Assert.AreEqual(FileLocksmithQueryStatus.MalformedOutput, result.Status);\n            Assert.IsEmpty(result.Processes);\n        }\n\n        [TestMethod]\n        public async Task FindProcessesAsyncCallerCancellationTerminatesWorker()\n        {\n            var workerPid = 0;\n            var service = CreateService(\n                \"Start-Sleep -Seconds 30\",\n                TimeSpan.FromSeconds(30),\n                pid => workerPid = pid);\n            using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));\n\n            await Assert.ThrowsExceptionAsync<OperationCanceledException>(\n                () => service.FindProcessesAsync(SelectedPaths, cancellation.Token));\n\n            Assert.AreNotEqual(0, workerPid);\n            Assert.IsFalse(IsProcessRunning(workerPid), \"The canceled worker process was left running.\");\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 93,
+        "rationale": "Structured malformed JSON and caller cancellation reach branches not covered by the existing tests."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request_changes-50217",
+      "type": "request_changes",
+      "label": "Request changes with 6 review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "pr": 50217,
+        "pullRequest": 50217,
+        "repository": "microsoft/PowerToys",
+        "event": "REQUEST_CHANGES",
+        "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
+        "body_prefix": "The worker-process direction addresses the UI crash and hang scenario, but the normal CLI path still executes potentially blocking native enumeration in-process. Please address that isolation gap and the protocol and cleanup issues below."
+      }
+    }
+  ],
+  "generated_at": "2026-08-28T23:05:34.8471939Z",
+  "evaluated_at": "2026-08-28T23:05:34.8471939Z",
+  "summary": "The current-head review contains six findings covering complete CLI isolation, worker protocol validation, process-exit cleanup, invalid UTF-8 handling, and regression coverage."
+}
