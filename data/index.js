@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-28T13:32:31.3692286+08:00",
+  "generated_at": "2026-08-28T14:31:58.6993277+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 131,
-    "open_issues": 12534,
-    "community": 11680,
-    "artifacts": 3196
+    "open_issues": 12535,
+    "community": 11681,
+    "artifacts": 3195
   },
   "impact": {
-    "as_of": "2026-08-28T13:32:31.3692286+08:00",
+    "as_of": "2026-08-28T14:31:58.6993277+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -2262,7 +2262,6 @@ window.BOARD_INDEX = {
     41429,
     41971,
     41397,
-    50169,
     41374,
     41371,
     41370,
@@ -7534,15 +7533,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "reviewer_infrastructure",
+      "stage": "review_drafted",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post general review note (no inline suggestions)"
+      },
       "labels": [
         "Needs-Review",
         "Product-Command Palette",
@@ -48610,17 +48612,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-12686",
+      "id": "issue-50197",
       "kind": "issue",
-      "number": 12686,
-      "url": "https://github.com/microsoft/PowerToys/issues/12686",
-      "title": "[PowerRename] :　add an important function: 　Favorites / Bookmarks",
-      "author": "dnknn",
-      "state": "closed",
+      "number": 50197,
+      "url": "https://github.com/microsoft/PowerToys/issues/50197",
+      "title": "CmdPal: Make the application extention show application icons without the shortcut icon",
+      "author": "Msavage314",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -48628,16 +48630,16 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-PowerRename"
+        "Needs-Triage",
+        "Product-Command Palette"
       ],
-      "created_at": "2021-08-08T00:25:42Z",
-      "updated_at": "2026-04-19T09:59:32Z",
-      "comments": 4,
+      "created_at": "2026-08-28T06:22:44Z",
+      "updated_at": "2026-08-28T06:27:45Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -194540,6 +194542,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-12686",
+      "kind": "issue",
+      "number": 12686,
+      "url": "https://github.com/microsoft/PowerToys/issues/12686",
+      "title": "[PowerRename] :　add an important function: 　Favorites / Bookmarks",
+      "author": "dnknn",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Product-PowerRename"
+      ],
+      "created_at": "2021-08-08T00:25:42Z",
+      "updated_at": "2026-04-19T09:59:32Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
       "id": "issue-44834",
       "kind": "issue",
       "number": 44834,
@@ -280431,21 +280464,20 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-27T15:03:10Z",
-      "has_artifact": true,
-      "agent_status": "fix",
+      "waiting_since": "2026-08-28T06:08:44Z",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
-        "Needs-Triage",
         "Product-General"
       ],
       "created_at": "2026-08-27T14:56:19Z",
-      "updated_at": "2026-08-27T15:03:10Z",
-      "comments": 1,
+      "updated_at": "2026-08-28T06:08:44Z",
+      "comments": 3,
       "priority": null
     },
     {
