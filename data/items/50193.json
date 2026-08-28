@@ -2,33 +2,338 @@
   "number": 50193,
   "kind": "issue",
   "track": "triage",
-  "stage": "design_in_progress",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+  "evaluated_at": "2026-08-28T15:49:37.97+08:00",
   "source_updated_at": "2026-08-27T22:23:32Z",
   "title": "[Peek] Incorrect window/content scaling when re-triggering Peek on a different display",
   "url": "https://github.com/microsoft/PowerToys/issues/50193",
-  "summary": "The issue contains a deterministic multi-monitor reproduction, explicit expected and actual behavior, screenshots, and monitor scaling values. The report is sufficiently scoped for a full design investigation without asserting a root cause during fast triage.",
+  "summary": "The report has a complete, deterministic reproduction and identifies a two-monitor, mixed-DPI configuration. The current Peek activation path uses two different HWNDs for one sizing operation: the target Explorer window for window placement and the existing Peek window for the image ScalingFactor. On a re-trigger, those HWNDs remain on different monitors until activation completes, so the stale DPI context is observable as an incorrectly sized window or image border.",
   "status": {
     "glyph": "🔧",
-    "label": "Design in progress",
-    "detail": "A detailed implementation-grade design is being prepared. No maintainer action is exposed until the design is complete and validated."
+    "label": "Detailed design ready",
+    "detail": "Approve a targeted fix that carries the activation target HWND/monitor context from OnShowPeek through Toggle and uses one resolved monitor context for ViewModel.ScalingFactor, preview sizing, and unpinned centering. Set the context before changing ViewModel.CurrentItem so asynchronous preview-size callbacks cannot observe the previous monitor's DPI."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue contains a deterministic multi-monitor reproduction, explicit expected and actual behavior, screenshots, and monitor scaling values. The report is sufficiently scoped for a full design investigation without asserting a root cause during fast triage.",
+    "rationale": "The report has a complete, deterministic reproduction and identifies a two-monitor, mixed-DPI configuration. The current Peek activation path uses two different HWNDs for one sizing operation: the target Explorer window for window placement and the existing Peek window for the image ScalingFactor. On a re-trigger, those HWNDs remain on different monitors until activation completes, so the stale DPI context is observable as an incorrectly sized window or image border.",
     "evidence": [
-      "Labels include Issue-Bug, Needs-Triage, and Product-Peek.",
-      "The body provides five ordered reproduction steps across displays with 125% and 175% scaling.",
-      "The expected behavior is reopening Peek at the correct size on the first display; the actual behavior is an incorrect window or content size.",
-      "Multiple screenshots document the incorrect and correct states.",
-      "The automated triage comment marks reproduction as sufficient and describes the issue as a scaling regression after moving Peek between displays."
+      "Issue reproduction: open Peek on display 1, drag Peek to display 2, select another folder on display 1, and trigger Peek again.",
+      "Reported displays are 1920x1080 at 125% and 3840x2160 at 175%; the issue reports both incorrect window size and incorrect image size with a large border.",
+      "Issue body contains three public screenshot attachments: incorrect result 591x481, correct result 833x677, and an image-border case 808x877.",
+      "The automated triage comment states that scaling appears to use stale display metrics and marks the reproduction sufficient.",
+      "MainWindow.Toggle calls Initialize(selectedItem) before Activate() when the existing window is visible (Peek.UI/PeekXAML/MainWindow.xaml.cs, Toggle).",
+      "MainWindow.Initialize unconditionally assigns ViewModel.ScalingFactor = this.GetMonitorScale(); while Peek can still be on the previous display (Peek.UI/PeekXAML/MainWindow.xaml.cs, Initialize).",
+      "FilePreviewer_PreviewSizeChanged separately obtains GetForegroundWindow(), GetMonitorSize(), and GetMonitorScale(), then centers using that target HWND (Peek.UI/PeekXAML/MainWindow.xaml.cs, FilePreviewer_PreviewSizeChanged).",
+      "FilePreview.ScalingFactor forwards the value to IImagePreviewer.ScalingFactor, and ImagePreviewer.UpdateMaxImageSize divides image pixels by that value (Peek.FilePreviewer/FilePreview.xaml.cs, ScalingFactor; Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs, UpdateMaxImageSize).",
+      "The current ImagePreviewer.GetPreviewSizeAsync returns the image's source pixel size and ImagePreviewer.MaxImageSize is therefore sensitive to the stale scaling factor."
     ],
-    "recommended_action": "Queue a bounded full design investigation for Peek display-DPI and window-content sizing transitions.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Approve a targeted fix that carries the activation target HWND/monitor context from OnShowPeek through Toggle and uses one resolved monitor context for ViewModel.ScalingFactor, preview sizing, and unpinned centering. Set the context before changing ViewModel.CurrentItem so asynchronous preview-size callbacks cannot observe the previous monitor's DPI.",
+    "evaluated_at": "2026-08-28T15:49:37.97+08:00",
     "source_updated_at": "2026-08-27T22:23:32Z"
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "approve-design-50193",
+      "type": "approve_design",
+      "label": "Approve design and start fork implementation",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Review the detailed design, risks, and validation plan before approving implementation.",
+      "issue": {
+        "number": 50193,
+        "repository": "microsoft/PowerToys"
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "The re-trigger path has an ordering and ownership defect, not an image-decoder defect. App.OnShowPeek captures the Explorer HWND before focus is stolen and passes SelectedItemByWindowHandle into MainWindow.Toggle. For an already visible unpinned Peek window, Toggle calls Initialize(selectedItem) and only then Activate(). Initialize changes CurrentItem, which starts FilePreview.OnItemPropertyChanged and GetPreviewSizeAsync asynchronously, then reads this.GetMonitorScale() from the old Peek window location. FilePreviewer_PreviewSizeChanged instead reads GetForegroundWindow() and uses the Explorer HWND's monitor for monitor bounds, scale, and CenterOnMonitor. With Peek still on the secondary 175% monitor and Explorer on the primary 125% monitor, ImagePreviewer.MaxImageSize is calculated with 1.75 while the new window is sized for 1.25. The resulting mismatch explains a window that is too small/large and an image rendered with excess border. Resetting ScalingFactor to 1 during Uninitialize does not remove the race because the next Initialize reads the old window monitor before SetWindowPos moves it.",
+    "evidence": [
+      {
+        "path": "src/modules/peek/Peek.UI/PeekXAML/App.xaml.cs",
+        "symbols": [
+          "App.OnShowPeek"
+        ],
+        "finding": "Captures GetForegroundWindow() before activating Peek and wraps it in SelectedItemByWindowHandle."
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "symbols": [
+          "MainWindow.Toggle",
+          "MainWindow.Initialize",
+          "MainWindow.FilePreviewer_PreviewSizeChanged"
+        ],
+        "finding": "The existing-window path initializes before Activate; Initialize reads the Peek HWND DPI, while FilePreviewer_PreviewSizeChanged reads the foreground/Explorer HWND DPI."
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/Extensions/HWNDExtensions.cs",
+        "symbols": [
+          "HWNDExtensions.GetMonitorSize",
+          "HWNDExtensions.GetMonitorScale"
+        ],
+        "finding": "Both monitor metrics are derived from the supplied HWND and default to its nearest monitor."
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/Extensions/WindowExtensions.cs",
+        "symbols": [
+          "WindowExtensions.GetMonitorScale",
+          "WindowExtensions.CenterOnMonitor"
+        ],
+        "finding": "WindowExtensions.GetMonitorScale derives DPI from the Peek window; CenterOnMonitor derives placement monitor and DPI from the target desktop HWND."
+      },
+      {
+        "path": "src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs",
+        "symbols": [
+          "FilePreview.ScalingFactor",
+          "FilePreview.OnItemPropertyChanged",
+          "FilePreview.OnScalingFactorPropertyChanged",
+          "FilePreview.UpdatePreviewSizeAsync"
+        ],
+        "finding": "Item and scaling changes can independently start asynchronous preview-size work; the scaling value is forwarded to image previewers."
+      },
+      {
+        "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+        "symbols": [
+          "ImagePreviewer.GetPreviewSizeAsync",
+          "ImagePreviewer.OnScalingFactorChanged",
+          "ImagePreviewer.UpdateMaxImageSize"
+        ],
+        "finding": "Image source pixels are returned as MonitorSize and MaxImageSize divides them by ScalingFactor, so a stale factor directly changes rendered content bounds."
+      },
+      {
+        "path": "src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs",
+        "symbols": [
+          "PeekFilePreviewTests.TestPinWindowAndSwitchImages",
+          "PeekFilePreviewTests.TestUnpinAndSwitchFiles",
+          "PeekFilePreviewTests.GetWindowBounds"
+        ],
+        "finding": "Existing UI coverage checks pinned/unpinned bounds and file switching, but has no mixed-DPI two-monitor re-trigger scenario."
+      },
+      {
+        "path": "history",
+        "symbols": [
+          "commit 6d676329c",
+          "commit 6e4d3bcdc"
+        ],
+        "finding": "The original monitor placement design centers from the foreground/Explorer HWND. A later image-scaling change addressed monitor-scale updates inside ImagePreviewer, but did not unify activation target context with MainWindow.Initialize."
+      }
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/peek/Peek.UI/Models/SelectedItemByWindowHandle.cs",
+        "purpose": "Expose the already captured Explorer HWND as the activation monitor source.",
+        "symbols": [
+          "SelectedItemByWindowHandle.WindowHandle"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "purpose": "Resolve and retain one activation monitor context before preview initialization, use it for scaling and sizing, and preserve pinned-window behavior.",
+        "symbols": [
+          "MainWindow.Toggle",
+          "MainWindow.Initialize",
+          "MainWindow.FilePreviewer_PreviewSizeChanged",
+          "MainWindow.GetMonitorMaxContentSize",
+          "MainWindow.GetMonitorMinContentSize"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/Extensions/HWNDExtensions.cs",
+        "purpose": "Reuse the existing HWND-based monitor size and DPI helpers; optionally add a small context helper if the implementation avoids duplicate calls.",
+        "symbols": [
+          "HWNDExtensions.GetMonitorSize",
+          "HWNDExtensions.GetMonitorScale"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/Extensions/WindowExtensions.cs",
+        "purpose": "Keep placement DPI conversion tied to the same target monitor and harden pixel rounding if needed.",
+        "symbols": [
+          "WindowExtensions.CenterOnMonitor"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs",
+        "purpose": "Ensure scaling changes and item changes cannot commit stale preview-size results after a new activation context is selected.",
+        "symbols": [
+          "FilePreview.ScalingFactor",
+          "FilePreview.OnItemPropertyChanged",
+          "FilePreview.OnScalingFactorPropertyChanged",
+          "FilePreview.UpdatePreviewSizeAsync"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+        "purpose": "Retain image metadata in source pixels while applying the current target monitor scale to MaxImageSize; add a regression seam if unit coverage is introduced.",
+        "symbols": [
+          "ImagePreviewer.GetPreviewSizeAsync",
+          "ImagePreviewer.OnScalingFactorChanged",
+          "ImagePreviewer.UpdateMaxImageSize"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs",
+        "purpose": "Add targeted two-monitor mixed-DPI activation and bounds/content regression coverage.",
+        "symbols": [
+          "PeekFilePreviewTests.OpenPeekWindow",
+          "PeekFilePreviewTests.GetWindowBounds",
+          "PeekFilePreviewTests.MoveWindowBy"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "symbols": [
+          "MainWindow.Toggle",
+          "MainWindow.Initialize"
+        ],
+        "current_behavior": "Toggle passes only SelectedItem to Initialize. On a re-trigger, Initialize changes the item and then reads this.GetMonitorScale() before Activate moves the existing Peek window to the source Explorer monitor.",
+        "change": "Add a private activation context field containing the target HWND (or a small immutable MonitorContext with TargetHwnd, MonitorSize, and Scale). Resolve it from SelectedItemByWindowHandle.WindowHandle for Explorer activation; use the Peek HWND for CLI activation and other cases. Assign ViewModel.ScalingFactor from this context before ViewModel.Initialize(selectedItem), so all item-change callbacks see the intended scale. Keep the context until the sizing callback completes, then replace it on the next activation.",
+        "code_block": "private HWND _activationMonitorSource;\n\nprivate HWND ResolveActivationMonitorSource(SelectedItem selectedItem)\n{\n    return selectedItem is SelectedItemByWindowHandle byWindowHandle &&\n           byWindowHandle.WindowHandle != HWND.Null\n        ? byWindowHandle.WindowHandle\n        : new HWND(this.GetWindowHandle());\n}\n\nprivate void Initialize(SelectedItem selectedItem)\n{\n    _activationMonitorSource = ResolveActivationMonitorSource(selectedItem);\n    ViewModel.ScalingFactor = _activationMonitorSource.GetMonitorScale();\n    ViewModel.Initialize(selectedItem);\n    // existing null-item guard and hook setup follow\n}\n\n// In Toggle, retain the existing Initialize(selectedItem); Activate() ordering,\n// because Initialize now has the target monitor context before it starts preview work.",
+        "edge_cases": [
+          "SelectedItemByWindowHandle.WindowHandle can be HWND.Null or invalid; use the existing nearest-monitor Win32 behavior only after validating the handle, and log a failed monitor query consistently with current helpers.",
+          "CLI activation has no Explorer target HWND; use the Peek HWND and preserve current command-line behavior.",
+          "A pinned window must not be recentered; its scale should be based on the current Peek window monitor rather than the Explorer source monitor because the user intentionally controls its position.",
+          "Do not use GetForegroundWindow() as a fallback after Activate(), because it reintroduces timing dependence."
+        ],
+        "tests": [
+          "Add a unit-testable resolver/context test for Explorer source HWND versus CLI/current-window fallback.",
+          "Add a UI regression that starts Peek on a 125% monitor, moves it to a 175% monitor, reselects an image on the 125% Explorer monitor, and re-triggers Peek; assert the final window is on the source monitor and its bounds match a fresh open on that monitor within a small pixel tolerance.",
+          "Repeat in the opposite direction (175% to 125%) to catch both stale-upscale and stale-downscale behavior."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "symbols": [
+          "MainWindow.FilePreviewer_PreviewSizeChanged",
+          "MainWindow.GetMonitorMaxContentSize",
+          "MainWindow.GetMonitorMinContentSize"
+        ],
+        "current_behavior": "The callback independently reads GetForegroundWindow(), then uses that HWND for monitor size, monitor scale, and CenterOnMonitor. The callback can therefore combine an old ViewModel scale with a new foreground monitor or run after focus has changed to Peek.",
+        "change": "Use the retained activation context as the sole source for monitor size and scale. Pass the same target HWND to CenterOnMonitor. For pinned windows, derive a fresh context from the Peek HWND only when placement is intentionally skipped; otherwise use the activation source. Keep all values in one DPI coordinate system: source image pixels divided by the target scale for XAML content, then converted back to physical pixels exactly once by CenterOnMonitor.",
+        "code_block": "private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)\n{\n    HWND monitorSource = TitleBarControl.Pinned\n        ? new HWND(this.GetWindowHandle())\n        : _activationMonitorSource;\n\n    Size monitorSize = monitorSource.GetMonitorSize();\n    double monitorScale = monitorSource.GetMonitorScale();\n    Size requestedSize = e.PreviewSize.MonitorSize ?? monitorSize;\n    double contentScale = e.PreviewSize.UseEffectivePixels ? 1d : monitorScale;\n    Size scaledRequestedSize = new(requestedSize.Width / contentScale, requestedSize.Height / contentScale);\n    Size adjustedContentSize = scaledRequestedSize.Fit(\n        GetMonitorMaxContentSize(monitorSize, monitorScale),\n        GetMonitorMinContentSize(monitorScale));\n\n    double desiredWindowWidth = adjustedContentSize.Width;\n    double desiredWindowHeight = adjustedContentSize.Height + TitleBarControl.ActualHeight;\n    if (!TitleBarControl.Pinned)\n    {\n        this.CenterOnMonitor(monitorSource, desiredWindowWidth, desiredWindowHeight);\n    }\n\n    this.Show();\n    WindowHelpers.BringToForeground(this.GetWindowHandle());\n}",
+        "edge_cases": [
+          "DPI values of 96, 120, 144, 168, 192 and non-integer per-monitor DPI must remain doubles until the final Win32 pixel conversion.",
+          "GetMonitorSize returns physical monitor pixels; do not divide it twice when UseEffectivePixels is true.",
+          "If monitor metrics fail, do not silently use a success-shaped default. Surface/log the existing Win32 failure path and avoid applying an untrusted resize.",
+          "Rapid re-triggering can deliver callbacks from canceled preview tasks. The callback should only use the current retained context and should not restore a previous context."
+        ],
+        "tests": [
+          "Add a sizing helper test with synthetic monitor sizes and scales 1.25 and 1.75, verifying the same target scale is used for both MaxContent and CenterOnMonitor inputs.",
+          "Add a manual check with a portrait image and an image larger than the 80% monitor limit to ensure Fit still honors both min and max content bounds."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/peek/Peek.UI/Extensions/WindowExtensions.cs",
+        "symbols": [
+          "WindowExtensions.CenterOnMonitor"
+        ],
+        "current_behavior": "CenterOnMonitor multiplies logical width/height by target DPI and casts directly to int. It gets DPI from the target HWND, which is correct only if callers pass the same target used for monitor placement.",
+        "change": "Keep target-HWND ownership explicit and, if changing this method, use checked positive rounding such as Math.Max(1, (int)Math.Round(value * scalingFactor, MidpointRounding.AwayFromZero)). Do not change the coordinate convention or add another independent DPI lookup.",
+        "code_block": "var w = width.HasValue\n    ? Math.Max(1, (int)Math.Round(width.Value * scalingFactor, MidpointRounding.AwayFromZero))\n    : windowRect.right - windowRect.left;\nvar h = height.HasValue\n    ? Math.Max(1, (int)Math.Round(height.Value * scalingFactor, MidpointRounding.AwayFromZero))\n    : windowRect.bottom - windowRect.top;",
+        "edge_cases": [
+          "Never pass a monitor scale from the old Peek HWND while using a target Explorer HWND for placement.",
+          "Retain SWP_NOACTIVATE and current maximize restore behavior.",
+          "Negative virtual-screen coordinates must continue to work; center calculations must remain based on rcMonitor, not primary-screen coordinates."
+        ],
+        "tests": [
+          "Verify final bounds on a monitor positioned left or above the primary monitor.",
+          "Verify a maximized Peek window is restored and centered without changing the pinned path."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs",
+        "symbols": [
+          "FilePreview.ScalingFactor",
+          "FilePreview.OnItemPropertyChanged",
+          "FilePreview.OnScalingFactorPropertyChanged",
+          "FilePreview.UpdatePreviewSizeAsync"
+        ],
+        "current_behavior": "ScalingFactor and Item dependency-property callbacks can overlap. The item callback cancels prior work, but the scaling callback uses the same token and can still publish a size callback after activation state has changed.",
+        "change": "Preserve cancellation, but make the activation context update happen before Item changes. If needed, add an activation generation/version captured by UpdatePreviewSizeAsync and check it before invoking PreviewSizeChanged, so a stale async size cannot resize the new activation. Do not add broad catches or silently swallow cancellation beyond the existing OperationCanceledException handling.",
+        "code_block": "private long _previewGeneration;\n\nprivate async Task UpdatePreviewSizeAsync(CancellationToken cancellationToken)\n{\n    if (Previewer == null)\n    {\n        return;\n    }\n\n    long generation = _previewGeneration;\n    PreviewSize previewSize = await Previewer.GetPreviewSizeAsync(cancellationToken);\n    cancellationToken.ThrowIfCancellationRequested();\n    if (generation == _previewGeneration)\n    {\n        PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(previewSize));\n    }\n}\n\n// Increment _previewGeneration when Item changes and when a new scaling context is installed.",
+        "edge_cases": [
+          "Do not invalidate an already loaded image merely because DPI changes; update MaxImageSize from the new factor and resize the window using the current target context.",
+          "A canceled operation must not publish a final PreviewSizeChanged event.",
+          "Non-image previewers using UseEffectivePixels must retain their existing semantics."
+        ],
+        "tests": [
+          "Add a unit test with a delayed preview-size task where Item/scaling changes occur before completion; assert only the latest generation publishes.",
+          "Run existing Peek preview and pinning UI tests to ensure cancellation and reuse behavior is unchanged."
+        ]
+      },
+      {
+        "order": 5,
+        "file": "src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs",
+        "symbols": [
+          "PeekFilePreviewTests.OpenPeekWindow",
+          "PeekFilePreviewTests.GetWindowBounds",
+          "PeekFilePreviewTests.MoveWindowBy"
+        ],
+        "current_behavior": "Tests cover image previews, pinned/unpinned switching, reopening, and bounds, but they assume one display/DPI and do not re-trigger from an Explorer window on another monitor.",
+        "change": "Add a targeted mixed-DPI test using existing UI-test window helpers plus Win32 monitor/window APIs already available to the test project. Capture a fresh-open baseline on each monitor, move Peek to the alternate monitor, trigger a different selected image from the original Explorer monitor, and compare final bounds and content bounds to the baseline. Skip with an explicit inconclusive result when fewer than two monitors or distinct effective DPIs are available.",
+        "code_block": "[TestMethod(\"Peek.WindowSizing.ReTriggerAcrossMixedDpiMonitors\")]\n+[TestCategory(\"Multi-monitor\")]\n+public void ReTriggerAcrossMixedDpiMonitorsUsesTargetMonitorDpi()\n+{\n+    // Arrange two physical monitors with distinct effective DPI values.\n+    // Open a baseline image on monitor A and record bounds.\n+    // Move Peek to monitor B, select a second image in Explorer on monitor A,\n+    // re-trigger Peek, then assert monitor A placement and baseline-equivalent bounds.\n+    // Run the reverse direction when the environment supports it.\n+}",
+        "edge_cases": [
+          "Do not hard-code 125%/175% in the automated test; discover effective DPI and require them to differ.",
+          "Use tolerance for non-client/title-bar rounding, but fail on the large border symptom or a scale-proportional size mismatch.",
+          "Restore monitor arrangement, Explorer selection, and Peek process state in cleanup."
+        ],
+        "tests": [
+          "Targeted build/test: build Peek.UITests.Next and run only Peek.WindowSizing.ReTriggerAcrossMixedDpiMonitors plus existing Peek.WindowPinning tests via vstest.console.exe per repository guidance.",
+          "Manual validation: two monitors at 125% and 175%; image, portrait image, large image, folder, and text preview; directions 125-to-175 and 175-to-125; repeated rapid re-trigger; pinned and unpinned modes; Peek initially minimized and maximized."
+        ]
+      }
+    ],
+    "verify": [
+      "targeted build: Build src/modules/peek/Peek.UI/Peek.UI.csproj and its required project references with the repository build script.",
+      "targeted build: Build src/modules/peek/Peek.UITests.Next/Peek.UITests.Next.csproj after implementation.",
+      "targeted tests: Run the new mixed-DPI regression and existing Peek.WindowPinning tests with vstest.console.exe; do not use dotnet test.",
+      "targeted tests: Run existing image preview tests for JPEG, PNG, and QOI to cover source-pixel metadata and MaxImageSize binding.",
+      "manual multi monitor validation: Configure physical monitors with 1920x1080 at 125% and 3840x2160 at 175%, matching the report.",
+      "manual multi monitor validation: Open an Explorer folder and trigger Peek on monitor A; drag Peek to monitor B; select another folder/image on monitor A; trigger Peek again.",
+      "manual multi monitor validation: Confirm Peek closes/reuses the old presentation, centers on monitor A, and has the same logical size as a fresh open on monitor A.",
+      "manual multi monitor validation: For images, confirm the content fills the expected bounds without the reported large border; repeat with portrait and oversized images.",
+      "manual multi monitor validation: Repeat in the reverse direction, after changing Windows scaling values, after minimizing Peek, and while pinned.",
+      "acceptance criteria: Every unpinned re-trigger uses one target monitor HWND for monitor dimensions, DPI scale, preview MaxImageSize, and placement.",
+      "acceptance criteria: No sizing callback can use the old Peek monitor's scale after the target Explorer activation context is installed.",
+      "acceptance criteria: Existing single-monitor, CLI, pinned, non-image, and effective-pixel behavior remains unchanged."
+    ],
+    "risks": [
+      "Moving scale resolution before ViewModel.Initialize changes the timing of the existing ScalingFactor dependency-property callback; cancellation and generation checks must prevent duplicate or stale window resizes.",
+      "Using the Explorer HWND for pinned mode would incorrectly resize image content when the user deliberately moved the pinned window; pinned mode must continue to use the actual Peek monitor.",
+      "WinUI/Win32 non-client rounding can produce one- or two-pixel differences at fractional DPI; compare with tolerance rather than exact raw bounds.",
+      "A UI test that assumes two monitors would be flaky in CI; gate it on monitor count and distinct effective DPI, while retaining the manual validation requirement.",
+      "Do not fix this by merely calling Activate() earlier: focus timing and asynchronous preview callbacks would still leave separate DPI sources and would regress cases where activation is delayed."
+    ],
+    "alternatives": [
+      {
+        "option": "Call Activate() before Initialize() on every re-trigger.",
+        "decision": "Reject as insufficient.",
+        "reason": "It relies on focus/foreground timing, can steal focus before the selected item is validated, and does not guarantee that asynchronous preview callbacks use the same monitor context as CenterOnMonitor."
+      },
+      {
+        "option": "Change ImagePreviewer to stop dividing MaxImageSize by ScalingFactor.",
+        "decision": "Reject.",
+        "reason": "It would mask the mixed-DPI mismatch for images but break the established source-pixel-to-XAML logical-size conversion and could regress single-monitor and monitor-DPI-change behavior."
+      },
+      {
+        "option": "Read DPI only from GetForegroundWindow() everywhere.",
+        "decision": "Reject.",
+        "reason": "Foreground can be the old Peek window, the Explorer source window, or Peek after activation depending on callback timing; it is not a stable activation contract."
+      },
+      {
+        "option": "Recreate the MainWindow for every activation.",
+        "decision": "Reject.",
+        "reason": "It adds flicker, discards pinning/window state, increases preview-handler lifetime churn, and avoids rather than fixes the inconsistent monitor-context ownership."
+      }
+    ]
+  }
 }

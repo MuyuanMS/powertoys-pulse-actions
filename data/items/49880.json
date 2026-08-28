@@ -2,33 +2,271 @@
   "number": 49880,
   "kind": "issue",
   "track": "triage",
-  "stage": "design_in_progress",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+  "evaluated_at": "2026-08-28T15:49:37.973+08:00",
   "source_updated_at": "2026-08-22T14:30:45Z",
   "title": "Turn on the environment variable function to flash back",
   "url": "https://github.com/microsoft/PowerToys/issues/49880",
-  "summary": "The issue has repeated reproduction reports, attached diagnostic material, a language-dependent failure pattern, and discussion of related PowerToys work. The latest technical analysis is community-provided and should not be treated as a confirmed root cause, but it provides enough evidence to begin an ownership and mitigation design investigation.",
+  "summary": "The crash is actionable even though the latest v0.101.2222 report lacks a Windows Error Reporting event: independent issue discussion evidence reproduces the failure for zh-CN, zh-TW, and ja-JP, and identifies the same Microsoft.UI.Windowing title-read path and failure family associated with #48547. PowerToys can contain the affected call path immediately, but the primary defect belongs to Windows App SDK.",
   "status": {
     "glyph": "🔧",
-    "label": "Design in progress",
-    "detail": "A detailed implementation-grade design is being prepared. No maintainer action is exposed until the design is complete and validated."
+    "label": "Detailed design ready",
+    "detail": "Approve a PowerToys containment PR that restores the Environment Variables custom XAML title-bar presentation and keeps the native Window.Title ASCII/non-CJK, while opening or linking the Windows App SDK fix for WinUIDesktopWin32WindowClass Unicode registration and safe GetTitle buffer handling. Do not treat a resource-string change or another empty-string fallback as the root fix."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue has repeated reproduction reports, attached diagnostic material, a language-dependent failure pattern, and discussion of related PowerToys work. The latest technical analysis is community-provided and should not be treated as a confirmed root cause, but it provides enough evidence to begin an ownership and mitigation design investigation.",
+    "rationale": "The crash is actionable even though the latest v0.101.2222 report lacks a Windows Error Reporting event: independent issue discussion evidence reproduces the failure for zh-CN, zh-TW, and ja-JP, and identifies the same Microsoft.UI.Windowing title-read path and failure family associated with #48547. PowerToys can contain the affected call path immediately, but the primary defect belongs to Windows App SDK.",
     "evidence": [
-      "The reporter reproduces an Environment Variables window that flashes and closes on v0.101.2222.",
-      "The discussion includes fresh PowerToys bug reports and Windows Event Viewer evidence requests.",
-      "A commenter reports reliable reproduction with zh-CN, zh-TW, and ja-JP and normal behavior with en-US and ru-RU.",
-      "The discussion explicitly references related PowerToys issue #49069 and earlier issue #48547.",
-      "The latest analysis proposes a framework/window-title interaction, but maintainers have not publicly confirmed that explanation or its ownership."
+      {
+        "classification": "confirmed",
+        "source": "Issue #49880 report",
+        "detail": "The reporter sees a black window followed by Environment Variables termination approximately three seconds after launch on v0.101.2222, with or without administrator elevation."
+      },
+      {
+        "classification": "confirmed",
+        "source": "Issue #49880 discussion, 2026-08-17",
+        "detail": "The reporter states the window opens successfully after switching the voice/language to English and fails when Chinese is configured."
+      },
+      {
+        "classification": "confirmed",
+        "source": "Issue #49880 discussion, 2026-08-20",
+        "detail": "A second tester reports reliable reproduction with zh-CN, zh-TW, and ja-JP at v0.101.2242, normal behavior with en-US and ru-RU, and matching faulting modules, offsets, and exception codes."
+      },
+      {
+        "classification": "confirmed",
+        "source": "Issue #49880 discussion, 2026-08-20",
+        "detail": "The supplied WinDbg/TTD analysis identifies Microsoft.UI.Windowing.dll, Core::YieldAndCall::GetTitle, TitleBar::UpdateTitle, and TitleBar::OnApplyTemplate; it reports E_INVALIDARG/fail-fast behavior during AppWindow.Title readback."
+      },
+      {
+        "classification": "confirmed",
+        "source": "Issue #49880 discussion, 2026-08-21",
+        "detail": "A corrected live-probe analysis reports IsWindowUnicode=false for the non-elevated WinUI desktop window, class WinUIDesktopWin32WindowClass, and CJK title truncation in the native window. It attributes the ANSI registration to Windows App SDK and reports a distinct elevated length/promotion failure."
+      },
+      {
+        "classification": "confirmed",
+        "source": "PowerToys source",
+        "detail": "MainWindow constructs a WinUI TitleBar, enables ExtendsContentIntoTitleBar, calls SetTitleBar(titleBar), and assigns localized resource strings to both Window.Title and titleBar.Title."
+      },
+      {
+        "classification": "confirmed",
+        "source": "PowerToys commit de4859454cd0750fe560adcc85cd7220c9cbda99 / PR #49069",
+        "detail": "PowerToys added an early non-empty fallback for Environment Variables and other TitleBar windows. The mitigation targets an empty-title startup race and shipped before the current report."
+      },
+      {
+        "classification": "confirmed",
+        "source": "PowerToys commit 4ced93ce6731276fe5002e02666032c640d59bf2 / PR #41417",
+        "detail": "Environment Variables changed from a custom XAML title bar to the built-in WinUI TitleBar, replacing AppTitleTextBlock.Text with titleBar.Title. This activated the framework title-readback path."
+      },
+      {
+        "classification": "confirmed",
+        "source": "microsoft-ui-xaml#11214",
+        "detail": "The framework issue documents AppWindow.Title getter failure on empty-title readback and explains that TitleBar.UpdateTitle and ResetTitle read AppWindow.Title during deferred layout."
+      },
+      {
+        "classification": "inference",
+        "source": "Correlation of the above evidence",
+        "detail": "The CJK-specific v0.101.2222 failure is not explained by missing localized strings or by #49069's empty-title case alone; it is consistent with a non-Unicode framework window/title conversion defect exposed by built-in TitleBar readback."
+      }
     ],
-    "recommended_action": "Start a design investigation that validates the CJK-only crash evidence, determines whether the actionable mitigation belongs in PowerToys or Windows App SDK/WinUI, and assesses the existing #49069 mitigation without presuming the reported root cause.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Approve a PowerToys containment PR that restores the Environment Variables custom XAML title-bar presentation and keeps the native Window.Title ASCII/non-CJK, while opening or linking the Windows App SDK fix for WinUIDesktopWin32WindowClass Unicode registration and safe GetTitle buffer handling. Do not treat a resource-string change or another empty-string fallback as the root fix.",
+    "evaluated_at": "2026-08-28T15:49:37.973+08:00",
     "source_updated_at": "2026-08-22T14:30:45Z"
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "approve-design-49880",
+      "type": "approve_design",
+      "label": "Approve design and start fork implementation",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Review the detailed design, risks, and validation plan before approving implementation.",
+      "issue": {
+        "number": 49880,
+        "repository": "microsoft/PowerToys"
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "confirmed: The current PowerToys Environment Variables window uses the built-in WinUI TitleBar and therefore causes WinUI to read AppWindow.Title during deferred layout. confirmed: The observed crash stack terminates in Microsoft.UI.Windowing.dll while resolving AppWindow.Title, not in EnvironmentVariablesUILib resource loading or EnvironmentVariables business logic. confirmed: The localized WindowTitle and WindowAdminTitle resources are reported intact; the failure is runtime title handling. confirmed: PR #49069 only ensures a non-empty title before layout. It does not make a CJK title safe when the underlying desktop window is ANSI or when framework title readback has a length/promotion mismatch. confirmed: PR #41417 is the PowerToys change that introduced the built-in TitleBar path for this window. inference: The exact trigger on every affected machine is likely the Windows App SDK ANSI-to-Unicode title conversion and/or GetTitle buffer-promotion defect described by the later TTD analysis; the v0.101.2222 report itself has no crash dump or Windows Error Reporting event. inference: The language switch is a trigger/correlating condition, not evidence that the .resw values are malformed. ownership: {\"powertoys\":\"Owns a safe application-side containment and regression validation. PowerToys should not attempt to patch framework DLL behavior or infer error state from GetLastError.\",\"windows_app_sdk\":\"Owns the root defect: WinUIDesktopWin32WindowClass Unicode registration and the Microsoft.UI.Windowing GetTitle readback/buffer-length handling. The matching framework issue is microsoft-ui-xaml#11214.\",\"issues_49069_and_48547\":\"#48547 is the earlier user-visible blank-window/crash symptom, especially when elevated. #49069 correctly mitigated the empty-title startup variant but does not cover non-empty CJK title conversion/readback, so #49880 remains a valid follow-up rather than a duplicate closure.\"}",
+    "evidence": [
+      "<PowerToysCheckout>\\src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariablesXAML\\MainWindow.xaml.cs assigns fallbackTitle, then localized title to Window.Title and titleBar.Title, and calls SetTitleBar(titleBar).",
+      "<PowerToysCheckout>\\src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariablesXAML\\MainWindow.xaml contains the built-in Microsoft.UI.Xaml.Controls.TitleBar.",
+      "<PowerToysCheckout>\\src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariables.csproj references Microsoft.WindowsAppSDK centrally; the local checkout currently pins Microsoft.WindowsAppSDK 2.2.0 in Directory.Packages.props.",
+      "The pre-PR-41417 MainWindow.xaml used a Grid plus AppTitleTextBlock.Text instead of the built-in TitleBar, demonstrating an existing PowerToys-local containment pattern.",
+      "PR #49069's stated scope and validation cover non-empty fallback titles; the later CJK report demonstrates that this scope is insufficient."
+    ],
+    "affected_files": [
+      {
+        "path": "src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariablesXAML\\MainWindow.xaml",
+        "purpose": "Replace the built-in TitleBar control with the existing custom title-bar presentation so Environment Variables no longer invokes TitleBar.UpdateTitle/AppWindow.Title readback during startup.",
+        "symbols": [
+          "MainWindow",
+          "titleBar",
+          "AppTitleTextBlock"
+        ]
+      },
+      {
+        "path": "src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariablesXAML\\MainWindow.xaml.cs",
+        "purpose": "Keep a non-empty ASCII native title before first layout and place the localized title in the custom title-bar TextBlock.",
+        "symbols": [
+          "MainWindow.MainWindow",
+          "fallbackTitle",
+          "Window.Title",
+          "AppTitleTextBlock.Text",
+          "ExtendsContentIntoTitleBar",
+          "SetTitleBar"
+        ]
+      },
+      {
+        "path": "src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariables.csproj",
+        "purpose": "Build target for the containment; no dependency change is required.",
+        "symbols": [
+          "Microsoft.WindowsAppSDK",
+          "OutputPath",
+          "ProjectPriFileName"
+        ]
+      },
+      {
+        "path": "Directory.Packages.props",
+        "purpose": "Dependency ownership and framework-fix follow-up point; only change this file if a verified Windows App SDK version containing the root fix is available.",
+        "symbols": [
+          "PackageVersion Include=\"Microsoft.WindowsAppSDK\""
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariablesXAML\\MainWindow.xaml",
+        "symbols": [
+          "Grid x:Name=\"titleBar\"",
+          "AppTitleTextBlock"
+        ],
+        "current_behavior": "The first row hosts Microsoft.UI.Xaml.Controls.TitleBar, whose deferred template/layout work reads the owning AppWindow.Title.",
+        "change": "Restore the pre-PR-41417 Grid title-bar structure: fixed 32px height, icon, and localized TextBlock. Preserve the existing x:Uid, backdrop, row structure, and Closed handler.",
+        "code_block": "<Grid x:Name=\"titleBar\" Height=\"32\" ColumnSpacing=\"16\">\\n    <Grid.ColumnDefinitions>...</Grid.ColumnDefinitions>\\n    <Image ... />\\n    <TextBlock x:Name=\"AppTitleTextBlock\" Grid.Column=\"2\" ... />\\n</Grid>",
+        "edge_cases": [
+          "Keep the title-bar grid name because SetTitleBar(titleBar) uses it.",
+          "Keep the existing icon asset path and CaptionTextBlockStyle.",
+          "Do not add a second framework TitleBar or bind the TextBlock back to AppWindow.Title."
+        ],
+        "tests": [
+          "Build the EnvironmentVariables project for x64 Release.",
+          "Manual visual check in light, dark, and high-contrast themes if available."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariablesXAML\\MainWindow.xaml.cs",
+        "symbols": [
+          "MainWindow.MainWindow",
+          "fallbackTitle",
+          "Window.Title",
+          "AppTitleTextBlock.Text"
+        ],
+        "current_behavior": "The constructor sets an English fallback, configures the built-in TitleBar, resolves WindowTitle/WindowAdminTitle, and assigns the localized value to both Window.Title and titleBar.Title.",
+        "change": "Set Window.Title to the stable ASCII fallback before enabling content into the title bar; resolve the localized resource only for AppTitleTextBlock.Text. Retain the empty-resource fallback for the visible title. Do not assign a CJK string to native Window.Title in the containment build.",
+        "code_block": "const string fallbackTitle = \"Environment Variables\";\\nTitle = fallbackTitle;\\n\\nExtendsContentIntoTitleBar = true;\\nSetTitleBar(titleBar);\\n...\\nvar title = ...;\\nif (string.IsNullOrEmpty(title))\\n{\\n    title = fallbackTitle;\\n}\\nAppTitleTextBlock.Text = title;",
+        "edge_cases": [
+          "Elevated mode must still show WindowAdminTitle in the visible custom title bar.",
+          "Missing or unresolved PRI resources must display the English fallback, not an empty TextBlock.",
+          "The native taskbar/window title intentionally remains the ASCII fallback until the Windows App SDK fix is available; document this as a containment tradeoff.",
+          "Do not use try/catch around TitleBar or AppWindow.Title as a mitigation; the reported framework path can fail-fast before a managed exception can be handled."
+        ],
+        "tests": [
+          "Add or update a focused unit test only if a pure title-selection helper is extracted; otherwise this platform-specific behavior is validated manually because the crash occurs in framework layout/native windowing.",
+          "Verify the constructor assigns the fallback before SetTitleBar and before any localized title lookup can affect the native title."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "Directory.Packages.props",
+        "symbols": [
+          "Microsoft.WindowsAppSDK PackageVersion"
+        ],
+        "current_behavior": "The repository centrally pins Microsoft.WindowsAppSDK and the Environment Variables project consumes that package.",
+        "change": "Do not speculative-upgrade the package as part of the PowerToys containment. After Windows App SDK publishes a release with a verified fix for Unicode window-class registration and/or safe GetTitle length handling, update this pin in a separate dependency change and re-run the complete language matrix.",
+        "code_block": "<PackageVersion Include=\"Microsoft.WindowsAppSDK\" Version=\"<verified-fixed-version>\" />",
+        "edge_cases": [
+          "A package version that only fixes empty-title handling is not sufficient evidence for #49880.",
+          "Confirm the self-contained runtime DLLs in the built output contain the fixed implementation; do not rely on the machine-installed framework version."
+        ],
+        "tests": [
+          "Build EnvironmentVariables and all other projects sharing the TitleBar control after any package update.",
+          "Repeat CJK and non-CJK manual launch validation before removing the PowerToys containment."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "External: microsoft/microsoft-ui-xaml#11214 and Windows App SDK issue tracker",
+        "symbols": [
+          "WinUIDesktopWin32WindowClass",
+          "Core::YieldAndCall::GetTitle",
+          "TitleBar::UpdateTitle",
+          "TitleBar::ResetTitle"
+        ],
+        "current_behavior": "The framework registers/uses the desktop window path and performs AppWindow.Title readback during TitleBar layout; the reported CJK path can truncate or fail-fast.",
+        "change": "Request and track a framework fix that registers the desktop window class as Unicode and makes GetTitle robust to zero-length titles, length changes between GetWindowTextLengthW and GetWindowTextW, and explicit NUL termination before string promotion.",
+        "code_block": "SetLastError(ERROR_SUCCESS);\\nint windowTextLength = GetWindowTextLengthW(hwnd);\\n// Read into a buffer whose actual retrieved length is checked.\\n// If retrievedSize != windowTextLength, discard/retry safely; never promote an untrusted terminator slot.",
+        "edge_cases": [
+          "The framework fix must cover both empty titles from #48547/#49069 and non-empty multi-byte CJK titles from #49880.",
+          "A managed catch in PowerToys is not an acceptable substitute for preventing the native fail-fast."
+        ],
+        "tests": [
+          "Framework maintainers should add a Unicode-window and CJK title regression test, including elevated and non-elevated windows.",
+          "PowerToys should consume a fixed package only after reproducing the original matrix on the fixed runtime."
+        ]
+      }
+    ],
+    "verify": [
+      "build: From <PowerToysCheckout>\\build\\build.ps1 -Platform x64 -Configuration Release",
+      "build: For a targeted project build, select/build src\\modules\\EnvironmentVariables\\EnvironmentVariables\\EnvironmentVariables.csproj as x64|Release with the repository build tooling; require exit code 0.",
+      "build: If restore is required, first run tools\\build\\build-essentials.cmd, then repeat the targeted build.",
+      "tests: Build the test project first if a focused Environment Variables test project is added; run it with Visual Studio Test Explorer or vstest.console.exe, not dotnet test, per repository guidance.",
+      "tests: Because the failure is native WinUI layout behavior and no existing Environment Variables UI test project is present in the inspected local checkout, the primary regression gate is the manual matrix below plus successful build output.",
+      "manual language switch: Start from a clean PowerToys installation containing the changed Environment Variables binary.",
+      "manual language switch: Set PowerToys language to Windows Default and Windows system/display language to en-US; launch Environment Variables from the tray at least 10 times, including once elevated, and confirm the window remains open.",
+      "manual language switch: Switch the Windows display/system language to Simplified Chinese (zh-CN), sign out/in if Windows requires it, restart PowerToys, and launch Environment Variables at least 10 times non-elevated and 10 times elevated; confirm no black-window-then-exit behavior.",
+      "manual language switch: Repeat the same matrix for Traditional Chinese (zh-TW) and Japanese (ja-JP).",
+      "manual language switch: For each CJK run, confirm the visible custom title is the localized WindowTitle or WindowAdminTitle, the native/taskbar title is the stable ASCII fallback, the icon is present, and editing remains usable.",
+      "manual language switch: Switch back to en-US and verify the language transition does not leave an empty title or stale UI.",
+      "manual language switch: On any failure, wait 2–5 minutes and collect the PowerToys report plus Windows Application Error/WER event IDs 1000/1001; record the faulting module and exception rather than classifying an unlogged termination as fixed.",
+      "success criteria: No Environment Variables process termination during the complete CJK/non-CJK and elevation matrix.",
+      "success criteria: No use of the built-in Microsoft.UI.Xaml.Controls.TitleBar remains in this window until the framework fix is verified.",
+      "success criteria: Localized visible titles and elevated labeling remain correct, with an explicit documented ASCII native-title tradeoff.",
+      "success criteria: The framework issue is linked as the root-cause follow-up; PowerToys issue #49880 is not closed solely because a fallback string exists."
+    ],
+    "risks": [
+      "Restoring the custom title bar may differ subtly from the built-in TitleBar in accessibility, system drag regions, caption-button layout, or future WinUI behavior.",
+      "Keeping an ASCII native title changes taskbar/window-switcher localization, although it prevents the reported ANSI conversion hazard.",
+      "A framework update may later make the custom containment unnecessary; removal should wait for the complete manual matrix and a confirmed fixed runtime.",
+      "The latest issue report lacks a v0.101.2222 crash dump, so the exact per-machine trigger remains partly inferred even though the CJK correlation and framework call path are strong."
+    ],
+    "alternatives": [
+      {
+        "name": "Only keep the #49069 early non-empty fallback",
+        "decision": "Reject",
+        "reason": "Already present and insufficient for non-empty CJK title conversion/readback."
+      },
+      {
+        "name": "Use the built-in TitleBar with an ASCII Window.Title and localized titleBar.Title",
+        "decision": "Reject for containment",
+        "reason": "The framework TitleBar reads AppWindow.Title during layout and may overwrite or otherwise depend on the native title; this leaves the defective framework path active."
+      },
+      {
+        "name": "Upgrade Microsoft.WindowsAppSDK immediately",
+        "decision": "Defer",
+        "reason": "No verified package version fixing the reported ANSI registration and GetTitle promotion defect was established; speculative dependency upgrades add release risk without proof."
+      },
+      {
+        "name": "Wait for Windows App SDK only",
+        "decision": "Reject",
+        "reason": "Leaves affected PowerToys users exposed and does not provide a release-contained workaround."
+      }
+    ]
+  }
 }
