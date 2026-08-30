@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-31T05:02:36.9840270+08:00",
+  "generated_at": "2026-08-31T06:07:40.8267930+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 150,
-    "open_issues": 12557,
-    "community": 11705,
+    "open_issues": 12558,
+    "community": 11706,
     "artifacts": 3416
   },
   "impact": {
-    "as_of": "2026-08-31T05:02:36.9840270+08:00",
+    "as_of": "2026-08-31T06:07:40.8267930+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -368558,6 +368558,37 @@ window.BOARD_INDEX = {
       "created_at": "2025-01-30T09:37:33Z",
       "updated_at": "2026-04-18T10:52:34Z",
       "comments": 13,
+      "priority": null
+    },
+    {
+      "id": "issue-50256",
+      "kind": "issue",
+      "number": 50256,
+      "url": "https://github.com/microsoft/PowerToys/issues/50256",
+      "title": "Feature Request, Add optional Right Mouse Button hold as activation modifier for Grab and Move",
+      "author": "kjmdjul",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-Grab And Move"
+      ],
+      "created_at": "2026-08-30T21:56:03Z",
+      "updated_at": "2026-08-30T22:01:17Z",
+      "comments": 1,
       "priority": null
     },
     {
