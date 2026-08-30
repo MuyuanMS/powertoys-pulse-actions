@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-30T12:35:40.0041023+08:00",
+  "generated_at": "2026-08-30T12:53:53.9056834+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 3235
   },
   "impact": {
-    "as_of": "2026-08-30T12:35:40.0041023+08:00",
+    "as_of": "2026-08-30T12:53:53.9056834+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -3353,7 +3353,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3366,7 +3366,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-29T23:47:06Z",
       "updated_at": "2026-08-30T03:30:56Z",
       "comments": 6,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 533,
+        "fork_title": "[PR 50245] feat(grabandmove): snap windows to screen edges and corners while dragging",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50245",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/533"
+      }
     },
     {
       "id": "pr-50233",
@@ -3479,7 +3487,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3491,7 +3499,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-29T06:36:39Z",
       "updated_at": "2026-08-30T00:27:14Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 534,
+        "fork_title": "[PR 50230] [UITests][MouseUtilities] Migrate to .Next and add test for Cursor Wrap",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50230-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/534"
+      }
     },
     {
       "id": "pr-50222",
@@ -3568,11 +3584,11 @@ window.BOARD_INDEX = {
       "priority": null,
       "mirror": {
         "kind": "pr",
-        "fork_number": 529,
+        "fork_number": 536,
         "fork_title": "[PR 50220] [GH Actions][UITests] Trigger new UI tests automatically per modified module",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50220",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/529"
+        "fork_branch": "pr-iterate/50220-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/536"
       }
     },
     {
@@ -4599,11 +4615,11 @@ window.BOARD_INDEX = {
       "priority": null,
       "mirror": {
         "kind": "pr",
-        "fork_number": 479,
-        "fork_title": "[PR 50100] Shortcut Guide: add Ableton Live shortcut manifest (review v2)",
+        "fork_number": 537,
+        "fork_title": "[PR 50100] Shortcut Guide: add Ableton Live shortcut manifest (refresh)",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50100-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/479"
+        "fork_branch": "pr-iterate/50100-v3",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/537"
       }
     },
     {
@@ -5748,7 +5764,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -5760,7 +5776,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-07T23:25:57Z",
       "updated_at": "2026-08-29T15:50:22Z",
       "comments": 3,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 538,
+        "fork_title": "[PR 49769] CmdPal: Hide redundant More button for a single secondary command",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/49769-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/538"
+      }
     },
     {
       "id": "pr-49759",
@@ -257137,12 +257161,12 @@ window.BOARD_INDEX = {
       "comments": 4,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 144,
-        "fork_title": "LightSwitch: Fix service crash in update_sun_times (std::stod + WinRT exceptions escape service worker)",
+        "kind": "issue",
+        "fork_number": 114,
+        "fork_title": "[Issue 42511] v0.95.0 - Light Switch - Crash - PowerToys_LightSwitchService!update_sun_times<LightSwitchConfig const > / CxxThrowException",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-42511-fix-light-switch-crash",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/144"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/114"
       }
     },
     {
@@ -262409,12 +262433,12 @@ window.BOARD_INDEX = {
       "comments": 1,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 145,
-        "fork_title": "FancyZones: Fix Quick Layout Switch targeting wrong monitor in multi-monitor setups",
+        "kind": "issue",
+        "fork_number": 115,
+        "fork_title": "[Issue 42290] FancyZones Quick Layout Switch changes multiple windows at once",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-42290-fancyzones-quick-layout-switch",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/145"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/115"
       }
     },
     {

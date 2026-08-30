@@ -2,79 +2,20 @@
   "number": 50220,
   "kind": "pr",
   "track": "review",
-  "pending_author": false,
-  "source_updated_at": "2026-08-29T00:09:08Z",
-  "head_sha": "8d0936ea34e3ddf784f16bc0b8dec6c596a348fc",
-  "title": "[GH Actions][UITests] Trigger new UI tests automatically per modified module",
-  "url": "https://github.com/microsoft/PowerToys/pull/50220",
-  "confidence": "High",
-  "phase0": {
-    "author": "khmyznikov",
-    "author_association": "MEMBER",
-    "bar": "member-authored; process nags skipped",
-    "disposition": "Proceed",
-    "gates_tripped": [],
-    "note": "This is a member-authored pipeline-only PR. CLA passed, visual evidence is not needed, and no community process gate applies.",
-    "evidence": [
-      "The live upstream head is 8d0936ea34e3ddf784f16bc0b8dec6c596a348fc.",
-      "Affected UI-test resolver jobs passed for x64 and arm64."
-    ]
-  },
-  "judgment": {
-    "status": "review_drafted",
-    "rationale": "The exact runtimeconfig comparison is correct for auto-selected projects but breaks the existing manual uiTestModules partial-matching contract. The fork fix preserved both paths, the final Copilot pass produced zero comments, and no unresolved threads remain.",
-    "recommended_action": "Review the drafted inline suggestion and post only after explicit approval and a freshness check.",
-    "evaluated_at": "2026-08-29T00:32:58.1799526Z",
-    "source_updated_at": "2026-08-29T00:09:08Z",
-    "evidence": [
-      "Legacy manual module values can differ from emitted runtimeconfig names, so exact matching drops valid runners.",
-      "Resolver Pester tests passed 3/3.",
-      "PowerShell parsing found zero errors in the changed scripts.",
-      "The final Copilot review produced zero new inline comments and zero unresolved threads remain.",
-      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
-    ]
-  },
-  "verification": {
-    "result": "passed",
-    "configuration": "pipeline scripts",
-    "tests": [
-      {
-        "suite": "resolveUiTestModules Pester tests",
-        "result": "passed",
-        "passed": 3,
-        "failed": 0
-      },
-      {
-        "suite": "PowerShell parser",
-        "result": "passed",
-        "errors": 0
-      },
-      {
-        "suite": "Fork Copilot thread audit",
-        "result": "passed",
-        "unresolved": 0
-      }
-    ],
-    "build_note": "Affected upstream UI-test resolver jobs passed; broader product build jobs were still running at the final review refresh."
-  },
-  "upstream_pr": {
-    "number": 50220,
-    "url": "https://github.com/microsoft/PowerToys/pull/50220",
-    "state": "OPEN",
-    "head_sha": "8d0936ea34e3ddf784f16bc0b8dec6c596a348fc",
-    "updated_at": "2026-08-29T00:09:08Z"
-  },
-  "workflow": {
-    "phase": "review_drafted",
-    "checkpoint_at": "2026-08-29T00:32:58.1799526Z",
-    "unresolved_copilot_threads": 0
-  },
   "stage": "review_drafted",
   "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-30T04:38:30Z",
+  "evaluated_at": "2026-08-30T04:38:30Z",
+  "source_updated_at": "2026-08-29T06:30:03Z",
+  "head_sha": "c19a013996bf45151b505ec2c9707fb01c79a9b7",
+  "title": "[GH Actions][UITests] Trigger new UI tests automatically per modified module",
+  "url": "https://github.com/microsoft/PowerToys/pull/50220",
+  "summary": "The refreshed current-head workflow review preserves one UI-test module matching finding. Resolver Pester checks, real-module mapping simulations, and manual MouseUtils assembly-name coverage passed; zero Copilot threads remain unresolved.",
   "status": {
-    "glyph": "⚠️",
+    "glyph": "warn",
     "label": "Blocking review drafted",
-    "detail": "One validated current-head pipeline compatibility finding is ready for maintainer selection."
+    "detail": "One current-head inline review comment is ready for maintainer selection."
   },
   "next_action": {
     "glyph": "▶",
@@ -83,26 +24,26 @@
   },
   "proposed_comments": [
     {
-      "id": "preserve-manual-uitest-module-matching",
+      "id": "preserve-manual-ui-test-selection",
       "kind": "inline",
-      "severity": "medium",
       "title": "Preserve manual UI-test module selection",
-      "path": ".pipelines/v2/templates/job-test-project.yml",
-      "start_line": 321,
-      "line": 325,
-      "side": "RIGHT",
-      "body": "### Preserve manual UI-test module selection\n\n**Severity:** `medium`\n\nThe new exact runtimeconfig comparison is correct for automatically resolved `.Next` projects, but it also changes the standalone UI Test Automation pipeline's documented manual `uiTestModules` behavior. Legacy projects such as `MouseUtils.UITests` build from `MouseUtils.UITests.csproj` while emitting `PowerToys.MouseUtils.UITests.runtimeconfig.json`; exact matching drops that runner and the job fails with \"No UI test runners matched.\" This keeps resolver-driven auto selection exact while retaining the previous partial match for manually supplied module values.\n\n```suggestion\n      if ($modules.Count -gt 0) {\n        $entries = $entries | Where-Object {\n          $projectName = $_.Name -replace '\\.runtimeconfig\\.json$', ''\n          if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {\n            $modules -contains $projectName\n          } else {\n            @($modules | Where-Object { $projectName -like \"*$_*\" }).Count -gt 0\n          }\n        }\n      }\n```",
+      "severity": "high",
+      "confidence": {
+        "score": 95,
+        "rationale": "The changed exact comparison rejects the documented PowerToys.MouseUtils.UITests runtime configuration when the manual value is MouseUtils.UITests, while the prior partial matching selects it. Automatic resolver output remains safe to match exactly."
+      },
+      "body": "### Preserve manual UI-test module selection\n\n**Severity:** `high`\n\nThe new exact comparison is correct for automatically resolved project names, but this template is also used by manually selected UI-test runs. Those runs may pass a project name whose runtime configuration uses a different assembly name, such as `MouseUtils.UITests` and `PowerToys.MouseUtils.UITests.runtimeconfig.json`; the exact check then selects no runner and fails the job. Keep exact matching for automatic selection while retaining the established partial match for manual values.\n\n```suggestion\n        $entries = $entries | Where-Object {\n          $projectName = $_.Name -replace '\\.runtimeconfig\\.json$', ''\n          if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {\n            $modules -contains $projectName\n          } else {\n            @($modules | Where-Object { $projectName -like \"*$_*\" }).Count -gt 0\n          }\n        }\n```",
       "in_diff": true,
       "disposition": "proposed",
-      "confidence": {
-        "score": 96,
-        "rationale": "The changed line switches to exact matching for every caller, while documented manual examples include project names whose emitted runtimeconfig names differ."
-      }
+      "path": ".pipelines/v2/templates/job-test-project.yml",
+      "start_line": 322,
+      "line": 325,
+      "side": "RIGHT"
     }
   ],
   "actions": [
     {
-      "id": "request_changes-50220",
+      "id": "request-changes-50220",
       "type": "request_changes",
       "label": "Request changes with 1 review comment",
       "primary": true,
@@ -113,13 +54,32 @@
         "pr": 50220,
         "pullRequest": 50220,
         "repository": "microsoft/PowerToys",
+        "head_sha": "c19a013996bf45151b505ec2c9707fb01c79a9b7",
         "event": "REQUEST_CHANGES",
-        "head_sha": "8d0936ea34e3ddf784f16bc0b8dec6c596a348fc",
-        "body_prefix": "Please address the UI-test module routing compatibility issue below."
+        "body_prefix": ""
       }
     }
   ],
-  "generated_at": "2026-08-29T00:32:58.1799526Z",
-  "evaluated_at": "2026-08-29T00:32:58.1799526Z",
-  "summary": "The current-head review contains one inline suggestion preserving documented manual UI-test module matching while retaining exact auto-selection."
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The updated workflow still needs to preserve the documented manual UI-test module matching path while keeping exact matching for automatically selected modules.",
+    "evidence": [
+      "The refreshed result is pinned to the live upstream head.",
+      "Resolver Pester suite passed.",
+      "Real-module mappings covered File Locksmith, FancyZones, Color Picker, legacy-only Hosts, and the manual MouseUtils assembly-name case.",
+      "Final reviewer requests were unavailable after completed iterations; the audit found no later comments and zero unresolved Copilot threads.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes comment.",
+    "evaluated_at": "2026-08-30T04:38:30Z",
+    "source_updated_at": "2026-08-29T06:30:03Z"
+  },
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-30T04:38:30Z",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "Resolver Pester suite passed"
+  }
 }
