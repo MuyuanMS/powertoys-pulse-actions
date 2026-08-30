@@ -2,94 +2,70 @@
   "number": 50203,
   "kind": "pr",
   "track": "review",
-  "stage": "post_review",
+  "stage": "review_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T17:51:00Z",
-  "evaluated_at": "2026-08-28T17:51:00Z",
-  "source_updated_at": "2026-08-28T17:48:57Z",
-  "head_sha": "6d1a78f9d12501a42d1a0c1a505b7a7a112963c6",
+  "generated_at": "2026-08-30T08:22:35.046961Z",
+  "evaluated_at": "2026-08-30T08:22:35.046961Z",
+  "source_updated_at": "2026-08-29T10:54:17Z",
+  "head_sha": "22ca386dbbdcf7545d43b6dc319f94563ea6e1a5",
   "title": "CmdPal: Prioritize initialization of CmdPal list items in that are used",
   "url": "https://github.com/microsoft/PowerToys/pull/50203",
-  "summary": "The fork review found that grid pages do not fully restore or track visible-item demand, and discarded back-stack list view models are not cleaned up. One inline suggestion and two general review notes are ready.",
+  "summary": "Current-head CmdPal icon/list stack review converged cleanly with zero public review findings. Built Microsoft.CmdPal.UI.ViewModels.UnitTests and Microsoft.CmdPal.Ext.Indexer.UnitTests Debug x64; 11 targeted ViewModels tests and 6 targeted indexer icon tests passed. Earlier UI and Bookmarks targeted builds/tests also passed for the reviewed stack.",
   "status": {
-    "glyph": "warn",
-    "label": "Review comments ready",
-    "detail": "One inline suggestion and two general notes are pinned to the current upstream head."
+    "glyph": "check",
+    "label": "Review ready",
+    "detail": "Clean current-head review is ready for maintainer approval."
   },
-  "next_action": "Review and selectively post the drafted request-changes comments.",
-  "proposed_comments": [
-    {
-      "id": "restore-grid-realization-demand",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Restore realized items through the active view",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml.cs",
-      "start_line": 372,
-      "line": 382,
-      "side": "RIGHT",
-      "body": "### Restore realized items through the active view\n\n**Severity:** `high`\n\n`RegisterExistingRealizedItems` only searches `ItemsList`, even though this control can render an `ItemsGrid`. A grid page therefore loses visible-item demand after the view loads and initializes its visible rows in speculative order. Use the active view for both the panel and container lookup so restored rows retain their priority in either layout.\n\n```suggestion\n            if (ItemView.ItemsPanelRoot is { } panel)\n            {\n                foreach (var child in panel.Children)\n                {\n                    if (child is SelectorItem container && ItemView.ItemFromContainer(container) is ListItemViewModel item)\n                    {\n                        RegisterRealizedItem(container, item);\n                    }\n                }\n            }\n```",
-      "confidence": 98
-    },
-    {
-      "id": "wire-grid-container-realization",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Wire grid container realization tracking",
-      "body": "### Wire grid container realization tracking\n\n**Severity:** `high`\n\n`ItemsGrid` uses the same item source as the list but does not subscribe to `ContainerContentChanging`, so visible grid rows never create realization demand. Please add `ContainerContentChanging=\"Items_ContainerContentChanging\"` to the `ItemsGrid` declaration as well. This is a general note because that declaration is outside the current diff range.",
-      "confidence": 98
-    },
-    {
-      "id": "dispose-cleared-backstack-lists",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Clean up list view models when clearing navigation history",
-      "body": "### Clean up list view models when clearing navigation history\n\n**Severity:** `high`\n\nSuspending every departing list correctly preserves pages that remain reachable through Back, but a non-nested navigation immediately clears the back stack. Those discarded list view models keep their model subscriptions and item graph unless they are cleaned up before the entries are removed. Before `RootFrame.BackStack.Clear()`, clean up list view models retained in its navigation parameters. This is a general note because the navigation host is outside the current diff range.",
-      "confidence": 95
-    }
-  ],
+  "next_action": {
+    "glyph": "✓",
+    "label": "Approve clean review",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [],
   "actions": [
     {
-      "id": "request-changes-50203",
-      "type": "request_changes",
-      "label": "Request changes",
+      "id": "approve-50203",
+      "type": "approve",
+      "label": "Approve clean review",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
+      "note": "Current-head clean review draft; explicit approval and freshness recheck required before posting.",
       "review": {
-        "head_sha": "6d1a78f9d12501a42d1a0c1a505b7a7a112963c6",
-        "event": "REQUEST_CHANGES",
-        "body": "The visible-item prioritization needs to cover grid realization and navigation-history cleanup before this is ready."
+        "pr": 50203,
+        "pullRequest": 50203,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "22ca386dbbdcf7545d43b6dc319f94563ea6e1a5",
+        "event": "APPROVE",
+        "body_prefix": "No public review comments are recommended for this PR at the current head."
       }
     }
   ],
   "confidence": "High",
   "judgment": {
-    "status": "review_comments_ready",
-    "rationale": "The current implementation hard-codes list realization in one recovery path, omits the grid realization event hook, and suspends list view models that can then be discarded from navigation history without cleanup.",
+    "status": "review_ready",
+    "rationale": "No current public findings remain after dependent-stack reconciliation and targeted validation.",
     "evidence": [
-      "The control selects list or grid through ItemView, but RegisterExistingRealizedItems directly searches ItemsList.",
-      "ItemsGrid lacks the ContainerContentChanging hook used to create visible-row demand.",
-      "Non-nested navigation clears BackStack entries after list view models are suspended, without invoking cleanup.",
-      "Two valid Copilot findings were fixed and resolved on the fork.",
-      "The final Copilot audit found zero new comments and zero unresolved threads.",
-      "Debug runner, Settings, CmdPal UI, and focused view-model validation passed, including 52 focused tests."
+      "The artifact is pinned to the live upstream head.",
+      "Collaborator PR; no community-contributor process gate is being raised.",
+      "Built Microsoft.CmdPal.UI.ViewModels.UnitTests and Microsoft.CmdPal.Ext.Indexer.UnitTests Debug x64; 11 targeted ViewModels tests and 6 targeted indexer icon tests passed. Earlier UI and Bookmarks targeted builds/tests also passed for the reviewed stack.",
+      "Fork-side Copilot final audit found 0 unresolved Copilot threads.",
+      "No unresolved Copilot-authored review threads remained after replying to and resolving addressed comments.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
     ],
-    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected comments as a request-changes review.",
-    "evaluated_at": "2026-08-28T17:51:00Z",
-    "source_updated_at": "2026-08-28T17:48:57Z"
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, submit an approval if still appropriate.",
+    "evaluated_at": "2026-08-30T08:22:35.046961Z",
+    "source_updated_at": "2026-08-29T10:54:17Z"
   },
-  "fork_pr": {
-    "number": 508,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/508"
-  },
-  "fork_branch": "pr-iterate/50203",
   "workflow": {
     "phase": "review_ready",
-    "checkpoint_at": "2026-08-28T17:51:00Z",
-    "fork_head_sha": "96f5ec99510f9df7a92d513029b785f94033b048",
+    "checkpoint_at": "2026-08-30T08:22:35.046961Z",
+    "fork_pr": 508,
+    "fork_reviewed_head_sha": "57200b4e4fb7fcd23536b89c9d84fd767f008c38",
     "unresolved_copilot_threads": 0,
-    "build_result": "passed",
-    "unit_test_result": "52 focused tests passed"
+    "copilot_final": "not accepted after prior completed iterations",
+    "build_result": "Built Microsoft.CmdPal.UI.ViewModels.UnitTests and Microsoft.CmdPal.Ext.Indexer.UnitTests Debug x64; 11 targeted ViewModels tests and 6 targeted indexer icon tests passed. Earlier UI and Bookmarks targeted builds/tests also passed for the reviewed stack.",
+    "test_instructions": "Exercise the changed CmdPal icon/list path relevant to this PR and verify expected icon rendering/list behavior."
   }
 }
