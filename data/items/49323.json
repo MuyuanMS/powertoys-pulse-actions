@@ -5,104 +5,220 @@
   "stage": "post_review",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T19:05:00Z",
-  "evaluated_at": "2026-08-28T19:05:00Z",
-  "source_updated_at": "2026-08-28T18:59:52Z",
-  "head_sha": "c4af287862eaec6926980796db56c8182089f0cc",
+  "generated_at": "2026-08-29T03:37:57.7125318Z",
+  "evaluated_at": "2026-08-29T03:37:57.7125318Z",
+  "source_updated_at": "2026-08-29T01:51:04Z",
+  "head_sha": "901fcc493b846cf843c9bf50976f7f5349a3c74a",
   "title": "CmdPal JS/TS Extensions - Phase 2: JSON-RPC transport + manifest",
   "url": "https://github.com/microsoft/PowerToys/pull/49323",
-  "summary": "The refreshed stacked review found five current robustness issues: the notification channel reader contract, bare-CR stderr framing, unbounded inbound frames, unbounded request concurrency, and fail-open manifest containment races.",
+  "summary": "The refreshed current-head review contains 10 JSON-RPC, manifest, cancellation, concurrency, and framing findings after reconciliation onto the reviewed 49321 base. Focused CmdPal unit-test build and 61 tests passed; zero Copilot threads remain unresolved.",
   "status": {
     "glyph": "warn",
     "label": "Review comments ready",
-    "detail": "Five general review notes are pinned to the refreshed upstream head."
+    "detail": "10 current-head review comments are ready for maintainer selection."
   },
   "next_action": "Review and selectively post the drafted request-changes comments.",
   "proposed_comments": [
     {
-      "id": "notification-queue-reader-contract",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Keep notification queue reads safe under producer pressure",
-      "body": "### Keep notification queue reads safe under producer pressure\n\n**Severity:** `high`\n\nThe bounded notification queue removes the oldest item from a producer path while the consumer is also reading. Configure the channel for multiple readers, or move eviction behind the sole consumer, so the declared channel contract matches the actual concurrent access pattern.",
-      "confidence": 95
-    },
-    {
       "id": "stderr-bare-carriage-return",
-      "kind": "companion",
-      "severity": "medium",
+      "kind": "inline",
       "title": "Treat standalone carriage returns as stderr line terminators",
-      "body": "### Treat standalone carriage returns as stderr line terminators\n\n**Severity:** `medium`\n\nA bare `\\r` must emit and reset the current stderr line. Otherwise progress-style output is concatenated into one record and can consume the line and volume budgets unexpectedly.",
-      "confidence": 99
+      "severity": "medium",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current branch returns on a bare carriage return without emitting or resetting the buffered line, and the existing reader treats line terminators as log record boundaries."
+      },
+      "body": "### Treat standalone carriage returns as stderr line terminators\n\n**Severity:** `medium`\n\nA progress-style stderr stream can use bare carriage returns without line feeds. The current branch drops the terminator and keeps appending to the same buffered line, so unrelated progress updates can merge into one log entry and consume the byte budget unexpectedly.\n\n```suggestion\n        if (value == (byte)'\\r')\n        {\n            EmitLine();\n            ResetLine();\n            return;\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/BoundedStderrReader.cs",
+      "start_line": 146,
+      "line": 150,
+      "side": "RIGHT"
     },
     {
-      "id": "bounded-inbound-json-rpc-frame",
-      "kind": "companion",
+      "id": "manifest-package-json-size-limit",
+      "kind": "inline",
+      "title": "Bound package.json before reading and deserializing it",
       "severity": "high",
-      "title": "Bound inbound JSON-RPC frames before allocation",
-      "body": "### Bound inbound JSON-RPC frames before allocation\n\n**Severity:** `high`\n\nReject oversized `Content-Length` declarations and oversized headers before allocating the payload buffer. The transport must not allow an extension to make the host buffer an unbounded or multi-gigabyte inbound message.",
-      "confidence": 92
+      "confidence": {
+        "score": 94,
+        "rationale": "TryParseFile currently reads the entire extension-controlled package.json into a string and then deserializes it, with no file-size gate before allocation."
+      },
+      "body": "### Bound package.json before reading and deserializing it\n\n**Severity:** `high`\n\nAn extension package controls `package.json`, so reading it with `File.ReadAllText` allows an oversized manifest to allocate memory before validation can reject it. Put a byte limit at the file boundary and return a parse failure when the manifest is too large.\n\n```suggestion\n        const int MaxPackageJsonBytes = 1024 * 1024;\n        string json;\n        try\n        {\n            using var stream = new FileStream(packageJsonPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, FileOptions.SequentialScan);\n            if (stream.Length > MaxPackageJsonBytes)\n            {\n                return JSExtensionManifestParseResult.Failure($\"The package.json exceeds the {MaxPackageJsonBytes}-byte limit.\");\n            }\n\n            using var reader = new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true);\n            json = reader.ReadToEnd();\n        }\n        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)\n        {\n            return JSExtensionManifestParseResult.Failure($\"Failed to read '{packageJsonPath}': {ex.Message}\");\n        }\n\n        if (System.Text.Encoding.UTF8.GetByteCount(json) > MaxPackageJsonBytes)\n        {\n            return JSExtensionManifestParseResult.Failure($\"The package.json exceeds the {MaxPackageJsonBytes}-byte limit.\");\n        }\n\n        var directory = Path.GetDirectoryName(Path.GetFullPath(packageJsonPath)) ?? string.Empty;\n        return TryParse(json, directory);\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/JSExtensionManifest.cs",
+      "start_line": 102,
+      "line": 113,
+      "side": "RIGHT"
+    },
+    {
+      "id": "manifest-prefix-ordinal",
+      "kind": "inline",
+      "title": "Use ordinal containment checks for case-sensitive directories",
+      "severity": "high",
+      "confidence": {
+        "score": 91,
+        "rationale": "The current StartsWith comparison is explicitly case-insensitive even though Windows directories can be case-sensitive, allowing a differently-cased sibling prefix to match."
+      },
+      "body": "### Use ordinal containment checks for case-sensitive directories\n\n**Severity:** `high`\n\nThe text containment check uses a case-insensitive prefix comparison. On a case-sensitive Windows directory, an entry point such as `../foo/index.js` can escape from package directory `Foo` into a distinct sibling while still matching the prefix text.\n\n```suggestion\n        var prefix = baseDirectory.EndsWith(Path.DirectorySeparatorChar)\n            ? baseDirectory\n            : baseDirectory + Path.DirectorySeparatorChar;\n\n        if (!resolved.StartsWith(prefix, StringComparison.Ordinal))\n        {\n            error = $\"The entry point '{entryPoint}' must not escape the extension directory.\";\n            return null;\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/JSExtensionManifest.cs",
+      "start_line": 305,
+      "line": 313,
+      "side": "RIGHT"
+    },
+    {
+      "id": "manifest-walk-fail-closed",
+      "kind": "inline",
+      "title": "Fail closed while walking the resolved manifest path",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The path walk uses case-insensitive comparisons and treats missing path segments as safe, so validation can pass without checking the actual segment."
+      },
+      "body": "### Fail closed while walking the resolved manifest path\n\n**Severity:** `high`\n\nThe reparse-point walk should use the same ordinal semantics as the prefix check and should not trust a path segment that disappears during validation. Returning `false` for a missing segment lets validation succeed without proving that every segment remained inside the extension directory.\n\n```suggestion\n            var baseDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(extensionDirectory));\n            var current = Path.GetFullPath(resolvedEntryPoint);\n\n            // Walk from the entry point up toward the extension directory. The extension directory\n            // itself and everything above it are outside this check.\n            while (!string.Equals(Path.TrimEndingDirectorySeparator(current), baseDirectory, StringComparison.Ordinal))\n            {\n                if (IsReparsePoint(current))\n                {\n                    error = $\"The entry point '{resolvedEntryPoint}' traverses a symbolic link or junction, which is not allowed.\";\n                    return false;\n                }\n\n                var parent = Path.GetDirectoryName(current);\n                if (string.IsNullOrEmpty(parent) || string.Equals(parent, current, StringComparison.Ordinal))\n                {\n                    // Reached a filesystem root without meeting the extension directory. The text\n                    // containment check already ran, so this only happens for pathological inputs.\n                    break;\n                }\n\n                current = parent;\n            }\n\n            return true;\n        }\n        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or PathTooLongException or System.Security.SecurityException)\n        {\n            error = $\"The entry point '{resolvedEntryPoint}' could not be validated: {ex.Message}\";\n            return false;\n        }\n    }\n\n    private static bool IsReparsePoint(string path)\n    {\n        try\n        {\n            return (File.GetAttributes(path) & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;\n        }\n        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)\n        {\n            return true;\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/JSExtensionManifest.cs",
+      "start_line": 338,
+      "line": 382,
+      "side": "RIGHT"
+    },
+    {
+      "id": "notification-write-cancellation",
+      "kind": "inline",
+      "title": "Avoid partial notification frames on caller cancellation",
+      "severity": "high",
+      "confidence": {
+        "score": 89,
+        "rationale": "The caller token is passed to the actual transport write, so cancellation can interrupt a frame after bytes have reached the stream while leaving the connection reusable."
+      },
+      "body": "### Avoid partial notification frames on caller cancellation\n\n**Severity:** `high`\n\nThe cancellation token is documented as canceling before the send starts, but it is passed into the actual frame write. If cancellation fires mid-write, the output stream can contain a partial JSON-RPC frame while the connection remains reusable, so the next message may be parsed incorrectly.\n\n```suggestion\n        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);\n        ArgumentException.ThrowIfNullOrEmpty(method);\n        cancellationToken.ThrowIfCancellationRequested();\n\n        try\n        {\n            var notification = _messageFactory.CreateRequestMessage();\n            notification.Method = method;\n            notification.Arguments = parameters;\n            await _messageHandler.WriteAsync(notification, _connectionClosedCts.Token).ConfigureAwait(false);\n        }\n        catch (OperationCanceledException) when (_connectionClosedCts.IsCancellationRequested)\n        {\n            DisposeRpc();\n            throw new JsonRpcException(\"The JSON-RPC connection failed while writing a notification.\");\n        }\n        catch (Exception ex) when (ex is ConnectionLostException or ObjectDisposedException or IOException or TimeoutException)\n        {\n            DisposeRpc();\n            throw new JsonRpcException(\"The JSON-RPC connection failed while writing a notification.\", ex);\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 225,
+      "line": 237,
+      "side": "RIGHT"
+    },
+    {
+      "id": "register-rpc-method-once",
+      "kind": "inline",
+      "title": "Serialize RPC method registration side effects",
+      "severity": "high",
+      "confidence": {
+        "score": 92,
+        "rationale": "ConcurrentDictionary.GetOrAdd may invoke the factory more than once, and the factory registers the target method as a side effect."
+      },
+      "body": "### Serialize RPC method registration side effects\n\n**Severity:** `high`\n\n`ConcurrentDictionary.GetOrAdd` can execute its factory more than once for the same key. Because this factory calls `AddLocalRpcMethod`, concurrent registrations for the same method can attempt duplicate JSON-RPC target registration even though only one value is retained.\n\n```suggestion\n    private void RegisterMethod(string method)\n    {\n        lock (_registeredMethods)\n        {\n            if (_registeredMethods.ContainsKey(method))\n            {\n                return;\n            }\n\n            var target = new RpcMethodTarget(this, method);\n            _rpc.AddLocalRpcMethod(\n                typeof(RpcMethodTarget).GetMethod(nameof(RpcMethodTarget.InvokeAsync))!,\n                target,\n                new JsonRpcMethodAttribute(method)\n                {\n                    UseSingleObjectParameterDeserialization = true,\n                });\n            _registeredMethods[method] = target;\n        }\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 308,
+      "line": 325,
+      "side": "RIGHT"
+    },
+    {
+      "id": "dispose-no-synchronous-drain",
+      "kind": "inline",
+      "title": "Do not synchronously wait for JSON-RPC pumps during Dispose",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "Dispose waits for the notification/error/RPC tasks even when it is called from one of those same callbacks, so reentrant shutdown blocks on its caller."
+      },
+      "body": "### Do not synchronously wait for JSON-RPC pumps during Dispose\n\n**Severity:** `medium`\n\nA request or notification handler can call `Dispose()` while the corresponding pump task is still executing that handler. Waiting synchronously on `_notificationConsumerTask` or `_rpc.Completion` from inside that path stalls shutdown for the timeout and can make extension teardown appear hung. Signal cancellation and let the existing continuation dispose the token sources after the pump tasks really complete.\n\n```suggestion\n        var tasks = new[]\n        {\n            _notificationConsumerTask ?? Task.CompletedTask,\n            _errorPumpTask ?? Task.CompletedTask,\n            _rpc.Completion,\n        };\n        _ = DisposeTokenSourcesWhenTasksCompleteAsync(tasks, _disposalCts, _connectionClosedCts);\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 281,
+      "line": 295,
+      "side": "RIGHT"
+    },
+    {
+      "id": "bounded-json-rpc-transport-limits",
+      "kind": "companion",
+      "title": "Bound inbound JSON-RPC frames and queued notification memory",
+      "severity": "high",
+      "confidence": {
+        "score": 93,
+        "rationale": "The current transport accepts arbitrary Content-Length/header sequences and bounds notification backlog by count even though each JsonElement can retain a large frame."
+      },
+      "body": "### Bound inbound JSON-RPC frames and queued notification memory\n\n**Severity:** `high`\n\nThe transport currently relies on the default header-delimited reader and can accept oversized headers or Content-Length values before allocating the body buffer. The notification queue is also capped only by item count, so a slow handler can retain many large cloned payloads; add explicit inbound frame/header limits plus aggregate queued-payload accounting so extension-controlled traffic stays bounded.",
+      "in_diff": false,
+      "disposition": "proposed"
     },
     {
       "id": "bounded-inbound-request-concurrency",
       "kind": "companion",
-      "severity": "high",
       "title": "Apply bounded admission control to inbound requests",
-      "body": "### Apply bounded admission control to inbound requests\n\n**Severity:** `high`\n\nWith a null synchronization context, inbound requests can execute concurrently. Gate request dispatch with a finite capacity and return the defined `ServerBusy` error when that capacity is exhausted, while retaining enough capacity for reentrant callbacks.",
-      "confidence": 90
+      "severity": "high",
+      "confidence": {
+        "score": 90,
+        "rationale": "The JSON-RPC instance runs without a synchronization context, so inbound request handlers can run concurrently and the defined ServerBusy code is otherwise unused."
+      },
+      "body": "### Apply bounded admission control to inbound requests\n\n**Severity:** `high`\n\nWith SynchronizationContext set to null, inbound requests can dispatch concurrently. Gate request handlers with a finite capacity and return the existing ServerBusy error when the limit is exhausted so a burst of extension requests cannot consume unbounded host work while still leaving room for reentrant callbacks.",
+      "in_diff": false,
+      "disposition": "proposed"
     },
     {
-      "id": "manifest-containment-fail-closed",
+      "id": "clean-eof-before-next-json-rpc-header",
       "kind": "companion",
-      "severity": "high",
-      "title": "Fail closed when a manifest path segment disappears",
-      "body": "### Fail closed when a manifest path segment disappears\n\n**Severity:** `high`\n\nIf a file or directory disappears between existence and attribute checks, treat the segment as untrusted rather than as a confirmed non-reparse point. Containment validation must not succeed without successfully validating every path segment.",
-      "confidence": 97
+      "title": "Treat clean EOF between frames as normal disconnect",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The current reader throws EndOfStreamException before the next header, which StreamJsonRpc classifies as a stream fault instead of a normal remote termination."
+      },
+      "body": "### Treat clean EOF between frames as normal disconnect\n\n**Severity:** `medium`\n\nWhen EOF arrives before a new header starts, the message handler should return null so StreamJsonRpc reports a normal remote termination. Throwing EndOfStreamException in that state makes ordinary extension exits look like protocol errors and raises the public error event unnecessarily.",
+      "in_diff": false,
+      "disposition": "proposed"
     }
   ],
   "actions": [
     {
       "id": "request-changes-49323",
       "type": "request_changes",
-      "label": "Request changes",
+      "label": "Request changes with 10 review comments",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
       "review": {
-        "head_sha": "c4af287862eaec6926980796db56c8182089f0cc",
+        "pr": 49323,
+        "pullRequest": 49323,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "901fcc493b846cf843c9bf50976f7f5349a3c74a",
         "event": "REQUEST_CHANGES",
-        "body": "The refreshed implementation should fail closed and remain bounded under malformed or adversarial extension traffic."
+        "body_prefix": "Thanks for continuing the CmdPal JS/TS extension transport work. The new host-side JSON-RPC and manifest parsing paths handle extension-controlled input, so please carry over these hardening fixes before merging this phase. If applying multiple suggestions individually, use Commit suggestion from bottom to top within each file, or batch them with Add suggestion to batch."
       }
     }
   ],
   "confidence": "High",
   "judgment": {
     "status": "review_comments_ready",
-    "rationale": "The refreshed transport and manifest implementation still has concurrency-contract, framing, allocation-bound, admission-control, and path-validation failures that were reproduced and fixed on the reconciled fork branch.",
+    "rationale": "The current-head JSON-RPC/manifest review found 10 supported issues. The child branch was reconciled onto reviewed PR 49321 fork base c3d0cf44af242fc7c90a9b86bb2eccfd1dfd3eae and converged with zero unresolved threads.",
     "evidence": [
-      "The producer path calls Reader.TryRead while the consumer also reads a channel declared for a single reader.",
-      "The stderr parser discards standalone carriage returns without emitting or resetting the buffered line.",
-      "The header-delimited JSON-RPC handler lacks application-level header and payload bounds before allocation.",
-      "Inbound dispatch can execute concurrently while the defined ServerBusy error remains unused.",
-      "A missing path segment after an existence check is treated as a trusted non-reparse result.",
-      "All five prior Copilot threads were replied to and resolved; the final audit found no new published findings.",
-      "The reconciled x64 Debug ViewModels build passed, and the focused pre-reconciliation run passed 168 tests."
+      "The current upstream head was reviewed after reconciling onto the reviewed PR 49321 base.",
+      "Final schema-v2 payload passed GitHub freshness and diff-range validation.",
+      "Focused CmdPal unit-test build passed and focused VSTest passed 61/61.",
+      "Prior reconciled-head validation covered TS SDK typecheck, lint, test, build, package verification, and relevant CmdPal builds.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
     ],
-    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected notes as a request-changes review.",
-    "evaluated_at": "2026-08-28T19:05:00Z",
-    "source_updated_at": "2026-08-28T18:59:52Z"
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes comments.",
+    "evaluated_at": "2026-08-29T03:37:57.7125318Z",
+    "source_updated_at": "2026-08-29T01:51:04Z"
   },
-  "fork_pr": {
-    "number": 519,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/519"
-  },
-  "fork_branch": "pr-iterate/49323-v6",
   "workflow": {
     "phase": "review_ready",
-    "checkpoint_at": "2026-08-28T19:05:00Z",
-    "fork_head_sha": "c5ff9c150ddf58f31a9be670f8f95c94b4d8f79c",
+    "checkpoint_at": "2026-08-29T03:37:57.7125318Z",
+    "fork_head_sha": "1af38b9d2b2fa3d00836ea28fe1088c8cce3dfc8",
+    "reviewed_parent_fork_head": "c3d0cf44af242fc7c90a9b86bb2eccfd1dfd3eae",
     "unresolved_copilot_threads": 0,
     "build_result": "passed",
-    "unit_test_result": "168 focused tests passed before parent-base reconciliation"
+    "unit_test_result": "61 tests passed"
   }
 }
