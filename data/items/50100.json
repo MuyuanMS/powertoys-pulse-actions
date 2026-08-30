@@ -2,84 +2,127 @@
   "number": 50100,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
+  "stage": "review_drafted",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-27T14:48:30.8006944Z",
-  "evaluated_at": "2026-08-27T14:48:30.8006944Z",
-  "source_updated_at": "2026-08-24T20:29:51Z",
-  "head_sha": "0e9d50766a69b9e2e583296232771860e918c724",
+  "generated_at": "2026-08-30T05:40:00Z",
+  "evaluated_at": "2026-08-30T05:40:00Z",
+  "source_updated_at": "2026-08-30T00:41:48Z",
+  "head_sha": "fd9459c831dd9c34282767f1350a8dbdd4d34071",
   "title": "Shortcut Guide: add Ableton Live shortcut manifest",
   "url": "https://github.com/microsoft/PowerToys/pull/50100",
+  "summary": "The current-head Shortcut Guide manifest review has four findings covering package-less identifier usage, matching filename rename, multi-process WindowFilter support, and literal <0> key encoding. The fork review converged with zero unresolved Copilot threads.",
   "status": {
-    "glyph": "✅",
-    "label": "Review ready",
-    "detail": "The current upstream head matches the reviewed head. The fork review converged with zero new Copilot comments and zero unresolved Copilot threads, and the recorded build checks passed. No upstream action posted."
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "4 current-head review comments are ready for maintainer selection."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Approve current review",
-    "reason": "The current upstream head is unchanged and the completed fork review has no remaining findings or unresolved threads. Approve only after the normal maintainer freshness check; no upstream action has been posted."
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
   },
-  "proposed_comments": [],
-  "actions": [
+  "proposed_comments": [
     {
-      "id": "approve-review-50100",
-      "type": "approve",
-      "label": "Approve",
-      "primary": true,
-      "note": "The current-head review found no author-facing findings. This is a maintainer decision only; no upstream approval is submitted automatically."
+      "id": "package-less-identifier",
+      "kind": "inline",
+      "title": "Use the package-less manifest identifier",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The repository schema explicitly requires the plus prefix for applications without a WinGet package, and the package identifier is used for manifest lookup."
+      },
+      "body": "### Use the package-less manifest identifier\n\n**Severity:** `medium`\n\n`Ableton.Live` is not a WinGet package identifier. The manifest schema reserves a leading `+` for applications without a corresponding package, so the identifier and its filename must use that convention for lookup to remain consistent.\n\n```suggestion\nPackageName: +Ableton.Live\n```\n\n> Also rename this file to `+Ableton.Live.en-US.yml` after applying the identifier change.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Assets/ShortcutGuide/Manifests/Ableton.Live.en-US.yml",
+      "start_line": 1,
+      "line": 1,
+      "side": "RIGHT"
+    },
+    {
+      "id": "package-less-filename",
+      "kind": "companion",
+      "title": "Rename the manifest to match the package-less identifier",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The schema defines manifest filenames from the package identifier; a file rename cannot be represented by an inline GitHub suggestion."
+      },
+      "body": "### Rename the manifest to match the package-less identifier\n\n**Severity:** `medium`\n\nAfter changing `PackageName` to `+Ableton.Live`, rename `Ableton.Live.en-US.yml` to `+Ableton.Live.en-US.yml`. The filename is part of the manifest lookup convention, so leaving the old name would make the identifier and file name inconsistent.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "multi-process-window-filter",
+      "kind": "companion",
+      "title": "Support every executable in the WindowFilter",
+      "severity": "high",
+      "confidence": {
+        "score": 97,
+        "rationale": "The manifest uses a semicolon-separated list while the current matching implementation compares a single filter string, directly preventing activation."
+      },
+      "body": "### Support every executable in the WindowFilter\n\n**Severity:** `high`\n\nThe manifest lists multiple Ableton executables, but the current matcher treats the entire semicolon-separated value as one executable name. None of the listed processes can therefore activate this manifest. Split the filter into exact executable names for both foreground and background process matching, document the supported list syntax, and add regression coverage for matching and non-matching names.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "literal-zero-key",
+      "kind": "inline",
+      "title": "Encode the literal zero key",
+      "severity": "medium",
+      "confidence": {
+        "score": 98,
+        "rationale": "The repository schema explicitly specifies the angle-bracket notation for literal digit keys and identifies virtual-key code 0 as undefined."
+      },
+      "body": "### Encode the literal zero key\n\n**Severity:** `medium`\n\nA bare or quoted digit is interpreted as a virtual-key code rather than the literal keyboard digit; virtual-key code 0 is undefined. Use the manifest's angle-bracket notation so the shortcut reliably displays the `0` key.\n\n```suggestion\n              - \"<0>\"\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Assets/ShortcutGuide/Manifests/Ableton.Live.en-US.yml",
+      "start_line": 298,
+      "line": 298,
+      "side": "RIGHT"
     }
   ],
+  "actions": [
+    {
+      "id": "request-changes-50100",
+      "type": "request_changes",
+      "label": "Request changes with 4 review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "pr": 50100,
+        "pullRequest": 50100,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "fd9459c831dd9c34282767f1350a8dbdd4d34071",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the contribution. Please address the correctness items below."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The review found current-head manifest and schema correctness issues in the Ableton Live shortcut contribution that should be addressed before landing.",
+    "evidence": [
+      "The artifact is pinned to the live upstream head.",
+      "Phase 0 proceeded: CLA/intake passed, template was complete, linked issue present, and scope is atomic.",
+      "The fork review converged with zero unresolved Copilot threads.",
+      "The result includes two exact inline suggestions and two companion notes for changes outside the upstream diff.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes comments.",
+    "evaluated_at": "2026-08-30T05:40:00Z",
+    "source_updated_at": "2026-08-30T00:41:48Z"
+  },
   "workflow": {
     "phase": "review_ready",
-    "checkpoint_at": "2026-08-27T14:48:30.8006944Z",
-    "fresh_review_basis": "Live upstream head and activity were revalidated. The existing fork review is current, converged, and has no unresolved Copilot threads; recorded build and context checks passed."
-  },
-  "freshness": {
-    "queued_at": "08/27/2026 09:28:33",
-    "checkpoint_at": "2026-08-27T14:48:30.8006944Z"
-  },
-  "fork_pr": {
-    "number": 479,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/479"
-  },
-  "fork_branch": "pr-iterate/50100-v2",
-  "confidence": "High",
-  "review": {
-    "upstream_head": "0e9d50766a69b9e2e583296232771860e918c724",
-    "fork_head": "f6731885a3b0f35d87ebd80dfc7d21125dcf6d65",
-    "fork_pr": 479,
-    "fork_branch": "pr-iterate/50100-v2",
-    "context": {
-      "author_type": "FIRST_TIME_CONTRIBUTOR",
-      "disposition": "proceed",
-      "gates": {
-        "P1_CLA": "clear",
-        "P2_demo": "not_needed",
-        "P3_self_validation": "not_triggered",
-        "P4_CI": "clear_for_available_checks",
-        "P5_provenance": "clear",
-        "P6_duplicate": "clear",
-        "P7_scope": "clear",
-        "P8_draft": "clear",
-        "P9_template": "clear"
-      }
-    },
-    "code_review": {
-      "copilot_rounds": 4,
-      "copilot_converged": true,
-      "unresolved_copilot_threads": 0,
-      "fallback_local_review": false,
-      "build": "passed",
-      "test_project_build": "passed",
-      "public_findings": 0
-    },
-    "test_instructions": [
-      "Launch the built PowerToys executable.",
-      "Open Ableton Live 9, 10, 11, or 12, then invoke Shortcut Guide.",
-      "Verify the Ableton Live manifest appears with the expected shortcut sections.",
-      "Exercise both a modern versioned executable name such as Ableton Live 12 Suite.exe and the legacy Live.exe name."
-    ]
+    "build_result": "Not separately reported in worker summary",
+    "unresolved_copilot_threads": 0,
+    "unit_test_result": "Not separately reported in worker summary",
+    "checkpoint_at": "2026-08-30T05:40:00Z"
   }
 }

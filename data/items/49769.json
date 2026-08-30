@@ -1,0 +1,100 @@
+{
+  "number": 49769,
+  "kind": "pr",
+  "track": "review",
+  "stage": "review_drafted",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-30T05:27:00Z",
+  "evaluated_at": "2026-08-30T05:27:00Z",
+  "source_updated_at": "2026-08-29T15:50:22Z",
+  "head_sha": "5e6bf9e4663610c033f30218b16d807a2f9fde01",
+  "title": "CmdPal: Hide redundant More button for a single secondary command",
+  "url": null,
+  "summary": "The current-head CmdPal More-button review has two findings: one apply-ready More-button visibility suggestion and one high-severity companion note covering context-menu anchoring and focus preservation. The fork review converged after five Copilot iterations with zero unresolved threads; CmdPal builds passed and the targeted view-model suite passed 287/287.",
+  "status": {
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "2 current-head review comments are ready for maintainer selection."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "count-commands-after-secondary",
+      "kind": "inline",
+      "title": "Determine More visibility from commands after the secondary action",
+      "severity": "medium",
+      "confidence": {
+        "score": 97,
+        "rationale": "The command model deliberately preserves separator entries, and content pages can retain the primary command ahead of the secondary command. Counting raw entries or assuming the first command is secondary therefore displays More when no command remains after the secondary action."
+      },
+      "body": "### Determine More visibility from commands after the secondary action\n\n**Severity:** `medium`\n\n`MoreCommands` retains separator entries and content pages can retain the primary command before the secondary command. Counting raw entries therefore leaves the More button visible when the secondary action is the last actionable item. Locate the actual secondary command and show More only when another command follows it.\n\n```suggestion\n    // MoreCommands can include separators and, for content pages, the primary command.\n    // Only command items after the secondary command belong in the More menu.\n    internal static bool ShouldShowMoreCommandsButtonFor(ICommandBarContext context) =>\n        context.MoreCommands\n               .SkipWhile(item => !ReferenceEquals(item, context.SecondaryCommand))\n               .Skip(1)\n               .Any(item => item is CommandContextItemViewModel);\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandBarViewModel.cs",
+      "start_line": 133,
+      "line": 135,
+      "side": "RIGHT"
+    },
+    {
+      "id": "preserve-independent-context-menu-interactions",
+      "kind": "companion",
+      "title": "Preserve keyboard and context-menu behavior when More is hidden",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "The null-element open message is used by Ctrl+K and nested keybindings as well as the More button. After More is collapsed, opening must use a context-menu capability check and a visible anchor, and focus restoration must not target the collapsed button."
+      },
+      "body": "### Preserve keyboard and context-menu behavior when More is hidden\n\n**Severity:** `high`\n\nThe null-element menu path is also used by Ctrl+K and nested keybindings, so it cannot be gated by More-button visibility. When More is hidden, opening the flyout must use the selected item's context-menu capability and anchor it to the visible secondary or primary command button. Focus restoration after closing the flyout also needs the same visible-button fallback; otherwise Escape can leave keyboard focus unset.\n\nGeneral note with no inline suggestion: these coordinated changes span the existing modified hunk and the focus-restoration method outside it, so they cannot be safely applied as an independent inline patch.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49769",
+      "type": "request_changes",
+      "label": "Request changes with 2 review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "pr": 49769,
+        "pullRequest": 49769,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "5e6bf9e4663610c033f30218b16d807a2f9fde01",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": ""
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The review found current-head CmdPal command-surface correctness issues that should be addressed before landing.",
+    "evidence": [
+      "The artifact is pinned to the live upstream head.",
+      "Phase 0 proceeded for a collaborator-authored PR.",
+      "Copilot convergence completed after five iterations with zero unresolved threads.",
+      "CmdPal builds completed successfully.",
+      "Targeted view-model suite passed 287/287.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes comments.",
+    "evaluated_at": "2026-08-30T05:27:00Z",
+    "source_updated_at": "2026-08-29T15:50:22Z"
+  },
+  "workflow": {
+    "phase": "review_ready",
+    "build_result": "CmdPal builds passed",
+    "unresolved_copilot_threads": 0,
+    "copilot_rounds": 5,
+    "unit_test_result": "Targeted view-model suite passed 287/287",
+    "checkpoint_at": "2026-08-30T05:27:00Z"
+  }
+}
