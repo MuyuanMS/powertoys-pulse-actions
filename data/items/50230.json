@@ -1,0 +1,139 @@
+{
+  "number": 50230,
+  "kind": "pr",
+  "track": "review",
+  "stage": "review_drafted",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-30T05:08:00Z",
+  "evaluated_at": "2026-08-30T05:08:00Z",
+  "source_updated_at": "2026-08-30T00:27:14Z",
+  "head_sha": "3163ff7db66c92944dabcf1533c2c4f6de14db9a",
+  "title": "[UITests][MouseUtilities] Migrate to .Next and add test for Cursor Wrap",
+  "url": "https://github.com/microsoft/PowerToys/pull/50230",
+  "summary": "The current-head MouseUtilities UI-test migration review has 4 inline findings: two baseline-stability fixes and two documentation/spelling fixes. Targeted builds passed, shared automation unit tests passed 19/19, and the UI-test executable discovered all 40 Mouse Utilities tests; the focused Cursor Wrap scenario was environment-blocked by non-interactive SendInput during cleanup, so no product-behavior pass is claimed.",
+  "status": {
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "4 current-head inline review comments are ready for maintainer selection."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "require-stable-shared-pixel-baseline",
+      "kind": "inline",
+      "title": "Fail when a shared visual baseline never stabilizes",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The helper returns LastObservation unconditionally after a finite stability wait, and numerous visual tests use its return value as their baseline."
+      },
+      "body": "### Fail when a shared visual baseline never stabilizes\n\n**Severity:** `medium`\n\nWhen the desktop pixel keeps changing for the entire wait, this helper currently returns the final sample as though it were a baseline. Visual tests then calculate valid-looking expectations from an unstable desktop and can report misleading failures. Assert the wait result before returning its observation so the test identifies the environmental precondition directly.\n\n```suggestion\n        var result = WaitHelper.WaitForStable(\n            () => WindowHelper.GetPixelColor(x, y),\n            color =>\n            {\n                var matchesPrevious = previous.HasValue && color.ToArgb() == previous.Value.ToArgb();\n                previous = color;\n                return matchesPrevious;\n            },\n            2_000,\n            requiredConsecutiveMatches: 4,\n            pollIntervalMS: 100);\n        Assert.IsTrue(\n            result.Succeeded,\n            $\"Desktop pixel at ({x},{y}) did not stabilize before capturing the visual baseline. Last observation: {result.LastObservation}.\");\n        return result.LastObservation;\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseUtilsTestHelper.cs",
+      "start_line": 186,
+      "line": 197,
+      "side": "RIGHT"
+    },
+    {
+      "id": "require-stable-crosshairs-opacity-baseline",
+      "kind": "inline",
+      "title": "Validate the Crosshairs opacity baseline",
+      "severity": "medium",
+      "confidence": {
+        "score": 95,
+        "rationale": "The opacity test uses the final sample from WaitForStable without inspecting Succeeded before blending it into its expected value."
+      },
+      "body": "### Validate the Crosshairs opacity baseline\n\n**Severity:** `medium`\n\nThe opacity assertion derives its expected blend from `LastObservation` even if the desktop pixel never stabilized. On an animated or changing desktop that produces an invalid expected color rather than explaining that the baseline was unavailable. Keep the wait result, assert success, and only then use the captured pixel.\n\n```suggestion\n        Color? previous = null;\n        var baselineResult = WaitHelper.WaitForStable(\n            () => WindowHelper.GetPixelColor(probeX, centerY),\n            color =>\n            {\n                var matchesPrevious = previous.HasValue && color.ToArgb() == previous.Value.ToArgb();\n                previous = color;\n                return matchesPrevious;\n            },\n            2_000,\n            requiredConsecutiveMatches: 4,\n            pollIntervalMS: 100);\n        Assert.IsTrue(\n            baselineResult.Succeeded,\n            $\"Desktop pixel at ({probeX},{centerY}) did not stabilize before capturing the Crosshairs opacity baseline. Last observation: {baselineResult.LastObservation}.\");\n        var baseline = baselineResult.LastObservation;\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/MouseUtils/MouseUtils.UITests.Next/MousePointerCrosshairsTests.cs",
+      "start_line": 214,
+      "line": 225,
+      "side": "RIGHT"
+    },
+    {
+      "id": "avoid-unrecognized-retryable-word",
+      "kind": "inline",
+      "title": "Avoid an unrecognized spelling in the CI guide",
+      "severity": "low",
+      "confidence": {
+        "score": 99,
+        "rationale": "The repository spell checker flags the newly added word retryable on this exact line."
+      },
+      "body": "### Avoid an unrecognized spelling in the CI guide\n\n**Severity:** `low`\n\nThe new wording introduces `retryable`, which the repository spell checker flags as unrecognized. Rephrase it with existing words so the documentation remains clear and the check can pass without expanding the allow list.\n\n```suggestion\nRead the waiter's JSON-lines `Event`: `progress` is a successful nonterminal read, `query-error` is a\nread failure that can be retried, `terminal` means every build completed, and `timeout` ends the bounded wait.\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": ".github/skills/ui-tests-pipeline-ci/references/agentic-loop.md",
+      "start_line": 268,
+      "line": 269,
+      "side": "RIGHT"
+    },
+    {
+      "id": "punctuate-keyboard-helper-summary",
+      "kind": "inline",
+      "title": "Correct the XML documentation punctuation",
+      "severity": "low",
+      "confidence": {
+        "score": 99,
+        "rationale": "The repository spelling and grammar check reports the missing comma in this newly changed documentation sentence."
+      },
+      "body": "### Correct the XML documentation punctuation\n\n**Severity:** `low`\n\nThe documentation sentence needs a comma after the introductory adverb. Correcting it avoids the repository grammar-check finding while preserving the intended input-path description.\n\n```suggestion\n    /// <summary>\n    /// Send a chord of keys. LWIN and side-specific Ctrl keys are held via <c>keybd_event</c> while\n    /// the remaining keys are sent via <see cref=\"FormsSendKeys.SendWait\"/>. Otherwise, everything\n    /// goes through SendKeys.SendWait (the modifier-aware Windows path).\n    /// </summary>\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/common/UITestAutomation.Next/KeyboardHelper.cs",
+      "start_line": 109,
+      "line": 112,
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50230",
+      "type": "request_changes",
+      "label": "Request changes with 4 review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "pr": 50230,
+        "pullRequest": 50230,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "3163ff7db66c92944dabcf1533c2c4f6de14db9a",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the thorough Mouse Utilities UI-test migration. Please address the reliability issues below so visual assertions fail clearly instead of deriving expectations from an unstable desktop."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The review found current-head reliability and documentation issues in the UI-test migration that should be addressed before landing.",
+    "evidence": [
+      "The artifact is pinned to the live upstream head.",
+      "Targeted builds passed.",
+      "Shared automation unit tests passed 19/19.",
+      "Mouse Utilities UI-test executable discovered all 40 tests.",
+      "Focused Cursor Wrap UI execution was blocked by non-interactive SendInput during cleanup; no product-behavior pass is claimed.",
+      "Final unavailable Copilot requests were audited after prior completed iterations with no newer findings and zero unresolved threads.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes comments.",
+    "evaluated_at": "2026-08-30T05:08:00Z",
+    "source_updated_at": "2026-08-30T00:27:14Z"
+  },
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-30T05:08:00Z",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "19/19 shared automation unit tests passed; 40 Mouse Utilities UI tests discovered",
+    "ui_test_result": "environment_blocked_noninteractive_sendinput"
+  }
+}
