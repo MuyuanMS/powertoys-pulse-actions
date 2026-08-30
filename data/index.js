@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-30T23:41:51.6219098+08:00",
+  "generated_at": "2026-08-31T01:08:30.3210808+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 149,
+    "open_prs": 150,
     "open_issues": 12558,
     "community": 11704,
     "artifacts": 3420
   },
   "impact": {
-    "as_of": "2026-08-30T23:41:51.6219098+08:00",
+    "as_of": "2026-08-31T01:08:30.3210808+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -3520,6 +3520,37 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-50252",
+      "kind": "pr",
+      "number": 50252,
+      "url": "https://github.com/microsoft/PowerToys/pull/50252",
+      "title": "[File Explorer Add-Ons] Combine all providers into one provider",
+      "author": "noraa-junker",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-File Explorer",
+        "Ready for review"
+      ],
+      "created_at": "2026-08-30T16:03:37Z",
+      "updated_at": "2026-08-30T16:59:52Z",
+      "comments": 3,
+      "priority": null
+    },
     {
       "id": "pr-50251",
       "kind": "pr",
