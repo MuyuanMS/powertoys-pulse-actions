@@ -8,46 +8,46 @@
   "title": "Add File Explorer thumbnail support for 3MF files",
   "url": "https://github.com/microsoft/PowerToys/pull/49350",
   "validation": {
-    "completed_at": "2026-08-28T05:23:00Z",
+    "completed_at": "2026-08-30T19:31:46Z",
     "configuration": "Debug x64",
     "results": [
       "GPOWrapper, PreviewPane, ThreeMF native and managed provider, runner/settings, fuzz-test, and unit-test projects built successfully.",
-      "ThreeMF focused unit tests passed 21/21.",
-      "The relationship-free Metadata thumbnail fallback regression test passed 1/1.",
+      "ThreeMF focused regression tests passed 3/3.",
+      "The full ThreeMF unit-test suite passed 23/23.",
       "Fork Copilot thread audit passed: 0 unresolved Copilot threads."
     ]
   },
   "workflow": {
-    "fork_head_sha": "f968b0bcffad87411c8500840ffd18c409e81e00",
-    "latest_copilot_review_commit": "b4247d3dd6a756adc3c144b3aa00d024cfa616e6",
-    "latest_copilot_published_inline_comments": 1,
-    "addressed_copilot_threads": 24,
+    "fork_head_sha": "c4498e79065faa41b8c8053ab7739105421a3236",
+    "latest_copilot_review_commit": "c4498e79065faa41b8c8053ab7739105421a3236",
+    "latest_copilot_published_inline_comments": 0,
+    "addressed_copilot_threads": 27,
     "unresolved_copilot_threads": 0,
     "unresolved_other_threads": 1,
-    "copilot_requested_at": "2026-08-28T05:22:53Z",
+    "copilot_requested_at": "2026-08-30T19:27:53Z",
     "copilot_requested_reviewers": [],
-    "final_copilot_review_submitted_at": "2026-08-28T05:30:19Z",
-    "final_copilot_review_commit": "f968b0bcffad87411c8500840ffd18c409e81e00",
+    "final_copilot_review_submitted_at": "2026-08-30T19:32:45Z",
+    "final_copilot_review_commit": "c4498e79065faa41b8c8053ab7739105421a3236",
     "final_copilot_new_comment_count": 0,
     "phase": "review_drafted",
-    "checkpoint_at": "2026-08-28T09:42:00Z"
+    "checkpoint_at": "2026-08-30T19:35:27Z"
   },
   "freshness": {
     "queued_at": "08/27/2026 10:51:07",
-    "checkpoint_at": "2026-08-28T05:23:00Z"
+    "checkpoint_at": "2026-08-30T19:35:27Z"
   },
   "fork_pr": {
     "number": 332,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/332",
-    "head_sha": "f968b0bcffad87411c8500840ffd18c409e81e00",
-    "source_updated_at": "2026-08-28T05:22:53Z"
+    "head_sha": "c4498e79065faa41b8c8053ab7739105421a3236",
+    "source_updated_at": "2026-08-30T19:32:45Z"
   },
   "fork_branch": "pr-iterate/49350-v4",
   "stage": "review_drafted",
   "owes": "maintainer",
-  "generated_at": "2026-08-28T09:42:00Z",
-  "evaluated_at": "2026-08-28T09:42:00Z",
-  "summary": "The fresh final-head Copilot review added zero new findings. All supported findings remain represented as 11 current-head review comments, with zero unresolved Copilot threads and passing recorded validation.",
+  "generated_at": "2026-08-30T19:35:27Z",
+  "evaluated_at": "2026-08-30T19:35:27Z",
+  "summary": "Three fresh Copilot rounds found and resolved three additional fork-side issues. The final current-head review added zero findings; all 11 supported upstream findings remain drafted, zero Copilot threads are unresolved, and targeted validation passes.",
   "status": {
     "glyph": "⚠️",
     "label": "Review comments drafted",
@@ -68,7 +68,7 @@
         "score": 97,
         "rationale": "The current implementation applies filename heuristics before package relationships, while the package relationship is the authoritative thumbnail declaration."
       },
-      "body": "### Honor the package thumbnail relationship first\n**Severity:** `high`\n\nResolve the package-declared thumbnail before applying filename heuristics. Otherwise a package that contains both a relationship target and an unrelated `thumbnail*.png` can render the wrong image.\n\n```suggestion\n        private static ZipArchiveEntry FindThumbnailEntry(ZipArchive archive)\n        {\n            foreach (var target in GetThumbnailTargetsFromRelationships(archive))\n            {\n                var entry = archive.GetEntry(target) ??\n                            archive.Entries.FirstOrDefault(e =>\n                                string.Equals(e.FullName.Replace('\\\\', '/'), target.TrimStart('/'), StringComparison.OrdinalIgnoreCase));\n\n                if (entry != null)\n                {\n                    return entry;\n                }\n            }\n\n            ZipArchiveEntry namedThumbnail = null;\n            ZipArchiveEntry metadataFallback = null;\n\n            foreach (var entry in archive.Entries)\n            {\n                var name = entry.FullName.Replace('\\\\', '/');\n                var fileName = name.Contains('/') ? name[(name.LastIndexOf('/') + 1)..] : name;\n\n                if (ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) &&\n                    fileName.Contains(\"thumbnail\", StringComparison.OrdinalIgnoreCase))\n                {\n                    namedThumbnail ??= entry;\n                    continue;\n                }\n\n                if (metadataFallback == null &&\n                    name.Contains(\"Metadata/\", StringComparison.OrdinalIgnoreCase) &&\n                    ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))\n                {\n                    metadataFallback = entry;\n                }\n            }\n\n            return namedThumbnail ?? metadataFallback;\n        }\n```\n",
+      "body": "### Honor the package thumbnail relationship first\n**Severity:** `high`\n\nResolve the package-declared thumbnail before applying filename heuristics. Otherwise a package that contains both a relationship target and an unrelated `thumbnail*.png` can render the wrong image.\n\n```suggestion\n        private static ZipArchiveEntry FindThumbnailEntry(ZipArchive archive)\n        {\n            foreach (var target in GetThumbnailTargetsFromRelationships(archive))\n            {\n                var entry = archive.GetEntry(target) ??\n                            archive.Entries.FirstOrDefault(e =>\n                                string.Equals(e.FullName.Replace('\\\\', '/'), target.TrimStart('/'), StringComparison.OrdinalIgnoreCase));\n\n                if (entry != null)\n                {\n                    return entry;\n                }\n            }\n\n            ZipArchiveEntry namedThumbnail = null;\n            ZipArchiveEntry metadataFallback = null;\n\n            foreach (var entry in archive.Entries)\n            {\n                var name = entry.FullName.Replace('\\\\', '/');\n                var fileName = name.Contains('/') ? name[(name.LastIndexOf('/') + 1)..] : name;\n\n                if (ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) &&\n                    fileName.Contains(\"thumbnail\", StringComparison.OrdinalIgnoreCase))\n                {\n                    namedThumbnail ??= entry;\n                    continue;\n                }\n\n                if (metadataFallback == null &&\n                    name.StartsWith(\"Metadata/\", StringComparison.OrdinalIgnoreCase) &&\n                    ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))\n                {\n                    metadataFallback = entry;\n                }\n            }\n\n            return namedThumbnail ?? metadataFallback;\n        }\n```\n",
       "in_diff": true,
       "disposition": "proposed",
       "path": "src/modules/previewpane/ThreeMfThumbnailProvider/ThreeMfModelLoader.cs",
