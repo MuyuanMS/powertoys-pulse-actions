@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 3,
+  "number": 50252,
+  "kind": "pr",
+  "track": "review",
+  "stage": "review_drafted",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-30T17:30:00Z",
+  "evaluated_at": "2026-08-30T17:30:00Z",
+  "source_updated_at": "2026-08-30T17:05:04Z",
+  "url": "https://github.com/microsoft/PowerToys/pull/50252",
+  "title": "[File Explorer Add-Ons] Combine all providers into one provider",
+  "author": "noraa-junker",
+  "authorAssociation": "COLLABORATOR",
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "High",
+  "head_sha": "dce536d0d3cf02f0002fd6faddabc2674011bf15",
+  "summary": "The current-head review requests restoring the PDF, QOI, and SVG provider-specific resize events in the consolidated File Explorer preview exporter.",
+  "status": {
+    "glyph": "⚠️",
+    "label": "Blocking review drafted",
+    "detail": "One current-head inline suggestion is ready for maintainer selection."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "phase0": {
+    "author": "noraa-junker",
+    "author_association": "COLLABORATOR",
+    "bar": "collaborator-authored; process nags skipped",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "The PR is a focused File Explorer Add-Ons consolidation, the CLA check passed, and no author-owed review request exists.",
+    "evidence": [
+      "The live upstream head is dce536d0d3cf02f0002fd6faddabc2674011bf15.",
+      "The license/CLA check completed successfully.",
+      "No upstream review or inline comments currently require author action."
+    ]
+  },
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "The consolidated exporter maps PDF, QOI, and SVG preview handlers to the Dev Files resize event even though each handler waits on its own named event. The fork-side review converged after all three Copilot findings were fixed and resolved, targeted Debug builds passed, and zero Copilot threads remain.",
+    "recommended_action": "Review the drafted inline suggestion and post it only after explicit approval and a final freshness check.",
+    "evaluated_at": "2026-08-30T17:30:00Z",
+    "source_updated_at": "2026-08-30T17:05:04Z",
+    "evidence": [
+      "PDF, QOI, and SVG each define and wait on provider-specific preview resize events.",
+      "The current dispatch supplies DEV_FILES_PREVIEW_RESIZE_EVENT to all three providers.",
+      "PowerToys essentials and the FileExplorerDllExporter x64 Debug build passed.",
+      "The final fork review audit found zero unresolved Copilot threads.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ]
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "builds": [
+      "PowerToys essentials",
+      "FileExplorerDllExporter"
+    ],
+    "tests": [
+      {
+        "suite": "Fork Copilot thread audit",
+        "result": "passed",
+        "unresolved": 0
+      }
+    ],
+    "manual_test_instructions": [
+      "Enable PDF, QOI, and SVG File Explorer preview handlers.",
+      "Open one file of each type in Explorer's preview pane and resize the pane.",
+      "Verify each preview follows the resized pane rather than staying at its initial bounds."
+    ],
+    "build_environment_note": "Malformed inherited GIT_CONFIG_* variables were removed only for the build process before the successful retry."
+  },
+  "workflow": {
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-30T17:30:00Z",
+    "unresolved_copilot_threads": 0
+  },
+  "fork": {
+    "owner": "MuyuanMS",
+    "repo": "MuyuanMS/PowerToys",
+    "pr": 549,
+    "branch": "pr-iterate/50252-v2",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/549"
+  },
+  "proposed_comments": [
+    {
+      "id": "preserve-preview-resize-events",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Preserve each preview handler's resize notifications",
+      "path": "src/modules/previewpane/FileExplorerDllExporter/dllmain.cpp",
+      "start_line": 111,
+      "line": 125,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Preserve each preview handler's resize notifications\n\n**Severity:** `high`\n\nPDF, QOI, and SVG previews each wait on a provider-specific named event, but the consolidated dispatch supplies the Dev Files event for all three. As a result, Explorer pane resizing does not notify these handlers and their previews can remain at the initial size. Use the matching event constant for each provider.\n\n```suggestion\n    else if (IsEqualCLSID(CLSID_PdfPreviewHandler, rclsid))\n    {\n        logFilePath.append(LogSettings::pdfPrevLogPath);\n        pClassFactory = new ClassFactory(LogSettings::pdfPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::PDF_PREVIEW_RESIZE_EVENT, L\"PowerToys.PdfPreviewHandler.exe\");\n    }\n    else if (IsEqualCLSID(CLSID_QoiPreviewHandler, rclsid))\n    {\n        logFilePath.append(LogSettings::qoiPrevLogPath);\n        pClassFactory = new ClassFactory(LogSettings::qoiPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::QOI_PREVIEW_RESIZE_EVENT, L\"PowerToys.QoiPreviewHandler.exe\");\n    }\n    else if (IsEqualCLSID(CLSID_SvgPreviewHandler, rclsid))\n    {\n        logFilePath.append(LogSettings::svgPrevLogPath);\n        pClassFactory = new ClassFactory(LogSettings::svgPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::SVG_PREVIEW_RESIZE_EVENT, L\"PowerToys.SvgPreviewHandler.exe\");\n    }\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The three target executables use distinct named resize events, while the current consolidated dispatch maps all three to the Dev Files event."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50252",
+      "type": "request_changes",
+      "label": "Request changes with 1 inline suggestion",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Draft only. Explicit approval and a final freshness check are required before posting.",
+      "review": {
+        "pr": 50252,
+        "pullRequest": 50252,
+        "repository": "microsoft/PowerToys",
+        "event": "REQUEST_CHANGES",
+        "head_sha": "dce536d0d3cf02f0002fd6faddabc2674011bf15",
+        "body_prefix": "Please preserve the provider-specific resize events for the PDF, QOI, and SVG preview handlers in the consolidated exporter."
+      }
+    }
+  ]
+}
