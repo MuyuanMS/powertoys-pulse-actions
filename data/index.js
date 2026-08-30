@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-30T23:04:42.3068151+08:00",
+  "generated_at": "2026-08-30T23:41:51.6219098+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 149,
     "open_issues": 12558,
     "community": 11704,
-    "artifacts": 3419
+    "artifacts": 3420
   },
   "impact": {
-    "as_of": "2026-08-30T23:04:42.3068151+08:00",
+    "as_of": "2026-08-30T23:41:51.6219098+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -144,6 +144,7 @@ window.BOARD_INDEX = {
     49966,
     49963,
     49926,
+    49915,
     49891,
     49863,
     49862,
@@ -3542,10 +3543,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Product-Mouse Without Borders",
+        "Product-CropAndLock",
         "Product-General"
       ],
       "created_at": "2026-08-30T14:29:38Z",
-      "updated_at": "2026-08-30T14:30:20Z",
+      "updated_at": "2026-08-30T15:28:07Z",
       "comments": 1,
       "priority": null
     },
@@ -5703,16 +5706,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_drafted",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with 1 inline suggestion"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -5720,7 +5726,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-14T23:35:33Z",
       "updated_at": "2026-08-30T14:47:02Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 547,
+        "fork_title": "[PR 49915] CmdPal: Shelf (1/n) - Add quick access shelf prototype",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/49915-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/547"
+      }
     },
     {
       "id": "pr-49891",
@@ -253625,12 +253639,12 @@ window.BOARD_INDEX = {
       "comments": 2,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 156,
-        "fork_title": "PowerRename: fix hang on Apply with non-ASCII (e.g. Simplified Chinese) filenames",
+        "kind": "issue",
+        "fork_number": 155,
+        "fork_title": "[Issue 42653 v2 — with logs] PowerRename hangs (not responding) on Apply with Simplified-Chinese filenames",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-42653-fix-powerrename-hang",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/156"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/155"
       }
     },
     {
