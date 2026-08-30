@@ -1,272 +1,60 @@
 {
+  "schemaVersion": 3,
   "number": 50075,
   "kind": "issue",
-  "track": "triage",
-  "stage": "awaiting_design_approval",
+  "track": "fix",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T09:19:00Z",
-  "evaluated_at": "2026-08-28T09:19:00Z",
+  "generated_at": "2026-08-30T14:00:33.80471Z",
+  "evaluated_at": "2026-08-30T14:00:33.80471Z",
   "source_updated_at": "2026-08-24T10:05:20Z",
-  "title": "Preferred language of Text Extractor not remembered",
   "url": "https://github.com/microsoft/PowerToys/issues/50075",
-  "summary": "Text Extractor persists a localized language name but restores it using a different localized property. When that lookup fails, page initialization selects and immediately saves a fallback. Persisting the stable language tag, accepting legacy names on read, and suppressing writes while rebuilding the list fixes both restart persistence and dropdown selection.",
+  "title": "Preferred language of Text Extractor not remembered",
+  "author": "Dobypeti",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Text Extractor"
+  ],
+  "comments": 5,
+  "confidence": "High",
   "status": {
-    "glyph": "🔧",
-    "label": "Detailed design ready",
-    "detail": "Approve a focused fix that stores OCR language tags, reads legacy native/display names, and prevents page initialization from overwriting the saved preference."
+    "glyph": "🔁",
+    "label": "Likely duplicate",
+    "detail": "The daily duplicate digest flags this issue as a likely duplicate of #29331."
+  },
+  "next_action": {
+    "glyph": "🔁",
+    "label": "Post duplicate triage comment",
+    "reason": "Review and, if correct, post the duplicate-close comment pointing to #29331."
   },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The deterministic reproduction matches a concrete identity and lifecycle mismatch in the current Settings UI. The design preserves existing settings, keeps overlay-only language changes session-scoped, and is distinct from #29331's automatic input-language feature.",
+    "status": "duplicate_or_handled",
+    "rationale": "The daily duplicate digest flags this issue as a likely duplicate of #29331.",
     "evidence": [
-      "PowerOcrViewModel.LanguageIndex saves Language.NativeName, while UpdateLanguages compares the saved value with Language.DisplayName.",
-      "UpdateLanguages assigns LanguageIndex while rebuilding choices, and that setter calls NotifySettingsChanged, allowing a failed lookup to persist its fallback.",
-      "PowerOcrPage refreshes the list on Loaded and DropDownOpened, so merely reopening the page can reproduce the overwrite.",
-      "OCROverlay already compares the preference with NativeName, demonstrating that the two consumers do not use one stable identity.",
-      "Issue #29331 requests an automatic current-input-language mode; it does not address persistence of the existing explicit preference."
+      "Labels: Issue-Bug, Needs-Triage, Product-Text Extractor",
+      "Candidate sources: created_week, updated_week",
+      "Duplicate digest mapped this issue to #29331."
     ],
-    "recommended_action": "Approve the language-tag persistence and initialization-suppression design, with backward-compatible reads for existing NativeName and DisplayName values.",
-    "evaluated_at": "2026-08-28T09:19:00Z",
+    "recommended_action": "Review and, if correct, post the duplicate-close comment pointing to #29331.",
+    "evaluated_at": "2026-08-30T14:00:33.80471Z",
     "source_updated_at": "2026-08-24T10:05:20Z"
   },
   "actions": [
     {
-      "id": "approve-design-50075",
-      "type": "approve_design",
-      "label": "Approve design and start fork implementation",
+      "id": "post-duplicate-50075",
+      "type": "post_comment",
+      "label": "Post duplicate triage comment",
       "primary": true,
       "confirm": true,
-      "requiresApproval": true,
-      "note": "Review the detailed design, compatibility behavior, and validation plan before approving implementation.",
-      "issue": {
+      "comment": {
+        "target": "issue",
         "number": 50075,
-        "repository": "microsoft/PowerToys"
-      }
+        "body": "This looks like it is already tracked by #29331. Could you continue discussion there so we keep the investigation in one place? If this issue covers a distinct scenario, please reply with the specific difference and fresh repro details."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
-  ],
-  "design": {
-    "root_cause": "The Settings UI writes PreferredLanguage using Windows.Globalization.Language.NativeName but later resolves that value using Language.DisplayName. These presentation strings differ for many UI cultures, so the saved language is not found. UpdateLanguages then chooses the current UI language or first OCR language and assigns LanguageIndex; the setter treats this programmatic initialization as a user change and sends the fallback through settings IPC, overwriting the valid preference. The overlay has a separate NativeName comparison, so restoration also lacks one stable cross-process language identity.",
-    "evidence": [
-      {
-        "path": "src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs",
-        "symbols": [
-          "PowerOcrViewModel.LanguageIndex",
-          "PowerOcrViewModel.UpdateLanguages",
-          "PowerOcrViewModel.NotifySettingsChanged"
-        ],
-        "finding": "The setter stores NativeName and sends settings IPC, while list restoration compares PreferredLanguage to DisplayName and assigns through the same setter during initialization."
-      },
-      {
-        "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/PowerOcrPage.xaml.cs",
-        "symbols": [
-          "TextExtractor_ComboBox_Loaded",
-          "TextExtractor_ComboBox_DropDownOpened"
-        ],
-        "finding": "Both handlers call UpdateLanguages, making page load and dropdown opening potential settings writes."
-      },
-      {
-        "path": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs",
-        "symbols": [
-          "OCROverlay.PopulateLanguageMenu",
-          "OCROverlay.LanguageMenuItem_Click"
-        ],
-        "finding": "The overlay restores by NativeName and has a separate synchronization defect where a Language object is assigned to a ComboBox whose items are ComboBoxItem objects."
-      },
-      {
-        "path": "src/settings-ui/Settings.UI.Library/PowerOcrProperties.cs",
-        "symbols": [
-          "PowerOcrProperties.PreferredLanguage"
-        ],
-        "finding": "The existing string property can store a stable language tag without renaming the JSON key or requiring a schema migration."
-      },
-      {
-        "path": "src/modules/PowerOCR/PowerOCR/Settings/UserSettings.cs",
-        "symbols": [
-          "UserSettings.PreferredLanguage",
-          "UserSettings.LoadSettingsFromJson"
-        ],
-        "finding": "The PowerOCR process watches settings.json and consumes the same preference string, so both writers and readers must agree on identity."
-      },
-      {
-        "path": "history",
-        "symbols": [
-          "microsoft/PowerToys#22901",
-          "microsoft/PowerToys#23095",
-          "microsoft/PowerToys#36356"
-        ],
-        "finding": "PreferredLanguage was introduced as a string and initialized to empty; later UI work switched visible and saved values toward NativeName but left the DisplayName restoration comparison."
-      }
-    ],
-    "affected_files": [
-      {
-        "path": "src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs",
-        "purpose": "Use a stable language identity and separate list initialization from explicit user changes.",
-        "symbols": [
-          "PowerOcrViewModel.LanguageIndex",
-          "PowerOcrViewModel.UpdateLanguages",
-          "PowerOcrViewModel.NotifySettingsChanged"
-        ]
-      },
-      {
-        "path": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs",
-        "purpose": "Resolve tag and legacy-name values consistently and keep menu/ComboBox selection synchronized.",
-        "symbols": [
-          "OCROverlay.PopulateLanguageMenu",
-          "OCROverlay.LanguageMenuItem_Click"
-        ]
-      },
-      {
-        "path": "src/settings-ui/Settings.UI.Library/PowerOcrProperties.cs",
-        "purpose": "Retain the existing PreferredLanguage key and empty default for compatibility.",
-        "symbols": [
-          "PowerOcrProperties.PreferredLanguage"
-        ]
-      },
-      {
-        "path": "src/settings-ui/Settings.UI.UnitTests",
-        "purpose": "Add pure language-resolution and no-save-during-initialization coverage.",
-        "symbols": [
-          "PowerOcrViewModel tests"
-        ]
-      },
-      {
-        "path": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
-        "purpose": "Add persistence and selected-dropdown-item regression coverage.",
-        "symbols": [
-          "PowerOCRTests.OCRLanguageSettingsTest"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs",
-        "symbols": [
-          "PowerOcrViewModel.UpdateLanguages",
-          "PowerOcrViewModel.LanguageIndex"
-        ],
-        "current_behavior": "UpdateLanguages rebuilds the available list and assigns LanguageIndex. The setter always writes PreferredLanguage and notifies settings, even when the assignment came from page initialization.",
-        "change": "Add a scoped suppression flag around list rebuilding and programmatic index assignment. The setter should still update the backing field and property notification, but write settings only for a valid explicit user selection outside initialization. Use try/finally so exceptions cannot leave saving disabled.",
-        "code_block": "private bool _updatingLanguages;\n\npublic int LanguageIndex\n{\n    get => _languageIndex;\n    set\n    {\n        if (!Set(ref _languageIndex, value) || _updatingLanguages ||\n            value < 0 || value >= possibleOcrLanguages.Count)\n        {\n            return;\n        }\n\n        _powerOcrSettings.Properties.PreferredLanguage =\n            possibleOcrLanguages[value].LanguageTag;\n        NotifySettingsChanged();\n    }\n}\n\npublic void UpdateLanguages()\n{\n    _updatingLanguages = true;\n    try\n    {\n        // Rebuild choices and assign the resolved index without saving.\n    }\n    finally\n    {\n        _updatingLanguages = false;\n    }\n}",
-        "edge_cases": [
-          "When no OCR languages are installed, set the index to -1 without writing settings.",
-          "An invalid or missing saved language may display a fallback but must remain stored until the user explicitly chooses a replacement.",
-          "Repeated Loaded or DropDownOpened events must not send duplicate settings messages."
-        ],
-        "tests": [
-          "Verify UpdateLanguages never invokes the settings IPC callback.",
-          "Verify an explicit valid LanguageIndex change stores LanguageTag and invokes IPC once.",
-          "Verify empty language enumeration produces index -1 and no write."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs",
-        "symbols": [
-          "PowerOcrViewModel.UpdateLanguages",
-          "IsStoredLanguageMatch"
-        ],
-        "current_behavior": "Restoration compares only the saved string with DisplayName, while new values are currently saved as NativeName.",
-        "change": "Resolve the saved preference by LanguageTag first, then accept NativeName and DisplayName for backward compatibility. Persist LanguageTag for every new explicit selection. Keep NativeName as the visible list text.",
-        "code_block": "private static bool IsStoredLanguageMatch(string? value, Language language)\n{\n    return string.Equals(value, language.LanguageTag, StringComparison.OrdinalIgnoreCase) ||\n           string.Equals(value, language.NativeName, StringComparison.OrdinalIgnoreCase) ||\n           string.Equals(value, language.DisplayName, StringComparison.Ordinal);\n}\n\nvar selectedIndex = possibleOcrLanguages.FindIndex(\n    language => IsStoredLanguageMatch(savedPreference, language));",
-        "edge_cases": [
-          "DisplayName is locale-dependent and is accepted only as a legacy read format.",
-          "Do not silently implement #29331's automatic input-language mode.",
-          "A one-time legacy normalization write is optional; the safer initial fix defers it until explicit user selection."
-        ],
-        "tests": [
-          "Resolve tag, NativeName, and DisplayName values to the same installed language.",
-          "Verify matching is case-insensitive for tags and native names.",
-          "Verify an unknown value does not get overwritten during initialization."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs",
-        "symbols": [
-          "OCROverlay.PopulateLanguageMenu",
-          "OCROverlay.LanguageMenuItem_Click"
-        ],
-        "current_behavior": "PopulateLanguageMenu recognizes only NativeName. Menu clicks assign a Language object as SelectedItem even though the ComboBox contains ComboBoxItem instances.",
-        "change": "Use the same tag-first, legacy-name-compatible resolution rules when initializing the overlay. Select the matching ComboBoxItem by its Language Tag when a menu item is clicked. Preserve existing session-only behavior: overlay selection must not rewrite PreferredLanguage.",
-        "code_block": "var preferred = languages.FirstOrDefault(language =>\n    IsStoredLanguageMatch(userSettings.PreferredLanguage.Value, language));\nselectedLanguage = preferred ?? ImageMethods.GetOCRLanguage();\n\nvar comboItem = LanguagesComboBox.Items\n    .OfType<ComboBoxItem>()\n    .FirstOrDefault(item => Equals(item.Tag, selectedLanguage));\nLanguagesComboBox.SelectedItem = comboItem;",
-        "edge_cases": [
-          "Number-key and context-menu changes remain local to the current overlay.",
-          "An unavailable saved language falls back through ImageMethods.GetOCRLanguage.",
-          "Repeated placeholders or feature modes from #28878 are outside this fix."
-        ],
-        "tests": [
-          "Verify a language tag saved by Settings selects the same overlay language.",
-          "Verify legacy NativeName settings remain supported.",
-          "Verify menu and ComboBox selections remain synchronized without persisting overlay changes."
-        ]
-      },
-      {
-        "order": 4,
-        "file": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
-        "symbols": [
-          "PowerOCRTests.OCRLanguageSettingsTest"
-        ],
-        "current_behavior": "Current UI coverage verifies that language controls exist but does not navigate away, reopen Settings, or inspect the highlighted dropdown item.",
-        "change": "Add a test requiring two installed OCR languages. Select a non-default language, navigate away and back, close and reopen Settings, and verify both the collapsed value and highlighted dropdown item. Add a separate overlay synchronization check where feasible.",
-        "code_block": "// Arrange two installed OCR languages.\n// Select a non-default language in Text Extractor settings.\n// Navigate away/back and close/reopen Settings.\n// Assert the same ComboBox value and selected dropdown item.\n// Launch overlay and assert its initial language matches the preference.",
-        "edge_cases": [
-          "Mark the test inconclusive when fewer than two OCR languages are installed.",
-          "Restore the original preference in cleanup.",
-          "Run with a non-English Windows display language to exercise localized DisplayName behavior."
-        ],
-        "tests": [
-          "Persistence across Settings page navigation.",
-          "Persistence across Settings process restart.",
-          "Correct selected/highlighted dropdown item.",
-          "Overlay starts with the persisted language."
-        ]
-      }
-    ],
-    "verify": [
-      "Build the Settings UI and PowerOCR projects using the repository build scripts and Visual Studio MSBuild environment.",
-      "Run the focused Settings UI unit tests for language resolution, explicit-save behavior, no-save initialization, empty lists, and legacy values.",
-      "Run the targeted PowerOCR UI tests through Visual Studio Test Explorer or vstest.console.exe; do not use dotnet test for the C++-integrated solution.",
-      "With at least two OCR packs installed, choose a non-default language, navigate away and back, restart Settings, and verify the same selected and highlighted language.",
-      "Launch Text Extractor and verify the overlay initially uses the saved preference.",
-      "Change the active overlay language, reopen it, and confirm the explicit Settings preference was not changed, preserving the distinction from #28878.",
-      "Repeat with a non-English Windows display language to prove that localized DisplayName no longer controls persistence."
-    ],
-    "risks": [
-      {
-        "risk": "Existing users may have PreferredLanguage stored as NativeName or DisplayName.",
-        "mitigation": "Accept both legacy representations on read and use LanguageTag only for new writes."
-      },
-      {
-        "risk": "Initialization suppression could accidentally block a real user change.",
-        "mitigation": "Scope the flag only to UpdateLanguages with try/finally and test an explicit selection immediately afterward."
-      },
-      {
-        "risk": "A fallback could erase a temporarily unavailable OCR language.",
-        "mitigation": "Display the fallback without saving it until the user explicitly chooses a replacement."
-      },
-      {
-        "risk": "Overlay changes could become persistent and unintentionally implement #28878.",
-        "mitigation": "Keep persistence exclusively in the Settings UI explicit-selection path."
-      }
-    ],
-    "alternatives": [
-      {
-        "option": "Continue storing NativeName and change only the restoration comparison.",
-        "decision": "Reject.",
-        "reason": "NativeName is presentation text rather than a stable identity and leaves cross-process behavior locale-sensitive."
-      },
-      {
-        "option": "Store DisplayName instead.",
-        "decision": "Reject.",
-        "reason": "DisplayName changes with Windows UI culture and recreates the same persistence defect."
-      },
-      {
-        "option": "Implement automatic current-input-language or last-used-overlay modes at the same time.",
-        "decision": "Reject.",
-        "reason": "Those are separate feature requests in #29331 and #28878 and require explicit mode semantics."
-      }
-    ]
-  }
+  ]
 }
