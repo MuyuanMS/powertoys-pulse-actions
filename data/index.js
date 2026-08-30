@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-30T13:42:23.6863920+08:00",
+  "generated_at": "2026-08-30T14:54:36.3901126+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 147,
-    "open_issues": 12557,
+    "open_issues": 12556,
     "community": 11702,
-    "artifacts": 3238
+    "artifacts": 3241
   },
   "impact": {
-    "as_of": "2026-08-30T13:42:23.6863920+08:00",
+    "as_of": "2026-08-30T14:54:36.3901126+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -99,6 +99,9 @@ window.BOARD_INDEX = {
   },
   "artifact_numbers": [
     50245,
+    50233,
+    50232,
+    50231,
     50230,
     50222,
     50220,
@@ -3394,16 +3397,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve clean review"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3411,7 +3417,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-29T07:09:20Z",
       "updated_at": "2026-08-29T07:52:33Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 545,
+        "fork_title": "[PR 50233] CmdPal: Virtualize grid views and polish it",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50233",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/545"
+      }
     },
     {
       "id": "pr-50232",
@@ -3425,16 +3439,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve clean review"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3442,7 +3459,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-29T06:59:12Z",
       "updated_at": "2026-08-29T06:59:30Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 544,
+        "fork_title": "[PR 50232] CmdPal: Fix separator section notifications",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50232",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/544"
+      }
     },
     {
       "id": "pr-50231",
@@ -3456,16 +3481,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve clean review"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3473,7 +3501,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-29T06:52:33Z",
       "updated_at": "2026-08-29T06:54:34Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 543,
+        "fork_title": "[PR 50231] CmdPal: Fix auto-sized font icons in grid views",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50231",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/543"
+      }
     },
     {
       "id": "pr-50230",
@@ -174587,38 +174623,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-45694",
-      "kind": "issue",
-      "number": 45694,
-      "url": "https://github.com/microsoft/PowerToys/issues/45694",
-      "title": "CmdPal: Soft list page refresh",
-      "author": "jiripolasek",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Status-In progress",
-        "Needs-Triage",
-        "Product-Command Palette"
-      ],
-      "created_at": "2026-02-20T10:21:17Z",
-      "updated_at": "2026-03-03T05:39:50Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-45692",
       "kind": "issue",
       "number": 45692,
@@ -320780,12 +320784,12 @@ window.BOARD_INDEX = {
       "comments": 1,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 151,
-        "fork_title": "FancyZones: Fix multi-zone window not moving to first zone on layout switch",
+        "kind": "issue",
+        "fork_number": 121,
+        "fork_title": "[Issue 39498] Windows which are moved into two zones will not move into the first selected zone when changing layouts",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-39498-fix-window-zone-switching",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/151"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/121"
       }
     },
     {
@@ -363647,12 +363651,12 @@ window.BOARD_INDEX = {
       "comments": 1,
       "priority": 5,
       "mirror": {
-        "kind": "pr",
-        "fork_number": 152,
-        "fork_title": "fix(KBM): improve hook scheduling and lifecycle under high CPU load",
+        "kind": "issue",
+        "fork_number": 122,
+        "fork_title": "[Issue 37380] [Keyboard Manager] Remapping temporarily stops working under high CPU load.",
         "fork_state": "OPEN",
-        "fork_branch": "copilot/issue-37380-fix-keyboard-manager-remapping",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/152"
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/122"
       }
     },
     {
