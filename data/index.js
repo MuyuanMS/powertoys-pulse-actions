@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-31T06:07:40.8267930+08:00",
+  "generated_at": "2026-08-31T07:13:10.3092982+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 150,
-    "open_issues": 12558,
-    "community": 11706,
+    "open_issues": 12557,
+    "community": 11705,
     "artifacts": 3416
   },
   "impact": {
-    "as_of": "2026-08-31T06:07:40.8267930+08:00",
+    "as_of": "2026-08-31T07:13:10.3092982+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -24228,36 +24228,6 @@ window.BOARD_INDEX = {
       ],
       "created_at": "2026-03-17T23:13:01Z",
       "updated_at": "2026-03-18T00:40:28Z",
-      "comments": 3,
-      "priority": null
-    },
-    {
-      "id": "issue-45905",
-      "kind": "issue",
-      "number": 45905,
-      "url": "https://github.com/microsoft/PowerToys/issues/45905",
-      "title": "Context menu customiser",
-      "author": "turtlecat77",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "created_at": "2026-03-03T21:54:47Z",
-      "updated_at": "2026-03-03T22:09:52Z",
       "comments": 3,
       "priority": null
     },
