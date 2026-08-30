@@ -1,0 +1,139 @@
+{
+  "number": 50245,
+  "kind": "pr",
+  "track": "review",
+  "stage": "review_drafted",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-30T05:15:00Z",
+  "evaluated_at": "2026-08-30T05:15:00Z",
+  "source_updated_at": "2026-08-30T11:30:56+08:00",
+  "head_sha": "309202e92dd874889a2a16db304dfc9596ccd719",
+  "title": "feat(grabandmove): snap windows to screen edges and corners while dragging",
+  "url": "https://github.com/microsoft/PowerToys/pull/50245",
+  "summary": "The current-head GrabAndMove snap review has 4 inline findings covering thread-safe settings reloads, release-time snap evaluation and hook safety, physical-edge detection, and supported-window checks. Copilot convergence completed with zero unresolved threads and a final zero-new-comment review; Debug essentials and GrabAndMove builds passed.",
+  "status": {
+    "glyph": "warn",
+    "label": "Review comments ready",
+    "detail": "4 current-head inline review comments are ready for maintainer selection."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit approval before posting."
+  },
+  "proposed_comments": [
+    {
+      "id": "atomic-snap-setting",
+      "kind": "inline",
+      "title": "Synchronize the reloaded snap setting",
+      "severity": "high",
+      "confidence": {
+        "score": 98,
+        "rationale": "The setting is assigned in LoadSettingsFromFile on the settings thread and read from the mouse-hook path; the file already uses an atomic setting pattern for concurrently reloaded excluded applications."
+      },
+      "body": "### Synchronize the reloaded snap setting\n\n**Severity:** `high`\n\nThe settings watcher reloads this value while the low-level mouse hook reads it during a drag. Keeping it as a plain `bool` creates a C++ data race, which can produce undefined behavior when the option is changed while Grab and Move is active. Store the setting in an atomic value so reloads and hook reads are synchronized.\n\n```suggestion\nstatic std::atomic_bool g_snapToEdges{ true };\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "start_line": 66,
+      "line": 66,
+      "side": "RIGHT"
+    },
+    {
+      "id": "recompute-release-target",
+      "kind": "inline",
+      "title": "Evaluate the snap target at button-up",
+      "severity": "high",
+      "confidence": {
+        "score": 97,
+        "rationale": "The release branch consumes g_snapArmed, which is updated only in the throttled mouse-move handler. The changed code directly exposes both the stale-state path and synchronous cross-process calls."
+      },
+      "body": "### Evaluate the snap target at button-up\n\n**Severity:** `high`\n\nMouse moves are throttled, so the stored snap state can describe an earlier cursor position when the user releases the button. This can leave a window snapped after the pointer left a zone, or fail to snap after it entered one. Re-evaluate the target from the button-up coordinates, preserve the first-move guard, and use asynchronous window operations so a hung target cannot stall the global input hook.\n\n```suggestion\n            SnapTarget snapTarget = SnapTarget::None;\n            RECT snapRect = {};\n            const LONG style = GetWindowLongW(g_dragTarget, GWL_STYLE);\n            g_snapArmed = !g_dragFirstMove && g_snapToEdges && ComputeSnapTarget(ms->pt, snapRect, snapTarget) &&\n                          ((snapTarget == SnapTarget::Maximize && (style & WS_MAXIMIZEBOX)) ||\n                           (snapTarget != SnapTarget::Maximize && (style & WS_THICKFRAME)));\n            g_snapTarget = g_snapArmed ? snapTarget : SnapTarget::None;\n            g_snapTargetRect = g_snapArmed ? snapRect : RECT{};\n\n            // Edge-snap on release: snap the window into the armed target region.\n            if (g_snapArmed)\n            {\n                const SnapTarget target = g_snapTarget;\n                const RECT targetRect = g_snapTargetRect;\n                g_snapArmed = false;\n                g_snapTarget = SnapTarget::None;\n                g_snapTargetRect = {};\n\n                if (target == SnapTarget::Maximize)\n                {\n                    SetWindowPos(g_dragTarget, nullptr, targetRect.left, targetRect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);\n                    ShowWindowAsync(g_dragTarget, SW_MAXIMIZE);\n                }\n                else if (target != SnapTarget::None)\n                {\n                    // Position the window directly so its visible frame (DWM extended\n                    // frame bounds) matches the target region. The visible frame is\n                    // inset from the window rect by the invisible resize borders, so\n                    // expand the target rect by those margins (recomputed here because\n                    // they are zeroed while the snap preview is armed).\n                    PrepareOverlayMetrics(g_dragTarget);\n                    RECT windowRect = targetRect;\n                    windowRect.left -= g_overlayMarginL;\n                    windowRect.top -= g_overlayMarginT;\n                    windowRect.right += g_overlayMarginR;\n                    windowRect.bottom += g_overlayMarginB;\n                    SetWindowPos(g_dragTarget, nullptr, windowRect.left, windowRect.top, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);\n                }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "start_line": 1500,
+      "line": 1526,
+      "side": "RIGHT"
+    },
+    {
+      "id": "detect-physical-monitor-edges",
+      "kind": "inline",
+      "title": "Use monitor bounds for snap-zone detection",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "MONITORINFO distinguishes rcMonitor from rcWork. The implementation uses rcWork for both hit-testing and placement, so a docked taskbar shifts the active threshold away from the physical edge."
+      },
+      "body": "### Use monitor bounds for snap-zone detection\n\n**Severity:** `medium`\n\n`rcWork` ends at the taskbar, not at the physical display edge, so the current comparisons arm snapping before the pointer reaches an edge and while it is over a docked taskbar. Keep the work area as the placement destination, but derive proximity from `rcMonitor`.\n\n```suggestion\nstatic bool ComputeSnapTarget(POINT pt, RECT& target, SnapTarget& out)\n{\n    RECT work{};\n    if (!GetWorkAreaForPoint(pt, work))\n    {\n        return false;\n    }\n\n    HMONITOR monitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);\n    MONITORINFO monitorInfo{};\n    monitorInfo.cbSize = sizeof(monitorInfo);\n    if (!GetMonitorInfoW(monitor, &monitorInfo))\n    {\n        return false;\n    }\n\n    const int midX = (work.left + work.right) / 2;\n    const int midY = (work.top + work.bottom) / 2;\n\n    const bool nearLeft = pt.x <= monitorInfo.rcMonitor.left + SNAP_EDGE_THRESHOLD;\n    const bool nearRight = pt.x >= monitorInfo.rcMonitor.right - SNAP_EDGE_THRESHOLD;\n    const bool nearTop = pt.y <= monitorInfo.rcMonitor.top + SNAP_EDGE_THRESHOLD;\n    const bool nearBottom = pt.y >= monitorInfo.rcMonitor.bottom - SNAP_EDGE_THRESHOLD;\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "start_line": 1651,
+      "line": 1665,
+      "side": "RIGHT"
+    },
+    {
+      "id": "preview-supported-snap-actions",
+      "kind": "inline",
+      "title": "Do not preview unsupported snap operations",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The existing right-button resize path already rejects windows without WS_THICKFRAME, while this changed drag path directly calls SetWindowPos or ShowWindow for every computed target."
+      },
+      "body": "### Do not preview unsupported snap operations\n\n**Severity:** `medium`\n\nThe new preview arms every movable window, but side and corner targets resize the window and the top target maximizes it. Fixed-size dialogs and windows without a maximize box can therefore show an action they do not support. Check the same style capabilities before displaying the preview so it remains consistent with release behavior.\n\n```suggestion\n    SnapTarget snapTarget = SnapTarget::None;\n    RECT snapRect{};\n    const LONG style = GetWindowLongW(g_dragTarget, GWL_STYLE);\n    const bool nowArmed = g_snapToEdges && ComputeSnapTarget(pt, snapRect, snapTarget) &&\n                          ((snapTarget == SnapTarget::Maximize && (style & WS_MAXIMIZEBOX)) ||\n                           (snapTarget != SnapTarget::Maximize && (style & WS_THICKFRAME)));\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "start_line": 1769,
+      "line": 1771,
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50245",
+      "type": "request_changes",
+      "label": "Request changes with 4 review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "pr": 50245,
+        "pullRequest": 50245,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "309202e92dd874889a2a16db304dfc9596ccd719",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": ""
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The review found current-head correctness and threading issues in the new GrabAndMove snap behavior that should be addressed before landing.",
+    "evidence": [
+      "The artifact is pinned to the live upstream head.",
+      "Phase 0 proceeded: linked context, validation steps, screenshots/recording, and CLA/intake evidence were present.",
+      "Copilot convergence completed in four processed rounds with zero unresolved threads and a final zero-new-comment review.",
+      "Debug essentials and GrabAndMove builds passed.",
+      "No GrabAndMove test project exists.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes comments.",
+    "evaluated_at": "2026-08-30T05:15:00Z",
+    "source_updated_at": "2026-08-30T11:30:56+08:00"
+  },
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-08-30T05:15:00Z",
+    "unresolved_copilot_threads": 0,
+    "copilot_rounds": 4,
+    "copilot_final": "zero_new_comments",
+    "build_result": "Debug essentials and GrabAndMove builds passed",
+    "unit_test_result": "No GrabAndMove test project exists"
+  }
+}
