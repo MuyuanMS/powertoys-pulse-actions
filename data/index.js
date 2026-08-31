@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-31T22:04:35.0128736+08:00",
+  "generated_at": "2026-08-31T23:14:56.5362313+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 146,
-    "open_issues": 12560,
-    "community": 11959,
-    "artifacts": 3440
+    "open_issues": 12559,
+    "community": 11961,
+    "artifacts": 3438
   },
   "impact": {
-    "as_of": "2026-08-31T22:04:35.0128736+08:00",
+    "as_of": "2026-08-31T23:14:56.5362313+08:00",
     "issues_helped": 10,
     "prs_iterated": 45,
     "constructive_comments_posted": 3,
@@ -1370,7 +1370,6 @@ window.BOARD_INDEX = {
     47456,
     47450,
     47448,
-    47446,
     47444,
     48382,
     47440,
@@ -1733,7 +1732,6 @@ window.BOARD_INDEX = {
     45641,
     45640,
     45639,
-    45630,
     45628,
     28106,
     45619,
@@ -4023,12 +4021,11 @@ window.BOARD_INDEX = {
         "label": "Request changes with 6 review comments"
       },
       "labels": [
-        "Needs-Review",
-        "Product-File Locksmith",
-        "Ready for review"
+        "Needs-Author-Feedback",
+        "Product-File Locksmith"
       ],
       "created_at": "2026-08-28T21:20:37Z",
-      "updated_at": "2026-08-29T01:03:54Z",
+      "updated_at": "2026-08-31T14:52:41Z",
       "comments": 2,
       "priority": null,
       "mirror": {
@@ -15045,6 +15042,38 @@ window.BOARD_INDEX = {
       ],
       "created_at": "2026-02-08T18:01:23Z",
       "updated_at": "2026-04-18T13:50:53Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-38255",
+      "kind": "issue",
+      "number": 38255,
+      "url": "https://github.com/microsoft/PowerToys/issues/38255",
+      "title": "Select to speak with OCR",
+      "author": "saifmry",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Needs-Triage",
+        "Product-Text Extractor"
+      ],
+      "created_at": "2025-03-31T12:28:16Z",
+      "updated_at": "2026-04-18T11:15:05Z",
       "comments": 1,
       "priority": null
     },
@@ -48147,39 +48176,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-32763",
-      "kind": "issue",
-      "number": 32763,
-      "url": "https://github.com/microsoft/PowerToys/issues/32763",
-      "title": "PT Run: revert UI style to defaults",
-      "author": "Jay-o-Way",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-PowerToys Run",
-        "Area-User Interface",
-        "Issue-Refactoring",
-        "UI refresh"
-      ],
-      "created_at": "2024-05-07T14:19:00Z",
-      "updated_at": "2026-03-04T14:38:17Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
       "id": "issue-15243",
       "kind": "issue",
       "number": 15243,
@@ -48498,6 +48494,39 @@ window.BOARD_INDEX = {
       ],
       "created_at": "2024-05-06T12:53:25Z",
       "updated_at": "2024-05-06T12:53:54Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-50266",
+      "kind": "issue",
+      "number": 50266,
+      "url": "https://github.com/microsoft/PowerToys/issues/50266",
+      "title": "Not working",
+      "author": "aledari",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-Quick Accent"
+      ],
+      "created_at": "2026-08-31T14:15:24Z",
+      "updated_at": "2026-08-31T14:22:27Z",
       "comments": 1,
       "priority": null
     },
@@ -109385,12 +109414,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-38255",
+      "id": "issue-47014",
       "kind": "issue",
-      "number": 38255,
-      "url": "https://github.com/microsoft/PowerToys/issues/38255",
-      "title": "Select to speak with OCR",
-      "author": "saifmry",
+      "number": 47014,
+      "url": "https://github.com/microsoft/PowerToys/issues/47014",
+      "title": "Search: Index content of drives that do not have letters assigned.",
+      "author": "GrzeWier",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -109408,11 +109437,11 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Idea-Enhancement",
-        "Needs-Triage",
-        "Product-Text Extractor"
+        "Product-PowerToys Run",
+        "Needs-Triage"
       ],
-      "created_at": "2025-03-31T12:28:16Z",
-      "updated_at": "2026-04-18T11:15:05Z",
+      "created_at": "2026-04-14T10:55:16Z",
+      "updated_at": "2026-04-19T10:02:01Z",
       "comments": 1,
       "priority": null
     },
@@ -127233,8 +127262,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -127244,8 +127273,8 @@ window.BOARD_INDEX = {
         "Product-Grab And Move"
       ],
       "created_at": "2026-04-29T18:53:12Z",
-      "updated_at": "2026-04-30T12:37:47Z",
-      "comments": 1,
+      "updated_at": "2026-08-31T14:08:17Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -138938,13 +138967,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47014",
+      "id": "issue-50267",
       "kind": "issue",
-      "number": 47014,
-      "url": "https://github.com/microsoft/PowerToys/issues/47014",
-      "title": "Search: Index content of drives that do not have letters assigned.",
-      "author": "GrzeWier",
-      "state": "closed",
+      "number": 50267,
+      "url": "https://github.com/microsoft/PowerToys/issues/50267",
+      "title": "PowerToys autoupdate configured for Stable update channel, installed Preview release",
+      "author": "meta-ed",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -138956,16 +138985,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-PowerToys Run",
-        "Needs-Triage"
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-General"
       ],
-      "created_at": "2026-04-14T10:55:16Z",
-      "updated_at": "2026-04-19T10:02:01Z",
+      "created_at": "2026-08-31T15:01:35Z",
+      "updated_at": "2026-08-31T15:08:12Z",
       "comments": 1,
       "priority": null
     },
@@ -158906,8 +158936,8 @@ window.BOARD_INDEX = {
         "Product-General"
       ],
       "created_at": "2023-09-26T03:37:17Z",
-      "updated_at": "2026-08-31T05:16:49Z",
-      "comments": 422,
+      "updated_at": "2026-08-31T14:28:50Z",
+      "comments": 424,
       "priority": null
     },
     {
@@ -176704,8 +176734,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -176715,8 +176745,8 @@ window.BOARD_INDEX = {
         "Product-Quick Accent"
       ],
       "created_at": "2026-02-16T11:07:22Z",
-      "updated_at": "2026-07-10T03:04:30Z",
-      "comments": 1,
+      "updated_at": "2026-08-31T14:33:03Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -263555,37 +263585,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-24111",
-      "kind": "issue",
-      "number": 24111,
-      "url": "https://github.com/microsoft/PowerToys/issues/24111",
-      "title": "fancyzones - Need a feature to quickly switch between windows in a layout",
-      "author": "systemnerd",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Triage",
-        "Needs-Team-Response"
-      ],
-      "created_at": "2023-02-15T05:22:29Z",
-      "updated_at": "2026-04-18T13:04:35Z",
-      "comments": 4,
-      "priority": null
-    },
-    {
       "id": "issue-22267",
       "kind": "issue",
       "number": 22267,
@@ -272458,15 +272457,15 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-32350",
+      "id": "issue-24111",
       "kind": "issue",
-      "number": 32350,
-      "url": "https://github.com/microsoft/PowerToys/issues/32350",
-      "title": "KBM: Remap: UI issues",
-      "author": "Jay-o-Way",
+      "number": 24111,
+      "url": "https://github.com/microsoft/PowerToys/issues/24111",
+      "title": "fancyzones - Need a feature to quickly switch between windows in a layout",
+      "author": "systemnerd",
       "state": "closed",
       "is_draft": false,
-      "is_community": false,
+      "is_community": true,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -272476,17 +272475,16 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Product-Settings",
-        "Area-User Interface"
+        "Needs-Triage",
+        "Needs-Team-Response"
       ],
-      "created_at": "2024-04-09T14:05:37Z",
-      "updated_at": "2026-03-04T14:40:30Z",
-      "comments": 1,
+      "created_at": "2023-02-15T05:22:29Z",
+      "updated_at": "2026-04-18T13:04:35Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -365298,37 +365296,6 @@ window.BOARD_INDEX = {
       "created_at": "2025-02-06T04:22:42Z",
       "updated_at": "2026-04-16T15:49:30Z",
       "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-12388",
-      "kind": "issue",
-      "number": 12388,
-      "url": "https://github.com/microsoft/PowerToys/issues/12388",
-      "title": "[Settings] recap: Navigation items",
-      "author": "Jay-o-Way",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Settings",
-        "Area-User Interface"
-      ],
-      "created_at": "2021-07-15T18:47:11Z",
-      "updated_at": "2026-03-04T14:52:44Z",
-      "comments": 2,
       "priority": null
     },
     {
