@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-31T11:24:17.0963805+08:00",
+  "generated_at": "2026-08-31T11:50:46.1747285+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,19 @@ window.BOARD_INDEX = {
     "open_prs": 151,
     "open_issues": 12561,
     "community": 11709,
-    "artifacts": 3416
+    "artifacts": 3421
   },
   "impact": {
-    "as_of": "2026-08-31T11:24:17.0963805+08:00",
+    "as_of": "2026-08-31T11:50:46.1747285+08:00",
     "issues_helped": 10,
-    "prs_iterated": 47,
+    "prs_iterated": 46,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50257,
+    50254,
+    50253,
     50252,
     50245,
     50233,
@@ -522,6 +525,8 @@ window.BOARD_INDEX = {
     48238,
     21274,
     32748,
+    50259,
+    50255,
     50248,
     50244,
     50243,
@@ -3528,13 +3533,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "agent",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3546,7 +3551,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-30T23:22:45Z",
       "updated_at": "2026-08-31T02:50:24Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 551,
+        "fork_title": "[PR 50257] [UITests][AlwaysOnTop] Add UI test",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50257",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/551"
+      }
     },
     {
       "id": "pr-50254",
@@ -3560,13 +3573,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "agent",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3578,7 +3591,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-30T18:59:11Z",
       "updated_at": "2026-08-30T20:12:50Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 553,
+        "fork_title": "[PR 50254] Move HotkeySettingsControlHook and NativeKeyboardHelper to ManagedCommon",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50254",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/553"
+      }
     },
     {
       "id": "pr-50253",
@@ -3592,13 +3613,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "agent",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3610,7 +3631,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-30T18:34:33Z",
       "updated_at": "2026-08-30T18:35:02Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 552,
+        "fork_title": "[PR 50253] [Advanced Paste][PowerDisplay] Move from own IPC implementation to the one from PowerToys.interop",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50253-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/552"
+      }
     },
     {
       "id": "pr-50252",
@@ -6977,15 +7006,7 @@ window.BOARD_INDEX = {
       "created_at": "2026-07-20T05:00:23Z",
       "updated_at": "2026-08-18T22:45:41Z",
       "comments": 10,
-      "priority": 10,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 162,
-        "fork_title": "[PR 49412] Add audio feedback using custom .wav files",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49412-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/162"
-      }
+      "priority": 10
     },
     {
       "id": "pr-49400",
@@ -48734,16 +48755,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "track": "triage",
+      "stage": "triaged",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-08-31T01:01:24Z",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -48863,16 +48887,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "triage",
+      "stage": "triaged",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Link duplicate Dock report"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -49185,18 +49212,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_reply",
-      "owes": "maintainer",
+      "stage": "owned",
+      "owes": "assignee",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -49318,7 +49342,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_reply",
+      "stage": "design_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -49326,10 +49350,7 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
