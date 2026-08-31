@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-01T05:13:41.9504337+08:00",
+  "generated_at": "2026-09-01T06:32:13.7892418+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 145,
-    "open_issues": 12546,
-    "community": 11949,
-    "artifacts": 3429
+    "open_issues": 12547,
+    "community": 11950,
+    "artifacts": 3428
   },
   "impact": {
-    "as_of": "2026-09-01T05:13:41.9504337+08:00",
+    "as_of": "2026-09-01T06:32:13.7892418+08:00",
     "issues_helped": 10,
     "prs_iterated": 45,
     "constructive_comments_posted": 3,
@@ -538,7 +538,6 @@ window.BOARD_INDEX = {
     50227,
     50224,
     50223,
-    50221,
     50219,
     32696,
     32690,
@@ -3846,7 +3845,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-08-29T07:09:20Z",
-      "updated_at": "2026-08-29T07:52:33Z",
+      "updated_at": "2026-08-31T21:46:58Z",
       "comments": 1,
       "priority": null,
       "mirror": {
@@ -4134,7 +4133,7 @@ window.BOARD_INDEX = {
         "0.102"
       ],
       "created_at": "2026-08-28T16:03:48Z",
-      "updated_at": "2026-08-28T18:29:37Z",
+      "updated_at": "2026-08-31T21:08:18Z",
       "comments": 1,
       "priority": null,
       "mirror": {
@@ -4176,7 +4175,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette"
       ],
       "created_at": "2026-08-28T09:49:27Z",
-      "updated_at": "2026-08-31T20:45:11Z",
+      "updated_at": "2026-08-31T21:55:18Z",
       "comments": 1,
       "priority": null,
       "mirror": {
@@ -7519,8 +7518,8 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-07-12T03:53:18Z",
-      "updated_at": "2026-08-31T19:22:32Z",
-      "comments": 12,
+      "updated_at": "2026-08-31T22:00:40Z",
+      "comments": 13,
       "priority": 60,
       "mirror": {
         "kind": "pr",
@@ -48386,12 +48385,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-2382",
+      "id": "issue-50269",
       "kind": "issue",
-      "number": 2382,
-      "url": "https://github.com/microsoft/PowerToys/issues/2382",
-      "title": "[FancyZones] Allow a different shortcut key for moving windows between zones (allow both FZ and Windows Snap)",
-      "author": "kylelawrence",
+      "number": 50269,
+      "url": "https://github.com/microsoft/PowerToys/issues/50269",
+      "title": "Feature Enhancement",
+      "author": "cmnarefin",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -48404,17 +48403,16 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "FancyZones-Hotkeys",
-        "Product-FancyZones"
+        "Needs-Author-Feedback",
+        "Needs-Triage"
       ],
-      "created_at": "2020-04-24T17:12:34Z",
-      "updated_at": "2026-06-05T13:47:53Z",
-      "comments": 7,
+      "created_at": "2026-08-31T21:37:59Z",
+      "updated_at": "2026-08-31T21:43:40Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -49763,21 +49761,19 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_comment",
-        "label": "Post duplicate guidance"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Needs-Author-Feedback",
         "Needs-Triage",
         "Needs-Team-Response"
       ],
       "created_at": "2026-08-29T00:10:19Z",
-      "updated_at": "2026-08-29T21:10:50Z",
+      "updated_at": "2026-08-31T22:16:21Z",
       "comments": 2,
       "priority": null
     },
@@ -177438,13 +177434,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-28080",
+      "id": "issue-2382",
       "kind": "issue",
-      "number": 28080,
-      "url": "https://github.com/microsoft/PowerToys/issues/28080",
-      "title": "Feature: Windows Explorer add-ons: Folder Sizes",
-      "author": "LocalDadm1n",
-      "state": "closed",
+      "number": 2382,
+      "url": "https://github.com/microsoft/PowerToys/issues/2382",
+      "title": "[FancyZones] Allow a different shortcut key for moving windows between zones (allow both FZ and Windows Snap)",
+      "author": "kylelawrence",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -177456,16 +177452,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-New PowerToy",
-        "Needs-Triage"
+        "Idea-Enhancement",
+        "FancyZones-Hotkeys",
+        "Product-FancyZones"
       ],
-      "created_at": "2023-08-21T20:33:26Z",
-      "updated_at": "2026-04-19T13:01:06Z",
-      "comments": 5,
+      "created_at": "2020-04-24T17:12:34Z",
+      "updated_at": "2026-06-05T13:47:53Z",
+      "comments": 7,
       "priority": null
     },
     {
@@ -383049,6 +383046,37 @@ window.BOARD_INDEX = {
       "created_at": "2024-12-18T15:58:11Z",
       "updated_at": "2024-12-19T01:17:47Z",
       "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-28080",
+      "kind": "issue",
+      "number": 28080,
+      "url": "https://github.com/microsoft/PowerToys/issues/28080",
+      "title": "Feature: Windows Explorer add-ons: Folder Sizes",
+      "author": "LocalDadm1n",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-New PowerToy",
+        "Needs-Triage"
+      ],
+      "created_at": "2023-08-21T20:33:26Z",
+      "updated_at": "2026-04-19T13:01:06Z",
+      "comments": 5,
       "priority": null
     },
     {
