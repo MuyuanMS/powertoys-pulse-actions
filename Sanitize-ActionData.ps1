@@ -78,12 +78,34 @@ function Get-PublicActions {
     @()
   }
 
-  @($Artifact.actions | Where-Object {
+  $actions = @($Artifact.actions | Where-Object {
     $_ -and
     $_.type -in $allowedTypes -and
     $_.type -ne 'hold' -and
     $_.label -notmatch '(?i)^not now$'
   })
+
+  if ($kind -eq 'pr') {
+    $proposedComments = @($Artifact.proposed_comments | Where-Object {
+      $_.disposition -eq 'proposed'
+    })
+    $inlineComments = @($proposedComments | Where-Object {
+      $_.kind -eq 'inline' -or
+      ($null -eq $_.kind -and $_.in_diff -eq $true)
+    })
+    foreach ($action in $actions | Where-Object { $_.type -eq 'post_review' }) {
+      if ($action.review) {
+        $action.review.event = 'COMMENT'
+        if ($proposedComments.Count -gt 0 -and
+            $inlineComments.Count -eq $proposedComments.Count -and
+            $action.review.PSObject.Properties['body_prefix']) {
+          $action.review.PSObject.Properties.Remove('body_prefix')
+        }
+      }
+    }
+  }
+
+  $actions
 }
 
 $itemsPath = Join-Path $DataPath 'items'

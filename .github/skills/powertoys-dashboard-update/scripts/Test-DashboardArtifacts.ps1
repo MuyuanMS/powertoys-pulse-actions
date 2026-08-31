@@ -127,6 +127,14 @@ foreach ($path in @($paths)) {
       $artifact.actions |
         Where-Object { $_.type -eq 'post_review' }
     ) | Select-Object -First 1
+    if ($reviewAction -and $reviewAction.review.event -and $reviewAction.review.event -ne 'COMMENT') {
+      $errors.Add("$prefix post_review action must use review event COMMENT")
+    }
+    if ($reviewAction -and $proposedComments.Count -gt 0 -and
+        $inlineComments.Count -eq $proposedComments.Count -and
+        -not [string]::IsNullOrWhiteSpace([string]$reviewAction.review.body_prefix)) {
+      $errors.Add("$prefix inline-only post_review action must omit review.body_prefix")
+    }
     if ($reviewAction -and $proposedComments.Count -gt 0 -and $inlineComments.Count -eq 0) {
       $presentationText = "$($reviewAction.label) $($reviewAction.note)"
       if ($presentationText -notmatch '(?i)general|no inline|text block') {

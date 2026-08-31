@@ -279,13 +279,43 @@ if (-not (Test-Path $artifactValidator)) {
         }
       )
       actions = @(
-        @{ type = 'post_review'; label = 'Post inline suggestion' }
+        @{
+          type = 'post_review'
+          label = 'Post inline suggestion'
+          review = @{ event = 'COMMENT'; pr = 34567 }
+        }
       )
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
     & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
 
     $invalidArtifact = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw |
       ConvertFrom-Json
+    $invalidArtifact.actions[0].review.event = 'REQUEST_CHANGES'
+    $invalidArtifact | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted REQUEST_CHANGES on a post_review action.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+
+    $invalidArtifact.actions[0].review.event = 'COMMENT'
+    $invalidArtifact.actions[0].review | Add-Member -NotePropertyName body_prefix -NotePropertyValue 'Unnecessary overall message.'
+    $invalidArtifact | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted body_prefix on an inline-only post_review action.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+
+    $invalidArtifact.actions[0].review.PSObject.Properties.Remove('body_prefix')
     $invalidArtifact.proposed_comments[0].body = 'Prose without a suggestion block.'
     $invalidArtifact | ConvertTo-Json -Depth 10 |
       Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
