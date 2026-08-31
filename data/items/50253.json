@@ -3,34 +3,161 @@
   "number": 50253,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "agent",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T03:36:35.8003297Z",
-  "evaluated_at": "2026-08-31T03:36:35.8003297Z",
-  "source_updated_at": "2026-08-30T18:35:02Z",
+  "generated_at": "2026-08-31T10:18:38.9409791Z",
+  "evaluated_at": "2026-08-31T10:18:38.9409791Z",
+  "source_updated_at": "2026-08-31T09:41:39Z",
   "url": "https://github.com/microsoft/PowerToys/pull/50253",
   "title": "[Advanced Paste][PowerDisplay] Move from own IPC implementation to the one from PowerToys.interop",
+  "author": "noraa-junker",
+  "authorAssociation": "COLLABORATOR",
   "state": "OPEN",
   "draft": false,
-  "head_sha": "849e33116e3eb671dde6f671aa3413a3ba2d00fe",
-  "summary": "The fork review is waiting for Copilot; direct inspection found debugger, framing, lifetime, and startup-readiness concerns.",
+  "head_sha": "7a63a32764391f84dfeef7099641b30ede79f9a6",
+  "confidence": "High",
+  "summary": "The current-head review drafts two inline framing fixes and two companion lifecycle/startup requests for the shared IPC migration.",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting for Copilot review",
-    "detail": "The 13-file fork diff matches upstream and current CI is successful."
+    "glyph": "📝",
+    "label": "Review ready — four requests drafted",
+    "detail": "The upstream head is pinned to 7a63a32764391f84dfeef7099641b30ede79f9a6. Targeted Debug builds completed successfully and the Copilot fallback audit found zero unresolved Copilot threads; two upstream Azure build jobs remain in progress."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Obtain explicit maintainer approval and recheck the upstream head, checks, comments, reviews, and threads before posting."
+  },
+  "phase0": {
+    "author": "noraa-junker",
+    "author_association": "COLLABORATOR",
+    "bar": "collaborator-authored; process nags skipped",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "The change is an internal IPC migration. The CLA and automated intake checks pass, no visual evidence is needed, and no author-facing process request is appropriate.",
+    "evidence": [
+      "The live upstream head is 7a63a32764391f84dfeef7099641b30ede79f9a6.",
+      "The author association is COLLABORATOR.",
+      "license/cla and pr-intake are successful.",
+      "The upstream intake reports that visual evidence is not needed for these changed files.",
+      "The description's empty closing-issue and validation fields are not process gates for a collaborator."
+    ]
+  },
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "The shared message-mode IPC preserves the sent payload, but both module managers still append the line delimiter formerly consumed by StreamReader.ReadLineAsync. That prevents command matching or adds spurious tokens. The migration also needs explicit managed and native IPC ownership plus listener readiness before launching the child process.",
+    "recommended_action": "Request the drafted changes only after explicit approval and a final current-head freshness check.",
+    "evaluated_at": "2026-08-31T10:18:38.9409791Z",
+    "source_updated_at": "2026-08-31T09:41:39Z",
+    "evidence": [
+      "Both current native senders append CRLF even though the replacement IPC preserves payloads verbatim.",
+      "Advanced Paste parses custom-action arguments with Split(), and PowerDisplay compares the first Split(' ', 2) token to command constants.",
+      "The current managed IPC instances are local variables and cannot be ended from application shutdown.",
+      "Both native managers launch the child before starting the named-pipe listener."
+    ]
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "builds": [
+      "PowerToys essentials",
+      "AdvancedPasteModuleInterface",
+      "AdvancedPaste",
+      "PowerDisplayModuleInterface",
+      "PowerDisplay"
+    ],
+    "tests": [
+      {
+        "suite": "Copilot fallback audit",
+        "result": "passed",
+        "new_published_comments": 0,
+        "unresolved_threads": 0
+      },
+      {
+        "suite": "Patch validation",
+        "command": "git diff --check",
+        "result": "passed"
+      }
+    ],
+    "build_environment_note": "Malformed inherited GIT_CONFIG_* variables were removed only for the successful build process."
   },
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-08-31T03:36:35.8003297Z",
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-08-31T10:18:38.9409791Z",
+    "copilot_result": "No new published comments under the empty-assignment fallback after auditing all later review activity.",
     "unresolved_copilot_threads": 0
   },
-  "fork": {
-    "owner": "MuyuanMS",
-    "repo": "MuyuanMS/PowerToys",
-    "pr": 552,
-    "branch": "pr-iterate/50253-v2",
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/552"
-  },
-  "actions": []
+  "proposed_comments": [
+    {
+      "id": "advanced-paste-remove-obsolete-line-delimiter",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Do not append a line delimiter to message-mode IPC",
+      "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/AdvancedPasteProcessManager.cpp",
+      "start_line": 208,
+      "line": 208,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Do not append a line delimiter to message-mode IPC\n\n**Severity:** `high`\n\nThe removed reader consumed CRLF, but `TwoWayPipeMessageIPC` now passes the exact payload to the managed callback. Keeping the delimiter makes `Split()` add trailing empty tokens, so valid additional and custom action messages no longer have the expected two-part shape. Send the command payload without a line ending.\n\n```suggestion\n        const auto message = message_arg.empty() ? message_type : std::format(L\"{} {}\", message_type, message_arg);\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "The removed Advanced Paste reader used ReadLineAsync while the replacement shared IPC forwards each sent message verbatim, and the current handler validates exact token counts."
+      }
+    },
+    {
+      "id": "powerdisplay-remove-obsolete-line-delimiter",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Preserve command names when sending message-mode IPC",
+      "path": "src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayProcessManager.cpp",
+      "start_line": 207,
+      "line": 207,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Preserve command names when sending message-mode IPC\n\n**Severity:** `high`\n\nThe previous line reader stripped CRLF, whereas the shared IPC delivers the complete string. For messages without an argument, the current terminator becomes part of the command token and Toggle or Terminate will not match their constants. Send the framed message without the obsolete line delimiter.\n\n```suggestion\n        const auto message = message_arg.empty() ? message_type : std::format(L\"{} {}\", message_type, message_arg);\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "PowerDisplay compares the first token from Split(' ', 2) directly against command constants, so a CRLF suffix prevents no-argument commands from matching."
+      }
+    },
+    {
+      "id": "own-native-ipc-and-start-listener-first",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Own native IPC endpoints and start the listener before the child",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Own native IPC endpoints and start the listener before the child\n\n**Severity:** `high`\n\nBoth process managers store an owning `TwoWayPipeMessageIPC` in a raw pointer, so failed starts, normal stops, and restarts can leave the endpoint and its worker resources alive. Please use `std::unique_ptr`, reset it during failure and shutdown, and create/start the named-pipe listener before launching the module process. This gives the child a ready endpoint for its first message and makes restart cleanup deterministic."
+    },
+    {
+      "id": "retain-managed-ipc-and-complete-startup",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Retain and close managed IPC for the application lifetime",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Retain and close managed IPC for the application lifetime\n\n**Severity:** `high`\n\nThe new `TwoWayPipeMessageIPCManaged` instances are local variables, so the applications cannot keep the callback channel alive or end it during shutdown. Retain each endpoint in the application object and call `End()` from its existing disposal/shutdown path. For PowerDisplay, initialize the main window before beginning IPC processing and trim the received message before parsing so the first delivered command cannot be dropped or retain a legacy delimiter."
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50253",
+      "type": "request_changes",
+      "label": "Request changes with 2 inline suggestions and 2 companion comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Draft only. Explicit approval and a final current-head freshness check are required before posting.",
+      "review": {
+        "pr": 50253,
+        "pullRequest": 50253,
+        "repository": "microsoft/PowerToys",
+        "event": "REQUEST_CHANGES",
+        "head_sha": "7a63a32764391f84dfeef7099641b30ede79f9a6",
+        "body_prefix": "Thanks for consolidating these IPC implementations. The migration needs the following framing, ownership, and startup-order fixes before merge."
+      }
+    }
+  ]
 }
