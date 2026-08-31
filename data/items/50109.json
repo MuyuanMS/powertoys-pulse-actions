@@ -6,9 +6,9 @@
   "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T07:43:33.7145705Z",
-  "evaluated_at": "2026-08-31T07:43:33.7145705Z",
-  "source_updated_at": "2026-08-25T12:16:54Z",
+  "generated_at": "2026-08-31T09:58:05Z",
+  "evaluated_at": "2026-08-31T09:58:05Z",
+  "source_updated_at": "2026-08-31T08:21:29Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50109",
   "title": "Command Palette doesn't open with shortcut sometimes",
   "author": "RexLuscus56",
@@ -18,48 +18,52 @@
     "Needs-Triage",
     "Product-Command Palette"
   ],
+  "assignees": [],
   "comments": 1,
   "confidence": "Medium-high",
+  "summary": "Command Palette activation fails only while PowerToys Settings has focus on 0.101.2362; later dedupe activity treats this as the canonical CmdPal focus-blocking issue for #50219.",
   "status": {
     "glyph": "🎯",
     "label": "Actionable design candidate",
-    "detail": "The failure is narrowly reproducible only while the PowerToys Settings window has focus, but no current fix or confirmed root cause exists."
+    "detail": "The deterministic Settings-focus reproduction and later duplicate references justify a focused activation-path design investigation."
   },
   "next_action": {
     "glyph": "🎯",
     "label": "Queue focused design investigation",
-    "reason": "Trace shortcut handling across Settings, CmdPalKeyboardService, and summon activation before exposing approve_design."
+    "reason": "Trace shortcut handling across Settings focus, CmdPalKeyboardService, and summon activation before exposing approve_design."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue provides a deterministic focus-dependent reproduction, current version/environment details, and a diagnostic attachment; it is sufficiently scoped for code investigation without asking the reporter for generic evidence.",
+    "rationale": "This is a credible current 0.101 issue because the failure is deterministic, scoped to a PowerToys-owned focused window, and later duplicate-digest activity keeps #50109 as the canonical issue for related CmdPal focus-blocking reports.",
     "evidence": [
-      "CmdPal opens normally except when the PowerToys Settings window is focused.",
-      "Pressing the configured Win+Alt+Z shortcut in that state produces the Windows stop sound.",
-      "The issue includes a PowerToys report ZIP, although automated triage could not safely parse it.",
-      "No linked PR or owner currently handles this Settings-focus scenario."
+      "The reporter uses PowerToys 0.101.2362 on Windows 11 25H2, running as administrator.",
+      "CmdPal opens normally except when the PowerToys Settings window is focused; pressing Win+Alt+Z then produces the Windows stop sound.",
+      "The issue includes a PowerToys report ZIP, although automated triage could not parse it safely.",
+      "Dedupe digest #50263 marks #50109 as the canonical issue and #50219 as a duplicate-like related report.",
+      "CmdPalKeyboardService installs a low-level keyboard hook and MainWindow dispatches matched hotkeys through HandleSummon/Summon."
     ],
-    "recommended_action": "Queue a full design investigation and keep stage design_in_progress; do not expose approve_design until the activation path and fix are verified.",
-    "evaluated_at": "2026-08-31T07:43:33.7145705Z",
-    "source_updated_at": "2026-08-25T12:16:54Z"
+    "recommended_action": "Queue a focused design investigation and keep stage design_in_progress; do not expose approve_design until the activation path and fix are verified.",
+    "evaluated_at": "2026-08-31T09:58:05Z",
+    "source_updated_at": "2026-08-31T08:21:29Z"
   },
   "issue_context": {
     "summary": "Command Palette activation works generally but fails with a system stop sound whenever the PowerToys Settings window is the focused foreground window.",
     "known_information": [
       "The report is against PowerToys 0.101.2362 on Windows 11 25H2, installed system-wide and running elevated.",
       "The configured shortcut is Win+Alt+Z with no reported conflict.",
-      "The failure is limited to PowerToys Settings focus and is consistently absent when another window has focus.",
-      "A diagnostic ZIP is attached, but automated triage rejected the archive structure and did not analyze its contents."
+      "The failure is limited to PowerToys Settings focus and is absent when another window has focus.",
+      "A diagnostic ZIP is attached, but automated triage rejected the archive structure and did not analyze its contents.",
+      "Dedupe digest #50263 later identifies #50109 as the canonical issue for #50219."
     ],
     "inferences": [
-      "The Settings window may consume, reject, or alter the shortcut before the CmdPal summon path completes, but the current evidence does not identify which process or handler owns the stop sound."
+      "The Settings window may consume, reject, or alter the shortcut before the CmdPal summon path completes, but current evidence does not identify which handler produces the stop sound.",
+      "The issue is related to elevated-foreground focus failures but is narrower because the focused window is PowerToys Settings itself."
     ],
-    "analysis": "Unlike #50219/#39704, this issue is not about an elevated third-party foreground process; it names a specific PowerToys window and deterministic sound/focus behavior. The supplied evidence is enough to begin a focused activation-path investigation, but not enough for an implementation-grade design.",
+    "analysis": "The supplied reproduction is deterministic enough to start a code investigation without requesting another generic diagnostic. The linked duplicate digest strengthens #50109 as the right item to keep queued for design.",
     "initial_investigation": [
-      "Reviewed the complete body, attached-report reference, triage comment, labels, and all cross-references; no fix PR is linked.",
-      "Inspected CmdPalKeyboardService/KeyboardListener.cpp, which installs the low-level hook and dispatches matching hotkeys, and CmdPal UI summon handling in ShellPage.xaml.cs.",
-      "Inspected Settings CmdPal integration in Settings.UI/ViewModels/CmdPalViewModel.cs and CmdPalPage.xaml.cs; Settings reads CmdPal configuration and launches it via x-cmdpal URIs.",
-      "Compared #39704 and #50219; those concern elevated foreground applications and do not account for this Settings-only focus condition."
+      "src/modules/cmdpal/CmdPalKeyboardService/KeyboardListener.cpp installs a low-level keyboard hook and invokes the matching action id when modifier/key state matches.",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs starts KeyboardListener, wires HandleSummon, and sends HotkeySummonMessage through Summon.",
+      "Related #50219 concerns elevated foreground applications and was flagged as duplicate-like under #50109 by #50263; closed #45126 documents earlier elevated Task Manager focus behavior."
     ],
     "information_gaps": []
   },

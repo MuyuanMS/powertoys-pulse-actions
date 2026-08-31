@@ -6,8 +6,8 @@
   "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T07:48:57.569Z",
-  "evaluated_at": "2026-08-31T07:48:57.569Z",
+  "generated_at": "2026-08-31T09:58:05Z",
+  "evaluated_at": "2026-08-31T09:58:05Z",
   "source_updated_at": "2026-08-26T23:33:31Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50152",
   "title": "Advanced Paste: Paste with AI can't find Foundry Local models",
@@ -21,11 +21,11 @@
   "assignees": [],
   "comments": 1,
   "confidence": "High",
-  "summary": "Foundry Local 0.10.3 is healthy with loaded models, but PowerToys’ SDK-backed discovery returns an empty list and reports no downloaded models.",
+  "summary": "Foundry Local 0.10.3 is healthy with loaded models, but PowerToys 0.101.2362 Advanced Paste shows an empty Foundry Local model list.",
   "status": {
     "glyph": "🛠️",
     "label": "Provider compatibility design ready",
-    "detail": "Complete service proof and current code identify the swallowed empty-list path."
+    "detail": "The issue supplies enough CLI/service evidence, and source inspection identifies the swallowed empty-list path."
   },
   "next_action": {
     "glyph": "🧭",
@@ -34,36 +34,35 @@
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The service, models, and UI failure are demonstrated well enough to investigate without more reporter data.",
+    "rationale": "This is a credible 0.101 Advanced Paste integration issue. The reporter demonstrated Foundry Local service health and loaded models, while current PowerToys code can turn provider discovery exceptions into an empty list indistinguishable from no models.",
     "evidence": [
-      "Foundry Local 0.10.3 reports a ready service and loaded phi-4-mini.",
-      "The model works in Foundry CLI and another model has the same result.",
-      "Refresh and service/PowerToys restarts do not help.",
-      "PowerToys 0.101.2362 reports no models downloaded."
+      "Foundry Local 0.10.3 reports service Ready and loaded phi-4-mini.",
+      "The model works in Foundry CLI, and installing/loading qwen3.5-2b-text produces the same PowerToys result.",
+      "Refresh, foundry server restart, and PowerToys restart do not help.",
+      "FoundryClient.ListCachedModels catches exceptions, logs the error, and returns an empty list; Advanced Paste then displays the no-model UI.",
+      "Closed #45340 is a related Foundry integration failure but concerned 400 Bad Request at request time, not discovery."
     ],
-    "recommended_action": "Continue compatibility and error-surfacing design; keep approval gated until exact SDK behavior and tests are established.",
-    "evaluated_at": "2026-08-31T07:48:57.569Z",
+    "recommended_action": "Queue a compatibility and error-surfacing design; keep approval gated until exact SDK behavior and tests are established.",
+    "evaluated_at": "2026-08-31T09:58:05Z",
     "source_updated_at": "2026-08-26T23:33:31Z"
   },
   "issue_context": {
     "summary": "Advanced Paste cannot enumerate models from a functioning current Foundry Local installation.",
     "known_information": [
-      "Foundry Local 0.10.3 has phi-4-mini loaded.",
-      "The local service is reachable at 127.0.0.1.",
-      "PowerToys is 0.101.2362 on Windows 11 Enterprise 25H2.",
-      "The archive was rejected by automation, but the body has extensive CLI evidence."
+      "Foundry Local 0.10.3 has phi-4-mini loaded and the service is reachable on localhost.",
+      "Foundry CLI chat works with phi-4-mini.",
+      "PowerToys is 0.101.2362 on Windows 11 Enterprise 25H2 and is running as admin.",
+      "The body includes extensive CLI output; the attached archive was rejected by automation."
     ],
     "inferences": [
-      "The Foundry SDK call may throw or return data incompatible with the installed service.",
-      "Converting exceptions to an empty list makes integration failure look like no models."
+      "The Foundry SDK call may throw or return data incompatible with the installed service, and PowerToys may be presenting that failure as an empty catalog."
     ],
-    "analysis": "The behavior is isolated to provider discovery. Another generic ZIP would not change the next step: reproduce against 0.10.3 and distinguish errors from an empty catalog.",
+    "analysis": "The behavior is isolated to provider discovery. Another generic ZIP would not change the next step: reproduce against Foundry Local 0.10.3 and distinguish errors from a genuine empty model catalog.",
     "initial_investigation": [
-      "Directory.Packages.props pins Microsoft.AI.Foundry.Local 0.3.0.",
-      "FoundryClient.cs calls FoundryLocalManager.ListCachedModelsAsync.",
-      "ListCachedModels catches every exception and returns an empty collection.",
-      "FoundryLocalModelProvider passes that collection to the no-model UI state.",
-      "Closed #45340 concerned port/request handling, not discovery."
+      "src/common/LanguageModelProvider/LanguageModelProvider.csproj references Microsoft.AI.Foundry.Local.",
+      "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs calls FoundryLocalManager.ListCachedModelsAsync and returns [] after logging any exception.",
+      "src/settings-ui/Settings.UI/SettingsXAML/Views/AdvancedPastePage.xaml.cs maps an empty cached model list to a no-local-model status.",
+      "Search found #45340 as a closed related issue, not a confirmed duplicate/fix for discovery on Foundry Local 0.10.3."
     ],
     "information_gaps": []
   },

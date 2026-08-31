@@ -6,8 +6,8 @@
   "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T07:48:09.65Z",
-  "evaluated_at": "2026-08-31T07:48:09.65Z",
+  "generated_at": "2026-08-31T09:58:05Z",
+  "evaluated_at": "2026-08-31T09:58:05Z",
   "source_updated_at": "2026-08-29T21:25:56Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50239",
   "title": "Shortcut Conflict shown when there's no documented conflict.",
@@ -21,11 +21,11 @@
   "assignees": [],
   "comments": 2,
   "confidence": "High",
-  "summary": "PowerToys reports Win+Shift+C as a system shortcut conflict even though Color Picker still receives it and the linked Windows documentation does not identify that chord.",
+  "summary": "PowerToys 0.101.2362 reports Win+Shift+C as a system shortcut conflict even though Color Picker still receives the shortcut and the linked Windows shortcut documentation does not list that chord.",
   "status": {
     "glyph": "🛠️",
     "label": "Design investigation ready",
-    "detail": "The current reproduction and detector implementation are specific enough for code investigation."
+    "detail": "The current reproduction and conflict-detector implementation are specific enough for code investigation."
   },
   "next_action": {
     "glyph": "🧭",
@@ -34,35 +34,35 @@
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue is current, reproducible, narrowly scoped, and repository inspection identifies the detector and attribution path.",
+    "rationale": "This appears to be a current 0.101 behavior, but the evidence supports a conflict-attribution/design investigation rather than a confirmed root cause.",
     "evidence": [
-      "Win+Shift+C is reported as a system conflict on 0.101.2362.",
-      "Color Picker continues to work with the chord.",
-      "The linked Windows shortcut reference has no matching entry.",
-      "The reporter reconfirmed after updating."
+      "The reporter reproduced on 0.101.2362 after manually updating.",
+      "Win+Shift+C still opens Color Picker, so there is no functional activation failure.",
+      "The UI labels the conflict as a system shortcut and links to Windows documentation that the reporter says has no Win+Shift+C entry.",
+      "hotkey_conflict_detector.cpp treats RegisterHotKey ERROR_HOTKEY_ALREADY_REGISTERED as a system conflict even though that failure can also mean another application owns the chord."
     ],
-    "recommended_action": "Continue focused design for conflict probing, attribution, and wording; do not expose approve_design until implementation-grade.",
-    "evaluated_at": "2026-08-31T07:48:09.65Z",
+    "recommended_action": "Queue a focused design for conflict attribution and wording; do not expose approve_design until an implementation-grade fix plan exists.",
+    "evaluated_at": "2026-08-31T09:58:05Z",
     "source_updated_at": "2026-08-29T21:25:56Z"
   },
   "issue_context": {
-    "summary": "The conflict detector labels a functioning Color Picker chord as a Windows system conflict and links documentation that does not support the classification.",
+    "summary": "The conflict detector labels a functioning Color Picker chord as a Windows system conflict and points users to documentation that does not support the classification.",
     "known_information": [
-      "Win+Shift+C still opens Color Picker.",
-      "PowerToys displays one conflict attributed to a system shortcut.",
-      "The behavior persists on 0.101.2362.",
-      "No duplicate, assignee, or linked fix is present."
+      "The configured chord is Win+Shift+C for Color Picker.",
+      "The home screen displays one shortcut conflict.",
+      "The shortcut still opens Color Picker.",
+      "The reporter confirmed the same behavior after updating to PowerToys 0.101.2362.",
+      "No assignee, duplicate, or linked fix is present."
     ],
     "inferences": [
-      "RegisterHotKey failure may mean a system reservation or another application; the probe cannot identify the owner.",
-      "Color Picker may use an activation path different from the registration probe."
+      "The conflict probe may be detecting a registration failure without enough evidence to identify Windows as the owner.",
+      "Color Picker may use a different activation path from the conflict probe, allowing the shortcut to work despite the warning."
     ],
-    "analysis": "More user diagnostics are unnecessary: current code converts a registration failure directly into the stronger claim that the system owns the shortcut.",
+    "analysis": "The current report is specific and already validated on 0.101.2362. More reporter data is unlikely to change the next step; maintainers need to inspect the detector semantics and UI attribution.",
     "initial_investigation": [
-      "hotkey_conflict_detector.cpp::HasConflictWithSystemHotkey uses RegisterHotKey and treats ERROR_HOTKEY_ALREADY_REGISTERED as system conflict.",
-      "GetAllConflicts synthesizes an owner named System.",
-      "The detector has no owner identity, so the UI link can overstate the evidence.",
-      "Issue search found no separate Win+Shift+C duplicate."
+      "src/runner/hotkey_conflict_detector.cpp::HasConflictWithSystemHotkey uses RegisterHotKey with a temporary id.",
+      "The same code returns true on ERROR_HOTKEY_ALREADY_REGISTERED and GetAllConflicts surfaces that as System ownership.",
+      "Targeted issue search found this issue as the only open Win+Shift+C conflict report."
     ],
     "information_gaps": []
   },
