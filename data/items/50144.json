@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50144,
   "kind": "issue",
   "track": "fix",
   "stage": "design_in_progress",
-  "owes": "maintainer",
+  "owes": "agent",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:45:16.646Z",
+  "evaluated_at": "2026-08-31T07:45:16.646Z",
   "source_updated_at": "2026-08-26T15:24:16Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50144",
   "title": "Render svg preview images in File Explorer is too slow",
@@ -17,29 +17,56 @@
     "Issue-Bug",
     "Needs-Triage"
   ],
+  "assignees": [],
   "comments": 0,
-  "confidence": "Medium-high",
+  "confidence": "Medium",
   "status": {
-    "glyph": "🎯",
-    "label": "Actionable design candidate",
-    "detail": "The issue has a concrete bug report for File Explorer: Thumbnail preview with reproduction evidence and enough diagnostic context for deeper design investigation."
+    "glyph": "🛠️",
+    "label": "Performance design investigation queued",
+    "detail": "The report matches the current per-thumbnail synchronous process/render handoff, but profiling and implementation-grade design are still needed."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Queue full design investigation",
-    "reason": "Queue this issue for a full fork-side design investigation before exposing an approve-design action."
+    "glyph": "🛠️",
+    "label": "Develop SVG thumbnail performance design",
+    "reason": "Profile the provider and design bounded reuse/concurrency without premature approval."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue has a concrete bug report for File Explorer: Thumbnail preview with reproduction evidence and enough diagnostic context for deeper design investigation.",
+    "rationale": "The issue gives a clear workload and severe per-item latency, while source reveals a plausible high-cost ownership path suitable for focused design investigation.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage",
-      "Candidate sources: created_week, updated_week",
-      "Issue body includes reproduction steps and a bug-report ZIP or equivalent diagnostic evidence."
+      "A first visit to a directory with at least 50 SVG files renders thumbnails one at a time at roughly 4–5 seconds each.",
+      "SvgThumbnailProvider::GetThumbnail writes each stream to a temporary SVG, starts PowerToys.SvgThumbnailProvider.exe, waits synchronously with an infinite timeout, then loads a temporary BMP.",
+      "The provider has output-correctness tests but the inspected path has no throughput or bounded-time test."
     ],
-    "recommended_action": "Queue this issue for a full fork-side design investigation before exposing an approve-design action.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Develop a profiled implementation-grade design covering process reuse or in-process rendering, timeout/cancellation, Shell concurrency, cache behavior, and representative SVG tests.",
+    "evaluated_at": "2026-08-31T07:45:16.646Z",
     "source_updated_at": "2026-08-26T15:24:16Z"
+  },
+  "issue_context": {
+    "summary": "SVG thumbnail generation is extremely slow for a folder of many files, and the provider pays a synchronous external-process and temporary-file handoff for each thumbnail.",
+    "known_information": [
+      "The author supplied version, Windows build, workload size, observed latency, and screenshot.",
+      "The delay occurs on the first directory visit while thumbnails are generated.",
+      "The native shell provider waits for a managed renderer process per request.",
+      "Recent history hardened cleanup/decoding but does not establish a throughput fix."
+    ],
+    "inferences": [
+      "Per-request process startup and serialization may contribute materially, but profiling is needed before calling it root cause.",
+      "Explorer scheduling may also affect visible serialization, so blind parallelism could create COM or resource problems."
+    ],
+    "analysis": "The source cost center is concrete enough for design work, not approve_design. The design must measure startup/render/cache costs and choose a safe lifetime/concurrency strategy compatible with Explorer.",
+    "initial_investigation": [
+      "Inspected src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProvider.cpp.",
+      "Located SVG thumbnail correctness tests under UnitTests-SvgThumbnailProvider.",
+      "Reviewed cleanup/decoding and provider-combination history; no linked issue-specific fix PR exists."
+    ],
+    "information_gaps": [
+      {
+        "information": "A representative profile on current stable/main separating startup, rendering, and Explorer scheduling.",
+        "why_needed": "The design must target the dominant cost and avoid unsafe speculative parallelism.",
+        "how_to_collect": "Use provider logs/profiling with a representative 50-file SVG directory during full design investigation."
+      }
+    ]
   },
   "actions": []
 }

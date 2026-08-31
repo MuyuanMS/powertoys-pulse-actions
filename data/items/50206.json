@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 4,
+  "number": 50206,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_in_progress",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-08-31T07:48:33.332Z",
+  "evaluated_at": "2026-08-31T07:48:33.332Z",
+  "source_updated_at": "2026-08-28T14:08:53Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50206",
+  "title": "Shortcut Guide V2's Win long-press activation breaks FancyZones Win+Arrow window cycling",
+  "author": "jrobbins-LiveData",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Product-Shortcut Guide",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "confidence": "High",
+  "summary": "Shortcut Guide’s Windows-key hold timer can fire while FancyZones consumes Win+Arrow input, interrupting repeated zone cycling during one sustained Win hold.",
+  "status": {
+    "glyph": "🛠️",
+    "label": "Cross-module design ready",
+    "detail": "The workflow is reproducible and recent input-hook changes identify a focused coordination boundary."
+  },
+  "next_action": {
+    "glyph": "🧭",
+    "label": "Design Win-hold cancellation",
+    "reason": "Ensure any Win+key chord cancels hold activation even when another PowerToys hook consumes it."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The user supplied a reliable cross-module reproduction and repository history shows the new Win-hold activation path and hooks that can prevent cancellation.",
+    "evidence": [
+      "On 0.101.2362 the first Win+Arrow moves a window, then Shortcut Guide appears.",
+      "Disabling Shortcut Guide restores FancyZones behavior.",
+      "Shortcut Guide Win-hold options landed in #49661 and #50000 shortly before this report.",
+      "The workflow intentionally holds Win across multiple arrow presses."
+    ],
+    "recommended_action": "Continue cross-module design for timer cancellation and regression coverage; keep design_in_progress until hook coordination and tests converge.",
+    "evaluated_at": "2026-08-31T07:48:33.332Z",
+    "source_updated_at": "2026-08-28T14:08:53Z"
+  },
+  "issue_context": {
+    "summary": "A sustained Win key is valid for repeated FancyZones moves, but Shortcut Guide interprets the same hold as activation after the first move.",
+    "known_information": [
+      "Override Windows Snap and Shortcut Guide Win-hold activation are enabled.",
+      "The first arrow move succeeds; the guide then appears and later arrows stop cycling.",
+      "Disabling Shortcut Guide is a complete workaround.",
+      "The issue is routed to Product-Shortcut Guide."
+    ],
+    "inferences": [
+      "FancyZones may consume Win+Arrow before the centralized hold tracker observes the different key and cancels its timer.",
+      "The fix likely belongs at the shared pressed-key coordination boundary."
+    ],
+    "analysis": "The deterministic interaction was introduced with recent Win-hold behavior. All non-Win chords during a held Win key must cancel the long-press action across hook ordering.",
+    "initial_investigation": [
+      "powertoy_module.cpp registers Shortcut Guide pressed-key actions for VK_LWIN/VK_RWIN.",
+      "centralized_kb_hook.cpp starts a 900 ms timer and cancels it when a different key reaches that hook.",
+      "ShortcutGuideModuleInterface/dllmain.cpp exposes the 900 ms hold action.",
+      "FancyZones handles Win+Arrow through its own low-level path, requiring hook-order regression tests.",
+      "Issue search found no exact duplicate."
+    ],
+    "information_gaps": []
+  },
+  "actions": []
+}

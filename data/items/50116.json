@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50116,
   "kind": "issue",
   "track": "fix",
   "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:43:33.7145705Z",
+  "evaluated_at": "2026-08-31T07:43:33.7145705Z",
   "source_updated_at": "2026-08-26T05:59:40Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50116",
   "title": "Mouse without border: KeysNotMatched",
@@ -22,37 +22,55 @@
   "confidence": "High",
   "status": {
     "glyph": "🔁",
-    "label": "Likely duplicate",
-    "detail": "The daily duplicate digest flags this issue as a likely duplicate of #26537, #48708."
+    "label": "Duplicate connection-key bug",
+    "detail": "Open issue #27945 reports the same KeysNotMatched failure and the same manual settings.json key workaround across machines."
   },
   "next_action": {
     "glyph": "🔁",
-    "label": "Post duplicate triage comment",
-    "reason": "Review and, if correct, post the duplicate-close comment pointing to #26537, #48708."
+    "label": "Post duplicate response",
+    "reason": "Consolidate the exact symptom and workaround under #27945 rather than the looser file-access matches suggested by automation."
   },
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The daily duplicate digest flags this issue as a likely duplicate of #26537, #48708.",
+    "rationale": "Issue #27945 is the strongest existing match: connection keys stop matching, UI reset attempts fail, and manually setting the same SecurityKey in each settings.json restores connectivity.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Product-Mouse Without Borders",
-      "Candidate sources: created_week, updated_week",
-      "Duplicate digest mapped this issue to #26537, #48708."
+      "The reporter tried generated, pasted, and manual 16-character keys, with and without IP mapping, and reinstalling.",
+      "Editing the same SecurityKey into both settings.json files while Mouse Without Borders is closed works around the failure.",
+      "#27945 contains multiple reports of the same KeysNotMatched behavior and manual settings.json key workaround."
     ],
-    "recommended_action": "Review and, if correct, post the duplicate-close comment pointing to #26537, #48708.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Post a duplicate response linking #27945 and preserve the detailed UI-versus-file update observations there.",
+    "evaluated_at": "2026-08-31T07:43:33.7145705Z",
     "source_updated_at": "2026-08-26T05:59:40Z"
+  },
+  "issue_context": {
+    "summary": "Mouse Without Borders rejects matching security keys entered through its setup UI, while directly setting the same key in the settings.json files on both machines restores the connection.",
+    "known_information": [
+      "The reporter tested generated, copied, simple manual, and IP-mapped keys without success.",
+      "Mouse Without Borders must be stopped while editing or it overwrites the file value.",
+      "Open issue #27945 includes the same invalid/mismatched-key symptom and repeated reports that manual settings.json synchronization fixes it."
+    ],
+    "inferences": [
+      "A settings synchronization or UI persistence race is plausible, but the report does not prove that file-watcher concurrency is the sole cause."
+    ],
+    "analysis": "The automated digest emphasized #26537/#48708 file-access errors, but the live history of #27945 is a closer symptom-and-workaround match. A duplicate response should use the strongest canonical evidence rather than overstate an unconfirmed root cause.",
+    "initial_investigation": [
+      "Reviewed the full body, all three comments, labels, timelines, and repeated duplicate-digest mappings.",
+      "Compared #26537, #48708, #26717, and #27945; #27945 most directly matches KeysNotMatched plus manual SecurityKey repair.",
+      "Inspected MouseWithoutBorders/App/Class/Setting.cs: a file watcher reloads SecurityKey, updates Encryption.MyKey, reopens sockets, and asynchronous saving can overwrite settings, confirming this is the relevant ownership boundary without proving the exact race."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
       "id": "post-duplicate-50116",
       "type": "post_comment",
-      "label": "Post duplicate triage comment",
+      "label": "Post duplicate response",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 50116,
-        "body": "This looks like it is already tracked by #26537 and #48708. Could you continue discussion there so we keep the investigation in one place? If this issue covers a distinct scenario, please reply with the specific difference and fresh repro details."
+        "body": "Thanks for documenting the failed key-entry paths and the manual settings.json workaround. The closest existing tracker is #27945: it reports the same KeysNotMatched/invalid-key connection failure, and multiple users there also restore connectivity by placing the same SecurityKey in the settings.json file on each machine. This issue should be closed as a duplicate of #27945, with your observation that the running Mouse Without Borders process overwrites manual edits retained there as useful additional evidence."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }

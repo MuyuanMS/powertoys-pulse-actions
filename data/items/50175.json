@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50175,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:48:33.332Z",
+  "evaluated_at": "2026-08-31T07:48:33.332Z",
   "source_updated_at": "2026-08-27T19:31:30Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50175",
   "title": "CmdPal: Bookmark {placeholder} field retains last-entered value on every subsequent open",
@@ -17,43 +17,53 @@
     "Issue-Bug",
     "Product-Command Palette"
   ],
+  "assignees": [],
   "comments": 0,
-  "confidence": "Medium",
+  "confidence": "High",
+  "summary": "Command Palette bookmark placeholder controls are cached with the bookmark command and retain StringParameterRun values after a successful launch.",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🛠️",
+    "label": "Focused design ready",
+    "detail": "The deterministic reproduction and source analysis match current main."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "🧭",
+    "label": "Design placeholder reset lifecycle",
+    "reason": "Choose and test the lifecycle boundary that clears values without breaking failed launches or repeated placeholders."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The current object lifetime and missing reset are directly visible in source.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Command Palette",
-      "Candidate sources: created_week, updated_week",
-      "Missing: numbered reliable reproduction steps, fresh PowerToys bug-report ZIP."
+      "The form starts empty only on first open, then reuses the last value.",
+      "The issue identifies the involved classes.",
+      "Current main stores StringParameterRun instances on a long-lived page.",
+      "LaunchWithCurrentValues dismisses after success without clearing runs."
     ],
-    "recommended_action": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Design and test reset on successful launch or page activation; do not approve until lifecycle and failure semantics are finalized.",
+    "evaluated_at": "2026-08-31T07:48:33.332Z",
     "source_updated_at": "2026-08-27T19:31:30Z"
   },
-  "actions": [
-    {
-      "id": "request-info-50175",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 50175,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the active window/app when invoking Command Palette, any installed CmdPal extensions involved, and the relevant Command Palette logs from the bug report."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ]
+  "issue_context": {
+    "summary": "Dynamic bookmark fields persist for the session although users expect a fresh parameter form for each invocation.",
+    "known_information": [
+      "A `{placeholder}` bookmark starts empty on first open.",
+      "Later opens are prefilled with the last submitted value.",
+      "The behavior reproduces on 0.101.2362.",
+      "No comments, assignee, duplicate, or linked fix exists."
+    ],
+    "inferences": [
+      "Clearing only after successful launch likely preserves failed input for correction.",
+      "Rebuilding the command on every activation may be broader than necessary."
+    ],
+    "analysis": "The source trace matches current main, so more diagnostics would not change triage; reset timing and tests are the remaining work.",
+    "initial_investigation": [
+      "BookmarkListItem.cs creates and retains one BookmarkPlaceholderPage as the command.",
+      "BuildParameterRuns creates StringParameterRun objects once in the constructor.",
+      "LaunchWithCurrentValues reads Text and dismisses without reset.",
+      "The parameter-page implementation landed in #47886; no later reset fix appears."
+    ],
+    "information_gaps": []
+  },
+  "actions": []
 }

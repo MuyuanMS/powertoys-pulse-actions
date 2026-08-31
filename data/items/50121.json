@@ -1,41 +1,89 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50121,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:45:16.646Z",
+  "evaluated_at": "2026-08-31T07:45:16.646Z",
   "source_updated_at": "2026-08-26T04:35:14Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50121",
   "title": "Installer corrupts system PATH: DSCModules entry written with trailing quote, breaking cmd.exe executable lookup for subsequent PATH dirs",
   "author": "zumtru",
   "authorAssociation": "NONE",
   "labels": [],
+  "assignees": [],
   "comments": 1,
-  "confidence": "Medium-low",
+  "confidence": "Medium",
   "status": {
-    "glyph": "🧭",
-    "label": "Needs maintainer triage",
-    "detail": "This recent/hot item is not labeled as an Issue-Bug and does not have enough safe evidence for an automated public issue action."
+    "glyph": "💬",
+    "label": "Needs installer transaction evidence",
+    "detail": "The malformed PATH and impact are documented, but current source has one WiX Environment entry and no log identifying which transaction emitted the quote."
   },
   "next_action": {
-    "glyph": "🧭",
-    "label": "No safe public action",
-    "reason": "Keep it in normal maintainer triage unless a product owner asks for a design investigation."
+    "glyph": "💬",
+    "label": "Request installer transaction evidence",
+    "reason": "Capture current reproduction logs and before/after PATH values to identify the writer."
   },
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "This recent/hot item is not labeled as an Issue-Bug and does not have enough safe evidence for an automated public issue action.",
+    "status": "needs_information",
+    "rationale": "Registry evidence proves corruption occurred, but quote leakage is still an inference. Logs are required before choosing an authoring fix, upgrade repair, or external-writer response.",
     "evidence": [
-      "Labels: ",
-      "Candidate sources: created_week, updated_week"
+      "The author captured a machine PATH entry ending in DSCModules\" and deleting only it restored cmd.exe lookup.",
+      "A second correctly formed DSCModules entry existed later, suggesting multiple transactions or paths.",
+      "Current installer authoring appends [DSCModulesReferenceFolder] once through a WiX Environment element.",
+      "No linked fix PR or duplicate is present."
     ],
-    "recommended_action": "Keep it in normal maintainer triage unless a product owner asks for a design investigation.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Request a fresh /bugreport, bootstrapper/MSI log, and before/after PATH export from a current reproduction before designing cleanup or authoring changes.",
+    "evaluated_at": "2026-08-31T07:45:16.646Z",
     "source_updated_at": "2026-08-26T04:35:14Z"
   },
-  "actions": []
+  "issue_context": {
+    "summary": "A PowerToys update allegedly wrote a quoted DSCModules machine-PATH entry that broke cmd.exe lookup for all later directories, while a correct duplicate also existed.",
+    "known_information": [
+      "The exact registry value and cmd.exe failure mode are supplied.",
+      "where.exe and other environments still found later directories.",
+      "Removing the malformed entry fixed the machine immediately.",
+      "Current WiX source uses DSCModulesReferenceFolder as the Environment value."
+    ],
+    "inferences": [
+      "An installer transaction may have serialized a directory property with an unmatched quote, but source alone does not confirm this.",
+      "The correct duplicate could be from a later repair pass rather than a second current code path."
+    ],
+    "analysis": "The decisive missing evidence is provenance: which bundle/MSI action wrote the malformed value. A current diagnostic and installer logs are needed, not a generic checklist.",
+    "initial_investigation": [
+      "Inspected installer/PowerToysSetupVNext/Core.wxs and DscResources.wxs.",
+      "Traced PATH authoring to DSC v3 installer history and found no alternate current writer.",
+      "Searched for linked fixes and found none."
+    ],
+    "information_gaps": [
+      {
+        "information": "A fresh diagnostic archive from a current install/update that creates the malformed entry.",
+        "why_needed": "This identifies installed versions, scope, and installer state.",
+        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport and upload the ZIP."
+      },
+      {
+        "information": "The bootstrapper/MSI log and machine PATH immediately before and after the transaction.",
+        "why_needed": "This ties the quote to a specific action and distinguishes current authoring from residue or another writer.",
+        "how_to_collect": "Preserve installer logs and export HKLM Environment PATH before/after, redacting unrelated sensitive paths."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-50121",
+      "type": "request_info",
+      "label": "Request installer transaction evidence",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50121,
+        "body": "Thanks for the exact malformed PATH value, the second correctly formed entry, and confirmation that deleting only the quoted entry restores cmd.exe lookup. To identify which installer transaction wrote it, please reproduce on current stable or Preview if possible and add a comment containing `/bugreport` immediately after the update. Please also attach the corresponding PowerToys bootstrapper/MSI log and a before/after export of the machine PATH value, with unrelated sensitive paths redacted. The live WiX authoring has a single `[DSCModulesReferenceFolder]` Environment entry, so transaction evidence is needed to distinguish current authoring, upgrade residue, or another writer."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

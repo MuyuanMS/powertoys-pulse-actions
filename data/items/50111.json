@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50111,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
+  "stage": "design_in_progress",
+  "owes": "agent",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:45:16.646Z",
+  "evaluated_at": "2026-08-31T07:45:16.646Z",
   "source_updated_at": "2026-08-25T13:44:22Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50111",
   "title": "Failed to remove PowerToys folder when updating from stable to Preview",
@@ -18,43 +18,57 @@
     "Area-Setup/Install",
     "Needs-Triage"
   ],
+  "assignees": [],
   "comments": 2,
-  "confidence": "High",
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔁",
-    "label": "Likely duplicate",
-    "detail": "The daily duplicate digest flags this issue as a likely duplicate of #50038."
+    "glyph": "🛠️",
+    "label": "Installer design investigation queued",
+    "detail": "The failure is independently corroborated and maps to scheduled-task cleanup, but the failing HRESULT and implementation-grade fix design are not established."
   },
   "next_action": {
-    "glyph": "🔁",
-    "label": "Post duplicate triage comment",
-    "reason": "Review and, if correct, post the duplicate-close comment pointing to #50038."
+    "glyph": "🛠️",
+    "label": "Investigate scheduled-task cleanup design",
+    "reason": "Reproduce with logs and design safe task deletion behavior before approval."
   },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The daily duplicate digest flags this issue as a likely duplicate of #50038.",
+    "status": "actionable_design",
+    "rationale": "The author supplied clear stable-to-Preview per-user steps, a maintainer independently sees the warning, and the source owner is identifiable.",
     "evidence": [
-      "Labels: Issue-Bug, Area-Setup/Install, Needs-Triage",
-      "Candidate sources: created_week, updated_week",
-      "Duplicate digest mapped this issue to #50038."
+      "The failure occurs upgrading a per-user WinGet stable installation with Preview x64.",
+      "The installer warns it failed to remove the PowerToys Task Scheduler folder.",
+      "Maintainer niels9001 reports seeing this for multiple versions and offered a reproducible machine.",
+      "RemoveScheduledTasksCA deletes tasks and then the folder; any surviving task or access failure emits the exact warning."
     ],
-    "recommended_action": "Review and, if correct, post the duplicate-close comment pointing to #50038.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Develop an implementation-grade design after capturing the failing HRESULT, covering task collection mutation, permissions, stable/Preview coexistence, and install scopes.",
+    "evaluated_at": "2026-08-31T07:45:16.646Z",
     "source_updated_at": "2026-08-25T13:44:22Z"
   },
-  "actions": [
-    {
-      "id": "post-duplicate-50111",
-      "type": "post_comment",
-      "label": "Post duplicate triage comment",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 50111,
-        "body": "This looks like it is already tracked by #50038. Could you continue discussion there so we keep the investigation in one place? If this issue covers a distinct scenario, please reply with the specific difference and fresh repro details."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ]
+  "issue_context": {
+    "summary": "Stable-to-Preview per-user upgrades can leave the PowerToys scheduled-task folder undeleted and display a warning, with independent maintainer corroboration.",
+    "known_information": [
+      "The original install used WinGet per-user scope and upgrade used Preview x64.",
+      "The issue is Area-Setup/Install and milestoned for 0.102.",
+      "A maintainer can reproduce it.",
+      "The custom action emits the exact warning after task or folder deletion failure."
+    ],
+    "inferences": [
+      "A task may remain due to deletion failure or collection mutation, but the HRESULT is unknown.",
+      "Stable/Preview task naming or ownership may contribute, but is unconfirmed."
+    ],
+    "analysis": "This has a maintainer reproduction path and precise source owner, so it should advance to design investigation, but not approval until logs identify the operation and a safe cross-channel strategy.",
+    "initial_investigation": [
+      "Inspected CustomAction.cpp::RemoveScheduledTasksCA.",
+      "Confirmed it emits the issue's exact warning.",
+      "Reviewed history and found no linked issue-specific fix PR."
+    ],
+    "information_gaps": [
+      {
+        "information": "The failing Task Scheduler HRESULT and which task remains.",
+        "why_needed": "Design differs for access denial, concurrent recreation, enumeration mutation, or channel ownership conflict.",
+        "how_to_collect": "Capture verbose installer logs and Task Scheduler folder contents during full design investigation."
+      }
+    ]
+  },
+  "actions": []
 }

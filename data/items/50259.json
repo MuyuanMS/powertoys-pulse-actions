@@ -1,41 +1,95 @@
 {
+  "schemaVersion": 4,
   "number": 50259,
   "kind": "issue",
-  "track": "triage",
-  "stage": "triaged",
-  "owes": "author",
+  "track": "fix",
+  "stage": "needs_reply",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T03:20:00Z",
-  "evaluated_at": "2026-08-31T03:20:00Z",
+  "generated_at": "2026-08-31T07:48:09.65Z",
+  "evaluated_at": "2026-08-31T07:48:09.65Z",
   "source_updated_at": "2026-08-31T01:01:24Z",
-  "title": "[Mouse Without Borders] Impossible to run without elevated privileges, Impossible to change layout",
   "url": "https://github.com/microsoft/PowerToys/issues/50259",
-  "summary": "The elevation warning is clear, but the report does not establish why PowerToys remains elevated after the setting is disabled.",
+  "title": "[Mouse Without Borders] Impossible to run without elevated privileges, Impossible to change layout",
+  "author": "HattDroid",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "confidence": "Medium-high",
+  "summary": "Mouse Without Borders disables layout drag-and-drop because the running PowerToys process is elevated; it is not yet clear why a normal restart remains elevated after the setting is disabled.",
+  "status": {
+    "glyph": "💬",
+    "label": "Needs elevation-state evidence",
+    "detail": "The restriction is intentional for an elevated WinUI process, but the report does not establish the state after a complete normal restart."
+  },
+  "next_action": {
+    "glyph": "💬",
+    "label": "Request focused elevation diagnostics",
+    "reason": "Confirm the post-restart process elevation state and collect a fresh archive only if PowerToys still starts elevated."
+  },
   "judgment": {
     "status": "needs_information",
-    "rationale": "A fix cannot be scoped until the team can distinguish a stale elevated process, an installation policy, and a Mouse Without Borders-specific elevation path.",
+    "rationale": "The warning is explained by the current safety guard, but a fix cannot be scoped until the team knows whether the process is actually still elevated after a full exit and normal restart.",
     "evidence": [
-      "The layout editor reports that PowerToys is elevated even after the reporter disables the run-as-administrator setting.",
-      "No bug report ZIP or process elevation details were attached.",
-      "The report does not say whether PowerToys was fully exited and restarted after changing the elevation setting."
+      "PowerToys 0.101.2362 shows the explicit Mouse Without Borders elevated-process drag restriction.",
+      "The reporter says disabling Run as administrator did not remove the restriction.",
+      "Current settings code gates layout dragging on the live process elevation state, not only the saved toggle."
     ],
-    "recommended_action": "Request a current bug report and precise elevation/restart observations.",
-    "evaluated_at": "2026-08-31T03:20:00Z",
+    "recommended_action": "Ask for the elevation state after a clean restart and a fresh /bugreport archive only if the process still launches elevated.",
+    "evaluated_at": "2026-08-31T07:48:09.65Z",
     "source_updated_at": "2026-08-31T01:01:24Z"
+  },
+  "issue_context": {
+    "summary": "The Mouse Without Borders layout editor remains locked behind an elevation warning after the reporter turns off the administrator setting.",
+    "known_information": [
+      "PowerToys 0.101.2362 was installed with WinGet.",
+      "The layout editor displays the explicit elevated-process drag-and-drop restriction.",
+      "The reporter states that Run as administrator was turned off.",
+      "Automated triage considered the UI reproduction clear."
+    ],
+    "inferences": [
+      "The existing process may retain its elevated token because changing the setting does not de-elevate it.",
+      "If a clean restart remains elevated, compatibility settings, startup configuration, service mode, or policy may be forcing elevation."
+    ],
+    "analysis": "Repository inspection shows a deliberate WinUI safety guard. The decision-changing question is whether PowerToys can restart unelevated and, if not, what startup path forces elevation.",
+    "initial_investigation": [
+      "MouseWithoutBordersViewModel.cs sets CanDragDrop false and shows the infobar from GeneralSettingsConfig.IsElevated.",
+      "MouseWithoutBordersPage.xaml cites microsoft-ui-xaml issue 7690 because elevated WinUI 3 dragging can crash.",
+      "No assignee, duplicate, or linked fix is present."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether PowerToys remains elevated after fully exiting, confirming all processes stopped, and restarting normally.",
+        "why_needed": "Distinguishes an existing elevated token from an elevation/startup defect.",
+        "how_to_collect": "Exit from the tray, verify no PowerToys processes remain in Task Manager, restart normally, and report the elevation state."
+      },
+      {
+        "information": "A fresh diagnostic archive if the clean restart still starts elevated.",
+        "why_needed": "Startup configuration and settings are needed to separate compatibility, service, and policy paths.",
+        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport and attach the generated ZIP."
+      }
+    ]
   },
   "actions": [
     {
       "id": "request-info-50259",
       "type": "request_info",
-      "label": "Request elevation diagnostics",
+      "label": "Request elevation-state diagnostics",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
       "comment": {
-        "issue": 50259,
+        "target": "issue",
         "repository": "microsoft/PowerToys",
-        "body": "Please fully exit PowerToys from the tray, confirm no PowerToys processes remain in Task Manager, restart it with `Run as administrator` disabled, and check whether Task Manager still shows PowerToys as elevated. If the layout remains locked, attach a newly generated PowerToys bug report ZIP and tell us whether PowerToys is installed per-user or machine-wide, whether it starts with Windows, and whether any compatibility setting or enterprise policy forces it to run elevated."
-      }
+        "number": 50259,
+        "body": "Thanks for the clear PowerToys 0.101.2362 report and exact Mouse Without Borders warning. The layout editor intentionally disables WinUI drag-and-drop while the running PowerToys process is actually elevated, and turning off the setting does not lower an already-running process. Please fully exit PowerToys from the tray, confirm in Task Manager that no PowerToys processes remain, restart normally with `Run as administrator` disabled, and tell us whether Task Manager still shows it as elevated. If it still starts elevated, reproduce the locked layout once and then add a comment containing `/bugreport` immediately so the generated ZIP captures that startup state; please also mention any executable compatibility setting or organizational policy that forces PowerToys to run as administrator."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

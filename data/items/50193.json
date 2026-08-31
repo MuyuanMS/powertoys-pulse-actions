@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50193,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:42:36Z",
+  "evaluated_at": "2026-08-31T07:42:36Z",
   "source_updated_at": "2026-08-27T22:23:32Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50193",
   "title": "[Peek] Incorrect window/content scaling when re-triggering Peek on a different display",
@@ -19,42 +19,52 @@
     "Product-Peek"
   ],
   "comments": 1,
-  "confidence": "Medium",
+  "confidence": "High",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🎯",
+    "label": "Actionable cross-display sizing defect",
+    "detail": "The report has deterministic mixed-DPI steps and visual evidence, but no linked fix owns the cross-display transition itself."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "🧭",
+    "label": "Complete transition-state design",
+    "reason": "Separate stale monitor state from the related minimum-size and native-image-size issues before approval."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The collaborator report supplies a deterministic mixed-DPI transition and current sizing code exposes monitor-scale state that can become stale across close and reopen.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Product-Peek",
-      "Candidate sources: created_week, updated_week",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "The issue reproduces by moving Peek from a 125% display to a 175% display and then re-triggering it from the first display.",
+      "Screenshots show both incorrect window dimensions and image/content sizing.",
+      "Current Peek code sets ViewModel.ScalingFactor during initialization and separately queries foreground-monitor scale when preview size changes."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Develop an implementation-grade design for resetting and applying monitor-specific scale during every Peek activation and previewer reuse transition.",
+    "evaluated_at": "2026-08-31T07:42:36Z",
     "source_updated_at": "2026-08-27T22:23:32Z"
   },
-  "actions": [
-    {
-      "id": "request-info-50193",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 50193,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include a small sample file or screenshot if the issue depends on file content, display scaling, OCR language, or Explorer preview behavior."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ]
+  "issue_context": {
+    "summary": "After Peek is moved between displays with different scaling and opened again from the original display, the window or preview content can retain incorrect dimensions.",
+    "known_information": [
+      "The reporter uses 1920x1080 at 125% and 3840x2160 at 175%.",
+      "The issue includes repeatable steps and screenshots of incorrect and correct sizing.",
+      "Issues 50243 and 50244 cover related minimum-size and image-native-size problems, but 50243 explicitly describes this cross-display issue as distinct."
+    ],
+    "inferences": [
+      "Monitor-specific scale or preview-size state may survive a close/reopen or previewer-reuse boundary.",
+      "The related issues may share unit-conversion code without fully covering this activation transition."
+    ],
+    "analysis": "The evidence supports design work now; a generic diagnostic request would not change triage. The design must isolate which state is stale and avoid treating the later scoped issues as confirmed duplicates.",
+    "initial_investigation": [
+      "Inspected Peek.UI/PeekXAML/MainWindow.xaml.cs monitor-scale initialization and FilePreviewer_PreviewSizeChanged.",
+      "Reviewed live cross-references to issues 50243 and 50244 and confirmed neither is a linked fix for this transition."
+    ],
+    "information_gaps": [
+      {
+        "information": "Which cached object retains the prior monitor's scale or requested preview size",
+        "why_needed": "This selects the correct lifetime boundary for resetting state without regressing pinned windows or previewer reuse.",
+        "how_to_collect": "Instrument activation, previewer reuse, ScalingFactor, and PreviewSizeChanged values across the documented two-monitor sequence."
+      }
+    ]
+  },
+  "actions": []
 }

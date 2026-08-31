@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50130,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:48:57.569Z",
+  "evaluated_at": "2026-08-31T07:48:57.569Z",
   "source_updated_at": "2026-08-26T09:09:04Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50130",
   "title": "FancyZones exclude by pressing shift during drag no longer working",
@@ -18,43 +18,53 @@
     "Product-FancyZones",
     "Needs-Triage"
   ],
+  "assignees": [],
   "comments": 1,
-  "confidence": "Medium",
+  "confidence": "High",
+  "summary": "A recent FancyZones input-hook change appears to have regressed zone exclusion when Shift is pressed after a drag begins.",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🛠️",
+    "label": "Regression design ready",
+    "detail": "The version-bounded reproduction and history point to the changed Shift-during-drag path."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "🧭",
+    "label": "Design and test Shift state fix",
+    "reason": "Validate key state propagation and remove the timing or stale-state gap."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The reproduction is precise, the prior release worked, and a recent change modified the exact path.",
     "evidence": [
-      "Labels: Issue-Bug, Product-FancyZones, Needs-Triage",
-      "Candidate sources: created_week, updated_week",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "On 0.101.2362, mid-drag Shift no longer excludes the window.",
+      "Pre-held Shift still works.",
+      "The issue was absent in the previous build.",
+      "Commit d68980a81b in #49985 changed OnKeyDown to set Shift while swallowing it."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Continue focused regression design and UI tests; keep design_in_progress until the exact state transition is proven.",
+    "evaluated_at": "2026-08-31T07:48:57.569Z",
     "source_updated_at": "2026-08-26T09:09:04Z"
   },
-  "actions": [
-    {
-      "id": "request-info-50130",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 50130,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include monitor layout/DPI, the configured PowerToys settings for this utility, and a short recording showing the failure."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ]
+  "issue_context": {
+    "summary": "FancyZones no longer honors exclusion when Shift is introduced mid-drag, while pre-held Shift remains correct.",
+    "known_information": [
+      "Hold Shift to activate zones is disabled, so Shift should suppress zoning.",
+      "The test uses Notepad on Windows 11 build 26200.9106.",
+      "Pre-held Shift works; mid-drag Shift fails.",
+      "No duplicate, assignee, or linked fix exists."
+    ],
+    "inferences": [
+      "The explicit SetShiftState call may not synchronize with the final MoveSize update, or release state may be inconsistent.",
+      "The regression likely ties to the August 21 change in this path."
+    ],
+    "analysis": "The report already provides the decision-changing timing distinction. Code reproduction and tests are next, not a generic diagnostic request.",
+    "initial_investigation": [
+      "DraggingState.cpp computes zoning from Shift and drag mode.",
+      "OnKeyboardInput updates Shift from raw input.",
+      "OnKeyDown now calls SetShiftState(true) before swallowing bare Shift during WindowMouseSnap.",
+      "#49985 introduced the change on 2026-08-21; current main retains it."
+    ],
+    "information_gaps": []
+  },
+  "actions": []
 }

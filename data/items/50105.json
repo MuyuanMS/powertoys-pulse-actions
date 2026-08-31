@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50105,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
+  "track": "triage",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:42:36Z",
+  "evaluated_at": "2026-08-31T07:42:36Z",
   "source_updated_at": "2026-08-25T06:52:24Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50105",
   "title": "File Locksmith Crush and Working Issue",
@@ -21,38 +21,68 @@
   "comments": 1,
   "confidence": "High",
   "status": {
-    "glyph": "🔁",
-    "label": "Likely duplicate",
-    "detail": "The daily duplicate digest flags this issue as a likely duplicate of #49789, #39112, #39152."
+    "glyph": "💬",
+    "label": "Needs crash correlation evidence",
+    "detail": "Five dumps establish repeated crashes, but the trigger and signature needed to correlate with issue 49789 are not stated."
   },
   "next_action": {
-    "glyph": "🔁",
-    "label": "Post duplicate triage comment",
-    "reason": "Review and, if correct, post the duplicate-close comment pointing to #49789, #39112, #39152."
+    "glyph": "💬",
+    "label": "Request focused crash context",
+    "reason": "Determine whether this is the known handle-enumeration race or a distinct elevation/UI crash."
   },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The daily duplicate digest flags this issue as a likely duplicate of #49789, #39112, #39152.",
+    "status": "needs_information",
+    "rationale": "The attached dumps are useful evidence, but the report does not provide a deterministic operation sequence or crash signature that establishes whether existing issue 49789 owns the failure.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Product-File Locksmith",
-      "Candidate sources: created_week, updated_week",
-      "Duplicate digest mapped this issue to #49789, #39112, #39152."
+      "The reporter attached five PowerToys.FileLocksmithUI dumps from PowerToys 0.100.2.",
+      "The crash is described as intermittent and sometimes associated with obtaining administrator privilege.",
+      "Issue 49789 documents a reproducible 0.100.2 handle-enumeration race with heap corruption or access violations, but this issue's dump signatures are not summarized."
     ],
-    "recommended_action": "Review and, if correct, post the duplicate-close comment pointing to #49789, #39112, #39152.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Ask for one exact current-version reproduction and a fresh diagnostic archive captured immediately after the crash.",
+    "evaluated_at": "2026-08-31T07:42:36Z",
     "source_updated_at": "2026-08-25T06:52:24Z"
+  },
+  "issue_context": {
+    "summary": "File Locksmith intermittently crashes while scanning a selected file or around the administrator retry path, with five raw dumps attached.",
+    "known_information": [
+      "The report is from PowerToys 0.100.2 on Windows 11 build 28000.2704 with a system-wide install.",
+      "Five FileLocksmithUI dump files are attached.",
+      "Issue 49789 contains an independent intermittent-crash reproduction and a detailed concurrency hypothesis in handle enumeration."
+    ],
+    "inferences": [
+      "This may share issue 49789's native enumeration race, but the mention of elevation could indicate a different lifecycle path.",
+      "Raw dumps alone do not safely justify declaring a duplicate without matching module and exception signatures."
+    ],
+    "analysis": "The request should acknowledge the substantial dump evidence rather than ask for generic logs. One current, numbered sequence plus immediately correlated diagnostics will decide whether to consolidate or investigate separately.",
+    "initial_investigation": [
+      "Reviewed all issue comments, attachments, dedupe references, and the full discussion in related issues 49501 and 49789.",
+      "Confirmed issue 49501 was closed as a duplicate while 49789 remains open with a handle-enumeration crash investigation."
+    ],
+    "information_gaps": [
+      {
+        "information": "One numbered reproduction identifying the selected file or folder type and whether the crash occurs before or after the administrator retry",
+        "why_needed": "This separates ordinary handle enumeration from the elevation relaunch path.",
+        "how_to_collect": "Retest on the latest stable or Preview build and record the exact click sequence for one crash."
+      },
+      {
+        "information": "Fresh PowerToys and File Locksmith logs correlated with that crash",
+        "why_needed": "The logs and crash signature determine whether issue 49789 is the same failure.",
+        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport so the generated ZIP captures the current logs."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "post-duplicate-50105",
-      "type": "post_comment",
-      "label": "Post duplicate triage comment",
+      "id": "request-info-50105",
+      "type": "request_info",
+      "label": "Ask for crash correlation evidence",
       "primary": true,
       "confirm": true,
+      "requiresApproval": true,
       "comment": {
         "target": "issue",
         "number": 50105,
-        "body": "This looks like it is already tracked by #49789 and #39112 and #39152. Could you continue discussion there so we keep the investigation in one place? If this issue covers a distinct scenario, please reply with the specific difference and fresh repro details."
+        "body": "Thanks for attaching five FileLocksmithUI dumps and the environment details; they establish that this is a repeated native crash. To determine whether it is the handle-enumeration race tracked in #49789 or a separate administrator-retry failure, please retest on the latest stable or Preview build and give one numbered sequence, including the selected file/folder type and whether the crash occurs before or after choosing the administrator option. Immediately after that crash, add a comment containing `/bugreport` so the generated ZIP captures the matching File Locksmith and runner logs."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }

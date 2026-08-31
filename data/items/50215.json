@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50215,
   "kind": "issue",
   "track": "fix",
   "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:42:36Z",
+  "evaluated_at": "2026-08-31T07:42:36Z",
   "source_updated_at": "2026-08-28T20:16:04Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50215",
   "title": "[Text Extractor] Captures mirrored screen area (X-axis inversion) when Windows display language is Arabic (RTL)",
@@ -18,28 +18,52 @@
     "Needs-Triage"
   ],
   "comments": 0,
-  "confidence": "Medium-high",
+  "confidence": "High",
   "status": {
     "glyph": "🎯",
-    "label": "Actionable design candidate",
-    "detail": "The issue has a concrete bug report for TextExtractor with reproduction evidence and enough diagnostic context for deeper design investigation."
+    "label": "Reproducible RTL coordinate defect",
+    "detail": "The report includes exact language conditions, a deterministic mirrored selection, and a diagnostic archive."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Queue full design investigation",
-    "reason": "Queue this issue for a full fork-side design investigation before exposing an approve-design action."
+    "glyph": "🧭",
+    "label": "Complete coordinate-path design",
+    "reason": "Trace RTL layout coordinates into physical screen capture and add focused RTL tests before approval."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue has a concrete bug report for TextExtractor with reproduction evidence and enough diagnostic context for deeper design investigation.",
+    "rationale": "The failure is deterministic, environment-specific, and supported by both a diagnostic archive and a narrow screen-coordinate path in Text Extractor.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage",
-      "Candidate sources: created_week, updated_week",
-      "Issue body includes reproduction steps and a bug-report ZIP or equivalent diagnostic evidence."
+      "Selecting a region on the right in an Arabic Windows display-language environment captures the corresponding region on the left.",
+      "The report includes a PowerToys diagnostic ZIP captured on Preview 0.101.2373.0.",
+      "PowerOCR builds the selection from WPF element coordinates and passes the resulting X offset into an absolute left-to-right CopyFromScreen call."
     ],
-    "recommended_action": "Queue this issue for a full fork-side design investigation before exposing an approve-design action.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Develop an implementation-grade design that normalizes overlay coordinates independently of RTL flow direction and verifies DPI and multi-monitor behavior.",
+    "evaluated_at": "2026-08-31T07:42:36Z",
     "source_updated_at": "2026-08-28T20:16:04Z"
+  },
+  "issue_context": {
+    "summary": "Text Extractor's visual selection and captured bitmap disagree on the horizontal coordinate when Windows uses an Arabic right-to-left display language.",
+    "known_information": [
+      "The issue reproduces on Windows 11 with Arabic as the system display language.",
+      "The selected right-side region is mirrored to the left side during capture.",
+      "OCROverlay uses WPF pointer positions while ImageMethods.GetRegionAsBitmap adds the selected X offset to the physical monitor's left coordinate."
+    ],
+    "inferences": [
+      "An inherited or culture-driven RTL transform may mirror the overlay coordinate space while the physical capture API remains left-to-right.",
+      "The fix will likely need coordinate normalization rather than OCR-language changes."
+    ],
+    "analysis": "The supplied evidence is sufficient to begin design without requesting another report. Source inspection narrows the boundary to selection-coordinate conversion versus physical screen capture, while the exact trigger still needs runtime confirmation.",
+    "initial_investigation": [
+      "Inspected PowerOCR/OCROverlay.xaml, OCROverlay.xaml.cs, and Helpers/ImageMethods.cs.",
+      "Confirmed the application loads the current UI culture and does not explicitly pin the overlay's FlowDirection."
+    ],
+    "information_gaps": [
+      {
+        "information": "Runtime confirmation of the overlay FlowDirection and pointer-to-screen transform under Arabic Windows",
+        "why_needed": "This distinguishes WPF layout mirroring from a monitor-origin or DPI conversion defect.",
+        "how_to_collect": "Add focused diagnostic logging or an automated RTL UI test during implementation."
+      }
+    ]
   },
   "actions": []
 }

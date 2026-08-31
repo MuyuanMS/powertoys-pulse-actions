@@ -1,46 +1,69 @@
 {
+  "schemaVersion": 4,
   "number": 50159,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaging",
+  "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-27T16:22:21.857Z",
-  "evaluated_at": "2026-08-27T16:22:21.857Z",
+  "generated_at": "2026-08-31T07:42:36Z",
+  "evaluated_at": "2026-08-31T07:42:36Z",
   "source_updated_at": "2026-08-27T13:36:36Z",
-  "title": "Keyboard Manager - Open app: Enhance Window Selection",
   "url": "https://github.com/microsoft/PowerToys/issues/50159",
+  "title": "Keyboard Manager - Open app: Enhance Window Selection",
+  "author": "eirikpre",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "confidence": "Medium",
   "status": {
     "glyph": "🎯",
-    "label": "Detailed Keyboard Manager design candidate",
-    "detail": "The request enumerates cycle and already-selected behaviors for Keyboard Manager's Open app action."
+    "label": "Actionable Open app enhancement",
+    "detail": "The desired cycling behaviors are concrete, but the prior artifact did not contain an implementation-grade design."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Design multi-window Open app behavior",
-    "reason": "The desired options and Win+number comparison provide a bounded starting point."
+    "glyph": "🧭",
+    "label": "Finish the implementation design",
+    "reason": "Define window identity, cycling state, settings compatibility, and tests before approval."
   },
-  "actions": [
-    {
-      "id": "design-50159",
-      "type": "approve_design",
-      "label": "Design Open app window cycling",
-      "primary": true,
-      "confirm": false,
-      "note": "Define behavior and settings for multiple running windows and already-selected applications, including repeated shortcut invocation. This drafts no upstream mutation."
-    }
-  ],
-  "confidence": "Medium",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The enhancement specifies the target Keyboard Manager action, user-visible options, and repeated-invocation behavior.",
+    "rationale": "The request identifies the existing Open app action and a bounded set of new behaviors for multiple windows and repeated activation.",
     "evidence": [
-      "The request extends Keyboard Manager's Open app action when an application is already running.",
-      "It proposes a cycle menu comparable to Win+number when multiple windows exist.",
-      "It lists expected already-selected behaviors: Windows default, minimize, cycle, or do nothing."
+      "The request compares the desired cycle experience to Win+number and lists explicit already-selected choices.",
+      "Keyboard Manager currently persists a ProgramAlreadyRunningAction enum with ShowWindow, StartAnother, DoNothing, Close, EndTask, and CloseAndEndTask.",
+      "The engine currently discovers processes by executable name and ShowWindow does not maintain per-shortcut cycle state."
     ],
-    "recommended_action": "Design the Open app state model and user settings for multiple windows and repeated activation.",
-    "evaluated_at": "2026-08-27T16:22:21.857Z",
+    "recommended_action": "Produce a detailed design for enumerating eligible top-level windows and cycling them deterministically per mapping.",
+    "evaluated_at": "2026-08-31T07:42:36Z",
     "source_updated_at": "2026-08-27T13:36:36Z"
-  }
+  },
+  "issue_context": {
+    "summary": "Keyboard Manager's Open app action should cycle among an application's windows and offer configurable behavior when the selected app is already foreground.",
+    "known_information": [
+      "The proposal asks for repeated shortcut presses to advance through multiple windows.",
+      "Current settings expose only process-level already-running actions.",
+      "CreateOrShowProcessForShortcut identifies applications by executable name and does not model individual window selection."
+    ],
+    "inferences": [
+      "The feature requires stable top-level-window enumeration and per-mapping cycle state, not only another enum value.",
+      "Packaged apps, multi-process applications, virtual desktops, minimized windows, and elevated windows may require distinct eligibility rules."
+    ],
+    "analysis": "The feature is suitable for design, but the previous approve_design action was premature because no root flow, affected-file plan, tests, or edge-case contract existed.",
+    "initial_investigation": [
+      "Inspected KeyboardManager/common/Shortcut.h, KeyboardManagerEditorUI/Interop/ShortcutKeyMapping.cs, and KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp.",
+      "Confirmed current behavior is process-oriented and lacks a window-cycle state machine."
+    ],
+    "information_gaps": [
+      {
+        "information": "Maintainer-approved definition of an application window set and cycle reset behavior",
+        "why_needed": "It determines correctness for multi-process apps, virtual desktops, foreground changes, and repeated shortcut timing.",
+        "how_to_collect": "Resolve in the implementation design with explicit acceptance cases."
+      }
+    ]
+  },
+  "actions": []
 }

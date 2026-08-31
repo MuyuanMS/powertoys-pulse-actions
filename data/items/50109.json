@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50109,
   "kind": "issue",
   "track": "fix",
   "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:43:33.7145705Z",
+  "evaluated_at": "2026-08-31T07:43:33.7145705Z",
   "source_updated_at": "2026-08-25T12:16:54Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50109",
   "title": "Command Palette doesn't open with shortcut sometimes",
@@ -23,24 +23,45 @@
   "status": {
     "glyph": "🎯",
     "label": "Actionable design candidate",
-    "detail": "The issue has a concrete bug report for Command Palette with reproduction evidence and enough diagnostic context for deeper design investigation."
+    "detail": "The failure is narrowly reproducible only while the PowerToys Settings window has focus, but no current fix or confirmed root cause exists."
   },
   "next_action": {
     "glyph": "🎯",
-    "label": "Queue full design investigation",
-    "reason": "Queue this issue for a full fork-side design investigation before exposing an approve-design action."
+    "label": "Queue focused design investigation",
+    "reason": "Trace shortcut handling across Settings, CmdPalKeyboardService, and summon activation before exposing approve_design."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue has a concrete bug report for Command Palette with reproduction evidence and enough diagnostic context for deeper design investigation.",
+    "rationale": "The issue provides a deterministic focus-dependent reproduction, current version/environment details, and a diagnostic attachment; it is sufficiently scoped for code investigation without asking the reporter for generic evidence.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Product-Command Palette",
-      "Candidate sources: created_week, updated_week",
-      "Issue body includes reproduction steps and a bug-report ZIP or equivalent diagnostic evidence."
+      "CmdPal opens normally except when the PowerToys Settings window is focused.",
+      "Pressing the configured Win+Alt+Z shortcut in that state produces the Windows stop sound.",
+      "The issue includes a PowerToys report ZIP, although automated triage could not safely parse it.",
+      "No linked PR or owner currently handles this Settings-focus scenario."
     ],
-    "recommended_action": "Queue this issue for a full fork-side design investigation before exposing an approve-design action.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Queue a full design investigation and keep stage design_in_progress; do not expose approve_design until the activation path and fix are verified.",
+    "evaluated_at": "2026-08-31T07:43:33.7145705Z",
     "source_updated_at": "2026-08-25T12:16:54Z"
+  },
+  "issue_context": {
+    "summary": "Command Palette activation works generally but fails with a system stop sound whenever the PowerToys Settings window is the focused foreground window.",
+    "known_information": [
+      "The report is against PowerToys 0.101.2362 on Windows 11 25H2, installed system-wide and running elevated.",
+      "The configured shortcut is Win+Alt+Z with no reported conflict.",
+      "The failure is limited to PowerToys Settings focus and is consistently absent when another window has focus.",
+      "A diagnostic ZIP is attached, but automated triage rejected the archive structure and did not analyze its contents."
+    ],
+    "inferences": [
+      "The Settings window may consume, reject, or alter the shortcut before the CmdPal summon path completes, but the current evidence does not identify which process or handler owns the stop sound."
+    ],
+    "analysis": "Unlike #50219/#39704, this issue is not about an elevated third-party foreground process; it names a specific PowerToys window and deterministic sound/focus behavior. The supplied evidence is enough to begin a focused activation-path investigation, but not enough for an implementation-grade design.",
+    "initial_investigation": [
+      "Reviewed the complete body, attached-report reference, triage comment, labels, and all cross-references; no fix PR is linked.",
+      "Inspected CmdPalKeyboardService/KeyboardListener.cpp, which installs the low-level hook and dispatches matching hotkeys, and CmdPal UI summon handling in ShellPage.xaml.cs.",
+      "Inspected Settings CmdPal integration in Settings.UI/ViewModels/CmdPalViewModel.cs and CmdPalPage.xaml.cs; Settings reads CmdPal configuration and launches it via x-cmdpal URIs.",
+      "Compared #39704 and #50219; those concern elevated foreground applications and do not account for this Settings-only focus condition."
+    ],
+    "information_gaps": []
   },
   "actions": []
 }

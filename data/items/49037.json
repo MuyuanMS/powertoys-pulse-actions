@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 49037,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:49:22.913Z",
+  "evaluated_at": "2026-08-31T07:49:22.913Z",
   "source_updated_at": "2026-08-27T22:52:24Z",
   "url": "https://github.com/microsoft/PowerToys/issues/49037",
   "title": "Alt key conflict in Grab and Move with Powershell",
@@ -18,43 +18,53 @@
     "Needs-Triage",
     "Product-Grab And Move"
   ],
+  "assignees": [],
   "comments": 1,
-  "confidence": "Medium",
+  "confidence": "High",
+  "summary": "Grab and Move’s default Alt hook can withhold Alt from applications and Explorer during non-Grab mouse interactions, breaking PowerShell Alt+click and desktop Alt-drag semantics.",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🛠️",
+    "label": "Modifier passthrough design ready",
+    "detail": "Two reports show cross-application suppression and current hook code reveals deferred replay."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "🧭",
+    "label": "Design non-Grab Alt passthrough",
+    "reason": "Delay or cancel Alt absorption so unrelated gestures receive native semantics while preserving window drag."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The updated issue broadens impact beyond one app, and the current modifier hook provides a specific design boundary.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Product-Grab And Move",
-      "Candidate sources: updated_week",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "PowerShell Alt+click is blocked.",
+      "A second reporter says desktop Alt-drag moves files instead of creating shortcuts.",
+      "Grab and Move defaults to Alt.",
+      "Current code can swallow bare Alt before a Grab gesture exists."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Continue focused input-state design and regression tests; keep approval gated until passthrough timing is proven.",
+    "evaluated_at": "2026-08-31T07:49:22.913Z",
     "source_updated_at": "2026-08-27T22:52:24Z"
   },
-  "actions": [
-    {
-      "id": "request-info-49037",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 49037,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include monitor layout/DPI, the configured PowerToys settings for this utility, and a short recording showing the failure."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ]
+  "issue_context": {
+    "summary": "Applications and Explorer do not receive Alt when needed because Grab and Move reserves it before knowing whether the user will move a window.",
+    "known_information": [
+      "Both left and right Alt reproduce in PowerShell 7.6.3 on 0.100.2.",
+      "Expected PowerShell behavior is Alt+click for a split pane.",
+      "Desktop Alt-drag should create a shortcut rather than move the file.",
+      "No assignee or linked fix exists."
+    ],
+    "inferences": [
+      "Replaying Alt on a later key or release may be too late for mouse controls inspecting modifier state during click/drop.",
+      "Deferring consumption until movement commits to Grab and Move may preserve native gestures."
+    ],
+    "analysis": "The second report proves a general passthrough defect rather than a PowerShell-specific request. Code inspection supports design without generic diagnostics.",
+    "initial_investigation": [
+      "GrabAndMove/main.cpp defaults g_modifierKey to Alt and g_shouldAbsorbAlt to true.",
+      "KeyboardProc swallows Alt keydown and replays it later if no Grab consumes it.",
+      "#49121 improved modifier-click passthrough, but current code still defers Alt during unrelated mouse interactions.",
+      "Closed #47294/#47302 addressed Alt+Tab targets, not these timing cases."
+    ],
+    "information_gaps": []
+  },
+  "actions": []
 }

@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 49227,
   "kind": "issue",
   "track": "fix",
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T07:45:16.646Z",
+  "evaluated_at": "2026-08-31T07:45:16.646Z",
   "source_updated_at": "2026-08-27T08:06:52Z",
   "url": "https://github.com/microsoft/PowerToys/issues/49227",
   "title": "Keyboard Manager does not remap the Copilot key correctly in some applications",
@@ -18,41 +18,74 @@
     "Needs-Triage",
     "Product-Keyboard Manager"
   ],
+  "assignees": [],
   "comments": 1,
-  "confidence": "Medium",
+  "confidence": "High",
   "status": {
     "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "label": "Needs elevation comparison",
+    "detail": "Every named failing target is elevated, but the issue does not say whether PowerToys was also running elevated."
   },
   "next_action": {
     "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "label": "Request elevation comparison",
+    "reason": "One matched-elevation comparison separates documented UIPI behavior from a Copilot-key-specific bug."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "rationale": "The normal-versus-elevated split strongly matches Windows integrity limits, but PowerToys elevation is the decision-changing missing fact.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Product-Keyboard Manager",
-      "Candidate sources: updated_week",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "Win+Shift+F23 to Ctrl works in Notepad and fails in Administrator PowerShell, Administrator Git Bash, and Task Manager.",
+      "The issue does not state whether PowerToys is running as administrator.",
+      "Keyboard Manager documentation says elevated foreground apps require equivalent elevation or future UIAccess work.",
+      "Related #15241 tracks UIAccess and #35808 documents Copilot-key shortcut semantics."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Ask whether PowerToys is elevated and request one elevated-to-elevated retest; request /bugreport only if matched elevation still fails.",
+    "evaluated_at": "2026-08-31T07:45:16.646Z",
     "source_updated_at": "2026-08-27T08:06:52Z"
+  },
+  "issue_context": {
+    "summary": "A Copilot-key shortcut remap works in normal applications but leaks original Windows-key behavior in elevated applications.",
+    "known_information": [
+      "The source is Win+Shift+F23 and the target is Ctrl.",
+      "All explicit failing examples are elevated or protected.",
+      "The remap works in a normal app on the same machine.",
+      "Keyboard Manager's hook approach is subject to UIPI/integrity boundaries."
+    ],
+    "inferences": [
+      "This is likely the standard lower-integrity hook limitation, but PowerToys elevation must be known.",
+      "The third-party Copilot Key+ comment does not establish a PowerToys fix."
+    ],
+    "analysis": "More screenshots or generic key details would not change triage. Matched elevation is decisive: success supports existing guidance; continued failure supports a real remapping investigation.",
+    "initial_investigation": [
+      "Reviewed the issue and later third-party comment.",
+      "Inspected Keyboard Manager documentation on UIPI/UIAccess.",
+      "Compared #35808, #15241, and #44650; none is an exact fix."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether PowerToys was running as administrator and the result when both it and the target are elevated.",
+        "why_needed": "This distinguishes expected integrity isolation from a remapping defect.",
+        "how_to_collect": "Restart PowerToys as administrator, verify Settings status, and repeat in one named elevated target."
+      },
+      {
+        "information": "A fresh diagnostic archive only if matched elevation still fails.",
+        "why_needed": "Logs from that case are needed for a Copilot-key-specific investigation.",
+        "how_to_collect": "Immediately after failure, add a comment containing /bugreport and upload the ZIP."
+      }
+    ]
   },
   "actions": [
     {
       "id": "request-info-49227",
       "type": "request_info",
-      "label": "Ask for focused repro details",
+      "label": "Request elevation comparison",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 49227,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the exact shortcut/key sequence, keyboard layout/input language, whether PowerToys is elevated, and a short recording if possible."
+        "body": "Thanks for showing that Win+Shift+F23 → Ctrl works in normal apps but fails in Administrator PowerShell, Administrator Git Bash, and Task Manager. Please confirm whether PowerToys itself shows “Running as administrator”, then retest once after restarting PowerToys as administrator. If it still fails while both PowerToys and the target are elevated, add a comment containing `/bugreport` immediately after the test and name the exact target. This separates the documented Windows integrity-level limitation from a Copilot-key-specific remapping bug."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }
