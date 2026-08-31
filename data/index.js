@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-31T10:25:45.5362755+08:00",
+  "generated_at": "2026-08-31T11:24:17.0963805+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 151,
-    "open_issues": 12560,
-    "community": 11708,
+    "open_issues": 12561,
+    "community": 11709,
     "artifacts": 3416
   },
   "impact": {
-    "as_of": "2026-08-31T10:25:45.5362755+08:00",
+    "as_of": "2026-08-31T11:24:17.0963805+08:00",
     "issues_helped": 10,
     "prs_iterated": 47,
     "constructive_comments_posted": 3,
@@ -3544,7 +3544,7 @@ window.BOARD_INDEX = {
         "Ready for review"
       ],
       "created_at": "2026-08-30T23:22:45Z",
-      "updated_at": "2026-08-31T00:33:14Z",
+      "updated_at": "2026-08-31T02:50:24Z",
       "comments": 0,
       "priority": null
     },
@@ -26973,6 +26973,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-15223",
+      "kind": "issue",
+      "number": 15223,
+      "url": "https://github.com/microsoft/PowerToys/issues/15223",
+      "title": "Have AppLocale like solution again for char encoding issues for languages like Chinese",
+      "author": "D0735",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-New PowerToy"
+      ],
+      "created_at": "2021-12-30T19:37:31Z",
+      "updated_at": "2026-04-19T11:06:49Z",
+      "comments": 6,
+      "priority": null
+    },
+    {
       "id": "issue-34016",
       "kind": "issue",
       "number": 34016,
@@ -48631,13 +48661,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-15223",
+      "id": "issue-50261",
       "kind": "issue",
-      "number": 15223,
-      "url": "https://github.com/microsoft/PowerToys/issues/15223",
-      "title": "Have AppLocale like solution again for char encoding issues for languages like Chinese",
-      "author": "D0735",
-      "state": "closed",
+      "number": 50261,
+      "url": "https://github.com/microsoft/PowerToys/issues/50261",
+      "title": "Support Customizable Keyboard Shortcuts for Command Palette Input",
+      "author": "axgn",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -48653,11 +48683,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-New PowerToy"
+        "Needs-Triage",
+        "Product-Keyboard Manager"
       ],
-      "created_at": "2021-12-30T19:37:31Z",
-      "updated_at": "2026-04-19T11:06:49Z",
-      "comments": 6,
+      "created_at": "2026-08-31T02:32:51Z",
+      "updated_at": "2026-08-31T02:37:02Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -297159,7 +297190,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/40701",
       "title": "[Deliverable][Epic] UITests - PT sanity check",
       "author": "khmyznikov",
-      "state": "closed",
+      "state": "open",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -297180,7 +297211,7 @@ window.BOARD_INDEX = {
         "Product-General"
       ],
       "created_at": "2025-07-18T11:36:36Z",
-      "updated_at": "2026-08-30T17:07:42Z",
+      "updated_at": "2026-08-31T02:51:42Z",
       "comments": 0,
       "priority": null
     },
@@ -347118,7 +347149,7 @@ window.BOARD_INDEX = {
       "number": 40143,
       "url": "https://github.com/microsoft/PowerToys/issues/40143",
       "title": "Can't uninstall,",
-      "author": "luvl4ne",
+      "author": "angelunit",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
