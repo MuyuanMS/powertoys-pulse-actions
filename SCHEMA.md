@@ -180,13 +180,60 @@ The page treats `stage` as a label; **actionability** is driven by
 }
 ```
 
+Issue artifacts with `schemaVersion: 4` also include display-only decision
+support for the action dialog:
+
+```jsonc
+{
+  "number": 50196,
+  "kind": "issue",
+  "issue_context": {
+    "summary": "The report and discussion describe ...",
+    "known_information": [
+      "The problem reproduces in Command Palette when launching BlueStacks 5."
+    ],
+    "inferences": [
+      "The failure may be specific to app activation rather than general search."
+    ],
+    "analysis": "The current discussion narrows the affected path but does not identify the activation failure.",
+    "initial_investigation": [
+      "No linked fix or duplicate currently establishes the failing component."
+    ],
+    "information_gaps": [
+      {
+        "information": "A fresh PowerToys diagnostic ZIP captured after reproduction",
+        "why_needed": "The Command Palette logs are needed to distinguish lookup, activation, and extension failures.",
+        "how_to_collect": "Add a comment containing /bugreport immediately after reproducing the issue."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "comment": {
+        "body": "Thanks for confirming ... Please reproduce once more, then add a comment containing `/bugreport` ..."
+      }
+    }
+  ]
+}
+```
+
+`issue_context` is shown only after opening an issue action. It is not editable
+and is never included automatically in a posted comment. `known_information`
+must contain facts already supported by the issue or live repository state;
+`inferences` must remain qualified. The editable `request_info` body should
+briefly acknowledge relevant known information, explain the unresolved
+ambiguity, and request the exact `information_gaps`. When `how_to_collect`
+references `/bugreport`, the proposed comment must use that command rather than
+generic instructions to upload logs.
+
 ### Action types
 | type | GitHub call (as the member) | notes |
 |------|-----------------------------|-------|
 | `post_review` | `POST /repos/{upstream}/pulls/{n}/reviews` | selected non-withdrawn comments: `in_diff && path && line` → inline `comments[]`, the rest appended to `body`. Event = COMMENT / APPROVE / REQUEST_CHANGES. |
 | `open_upstream_pr` | `POST /repos/{upstream}/pulls` | `head=MuyuanMS:<branch>`, `base=main`. `body` **may** contain `Fixes #<n>` — this is the real upstream PR that closes the issue (post-approval), the one allowed use of `#<n>`. |
 | `approve_design` | `POST /repos/{fork}/issues/{mirror}/comments` | approval note on the **fork mirror issue** so the scheduled job proceeds. |
-| `request_info` | `POST /repos/{upstream}/issues/{n}/comments` | ask author for clearly-missing info. |
+| `request_info` | `POST /repos/{upstream}/issues/{n}/comments` | issue-specific request that acknowledges current evidence, explains the unresolved gap, and asks for exact missing information; use `/bugreport` when a fresh PowerToys diagnostic ZIP is needed. |
 | `post_comment` | `POST …/comments` | generic member comment. |
 | `rerun` / `start_review` / `hold` | *(none)* | local queue signals for the board owner's agent job; no GitHub write. |
 

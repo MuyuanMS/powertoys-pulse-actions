@@ -63,11 +63,14 @@ if (Test-Path $indexPath) {
             $errors.Add("Manifest artifact exposes unsupported $($artifact.kind) action '$($action.type)': $artifactPath")
           }
         }
-        if ($artifact.kind -eq 'issue') {
+        if ($artifact.kind -eq 'issue' -and [int]$artifact.schemaVersion -ge 4) {
           $issueAction = @($actions | Where-Object {
             $_.type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
           }) | Select-Object -First 1
-          if (-not $issueAction) {
+          $allowsNoAction = $artifact.pending_author -or
+            $artifact.judgment.status -in @('duplicate_or_handled', 'not_actionable') -or
+            $artifact.stage -eq 'design_in_progress'
+          if (-not $issueAction -and -not $allowsNoAction) {
             $errors.Add("Issue manifest artifact has no meaningful maintainer action: $artifactPath")
           }
         }
@@ -289,6 +292,63 @@ if (-not (Test-Path $artifactValidator)) {
     try {
       & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
       $errors.Add('Dashboard artifact validator accepted inline prose without a suggestion block.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+
+    @{
+      schemaVersion = 4
+      number = 45678
+      kind = 'issue'
+      track = 'triage'
+      stage = 'triaged'
+      generated_at = '2026-08-24T00:00:00Z'
+      evaluated_at = '2026-08-24T00:00:00Z'
+      source_updated_at = '2026-08-24T00:00:00Z'
+      judgment = @{
+        status = 'needs_information'
+        rationale = 'The report identifies the failing action but not the component that rejects it.'
+        evidence = @('The reporter supplied reproduction steps but no diagnostic archive.')
+        recommended_action = 'Request a fresh diagnostic archive captured after reproduction.'
+      }
+      issue_context = @{
+        summary = 'The issue consistently fails during app activation, but the discussion does not identify which activation stage fails.'
+        known_information = @('The reporter can reproduce the failure when launching the target app.')
+        inferences = @('The failure may occur after search result selection rather than during result discovery.')
+        analysis = 'A diagnostic archive can distinguish search, extension, and activation failures.'
+        initial_investigation = @('No linked duplicate or fix identifies the failing activation component.')
+        information_gaps = @(
+          @{
+            information = 'A fresh PowerToys diagnostic ZIP captured immediately after reproduction'
+            why_needed = 'The relevant logs identify which activation stage failed.'
+            how_to_collect = 'Add a comment containing /bugreport immediately after reproducing.'
+          }
+        )
+      }
+      actions = @(
+        @{
+          type = 'request_info'
+          label = 'Request activation diagnostics'
+          comment = @{
+            target = 'issue'
+            number = 45678
+            body = 'Thanks for confirming that the failure occurs when launching the selected app. The current steps show where you observe the problem, but they do not identify whether search, the extension, or app activation rejects the request. Please reproduce it once more and then add a comment containing `/bugreport` so the fresh PowerToys diagnostic ZIP includes the relevant activation logs.'
+          }
+        }
+      )
+    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $artifactRoot 'data\items\45678.json')
+    & $artifactValidator -Dashboard $artifactRoot -Numbers 45678 -RequireIssueContext | Out-Null
+
+    $invalidIssue = Get-Content (Join-Path $artifactRoot 'data\items\45678.json') -Raw |
+      ConvertFrom-Json
+    $invalidIssue.actions[0].comment.body = 'Please send more logs and information.'
+    $invalidIssue | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\45678.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 45678 -RequireIssueContext 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a generic request-info comment.')
     } catch {
       if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
         throw

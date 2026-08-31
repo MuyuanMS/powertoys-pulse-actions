@@ -47,8 +47,14 @@ rules. In particular:
 - checkpoint every durable PR stage locally and push refreshed JSON after two
   transitions, eight minutes in normal mode, five minutes in drain mode, or a
   completed review, whichever comes first;
-- give every new or changed bug issue a lightweight explicit judgment and
-  action;
+- give every new or changed bug issue a lightweight explicit judgment and,
+  when actionable, schema-version-4 display-only issue context summarizing the
+  discussion, known facts, qualified inferences, Copilot analysis, initial
+  investigation, and exact information gaps;
+- make every request-info draft issue-specific: acknowledge useful evidence
+  already supplied, explain why it is insufficient, ask only for the missing
+  information that changes triage, and use established collection commands
+  such as `/bugreport` when a fresh PowerToys diagnostic ZIP is needed;
 - run only the bounded highest-confidence issue batch through the detailed
   design workflow in normal mode; in drain mode, process all actionable issue
   designs with the same checkpoint and publish guarantees;

@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "number": 50196,
   "kind": "issue",
   "track": "fix",
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-08-31T06:35:00Z",
+  "evaluated_at": "2026-08-31T06:35:00Z",
   "source_updated_at": "2026-08-28T15:14:53Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50196",
   "title": "Unable to open BlueStacks 5 using CmdPal.",
@@ -23,37 +23,70 @@
   "confidence": "Medium",
   "status": {
     "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "label": "Needs shortcut behavior details",
+    "detail": "The supplied bug report identifies an access-denied launch failure, but it does not yet distinguish a CmdPal shortcut-launch bug from a shortcut that Windows and other launchers also cannot open."
   },
   "next_action": {
     "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "label": "Clarify whether the shortcut itself is launchable",
+    "reason": "Ask how the exact BlueStacks shortcut behaves when opened directly and collect its sanitized target, arguments, and launch settings."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "rationale": "The uploaded bug report already narrows the failure to an access-denied result while shell-opening the BlueStacks shortcut. Because the reporter also sees the shortcut fail in Flow Launcher, direct shortcut behavior and properties are needed before attributing the problem to CmdPal.",
     "evidence": [
       "Labels: Issue-Bug, Needs-Triage, Needs-Team-Response, Product-Command Palette",
-      "Candidate sources: created_week, updated_week",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "CmdPal finds BlueStacks 5.lnk, so application discovery succeeds.",
+      "The uploaded bug report logs AppCommand.StartExe failing with access denied for the Start Menu shortcut.",
+      "The reporter says shortcuts with extra startup parameters also fail in Flow Launcher."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Ask whether the exact shortcut opens directly and request its sanitized target, arguments, working directory, and launch settings.",
+    "evaluated_at": "2026-08-31T06:35:00Z",
     "source_updated_at": "2026-08-28T15:14:53Z"
+  },
+  "issue_context": {
+    "summary": "Command Palette finds the BlueStacks 5 Start Menu shortcut, but pressing Enter does nothing. The reporter supplied a PowerToys bug report after `/bugreport`; its CmdPal log shows Windows returning access denied while launching the shortcut. The reporter also observed that the same parameterized shortcut cannot be opened by Flow Launcher.",
+    "known_information": [
+      "The issue reproduces with PowerToys 0.101.2362.0 on Windows 11 Pro 25H2.",
+      "Command Palette successfully discovers and displays BlueStacks 5.lnk.",
+      "The reporter already uploaded PowerToysReport.zip after the maintainer requested `/bugreport`.",
+      "The log records AppCommand.StartExe receiving access denied for C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\BlueStacks 5.lnk.",
+      "The shortcut contains additional startup parameters and reportedly also fails in Flow Launcher."
+    ],
+    "inferences": [
+      "The failure occurs after result discovery, in the launch path rather than CmdPal search or indexing.",
+      "The cross-launcher failure suggests the shortcut target, arguments, permissions, or shell activation behavior may contribute; it does not yet prove CmdPal is correct."
+    ],
+    "analysis": "The diagnostic archive is sufficient to stop asking for generic logs. The remaining decision is whether CmdPal mishandles a valid parameterized shortcut or faithfully surfaces a Windows/shortcut failure. Directly opening the same .lnk and inspecting its sanitized properties will distinguish those paths.",
+    "initial_investigation": [
+      "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/AppCommand.cs launches non-packaged entries with Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }).",
+      "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Programs/Win32Program.cs resolves shortcut targets and arguments for metadata but maps AppItem.ExePath back to the original .lnk path for launch.",
+      "No linked issue or fix in the discussion establishes whether this specific BlueStacks shortcut is valid when shell-opened directly."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the exact BlueStacks 5.lnk opens when double-clicked from its Start Menu folder or File Explorer",
+        "why_needed": "This distinguishes a CmdPal-specific launch failure from a shortcut that Windows itself cannot shell-open.",
+        "how_to_collect": "Open C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs and double-click the same shortcut."
+      },
+      {
+        "information": "The sanitized Target, Start in, and command-line arguments from the shortcut properties, plus whether Run as administrator is enabled",
+        "why_needed": "These settings determine whether CmdPal must preserve special arguments, a working directory, or elevation behavior.",
+        "how_to_collect": "Open the shortcut Properties dialog and copy the values with any personal paths or identifiers removed."
+      }
+    ]
   },
   "actions": [
     {
       "id": "request-info-50196",
       "type": "request_info",
-      "label": "Ask for focused repro details",
+      "label": "Ask how the shortcut launches directly",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 50196,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the active window/app when invoking Command Palette, any installed CmdPal extensions involved, and the relevant Command Palette logs from the bug report."
+        "body": "Thanks for uploading the PowerToys bug report. It already shows that Command Palette finds `BlueStacks 5.lnk`, then Windows returns access denied when CmdPal tries to launch that shortcut. You also noted that the parameterized shortcut fails in Flow Launcher, so the remaining question is whether CmdPal is mishandling a valid shortcut or whether the shortcut itself cannot be shell-opened.\n\nCould you please check the following?\n\n1. Open `C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs` and double-click the same `BlueStacks 5.lnk`. Does it launch successfully there?\n2. From the shortcut's Properties dialog, share the sanitized **Target** and **Start in** values, including the command-line arguments, and confirm whether **Run as administrator** is enabled.\n\nThose details will tell us whether the fix belongs in CmdPal's shortcut-launch path or in the BlueStacks shortcut/configuration. There is no need to upload another bug report unless the behavior changes."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }

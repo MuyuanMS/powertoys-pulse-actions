@@ -5,7 +5,8 @@ param(
     Join-Path $PSScriptRoot '..\..\..\..'
   }),
   [int[]]$Numbers,
-  [switch]$RequireDetailedDesign
+  [switch]$RequireDetailedDesign,
+  [switch]$RequireIssueContext
 )
 
 $ErrorActionPreference = 'Stop'
@@ -159,6 +160,49 @@ foreach ($path in @($paths)) {
     Require-Text $artifact.judgment.recommended_action 'judgment.recommended_action' $prefix
     if (@($artifact.judgment.evidence).Count -eq 0) {
       $errors.Add("$prefix missing judgment.evidence")
+    }
+  }
+
+  $requestInfoAction = @($artifact.actions | Where-Object {
+    $_.type -eq 'request_info'
+  }) | Select-Object -First 1
+  $requiresIssueContext = $RequireIssueContext -or [int]$artifact.schemaVersion -ge 4
+  if ($requiresIssueContext -and $issueAction) {
+    if (-not $artifact.issue_context) {
+      $errors.Add("$prefix missing issue_context for an actionable issue")
+    } else {
+      Require-Text $artifact.issue_context.summary 'issue_context.summary' $prefix
+      Require-Text $artifact.issue_context.analysis 'issue_context.analysis' $prefix
+      if (@($artifact.issue_context.known_information).Count -eq 0) {
+        $errors.Add("$prefix missing issue_context.known_information")
+      }
+      if (-not $artifact.issue_context.PSObject.Properties['inferences']) {
+        $errors.Add("$prefix missing issue_context.inferences")
+      }
+      if (@($artifact.issue_context.initial_investigation).Count -eq 0) {
+        $errors.Add("$prefix missing issue_context.initial_investigation")
+      }
+    }
+  }
+
+  if ($requestInfoAction -and $requiresIssueContext) {
+    $commentBody = [string]$requestInfoAction.comment.body
+    Require-Text $commentBody 'request_info comment.body' $prefix
+    if ($commentBody.Trim().Length -lt 160) {
+      $errors.Add("$prefix request_info comment is too generic; acknowledge current evidence, explain the gap, and ask for exact information")
+    }
+
+    $informationGaps = @($artifact.issue_context.information_gaps)
+    if ($informationGaps.Count -eq 0) {
+      $errors.Add("$prefix request_info action requires issue_context.information_gaps")
+    }
+    foreach ($gap in $informationGaps) {
+      Require-Text $gap.information 'issue_context.information_gaps[].information' $prefix
+      Require-Text $gap.why_needed 'issue_context.information_gaps[].why_needed' $prefix
+      if ([string]$gap.how_to_collect -match '(?i)/bugreport' -and
+          $commentBody -notmatch '(?i)/bugreport') {
+        $errors.Add("$prefix request_info comment must use /bugreport because its collection guidance requires it")
+      }
     }
   }
 
