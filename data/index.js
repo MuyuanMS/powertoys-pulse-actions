@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-08-31T19:03:34.5141739+08:00",
+  "generated_at": "2026-08-31T20:02:52.3972037+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,15 +85,15 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 147,
+    "open_prs": 146,
     "open_issues": 12563,
-    "community": 11961,
-    "artifacts": 3442
+    "community": 11962,
+    "artifacts": 3438
   },
   "impact": {
-    "as_of": "2026-08-31T19:03:34.5141739+08:00",
+    "as_of": "2026-08-31T20:02:52.3972037+08:00",
     "issues_helped": 10,
-    "prs_iterated": 46,
+    "prs_iterated": 45,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
@@ -125,7 +125,6 @@ window.BOARD_INDEX = {
     50183,
     50182,
     50181,
-    50180,
     50151,
     50132,
     50114,
@@ -165,7 +164,6 @@ window.BOARD_INDEX = {
     49647,
     49625,
     49597,
-    49588,
     49571,
     49538,
     49502,
@@ -1510,7 +1508,6 @@ window.BOARD_INDEX = {
     46948,
     46947,
     46946,
-    46945,
     46943,
     29397,
     29387,
@@ -3018,7 +3015,6 @@ window.BOARD_INDEX = {
     37829,
     37827,
     20305,
-    20304,
     37821,
     37817,
     37813,
@@ -3543,6 +3539,37 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-50265",
+      "kind": "pr",
+      "number": 50265,
+      "url": "https://github.com/microsoft/PowerToys/pull/50265",
+      "title": "[Keyboard Manager] Editor: identity-based duplicate/conflict check in edit mode",
+      "author": "MasaYan24",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Keyboard Manager",
+        "Ready for review"
+      ],
+      "created_at": "2026-08-31T11:53:29Z",
+      "updated_at": "2026-08-31T11:53:52Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "pr-50254",
       "kind": "pr",
       "number": 50254,
@@ -4026,7 +4053,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette"
       ],
       "created_at": "2026-08-28T20:46:53Z",
-      "updated_at": "2026-08-28T21:00:21Z",
+      "updated_at": "2026-08-31T11:36:16Z",
       "comments": 0,
       "priority": null
     },
@@ -4735,50 +4762,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50181",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/496"
-      }
-    },
-    {
-      "id": "pr-50180",
-      "kind": "pr",
-      "number": 50180,
-      "url": "https://github.com/microsoft/PowerToys/pull/50180",
-      "title": "CmdPal: Add support for richer content in Details",
-      "author": "zadjii-msft",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "review",
-      "stage": "review_drafted",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 13,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with 13 review comments"
-      },
-      "labels": [
-        "Product-Command Palette",
-        "CmdPal-API",
-        "0.102",
-        "Ready for review"
-      ],
-      "created_at": "2026-08-27T21:55:19Z",
-      "updated_at": "2026-08-28T21:58:02Z",
-      "comments": 2,
-      "priority": null,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 528,
-        "fork_title": "[PR 50180] CmdPal: Add support for richer content in Details",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50180-v4",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/528"
       }
     },
     {
@@ -6540,8 +6523,8 @@ window.BOARD_INDEX = {
       },
       "labels": [],
       "created_at": "2026-08-02T17:11:06Z",
-      "updated_at": "2026-08-04T16:39:34Z",
-      "comments": 5,
+      "updated_at": "2026-08-31T11:33:34Z",
+      "comments": 6,
       "priority": null,
       "mirror": {
         "kind": "pr",
@@ -6589,44 +6572,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49597-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/365"
-      }
-    },
-    {
-      "id": "pr-49588",
-      "kind": "pr",
-      "number": 49588,
-      "url": "https://github.com/microsoft/PowerToys/pull/49588",
-      "title": "[Screen Ruler] Add DIP as an extra measurement unit",
-      "author": "niels9001",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Screen Ruler"
-      ],
-      "created_at": "2026-07-30T14:56:14Z",
-      "updated_at": "2026-08-11T05:59:00Z",
-      "comments": 0,
-      "priority": 60,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 255,
-        "fork_title": "[PR 49588] [Screen Ruler] Add DIP as an extra measurement unit",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49588-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/255"
       }
     },
     {
@@ -7565,7 +7510,7 @@ window.BOARD_INDEX = {
       "title": "[Keyboard Manager] Search, filter and bulk-delete for the remapping list",
       "author": "MasaYan24",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
@@ -7580,11 +7525,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Author-Feedback",
         "Product-Keyboard Manager"
       ],
       "created_at": "2026-07-12T20:31:37Z",
-      "updated_at": "2026-08-25T10:04:50Z",
-      "comments": 5,
+      "updated_at": "2026-08-31T11:28:58Z",
+      "comments": 7,
       "priority": null
     },
     {
@@ -7603,7 +7549,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-21T15:09:24Z",
+      "waiting_since": "2026-08-31T11:30:25Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -7613,8 +7559,8 @@ window.BOARD_INDEX = {
         "Product-Mouse Utilities"
       ],
       "created_at": "2026-07-12T03:53:18Z",
-      "updated_at": "2026-08-21T15:09:24Z",
-      "comments": 8,
+      "updated_at": "2026-08-31T11:30:25Z",
+      "comments": 9,
       "priority": 60,
       "mirror": {
         "kind": "pr",
@@ -8450,8 +8396,8 @@ window.BOARD_INDEX = {
         "Product-Mouse Pointer Crosshairs"
       ],
       "created_at": "2026-06-13T21:55:45Z",
-      "updated_at": "2026-08-14T16:56:44Z",
-      "comments": 4,
+      "updated_at": "2026-08-31T11:23:53Z",
+      "comments": 7,
       "priority": 60,
       "mirror": {
         "kind": "pr",
@@ -8948,7 +8894,7 @@ window.BOARD_INDEX = {
         "Product-Mouse Utilities"
       ],
       "created_at": "2026-02-13T09:22:40Z",
-      "updated_at": "2026-08-21T12:08:33Z",
+      "updated_at": "2026-08-31T11:33:26Z",
       "comments": 5,
       "priority": 60
     },
@@ -9049,8 +8995,8 @@ window.BOARD_INDEX = {
         "Product-FancyZones"
       ],
       "created_at": "2025-09-05T20:57:29Z",
-      "updated_at": "2026-08-10T17:54:58Z",
-      "comments": 3,
+      "updated_at": "2026-08-31T11:24:48Z",
+      "comments": 4,
       "priority": 60,
       "mirror": {
         "kind": "pr",
@@ -11703,6 +11649,38 @@ window.BOARD_INDEX = {
       "created_at": "2024-09-13T17:12:13Z",
       "updated_at": "2024-10-13T12:10:46Z",
       "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-32745",
+      "kind": "issue",
+      "number": 32745,
+      "url": "https://github.com/microsoft/PowerToys/issues/32745",
+      "title": "Keyboard Manager: \"non-concatenation remapping(s)\" option",
+      "author": "Pahadimas",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Product-Keyboard Shortcut Manager",
+        "Needs-Triage"
+      ],
+      "created_at": "2024-05-06T10:39:48Z",
+      "updated_at": "2026-04-19T14:25:10Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -48516,13 +48494,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-32745",
+      "id": "issue-50264",
       "kind": "issue",
-      "number": 32745,
-      "url": "https://github.com/microsoft/PowerToys/issues/32745",
-      "title": "Keyboard Manager: \"non-concatenation remapping(s)\" option",
-      "author": "Pahadimas",
-      "state": "closed",
+      "number": 50264,
+      "url": "https://github.com/microsoft/PowerToys/issues/50264",
+      "title": "[Feature] UserDllHost.exe Feature Request",
+      "author": "BayraktarTB2",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -48534,16 +48512,14 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-Keyboard Shortcut Manager",
         "Needs-Triage"
       ],
-      "created_at": "2024-05-06T10:39:48Z",
-      "updated_at": "2026-04-19T14:25:10Z",
+      "created_at": "2026-08-31T11:05:20Z",
+      "updated_at": "2026-08-31T11:51:13Z",
       "comments": 1,
       "priority": null
     },
@@ -140756,7 +140732,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/46945",
       "title": "[Screen Ruler] Millimetre conversion is 100x wrong in Measurement.cpp",
       "author": "crutkas",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -140766,8 +140742,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -140776,7 +140752,7 @@ window.BOARD_INDEX = {
         "Product-Screen Ruler"
       ],
       "created_at": "2026-04-13T03:07:23Z",
-      "updated_at": "2026-04-18T13:51:08Z",
+      "updated_at": "2026-08-31T11:31:59Z",
       "comments": 0,
       "priority": null
     },
@@ -300546,36 +300522,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-45910",
-      "kind": "issue",
-      "number": 45910,
-      "url": "https://github.com/microsoft/PowerToys/issues/45910",
-      "title": "Awake - Add an option to automatically activate it at certain hours/days",
-      "author": "yagoroig",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "created_at": "2026-03-04T06:26:08Z",
-      "updated_at": "2026-03-04T11:18:15Z",
-      "comments": 2,
-      "priority": null
-    },
-    {
       "id": "issue-28312",
       "kind": "issue",
       "number": 28312,
@@ -355002,7 +354948,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/20304",
       "title": "Add \"Scale\" setting to Screen Ruler to match Window's scaling features",
       "author": "JacobDB",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -355012,8 +354958,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
@@ -355022,7 +354968,7 @@ window.BOARD_INDEX = {
         "Product-Screen Ruler"
       ],
       "created_at": "2022-09-06T21:26:22Z",
-      "updated_at": "2025-10-08T07:44:22Z",
+      "updated_at": "2026-08-31T11:31:59Z",
       "comments": 17,
       "priority": null
     },
