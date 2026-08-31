@@ -4,12 +4,12 @@
   "number": 49963,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
-  "pending_author": false,
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
   "generated_at": "2026-08-27T14:33:52Z",
-  "evaluated_at": "2026-08-27T14:33:52Z",
-  "source_updated_at": "2026-08-21T07:50:46Z",
+  "evaluated_at": "2026-08-31T13:48:43Z",
+  "source_updated_at": "2026-08-30T00:55:59Z",
   "url": "https://github.com/microsoft/PowerToys/pull/49963",
   "title": "[Peek] Enable reusable previewers for Peek to fix flicker",
   "author": "daverayment",
@@ -25,13 +25,13 @@
   "confidence": "High",
   "processVerdict": "proceed",
   "head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
-  "summary": "Fresh revalidation against the unchanged upstream head found three actionable previewer-reuse correctness gaps. The resumed review local checkout rebuilt successfully and targeted reuse tests passed; request changes are drafted for maintainer approval.",
+  "summary": "The upstream head is unchanged, but the author has acknowledged maintainer feedback and is preparing a broader tested update. The prior request-changes draft is held until that update is available.",
   "status": {
     "glyph": "⚠️",
-    "label": "Request changes drafted",
-    "detail": "Two apply-ready inline suggestions and one companion request are pinned to current upstream head 4c4c3a66d200e23b0496240dbbec1c7d890da2e6."
+    "label": "Waiting on author update",
+    "detail": "The author reports that they are adding tests and related fixes before publishing the next update. Do not post the prior draft against the unchanged work-in-progress head."
   },
-  "next_action": "Review and explicitly approve the current-head request-changes action to ask the author to address the three previewer-reuse correctness gaps.",
+  "next_action": "Wait for the author's promised update, then revalidate the new head and current diff.",
   "needs_revalidation": false,
   "proposed_comments": [
     {
@@ -48,7 +48,8 @@
       "side": "RIGHT",
       "in_diff": true,
       "body": "### Preserve thumbnail fallback during previewer reuse\n\n**Severity:** `medium`\n\nWhen a reused image previewer fails to decode the next file at full quality, `Preview` can still contain the previous image. Checking `Preview is null` therefore skips the cached-thumbnail fallback and sends otherwise previewable files to the error path. Attempt the thumbnail fallback whenever the full-quality load fails; the double buffer keeps the old frame visible until the replacement is ready.\n\n```suggestion\n            if (!loaded)\n            {\n                loaded = await LoadThumbnailAsync(cancellationToken);\n            }\n```",
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Held while the author prepares a broader tested update."
     },
     {
       "id": "c-image-size-cancellation",
@@ -64,7 +65,8 @@
       "side": "RIGHT",
       "in_diff": true,
       "body": "### Do not publish stale image dimensions after navigation\n\n**Severity:** `medium`\n\nThe size lookup runs on a background task and can finish after navigation has canceled the request. Updating `ImageSize` without rechecking cancellation lets an older request overwrite the dimensions used by the current preview, causing incorrect scaling. Check cancellation immediately after the await and before mutating the shared properties.\n\n```suggestion\n            cancellationToken.ThrowIfCancellationRequested();\n\n            if (State == PreviewState.Loaded)\n            {\n                ImageSize = size;\n            }\n```",
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Held while the author prepares a broader tested update."
     },
     {
       "id": "c-unsupported-generation",
@@ -76,36 +78,22 @@
       },
       "in_diff": false,
       "body": "### Ignore asynchronous results from a previous unsupported-file binding\n\n**Severity:** `high`\n\nRebinding an unsupported-file previewer clears the displayed metadata, but the previous item’s content-type, icon, folder-size, or exception completion can still arrive later and write into the same preview object. Track a binding generation (or equivalent item identity) and validate it before every asynchronous result, progress callback, and error-state update so rapid navigation cannot mix metadata between files. This should cover both successful completions and exceptions from non-cancelable awaits.",
-      "disposition": "proposed",
+      "disposition": "withdrawn",
+      "reason": "Held while the author prepares a broader tested update.",
       "kind": "companion"
     }
   ],
-  "actions": [
-    {
-      "id": "request-changes-49963",
-      "type": "request_changes",
-      "label": "Request previewer reuse fixes",
-      "primary": true,
-      "confirm": true,
-      "review": {
-        "event": "REQUEST_CHANGES",
-        "pr": 49963,
-        "head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
-        "body_prefix": "Thanks for the Peek previewer reuse work. Please address the correctness issues below before merge."
-      },
-      "note": "Draft only. The request is pinned to the current upstream head and requires explicit maintainer approval plus a final freshness check before publishing."
-    }
-  ],
+  "actions": [],
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-08-27T14:33:52Z",
+    "phase": "awaiting_author",
+    "checkpoint_at": "2026-08-31T13:48:43Z",
     "copilot_rounds": 3,
     "latest_copilot_review_at": "2026-08-20T10:04:01Z",
     "unresolved_copilot_threads": 0,
     "fresh_revalidation": {
-      "at": "2026-08-27T14:33:52Z",
+      "at": "2026-08-31T13:48:43Z",
       "upstream_head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
-      "upstream_activity_unchanged": true,
+      "upstream_activity_unchanged": false,
       "build": "passed",
       "targeted_tests": "passed (3/3)",
       "unresolved_copilot_threads": 0,
@@ -114,10 +102,10 @@
   },
   "freshness": {
     "queued_at": "2026-08-27T14:33:52Z",
-    "checkpoint_at": "2026-08-27T14:33:52Z",
-    "source_updated_at": "2026-08-21T07:50:46Z",
+    "checkpoint_at": "2026-08-31T13:48:43Z",
+    "source_updated_at": "2026-08-30T00:55:59Z",
     "source_head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
-    "latest_upstream_check_at": "2026-08-27T14:33:52Z"
+    "latest_upstream_check_at": "2026-08-31T13:48:43Z"
   },
   "phase0": {
     "verdict": "proceed",
