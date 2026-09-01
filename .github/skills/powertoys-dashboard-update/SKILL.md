@@ -553,7 +553,9 @@ Emit `post_review` with review event `COMMENT`. When every proposed comment is
 inline, omit `review.body_prefix` so GitHub receives only the selected inline
 comments and no overall review message. Use `request_changes` only for a
 deliberate blocking review; never encode a request-changes event inside a
-`post_review` action.
+`post_review` action. Pulse may let the maintainer explicitly change the final
+submission from Comment to Request changes, but the generated artifact remains
+non-blocking by default.
 
 Do not collapse every concrete code fix into broad companion notes. When the
 converged fork contains a localized fix on a current upstream diff line, emit
