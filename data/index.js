@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-02T05:25:15.6337463+08:00",
+  "generated_at": "2026-09-02T06:03:41.2958895+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 150,
-    "open_issues": 12571,
-    "community": 11716,
-    "artifacts": 3444
+    "open_issues": 12572,
+    "community": 11717,
+    "artifacts": 3443
   },
   "impact": {
-    "as_of": "2026-09-02T05:25:15.6337463+08:00",
+    "as_of": "2026-09-02T06:03:41.2958895+08:00",
     "issues_helped": 10,
     "prs_iterated": 44,
     "constructive_comments_posted": 3,
@@ -673,7 +673,6 @@ window.BOARD_INDEX = {
     32323,
     49839,
     32310,
-    49818,
     49264,
     49816,
     32291,
@@ -3571,9 +3570,11 @@ window.BOARD_INDEX = {
         "Area-Tests",
         "Product-Quick Accent"
       ],
-      "assignees": [],
+      "assignees": [
+        "khmyznikov"
+      ],
       "created_at": "2026-09-01T16:48:03Z",
-      "updated_at": "2026-09-01T17:16:47Z",
+      "updated_at": "2026-09-01T21:43:36Z",
       "comments": 1,
       "priority": null,
       "mirror": {
@@ -3648,8 +3649,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-01T00:26:05Z",
-      "updated_at": "2026-09-01T21:16:14Z",
-      "comments": 4,
+      "updated_at": "2026-09-01T21:33:27Z",
+      "comments": 5,
       "priority": null,
       "mirror": {
         "kind": "pr",
@@ -7666,7 +7667,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-29T02:13:38Z",
+      "waiting_since": "2026-09-01T21:50:46Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -7684,7 +7685,7 @@ window.BOARD_INDEX = {
         "michaeljolley"
       ],
       "created_at": "2026-07-15T04:38:04Z",
-      "updated_at": "2026-08-29T02:13:38Z",
+      "updated_at": "2026-09-01T21:50:46Z",
       "comments": 2,
       "priority": 60,
       "mirror": {
@@ -49635,13 +49636,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-40862",
+      "id": "issue-50303",
       "kind": "issue",
-      "number": 40862,
-      "url": "https://github.com/microsoft/PowerToys/issues/40862",
-      "title": "PowerToys randomly stops running and won't open",
-      "author": "Lazy-Write",
-      "state": "closed",
+      "number": 50303,
+      "url": "https://github.com/microsoft/PowerToys/issues/50303",
+      "title": "[aw] Failed jobs: AI Issue Triage",
+      "author": "app/github-actions",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -49653,18 +49654,16 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-General"
+        "agentic-workflows"
       ],
       "assignees": [],
-      "created_at": "2025-07-29T16:09:12Z",
-      "updated_at": "2026-04-18T18:40:31Z",
-      "comments": 1,
+      "created_at": "2026-09-01T21:34:41Z",
+      "updated_at": "2026-09-01T21:34:41Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -63672,7 +63671,7 @@ window.BOARD_INDEX = {
       "kind": "issue",
       "number": 49818,
       "url": "https://github.com/microsoft/PowerToys/issues/49818",
-      "title": "Phi Silica model is not ready.",
+      "title": "Phi Silica not available in China",
       "author": "shaoya730",
       "state": "open",
       "is_draft": false,
@@ -63684,23 +63683,20 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
-      "issue_type": "bug",
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_comment",
-        "label": "Post platform-availability explanation"
-      },
+      "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Triage"
+        "Issue-Feature",
+        "Product-Advanced Paste"
       ],
       "assignees": [
         "khmyznikov"
       ],
       "created_at": "2026-08-11T04:01:56Z",
-      "updated_at": "2026-08-12T16:13:28Z",
+      "updated_at": "2026-09-01T21:31:50Z",
       "comments": 5,
       "priority": null
     },
@@ -156001,7 +155997,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2021-06-01T21:22:44Z",
-      "updated_at": "2026-09-01T00:31:55Z",
+      "updated_at": "2026-09-01T21:58:50Z",
       "comments": 23,
       "priority": null
     },
@@ -407193,6 +407189,39 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2024-11-14T12:42:25Z",
       "updated_at": "2026-04-16T15:57:07Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-40862",
+      "kind": "issue",
+      "number": 40862,
+      "url": "https://github.com/microsoft/PowerToys/issues/40862",
+      "title": "PowerToys randomly stops running and won't open",
+      "author": "Lazy-Write",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2025-07-29T16:09:12Z",
+      "updated_at": "2026-04-18T18:40:31Z",
       "comments": 1,
       "priority": null
     },
