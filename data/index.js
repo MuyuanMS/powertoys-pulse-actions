@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-02T02:59:53.9715914+08:00",
+  "generated_at": "2026-09-02T03:18:37.7326938+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 150,
-    "open_issues": 12566,
-    "community": 11712,
+    "open_issues": 12568,
+    "community": 11713,
     "artifacts": 3442
   },
   "impact": {
-    "as_of": "2026-09-02T02:59:53.9715914+08:00",
+    "as_of": "2026-09-02T03:18:37.7326938+08:00",
     "issues_helped": 10,
     "prs_iterated": 44,
     "constructive_comments_posted": 3,
@@ -49691,6 +49691,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50298",
+      "kind": "issue",
+      "number": 50298,
+      "url": "https://github.com/microsoft/PowerToys/issues/50298",
+      "title": "[aw] Failed jobs: AI Issue Triage",
+      "author": "app/github-actions",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "agentic-workflows"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-01T19:13:56Z",
+      "updated_at": "2026-09-01T19:13:56Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-32436",
       "kind": "issue",
       "number": 32436,
@@ -54711,7 +54742,7 @@ window.BOARD_INDEX = {
       "author": "jiripolasek",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": "triage",
@@ -54728,7 +54759,9 @@ window.BOARD_INDEX = {
         "Idea-New PowerToy",
         "Needs-Triage"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-08-26T07:03:19Z",
       "updated_at": "2026-08-26T15:19:03Z",
       "comments": 1,
@@ -80942,6 +80975,38 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-07-07T14:46:09Z",
       "updated_at": "2026-07-07T15:32:08Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-50297",
+      "kind": "issue",
+      "number": 50297,
+      "url": "https://github.com/microsoft/PowerToys/issues/50297",
+      "title": "Command Pallet Multiple Displays",
+      "author": "xtremewaianae",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-01T19:11:23Z",
+      "updated_at": "2026-09-01T19:14:48Z",
       "comments": 0,
       "priority": null
     },
