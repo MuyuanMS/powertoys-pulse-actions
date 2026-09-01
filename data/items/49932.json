@@ -4,11 +4,11 @@
   "number": 49932,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-01T20:15:00Z",
-  "evaluated_at": "2026-09-01T20:15:00Z",
+  "generated_at": "2026-09-01T20:54:00Z",
+  "evaluated_at": "2026-09-01T20:54:00Z",
   "source_updated_at": "2026-09-01T14:43:15Z",
   "url": "https://github.com/microsoft/PowerToys/pull/49932",
   "title": "CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
@@ -24,39 +24,116 @@
   "confidence": "High",
   "processVerdict": "proceed",
   "head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
-  "summary": "Phase 0 passed and the upstream head and checks remain current. Fork head ebf1e4fd2 retains successful targeted builds, 24 shelf/settings tests, 11 bookmark tests, and zero unresolved Copilot threads. The exact-head review originally requested at 18:47:45Z remained stuck as a pending reviewer request without a submitted review; the request was safely cleared and re-requested at 19:51:23Z, but no exact-head result arrived during the bounded run. Convergence and Step 9 therefore remain blocked.",
+  "summary": "The unchanged upstream head and reported checks remain current. The empty-assignment audit established that the refreshed request completed on fork head ebf1e4fd2: Copilot submitted an exact-head review at 19:54:50Z with zero new published comments, no review comments were posted after the request, and unresolved threads remain zero. The validated net diff supports three non-duplicate review notes: preserve HTML resource maps through async drag preparation, include directory bookmarks in filesystem drag packages, and avoid expanding the Indexer helper's public API.",
   "status": {
-    "glyph": "⏳",
-    "label": "Review blocked — exact-head Copilot review pending",
-    "detail": "No upstream action is ready. Fork PR 565 remains clean at ebf1e4fd2 with 35 tests passing and zero unresolved threads, but the refreshed exact-head Copilot request at 19:51:23Z had not produced a review by checkpoint."
+    "glyph": "📝",
+    "label": "Review notes drafted",
+    "detail": "The review loop converged on ebf1e4fd2 with a fresh exact-head zero-comment review, an empty reviewer assignment, zero unresolved threads, successful targeted builds, and 35 passing tests."
   },
-  "next_action": "Resume fork PR 565 at ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37. Inspect the refreshed Copilot request made at 19:51:23Z. If an exact-head review has posted with zero new published comments, confirm unresolved threads remain zero and complete Step 9; otherwise keep actions empty or process any published finding.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "▶",
+    "label": "Review drafted notes",
+    "reason": "Recheck upstream freshness and obtain explicit maintainer approval before posting the selected comments."
+  },
+  "proposed_comments": [
+    {
+      "id": "preserve-drag-resource-map",
+      "kind": "companion",
+      "severity": "high",
+      "confidence": {
+        "score": 98,
+        "rationale": "DataPackage.ResourceMap is a separate URI-to-stream map used by HTML payloads; copying only AvailableFormats, properties, and deferred data providers demonstrably omits referenced resources."
+      },
+      "title": "Preserve resource-map entries during package transfer",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
+      "line": 32,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve resource-map entries during package transfer\n\n**Severity:** `high`\n\nThe transfer copies advertised formats but omits `DataPackageView.GetResourceMapAsync()`. HTML payloads that reference packaged images or other URI resources therefore retain their markup while silently losing the referenced content.\n\nPlease copy the source resource map into `destination.ResourceMap` before the payload becomes available. The shelf drag can await this work under `DragStartingEventArgs.GetDeferral()`; the non-deferrable list drag path should prepare or coordinate the map without converting `DragItemsStarting` into an untracked `async void` handler or silently rejecting an otherwise valid immediate drag. Add focused coverage for an HTML/resource-map package.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "include-directory-bookmark-drag-package",
+      "kind": "inline",
+      "severity": "medium",
+      "confidence": {
+        "score": 99,
+        "rationale": "The changed classifier already handles CommandKind.Directory and DataPackageHelper accepts StorageFolder, but the new filter permits only file-oriented kinds and File.Exists."
+      },
+      "title": "Include directory bookmarks in filesystem drags",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkListItem.cs",
+      "startLine": 124,
+      "line": 129,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Include directory bookmarks in filesystem drags\n\n**Severity:** `medium`\n\nThe new package filter excludes `CommandKind.Directory` and only calls `File.Exists`, even though the helper already supports folders. As a result, file bookmarks can be dragged to Explorer or other filesystem targets while directory bookmarks expose no equivalent package.\n\n```suggestion\n        var localFilePath =\n            classification.Kind is CommandKind.FileExecutable or CommandKind.FileDocument or CommandKind.Shortcut or CommandKind.InternetShortcut or CommandKind.Directory &&\n            (File.Exists(classification.Target) || Directory.Exists(classification.Target))\n                ? classification.Target\n                : null;\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "keep-data-package-helper-internal",
+      "kind": "companion",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The only new consumer is the Bookmarks assembly, and the Indexer project already uses InternalsVisibleTo for narrow cross-assembly access."
+      },
+      "title": "Keep the Indexer drag helper internal",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Helpers/DataPackageHelper.cs",
+      "line": 17,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep the Indexer drag helper internal\n\n**Severity:** `medium`\n\nChanging `DataPackageHelper` from `internal` to `public` expands the Indexer extension's externally visible API solely to share implementation code with the Bookmarks assembly. That creates compatibility expectations for a helper that is not designed as a supported extension API.\n\nPlease keep the helper internal and grant `Microsoft.CmdPal.Ext.Bookmarks` friend access through `InternalsVisibleTo`, or move the helper into an intentionally shared internal assembly.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49932",
+      "type": "post_review",
+      "label": "Post selected review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49932,
+        "event": "COMMENT",
+        "head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
+        "body_prefix": "Thanks for extending drag-and-drop support across the shelf and bookmark surfaces. The existing upstream threads already cover preserving the original package formats and reserving shelf drop-target space; the notes below are limited to additional current-head issues found during validation."
+      },
+      "note": "Mandatory: recheck the upstream head, conversation, and checks before publishing. Never post without explicit maintainer approval."
+    }
+  ],
   "safe_actions": [
-    "Post nothing upstream from this artifact",
-    "Wait for the refreshed exact-head fork Copilot review requested at 19:51:23Z",
-    "Require zero new published comments and zero unresolved threads before convergence",
-    "Preserve the successful targeted builds and 35-test evidence"
+    {
+      "id": "post-review-49932",
+      "upstream_write": true,
+      "approval_required": true
+    },
+    {
+      "id": "recheck-49932",
+      "upstream_write": false,
+      "approval_required": false
+    }
   ],
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-01T20:15:00Z",
-    "deadline": "2026-09-01T20:22:59Z",
-    "copilot_rounds": 6,
-    "latest_copilot_review_at": "2026-09-01T17:22:39Z",
-    "latest_copilot_review_head": "55a6a9056822223f8c7ca7af15046cb50b3201cd",
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-01T20:54:00Z",
+    "deadline": "2026-09-01T21:30:01Z",
+    "copilot_rounds": 7,
+    "latest_copilot_review_at": "2026-09-01T19:54:50Z",
+    "latest_copilot_review_head": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37",
     "latest_published_comments": 0,
     "unresolved_copilot_threads": 0,
-    "converged": false,
-    "resume_reason": "The exact-head request from 18:47:45Z was still present but had never produced a submitted review. It was cleared and re-requested at 19:51:23Z; repeated polling through the bounded run still found no review for ebf1e4fd2. With zero unresolved threads and prior validation still passing, only the missing exact-head review blocks convergence and Step 9."
+    "converged": true,
+    "resume_reason": "The empty-assignment fallback found an exact-head Copilot review submitted at 19:54:50Z after the 19:51:23Z request. Its body reports zero new comments, the review-comment audit found no comments after the request, the reviewer assignment is empty, and the unresolved-thread audit returned zero."
   },
   "freshness": {
     "queued_at": "2026-09-01T14:37:24.5378648Z",
-    "checkpoint_at": "2026-09-01T20:15:00Z",
+    "checkpoint_at": "2026-09-01T20:54:00Z",
     "source_updated_at": "2026-09-01T14:43:15Z",
     "source_head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
-    "latest_upstream_check_at": "2026-09-01T19:50:00Z"
+    "latest_upstream_check_at": "2026-09-01T20:54:00Z"
   },
   "phase0": {
     "verdict": "proceed",
@@ -119,7 +196,7 @@
     }
   ],
   "verification": {
-    "result": "passed_with_exact_head_review_pending",
+    "result": "passed_and_review_converged",
     "configuration": "x64 Debug",
     "builds": [
       "PowerToys solution package restore",
@@ -150,15 +227,15 @@
       },
       {
         "suite": "Latest fresh Copilot review",
-        "result": "publication_clean_but_superseded_by_followup_fix",
+        "result": "publication_clean_and_converged",
         "new_comments": 0,
-        "submitted_at": "2026-09-01T17:22:39Z",
-        "reviewed_head": "55a6a9056822223f8c7ca7af15046cb50b3201cd",
+        "submitted_at": "2026-09-01T19:54:50Z",
+        "reviewed_head": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37",
         "remaining_accepted_suppressed_findings": 0,
         "original_final_review_requested_at": "2026-09-01T18:47:45Z",
         "final_review_requested_at": "2026-09-01T19:51:23Z",
         "final_review_head": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37",
-        "final_review_status": "pending_at_checkpoint"
+        "final_review_status": "completed_zero_published_comments"
       }
     ],
     "build_environment_note": "The full essentials runner build was blocked by an inherited empty GIT_CONFIG_VALUE_3 during vcpkg initialization. Clearing inherited GIT_CONFIG_* entries allowed all targeted builds to pass."
