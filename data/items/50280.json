@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 4,
+  "number": 50280,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-01T12:20:00Z",
+  "evaluated_at": "2026-09-01T12:20:00Z",
+  "source_updated_at": "2026-09-01T11:32:37Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50280",
+  "title": "Power Toys Run: Calculator doesn't handle scientific notation properly",
+  "author": "lukas-lang",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "confidence": "High",
+  "summary": "PowerToys Run evaluates subtraction before scientific notation incorrectly: `0-1e0` becomes multiplication by a signed scientific literal and returns 0 instead of -1. A prior Command Palette fix did not change the separate PowerToys Run calculator implementation.",
+  "status": {
+    "glyph": "!",
+    "label": "Focused fix design ready",
+    "detail": "The implementation design separates unary signs from scientific-number tokens and adds direct transformation and calculation regression coverage."
+  },
+  "next_action": {
+    "glyph": ">",
+    "label": "Review focused parser design",
+    "reason": "Approve the fork-side implementation plan before code work begins."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The deterministic expression reproduces a known parsing mechanism in the separate PowerToys Run calculator, and current source still includes an optional leading minus inside the scientific-notation token matched after a binary subtraction operator.",
+    "evidence": [
+      "On PowerToys 0.100.2, `=0-1e0` returns 0 instead of -1.",
+      "Issue 39659 documented the same sign-binding mechanism and was fixed only for the Command Palette calculator by merged PR 44594.",
+      "PowerToys Run retains its own CalculateHelper.CheckScientificNotation implementation.",
+      "The current regex captures an optional leading minus as part of the mantissa and rewrites the match as a parenthesized multiplication expression.",
+      "Existing PowerToys Run tests cover standalone negative scientific literals but not subtraction immediately followed by scientific notation."
+    ],
+    "recommended_action": "Design a narrow PowerToys Run parser fix that distinguishes unary signs from binary subtraction and add regression tests for subtraction, negative literals, exponents, whitespace, and chained operations.",
+    "evaluated_at": "2026-09-01T12:20:00Z",
+    "source_updated_at": "2026-09-01T11:32:37Z"
+  },
+  "issue_context": {
+    "summary": "The PowerToys Run calculator binds the subtraction sign to the following scientific-notation mantissa, changing `0-1e0` into implicit multiplication rather than subtraction.",
+    "known_information": [
+      "The reporter supplied the exact expression `=0-1e0`, expected result -1, actual result 0, and a screenshot.",
+      "Issue 39659 previously identified that a minus before scientific notation was captured as part of the number.",
+      "PR 44594 fixed the Command Palette calculator but did not touch the PowerToys Run calculator files.",
+      "PowerToys Run's current CheckScientificNotation regex allows an optional leading minus in the mantissa and replaces the complete match with `($1 * 10^($5))`.",
+      "The existing QueryTests include standalone negative scientific notation such as `-1.0E-2`, but no binary subtraction case."
+    ],
+    "inferences": [
+      "The optional mantissa sign likely consumes the binary subtraction operator in `0-1e0`, after which adjacent parenthesized expressions are treated as implicit multiplication.",
+      "A safe fix must preserve true unary negative scientific literals while preventing binary `-` from being absorbed."
+    ],
+    "analysis": "The symptom is deterministic and the relevant source transformation is visible, so additional reporter diagnostics are unlikely to change triage. The remaining uncertainty is the safest parser boundary for distinguishing unary and binary signs across beginning-of-expression, parentheses, whitespace, and chained operators.",
+    "initial_investigation": [
+      "Inspected `src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs`, including CheckScientificNotation and the later implicit-multiplication transforms.",
+      "Inspected `src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs`; scientific-notation coverage lacks subtraction cases.",
+      "Confirmed merged PR 44594 changed Command Palette calculator files and the shared native evaluator, not the PowerToys Run CalculateHelper."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "CalculateHelper.CheckScientificNotation includes an optional leading minus in the scientific-number token. In `0-1e0`, it consumes `-1e0`, rewrites it as a parenthesized signed multiplication, and the later implicit-multiplication pass turns the preceding `0(` into multiplication instead of preserving subtraction.",
+    "evidence": [
+      "The reporter's deterministic `=0-1e0` expression returns 0 instead of -1.",
+      "Current PowerToys Run source uses `(-?(\\d+(\\.\\d*)?)|-?(\\.\\d+))e(-?\\d+)` and replaces the full signed match.",
+      "The following implicit-multiplication transform inserts `*` between a number and an opening parenthesis.",
+      "Issue 39659 documented the same mechanism, and Command Palette PR 44594 fixed it by removing the mantissa sign from the scientific token.",
+      "The PowerToys Run implementation and tests were outside PR 44594."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs",
+        "purpose": "Validates calculator tokens and rewrites scientific notation before Mages evaluation.",
+        "symbols": [
+          "CalculateHelper.RegValidExpressChar",
+          "CalculateHelper.FixHumanMultiplicationExpressions",
+          "CalculateHelper.CheckScientificNotation"
+        ]
+      },
+      {
+        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs",
+        "purpose": "Covers intermediate expression transformation and end-to-end calculator results.",
+        "symbols": [
+          "QueryTests.RightHumanMultiplicationExpressionTransformation",
+          "QueryTests.RightAnswerForHumanMultiplicationExpressions"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs",
+        "symbols": [
+          "CalculateHelper.RegValidExpressChar",
+          "CalculateHelper.CheckScientificNotation"
+        ],
+        "current_behavior": "The scientific token owns an optional mantissa minus, so a binary subtraction operator can be absorbed into the following literal.",
+        "change": "Match only an unsigned mantissa and retain the optional exponent sign. Let the existing operator grammar represent unary or binary minus outside the scientific token.",
+        "code_block": "var pattern = @\"(\\d+(?:\\.\\d*)?|\\.\\d+)[eE](-?\\d+)\";\nreturn Regex.Replace(input, pattern, \"($1 * 10^($2))\");",
+        "edge_cases": [
+          "Standalone negative literals must remain negative after transformation.",
+          "Negative exponents must remain part of the exponent.",
+          "Binary subtraction must not become implicit multiplication.",
+          "Mantissas such as `.1`, `1.`, and integers must remain supported.",
+          "Culture normalization continues to occur before this invariant-format helper."
+        ],
+        "tests": [
+          "Assert `0-1e0` transforms to `0-(1 * 10^(0))`.",
+          "Assert `-1.0E-2` transforms to `-(1.0 * 10^(-2))`.",
+          "Cover addition and multiplication by a negative scientific literal."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs",
+        "symbols": [
+          "QueryTests.RightHumanMultiplicationExpressionTransformation",
+          "QueryTests.RightAnswerForHumanMultiplicationExpressions"
+        ],
+        "current_behavior": "Tests cover standalone scientific notation but not a binary subtraction immediately before it.",
+        "change": "Add intermediate-string and end-to-end result cases for binary operators, unary negatives, exponent signs, whitespace, and the expression from issue 39659.",
+        "code_block": "[DataRow(\"0-1e0\", -1)]\n[DataRow(\"1E3-1E3/1.5\", 333.3333333333)]\n[DataRow(\"-1e0\", -1)]\n[DataRow(\"1e-3\", 0.001)]",
+        "edge_cases": [
+          "Run both global and explicit `=` query paths.",
+          "Retain locale-normalized decimal coverage.",
+          "Use the existing rounding expectations for repeating decimals."
+        ],
+        "tests": [
+          "Run the complete calculator unit-test project.",
+          "Run QueryTests as a focused regression selection."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the PowerToys Run calculator and its unit-test project in x64 Debug.",
+      "Run the calculator unit-test suite and focused QueryTests.",
+      "Launch `x64\\Debug\\PowerToys.exe` and verify `=0-1e0` returns `-1`.",
+      "Verify standalone negative notation, negative exponents, addition, subtraction, multiplication by a negative literal, and decimal-separator normalization."
+    ],
+    "risks": [
+      "The intermediate transformed string for a standalone negative literal changes, so end-to-end tests must prove equivalent Mages evaluation.",
+      "An overly broad regex change could regress decimal or exponent forms; retain explicit coverage for integer, fractional, leading-dot, trailing-dot, and negative-exponent forms."
+    ],
+    "alternatives": [
+      "Requiring whitespace after subtraction was rejected because it preserves surprising nonstandard calculator behavior.",
+      "Copying the entire Command Palette parser was rejected because the narrow token-boundary fix addresses the defect without broad parser churn."
+    ]
+  },
+  "fork_issue": {
+    "number": 561,
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/561"
+  },
+  "actions": [
+    {
+      "id": "approve-design-50280",
+      "type": "approve_design",
+      "label": "Approve scientific-notation parser design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Approves fork-side implementation work only. Opening or posting anything upstream requires separate explicit approval."
+    }
+  ]
+}
