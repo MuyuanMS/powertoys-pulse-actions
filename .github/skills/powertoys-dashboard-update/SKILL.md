@@ -363,6 +363,13 @@ Each judgment must contain `rationale`, concrete `evidence`, a
 root cause during the fast pass. When evidence is insufficient, prefer
 `needs_information` over a speculative design.
 
+Before defaulting to a request for logs or `/bugreport`, perform a focused
+initial investigation using the issue body, discussion, labels, linked issues,
+linked PRs, likely owning code area, and recent history/duplicates that can be
+checked without a full implementation pass. If that investigation can identify
+a plausible root cause or fix plan with useful confidence, emit that as a
+design/fix path instead of only pushing the reporter for more information.
+
 Every new or substantively refreshed issue artifact that exposes an action must
 use `schemaVersion: 4` and include display-only `issue_context`:
 
@@ -406,6 +413,13 @@ The editable `request_info` comment and display-only context must agree:
 `actions[].comment.body` asks for the same gaps recorded under
 `issue_context.information_gaps`, and any gap whose `how_to_collect` names
 `/bugreport` must use `/bugreport` in the proposed comment.
+
+When the evidence supports it, emit multiple issue actions rather than a single
+default request-info path: an `approve_design` action for the best currently
+supportable fix plan with an explicit confidence score/rationale, plus a
+`request_info` action that asks only for evidence that would materially improve
+or disprove that plan. Prefer this split for vague or long issues where the
+discussion already narrows the component but still lacks a decisive diagnostic.
 
 Older unchanged bugs do not need to be re-read every run, but they must retain
 their prior explicit judgment/action in the board. The 30-day window controls

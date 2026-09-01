@@ -110,14 +110,16 @@ the limit and is required for member-gated artifacts and writes.
       "url": "https://github.com/microsoft/PowerToys/pull/49136",
       "title": "…", "author": "…",
       "is_community": true, "mine": false, "is_cmdpal": true,
+      "assignees": ["maintainer-login"],
       "track": "review",              // review | fix | none
       "stage": "review_posted",       // free-form stage hint (see below)
       "owes": "author",               // us | author | maintainer  (who acts next)
-      "pending_author": true,         // derived: owes === author
+      "pending_author": true,         // true when owes === author or a PR has posted Pulse review comments awaiting a response
+      "waiting_since": "…",           // when the author wait began; prefer posted review time when available
       "has_artifact": true,           // is there a data/items/<n>.json?
       "agent_status": "review",       // ALWAYS set: review|fix (local artifact) | mirror (fork work, no artifact) | none (no agent yet)
       "issue_type": "bug",            // issues only: bug | feature | other (from labels)
-      "proposed_open": 0,             // # of still-to-post proposed review comments (drives the comments sort)
+      "proposed_open": 0,             // # of still-to-post proposed review comments; can stay >0 after a partial post
       "mirror": {                     // present only when a fork trace exists
         "kind": "pr",                 // pr | issue in MuyuanMS/PowerToys
         "fork_number": 182,
@@ -233,6 +235,14 @@ briefly acknowledge relevant known information, explain the unresolved
 ambiguity, and request the exact `information_gaps`. When `how_to_collect`
 references `/bugreport`, the proposed comment must use that command rather than
 generic instructions to upload logs.
+
+Issue artifacts may expose more than one concrete maintainer action when that
+helps the reviewer make a better decision. For example, a bug can include an
+`approve_design` action for a confidence-scored likely fix and a companion
+`request_info` action asking for the specific evidence that would raise or lower
+that confidence. The action list must stay concrete and issue-specific; never
+emit a generic log request when code/history/duplicate investigation can support
+a higher-confidence fix path.
 
 ### Action types
 | type | GitHub call (as the member) | notes |

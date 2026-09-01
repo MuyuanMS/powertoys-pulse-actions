@@ -60,6 +60,7 @@ function Get-LiveCollection {
 function Convert-LiveItem {
   param($Raw, [string]$Kind, $Previous, [int]$CommentCount)
   $labels = @($Raw.labels | ForEach-Object { $_.name })
+  $assignees = @($Raw.assignees | ForEach-Object { $_.login } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
   $author = if ($Raw.user.login) { $Raw.user.login } else { 'unknown' }
   $association = [string]$Raw.author_association
   $community = $association -notin @('MEMBER','OWNER','COLLABORATOR')
@@ -71,6 +72,7 @@ function Convert-LiveItem {
     is_community = [bool]$community; mine = ($author -ieq $ME)
     is_cmdpal = (($labels -join '|') -match '(?i)Command Palette|CmdPal')
     labels = $labels; created_at = $Raw.created_at; updated_at = $Raw.updated_at
+    assignees = $assignees
     comments = $CommentCount
     track = if ($Previous) { $Previous.track } else { $null }
     stage = if ($Previous) { $Previous.stage } else { $null }
@@ -730,9 +732,21 @@ foreach ($it in $src.items) {
   }
   # ---- outstanding proposed comments (drives the "good to go -> more comments" sort) ----
   $proposedOpen = 0
+  $postedComments = 0
   if ($o -and $o.proposed_comments) {
     $proposedOpen = @($o.proposed_comments | Where-Object { $_.disposition -eq 'proposed' }).Count
+    $postedComments = @($o.proposed_comments | Where-Object { $_.disposition -eq 'posted' }).Count
   }
+  $pendingAuthor = ($iowes -eq 'author') -or ($it.kind -eq 'pr' -and $postedComments -gt 0)
+  $waitingSince = if ($o -and $o.waiting_since) { $o.waiting_since }
+                  elseif ($pendingAuthor) {
+                    $postedAt = if ($o -and $o.proposed_comments) {
+                      @($o.proposed_comments | Where-Object { $_.disposition -eq 'posted' -and $_.posted_at } | Sort-Object posted_at | Select-Object -First 1).posted_at
+                    } else {
+                      $null
+                    }
+                    if ($postedAt) { $postedAt } else { $it.updated_at }
+                  } else { $null }
   $primary = $null
   if ($hasArtifact -and $stage -eq 'owned_elsewhere') {
     $primary = $null
@@ -765,12 +779,12 @@ foreach ($it in $src.items) {
     state=$it.state
     is_draft=[bool]$it.is_draft
     is_community=[bool]$it.is_community; mine=[bool]$it.mine; is_cmdpal=[bool]$it.is_cmdpal
-    track=$track; stage=$stage; owes=$iowes; pending_author=($iowes -eq 'author')
-    waiting_since=if ($o -and $o.waiting_since) { $o.waiting_since } elseif ($iowes -eq 'author') { $it.updated_at } else { $null }
+    track=$track; stage=$stage; owes=$iowes; pending_author=$pendingAuthor
+    waiting_since=$waitingSince
     has_artifact=$hasArtifact; agent_status=$agentStatus; issue_type=$issueType
     proposed_open=$proposedOpen
     primary_action=if ($primary) { [pscustomobject]$primary } else { $null }
-    labels=@($it.labels); created_at=$it.created_at; updated_at=$it.updated_at
+    labels=@($it.labels); assignees=@($it.assignees); created_at=$it.created_at; updated_at=$it.updated_at
     comments=$it.comments; priority=$it.priority
   }
   if ($mt) { $entry['mirror'] = [pscustomobject]$mt }
@@ -780,9 +794,10 @@ foreach ($it in $src.items) {
 
   # ---- per-number artifact (the drafted, approvable payload) ----
   $owes = if ($o.owes) { $o.owes } elseif ($it.owes) { $it.owes } else { 'us' }
+  $artifactPendingAuthor = ($owes -eq 'author') -or ($it.kind -eq 'pr' -and $postedComments -gt 0)
   $art = [ordered]@{
     number=$n; kind=$it.kind; track=$track; stage=$stage; owes=$owes
-    pending_author=($owes -eq 'author'); generated_at=$now
+    pending_author=$artifactPendingAuthor; generated_at=$now
     evaluated_at=if ($o.evaluated_at) { $o.evaluated_at } else { $now }
     source_updated_at=if ($o.source_updated_at) { $o.source_updated_at } else { $it.updated_at }
     status     = Obj $o.status
