@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 4,
+  "number": 50304,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-01T23:08:00Z",
+  "evaluated_at": "2026-09-01T23:08:00Z",
+  "source_updated_at": "2026-09-01T22:38:52Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50304",
+  "title": "FancyZones Issue with msedge.exe Apps",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "confidence": "High",
+  "summary": "Distinct Microsoft Edge PWAs appear to share FancyZones' remembered zone because their windows are associated with the same Edge executable rather than a stable per-app identity.",
+  "status": {
+    "glyph": "?",
+    "label": "Per-PWA identity evidence needed",
+    "detail": "The report is consistent with executable-based matching, but a focused trace is needed to confirm which window identity fields remain stable for each PWA."
+  },
+  "next_action": {
+    "glyph": ">",
+    "label": "Request focused PWA reproduction",
+    "reason": "Capture the two affected window identities and FancyZones state immediately after reproducing the cross-placement."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The described behavior is plausible and specific, but the issue does not yet establish whether FancyZones receives distinct AUMIDs, application IDs, or other stable properties for the affected Edge PWA windows.",
+    "evidence": [
+      "The reporter uses approximately twelve Edge PWAs.",
+      "Launching one PWA can place it in the zone last used by a different PWA.",
+      "The reporter identified shared msedge.exe or msedge_proxy.exe hosting as a possible cause.",
+      "No PowerToys diagnostic archive or concrete two-PWA reproduction trace is attached."
+    ],
+    "recommended_action": "Request a fresh diagnostic archive and a controlled two-PWA placement/relaunch sequence so maintainers can determine which per-window identity is available for matching.",
+    "evaluated_at": "2026-09-01T23:08:00Z",
+    "source_updated_at": "2026-09-01T22:38:52Z"
+  },
+  "issue_context": {
+    "summary": "FancyZones appears to remember one shared location for multiple Edge PWAs instead of preserving a separate last zone for each installed PWA.",
+    "known_information": [
+      "The issue reproduces on PowerToys 0.100.2 installed through WinGet or auto-update.",
+      "The machine runs Windows 11 Pro 25H2 with three Dell S2721DS displays.",
+      "The affected applications are installed Edge PWAs hosted by Edge processes.",
+      "Different PWAs can open in the zone most recently used by another PWA."
+    ],
+    "inferences": [
+      "FancyZones may be grouping the windows by executable path when the PWA-specific identity is unavailable or not considered.",
+      "An Edge application ID or AUMID could provide a more specific key if it is consistently exposed for these windows."
+    ],
+    "analysis": "The report supplies a useful hypothesis and expected behavior, but selecting an implementation requires evidence about the actual identity properties FancyZones sees. A minimal two-PWA trace and fresh diagnostics would distinguish an executable-key collision from unstable window metadata or a broader last-zone persistence problem.",
+    "initial_investigation": [
+      "The report already identifies the shared Edge host process and suggests two candidate per-PWA identities.",
+      "No diagnostic archive or window-property evidence is currently available in the issue."
+    ],
+    "information_gaps": [
+      {
+        "information": "A controlled reproduction using two named Edge PWAs placed in different zones, including the exact relaunch order and resulting zones.",
+        "why_needed": "This establishes a deterministic cross-PWA collision and rules out general zone-history or startup-order behavior.",
+        "how_to_collect": "Move PWA A and PWA B to different zones, close both, relaunch A, then B, and record the expected and actual zone for each."
+      },
+      {
+        "information": "A fresh PowerToys diagnostic archive captured immediately after the two-PWA reproduction.",
+        "why_needed": "The archive can show FancyZones history and matching data for the affected windows.",
+        "how_to_collect": "Submit a comment containing /bugreport immediately after reproducing the incorrect placement."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-50304",
+      "type": "request_info",
+      "label": "Request PWA identity trace",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50304,
+        "body": "Thanks for the detailed hypothesis and multi-PWA setup. To confirm whether FancyZones is grouping these windows by the shared Edge executable rather than a per-PWA identity, please run a controlled test with two named PWAs: move PWA A and PWA B into different zones, close both, relaunch A and then B, and report the expected and actual zone for each. Immediately after reproducing the incorrect placement, please also submit a comment containing `/bugreport` so the generated diagnostic ZIP captures the relevant FancyZones history and window-matching state."
+      }
+    }
+  ]
+}
