@@ -133,6 +133,13 @@ the limit and is required for member-gated artifacts and writes.
 }
 ```
 
+Posted Pulse comments include an invisible marker with the item kind, upstream
+number, reviewed revision, and proposal ID. Run
+`.github/skills/powertoys-dashboard-update/scripts/Get-PulseContributionStats.ps1`
+to reconstruct individually attributable posted comments from GitHub. This
+does not yet cover approvals, opened pull requests, or reliably prove that a
+GitHub inline suggestion was accepted.
+
 `data/index.js` is the same object assigned to `window.BOARD_INDEX` — a `file://`
 fallback so the page renders without a server. Prefer serving over HTTP.
 
@@ -230,7 +237,7 @@ generic instructions to upload logs.
 ### Action types
 | type | GitHub call (as the member) | notes |
 |------|-----------------------------|-------|
-| `post_review` | `POST /repos/{upstream}/pulls/{n}/reviews` | selected non-withdrawn comments: `in_diff && path && line` → inline `comments[]`, the rest appended to `body`. Event = COMMENT / APPROVE / REQUEST_CHANGES. |
+| `post_review` | `POST /repos/{upstream}/pulls/{n}/reviews` | selected non-withdrawn comments: `in_diff && path && line` → inline `comments[]`, the rest appended to `body`. The artifact defaults to `COMMENT`; Pulse may offer an explicit maintainer override to `REQUEST_CHANGES`. Inline-only reviews omit `body`, and an artifact-proposed overall message is optional in Pulse. |
 | `open_upstream_pr` | `POST /repos/{upstream}/pulls` | `head=MuyuanMS:<branch>`, `base=main`. `body` **may** contain `Fixes #<n>` — this is the real upstream PR that closes the issue (post-approval), the one allowed use of `#<n>`. |
 | `approve_design` | `POST /repos/{fork}/issues/{mirror}/comments` | approval note on the **fork mirror issue** so the scheduled job proceeds. |
 | `request_info` | `POST /repos/{upstream}/issues/{n}/comments` | issue-specific request that acknowledges current evidence, explains the unresolved gap, and asks for exact missing information; use `/bugreport` when a fresh PowerToys diagnostic ZIP is needed. |
