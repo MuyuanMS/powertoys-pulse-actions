@@ -2,25 +2,29 @@
   "number": 49943,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-01T21:05:48.6601497Z",
-  "evaluated_at": "2026-09-01T21:05:48.6601497Z",
+  "evaluated_at": "2026-09-01T23:19:00Z",
   "source_updated_at": "2026-09-01T14:36:43Z",
   "head_sha": "b3f7ee2be5114492ad49c6f5082c3540dd435e96",
   "title": "CmdPal: Shelf (5/n) - Add Alt+Shift+# shortcuts that select the shelf item",
   "url": "https://github.com/microsoft/PowerToys/pull/49943",
   "author": "jiripolasek",
   "author_association": "COLLABORATOR",
-  "confidence": "Medium",
-  "summary": "Phase 0 remains clear. Copilot round 1 found a released-Alt key-tip path that could consume Shift+digit before shelf selection; the valid finding was fixed on the fork, regression-tested, pushed, replied to, and resolved. A fresh round-2 review is now pending, so no upstream action is exposed.",
+  "confidence": "High",
+  "summary": "Phase 0 is clear and the fork review converged. The current head can consume a released-Alt Shift+digit access-key sequence as a context shortcut before the intended shelf item receives focus. Three current-head suggestions preserve key-tip mode through the resolver and add regression coverage.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review round 2",
-    "detail": "The fork contains commit 34f052678 with the round-1 fix. The targeted CmdPal ViewModels test project builds and all 35 QuickAccessShelfResolverTests pass; exact zero-comment convergence still awaits the freshly requested review."
+    "glyph": "📝",
+    "label": "Review ready — three suggestions drafted",
+    "detail": "Round 2 returned zero new comments, the prior thread is resolved, the targeted build passes, and all 35 QuickAccessShelfResolverTests pass."
   },
-  "next_action": "Inspect the round-2 review requested at 2026-09-01T21:05:25Z. If it has findings, process and resolve them; otherwise confirm zero unresolved threads and exact heads before drafting any current-head action.",
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "The three localized suggestions prevent the released-Alt access-key regression and cover it with a focused unit test."
+  },
   "phase0": {
     "disposition": "Proceed",
     "author_bar": "Collaborator: skip community process nags",
@@ -37,9 +41,77 @@
       "P9": "Note only: validation section is blank, but collaborator process nags are skipped"
     }
   },
-  "proposed_comments": [],
-  "actions": [],
-  "needs_revalidation": true,
+  "proposed_comments": [
+    {
+      "id": "released-alt-selection-resolution",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Recognize released-Alt key-tip mode",
+      "confidence": {
+        "score": 97,
+        "rationale": "The native access-key sequence clears the Alt modifier before this resolver runs, while the active key-tip display mode still identifies the intended selection chord."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfShortcuts.cs",
+      "side": "RIGHT",
+      "start_line": 31,
+      "line": 52,
+      "body": "### Recognize released-Alt key-tip mode\n\n**Severity:** `medium`\n\nWindows access keys can enter key-tip mode when Alt is pressed and released before the number key. At that point the preview handler sees `Alt` as false, so Shift+number is treated as a context shortcut instead of selecting the shelf item. Preserve the normal modifier check while allowing the active key-tip display mode to identify this selection sequence.\n\n```suggestion\n    public static bool IsSelectionShortcut(VirtualKey key, bool ctrl, bool alt, bool shift, bool win, bool isKeyTipDisplayMode = false) =>\n        (alt || isKeyTipDisplayMode) &&\n        IsSelectionAccessKey(ctrl, shift, win) &&\n        GetTopRowShortcutIndex(key) >= 0;\n\n    public static SelectionShortcutTarget ResolveSelectionShortcut(\n        VirtualKey key,\n        bool ctrl,\n        bool alt,\n        bool shift,\n        bool win,\n        int visibleItemCount,\n        bool isKeyTipDisplayMode = false)\n    {\n        if (!IsSelectionShortcut(key, ctrl, alt, shift, win, isKeyTipDisplayMode))\n        {\n            return SelectionShortcutTarget.None;\n        }\n\n        return GetTopRowShortcutIndex(key) < visibleItemCount\n            ? SelectionShortcutTarget.Visible\n            : SelectionShortcutTarget.Unavailable;\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "pass-key-tip-display-mode",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Pass key-tip display state to the shortcut resolver",
+      "confidence": {
+        "score": 97,
+        "rationale": "This handler owns the AccessKeyManager state and is the only call site that needs to distinguish released-Alt key-tip mode from an ordinary Shift+number chord."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "side": "RIGHT",
+      "start_line": 1663,
+      "line": 1679,
+      "body": "### Pass key-tip display state to the shortcut resolver\n\n**Severity:** `medium`\n\nThe resolver cannot infer a released-Alt access-key sequence from keyboard modifiers alone. Passing the current access-key display state keeps normal Shift+number context shortcuts unchanged while allowing the active key-tip sequence to reach the matching shelf item.\n\n```suggestion\n        switch (QuickAccessShelfShortcuts.ResolveSelectionShortcut(\n            e.Key,\n            modifiers.Ctrl,\n            modifiers.Alt,\n            modifiers.Shift,\n            modifiers.Win,\n            QuickAccessShelf.VisibleItemCount,\n            isKeyTipDisplayMode: AccessKeyManager.IsDisplayModeEnabled))\n        {\n            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible:\n                // Let the matching native access key move focus to the requested shelf item.\n                return false;\n            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable:\n                // Reserve shelf selection chords even when their targets are in overflow so\n                // they cannot invoke a context shortcut on the currently focused shelf item.\n                e.Handled = true;\n                return true;\n        }\n```",
+      "in_diff": true,
+      "disposition": "proposed"
+    },
+    {
+      "id": "released-alt-regression-test",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cover the released-Alt access-key sequence",
+      "confidence": {
+        "score": 95,
+        "rationale": "The existing test exercises Alt held down but not the released-Alt path that produces the incorrect result; the assertion directly distinguishes the two modes."
+      },
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
+      "side": "RIGHT",
+      "start_line": 42,
+      "line": 50,
+      "body": "### Cover the released-Alt access-key sequence\n\n**Severity:** `medium`\n\nThe existing test only verifies selection while Alt remains held. Add the released-Alt case so a future modifier-handling change cannot reintroduce the path that consumes Shift+number before native access-key selection runs.\n\n```suggestion\n    [TestMethod]\n    public void IsSelectionShortcut_RequiresOnlyAltShiftAndNumberedKey()\n    {\n        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: true, alt: true, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: false, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: false, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: true, win: true));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number0, ctrl: false, alt: true, shift: true, win: false));\n        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: false, shift: true, win: false, isKeyTipDisplayMode: true));\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49943",
+      "type": "post_review",
+      "label": "Post three inline suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49943,
+        "event": "COMMENT",
+        "head_sha": "b3f7ee2be5114492ad49c6f5082c3540dd435e96"
+      },
+      "note": "Recheck freshness and obtain explicit approval before publishing."
+    }
+  ],
+  "needs_revalidation": false,
   "fork_pr": {
     "number": 569,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/569"
@@ -47,14 +119,16 @@
   "fork_branch": "pr-iterate/49943",
   "fork_head_sha": "34f052678acf8ad5213cc466c35018f0fd3ca859",
   "workflow": {
-    "phase": "waiting_copilot",
+    "phase": "review_drafted",
     "review_round": 2,
     "requested_at": "2026-09-01T21:05:25.7412725Z",
-    "latest_copilot_review_at": "2026-09-01T20:00:23Z",
-    "checkpoint_at": "2026-09-01T21:05:48.6601497Z",
+    "latest_copilot_review_at": "2026-09-01T21:07:14Z",
+    "checkpoint_at": "2026-09-01T23:19:00Z",
     "unresolved_copilot_threads": 0,
     "round_1_comment_count": 1,
-    "round_1_resolved": true
+    "round_1_resolved": true,
+    "round_2_comment_count": 0,
+    "copilot_final": "zero_new_comments"
   },
   "validation": {
     "upstream_head_matches": true,
