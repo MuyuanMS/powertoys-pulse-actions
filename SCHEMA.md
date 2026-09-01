@@ -133,6 +133,13 @@ the limit and is required for member-gated artifacts and writes.
 }
 ```
 
+Posted Pulse comments include an invisible marker with the item kind, upstream
+number, reviewed revision, and proposal ID. Run
+`.github/skills/powertoys-dashboard-update/scripts/Get-PulseContributionStats.ps1`
+to reconstruct individually attributable posted comments from GitHub. This
+does not yet cover approvals, opened pull requests, or reliably prove that a
+GitHub inline suggestion was accepted.
+
 `data/index.js` is the same object assigned to `window.BOARD_INDEX` — a `file://`
 fallback so the page renders without a server. Prefer serving over HTTP.
 
