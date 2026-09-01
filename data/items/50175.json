@@ -6,9 +6,9 @@
   "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T07:48:33.332Z",
-  "evaluated_at": "2026-08-31T07:48:33.332Z",
-  "source_updated_at": "2026-08-27T19:31:30Z",
+  "generated_at": "2026-09-01T10:05:00Z",
+  "evaluated_at": "2026-09-01T10:05:00Z",
+  "source_updated_at": "2026-09-01T08:38:37Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50175",
   "title": "CmdPal: Bookmark {placeholder} field retains last-entered value on every subsequent open",
   "author": "tbertran",
@@ -18,13 +18,13 @@
     "Product-Command Palette"
   ],
   "assignees": [],
-  "comments": 0,
+  "comments": 1,
   "confidence": "High",
-  "summary": "Command Palette bookmark placeholder controls are cached with the bookmark command and retain StringParameterRun values after a successful launch.",
+  "summary": "Command Palette bookmark placeholder controls are cached with the bookmark command and retain StringParameterRun values after a successful launch. A cross-architecture UI Automation reproduction now confirms the value persists only within the Command Palette session and resets after restart.",
   "status": {
     "glyph": "🛠️",
     "label": "Focused design ready",
-    "detail": "The deterministic reproduction and source analysis match current main."
+    "detail": "The deterministic reproduction, source analysis, and new x64/ARM64 UI Automation evidence match current main."
   },
   "next_action": {
     "glyph": "🧭",
@@ -38,11 +38,13 @@
       "The form starts empty only on first open, then reuses the last value.",
       "The issue identifies the involved classes.",
       "Current main stores StringParameterRun instances on a long-lived page.",
-      "LaunchWithCurrentValues dismisses after success without clearing runs."
+      "LaunchWithCurrentValues dismisses after success without clearing runs.",
+      "An independent UI Automation reproduction passed its controls on x64 and ARM64 and showed the submitted value on the next open.",
+      "Restarting Command Palette resets the field, confirming that the value is session-cached rather than persisted to bookmarks.json."
     ],
     "recommended_action": "Design and test reset on successful launch or page activation; do not approve until lifecycle and failure semantics are finalized.",
-    "evaluated_at": "2026-08-31T07:48:33.332Z",
-    "source_updated_at": "2026-08-27T19:31:30Z"
+    "evaluated_at": "2026-09-01T10:05:00Z",
+    "source_updated_at": "2026-09-01T08:38:37Z"
   },
   "issue_context": {
     "summary": "Dynamic bookmark fields persist for the session although users expect a fresh parameter form for each invocation.",
@@ -50,18 +52,21 @@
       "A `{placeholder}` bookmark starts empty on first open.",
       "Later opens are prefilled with the last submitted value.",
       "The behavior reproduces on 0.101.2362.",
-      "No comments, assignee, duplicate, or linked fix exists."
+      "An independent UI Automation run reproduced identical session-only retention on x64 and ARM64.",
+      "The field is empty after restarting Command Palette, and the value is not persisted to bookmarks.json.",
+      "No assignee, duplicate, or linked fix exists."
     ],
     "inferences": [
       "Clearing only after successful launch likely preserves failed input for correction.",
       "Rebuilding the command on every activation may be broader than necessary."
     ],
-    "analysis": "The source trace matches current main, so more diagnostics would not change triage; reset timing and tests are the remaining work.",
+    "analysis": "The source trace and cross-architecture automated reproduction now independently confirm the session-lifetime state leak, so more reporter diagnostics would not change triage; reset timing, accessibility targeting, and regression tests are the remaining work.",
     "initial_investigation": [
       "BookmarkListItem.cs creates and retains one BookmarkPlaceholderPage as the command.",
       "BuildParameterRuns creates StringParameterRun objects once in the constructor.",
       "LaunchWithCurrentValues reads Text and dismisses without reset.",
-      "The parameter-page implementation landed in #47886; no later reset fix appears."
+      "The parameter-page implementation landed in #47886; no later reset fix appears.",
+      "The existing CmdPal UI-test harness locates controls by AutomationId, while the placeholder TextBox currently has neither x:Name nor AutomationProperties.AutomationId."
     ],
     "information_gaps": []
   },
