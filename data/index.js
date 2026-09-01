@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-01T08:11:26.9395219+08:00",
+  "generated_at": "2026-09-01T10:35:42.8955356+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,19 +85,20 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 145,
+    "open_prs": 146,
     "open_issues": 12547,
     "community": 11950,
-    "artifacts": 3428
+    "artifacts": 3429
   },
   "impact": {
-    "as_of": "2026-09-01T08:11:26.9395219+08:00",
+    "as_of": "2026-09-01T10:35:42.8955356+08:00",
     "issues_helped": 10,
     "prs_iterated": 45,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50271,
     50268,
     50265,
     50254,
@@ -3529,6 +3530,49 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-50271",
+      "kind": "pr",
+      "number": 50271,
+      "url": "https://github.com/microsoft/PowerToys/pull/50271",
+      "title": "[Mouse Utilities] Add Auto Hide Cursor",
+      "author": "DamianEdwards",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 5,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Post drafted request-changes review"
+      },
+      "labels": [
+        "Product-Mouse Utilities",
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "created_at": "2026-09-01T00:26:05Z",
+      "updated_at": "2026-09-01T00:30:34Z",
+      "comments": 3,
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 559,
+        "fork_title": "[PR 50271] [Mouse Utilities] Add Auto Hide Cursor",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50271",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/559"
+      }
+    },
+    {
       "id": "pr-50268",
       "kind": "pr",
       "number": 50268,
@@ -4175,7 +4219,7 @@ window.BOARD_INDEX = {
         "Product-Command Palette"
       ],
       "created_at": "2026-08-28T09:49:27Z",
-      "updated_at": "2026-08-31T21:55:18Z",
+      "updated_at": "2026-09-01T02:22:37Z",
       "comments": 1,
       "priority": null,
       "mirror": {
@@ -149695,11 +149739,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Idea-Enhancement",
+        "Status-In progress",
         "Product-Mouse Utilities"
       ],
       "created_at": "2021-06-01T21:22:44Z",
-      "updated_at": "2026-08-31T18:46:52Z",
-      "comments": 22,
+      "updated_at": "2026-09-01T00:31:55Z",
+      "comments": 23,
       "priority": null
     },
     {
