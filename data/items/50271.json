@@ -1,177 +1,35 @@
 {
-  "schemaVersion": 3,
   "number": 50271,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
+  "stage": "review_in_progress",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-01T02:25:07.7886103Z",
-  "evaluated_at": "2026-09-01T02:25:07.7886103Z",
-  "source_updated_at": "2026-09-01T00:30:34Z",
-  "head_sha": "3ebffb4f7bdc198c6e767ebf773d265caeaf17fa",
+  "generated_at": "2026-09-01T23:13:49.2100646Z",
+  "evaluated_at": "2026-09-01T23:13:49.2100646Z",
+  "source_updated_at": "2026-09-01T21:33:27Z",
+  "head_sha": "ede6dc652c371a259096541ebd5608812e05911a",
   "title": "[Mouse Utilities] Add Auto Hide Cursor",
   "url": "https://github.com/microsoft/PowerToys/pull/50271",
-  "summary": "The new Auto Hide Cursor utility passes Phase 0 and targeted native, Settings, GPO, and spelling validation. The converged review found idle-detection starvation, incomplete standard-cursor coverage, incorrect GPO version metadata, a WinRT ABI ordering break, and missing UI integration coverage. A current-head request-changes review is drafted.",
   "status": {
-    "glyph": "📝",
-    "label": "Review ready — request changes drafted",
-    "detail": "The final fresh Copilot passes produced zero new comments and all Copilot threads are resolved. Targeted builds, 7/7 native tests, and 6/6 Settings tests pass."
+    "glyph": "...",
+    "label": "Waiting for Copilot review",
+    "detail": "Current-head fork fixes and targeted UI-test build are complete; GitHub did not accept the fresh Copilot reviewer request, so convergence is blocked pending reviewer availability."
   },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted request-changes review",
-    "reason": "Four correctness and compatibility fixes plus UI integration coverage are required before this system-wide cursor feature is ready."
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
+  "actions": [],
+  "workflow": {
+    "phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-01T23:13:49.2100646Z"
   },
-  "actions": [
-    {
-      "id": "request-changes-50271",
-      "type": "request_changes",
-      "label": "Post drafted request-changes review",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50271,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "3ebffb4f7bdc198c6e767ebf773d265caeaf17fa",
-        "body_prefix": "Thanks for adding Auto Hide Cursor. Before this system-wide cursor replacement feature is ready, please address the idle-timer starvation, cursor coverage, policy metadata, and WinRT ABI concerns below, and add automated Settings integration coverage for the new module."
-      },
-      "note": "Recheck the upstream head, checks, comments, reviews, and threads; validate the pinned payload; and obtain explicit approval before publishing."
-    }
-  ],
-  "proposed_comments": [
-    {
-      "id": "evaluate-idle-timer-after-every-wake",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Do not let message traffic starve idle hiding",
-      "confidence": {
-        "score": 96,
-        "rationale": "The timer currently runs only after WAIT_TIMEOUT. Continuous queued messages can therefore prevent the independent pointer-idle transition indefinitely; evaluating after every successful wake directly removes that starvation."
-      },
-      "path": "src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp",
-      "side": "RIGHT",
-      "start_line": 128,
-      "line": 132,
-      "body": "### Do not let message traffic starve idle hiding\n\n**Severity:** `high`\n\nIdle detection currently runs only when the wait times out. A steady stream of queued messages can keep returning the message-queue result, so pointer inactivity may never trigger hiding. Drain the messages first, then evaluate the timer after every successful wake.\n\n```suggestion\n                if (running)\n                {\n                    QueueAction(m_state.OnTimer(GetTickCount64(), GetCursorPosition()));\n                    ProcessMessages();\n                }\n```",
-      "in_diff": true,
-      "disposition": "proposed"
-    },
-    {
-      "id": "cover-all-standard-system-cursors",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Hide every supported standard cursor shape",
-      "confidence": {
-        "score": 95,
-        "rationale": "OCR_HELP, OCR_PIN, and OCR_PERSON are standard cursor identifiers on supported Windows versions. Omitting them leaves visible cursor shapes while the utility claims system-wide hiding."
-      },
-      "path": "src/modules/MouseUtils/AutoHideCursor/SystemCursorHider.h",
-      "side": "RIGHT",
-      "start_line": 138,
-      "line": 152,
-      "body": "### Hide every supported standard cursor shape\n\n**Severity:** `medium`\n\nThe list omits Help Select, Location Select, and Person Select, so those standard shapes remain visible while the utility is active. Include all supported standard cursor IDs; the descriptive names below also satisfy the repository spelling check.\n\n```suggestion\n        inline static constexpr std::array<DWORD, 16> systemCursorIds = {\n            32512, // OCR_NORMAL\n            32513, // Text select\n            32514, // OCR_WAIT\n            32515, // OCR_CROSS\n            32516, // OCR_UP\n            32642, // OCR_SIZENWSE\n            32643, // OCR_SIZENESW\n            32644, // OCR_SIZEWE\n            32645, // OCR_SIZENS\n            32646, // OCR_SIZEALL\n            32648, // OCR_NO\n            32649, // OCR_HAND\n            32650, // Working in background\n            32651, // OCR_HELP\n            32671, // OCR_PIN\n            32672, // OCR_PERSON\n        };\n```",
-      "in_diff": true,
-      "disposition": "proposed"
-    },
-    {
-      "id": "use-current-gpo-supported-version",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Advertise the correct policy introduction version",
-      "confidence": {
-        "score": 98,
-        "rationale": "Auto Hide Cursor is introduced in the 0.101 release train, so the 0.97 reference gives Group Policy administrators incorrect compatibility information."
-      },
-      "path": "src/gpo/assets/PowerToys.admx",
-      "side": "RIGHT",
-      "line": 381,
-      "start_line": 381,
-      "body": "### Advertise the correct policy introduction version\n\n**Severity:** `medium`\n\nThis policy is new in the current 0.101 release train, but the template advertises it as available since 0.97. Use the current release definition so Group Policy Editor reports accurate compatibility.\n\n```suggestion\n      <supportedOn ref=\"SUPPORTED_POWERTOYS_0_101_0\" />\n```",
-      "in_diff": true,
-      "disposition": "proposed"
-    },
-    {
-      "id": "preserve-gpowrapper-winrt-abi-order",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Append the new GPO method without shifting WinRT ABI slots",
-      "confidence": {
-        "score": 96,
-        "rationale": "Adding a method in the middle of the generated statics interface shifts the vtable position of every subsequent member. Existing additions are appended specifically to preserve binary ordering."
-      },
-      "body": "### Append the new GPO method without shifting WinRT ABI slots\n\n**Severity:** `high`\n\n`GetConfiguredAutoHideCursorEnabledValue` is inserted before existing members in `src/common/GPOWrapper/GPOWrapper.idl`. That shifts the generated WinRT statics-interface slots for `GetConfiguredCursorWrapEnabledValue` and every method after it, which can break mixed-version consumers. Move the new method to the end of the existing method list so all established ABI positions remain unchanged.",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "add-auto-hide-cursor-ui-integration-tests",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Cover the new Settings and worker integration",
-      "confidence": {
-        "score": 90,
-        "rationale": "The existing native and serialization tests do not exercise Settings bindings, IPC updates, worker lifecycle, or cursor restoration. Other Mouse Utilities modules have dedicated UI suites for equivalent integration surfaces."
-      },
-      "body": "### Cover the new Settings and worker integration\n\n**Severity:** `medium`\n\nPlease add `MouseUtils.UITests.Next` coverage for enabling and disabling Auto Hide Cursor, both trigger toggles and their persisted values, the 1–60 second delay bounds, and worker start/stop/restart behavior. The current unit tests cover state and serialization, but not the Settings bindings, IPC path, or cursor restoration lifecycle introduced by this module.",
-      "in_diff": false,
-      "disposition": "proposed"
-    }
-  ],
-  "confidence": "High",
-  "judgment": {
-    "status": "review_drafted",
-    "rationale": "The current upstream head was mirrored and reviewed through five Copilot rounds. Supported findings were fixed on the fork, the final two freshly requested passes produced zero new comments, all Copilot threads are resolved, and targeted builds and tests pass.",
-    "evidence": [
-      "Upstream PR 50271 is open and mergeable at head 3ebffb4f7bdc198c6e767ebf773d265caeaf17fa.",
-      "The author is a PowerToys member; the linked issue, screenshot, validation notes, CLA, intake, dependency, and telemetry-detection checks are present or successful.",
-      "The review converged after five Copilot rounds; rounds four and five produced zero new comments and zero Copilot threads remain unresolved.",
-      "The supported fork fixes cover idle detection starvation, standard cursor coverage, accurate 0.101 policy metadata, preserved WinRT ABI ordering, and Settings integration tests.",
-      "PowerToys essentials, GPOWrapper, the module and worker, native tests, Settings tests, UI-test project, and spelling validation built or passed.",
-      "Native Auto Hide Cursor tests passed 7/7 and Settings tests passed 6/6.",
-      "UI automation execution could not reach its assertions because another PowerToys instance owned the test target; no unrelated process was terminated."
-    ],
-    "recommended_action": "Review and, after explicit approval and a current-head freshness check, post the drafted request-changes review.",
-    "evaluated_at": "2026-09-01T02:25:07.7886103Z",
-    "source_updated_at": "2026-09-01T00:30:34Z"
-  },
-  "phase0": {
-    "author": "DamianEdwards",
-    "author_association": "MEMBER",
-    "disposition": "Proceed",
-    "gates_tripped": [],
-    "note": "The PR links issue 11566, includes a screenshot and detailed validation, and current automated intake and CLA checks pass. The telemetry follow-up remains a normal pre-merge coordination note."
+  "freshness": {
+    "queued_at": "2026-09-01T23:13:49.2100646Z",
+    "checkpoint_at": "2026-09-01T23:13:49.2100646Z"
   },
   "fork_pr": {
-    "number": 559,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/559"
+    "number": 570,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/570"
   },
-  "fork_branch": "pr-iterate/50271",
-  "workflow": {
-    "phase": "review_drafted",
-    "checkpoint_at": "2026-09-01T02:25:07.7886103Z",
-    "copilot_rounds": 5,
-    "copilot_final": "zero_new_comments",
-    "unresolved_copilot_threads": 0
-  },
-  "revalidation": {
-    "completed_at": "2026-09-01T02:25:07.7886103Z",
-    "result": "targeted_validation_passed_ui_execution_blocked",
-    "fork_head_sha": "a72521633e0292f7f22000ca71c09046d8b4bd57",
-    "builds": [
-      "PowerToys essentials",
-      "GPOWrapper",
-      "AutoHideCursor module and worker",
-      "AutoHideCursor native tests",
-      "Settings UI tests",
-      "MouseUtils.UITests.Next"
-    ],
-    "tests": [
-      "7/7 Auto Hide Cursor native tests passed",
-      "6/6 Auto Hide Cursor Settings tests passed"
-    ],
-    "ui_test_note": "The UI-test project built, but execution did not reach assertions because another PowerToys instance owned the test target."
-  }
+  "fork_branch": "pr-iterate/50271-v2"
 }
