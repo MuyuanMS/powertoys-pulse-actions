@@ -189,6 +189,135 @@ function Test-PublishableArtifact {
   return $hasFreshness
 }
 
+$prAuthorWaitCache = @{}
+function ConvertTo-DateTimeOrNull {
+  param($Value)
+  if (-not $Value) { return $null }
+  $parsed = [datetime]::MinValue
+  if ([datetime]::TryParse([string]$Value, [ref]$parsed)) {
+    return $parsed.ToUniversalTime()
+  }
+  return $null
+}
+function Get-MaxDateTime {
+  param([object[]]$Values)
+  $dates = @($Values | ForEach-Object { ConvertTo-DateTimeOrNull $_ } | Where-Object { $null -ne $_ })
+  if ($dates.Count -eq 0) { return $null }
+  return @($dates | Sort-Object -Descending | Select-Object -First 1)[0]
+}
+function Test-AfterDate {
+  param($Candidate, $Anchor)
+  $candidateDate = ConvertTo-DateTimeOrNull $Candidate
+  $anchorDate = ConvertTo-DateTimeOrNull $Anchor
+  return $candidateDate -and $anchorDate -and $candidateDate -gt $anchorDate
+}
+function Get-FirstDateValue {
+  param([object[]]$Values)
+  $dates = @($Values | ForEach-Object { ConvertTo-DateTimeOrNull $_ } | Where-Object { $null -ne $_ })
+  if ($dates.Count -eq 0) { return $null }
+  return @($dates | Sort-Object | Select-Object -First 1)[0].ToString('o')
+}
+function Resolve-PrAuthorWaitState {
+  param(
+    [object]$Item,
+    [object]$Artifact,
+    [bool]$DefaultPendingAuthor,
+    [string]$DefaultWaitingSince,
+    [int]$PostedComments
+  )
+
+  $number = [int]$Item.number
+  if ($Item.kind -ne 'pr' -or -not $DefaultPendingAuthor) {
+    return [pscustomobject]@{
+      pending_author = $DefaultPendingAuthor
+      waiting_since = if ($DefaultPendingAuthor) { $DefaultWaitingSince } else { $null }
+      resolved_by_author_activity = $false
+      reason = $null
+    }
+  }
+
+  if ($prAuthorWaitCache.ContainsKey($number)) {
+    return $prAuthorWaitCache[$number]
+  }
+
+  $decision = [pscustomobject]@{
+    pending_author = $DefaultPendingAuthor
+    waiting_since = if ($DefaultPendingAuthor) { $DefaultWaitingSince } else { $null }
+    resolved_by_author_activity = $false
+    reason = 'preserved from existing artifact'
+  }
+
+  try {
+    $live = gh pr view $number -R $UP --json author,labels,commits,reviews,comments,updatedAt,headRefOid 2>$null | ConvertFrom-Json
+    $author = [string]$live.author.login
+    $labels = @($live.labels | ForEach-Object { [string]$_.name })
+    $hasNeedsAuthorLabel = @($labels | Where-Object { $_ -match '(?i)needs[- ]author[- ]feedback|author[- ]feedback|waiting[- ]for[- ]author' }).Count -gt 0
+    $authorActivity = @()
+    $authorActivity += @($live.commits | Where-Object { @($_.authors | ForEach-Object { $_.login }) -contains $author } | ForEach-Object { $_.authoredDate })
+    $authorActivity += @($live.comments | Where-Object { $_.author.login -eq $author } | ForEach-Object { $_.createdAt })
+    $authorActivity += @($live.reviews | Where-Object { $_.author.login -eq $author } | ForEach-Object { $_.submittedAt })
+    $latestAuthorActivity = Get-MaxDateTime $authorActivity
+
+    $latestBlockingReview = Get-MaxDateTime @(
+      $live.reviews |
+        Where-Object { $_.author.login -ne $author -and $_.state -eq 'CHANGES_REQUESTED' } |
+        ForEach-Object { $_.submittedAt }
+    )
+    $latestPulseReview = Get-MaxDateTime @(
+      $live.reviews |
+        Where-Object { $_.author.login -ne $author -and [string]$_.body -match 'powertoys-pulse:' } |
+        ForEach-Object { $_.submittedAt }
+    )
+    $latestPulseComment = Get-MaxDateTime @(
+      $live.comments |
+        Where-Object { $_.author.login -ne $author -and [string]$_.body -match 'powertoys-pulse:' } |
+        ForEach-Object { $_.createdAt }
+    )
+    $latestPulseAction = Get-MaxDateTime @($latestPulseReview, $latestPulseComment)
+
+    if ($hasNeedsAuthorLabel) {
+      $decision.pending_author = $true
+      $decision.waiting_since = if ($DefaultWaitingSince) { $DefaultWaitingSince } else { [string]$live.updatedAt }
+      $decision.reason = 'needs-author-feedback label is present'
+    } elseif ($latestBlockingReview -and (-not $latestAuthorActivity -or $latestBlockingReview -gt $latestAuthorActivity)) {
+      $decision.pending_author = $true
+      $decision.waiting_since = $latestBlockingReview.ToString('o')
+      $decision.reason = 'latest current changes-requested review is after author activity'
+    } elseif ($latestPulseAction -and (-not $latestAuthorActivity -or $latestPulseAction -gt $latestAuthorActivity)) {
+      $decision.pending_author = $true
+      $decision.waiting_since = $latestPulseAction.ToString('o')
+      $decision.reason = 'posted Pulse review action is after author activity'
+    } elseif ($PostedComments -gt 0) {
+      $postedAt = Get-FirstDateValue @(
+        $Artifact.proposed_comments |
+          Where-Object { $_.disposition -eq 'posted' -and $_.posted_at } |
+          ForEach-Object { $_.posted_at }
+      )
+      $anchor = if ($postedAt) { $postedAt } elseif ($DefaultWaitingSince) { $DefaultWaitingSince } else { [string]$Artifact.source_updated_at }
+      if ($latestAuthorActivity -and (Test-AfterDate $latestAuthorActivity $anchor)) {
+        $decision.pending_author = $false
+        $decision.waiting_since = $null
+        $decision.resolved_by_author_activity = $true
+        $decision.reason = 'author activity occurred after the posted Pulse review action'
+      } else {
+        $decision.pending_author = $true
+        $decision.waiting_since = $anchor
+        $decision.reason = 'posted Pulse review action has no newer author activity'
+      }
+    } else {
+      $decision.pending_author = $false
+      $decision.waiting_since = $null
+      $decision.resolved_by_author_activity = $true
+      $decision.reason = 'no current needs-author label, changes-requested review, or posted Pulse action remains after author activity'
+    }
+  } catch {
+    Write-Warning "Could not re-evaluate PR ${number} author-wait state: $($_.Exception.Message)"
+  }
+
+  $prAuthorWaitCache[$number] = $decision
+  return $decision
+}
+
 # ---- tracked-item overlay ------------------------------------------------
 # Keyed by upstream number. Only fields that augment the v2 base item.
 $OV = @{}
@@ -737,22 +866,31 @@ foreach ($it in $src.items) {
     $proposedOpen = @($o.proposed_comments | Where-Object { $_.disposition -eq 'proposed' }).Count
     $postedComments = @($o.proposed_comments | Where-Object { $_.disposition -eq 'posted' }).Count
   }
-  $pendingAuthor = ($iowes -eq 'author') -or ($it.kind -eq 'pr' -and $postedComments -gt 0)
-  $waitingSince = if ($o -and $o.waiting_since) { $o.waiting_since }
-                  elseif ($pendingAuthor) {
-                    $postedAt = if ($o -and $o.proposed_comments) {
-                      @($o.proposed_comments | Where-Object { $_.disposition -eq 'posted' -and $_.posted_at } | Sort-Object posted_at | Select-Object -First 1).posted_at
-                    } else {
-                      $null
-                    }
-                    if ($postedAt) { $postedAt } else { $it.updated_at }
-                  } else { $null }
+  $defaultPendingAuthor = ($iowes -eq 'author') -or ($it.kind -eq 'pr' -and $postedComments -gt 0)
+  $defaultWaitingSince = if ($o -and $o.waiting_since) { $o.waiting_since }
+                         elseif ($defaultPendingAuthor) {
+                           $postedAt = if ($o -and $o.proposed_comments) {
+                             @($o.proposed_comments | Where-Object { $_.disposition -eq 'posted' -and $_.posted_at } | Sort-Object posted_at | Select-Object -First 1).posted_at
+                           } else {
+                             $null
+                           }
+                           if ($postedAt) { $postedAt } else { $it.updated_at }
+                         } else { $null }
+  $authorWaitDecision = Resolve-PrAuthorWaitState $it $o $defaultPendingAuthor $defaultWaitingSince $postedComments
+  $pendingAuthor = [bool]$authorWaitDecision.pending_author
+  $waitingSince = if ($pendingAuthor) { $authorWaitDecision.waiting_since } else { $null }
+  $authorWaitResolved = [bool]$authorWaitDecision.resolved_by_author_activity
+  if ($authorWaitResolved) {
+    $iowes = 'us'
+    $stage = 'review_in_progress'
+  }
+  $needsRevalidation = ($o -and $o.needs_revalidation) -or $issueNeedsRevalidation -or $authorWaitResolved
   $primary = $null
   if ($hasArtifact -and $stage -eq 'owned_elsewhere') {
     $primary = $null
   } elseif ($hasArtifact -and $stage -eq 'ci_blocked') {
     $primary = $null
-  } elseif ($hasArtifact -and ($o.needs_revalidation -or $issueNeedsRevalidation)) {
+  } elseif ($hasArtifact -and $needsRevalidation) {
     $primary = $null
   } elseif ($hasArtifact -and $it.kind -eq 'pr') {
     $explicitPrAction = @($o.actions | Where-Object { Test-MeaningfulAction $o $_ }) | Select-Object -First 1
@@ -794,17 +932,42 @@ foreach ($it in $src.items) {
 
   # ---- per-number artifact (the drafted, approvable payload) ----
   $owes = if ($o.owes) { $o.owes } elseif ($it.owes) { $it.owes } else { 'us' }
-  $artifactPendingAuthor = ($owes -eq 'author') -or ($it.kind -eq 'pr' -and $postedComments -gt 0)
+  if ($authorWaitResolved) {
+    $owes = 'us'
+  }
+  $artifactPendingAuthor = $pendingAuthor
+  $artifactStatus = if ($authorWaitResolved) {
+    Obj @{
+      glyph='🔄'
+      label='Author responded — review needed'
+      detail="Live PR activity no longer supports the previous author-wait state ($($authorWaitDecision.reason)). Re-run powertoys-pr-review before posting another maintainer action."
+    }
+  } else {
+    Obj $o.status
+  }
+  $artifactNextAction = if ($authorWaitResolved) {
+    Obj @{
+      glyph='🔄'
+      label='Run PR review'
+      reason='The author-wait state was cleared by live activity; this PR needs a fresh review decision.'
+    }
+  } elseif ($o.next_action) {
+    Obj $o.next_action
+  } elseif ($it.next_action) {
+    Obj @{ glyph=$it.next_action.glyph; label=$it.next_action.label; reason=$it.next_action.reason }
+  } else {
+    $null
+  }
   $art = [ordered]@{
     number=$n; kind=$it.kind; track=$track; stage=$stage; owes=$owes
     pending_author=$artifactPendingAuthor; generated_at=$now
     evaluated_at=if ($o.evaluated_at) { $o.evaluated_at } else { $now }
     source_updated_at=if ($o.source_updated_at) { $o.source_updated_at } else { $it.updated_at }
-    status     = Obj $o.status
-    next_action= if ($o.next_action) { Obj $o.next_action } elseif ($it.next_action) { Obj @{ glyph=$it.next_action.glyph; label=$it.next_action.label; reason=$it.next_action.reason } } else { $null }
-    actions    = @($o.actions | Where-Object { Test-MeaningfulAction $o $_ } | ForEach-Object { Obj $_ })
+    status     = $artifactStatus
+    next_action= $artifactNextAction
+    actions    = if ($authorWaitResolved) { @() } else { @($o.actions | Where-Object { Test-MeaningfulAction $o $_ } | ForEach-Object { Obj $_ }) }
   }
-  if ($o.needs_revalidation -or $issueNeedsRevalidation) { $art.needs_revalidation = $true }
+  if ($needsRevalidation) { $art.needs_revalidation = $true }
   if ($o.confidence)  { $art.confidence  = $o.confidence }
   if ($o.head_sha)    { $art.head_sha    = $o.head_sha }        # staleness anchor vs live PR head
   if ($o.design)      { $art.design      = Obj $o.design }
@@ -815,7 +978,7 @@ foreach ($it in $src.items) {
   if ($o.fork_branch) { $art.fork_branch = $o.fork_branch }
   if ($o.fork_issue)  { $art.fork_issue  = Obj $o.fork_issue } elseif ($it.fork_issue) { $art.fork_issue = $it.fork_issue }
 
-  if ($writeArtifact) {
+  if ($writeArtifact -or $authorWaitResolved) {
     $aj = ([pscustomobject]$art) | ConvertTo-Json -Depth 20
     [System.IO.File]::WriteAllText((Join-Path $itemsDir "$n.json"), $aj, $enc)
   }

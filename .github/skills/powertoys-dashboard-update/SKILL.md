@@ -294,6 +294,15 @@ changes requirements, reveals a concern, resolves author-waiting state, or
 invalidates the prior decision. Otherwise advance `evaluated_at` and
 `source_updated_at` without pretending a new code review occurred.
 
+Do not classify a PR as waiting on author from "who commented last" or from a
+generic maintainer comment alone. Preserve `pending_author` only when current
+live evidence supports it: a needs-author-feedback label, a current
+changes-requested review after the author's latest activity, or posted Pulse
+review comments that have not been followed by an author commit/comment/review.
+If the author has pushed or replied after the author-wait signal, clear
+`pending_author`, mark the artifact `needs_revalidation`, and put the PR back
+in the review queue so the update agent makes a fresh decision.
+
 Never skip an eligible PR merely because it is old or absent from the recent
 activity query. Never re-review an unchanged, converged head with no newer
 relevant activity.

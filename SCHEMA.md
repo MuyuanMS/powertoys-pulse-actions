@@ -153,6 +153,14 @@ fallback so the page renders without a server. Prefer serving over HTTP.
 The page treats `stage` as a label; **actionability** is driven by
 `has_artifact` + `pending_author`, not by parsing the stage string.
 
+For PRs, `pending_author` is a live-timeline decision, not a last-comment
+heuristic. The generator keeps a PR waiting on author only when current evidence
+still supports it: a needs-author-feedback label, a changes-requested review
+after the author's latest activity, or posted Pulse review comments with no
+newer author commit/comment/review. If the author has responded after the
+author-wait signal, the next emit clears `pending_author`, sets
+`needs_revalidation`, and returns the PR to the review queue.
+
 ## `data/items/<number>.json` (agent artifact)
 
 ```jsonc
