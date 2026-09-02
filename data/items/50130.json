@@ -6,8 +6,8 @@
   "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T07:48:57.569Z",
-  "evaluated_at": "2026-08-31T07:48:57.569Z",
+  "generated_at": "2026-09-02T02:35:24Z",
+  "evaluated_at": "2026-09-02T02:35:24Z",
   "source_updated_at": "2026-08-26T09:09:04Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50130",
   "title": "FancyZones exclude by pressing shift during drag no longer working",
@@ -25,44 +25,44 @@
   "status": {
     "glyph": "🛠️",
     "label": "Regression design ready",
-    "detail": "The version-bounded reproduction and history point to the changed Shift-during-drag path."
+    "detail": "The report distinguishes pre-held Shift from mid-drag Shift and source shows the consumed bare-Shift path updates DraggingState directly."
   },
   "next_action": {
     "glyph": "🧭",
     "label": "Design and test Shift state fix",
-    "reason": "Validate key state propagation and remove the timing or stale-state gap."
+    "reason": "Validate key state propagation through the drag lifecycle and cover the mid-drag exclusion regression."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The reproduction is precise, the prior release worked, and a recent change modified the exact path.",
+    "rationale": "The reproduction is precise, the reporter says the previous build worked, and the source path around consumed Shift during WindowMouseSnap is narrow enough for focused design.",
     "evidence": [
-      "On 0.101.2362, mid-drag Shift no longer excludes the window.",
-      "Pre-held Shift still works.",
-      "The issue was absent in the previous build.",
-      "Commit d68980a81b in #49985 changed OnKeyDown to set Shift while swallowing it."
+      "On 0.101.2362.0, pressing Shift during a Notepad drag no longer excludes the window from zoning when hold-shift-to-enable-zones is disabled.",
+      "Pre-held Shift still works, which narrows the defect to a mid-drag state transition.",
+      "FancyZones::OnKeyDown consumes bare Shift while m_windowMouseSnapper exists and calls DraggingState.SetShiftState(true).",
+      "DraggingState::SetShiftState updates m_shift and invokes the key-update callback that recomputes drag state."
     ],
-    "recommended_action": "Continue focused regression design and UI tests; keep design_in_progress until the exact state transition is proven.",
-    "evaluated_at": "2026-08-31T07:48:57.569Z",
+    "recommended_action": "Continue focused regression design and tests for Shift press/release propagation during active move-size drag.",
+    "evaluated_at": "2026-09-02T02:35:24Z",
     "source_updated_at": "2026-08-26T09:09:04Z"
   },
   "issue_context": {
     "summary": "FancyZones no longer honors exclusion when Shift is introduced mid-drag, while pre-held Shift remains correct.",
     "known_information": [
       "Hold Shift to activate zones is disabled, so Shift should suppress zoning.",
-      "The test uses Notepad on Windows 11 build 26200.9106.",
-      "Pre-held Shift works; mid-drag Shift fails.",
-      "No duplicate, assignee, or linked fix exists."
+      "The reporter used Notepad on Windows 11 build 26200.9106, German Windows, system installation, user/autostart.",
+      "Pre-held Shift works; pressing Shift after the drag starts fails.",
+      "The issue was not present in the previous build according to the reporter.",
+      "There are no assignees, duplicates, or linked fixes on the issue."
     ],
     "inferences": [
-      "The explicit SetShiftState call may not synchronize with the final MoveSize update, or release state may be inconsistent.",
-      "The regression likely ties to the August 21 change in this path."
+      "The consumed key path may update press state but not all drag/end paths may observe the updated state at drop time.",
+      "A release-state or callback-ordering gap remains possible and should be tested rather than assumed."
     ],
-    "analysis": "The report already provides the decision-changing timing distinction. Code reproduction and tests are next, not a generic diagnostic request.",
+    "analysis": "The report already supplies the decision-changing timing distinction. Source confirms a special mid-drag Shift path, so a targeted design and UI test plan is appropriate.",
     "initial_investigation": [
-      "DraggingState.cpp computes zoning from Shift and drag mode.",
-      "OnKeyboardInput updates Shift from raw input.",
-      "OnKeyDown now calls SetShiftState(true) before swallowing bare Shift during WindowMouseSnap.",
-      "#49985 introduced the change on 2026-08-21; current main retains it."
+      "Forced 2026-09-02 pass read the complete issue body, one triage comment, labels, empty assignee list, and timeline links; no linked work appeared.",
+      "Read src/modules/fancyzones/FancyZonesLib/FancyZones.cpp around the bare-Shift suppression path during WindowMouseSnap.",
+      "Read src/modules/fancyzones/FancyZonesLib/DraggingState.cpp: SetShiftState updates m_shift and triggers the key-update callback used to recompute dragging state."
     ],
     "information_gaps": []
   },

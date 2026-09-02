@@ -6,8 +6,8 @@
   "stage": "design_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T07:42:36Z",
-  "evaluated_at": "2026-08-31T07:42:36Z",
+  "generated_at": "2026-09-02T02:35:24Z",
+  "evaluated_at": "2026-09-02T02:35:24Z",
   "source_updated_at": "2026-08-26T13:47:30Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50138",
   "title": "PowerToys Monaco Preview Handler displays UTF-16LE .reg files with NUL characters",
@@ -23,48 +23,51 @@
   "status": {
     "glyph": "🎯",
     "label": "Actionable encoding defect",
-    "detail": "The reporter supplied a sample, workaround, latest-version confirmation, and a narrow Monaco encoding path."
+    "detail": "The reporter supplied a sample, workaround, and latest-version confirmation; source shows a decoded-text-to-original-encoding transport seam that needs design validation."
   },
   "next_action": {
     "glyph": "🧭",
     "label": "Complete encoding design",
-    "reason": "Specify the decoded-text-to-WebView encoding contract and regression tests before approval."
+    "reason": "Specify the Monaco payload encoding contract and regression tests before approval."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue is fully reproducible on the latest stable version and source inspection identifies a concrete re-encoding boundary suitable for focused design and tests.",
+    "rationale": "The report is reproducible on the latest stable version and source inspection identifies a focused encoding boundary suitable for implementation-grade design.",
     "evidence": [
-      "The attached UTF-16LE .reg sample displays NUL markers in Monaco but displays correctly through the Windows text preview handler.",
-      "The reporter manually updated to 0.101.2362.0 and confirmed the problem still reproduces.",
-      "MonacoPreviewHandler decodes with UtfUnknown, then base64-encodes the resulting text using the detected source encoding before injecting it into the WebView."
+      "The attached UTF-16LE .reg sample displays visible NUL markers in Monaco but displays correctly through the built-in Windows text preview handler.",
+      "The reporter manually updated to 0.101.2362.0 and confirmed the issue still reproduces.",
+      "MonacoPreviewHandlerControl decodes through CharsetDetector and StreamReader, then base64-encodes encodingToUse.GetBytes(fileContent); src/Monaco/index.html decodes PT_CODE as UTF-8-like percent-encoded bytes."
     ],
-    "recommended_action": "Develop an implementation-grade design that sends normalized decoded text to Monaco and adds UTF-16LE regression coverage.",
-    "evaluated_at": "2026-08-31T07:42:36Z",
+    "recommended_action": "Develop an implementation-grade design that normalizes the decoded text for Monaco transport and adds UTF-16LE/UTF-16BE/UTF-8 regression coverage.",
+    "evaluated_at": "2026-09-02T02:35:24Z",
     "source_updated_at": "2026-08-26T13:47:30Z"
   },
   "issue_context": {
     "summary": "Monaco correctly receives a UTF-16LE Registry file but renders each zero byte as a visible NUL marker instead of normal decoded text.",
     "known_information": [
-      "The issue includes a minimal .reg reproduction archive and a separate workaround archive.",
-      "UTF-8 content renders correctly, and disabling Monaco lets the built-in Windows handler render the UTF-16LE file correctly.",
-      "The current handler detects an encoding, reads text through StreamReader, and then converts that text back to bytes with the original encoding for base64 transport."
+      "The issue includes a minimal UTF-16LE .reg reproduction archive and a workaround archive removing HKCU Monaco preview-handler overrides.",
+      "UTF-8 content renders correctly, and disabling Monaco lets the built-in Windows preview handler render the UTF-16LE file correctly.",
+      "The reporter confirmed the defect on PowerToys 0.101.2362.0 after manually updating.",
+      "There are no assignees, linked fixes, or comments after the latest-version confirmation."
     ],
     "inferences": [
-      "The WebView transport may expect UTF-8 or character text while receiving UTF-16LE bytes, which would explain alternating NUL markers.",
-      "The encoding detector itself may be working; the defect may occur after successful decoding."
+      "The WebView payload likely expects UTF-8 byte semantics or decoded character text while receiving UTF-16LE bytes, which would explain alternating visible NUL markers.",
+      "Encoding detection may be succeeding; the defect may occur after decoding when the text is re-encoded for PT_CODE."
     ],
-    "analysis": "The reporter already closed the version and reproduction gaps. The source path offers a focused hypothesis that can be validated with unit tests, so another information request would delay an actionable fix.",
+    "analysis": "The reporter closed the version and reproduction gaps. The source path gives a concrete hypothesis, so fast triage should route design work rather than ask for another diagnostic archive.",
     "initial_investigation": [
-      "Inspected previewpane/MonacoPreviewHandler/MonacoPreviewHandlerControl.cs around charset detection, StreamReader decoding, and base64 generation.",
-      "Verified the issue's latest-stable retest and attached sample evidence."
+      "Forced 2026-09-02 pass read the complete issue body, both comments, labels, empty assignee list, and timeline links; no linked work appeared.",
+      "Read src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandlerControl.cs around CharsetDetector.DetectFromFile, StreamReader decoding, and Convert.ToBase64String(encodingToUse.GetBytes(fileContent)).",
+      "Read src/Monaco/index.html, where [[PT_CODE]] is decoded with atob plus decodeURIComponent over percent-encoded bytes."
     ],
     "information_gaps": [
       {
-        "information": "The exact JavaScript decoding contract for the PT_CODE payload",
-        "why_needed": "It determines whether the handler should always encode UTF-8 bytes or inject decoded Unicode through another safe transport.",
+        "why_needed": "It determines whether the handler should always encode UTF-8 bytes, escape decoded Unicode text differently, or adjust the page decoder.",
+        "information": "The exact JavaScript decoding contract for the PT_CODE payload after decoded .NET text is injected.",
         "how_to_collect": "Trace the Monaco index template payload decode and add round-trip tests for UTF-8, UTF-16LE with BOM, and UTF-16BE."
       }
     ]
   },
-  "actions": []
+  "actions": [],
+  "assignees": []
 }
