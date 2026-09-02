@@ -1,34 +1,282 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-49709",
   "number": 49709,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T10:57:43.0546493+08:00",
-  "evaluated_at": "2026-08-14T00:19:14Z",
-  "source_updated_at": "2026-08-12T06:47:20Z",
+  "generated_at": "2026-09-02T12:40:01.811+08:00",
+  "evaluated_at": "2026-09-02T12:40:01.811+08:00",
+  "source_updated_at": "2026-08-15T18:18:30Z",
+  "url": "https://github.com/microsoft/PowerToys/pull/49709",
+  "title": "[Settings] Disable index generation for debug builds",
+  "author": "noraa-junker",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "head_sha": "a4eea759a6eff8b355b5f2fdb8b1a816a726190a",
+  "summary": "PR 49709 is collaborator-authored, so routine Phase 0 process nags are skipped. The current upstream head still disables Debug Settings search-index generation and also gates search.index.json resource inclusion on that same property and Exists(), leaving clean Debug builds without the embedded Settings search resource. The prior fork-side review state was resumed without remirroring; valid findings were already fixed there, the latest fork Copilot review had zero published inline comments, unresolved Copilot thread count is zero, and targeted Settings builds passed on the resumed worktree.",
   "status": {
-    "glyph": "🔄",
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "📝",
+    "label": "Review ready — Settings search blocker drafted",
+    "detail": "The live upstream head a4eea759a6eff8b355b5f2fdb8b1a816a726190a still has the Debug search-index/resource regression that maintainer feedback already flagged as not working. A request-changes review note is drafted and pinned to the current head."
   },
   "next_action": {
-    "glyph": "🔄",
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
+    "glyph": "▶",
+    "label": "Review the drafted request-changes note",
+    "reason": "Posting should clarify the concrete failure for the author: clean Debug builds skip generating and embedding the Settings search index, so Settings search has no prebuilt resource."
   },
-  "actions": [],
-  "needs_revalidation": true,
-  "confidence": "High",
-  "head_sha": "a4eea759a6eff8b355b5f2fdb8b1a816a726190a",
-  "upstream_pr": {
-    "number": 49709,
-    "url": "https://github.com/microsoft/PowerToys/pull/49709"
+  "needs_revalidation": false,
+  "phase0": {
+    "bar": "collaborator: skip routine Phase 0 process gates",
+    "verdict": "proceed",
+    "disposition": "Proceed",
+    "author": "noraa-junker",
+    "author_association": "COLLABORATOR",
+    "summary": "The PR is authored by a collaborator, CLA and visible CI checks are green, and no template/demo/self-validation nag is appropriate. The remaining issue is a code correctness blocker already aligned with maintainer feedback in the thread.",
+    "processAsks": [],
+    "gateEvidence": {
+      "P1_cla": {
+        "status": "pass",
+        "evidence": "license/cla completed successfully on 2026-08-15."
+      },
+      "P2_demo": {
+        "status": "skipped",
+        "evidence": "Collaborator-authored build-system behavior change; no routine demo gate."
+      },
+      "P3_author_validation": {
+        "status": "skipped",
+        "evidence": "Collaborator-authored PR; the author later supplied Debug build output when responding to maintainer feedback."
+      },
+      "P4_ci": {
+        "status": "pass",
+        "evidence": "PowerToys CI and visible checks completed successfully on the current head."
+      },
+      "P5_provenance": {
+        "status": "pass",
+        "evidence": "No provenance or originality concern found."
+      },
+      "P6_duplicate": {
+        "status": "note",
+        "evidence": "Maintainer linked PR 49822 as a concrete alternative fix, but that PR is closed and this PR remains open, so the draft focuses on the underlying code issue rather than recommending closure."
+      },
+      "P7_scope": {
+        "status": "pass",
+        "evidence": "The current upstream diff is limited to two Settings build project files."
+      },
+      "P8_draft": {
+        "status": "pass",
+        "evidence": "The PR is open and non-draft."
+      },
+      "P9_template": {
+        "status": "skipped",
+        "evidence": "Routine template completeness is not enforced for collaborator-authored PRs."
+      }
+    }
+  },
+  "proposed_comments": [
+    {
+      "id": "keep-debug-search-index-resource",
+      "kind": "companion",
+      "title": "Keep Debug builds from dropping the Settings search resource",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current head explicitly defaults GenerateSettingsSearchIndex to false in Debug, uses that property to skip both the producer target and the Content/EmbeddedResource items, and keeps Exists() conditions that are evaluated before the generated JSON is produced."
+      },
+      "body": "### Keep Debug builds from dropping the Settings search resource\n\n**Severity:** `high`\n\nThe current change makes `GenerateSettingsSearchIndex` default to `false` in Debug and then uses that same property to skip both the producer target and the `Content`/`EmbeddedResource` entries for `search.index.json`. On a clean Debug build, the generated JSON is not present during project evaluation, so the resource is neither produced nor embedded; Settings search depends on `Microsoft.PowerToys.Settings.UI.Assets.search.index.json`, so Debug builds can return no Settings search results. Please model the optimization as incremental generation/resource registration instead of disabling the producer and resource, or align this PR with the follow-up fix linked in the thread.",
+      "path": "src/settings-ui/Settings.UI/PowerToys.Settings.csproj",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49709",
+      "type": "request_changes",
+      "label": "Request changes with Settings search blocker note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting. General review note only — no inline suggestions.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49709,
+        "pr": 49709,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "a4eea759a6eff8b355b5f2fdb8b1a816a726190a",
+        "body_prefix": "",
+        "body": "### Keep Debug builds from dropping the Settings search resource\n\n**Severity:** `high`\n\nThe current change makes `GenerateSettingsSearchIndex` default to `false` in Debug and then uses that same property to skip both the producer target and the `Content`/`EmbeddedResource` entries for `search.index.json`. On a clean Debug build, the generated JSON is not present during project evaluation, so the resource is neither produced nor embedded; Settings search depends on `Microsoft.PowerToys.Settings.UI.Assets.search.index.json`, so Debug builds can return no Settings search results. Please model the optimization as incremental generation/resource registration instead of disabling the producer and resource, or align this PR with the follow-up fix linked in the thread."
+      }
+    }
+  ],
+  "safe_actions": [
+    {
+      "id": "request-changes-49709",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "validator_required": "Test-ReviewData.ps1",
+      "head_pinned": "a4eea759a6eff8b355b5f2fdb8b1a816a726190a"
+    },
+    {
+      "id": "hold-review-49709",
+      "upstream_write": false,
+      "approval_required": false
+    }
+  ],
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The current upstream head keeps the clean-Debug Settings search regression: Debug disables index generation and also disables or misses the resource declaration needed by Settings search. Existing maintainer feedback reported the behavior as not working and linked an alternative fix. The resumed fork loop had already fixed the valid review findings and converged, so the dashboard should present the remaining current-head upstream blocker for maintainer approval rather than queue another stale re-review.",
+    "evidence": [
+      "Upstream microsoft/PowerToys PR 49709 is OPEN at head a4eea759a6eff8b355b5f2fdb8b1a816a726190a and changes only src/settings-ui/Settings.UI/PowerToys.Settings.csproj plus src/settings-ui/Settings.UI.XamlIndexBuilder/Settings.UI.XamlIndexBuilder.csproj.",
+      "Current upstream PowerToys.Settings.csproj sets GenerateSettingsSearchIndex false by default for Debug and conditions both Content and EmbeddedResource inclusion on GenerateSettingsSearchIndex plus Exists('$(GeneratedJsonFile)').",
+      "Current upstream Settings.UI.XamlIndexBuilder.csproj conditions GenerateSearchIndexSelf on GenerateSettingsSearchIndex, so Debug skips the producer by default.",
+      "SearchIndexService depends on the embedded resource name Microsoft.PowerToys.Settings.UI.Assets.search.index.json, matching the resource logical name in the changed project file.",
+      "Maintainer moooyo commented on 2026-08-11 that local testing did not work and linked microsoft/PowerToys PR 49822, whose diff removes the Exists() resource-registration problem and keeps the generated file registered during project evaluation.",
+      "Fork PR 245 on branch pr-iterate/49709-v2 was resumed without remirroring. It contains prior review fixes, the latest Copilot review at 2026-08-06T08:29:34Z had no published inline comments, and Get-UnresolvedCopilotThreads.ps1 reports 0 unresolved Copilot threads.",
+      "build-essentials.cmd completed restore, Runner, and Settings UI successfully on C:\\PowerToys-115a; targeted Settings.UI.XamlIndexBuilder and Settings.UI builds also exited 0 with POWERTOYS_DISABLE_SPECTRE=1.",
+      "No review, comment, label, state change, branch push, commit, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a final current-head freshness check, request changes with the drafted Settings search-resource blocker note.",
+    "evaluated_at": "2026-09-02T12:40:01.811+08:00",
+    "source_updated_at": "2026-08-15T18:18:30Z"
+  },
+  "fork": {
+    "owner": "MuyuanMS",
+    "repo": "MuyuanMS/PowerToys",
+    "pr": 245,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/245",
+    "branch": "pr-iterate/49709-v2",
+    "head_sha": "7c8d5829dd45c85c893e4f4684944dbf8386b194",
+    "worktree": "C:\\PowerToys-115a"
   },
   "fork_pr": {
     "number": 245,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/245"
   },
-  "fork_branch": "pr-iterate/49709-v2"
+  "fork_branch": "pr-iterate/49709-v2",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-09-02T12:40:01.811+08:00",
+    "copilot_rounds": 9,
+    "unresolved_copilot_threads": 0,
+    "build_result": "build-essentials, Settings.UI.XamlIndexBuilder, and Settings.UI Debug builds passed",
+    "unit_test_result": "No separate unit-test project exists for this two-file MSBuild project change; targeted build/resource checks were used."
+  },
+  "revalidation": {
+    "completed_at": "2026-09-02T12:40:01.811+08:00",
+    "result": "passed_with_current_head_blocker",
+    "copilot_latest_review_submitted_at": "2026-08-06T08:29:34Z",
+    "copilot_latest_review_commit": "7c8d5829dd45c85c893e4f4684944dbf8386b194",
+    "copilot_new_comment_count": 0,
+    "unresolved_copilot_threads": 0,
+    "builds": [
+      "C:\\PowerToys-115a\\tools\\build\\build-essentials.cmd",
+      "C:\\PowerToys-115a\\src\\settings-ui\\Settings.UI.XamlIndexBuilder via tools\\build\\build.cmd",
+      "C:\\PowerToys-115a\\src\\settings-ui\\Settings.UI via tools\\build\\build.cmd"
+    ],
+    "tests": "Targeted build verified PowerToys.exe exists and search.index.json is produced on the resumed fixed worktree.",
+    "notes": "The resumed fork branch predates the author's second upstream commit and therefore is used as durable review/fix evidence, not as a remirrored current-head source of truth. The public draft is based on the live upstream diff at a4eea759a6eff8b355b5f2fdb8b1a816a726190a."
+  },
+  "freshness": {
+    "headRefOid": "a4eea759a6eff8b355b5f2fdb8b1a816a726190a",
+    "baseRefOid": "2c1a14b9b8c939abb728c61e361d782fb0b913b7",
+    "updatedAt": "2026-08-15T18:18:30Z",
+    "latestCommitAt": "2026-08-08T17:57:11Z",
+    "latestIssueCommentAt": "2026-08-15T18:18:10Z",
+    "latestReviewCommentAt": "2026-08-05T20:20:58Z",
+    "latestReviewAt": "2026-08-08T18:00:41Z",
+    "lastMeaningfulEventAt": "2026-08-15T18:18:30Z",
+    "lastMeaningfulEvent": "The author responded to maintainer feedback asking what exactly failed and included Debug build output; no new commits followed.",
+    "headCommitCount": 2,
+    "changedFileCount": 2,
+    "unresolvedReviewThreadCount": 0,
+    "mergeableState": "unknown",
+    "checkSummary": "Visible checks are successful: license/cla, PowerToys CI, copilot-pull-request-reviewer, dependency-review, detect-telemetry-events, and label.",
+    "fresh": true,
+    "checkedAt": "2026-09-02T12:40:01.811+08:00"
+  },
+  "live_snapshot": {
+    "upstream_head_sha": "a4eea759a6eff8b355b5f2fdb8b1a816a726190a",
+    "upstream_updated_at": "2026-08-15T18:18:30Z",
+    "upstream_state": "OPEN",
+    "upstream_labels": [
+      "Needs-Triage",
+      "Needs-Team-Response"
+    ],
+    "upstream_issue_comment_count": 2,
+    "upstream_review_comment_count": 2,
+    "upstream_review_count": 3,
+    "upstream_changed_files": 2,
+    "fork_head_sha": "7c8d5829dd45c85c893e4f4684944dbf8386b194",
+    "fork_state": "OPEN",
+    "fork_review_count": 9,
+    "fork_copilot_published_comment_count": 0,
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "unit_test_result": "not applicable; targeted Settings project builds passed"
+  },
+  "reviewData": {
+    "schemaVersion": 2,
+    "repository": "microsoft/PowerToys",
+    "generatedAt": "2026-09-02T12:40:01.811+08:00",
+    "phase": "ready",
+    "prs": [
+      {
+        "number": 49709,
+        "url": "https://github.com/microsoft/PowerToys/pull/49709",
+        "title": "[Settings] Disable index generation for debug builds",
+        "author": "noraa-junker",
+        "assoc": "COLLABORATOR",
+        "firstTimer": false,
+        "draft": false,
+        "phase": "ready",
+        "loop": 9,
+        "waitingOn": "maintainer approval",
+        "headSha": "a4eea759a6eff8b355b5f2fdb8b1a816a726190a",
+        "disposition": "Request changes",
+        "phase0Note": "Collaborator-authored PR; routine Phase 0 process gates are skipped. The current-head blocker is code correctness: Debug builds skip producing and embedding the Settings search index resource.",
+        "snapshot": {
+          "updatedAt": "2026-08-15T18:18:30Z",
+          "issueCommentCount": 2,
+          "reviewCommentCount": 2,
+          "reviewCount": 3
+        },
+        "publicPayload": {
+          "contextBody": "",
+          "items": [
+            {
+              "id": "keep-debug-search-index-resource",
+              "kind": "companion",
+              "severity": "high",
+              "title": "Keep Debug builds from dropping the Settings search resource",
+              "body": "### Keep Debug builds from dropping the Settings search resource\n\n**Severity:** `high`\n\nThe current change makes `GenerateSettingsSearchIndex` default to `false` in Debug and then uses that same property to skip both the producer target and the `Content`/`EmbeddedResource` entries for `search.index.json`. On a clean Debug build, the generated JSON is not present during project evaluation, so the resource is neither produced nor embedded; Settings search depends on `Microsoft.PowerToys.Settings.UI.Assets.search.index.json`, so Debug builds can return no Settings search results. Please model the optimization as incremental generation/resource registration instead of disabling the producer and resource, or align this PR with the follow-up fix linked in the thread.",
+              "path": "src/settings-ui/Settings.UI/PowerToys.Settings.csproj",
+              "confidence": {
+                "score": 96,
+                "rationale": "The current head explicitly defaults GenerateSettingsSearchIndex to false in Debug, uses that property to skip both the producer target and the Content/EmbeddedResource items, and keeps Exists() conditions that are evaluated before the generated JSON is produced."
+              }
+            }
+          ]
+        },
+        "testInstructions": [
+          "Launch C:\\PowerToys-115a\\x64\\Debug\\PowerToys.exe from the already-built resumed review worktree.",
+          "Open Settings and use the Settings search box in a Debug build.",
+          "Verify that the fixed review worktree has a generated and embedded Settings search index; the upstream head should not be accepted until a clean Debug build also produces usable Settings search results.",
+          "For the upstream PR, specifically verify a clean Debug build where Assets\\Settings\\search.index.json does not exist before project evaluation."
+        ]
+      }
+    ]
+  }
 }
