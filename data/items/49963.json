@@ -2,74 +2,61 @@
   "number": 49963,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "blocked",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T10:57:43.0546493+08:00",
-  "evaluated_at": "2026-08-31T13:48:43Z",
+  "generated_at": "2026-09-02T04:40:26Z",
+  "evaluated_at": "2026-09-02T04:40:26Z",
   "source_updated_at": "2026-08-30T00:55:59Z",
-  "status": {
-    "glyph": "🔄",
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action."
-  },
-  "next_action": {
-    "glyph": "🔄",
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
-  },
-  "actions": [],
-  "needs_revalidation": true,
-  "confidence": "High",
   "head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
-  "proposed_comments": [
-    {
-      "id": "c-image-thumbnail-fallback",
-      "title": "Always try the cached thumbnail after a full-quality decode fails",
-      "severity": "medium",
-      "confidence": {
-        "score": 92,
-        "rationale": "The reusable previewer keeps Preview non-null from the prior item, so the current condition skips the documented thumbnail fallback on image-to-image navigation."
-      },
-      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
-      "line": 115,
-      "start_line": 112,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Preserve thumbnail fallback during previewer reuse\n\n**Severity:** `medium`\n\nWhen a reused image previewer fails to decode the next file at full quality, `Preview` can still contain the previous image. Checking `Preview is null` therefore skips the cached-thumbnail fallback and sends otherwise previewable files to the error path. Attempt the thumbnail fallback whenever the full-quality load fails; the double buffer keeps the old frame visible until the replacement is ready.\n\n```suggestion\n            if (!loaded)\n            {\n                loaded = await LoadThumbnailAsync(cancellationToken);\n            }\n```",
-      "disposition": "withdrawn",
-      "reason": "Held while the author prepares a broader tested update."
+  "title": "[Peek] Enable reusable previewers for Peek to fix flicker",
+  "url": "https://github.com/microsoft/PowerToys/pull/49963",
+  "status": {
+    "glyph": "blocked",
+    "label": "Current-head review blocked on fork Copilot assignment",
+    "detail": "The upstream head is unchanged. The preserved fork review fixed the two valid current Copilot findings, pushed d2ebd0ecc2623255bdb41e664c55d7d6dc183a46, replied to and resolved all fork Copilot threads, and passed focused Peek builds and tests. A final Copilot reviewer request on fork PR 415 returned an empty requested-reviewers assignment, so the required fresh zero-comment convergence round could not run. No upstream action is proposed."
+  },
+  "next_action": "Enable GitHub Copilot code review for MuyuanMS/PowerToys, then request a fresh review of fork PR 415 at d2ebd0ecc2623255bdb41e664c55d7d6dc183a46. Draft an upstream action only if that review has zero published comments and no unresolved Copilot threads.",
+  "proposed_comments": [],
+  "actions": [],
+  "confidence": "High",
+  "workflow": {
+    "phase": "blocked_copilot_assignment",
+    "checkpoint_at": "2026-09-02T04:40:26Z",
+    "queued_head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
+    "reviewed_upstream_head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
+    "phase0": {
+      "author_association": "COLLABORATOR",
+      "disposition": "proceed",
+      "detail": "Phase 0 process gates were not applied to the collaborator author; the reported upstream checks are green."
     },
-    {
-      "id": "c-image-size-cancellation",
-      "title": "Discard canceled image-size results before updating shared state",
-      "severity": "medium",
-      "confidence": {
-        "score": 86,
-        "rationale": "GetPreviewSizeAsync performs uncancellable background size work; without a post-await cancellation check, an older navigation can overwrite ImageSize for the current preview."
-      },
-      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
-      "line": 98,
-      "start_line": 93,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Do not publish stale image dimensions after navigation\n\n**Severity:** `medium`\n\nThe size lookup runs on a background task and can finish after navigation has canceled the request. Updating `ImageSize` without rechecking cancellation lets an older request overwrite the dimensions used by the current preview, causing incorrect scaling. Check cancellation immediately after the await and before mutating the shared properties.\n\n```suggestion\n            cancellationToken.ThrowIfCancellationRequested();\n\n            if (State == PreviewState.Loaded)\n            {\n                ImageSize = size;\n            }\n```",
-      "disposition": "withdrawn",
-      "reason": "Held while the author prepares a broader tested update."
-    },
-    {
-      "id": "c-unsupported-generation",
-      "title": "Guard unsupported-file async callbacks against rebinding",
-      "severity": "high",
-      "confidence": {
-        "score": 90,
-        "rationale": "Content-type, icon, and folder-size operations outlive cancellation in several paths; a reused previewer needs an item-generation check before every shared Preview or State mutation."
-      },
-      "in_diff": false,
-      "body": "### Ignore asynchronous results from a previous unsupported-file binding\n\n**Severity:** `high`\n\nRebinding an unsupported-file previewer clears the displayed metadata, but the previous item’s content-type, icon, folder-size, or exception completion can still arrive later and write into the same preview object. Track a binding generation (or equivalent item identity) and validate it before every asynchronous result, progress callback, and error-state update so rapid navigation cannot mix metadata between files. This should cover both successful completions and exceptions from non-cancelable awaits.",
-      "disposition": "withdrawn",
-      "reason": "Held while the author prepares a broader tested update.",
-      "kind": "companion"
-    }
-  ]
+    "fork_pr": 415,
+    "fork_pr_url": "https://github.com/MuyuanMS/PowerToys/pull/415",
+    "fork_branch": "pr-iterate/49963-v2",
+    "fork_head_sha": "d2ebd0ecc2623255bdb41e664c55d7d6dc183a46",
+    "worktree": "C:\\PowerToys-cba9",
+    "blocker": "The final Copilot reviewer request on fork PR 415 returned an empty requested-reviewers assignment; no fresh review was submitted after the current fork head.",
+    "completed": [
+      "Preserved the existing fork PR 415, branch pr-iterate/49963-v2, and C:\\PowerToys-cba9 worktree.",
+      "Fixed the canceled-thumbnail assignment race in ImagePreviewer.",
+      "Prevented stale unsupported-file failures from logging or changing a newer binding's state.",
+      "Pushed d2ebd0ecc2623255bdb41e664c55d7d6dc183a46, replied to both valid Copilot findings, and resolved both threads.",
+      "Confirmed unresolved fork Copilot thread count is 0."
+    ],
+    "validation": [
+      "C:\\PowerToys-cba9\\tools\\build\\build-essentials.cmd completed successfully with POWERTOYS_DISABLE_SPECTRE=1.",
+      "C:\\PowerToys-cba9\\src\\modules\\peek\\Peek.FilePreviewer built successfully with tools\\build\\build.cmd.",
+      "C:\\PowerToys-cba9\\src\\modules\\peek\\Peek.Common.UnitTests built successfully with tools\\build\\build.cmd.",
+      "vstest.console.exe passed all 3 PreviewerFactoryAndReuseTests tests."
+    ]
+  },
+  "freshness": {
+    "checkpoint_at": "2026-09-02T04:40:26Z",
+    "reviewed_upstream_updated_at": "2026-08-30T00:55:59Z"
+  },
+  "fork_pr": {
+    "number": 415,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/415"
+  },
+  "fork_branch": "pr-iterate/49963-v2"
 }
