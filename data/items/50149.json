@@ -7,8 +7,8 @@
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-02T07:20:00Z",
-  "evaluated_at": "2026-09-02T07:20:00Z",
-  "source_updated_at": "2026-08-27T05:54:05Z",
+  "evaluated_at": "2026-09-02T17:18:38Z",
+  "source_updated_at": "2026-09-02T16:31:28Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50149",
   "title": "SHIFT(hold) + NUMBER not working to switch between Fancy zones personal layouts",
   "author": "ed-ferreira",
@@ -23,7 +23,7 @@
   "status": {
     "glyph": "ℹ️",
     "label": "Intentional shortcut change",
-    "detail": "PR #48569 deliberately changed layout switching during a drag to require Win+Ctrl+Alt+digit so stale drag state cannot steal ordinary number keys."
+    "detail": "PR #48569 deliberately changed layout switching during a drag to require Win+Ctrl+Alt+digit so stale drag state cannot steal ordinary number keys; the latest comment confirms the shortcut concern and mentions separate placement symptoms."
   },
   "next_action": {
     "glyph": "💬",
@@ -35,24 +35,26 @@
     "rationale": "The reported loss of Shift/secondary-click + digit switching matches an intentional behavior change merged in #48569, not an unexplained regression requiring a bug design.",
     "evidence": [
       "Two reporters confirm that digits no longer switch layouts during a drag on 0.101.2362.",
+      "A third commenter confirms the shortcut issue and separately reports Explorer placement and last-zone symptoms.",
       "Current FancyZones.cpp requires Win+Ctrl+Alt+digit both while dragging and not dragging.",
       "Merged PR #48569 states that the stricter chord prevents stuck drag state from stealing number keys, referencing root symptom #410."
     ],
     "recommended_action": "Post a maintainer-direction comment explaining the intentional change and direct any request for an alternative safe gesture to a feature discussion.",
-    "evaluated_at": "2026-09-02T07:20:00Z",
-    "source_updated_at": "2026-08-27T05:54:05Z"
+    "evaluated_at": "2026-09-02T17:18:38Z",
+    "source_updated_at": "2026-09-02T16:31:28Z"
   },
   "issue_context": {
     "summary": "FancyZones no longer accepts bare digits while a window is being dragged; users now must use Win+Ctrl+Alt+digit to switch quick layouts.",
     "known_information": [
       "The old Shift-drag and secondary-mouse activation workflows allowed a digit to select a quick layout.",
       "The behavior changed in PowerToys 0.101.2362 and is confirmed by a second reporter.",
+      "A third commenter confirmed the shortcut concern while also describing separate Explorer placement and last-zone behavior.",
       "Merged PR #48569 intentionally requires Win+Ctrl+Alt during a drag to prevent ordinary number keys from being swallowed when drag state is stale."
     ],
     "inferences": [
       "Users may still benefit from a safer configurable drag-time gesture, but restoring bare-digit handling would reintroduce the input-safety risk addressed by #48569."
     ],
-    "analysis": "Repository history resolves the apparent regression: the current behavior is deliberate and covered by an explicit security/correctness tradeoff in the merged PR. A bug-report ZIP would not change that decision.",
+    "analysis": "Repository history resolves the shortcut regression: the current behavior is deliberate and covered by an explicit safety tradeoff in the merged PR. The newly mentioned placement symptoms should be investigated separately rather than folded into this shortcut decision.",
     "initial_investigation": [
       "Reviewed the full issue and both comments; no linked fix or assignee exists.",
       "Inspected FancyZones.cpp lines handling quickLayoutSwitch and traced the change with git blame to commit dd26d86580.",
@@ -71,7 +73,7 @@
       "comment": {
         "target": "issue",
         "number": 50149,
-        "body": "Thanks for confirming the behavior on 0.101.2362. This change is intentional: #48569 updated FancyZones so quick-layout switching requires Win+Ctrl+Alt+digit even while dragging. Bare digits were previously accepted whenever FancyZones believed a drag was active; if that state became stuck, normal number keys could be swallowed by the background hook. Restoring Shift/secondary-click + bare digit would reintroduce that risk. If a simpler drag-time shortcut is still needed, it should be considered as a new interaction design rather than treated as an unknown regression."
+        "body": "Thanks for the confirmations. The Shift/secondary-click + bare number-key behavior changed intentionally in #48569: FancyZones now requires Win+Ctrl+Alt+digit for quick layout switching even while dragging, because accepting bare digits whenever FancyZones believed a drag was active could steal normal number-key input when drag state became stuck. Restoring the old bare-digit gesture would reintroduce that risk.\n\nThe Explorer placement and last-used-zone behavior mentioned above sound like separate FancyZones issues from this shortcut change. If those still reproduce on the latest build, please open separate focused issues for them with exact reproduction steps and, if possible, add a fresh `/bugreport` immediately after reproducing so those symptoms can be investigated independently."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }
