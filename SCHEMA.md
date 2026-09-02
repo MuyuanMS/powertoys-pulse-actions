@@ -153,6 +153,14 @@ fallback so the page renders without a server. Prefer serving over HTTP.
 The page treats `stage` as a label; **actionability** is driven by
 `has_artifact` + `pending_author`, not by parsing the stage string.
 
+For PRs, `pending_author` is a live-timeline decision, not a last-comment
+heuristic. The generator keeps a PR waiting on author only when current evidence
+still supports it: a needs-author-feedback label, a changes-requested review
+after the author's latest activity, or posted Pulse review comments with no
+newer author commit/comment/review. If the author has responded after the
+author-wait signal, the next emit clears `pending_author`, sets
+`needs_revalidation`, and returns the PR to the review queue.
+
 ## `data/items/<number>.json` (agent artifact)
 
 ```jsonc
@@ -244,12 +252,39 @@ that confidence. The action list must stay concrete and issue-specific; never
 emit a generic log request when code/history/duplicate investigation can support
 a higher-confidence fix path.
 
+Issue artifacts may also expose a `reproduce` action when the public report is
+clear enough for a maintainer to verify locally before a fix design exists:
+
+```jsonc
+{
+  "type": "reproduce",
+  "label": "Reproduce locally",
+  "note": "The issue has enough public detail to verify before requesting more logs.",
+  "reproduce": {
+    "title": "Verify PowerRename behavior with a large file",
+    "module": "PowerRename",
+    "version_requirement": "PowerToys 0.94 or newer",
+    "prerequisites": ["Windows 11", "PowerRename enabled"],
+    "setup": ["Create a test folder containing one file larger than 2 MB."],
+    "steps": ["Open PowerRename for the test folder.", "Apply the rename pattern from the issue."],
+    "expected_result": "The UI should remain responsive and rename preview should complete.",
+    "setup_prompt": "Create a temporary folder with one binary file larger than 2 MB for PowerRename testing.",
+    "attachments": [{ "label": "Reporter sample", "url": "https://github.com/..." }]
+  }
+}
+```
+
+`reproduce` is display-only in Pulse. It does not post to GitHub. If
+`setup_prompt` is present, Pulse exposes a copy button so the maintainer can
+prepare local test files or environment setup with a local agent.
+
 ### Action types
 | type | GitHub call (as the member) | notes |
 |------|-----------------------------|-------|
 | `post_review` | `POST /repos/{upstream}/pulls/{n}/reviews` | selected non-withdrawn comments: `in_diff && path && line` → inline `comments[]`, the rest appended to `body`. The artifact defaults to `COMMENT`; Pulse may offer an explicit maintainer override to `REQUEST_CHANGES`. Inline-only reviews omit `body`, and an artifact-proposed overall message is optional in Pulse. |
 | `open_upstream_pr` | `POST /repos/{upstream}/pulls` | `head=MuyuanMS:<branch>`, `base=main`. `body` **may** contain `Fixes #<n>` — this is the real upstream PR that closes the issue (post-approval), the one allowed use of `#<n>`. |
 | `approve_design` | `POST /repos/{fork}/issues/{mirror}/comments` | approval note on the **fork mirror issue** so the scheduled job proceeds. |
+| `reproduce` | *(none)* | display-only local reproduction plan with module, version requirement, setup/prerequisites, steps, expected result, optional public attachments, and optional copyable `setup_prompt`. |
 | `request_info` | `POST /repos/{upstream}/issues/{n}/comments` | issue-specific request that acknowledges current evidence, explains the unresolved gap, and asks for exact missing information; use `/bugreport` when a fresh PowerToys diagnostic ZIP is needed. |
 | `post_comment` | `POST …/comments` | generic member comment. |
 | `rerun` / `start_review` / `hold` | *(none)* | local queue signals for the board owner's agent job; no GitHub write. |

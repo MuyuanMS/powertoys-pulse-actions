@@ -56,16 +56,24 @@ if (Test-Path $indexPath) {
         $allowedActionTypes = if ($artifact.kind -eq 'pr') {
           @('approve', 'post_review', 'request_changes')
         } else {
-          @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+          @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
         }
         foreach ($action in $actions) {
           if ($action.type -notin $allowedActionTypes) {
             $errors.Add("Manifest artifact exposes unsupported $($artifact.kind) action '$($action.type)': $artifactPath")
           }
+          if ($action.type -eq 'reproduce') {
+            if (-not $action.reproduce) {
+              $errors.Add("Manifest artifact reproduce action missing reproduce payload: $artifactPath")
+            }
+            if (@($action.reproduce.steps).Count -eq 0) {
+              $errors.Add("Manifest artifact reproduce action missing reproduce.steps: $artifactPath")
+            }
+          }
         }
         if ($artifact.kind -eq 'issue' -and [int]$artifact.schemaVersion -ge 4) {
           $issueAction = @($actions | Where-Object {
-            $_.type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+            $_.type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
           }) | Select-Object -First 1
           $allowsNoAction = $artifact.pending_author -or
             $artifact.judgment.status -in @('duplicate_or_handled', 'not_actionable') -or
@@ -370,6 +378,49 @@ if (-not (Test-Path $artifactValidator)) {
       )
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $artifactRoot 'data\items\45678.json')
     & $artifactValidator -Dashboard $artifactRoot -Numbers 45678 -RequireIssueContext | Out-Null
+
+    @{
+      schemaVersion = 4
+      number = 45679
+      kind = 'issue'
+      track = 'triage'
+      stage = 'triaged'
+      generated_at = '2026-08-24T00:00:00Z'
+      evaluated_at = '2026-08-24T00:00:00Z'
+      source_updated_at = '2026-08-24T00:00:00Z'
+      judgment = @{
+        status = 'reproducible'
+        rationale = 'The public report contains enough environment and step detail to verify locally.'
+        evidence = @('The reporter supplied the affected module, version, setup, and numbered steps.')
+        recommended_action = 'Reproduce locally before deciding whether to design a fix or request more diagnostics.'
+      }
+      issue_context = @{
+        summary = 'The issue describes a clear PowerRename slowdown with a large file input.'
+        known_information = @('PowerRename is enabled.', 'The repro needs a file larger than 2 MB.')
+        inferences = @('The failure is likely in preview generation rather than shell integration.')
+        analysis = 'The report is concrete enough for a maintainer to verify before asking for logs.'
+        initial_investigation = @('No duplicate currently proves this specific large-file preview path.')
+        information_gaps = @()
+      }
+      actions = @(
+        @{
+          type = 'reproduce'
+          label = 'Reproduce locally'
+          note = 'Prepare the large file, then follow the issue steps.'
+          reproduce = @{
+            title = 'Verify PowerRename large-file preview'
+            module = 'PowerRename'
+            version_requirement = 'PowerToys 0.94 or newer'
+            prerequisites = @('PowerRename enabled')
+            setup = @('Create a temporary folder containing one file larger than 2 MB.')
+            steps = @('Open PowerRename for the temporary folder.', 'Apply the rename pattern from the issue.')
+            expected_result = 'The preview should complete without hanging.'
+            setup_prompt = 'Create a temporary folder containing one binary file larger than 2 MB for PowerRename testing.'
+          }
+        }
+      )
+    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $artifactRoot 'data\items\45679.json')
+    & $artifactValidator -Dashboard $artifactRoot -Numbers 45679 -RequireIssueContext | Out-Null
 
     $invalidIssue = Get-Content (Join-Path $artifactRoot 'data\items\45678.json') -Raw |
       ConvertFrom-Json
