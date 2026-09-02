@@ -2,26 +2,53 @@
   "number": 49793,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T10:57:43.0546493+08:00",
-  "evaluated_at": "08/27/2026 10:31:38",
+  "generated_at": "2026-09-02T13:12:00+08:00",
+  "evaluated_at": "2026-09-02T13:12:00+08:00",
   "source_updated_at": "2026-08-26T19:11:13Z",
+  "head_sha": "16356cc2dd56e2bc1018883495df8d8af05c1403",
   "status": {
-    "glyph": "🔄",
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "📝",
+    "label": "Review ready — two requests drafted",
+    "detail": "The current upstream head remains 16356cc2dd56e2bc1018883495df8d8af05c1403. Phase 0 process nags are skipped because the author is a collaborator and live checks are green. The fork review loop fixed the remaining startup activation replay race, all Copilot threads are resolved, and the final empty-assignment fallback audit found no later reviews or comments."
   },
   "next_action": {
-    "glyph": "🔄",
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
+    "glyph": "📝",
+    "label": "Review and post the two drafted requests",
+    "reason": "The startup activation path can still lose or reorder redirected command links during cold launch, and the new coordinator remains a security-sensitive execution boundary without direct regression coverage."
   },
-  "actions": [],
-  "needs_revalidation": true,
-  "head_sha": "16356cc2dd56e2bc1018883495df8d8af05c1403",
+  "actions": [
+    {
+      "id": "post-review-49793",
+      "type": "post_review",
+      "label": "Post general review notes (no inline suggestions)",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "COMMENT",
+        "pr": 49793,
+        "head_sha": "16356cc2dd56e2bc1018883495df8d8af05c1403"
+      },
+      "note": "Companion-only review: posts general review notes with no inline suggestions. Mandatory: refresh the upstream head and conversation, validate the pinned payload, and require explicit approval before publishing."
+    }
+  ],
+  "confidence": "High",
   "proposed_comments": [
+    {
+      "id": "preserve-startup-activation-replay",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve redirected activations during cold startup",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current upstream code dispatches only when AppWindow is already available and otherwise logs/drops redirected activation arguments; the fork-side fix was built and cleared all review threads."
+      },
+      "in_diff": false,
+      "body": "### Preserve redirected activations during cold startup\n\n**Severity:** `high`\n\nA redirected `x-cmdpal` activation can arrive after `AppInstance.Activated` is registered but before `OnLaunched` has created the `MainWindow`. In that path the current code logs and drops the activation, and because the redirecting process can exit immediately after `RedirectActivationToAsync` returns, the command link can be lost before CmdPal can process it. Please capture the activation data synchronously into a plain snapshot, queue redirected activations until startup finishes, and publish the main window only after the queued snapshots have been replayed so later redirects cannot overtake earlier ones.",
+      "disposition": "proposed"
+    },
     {
       "id": "coordinator-direct-regression-coverage",
       "kind": "companion",
@@ -36,9 +63,109 @@
       "disposition": "proposed"
     }
   ],
+  "phase0": {
+    "author": "jiripolasek",
+    "author_association": "COLLABORATOR",
+    "bar": "collaborator process review; template/demo/self-validation nags skipped",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "The PR is open, not draft, mergeable, labeled Product-Command Palette and Ready for review, has successful CLA, intake, dependency, telemetry, and PowerToys CI checks, and has no new upstream comments or reviews after 2026-08-18."
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "summary": "Fork-side startup activation fixes were committed, pushed to the existing review PR, replied to and resolved on all Copilot threads, rebuilt, and tested. A final Copilot request returned an empty assignment; using the documented fallback, later reviews/comments were audited and no new comments were found, with zero unresolved Copilot threads.",
+    "builds": [
+      "tools\\build\\build-essentials.cmd",
+      "src\\modules\\cmdpal\\CmdPalModuleInterface\\CmdPalModuleInterface.vcxproj",
+      "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\Microsoft.CmdPal.UI.UnitTests.csproj"
+    ],
+    "tests": [
+      {
+        "suite": "Microsoft.CmdPal.UI.UnitTests",
+        "result": "passed",
+        "total": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "result": "passed",
+        "total": 337,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "outputs": [
+      "C:\\PowerToys-49793\\x64\\Debug\\PowerToys.exe",
+      "C:\\PowerToys-49793\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll"
+    ]
+  },
+  "test_instructions": [
+    "Launch C:\\PowerToys-49793\\x64\\Debug\\PowerToys.exe.",
+    "Invoke an x-cmdpal command deep link while CmdPal is not already visible, including during cold startup.",
+    "Verify the command link is preserved, consent is shown when needed, and the requested command or settings route executes after CmdPal finishes launching.",
+    "Send two command links rapidly during startup and verify they are handled in arrival order rather than dropped or reordered."
+  ],
+  "upstream_pr": {
+    "number": 49793,
+    "url": "https://github.com/microsoft/PowerToys/pull/49793",
+    "head_sha": "16356cc2dd56e2bc1018883495df8d8af05c1403",
+    "updated_at": "2026-08-26T19:11:13Z"
+  },
   "fork_pr": {
     "number": 485,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/485"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/485",
+    "state": "OPEN",
+    "updated_at": "2026-09-02T05:10:06Z",
+    "head_sha": "907818b11bd30bd91542e6b556c09916e637db00",
+    "base_sha": "d7ff9f452a69039c947107eed825a4bac4d00509",
+    "branch": "pr-iterate/49793-v2",
+    "worktree": "C:\\PowerToys-49793"
   },
-  "fork_branch": "pr-iterate/49793-v2"
+  "fork_branch": "pr-iterate/49793-v2",
+  "internalEvidence": {
+    "resume": {
+      "existing_fork_pr": 485,
+      "existing_branch": "pr-iterate/49793-v2",
+      "worktree": "C:\\PowerToys-49793",
+      "upstream_head_unchanged_from_prior_item": true
+    },
+    "fork_commits_added": [
+      {
+        "sha": "ca105f98e88a6b304b146f04f973c8bc32193d25",
+        "message": "Address activation replay race"
+      },
+      {
+        "sha": "907818b11bd30bd91542e6b556c09916e637db00",
+        "message": "Preserve activation replay order"
+      }
+    ],
+    "copilot_loop": {
+      "resolved_threads": [
+        {
+          "comment_id": 3872609330,
+          "thread_id": "PRRT_kwDOM2Pyb86c2bqF",
+          "finding": "Redirected activation could enqueue after replay drained and remain queued forever."
+        },
+        {
+          "comment_id": 3910824349,
+          "thread_id": "PRRT_kwDOM2Pyb86eXqor",
+          "finding": "Publishing the main window before draining pending activations could let newer activations overtake older queued snapshots."
+        }
+      ],
+      "latest_review": {
+        "id": 5085690878,
+        "submitted_at": "2026-09-02T04:53:45Z",
+        "commit": "ca105f98e88a6b304b146f04f973c8bc32193d25",
+        "result": "one activation-order thread, fixed by 907818b11bd30bd91542e6b556c09916e637db00"
+      },
+      "final_request": {
+        "requested_at": "2026-09-02T04:59:14Z",
+        "requested_reviewers_count": 0,
+        "fallback_audit": "No fresh review landed within the polling window, no later Copilot comments were found, and unresolved Copilot threads remained 0."
+      }
+    }
+  }
 }
