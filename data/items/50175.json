@@ -3,11 +3,11 @@
   "number": 50175,
   "kind": "issue",
   "track": "fix",
-  "stage": "designing",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T02:36:38Z",
-  "evaluated_at": "2026-09-02T14:26:00Z",
+  "generated_at": "2026-09-02T14:42:57Z",
+  "evaluated_at": "2026-09-02T14:42:57Z",
   "source_updated_at": "2026-09-02T14:05:47Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50175",
   "title": "CmdPal: Bookmark {placeholder} field retains last-entered value on every subsequent open",
@@ -20,55 +20,255 @@
   "assignees": [],
   "comments": 1,
   "confidence": "High",
-  "summary": "Command Palette bookmark placeholder controls are cached with the bookmark command and retain StringParameterRun values after a successful launch. A cross-architecture UI Automation reproduction now confirms the value persists only within the Command Palette session and resets after restart.",
+  "summary": "Command Palette caches a placeholder page for each bookmark. Its StringParameterRun objects retain their in-memory text after a successful launch, so the next opening in the same Command Palette session shows the prior submission.",
   "status": {
-    "glyph": "🛠️",
-    "label": "Detailed design in progress",
-    "detail": "The deterministic reproduction and source analysis qualify the issue for the drain's full design workflow."
+    "glyph": "!",
+    "label": "Implementation design ready",
+    "detail": "Reset retained placeholder runs only after a successful launch, add an accessible parameter locator, and cover the lifecycle with unit and UI automation regression tests."
   },
   "next_action": {
-    "glyph": "▶",
-    "label": "Complete implementation design",
-    "reason": "Reset timing, binding notifications, accessibility targeting, and regression coverage must converge before approval."
+    "glyph": ">",
+    "label": "Review bookmark placeholder reset design",
+    "reason": "Approval authorizes fork-side implementation only; no upstream action is proposed."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The current object lifetime and missing reset are directly visible in source.",
+    "rationale": "The report, cross-architecture reproduction, current source, and feature history independently identify a retained session object whose values are never reset. The narrow success-only reset has a clear lifecycle boundary and preserves input after a failed launch.",
     "evidence": [
-      "The form starts empty only on first open, then reuses the last value.",
-      "The issue identifies the involved classes.",
-      "Current main stores StringParameterRun instances on a long-lived page.",
-      "LaunchWithCurrentValues dismisses after success without clearing runs.",
-      "An independent UI Automation reproduction passed its controls on x64 and ARM64 and showed the submitted value on the next open.",
-      "Restarting Command Palette resets the field, confirming that the value is session-cached rather than persisted to bookmarks.json."
+      "The reporter's deterministic reproduction starts with an empty field, submits a value, and finds that value on every subsequent opening during the session.",
+      "The independent UI Automation reproduction on x64 and ARM64 observed the same retention and confirmed that restarting Command Palette clears it without changing bookmarks.json.",
+      "BookmarkListItem.ClassifyAsync constructs BookmarkPlaceholderPage only during initial classification or a BookmarkUpdated event; opening the item does not reconstruct the page.",
+      "BookmarkPlaceholderPage.BuildParameterRuns creates and retains StringParameterRun objects in _placeholderRuns, and LaunchWithCurrentValues dismisses after CommandLauncher.Launch succeeds without clearing them.",
+      "StringParameterRun.ClearValue resets Text and raises property notifications; StringParameterRunViewModel.FetchProperty mirrors model-side Text changes to TextForUI.",
+      "Merged PR #47886 (commit 2d3f93537fad47540c57342310b5004d87d3fcf2) introduced the ParametersPage implementation. No later history touching LaunchWithCurrentValues adds a reset."
     ],
-    "recommended_action": "Design and test reset on successful launch or page activation; do not approve until lifecycle and failure semantics are finalized.",
-    "evaluated_at": "2026-09-02T14:26:00Z",
+    "recommended_action": "Approve the fork-side plan to clear each retained placeholder run after, and only after, CommandLauncher.Launch returns true; add isolated regression coverage and an accessible parameter-field name.",
+    "evaluated_at": "2026-09-02T14:42:57Z",
     "source_updated_at": "2026-09-02T14:05:47Z"
   },
   "issue_context": {
-    "summary": "Dynamic bookmark fields persist for the session although users expect a fresh parameter form for each invocation.",
+    "summary": "A dynamic bookmark such as https://example.com/issue/ABC-{n} should solicit a new value on every invocation. Instead, the parameter value is retained for the lifetime of the Command Palette process.",
     "known_information": [
-      "A `{placeholder}` bookmark starts empty on first open.",
-      "Later opens are prefilled with the last submitted value.",
-      "The behavior reproduces on 0.101.2362.",
-      "An independent UI Automation run reproduced identical session-only retention on x64 and ARM64.",
-      "The field is empty after restarting Command Palette, and the value is not persisted to bookmarks.json.",
-      "No assignee, duplicate, or linked fix exists."
+      "The issue supplies numbered reproduction steps, expected behavior, an example URL, product version 0.101.2362.0, and Windows 11.",
+      "A first opening is empty; after a successful submission, reopening the same bookmark shows the last submitted value.",
+      "A separate x64 and ARM64 UI Automation reproduction confirms the retention is session-only and that the value is absent after restart.",
+      "No assignee, duplicate, linked fix, or maintainer ownership exists.",
+      "The existing Command Palette UI test suite locates MainSearchBox through AutomationId, while StringParamTemplate supplies no automation id or accessible name for placeholder text boxes."
     ],
     "inferences": [
-      "Clearing only after successful launch likely preserves failed input for correction.",
-      "Rebuilding the command on every activation may be broader than necessary."
+      "The retained values are transient extension state, not a persisted bookmark default.",
+      "A post-success reset is safer than a reset during page construction or navigation because it retains entered text when launching fails and avoids rebuilding the page, command, subscriptions, and icon gate."
     ],
-    "analysis": "The source trace and cross-architecture automated reproduction now independently confirm the session-lifetime state leak, so more reporter diagnostics would not change triage; reset timing, accessibility targeting, and regression tests are the remaining work.",
+    "analysis": "The evidence identifies both the state owner and the missing lifecycle transition. A successful launch is the intended completion boundary: the evaluated target is computed before values are cleared, dismissal follows as it does today, and an unsuccessful launch retains the visible values for correction. The toolkit and view model already propagate ClearValue notifications, so no binding-mode or page-recreation change is warranted.",
     "initial_investigation": [
-      "BookmarkListItem.cs creates and retains one BookmarkPlaceholderPage as the command.",
-      "BuildParameterRuns creates StringParameterRun objects once in the constructor.",
-      "LaunchWithCurrentValues reads Text and dismisses without reset.",
-      "The parameter-page implementation landed in #47886; no later reset fix appears.",
-      "The existing CmdPal UI-test harness locates controls by AutomationId, while the placeholder TextBox currently has neither x:Name nor AutomationProperties.AutomationId."
+      "Inspected BookmarkListItem.ClassifyAsync, BookmarkPlaceholderPage.BuildParameterRuns, BuildEvaluatedBookmark, LaunchWithCurrentValues, and Dispose on current main.",
+      "Inspected StringParameterRun.ClearValue and StringParameterRunViewModel.InitializeProperties, SetTextFromUi, and FetchProperty; model resets update TextForUI through the existing property-change path.",
+      "Inspected current CmdPal bookmark unit tests and UI test harness. The bookmarks assembly exposes internals to Microsoft.CmdPal.Ext.Bookmarks.UnitTests, and the CmdPal solution filter includes both bookmark unit tests and Microsoft.CmdPal.UITests.",
+      "Reviewed merged PR #47886, the introducing change, and searched matching upstream issues. Issue #46528 concerns Enter activation rather than retained values and is not a duplicate."
     ],
     "information_gaps": []
   },
-  "actions": []
+  "design": {
+    "root_cause": "BookmarkListItem retains one BookmarkPlaceholderPage in its Command property for the Command Palette session. The page creates its StringParameterRun instances once in BuildParameterRuns and retains them in _placeholderRuns. LaunchWithCurrentValues builds the target from those runs and returns Dismiss after CommandLauncher.Launch succeeds, but does not clear the runs. The long-lived model values are therefore shown again by the existing StringParameterRunViewModel binding when the same page is reopened.",
+    "evidence": [
+      "BookmarkListItem.ClassifyAsync selects new BookmarkPlaceholderPage only while classifying the bookmark; ordinary reopening does not execute that path.",
+      "BookmarkPlaceholderPage stores _parameters and _placeholderRuns as readonly page fields, subscribes the runs to OnPlaceholderChanged, and only disposes those subscriptions when the page is disposed.",
+      "LaunchWithCurrentValues currently evaluates the bookmark, calls CommandLauncher.Launch, and returns CommandResult.Dismiss or CommandResult.KeepOpen with no value reset.",
+      "StringParameterRun.ClearValue assigns string.Empty through Text, which raises the same Text and NeedsValue notifications used by the subtitle and UI view model.",
+      "The issue and independent test demonstrate exactly the predicted process-lifetime behavior: persistence during a session and reset after process restart."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkPlaceholderPage.cs",
+        "purpose": "Owns the retained placeholder runs and maps a completed parameter form to a launched bookmark.",
+        "symbols": [
+          "BookmarkPlaceholderPage.LaunchWithCurrentValues",
+          "BookmarkPlaceholderPage.ClearPlaceholderValues",
+          "BookmarkPlaceholderPage.UpdateSubtitle",
+          "BookmarkPlaceholderPage._placeholderRuns"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/SearchBar.xaml",
+        "purpose": "Defines the StringParamTemplate TextBox that renders each string parameter field.",
+        "symbols": [
+          "SearchBar.StringParamTemplate"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Bookmarks.UnitTests/BookmarkPlaceholderPageTests.cs",
+        "purpose": "New focused unit-test fixture for clearing retained bookmark placeholder values and their derived command subtitle state.",
+        "symbols": [
+          "BookmarkPlaceholderPageTests.ClearPlaceholderValues_ClearsEveryDistinctPlaceholderAndSubtitle"
+        ]
+      },
+      {
+        "path": "src/common/UITestAutomation/UITestBase.cs",
+        "purpose": "Provides narrowly scoped virtual pre-session and post-session hooks so a CmdPal UI test can provision and restore test-owned persistent state before the package starts.",
+        "symbols": [
+          "UITestBase.TestInit",
+          "UITestBase.TestCleanup",
+          "UITestBase.ConfigureBeforeSession",
+          "UITestBase.RestoreAfterSession"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/BookmarkPlaceholderTests.cs",
+        "purpose": "New end-to-end regression fixture that seeds one test-owned dynamic bookmark, submits it, reopens it, and reads the accessible parameter field.",
+        "symbols": [
+          "BookmarkPlaceholderTests.PlaceholderValue_IsClearedAfterSuccessfulLaunch",
+          "BookmarkPlaceholderTests.ConfigureBeforeSession",
+          "BookmarkPlaceholderTests.RestoreAfterSession"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkPlaceholderPage.cs",
+        "symbols": [
+          "BookmarkPlaceholderPage.LaunchWithCurrentValues",
+          "BookmarkPlaceholderPage.ClearPlaceholderValues",
+          "BookmarkPlaceholderPage.UpdateSubtitle"
+        ],
+        "current_behavior": "LaunchWithCurrentValues first captures values with BuildEvaluatedBookmark, classifies and launches that target, then immediately returns Dismiss on true or KeepOpen on false. The same StringParameterRun instances remain populated after both paths.",
+        "change": "Add an internal ClearPlaceholderValues helper that iterates _placeholderRuns.Values and calls ClearValue once per dictionary entry. In LaunchWithCurrentValues, preserve target evaluation and launch ordering; when Launch returns false, return KeepOpen unchanged. When it returns true, call ClearPlaceholderValues and then return Dismiss.",
+        "code_block": "private void ClearPlaceholderValues()\n{\n    foreach (var run in _placeholderRuns.Values)\n    {\n        run.ClearValue();\n    }\n}\n\nprivate CommandResult LaunchWithCurrentValues()\n{\n    var target = BuildEvaluatedBookmark();\n    var classification = _resolver.ClassifyOrUnknown(target);\n    if (!CommandLauncher.Launch(classification))\n    {\n        return CommandResult.KeepOpen();\n    }\n\n    ClearPlaceholderValues();\n    return CommandResult.Dismiss();\n}",
+        "edge_cases": [
+          "Build the evaluated target before clearing so the current submission is launched exactly as before.",
+          "Do not clear after a false return: the field and preview remain available for the user to correct a failing target.",
+          "Repeated placeholder names share one dictionary entry but can appear in multiple parameter positions; iterating Values clears the shared model once and updates every bound position.",
+          "An empty or externally invoked incomplete form still follows the existing launch result semantics; a successful launch clears it harmlessly.",
+          "ClearValue raises Text and NeedsValue notifications. OnPlaceholderChanged recomputes the subtitle; the UI view model's existing FetchProperty updates TextForUI. Do not alter binding mode or dispose/recreate the page while a parameter view model owns subscriptions.",
+          "The command is only presented after required values are observed. That existing visibility gate serializes normal text-entry updates before successful submit, so a queued stale UI write cannot ordinarily repopulate a successfully submitted field; the UI regression test must exercise typing followed by Enter."
+        ],
+        "tests": [
+          "Add BookmarkPlaceholderPageTests.ClearPlaceholderValues_ClearsEveryDistinctPlaceholderAndSubtitle with a URL containing repeated and differently cased placeholder names; set runs non-empty, clear, then assert every distinct StringParameterRun.Text is empty and page.Command.Subtitle is empty.",
+          "The UI test in step 3 proves the production success path invokes the helper rather than merely testing the helper in isolation."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/SearchBar.xaml",
+        "symbols": [
+          "SearchBar.StringParamTemplate"
+        ],
+        "current_behavior": "The parameter TextBox exposes only PlaceholderText and no stable accessible name or automation id, forcing UI Automation clients to infer it from the set of Edit controls.",
+        "change": "Bind AutomationProperties.Name to the existing PlaceholderText in StringParamTemplate. Keep the current Text x:Bind and TextChanged handler unchanged; this is an accessibility label and test locator, not another value-binding path.",
+        "code_block": "<TextBox\n    AutomationProperties.Name=\"{x:Bind PlaceholderText, Mode=OneWay}\"\n    PlaceholderText=\"{x:Bind PlaceholderText, Mode=OneWay}\"\n    Text=\"{x:Bind TextForUI, Mode=OneWay}\"\n    TextChanged=\"StringParameter_TextChanged\" />",
+        "edge_cases": [
+          "Do not use a fixed AutomationId because a parameter page can contain multiple fields; their placeholder names remain the semantic locator.",
+          "Repeated placeholder occurrences may expose the same name because they intentionally represent one logical value; the UI test uses one placeholder and scopes the search to the active form.",
+          "Do not change Text to TwoWay: SearchBar.xaml.cs intentionally sends UI changes through StringParameter_TextChanged to StringParameterRunViewModel.SetTextFromUi."
+        ],
+        "tests": [
+          "In the CmdPal UI regression, locate the seeded placeholder TextBox by its accessible name and assert that its Text is visible after entry and empty after reopening.",
+          "Manually inspect with Accessibility Insights or Inspect.exe that the active parameter field reports the placeholder name without changing keyboard input behavior."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/common/UITestAutomation/UITestBase.cs",
+        "symbols": [
+          "UITestBase.TestInit",
+          "UITestBase.TestCleanup",
+          "UITestBase.ConfigureBeforeSession",
+          "UITestBase.RestoreAfterSession"
+        ],
+        "current_behavior": "TestInit starts the target package before a derived CmdPal test can safely arrange package LocalState. TestCleanup releases the session and package after the test, with no extension point for restoring an on-disk test fixture.",
+        "change": "Add no-op protected virtual ConfigureBeforeSession and RestoreAfterSession hooks. Call the former after other applications have been closed and immediately before SessionHelper.Init; call the latter in a finally block after Session.Cleanup and sessionHelper.Cleanup. Do not change the default behavior for existing UI tests.",
+        "code_block": "protected virtual void ConfigureBeforeSession() { }\nprotected virtual void RestoreAfterSession() { }\n\n// TestInit, before SessionHelper.Init()\nConfigureBeforeSession();\n\n// TestCleanup\ntry\n{\n    this.Session.Cleanup();\n    this.sessionHelper!.Cleanup();\n}\nfinally\n{\n    RestoreAfterSession();\n}",
+        "edge_cases": [
+          "Restore the original bookmarks.json bytes, or remove only a file created by the test, after the CmdPal process is stopped; never overwrite a user profile while the package is running.",
+          "Keep restoration in finally so a failed assertion, driver error, or cleanup exception does not leave the seeded bookmark behind.",
+          "The hooks must remain protected and no-op by default so they cannot alter unrelated UI test startup behavior.",
+          "Retain screenshot and recording collection ordering in TestCleanup; resource capture must still happen before process cleanup."
+        ],
+        "tests": [
+          "Run an existing CmdPal UI smoke test such as BasicTests.BasicCalculatorTest to show default hook behavior is unchanged.",
+          "Run the new bookmark UI test both passing and with an intentionally failing local assertion once to verify the fixture restoration path."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/BookmarkPlaceholderTests.cs",
+        "symbols": [
+          "BookmarkPlaceholderTests.PlaceholderValue_IsClearedAfterSuccessfulLaunch",
+          "BookmarkPlaceholderTests.ConfigureBeforeSession",
+          "BookmarkPlaceholderTests.RestoreAfterSession"
+        ],
+        "current_behavior": "Microsoft.CmdPal.UITests has no bookmark-placeholder lifecycle test and cannot address the parameter TextBox through an accessibility identifier or name.",
+        "change": "Add a fixture that snapshots only the CmdPal test package's bookmarks.json, writes a single uniquely named bookmark with one placeholder before session launch, and restores the snapshot after session cleanup. Search for that bookmark, open it, locate its field by the accessible placeholder name, enter a unique value, submit successfully to a benign test URL, return to the list, reopen the bookmark, and assert the field is empty. Assert the entered value before submit and assert that the list is visible between opens so an inaccessible field or a form that never dismissed cannot yield a false pass.",
+        "code_block": "protected override void ConfigureBeforeSession()\n{\n    _originalBookmarks = BookmarkTestState.SnapshotAndSeed(\"issue-50175\", \"https://example.invalid/ABC-{issue50175}\");\n}\n\n[TestMethod]\npublic void PlaceholderValue_IsClearedAfterSuccessfulLaunch()\n{\n    SetSearchBox(\"issue-50175\");\n    this.Find<NavigationViewItem>(\"issue-50175\").DoubleClick();\n    var field = this.Find<TextBox>(\"issue50175\");\n    field.SetText(\"first-value\");\n    Assert.AreEqual(\"first-value\", field.Text);\n    this.PressKey(Key.Enter);\n    Assert.IsNotNull(this.Find<TextBox>(By.AccessibilityId(\"MainSearchBox\")));\n    this.Find<NavigationViewItem>(\"issue-50175\").DoubleClick();\n    Assert.AreEqual(string.Empty, this.Find<TextBox>(\"issue50175\").Text);\n}",
+        "edge_cases": [
+          "Use a unique test bookmark title, placeholder name, and value so parallel or pre-existing data cannot satisfy a locator.",
+          "Seed only the test package LocalState selected by the existing test environment and restore an exact byte snapshot in RestoreAfterSession; do not use the contributor's destructive overwrite approach against arbitrary local state.",
+          "Use an URL that can be treated as a successful shell launch without asserting a browser's process lifetime; the regression assertion is page dismissal followed by a cleared reopened field.",
+          "If the UI harness needs a deterministic dismissal signal, keep the asserted MainSearchBox/list transition and do not rely solely on timing delays.",
+          "Run the test in an isolated UI-test environment; it must not be included in ordinary unit-test execution."
+        ],
+        "tests": [
+          "Run Microsoft.CmdPal.UITests with a filter for FullyQualifiedName~BookmarkPlaceholderTests.",
+          "Run the complete Command Palette UI test project on a machine with the established WinAppDriver and Developer Mode prerequisites.",
+          "Repeat the test on x64 and ARM64 when those existing UI-test lanes are available."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the CmdPal solution filter in x64 Debug with `pwsh -NoProfile -File tools\\build\\build.ps1 -Platform x64 -Configuration Debug` from the repository root.",
+      "Run the bookmark unit-test assembly with Visual Studio Test Explorer or `vstest.console.exe x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.dll` after the project is built.",
+      "Run `vstest.console.exe x64\\Debug\\tests\\Microsoft.CmdPal.UITests\\Microsoft.CmdPal.UITests.dll /TestCaseFilter:\"FullyQualifiedName~BookmarkPlaceholderTests\"` in the established WinAppDriver/Developer Mode UI-test environment; use the actual build output path if the test runner layout differs.",
+      "Manually create a bookmark with one placeholder, submit a value, reopen it in the same Command Palette session, and verify a blank field. Then exercise a deliberately invalid target and verify the entered value stays visible after KeepOpen.",
+      "Manually verify a URL containing repeated placeholder names substitutes the same entered value at every occurrence, clears on the next open, and retains the existing escaped URL behavior."
+    ],
+    "risks": [
+      "Clearing before building the target would launch an empty or unexpanded bookmark; preserving the current evaluation-before-reset order prevents this.",
+      "Clearing regardless of launch success would discard recoverable user input; the explicit false branch preserves it.",
+      "A fixed automation id would be ambiguous for multi-parameter forms; the accessibility name uses each field's existing placeholder semantics instead.",
+      "Adding generic UI-test fixture hooks touches shared test infrastructure. Keeping them protected, no-op, and invoked at strictly pre-start/post-cleanup boundaries limits the blast radius, while existing CmdPal smoke coverage must be run.",
+      "A UI test that writes package state without reliable restoration could damage developer state. The design requires a byte-for-byte snapshot and finally-based restore after process shutdown."
+    ],
+    "alternatives": [
+      "Recreate BookmarkPlaceholderPage every time the bookmark is opened. Rejected because it broadens lifecycle changes across Command, icon loading, subscriptions, and cached classification solely to clear transient input.",
+      "Clear values when the parameter page becomes active. Rejected because page activation may recur due to navigation or focus changes and could discard in-progress input before the user launches.",
+      "Clear values before every Launch call. Rejected because it changes the evaluated target and destroys input on failed launches.",
+      "Change StringParamTemplate.Text to TwoWay. Rejected because the current event-handler path intentionally serializes writes in StringParameterRunViewModel; it is unrelated to the retained model-state defect.",
+      "Use only a unit test of ClearPlaceholderValues. Rejected as insufficient: it would not prove that the successful interactive launch path calls the reset helper or that the page actually dismisses and reopens."
+    ],
+    "adversarial_review": {
+      "challenges_considered": [
+        "Could a reset race with the asynchronous StringParameterRunViewModel write queue and restore the old value?",
+        "Would a reset make a failed launch frustrating by discarding the user's correction context?",
+        "Would repeated placeholders or multiple fields leave a second stale value behind?",
+        "Could an end-to-end test pass while reading the original form rather than a reopened form?",
+        "Could test data provisioning leak or overwrite a developer's real bookmark file?"
+      ],
+      "resolutions": [
+        "The normal submit command is not shown until all required model values have been observed, so typing is propagated before Enter submits; the end-to-end test exercises this exact typing-and-submit sequence and verifies both visible input and a list transition.",
+        "Only a true CommandLauncher result clears values. The false branch remains KeepOpen with unchanged values.",
+        "_placeholderRuns is case-insensitive and contains one entry per logical placeholder name; clearing its Values covers every distinct model, while shared model notifications update repeated rendered occurrences.",
+        "The UI test explicitly asserts MainSearchBox/list visibility between the first submit and the second open before asserting the reopened field is empty.",
+        "The shared test-base hook snapshots and restores only the test package state in finally after the session and helper clean up; it never writes arbitrary user state."
+      ],
+      "conclusion": "The remaining risk is confined to the UI-test environment and is mitigated by the existing CmdPal unit and UI suites plus manual failed-launch validation. The production fix is a local success-path state transition with no persistence, IPC, schema, or ABI change."
+    }
+  },
+  "fork_trace": {
+    "kind": "design_artifact",
+    "id": "issue-design-50175",
+    "status": "design_ready",
+    "implementation_branch": null,
+    "note": "This validated artifact is the durable fork-side design trace. A fork branch and PR remain approval-gated and have not been created."
+  },
+  "actions": [
+    {
+      "id": "approve-design-50175",
+      "type": "approve_design",
+      "label": "Approve bookmark placeholder reset design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Approves fork-side implementation work only. Opening or posting anything upstream requires separate explicit approval."
+    }
+  ]
 }
