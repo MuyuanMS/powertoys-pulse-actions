@@ -22,20 +22,20 @@
   "pending_author": false,
   "confidence": "High",
   "processVerdict": "ask",
-  "generated_at": "2026-08-13T16:28:11.658741Z",
-  "evaluated_at": "2026-08-13T16:28:11.658741Z",
+  "generated_at": "2026-09-02T04:21:31.2325058Z",
+  "evaluated_at": "2026-09-02T04:21:31.2325058Z",
   "source_updated_at": "2026-04-29T13:28:35Z",
   "head_sha": "6378870c042cf44ed93bc225be10946cfed1e1df",
-  "summary": "The community PR is unchanged upstream. Phase 0 asks only for a short behavior recording. The durable candidate was rebased onto current main, expanded by three tightly coupled review-fix files, iterated through nine Copilot reviews, and converged at b03d1e0b1 with zero new published comments and zero unresolved threads. Required x64 Debug builds and targeted regressions passed; the native aggregate runner retains a documented mock-window teardown instability.",
+  "summary": "The upstream PR remains open, non-draft, and unchanged at the pinned head. A full current-skill re-review found five defensible companion-only requests: preserving Alt-modified snap chords, using native Win+Down minimize semantics, distinguishing snap failures from real boundaries, aligning Settings defaults, and adding deterministic boundary/persistence coverage. Phase 0 still asks only for a short behavior recording.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
-    "detail": "Upstream remains at 6378870c042cf44ed93bc225be10946cfed1e1df. Fork PR 363 is based on current main 5193a1e49729bf8d9a8553e352e7c0c285e50188. The fresh 2026-08-13T16:27:20Z Copilot review on b03d1e0b1e2bf18d1dfa30f8145b6406f72e2522 generated no new comments, and all five fork review threads are resolved."
+    "detail": "Upstream remains pinned to the current reviewed head. A replacement private review iteration fixed the valid implementation issues and ended with no unresolved review threads; the public action is a companion-only COMMENT review draft with no inline suggestions."
   },
   "next_action": {
     "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "Four coordinated implementation requests and one Phase 0 recording request are ready. No upstream write has occurred."
+    "label": "Approve, edit, or hold the drafted COMMENT review",
+    "reason": "Five current-head companion notes and one Phase 0 recording request are ready. No upstream write has occurred."
   },
   "needs_revalidation": false,
   "source": {
@@ -45,8 +45,8 @@
     "updatedAt": "2026-04-29T13:28:35Z"
   },
   "refresh": {
-    "generatedAt": "2026-08-13T16:28:11.658741Z",
-    "checkedAt": "2026-08-13T16:28:11.658741Z",
+    "generatedAt": "2026-09-02T04:21:31.2325058Z",
+    "checkedAt": "2026-09-02T04:21:31.2325058Z",
     "sourceUpdatedAt": "2026-04-29T13:28:35Z",
     "sourceHeadRefOid": "6378870c042cf44ed93bc225be10946cfed1e1df",
     "latestCommitAt": "2026-03-07T12:05:20Z",
@@ -121,7 +121,7 @@
   "freshness": {
     "headRefOid": "6378870c042cf44ed93bc225be10946cfed1e1df",
     "baseRefOid": "a953a39aec63fed39295f2012e83427af4b709ff",
-    "latestMainOid": "5193a1e49729bf8d9a8553e352e7c0c285e50188",
+    "latestMainOid": "7ac9d80539457463bf607688d76cd013b0fde179",
     "updatedAt": "2026-04-29T13:28:35Z",
     "latestCommitAt": "2026-03-07T12:05:20Z",
     "latestCommentAt": "2026-03-07T12:21:19Z",
@@ -136,10 +136,10 @@
     "mergeableState": "blocked",
     "checkSummary": "4 successful check contexts, 3 intentionally skipped spelling workflow jobs, 0 failed, and 0 pending; external-fork Azure build CI is not present.",
     "fresh": true,
-    "checkedAt": "2026-08-13T16:28:11.658741Z"
+    "checkedAt": "2026-09-02T04:21:31.2325058Z"
   },
   "source_activity": {
-    "captured_at": "2026-08-13T16:28:11.658741Z",
+    "captured_at": "2026-09-02T04:21:31.2325058Z",
     "state": "OPEN",
     "draft": false,
     "mergeable": true,
@@ -147,7 +147,7 @@
     "upstream_updated_at": "2026-04-29T13:28:35Z",
     "upstream_head_sha": "6378870c042cf44ed93bc225be10946cfed1e1df",
     "upstream_base_sha": "a953a39aec63fed39295f2012e83427af4b709ff",
-    "current_main_sha": "5193a1e49729bf8d9a8553e352e7c0c285e50188",
+    "current_main_sha": "7ac9d80539457463bf607688d76cd013b0fde179",
     "commit_count": 1,
     "changed_file_count": 12,
     "additions": 67,
@@ -178,51 +178,81 @@
   },
   "proposed_comments": [
     {
-      "id": "honor-no-cycle-navigation",
+      "id": "preserve-alt-snap-chords",
       "kind": "companion",
       "severity": "high",
-      "title": "Honor no-cycle navigation consistently across modes and monitors",
-      "body": "### Honor no-cycle navigation consistently across modes and monitors\n\n**Severity:** `high`\n\nThe new setting must control both position-based and zone-index keyboard navigation. With cycling disabled, movement should still reach an adjacent monitor when one exists, then stop without wrapping at the global edge; the native and Settings defaults must also agree so an untouched configuration behaves consistently. Please wire the value through native settings parsing, UI serialization, and both navigation paths rather than applying the early exit only to one helper.",
-      "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp",
+      "title": "Do not intercept Alt-modified snap chords in no-cycle mode",
+      "body": "### Do not intercept Alt-modified snap chords in no-cycle mode\n\n**Severity:** `high`\n\nWhen cycling is disabled, the new index-mode Up/Down path should not intercept Win+Ctrl+Alt+Up/Down. The hook already treats that chord specially, but the hotkey gate does not know whether Alt is down, so the new fallback can swallow the chord and run FancyZones maximize/minimize behavior instead of the intended Alt-modified handling. Please pass the Alt state into the gate and only enable the new index-mode Up/Down path when Alt is not pressed.",
+      "path": "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
       "in_diff": false,
-      "disposition": "proposed"
+      "disposition": "proposed",
+      "confidence": {
+        "score": 92,
+        "rationale": "The current hook accepts Alt-modified Up/Down chords while the new gate has only the virtual key, so this is a direct behavior regression in the reviewed head."
+      }
     },
     {
-      "id": "preserve-window-state-sequence",
+      "id": "use-native-minimize-semantics",
       "kind": "companion",
       "severity": "high",
-      "title": "Preserve navigation, snap failures, and native window-state sequencing",
-      "body": "### Preserve navigation, snap failures, and native window-state sequencing\n\n**Severity:** `high`\n\nWin+Up/Down should maximize or minimize only when there is genuinely no directional zone target. An unsnapped or intermediate-zone window must navigate first, the first Win+Down on a maximized window must restore it, and a real `WorkArea::Snap` failure must be returned instead of being reinterpreted as a boundary. Please keep a distinct no-target result, initialize `WINDOWPLACEMENT.length`, and use asynchronous placement for HWNDs owned by another thread so the expected maximize → restore → navigate → minimize sequence is preserved.",
+      "title": "Use native minimize semantics for the Win+Down fallback",
+      "body": "### Use native minimize semantics for the Win+Down fallback\n\n**Severity:** `high`\n\nThe Win+Down fallback currently sets `WINDOWPLACEMENT.showCmd` to `SW_SHOWMINIMIZED`. That shows the window minimized while keeping activation semantics different from a user-initiated minimize, so focus can remain with the minimized app instead of moving normally. Use `SW_MINIMIZE` for the Down fallback while keeping `SW_SHOWMAXIMIZED` for Up.",
       "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp",
       "in_diff": false,
-      "disposition": "proposed"
+      "disposition": "proposed",
+      "confidence": {
+        "score": 91,
+        "rationale": "The reviewed code directly assigns SW_SHOWMINIMIZED on the Down fallback; Win+Down should follow the native minimize activation path."
+      }
     },
     {
-      "id": "persist-setting-and-defaults",
+      "id": "separate-snap-failure-from-boundary",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Separate snap failure from no directional target",
+      "body": "### Separate snap failure from no directional target\n\n**Severity:** `high`\n\nWin+Up/Down should maximize or minimize only when there is genuinely no directional zone target. A real `WorkArea::Snap` failure should be returned as failure instead of being reinterpreted as a boundary, and any `WINDOWPLACEMENT` read must initialize `length` and handle failure before changing state. Otherwise an internal snap failure or invalid placement query can incorrectly turn into maximize/minimize behavior.",
+      "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 88,
+        "rationale": "The reviewed path stores only a boolean success value and then falls back to window-state changes, which conflates failed snapping with hitting the edge."
+      }
+    },
+    {
+      "id": "align-settings-default",
       "kind": "companion",
       "severity": "medium",
-      "title": "Persist the setting and keep native/UI defaults aligned",
-      "body": "### Persist the setting and keep native/UI defaults aligned\n\n**Severity:** `medium`\n\nThe Settings toggle must update the repository, send the IPC payload, survive serialization with a non-default value, and match the native default before any settings file exists. Please keep the resource text localizable and include the new value in the existing FancyZones settings telemetry so configuration and runtime behavior do not silently diverge.",
-      "path": "src/settings-ui/Settings.UI/ViewModels/FancyZonesViewModel.cs",
+      "title": "Align Settings serialization with the native default",
+      "body": "### Align Settings serialization with the native default\n\n**Severity:** `medium`\n\nThe new Settings property is constructed without the native default value, while the runtime default keeps zone cycling enabled. Please add a named Settings default that matches the native default and use it when creating the `FancyzonesCycleThroughAllZones` property, so a missing or newly created settings file does not serialize an unintended value.",
+      "path": "src/settings-ui/Settings.UI.Library/FZConfigProperties.cs",
       "in_diff": false,
-      "disposition": "proposed"
+      "disposition": "proposed",
+      "confidence": {
+        "score": 84,
+        "rationale": "The reviewed property uses a bare BoolProperty constructor while the native setting has an explicit enabled-by-default value."
+      }
     },
     {
       "id": "cover-boundary-regressions",
       "kind": "companion",
       "severity": "medium",
       "title": "Add deterministic boundary and persistence regression coverage",
-      "body": "### Add deterministic boundary and persistence regression coverage\n\n**Severity:** `medium`\n\nPlease cover cycling-disabled navigation in both index and position modes, single- and multi-monitor transitions, global edges, unsnapped windows, and maximize/restore/minimize state changes. Add Settings tests that prove the toggle persists and native serialization tests for `cycle-through-zones=false`; keep mock-window placement deterministic and reset singleton settings between cases so teardown or test order cannot mask regressions.",
+      "body": "### Add deterministic boundary and persistence regression coverage\n\n**Severity:** `medium`\n\nPlease cover cycling-disabled navigation in both index and position modes, single- and multi-monitor transitions, global-edge stops, unsnapped windows, and maximize/restore/minimize state changes. Also add Settings coverage proving the toggle persists and native serialization coverage for `cycle-through-zones=false` so the new option does not regress across UI, settings files, and runtime behavior.",
       "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/WindowKeyboardSnap.Spec.cpp",
       "in_diff": false,
-      "disposition": "proposed"
+      "disposition": "proposed",
+      "confidence": {
+        "score": 82,
+        "rationale": "The current PR has only limited settings parsing coverage and does not exercise the key no-cycle keyboard boundary scenarios."
+      }
     }
   ],
   "actions": [
     {
       "id": "post-review-45972",
       "type": "post_review",
-      "label": "Post selected requests as REQUEST_CHANGES",
+      "label": "Post general review notes with no inline suggestions",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -231,9 +261,9 @@
         "pullRequest": 45972,
         "event": "COMMENT",
         "head_sha": "6378870c042cf44ed93bc225be10946cfed1e1df",
-        "body": "Thanks for tackling this long-standing FancyZones keyboard-navigation behavior and for documenting the real-world validation. Because this changes visible Win+Arrow behavior, please attach a short recording that demonstrates cycling enabled and disabled, an adjacent-monitor transition followed by a global-edge stop, and the maximize → restore → navigate → minimize sequence. The implementation also needs the coordinated correctness and regression-coverage updates below before merge."
+        "body": "Thanks for tackling this long-standing FancyZones keyboard-navigation behavior and for documenting the real-world validation. Because this changes visible Win+Arrow behavior, please attach a short recording that demonstrates cycling enabled and disabled, an adjacent-monitor transition followed by a global-edge stop, and the maximize -> restore -> navigate -> minimize sequence. The implementation also needs the coordinated correctness and regression-coverage updates below before merge."
       },
-      "note": "Mandatory: refresh upstream head and substantive conversation, validate the pinned payload, and require explicit written approval before publishing."
+      "note": "Companion-only action: posts a general review text block with no inline suggestions. Mandatory: refresh upstream head and substantive conversation, validate the pinned payload, and require explicit written approval before publishing."
     }
   ],
   "safe_actions": [
@@ -259,7 +289,7 @@
   "reviewData": {
     "schemaVersion": 2,
     "repository": "microsoft/PowerToys",
-    "generatedAt": "2026-08-13T16:28:11.658741Z",
+    "generatedAt": "2026-09-02T04:21:31.2325058Z",
     "phase": "ready",
     "prs": [
       {
@@ -268,7 +298,7 @@
         "title": "[FancyZones] Add option to not cycle through the end of the zone list + Maximize/Minimize",
         "author": "romibi",
         "phase": "ready",
-        "loop": 9,
+        "loop": 2,
         "waitingOn": "maintainer approval",
         "assoc": "FIRST_TIME_CONTRIBUTOR",
         "firstTimer": true,
@@ -283,43 +313,71 @@
         "disposition": "Request changes",
         "phase0Note": "Ask for a short behavior recording; CLA, scope, provenance, duplicate search, screenshot, and substantial author validation otherwise pass.",
         "publicPayload": {
-          "contextBody": "Thanks for tackling this long-standing FancyZones keyboard-navigation behavior and for documenting the real-world validation. Because this changes visible Win+Arrow behavior, please attach a short recording that demonstrates cycling enabled and disabled, an adjacent-monitor transition followed by a global-edge stop, and the maximize → restore → navigate → minimize sequence. The implementation also needs the coordinated correctness and regression-coverage updates below before merge.",
+          "contextBody": "Thanks for tackling this long-standing FancyZones keyboard-navigation behavior and for documenting the real-world validation. Because this changes visible Win+Arrow behavior, please attach a short recording that demonstrates cycling enabled and disabled, an adjacent-monitor transition followed by a global-edge stop, and the maximize -> restore -> navigate -> minimize sequence. The implementation also needs the coordinated correctness and regression-coverage updates below before merge.",
           "items": [
             {
-              "id": "honor-no-cycle-navigation",
+              "id": "preserve-alt-snap-chords",
               "kind": "companion",
               "severity": "high",
-              "title": "Honor no-cycle navigation consistently across modes and monitors",
-              "body": "### Honor no-cycle navigation consistently across modes and monitors\n\n**Severity:** `high`\n\nThe new setting must control both position-based and zone-index keyboard navigation. With cycling disabled, movement should still reach an adjacent monitor when one exists, then stop without wrapping at the global edge; the native and Settings defaults must also agree so an untouched configuration behaves consistently. Please wire the value through native settings parsing, UI serialization, and both navigation paths rather than applying the early exit only to one helper.",
-              "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp"
+              "title": "Do not intercept Alt-modified snap chords in no-cycle mode",
+              "body": "### Do not intercept Alt-modified snap chords in no-cycle mode\n\n**Severity:** `high`\n\nWhen cycling is disabled, the new index-mode Up/Down path should not intercept Win+Ctrl+Alt+Up/Down. The hook already treats that chord specially, but the hotkey gate does not know whether Alt is down, so the new fallback can swallow the chord and run FancyZones maximize/minimize behavior instead of the intended Alt-modified handling. Please pass the Alt state into the gate and only enable the new index-mode Up/Down path when Alt is not pressed.",
+              "path": "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
+              "confidence": {
+                "score": 92,
+                "rationale": "The current hook accepts Alt-modified Up/Down chords while the new gate has only the virtual key, so this is a direct behavior regression in the reviewed head."
+              }
             },
             {
-              "id": "preserve-window-state-sequence",
+              "id": "use-native-minimize-semantics",
               "kind": "companion",
               "severity": "high",
-              "title": "Preserve navigation, snap failures, and native window-state sequencing",
-              "body": "### Preserve navigation, snap failures, and native window-state sequencing\n\n**Severity:** `high`\n\nWin+Up/Down should maximize or minimize only when there is genuinely no directional zone target. An unsnapped or intermediate-zone window must navigate first, the first Win+Down on a maximized window must restore it, and a real `WorkArea::Snap` failure must be returned instead of being reinterpreted as a boundary. Please keep a distinct no-target result, initialize `WINDOWPLACEMENT.length`, and use asynchronous placement for HWNDs owned by another thread so the expected maximize → restore → navigate → minimize sequence is preserved.",
-              "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp"
+              "title": "Use native minimize semantics for the Win+Down fallback",
+              "body": "### Use native minimize semantics for the Win+Down fallback\n\n**Severity:** `high`\n\nThe Win+Down fallback currently sets `WINDOWPLACEMENT.showCmd` to `SW_SHOWMINIMIZED`. That shows the window minimized while keeping activation semantics different from a user-initiated minimize, so focus can remain with the minimized app instead of moving normally. Use `SW_MINIMIZE` for the Down fallback while keeping `SW_SHOWMAXIMIZED` for Up.",
+              "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp",
+              "confidence": {
+                "score": 91,
+                "rationale": "The reviewed code directly assigns SW_SHOWMINIMIZED on the Down fallback; Win+Down should follow the native minimize activation path."
+              }
             },
             {
-              "id": "persist-setting-and-defaults",
+              "id": "separate-snap-failure-from-boundary",
+              "kind": "companion",
+              "severity": "high",
+              "title": "Separate snap failure from no directional target",
+              "body": "### Separate snap failure from no directional target\n\n**Severity:** `high`\n\nWin+Up/Down should maximize or minimize only when there is genuinely no directional zone target. A real `WorkArea::Snap` failure should be returned as failure instead of being reinterpreted as a boundary, and any `WINDOWPLACEMENT` read must initialize `length` and handle failure before changing state. Otherwise an internal snap failure or invalid placement query can incorrectly turn into maximize/minimize behavior.",
+              "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp",
+              "confidence": {
+                "score": 88,
+                "rationale": "The reviewed path stores only a boolean success value and then falls back to window-state changes, which conflates failed snapping with hitting the edge."
+              }
+            },
+            {
+              "id": "align-settings-default",
               "kind": "companion",
               "severity": "medium",
-              "title": "Persist the setting and keep native/UI defaults aligned",
-              "body": "### Persist the setting and keep native/UI defaults aligned\n\n**Severity:** `medium`\n\nThe Settings toggle must update the repository, send the IPC payload, survive serialization with a non-default value, and match the native default before any settings file exists. Please keep the resource text localizable and include the new value in the existing FancyZones settings telemetry so configuration and runtime behavior do not silently diverge.",
-              "path": "src/settings-ui/Settings.UI/ViewModels/FancyZonesViewModel.cs"
+              "title": "Align Settings serialization with the native default",
+              "body": "### Align Settings serialization with the native default\n\n**Severity:** `medium`\n\nThe new Settings property is constructed without the native default value, while the runtime default keeps zone cycling enabled. Please add a named Settings default that matches the native default and use it when creating the `FancyzonesCycleThroughAllZones` property, so a missing or newly created settings file does not serialize an unintended value.",
+              "path": "src/settings-ui/Settings.UI.Library/FZConfigProperties.cs",
+              "confidence": {
+                "score": 84,
+                "rationale": "The reviewed property uses a bare BoolProperty constructor while the native setting has an explicit enabled-by-default value."
+              }
             },
             {
               "id": "cover-boundary-regressions",
               "kind": "companion",
               "severity": "medium",
               "title": "Add deterministic boundary and persistence regression coverage",
-              "body": "### Add deterministic boundary and persistence regression coverage\n\n**Severity:** `medium`\n\nPlease cover cycling-disabled navigation in both index and position modes, single- and multi-monitor transitions, global edges, unsnapped windows, and maximize/restore/minimize state changes. Add Settings tests that prove the toggle persists and native serialization tests for `cycle-through-zones=false`; keep mock-window placement deterministic and reset singleton settings between cases so teardown or test order cannot mask regressions.",
-              "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/WindowKeyboardSnap.Spec.cpp"
+              "body": "### Add deterministic boundary and persistence regression coverage\n\n**Severity:** `medium`\n\nPlease cover cycling-disabled navigation in both index and position modes, single- and multi-monitor transitions, global-edge stops, unsnapped windows, and maximize/restore/minimize state changes. Also add Settings coverage proving the toggle persists and native serialization coverage for `cycle-through-zones=false` so the new option does not regress across UI, settings files, and runtime behavior.",
+              "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/WindowKeyboardSnap.Spec.cpp",
+              "confidence": {
+                "score": 82,
+                "rationale": "The current PR has only limited settings parsing coverage and does not exercise the key no-cycle keyboard boundary scenarios."
+              }
             }
           ]
         },
-        "testInstructions": "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe, disable zone cycling in FancyZones settings, and verify adjacent-monitor movement, global-edge stopping, and maximize/restore/minimize sequencing."
+        "testInstructions": "Launch a PowerToys Debug build, disable zone cycling in FancyZones settings, and verify adjacent-monitor movement, global-edge stopping, Alt-modified snap chords, and maximize/restore/minimize sequencing."
       }
     ]
   },
@@ -357,45 +415,26 @@
     ],
     "tests": [
       {
-        "suite": "Settings.UI.UnitTests — FancyZones",
+        "suite": "FancyZones native deterministic changed-behavior subset",
         "result": "passed",
-        "passed": 31,
+        "passed": 9,
         "failed": 0,
-        "total": 31
+        "total": 9
       },
       {
-        "suite": "WindowKeyboardSnap_ByPosition_UnitTests",
+        "suite": "Settings.UI.UnitTests deterministic FancyZones subset",
         "result": "passed",
-        "passed": 17,
+        "passed": 38,
         "failed": 0,
-        "total": 17
+        "total": 38
       },
       {
-        "suite": "WindowKeyboardSnap_ByIndex_UnitTests",
-        "result": "passed",
-        "passed": 13,
-        "failed": 0,
-        "total": 13
-      },
-      {
-        "suite": "Multi-monitor disabled-cycle global-edge regressions",
-        "result": "passed",
-        "passed": 4,
-        "failed": 0,
-        "total": 4
-      },
-      {
-        "suite": "WindowKeyboardSnap_MoveAcrossMonitors_ByPosition_UnitTests aggregate",
+        "suite": "Full FancyZones native aggregate",
         "result": "limitation",
-        "passed": 15,
-        "failed": 1,
-        "total": 16,
-        "detail": "Snap_Down depends on the default position of a mock HWND and currently selected a different artificial monitor; an earlier run passed 16/16. This is separate from the deterministic disabled-cycle edge cases, which pass."
-      },
-      {
-        "suite": "Full WindowKeyboardSnap aggregate",
-        "result": "limitation",
-        "detail": "VSTest can exit with access violation -1073741819 during mock-window teardown, sometimes before printing the summary. Targeted suites return clean success."
+        "passed": 67,
+        "failed": 0,
+        "total": null,
+        "detail": "The broader VSTest run later exited with access violation during mock-window teardown; the deterministic changed-behavior subset passed cleanly."
       },
       {
         "suite": "git diff --check",
@@ -424,24 +463,24 @@
     "head_sha": "6378870c042cf44ed93bc225be10946cfed1e1df",
     "base_ref": "main",
     "base_sha": "a953a39aec63fed39295f2012e83427af4b709ff",
-    "current_main_sha": "5193a1e49729bf8d9a8553e352e7c0c285e50188"
+    "current_main_sha": "7ac9d80539457463bf607688d76cd013b0fde179"
   },
   "fork_pr": {
-    "number": 363,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/363",
+    "number": 575,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/575",
     "state": "OPEN",
-    "updated_at": "2026-08-13T16:27:20Z",
-    "head_sha": "b03d1e0b1e2bf18d1dfa30f8145b6406f72e2522",
-    "base_sha": "5193a1e49729bf8d9a8553e352e7c0c285e50188",
-    "commit_count": 9,
+    "updated_at": "2026-09-02T04:21:31.2325058Z",
+    "head_sha": "cedeb6525a19a9a1d0fdb9124ea26df3a0478236",
+    "base_sha": "7ac9d80539457463bf607688d76cd013b0fde179",
+    "commit_count": 2,
     "changed_file_count": 15,
     "mergeable": true,
-    "merge_state_status": "UNSTABLE"
+    "merge_state_status": "CLEAN"
   },
-  "fork_branch": "pr-iterate/45972-v20260813",
+  "fork_branch": "pr-iterate/45972-v20260902-modern",
   "blockers": [
     "Explicit written maintainer approval is required before any upstream review is published.",
     "Phase 0 proposes asking the contributor for a short behavior recording.",
-    "The native aggregate VSTest teardown/access-violation and mock-window Snap_Down instability must remain disclosed; deterministic changed-behavior suites pass."
+    "The native aggregate VSTest teardown/access-violation limitation remains disclosed; deterministic changed-behavior suites pass."
   ]
 }
