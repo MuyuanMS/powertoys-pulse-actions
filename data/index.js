@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-02T07:34:46.0548518+08:00",
+  "generated_at": "2026-09-02T08:18:05.9510707+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 150,
     "open_issues": 12574,
     "community": 11719,
-    "artifacts": 3446
+    "artifacts": 3445
   },
   "impact": {
-    "as_of": "2026-09-02T07:34:46.0548518+08:00",
+    "as_of": "2026-09-02T08:18:05.9510707+08:00",
     "issues_helped": 10,
     "prs_iterated": 43,
     "constructive_comments_posted": 3,
@@ -583,7 +583,6 @@ window.BOARD_INDEX = {
     50158,
     50156,
     50154,
-    50152,
     50149,
     50148,
     50147,
@@ -3577,7 +3576,7 @@ window.BOARD_INDEX = {
         "khmyznikov"
       ],
       "created_at": "2026-09-01T16:48:03Z",
-      "updated_at": "2026-09-01T21:43:36Z",
+      "updated_at": "2026-09-01T23:28:57Z",
       "comments": 1,
       "priority": null,
       "mirror": {
@@ -54135,8 +54134,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -54147,8 +54146,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-26T23:23:57Z",
-      "updated_at": "2026-08-26T23:33:31Z",
-      "comments": 1,
+      "updated_at": "2026-09-02T00:11:36Z",
+      "comments": 2,
       "priority": null
     },
     {
