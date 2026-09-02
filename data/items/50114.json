@@ -2,39 +2,181 @@
   "number": 50114,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T10:57:43.0546493+08:00",
-  "evaluated_at": "2026-08-27T14:45:24Z",
+  "generated_at": "2026-09-02T12:24:40.877+08:00",
+  "evaluated_at": "2026-09-02T12:24:40.877+08:00",
   "source_updated_at": "2026-08-25T15:01:46Z",
+  "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+  "title": "Disable cursor wrap on the top edge of monitors when in an RDP session.",
+  "url": "https://github.com/microsoft/PowerToys/pull/50114",
+  "summary": "Current-head review is ready. Phase 0 still needs visual evidence and upstream CI repair, and the code review found four apply-ready fixes for production build isolation, suppressed top-corner behavior, test coverage, and settings synchronization.",
   "status": {
-    "glyph": "🔄",
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "warn",
+    "label": "Current-head review comments ready",
+    "detail": "Upstream head 620ae8838d2257594d617891ecbe9f4ae3f03a2a is unchanged from the stale queue entry. The fork review loop converged with a zero-comment Copilot review and zero unresolved Copilot threads after valid fixes were applied locally."
   },
   "next_action": {
-    "glyph": "🔄",
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
+    "glyph": "▶",
+    "label": "Review request-changes draft",
+    "reason": "Recheck the upstream head and obtain explicit maintainer approval before posting the drafted process ask and code suggestions."
   },
-  "actions": [],
-  "needs_revalidation": true,
-  "confidence": "High",
-  "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
   "proposed_comments": [
     {
-      "id": "context-50114-process",
+      "id": "context-50114-visual-evidence-ci",
       "kind": "context",
       "type": "comment",
+      "title": "Add visual evidence and address failed CI",
       "severity": "medium",
       "confidence": {
         "score": 98,
-        "rationale": "The latest upstream intake comment explicitly requests visual evidence, and the reported PowerToys CI plus x64/arm64 release checks are failed."
+        "rationale": "The live PR intake comment requests visual evidence for the Settings UI change, and the live upstream status rollup still reports failed PowerToys CI x64 and arm64 release builds."
       },
-      "body": "Thanks for the change. Could you add a short screenshot, GIF, or video showing the new Cursor Wrap setting and its behavior in an RDP session, and take a look at the failed PowerToys CI checks (including the x64 and arm64 release builds)? Once those are addressed or explained, the review can continue."
+      "body": "Thanks for the change. Could you add a short screenshot, GIF, or video showing the new Cursor Wrap setting and its behavior in an RDP session, and take a look at the failed PowerToys CI checks, including the x64 and arm64 release builds? Once those are addressed or explained, the review can continue."
+    },
+    {
+      "id": "remove-unit-test-source-from-production-project",
+      "kind": "inline",
+      "title": "Keep the unit-test source out of the production DLL",
+      "severity": "high",
+      "confidence": {
+        "score": 98,
+        "rationale": "The production CursorWrap project currently compiles MonitorTopologyTests.cpp even though that file includes Visual Studio CppUnitTest headers and test-only classes."
+      },
+      "body": "### Keep the unit-test source out of the production DLL\n\n**Severity:** `high`\n\n`MonitorTopologyTests.cpp` is included in the production CursorWrap DLL project. That source depends on `CppUnitTest.h`, so the release build can fail to resolve test-only headers; even if it compiled, the test class should not ship in the module binary. Keep the source only in the dedicated CursorWrap unit-test project.\n\n```suggestion\n    <ClCompile Include=\"trace.cpp\" />\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj",
+      "start_line": 99,
+      "line": 100,
+      "side": "RIGHT"
+    },
+    {
+      "id": "block-vertical-suppressed-top-corner-wrap",
+      "kind": "inline",
+      "title": "Block vertical movement at suppressed top corners",
+      "severity": "high",
+      "confidence": {
+        "score": 95,
+        "rationale": "At a top-left or top-right corner, removing only the Top candidate leaves Left or Right available, so vertical movement can still wrap sideways instead of being blocked."
+      },
+      "body": "### Block vertical movement at suppressed top corners\n\n**Severity:** `high`\n\nAt a top-left or top-right corner, suppressing only the `Top` candidate still leaves the side edge in the candidate list. When the pointer is moving upward, `PrioritizeEdgeByDirection` can then fall back to that side candidate and wrap sideways instead of keeping the RDP connection bar reachable. Detect the suppressed top-corner case before collecting side candidates, return no edge for vertical or unknown movement, and still allow horizontal movement to wrap through the side edge.\n\n```suggestion\n    // At corners, multiple edges may match - collect all candidates and try each\n    // to find one with a valid wrap destination\n    std::vector<EdgeType> candidateEdges;\n    const bool topEdgeSuppressed =\n        (wrapMode == WrapMode::Both || wrapMode == WrapMode::VerticalOnly) &&\n        cursorPos.y <= monitorRect.top + edgeThreshold &&\n        suppressTopEdgeAtGlobalTop &&\n        IsMonitorAtGlobalTop(monitor);\n\n    // At a suppressed top corner, vertical or unknown movement must not fall back to\n    // a horizontal candidate. Horizontal movement still wraps through the side edge.\n    if (topEdgeSuppressed &&\n        (direction == nullptr ||\n         (direction->dx == 0 && direction->dy == 0) ||\n         !direction->IsPrimarilyHorizontal()))\n    {\n        return false;\n    }\n\n    // Left edge - only if mode allows horizontal wrapping\n    if ((wrapMode == WrapMode::Both || wrapMode == WrapMode::HorizontalOnly) &&\n        cursorPos.x <= monitorRect.left + edgeThreshold)\n    {\n        auto it = m_edgeMap.find({monitorIndex, EdgeType::Left});\n        if (it != m_edgeMap.end() && it->second.isOuter)\n        {\n            candidateEdges.push_back(EdgeType::Left);\n        }\n    }\n\n    // Right edge - only if mode allows horizontal wrapping\n    if ((wrapMode == WrapMode::Both || wrapMode == WrapMode::HorizontalOnly) &&\n        cursorPos.x >= monitorRect.right - 1 - edgeThreshold)\n    {\n        auto it = m_edgeMap.find({monitorIndex, EdgeType::Right});\n        if (it != m_edgeMap.end())\n        {\n            if (it->second.isOuter)\n            {\n                candidateEdges.push_back(EdgeType::Right);\n            }\n            // Debug: Log why right edge isn't outer\n            else\n            {\n                Logger::trace(L\"IsOnOuterEdge: Monitor {} right edge is NOT outer (inner edge)\", monitorIndex);\n            }\n        }\n    }\n\n    // Top edge - only if mode allows vertical wrapping\n    if ((wrapMode == WrapMode::Both || wrapMode == WrapMode::VerticalOnly) &&\n        cursorPos.y <= monitorRect.top + edgeThreshold)\n    {\n        // In a Remote Desktop session the topmost row of the virtual desktop hosts the RDP\n        // connection bar. Suppressing the top-edge wrap only for the monitor(s) at the very\n        // top of the vertical stack keeps that bar reachable, while monitors that merely have\n        // an outer top edge lower down continue to wrap normally.\n        if (!topEdgeSuppressed)\n        {\n            auto it = m_edgeMap.find({monitorIndex, EdgeType::Top});\n            if (it != m_edgeMap.end() && it->second.isOuter)\n            {\n                candidateEdges.push_back(EdgeType::Top);\n            }\n        }\n    }\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/MouseUtils/CursorWrap/MonitorTopology.cpp",
+      "start_line": 262,
+      "line": 315,
+      "side": "RIGHT"
+    },
+    {
+      "id": "cover-suppressed-top-corner-direction",
+      "kind": "inline",
+      "title": "Cover suppressed top-corner direction handling",
+      "severity": "medium",
+      "confidence": {
+        "score": 93,
+        "rationale": "The added topology tests cover straight edges and lower monitors, but they do not exercise the top-corner fallback that currently allows upward movement to wrap sideways."
+      },
+      "body": "### Cover suppressed top-corner direction handling\n\n**Severity:** `medium`\n\nThe new tests cover global-top suppression for straight top edges, but they miss the corner case where side candidates remain available. Add coverage for upward, unknown, and horizontal movement at a suppressed top corner so the intended behavior is locked down.\n\n```suggestion\n\t\t}\n\n\t\tTEST_METHOD(SuppressedTopCorner_BlocksVerticalAndUnknownMovement)\n\t\t{\n\t\t\tMonitorTopology topology;\n\t\t\tauto monitor = MakeMonitor(1, 0, 0, 1920, 1080, true);\n\t\t\ttopology.Initialize({ monitor });\n\n\t\t\tconst POINT topLeft = { monitor.rect.left, monitor.rect.top };\n\t\t\tEdgeType edge{};\n\t\t\tCursorDirection upward = { 0, -10 };\n\t\t\tAssert::IsFalse(\n\t\t\t\ttopology.IsOnOuterEdge(monitor.hMonitor, topLeft, edge, WrapMode::Both, &upward, true),\n\t\t\t\tL\"Upward movement at a suppressed top corner must not wrap sideways.\");\n\t\t\tAssert::IsFalse(\n\t\t\t\ttopology.IsOnOuterEdge(monitor.hMonitor, topLeft, edge, WrapMode::Both, nullptr, true),\n\t\t\t\tL\"Unknown movement at a suppressed top corner must not wrap sideways.\");\n\n\t\t\tCursorDirection left = { -10, 0 };\n\t\t\tAssert::IsTrue(\n\t\t\t\ttopology.IsOnOuterEdge(monitor.hMonitor, topLeft, edge, WrapMode::Both, &left, true),\n\t\t\t\tL\"Horizontal movement at a suppressed top corner should still wrap through the side edge.\");\n\t\t\tAssert::IsTrue(edge == EdgeType::Left);\n\t\t}\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/MouseUtils/CursorWrap/UnitTests/MonitorTopologyTests.cpp",
+      "start_line": 184,
+      "line": 184,
+      "side": "RIGHT"
+    },
+    {
+      "id": "make-rdp-suppression-setting-atomic",
+      "kind": "inline",
+      "title": "Synchronize the live RDP suppression setting",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "set_config writes this field on the runner thread while MouseHookProc reads it on the hook thread, matching the existing reason m_hookActive is atomic."
+      },
+      "body": "### Synchronize the live RDP suppression setting\n\n**Severity:** `medium`\n\n`set_config` updates this option on the runner thread while `MouseHookProc` reads it on the separate low-level mouse hook thread. A plain `bool` makes live settings changes a C++ data race. Store the setting atomically, matching the existing hook-thread state pattern, and read it with a relaxed load in the hook path.\n\n```suggestion\n    std::atomic_bool m_suppressTopEdgeWrapInRemoteSession = false; // Default to false; keeps the RDP connection bar reachable\n```\n\n> Also update the hook read to `m_suppressTopEdgeWrapInRemoteSession.load(std::memory_order_relaxed)` where `suppressTopEdgeWrap` is computed.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
+      "start_line": 87,
+      "line": 87,
+      "side": "RIGHT"
+    },
+    {
+      "id": "load-rdp-suppression-setting-atomically",
+      "kind": "inline",
+      "title": "Read the RDP suppression setting atomically in the hook",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "This is the paired hook-thread read for the setting made atomic above; without it the code will not compile after changing the field type."
+      },
+      "body": "### Read the RDP suppression setting atomically in the hook\n\n**Severity:** `medium`\n\nAfter the setting is made atomic, the hook path should read the current value explicitly. A relaxed load is enough here because the flag is a standalone setting and the hook only needs a current boolean value without ordering other data.\n\n```suggestion\n                bool suppressTopEdgeWrap = g_cursorWrapInstance->m_suppressTopEdgeWrapInRemoteSession.load(std::memory_order_relaxed) &&\n```\n\n> Apply this together with the field-type suggestion above.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
+      "start_line": 731,
+      "line": 731,
+      "side": "RIGHT"
     }
   ],
+  "actions": [
+    {
+      "id": "request-changes-50114",
+      "type": "request_changes",
+      "label": "Request changes with process ask and 5 code suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
+      "review": {
+        "pr": 50114,
+        "pullRequest": 50114,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the contribution. Please address the process and correctness items below."
+      }
+    }
+  ],
+  "confidence": "High",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The upstream PR is a community contribution with a visible Settings UI change, failed upstream release CI checks, and current-head CursorWrap correctness/build issues that should be addressed before landing.",
+    "evidence": [
+      "Live upstream head remains 620ae8838d2257594d617891ecbe9f4ae3f03a2a, matching the stale queue item.",
+      "Author association is CONTRIBUTOR, so full Phase 0 applies.",
+      "The PR body links issue 45200 and includes validation steps, but no screenshot, GIF, or video; live PR intake also requests visual evidence.",
+      "The live upstream status rollup reports PowerToys CI, Build x64 Release, and Build arm64 Release as failed.",
+      "The fork review loop applied valid fixes on the preserved pr-iterate/50114 branch, received a zero-comment Copilot review on the resulting head, and has zero unresolved Copilot threads.",
+      "No review, comment, label, state change, close action, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes review comments.",
+    "evaluated_at": "2026-09-02T12:24:40.877+08:00",
+    "source_updated_at": "2026-08-25T15:01:46Z"
+  },
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-09-02T12:24:40.877+08:00",
+    "queued_head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+    "reviewed_upstream_head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+    "fork_pr": 452,
+    "fork_pr_url": "https://github.com/MuyuanMS/PowerToys/pull/452",
+    "fork_branch": "pr-iterate/50114",
+    "fork_head_sha": "13da307495323132951df02ca2b108dccfc34217",
+    "worktree": "C:\\PowerToys-2a5c",
+    "copilot_review": "Latest fork Copilot review at 2026-08-26T13:51:58Z reported 0 new comments.",
+    "unresolved_copilot_threads": 0,
+    "build_result": "C:\\PowerToys-2a5c\\src\\modules\\MouseUtils\\CursorWrap built successfully with tools\\build\\build.cmd.",
+    "unit_test_result": "C:\\PowerToys-2a5c\\src\\modules\\MouseUtils\\CursorWrap\\UnitTests built successfully and vstest.console.exe passed 7 CursorWrap.UnitTests tests.",
+    "completed": [
+      "Preserved and resumed existing fork PR 452, branch pr-iterate/50114, and worktree C:\\PowerToys-2a5c.",
+      "Confirmed the fork PR file scope matches the upstream PR file scope.",
+      "Verified all prior fork Copilot threads are resolved and the latest Copilot round returned zero published comments.",
+      "Rechecked live upstream Phase 0: visual evidence is still missing and upstream PowerToys CI x64/arm64 release checks are failed."
+    ]
+  },
   "upstream_pr": {
     "number": 50114,
     "url": "https://github.com/microsoft/PowerToys/pull/50114",
