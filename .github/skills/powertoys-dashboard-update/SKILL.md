@@ -294,6 +294,15 @@ changes requirements, reveals a concern, resolves author-waiting state, or
 invalidates the prior decision. Otherwise advance `evaluated_at` and
 `source_updated_at` without pretending a new code review occurred.
 
+Do not classify a PR as waiting on author from "who commented last" or from a
+generic maintainer comment alone. Preserve `pending_author` only when current
+live evidence supports it: a needs-author-feedback label, a current
+changes-requested review after the author's latest activity, or posted Pulse
+review comments that have not been followed by an author commit/comment/review.
+If the author has pushed or replied after the author-wait signal, clear
+`pending_author`, mark the artifact `needs_revalidation`, and put the PR back
+in the review queue so the update agent makes a fresh decision.
+
 Never skip an eligible PR merely because it is old or absent from the recent
 activity query. Never re-review an unchanged, converged head with no newer
 relevant activity.
@@ -353,6 +362,7 @@ repository ownership signals, then emit one of:
 | `judgment.status` | Dashboard result |
 | --- | --- |
 | `actionable_design` | `Design fix` action; candidate for the bounded full-design batch |
+| `reproducible` | `Reproduce` action with maintainer-ready local verification steps |
 | `needs_information` | Draft a specific `request_info` action describing exactly what evidence is missing |
 | `duplicate_or_handled` | Link the duplicate/fix/owned work; no duplicate agent work |
 | `waiting_on_author` | Preserve the requested evidence and waiting-since timestamp |
@@ -421,6 +431,16 @@ supportable fix plan with an explicit confidence score/rationale, plus a
 or disprove that plan. Prefer this split for vague or long issues where the
 discussion already narrows the component but still lacks a decisive diagnostic.
 
+When an issue is already clearly reproducible from the public report or
+attachments but does not yet justify a fix design, emit a `reproduce` action
+instead of asking the reporter for more logs. The action must include the
+PowerToys module, version/build requirement when relevant, prerequisites,
+numbered reproduction steps, expected result, and any setup requirements. If
+the repro needs external assets (for example, a file over a threshold size or a
+specific file shape), include `reproduce.setup_prompt` so Pulse can copy a
+prompt the maintainer can paste into a local agent to prepare those files, or
+link public issue attachments in `reproduce.attachments`.
+
 Older unchanged bugs do not need to be re-read every run, but they must retain
 their prior explicit judgment/action in the board. The 30-day window controls
 full-design priority, not whether changed issues receive a judgment.
@@ -435,9 +455,9 @@ that queued state instead.
 Do not emit placeholder issue controls. Issue artifacts should only include
 concrete maintainer actions that can be executed from Pulse: request a specific
 piece of information, post a close/dedupe/out-of-scope comment, approve/start a
-fix design, or open an upstream PR from a completed fork fix. Do not include
-`hold`/`Not now` actions, and do not publish issue artifacts whose only action
-is to wait.
+fix design, guide a maintainer through a local reproduction, or open an
+upstream PR from a completed fork fix. Do not include `hold`/`Not now` actions,
+and do not publish issue artifacts whose only action is to wait.
 
 For every artifact and mapped fork trace, also detect:
 

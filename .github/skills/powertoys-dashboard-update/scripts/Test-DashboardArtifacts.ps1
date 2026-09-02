@@ -18,6 +18,7 @@ if (-not (Test-Path $itemsPath)) {
 
 $allowedJudgments = @(
   'actionable_design',
+  'reproducible',
   'needs_information',
   'duplicate_or_handled',
   'waiting_on_author',
@@ -80,10 +81,18 @@ foreach ($path in @($paths)) {
     $allowedActionTypes = if ($artifact.kind -eq 'pr') {
       @('approve', 'post_review', 'request_changes')
     } else {
-      @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+      @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
     }
     if ($action.type -notin $allowedActionTypes) {
       $errors.Add("$prefix exposes unsupported $($artifact.kind) action '$($action.type)'")
+    }
+    if ($action.type -eq 'reproduce') {
+      if (-not $action.reproduce) {
+        $errors.Add("$prefix reproduce action missing reproduce payload")
+      }
+      if (@($action.reproduce.steps).Count -eq 0) {
+        $errors.Add("$prefix reproduce action missing reproduce.steps")
+      }
     }
   }
 
@@ -148,7 +157,7 @@ foreach ($path in @($paths)) {
   }
 
   $issueAction = @($artifact.actions | Where-Object {
-    $_.type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+    $_.type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
   }) | Select-Object -First 1
   $allowsNoAction = $artifact.judgment.status -in @(
     'duplicate_or_handled',
