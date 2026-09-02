@@ -1,27 +1,160 @@
 {
+  "schemaVersion": 4,
   "number": 49291,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "post_review",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T10:57:43.0546493+08:00",
-  "evaluated_at": "2026-08-14T00:17:06Z",
-  "source_updated_at": "2026-08-06T02:24:41Z",
+  "generated_at": "2026-09-02T14:41:05.7137214+08:00",
+  "evaluated_at": "2026-09-02T14:41:05.7137214+08:00",
+  "source_updated_at": "2026-08-26T10:51:02Z",
+  "head_sha": "5858c8e37c8a1b4adbec6ca633b309bccc413990",
+  "title": "Feature/fancyzones mouse wheel layout switch",
+  "url": "https://github.com/microsoft/PowerToys/pull/49291",
+  "summary": "The author addressed the six previously posted findings, but current-head re-review found additional correctness gaps in high-resolution wheel handling, queued-switch validation, duplicate hotkey mappings, unrelated mouse-button behavior, overlay lifetime, and drag-highlight refresh. A three-item companion-only request-changes review is ready.",
   "status": {
-    "glyph": "🔄",
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "⚠️",
+    "label": "Request-changes review ready",
+    "detail": "The preserved fork review was refreshed to upstream head 5858c8e37c8a1b4adbec6ca633b309bccc413990, rebased onto current main, fixed, built, tested, and converged with a fresh zero-comment Copilot review and zero unresolved threads. Three current-head correctness notes require maintainer approval before posting upstream."
   },
   "next_action": {
-    "glyph": "🔄",
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
+    "glyph": "📝",
+    "label": "Review and approve the drafted request-changes action",
+    "reason": "Approve or hold the three companion notes. Recheck the upstream head and activity immediately before any publication."
   },
-  "actions": [],
-  "needs_revalidation": true,
   "confidence": "High",
-  "head_sha": "f113115da7742a539d946cdda3cdb96b2c537f66",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The author's August 26 update resolves every previously posted inline comment. Re-review of the complete current head and historical suppressed findings identified additional reproducible input and rendering defects; the validated fork-side implementation resolves them and the final Copilot pass produced zero new comments.",
+    "evidence": [
+      "Upstream head remains 5858c8e37c8a1b4adbec6ca633b309bccc413990 and all currently reported checks pass: license/cla, dependency-review, detect-telemetry-events, and pr-intake.",
+      "The author supplied visual proof and reported 297 FancyZones tests plus 32 Settings view-model tests passing. The PR intake bot marks the PR ready for review.",
+      "The refreshed fork diff contains the current upstream feature plus only the review fixes; the existing fork PR, branch, and worktree were preserved rather than duplicated or remirrored.",
+      "PowerToys essentials, FancyZonesModuleInterface, FancyZones.UnitTests, and Settings.UI.UnitTests built successfully with POWERTOYS_DISABLE_SPECTRE=1.",
+      "The 43 changed FancyZones native tests and all 32 FancyZones Settings tests passed. The later duplicate-hotkey regression round passed all 7 LayoutHotkeys tests.",
+      "Fresh fork Copilot review 5086403365 reviewed 32/32 files at cec338b0ca66177e7e47ccb9fb2c7f0d83e496a8 and generated zero new comments; unresolved Copilot thread count is zero.",
+      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a mandatory freshness check, submit the three general notes as a REQUEST_CHANGES review.",
+    "evaluated_at": "2026-09-02T14:41:05.7137214+08:00",
+    "source_updated_at": "2026-08-26T10:51:02Z"
+  },
+  "phase0": {
+    "author": "TyrantRey",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "CLA passes, visual proof is present, and the author supplied detailed local validation. The missing linked issue is a template note rather than a standalone blocker. The existing telemetry bot checklist remains visible and should be completed before merge; no duplicate process comment is drafted."
+  },
+  "proposed_comments": [
+    {
+      "id": "wheel-hook-state-and-gesture",
+      "kind": "companion",
+      "title": "Keep wheel interception isolated and consistent",
+      "severity": "high",
+      "confidence": {
+        "score": 97,
+        "rationale": "The hook is enabled by either mouse feature, but the current callbacks share state and accumulate deltas before proving wheel switching is active. This deterministically changes disabled right/middle-button behavior and leaks or loses partial high-resolution gestures."
+      },
+      "body": "### Keep wheel interception isolated and consistent\n\n**Severity:** `high`\n\nEnabling mouse-wheel layout switching also activates the existing right/X-button hook path even when the non-primary mouse-button setting is off. Separately, partial high-resolution deltas are accumulated while switching is inactive and forwarded before a later packet is consumed, so a gesture can both scroll the target and switch layouts. Gate the right/middle callbacks by their own settings, expose a direction-aware `can switch` predicate to the hook, clear inactive/reversed/disabled accumulation, and reserve the complete high-resolution gesture only while a valid switch is available.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "revalidate-and-deduplicate-wheel-switch",
+      "kind": "companion",
+      "title": "Revalidate queued switches and de-duplicate layout IDs",
+      "severity": "high",
+      "confidence": {
+        "score": 98,
+        "rationale": "The switch is posted asynchronously without checking the API result or revalidating drag/settings state. Duplicate UUIDs under multiple hotkeys also make a two-entry cycle that reapplies the current layout while consuming input."
+      },
+      "body": "### Revalidate queued switches and de-duplicate layout IDs\n\n**Severity:** `high`\n\n`PostMessageW` failure currently still reports the wheel as handled, and the queued handler can apply and persist a layout after the drag ended or the setting was disabled. Return the post result and recheck the active drag, setting, work area, and next layout in the message handler. Also de-duplicate valid quick-layout UUIDs in hotkey order before deciding that at least two layouts can be cycled; otherwise two keys mapped to one layout consume scrolling without changing anything.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "overlay-lifetime-and-highlight-refresh",
+      "kind": "companion",
+      "title": "Keep the label and drag highlight synchronized with the new layout",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The overlay render loop ends with the shorter scene animation and hidden overlays still accept labels. RefreshLayouts also clears drawing without resetting the snapper's cached highlighted-zone indices."
+      },
+      "body": "### Keep the label and drag highlight synchronized with the new layout\n\n**Severity:** `medium`\n\nThe layout-name label can be stored while the overlay is hidden, while a visible label configured for longer than the flash animation is cleared when that shorter animation ends. Keep rendering until both lifetimes expire and ignore label requests unless the overlay is already visible. After applying a layout during a drag, reset the snapper's cached highlighted-zone state before recomputing at the cursor; otherwise the same-numbered zone or a multi-zone anchor can remain visually stale. The settings description should also cover switching whenever zones are visible, not only while dragging.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49291",
+      "type": "request_changes",
+      "label": "Request changes with 3 general notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Companion-only review with no inline suggestions. Validated against upstream head 5858c8e37c8a1b4adbec6ca633b309bccc413990; explicit approval and a final freshness check are required before posting.",
+      "review": {
+        "pr": 49291,
+        "pullRequest": 49291,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "5858c8e37c8a1b4adbec6ca633b309bccc413990",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the thorough update and validation. The six earlier comments are addressed. A current-head re-review found three additional correctness areas around low-level wheel interception, asynchronous switch validation, and overlay/highlight lifetime. These are general notes rather than inline suggestions because each fix spans multiple files."
+      }
+    }
+  ],
+  "fork_pr": {
+    "number": 359,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/359",
+    "base": "main",
+    "base_sha": "d71efa3365d83ad8d5e6f27567f586ed42d81dca"
+  },
+  "fork_branch": "pr-iterate/49291-v2",
+  "workflow": {
+    "phase": "review_ready",
+    "checkpoint_at": "2026-09-02T14:41:05.7137214+08:00",
+    "queued_head_sha": "f113115da7742a539d946cdda3cdb96b2c537f66",
+    "reviewed_upstream_head_sha": "5858c8e37c8a1b4adbec6ca633b309bccc413990",
+    "fork_head_sha": "cec338b0ca66177e7e47ccb9fb2c7f0d83e496a8",
+    "worktree": "C:\\PowerToys-49291",
+    "copilot_review_id": 5086403365,
+    "latest_copilot_review_at": "2026-09-02T06:38:40Z",
+    "latest_review_commit": "cec338b0ca66177e7e47ccb9fb2c7f0d83e496a8",
+    "unresolved_copilot_threads": 0,
+    "resume_action": "await-approval",
+    "completed": [
+      "Re-read the complete upstream description, issue comments, reviews, inline comments, current checks, and author response.",
+      "Audited all prior published and suppressed fork findings, using the review bodies directly because no assigned thread records existed for the historical zero-comment rounds.",
+      "Refreshed the preserved fork PR, head branch, and worktree to the live upstream head without creating a duplicate or remirroring.",
+      "Applied the valid fork-side fixes, replied to and resolved the new duplicate-hotkey thread, and re-requested Copilot review to zero new comments.",
+      "Rebased the effective review diff onto current main while retaining protected fork branch history."
+    ],
+    "environment_note": "The first essentials build failed because the inherited empty GIT_CONFIG_VALUE_3 entry breaks vcpkg child Git invocations. Retrying with GIT_CONFIG_COUNT=3 and that empty pair removed succeeded. An attempted full native test run later exited with 0xC0000005 in unrelated remaining tests after the changed suites had passed, so validation was repeated with the four changed native test classes and the FancyZones Settings class; those targeted runs are fully green. A temporary protected fork base ref was created to refresh GitHub's stale base OID; deletion was rejected by GH013, but the existing PR is retargeted to main and has the correct 32-file diff."
+  },
+  "revalidation": {
+    "completed_at": "2026-09-02T14:41:05.7137214+08:00",
+    "result": "targeted_builds_and_tests_passed_review_converged",
+    "builds": [
+      "PowerToys essentials Debug x64",
+      "FancyZonesModuleInterface Debug x64",
+      "FancyZones.UnitTests Debug x64",
+      "Settings.UI.UnitTests Debug x64"
+    ],
+    "tests": [
+      "43/43 changed FancyZones native tests passed",
+      "32/32 FancyZones Settings view-model tests passed",
+      "7/7 LayoutHotkeys tests passed after the final duplicate-UUID fix"
+    ],
+    "artifacts": [
+      "C:\\PowerToys-49291\\x64\\Debug\\PowerToys.exe",
+      "C:\\PowerToys-49291\\x64\\Debug\\PowerToys.FancyZonesModuleInterface.dll"
+    ]
+  },
+  "needs_revalidation": true,
   "upstream_pr": {
     "number": 49291,
     "url": "https://github.com/microsoft/PowerToys/pull/49291"
