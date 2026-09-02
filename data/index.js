@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-03T01:44:00.0010762+08:00",
+  "generated_at": "2026-09-03T01:57:37.7801983+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 3440
   },
   "impact": {
-    "as_of": "2026-09-03T01:44:00.0010762+08:00",
+    "as_of": "2026-09-03T01:57:37.7801983+08:00",
     "issues_helped": 10,
     "prs_iterated": 34,
     "constructive_comments_posted": 3,
@@ -125918,7 +125918,7 @@ window.BOARD_INDEX = {
       "number": 47668,
       "url": "https://github.com/microsoft/PowerToys/issues/47668",
       "title": "Doc: Broken Markdown reference link in Roadmap section",
-      "author": "ItsCaptainEXE",
+      "author": "thecaptainexe",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
