@@ -12,6 +12,9 @@ $blockedProperties = @(
   'internal_evidence',
   'internalEvidence',
   'worktree',
+  'local_worktree_branch',
+  'worktree_head',
+  'worktree_clean',
   'evidenceDirectory'
 )
 
@@ -73,7 +76,7 @@ function Get-PublicActions {
   $allowedTypes = if ($kind -eq 'pr') {
     @('approve', 'post_review', 'request_changes')
   } elseif ($kind -eq 'issue') {
-    @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment')
+    @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
   } else {
     @()
   }

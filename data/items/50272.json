@@ -3,55 +3,79 @@
   "number": 50272,
   "kind": "issue",
   "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
+  "stage": "reproduction_ready",
+  "owes": "maintainer",
+  "pending_author": false,
   "generated_at": "2026-09-02T02:36:38Z",
-  "evaluated_at": "2026-09-02T02:36:38Z",
-  "source_updated_at": "2026-09-01T04:17:20Z",
+  "evaluated_at": "2026-09-02T06:30:00Z",
+  "source_updated_at": "2026-09-02T03:18:27Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50272",
   "title": "Keyboard manager bug",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "The existing triage request asks for current-version reproduction and exact remap details."
+    "glyph": "🧪",
+    "label": "Current-build reproduction confirmed",
+    "detail": "The author retested on prerelease 0.101.2373 and confirmed that the stuck synthetic modifier behavior persists."
   },
   "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for the requested reproduction",
-    "reason": "A second information request would duplicate the unanswered upstream request."
+    "glyph": "▶",
+    "label": "Reproduce modifier key-up handling",
+    "reason": "The author has cleared the current-version question; maintainers can now verify the remap sequence and inspect synthetic key release behavior."
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The report targets 0.100.2 and the existing request for current-version reproduction and mapping details remains unanswered.",
+    "status": "actionable_design",
+    "rationale": "The author replied after the automated request and confirmed that the defect persists on prerelease 0.101.2373. The deterministic modifier-remap sequence is now ready for maintainer reproduction.",
     "evidence": [
       "The reported remap leaves synthetic Right Shift pressed until physical Right Shift is pressed.",
-      "The issue is labeled Needs-Author-Feedback and has no author follow-up."
+      "The author retested on PowerToys prerelease 0.101.2373 and confirmed that the problem persists.",
+      "The issue is now labeled Needs-Team-Response rather than waiting for author feedback."
     ],
-    "recommended_action": "Wait for the requested updated-version reproduction evidence.",
-    "evaluated_at": "2026-09-02T02:36:38Z",
-    "source_updated_at": "2026-09-01T04:17:20Z"
+    "recommended_action": "Reproduce the remap and shortcut sequence while tracing injected modifier down/up events.",
+    "evaluated_at": "2026-09-02T06:30:00Z",
+    "source_updated_at": "2026-09-02T03:18:27Z"
   },
   "issue_context": {
     "summary": "A Keyboard Manager modifier remap appears to leave a synthetic modifier pressed after a shortcut is released.",
     "known_information": [
       "The setup maps Right Shift to Left Caps Lock and uses CapsLock-based shortcuts.",
-      "The report targets PowerToys 0.100.2."
+      "The original report targets PowerToys 0.100.2.",
+      "The author confirmed the same behavior on prerelease 0.101.2373."
     ],
     "inferences": [
       "Synthetic modifier key-up handling may be involved, but no root cause is established."
     ],
-    "analysis": "The existing upstream request already asks for the evidence needed to determine whether this is a current and reproducible defect.",
+    "analysis": "The author's current-build reply clears the previous waiting state. The remaining useful step is a controlled maintainer reproduction that records physical and synthetic modifier transitions.",
     "initial_investigation": [
-      "Reviewed the full issue, labels, discussion, and visible references."
+      "Reviewed the full issue, labels, discussion, and visible references.",
+      "Confirmed the author replied after the author-wait signal and that the live label now requests a team response."
     ],
-    "information_gaps": [
-      {
-        "information": "Current-version reproduction with exact remap and shortcut entries.",
-        "why_needed": "Determines whether the defect remains current and reproducible.",
-        "how_to_collect": "Reply to the existing triage request after retesting on the current stable release."
-      }
-    ]
+    "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "reproduce-50272",
+      "type": "reproduce",
+      "label": "Reproduce stuck remapped modifier",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirements": "PowerToys prerelease 0.101.2373 or a newer current build.",
+        "prerequisites": [
+          "Map Right Shift to Left Caps Lock.",
+          "Create the reported CapsLock+H shortcut that sends Backspace."
+        ],
+        "steps": [
+          "Apply the reported remap and shortcut.",
+          "Press and release CapsLock+H.",
+          "Type normal characters and observe whether Shift remains active.",
+          "Press and release physical Right Shift and observe whether the state clears.",
+          "Trace physical and injected modifier down/up events."
+        ],
+        "expected_result": "Releasing the shortcut should release every injected modifier without requiring physical Right Shift.",
+        "setup_requirements": [
+          "Capture the exact Keyboard Manager remap and shortcut configuration."
+        ]
+      }
+    }
+  ]
 }
