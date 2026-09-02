@@ -2,33 +2,193 @@
   "number": 49412,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T10:57:43.0546493+08:00",
-  "evaluated_at": "2026-08-14T00:19:14Z",
-  "source_updated_at": "2026-08-05T08:34:40Z",
+  "generated_at": "2026-09-02T06:04:38.905231Z",
+  "evaluated_at": "2026-09-02T06:04:38.905231Z",
+  "source_updated_at": "2026-08-18T22:45:41Z",
+  "head_sha": "1d68df54f5b1f4d3d297ee0832033fd2bafe5f43",
+  "title": "Add audio feedback using custom .wav files",
+  "url": "https://github.com/microsoft/PowerToys/pull/49412",
+  "summary": "The live upstream head was resumed in the preserved fork PR and reviewed to convergence. Fork-side fixes package the WAV assets, keep asynchronous SND_MEMORY buffers pinned, report playback failure, repair changed-default tests, restore spell-check coverage, and align the review description with the third-party asset provenance. Debug builds and 25 targeted tests pass.",
   "status": {
-    "glyph": "🔄",
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "📝",
+    "label": "Review ready — four requests drafted",
+    "detail": "Fork PR 162 is at 5716fcca5. The fresh 2026-09-02T06:03:10Z Copilot review produced zero published comments after empty-assignment fallback polling, all Copilot threads are resolved, Debug builds passed, and 25 targeted settings tests passed."
   },
   "next_action": {
-    "glyph": "🔄",
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
+    "glyph": "📝",
+    "label": "Review the four drafted change requests",
+    "reason": "The current upstream head still needs safe asynchronous buffer lifetime, installer deployment, corrected test/spell coverage, and PR-description provenance/default alignment before merge."
   },
-  "actions": [],
-  "needs_revalidation": true,
+  "actions": [
+    {
+      "id": "post-review-49412",
+      "type": "post_review",
+      "label": "Post selected requests as general review notes (no inline suggestions)",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "COMMENT",
+        "pr": 49412,
+        "head_sha": "1d68df54f5b1f4d3d297ee0832033fd2bafe5f43",
+        "body_prefix": "Thanks for the updated implementation, recording, validation details, and attribution work. Before merge, please address these remaining correctness and packaging gaps. The UI/sound wording and sound-strength judgment can remain with the requested maintainer design signoff."
+      },
+      "note": "This companion-only review posts one general text block with no inline suggestions. Mandatory: refresh the upstream head and substantive conversation, validate the pinned payload, and require explicit approval before publishing."
+    }
+  ],
   "confidence": "High",
-  "head_sha": "9ca5a92e19dc2094356247c01bc87fbbde26ed84",
+  "proposed_comments": [
+    {
+      "id": "pin-async-wave-buffers",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep asynchronous in-memory WAV buffers valid",
+      "confidence": {
+        "score": 98,
+        "rationale": "Microsoft PlaySound documentation explicitly requires SND_MEMORY plus SND_ASYNC buffers to remain valid until playback completes, while the current byte[] P/Invoke pin lasts only for the call."
+      },
+      "body": "### Keep asynchronous in-memory WAV buffers valid\r\n\r\n**Severity:** `high`\r\n\r\n`PlaySound` is called with `SND_MEMORY | SND_ASYNC`, but the current `byte[]` marshalling pin is only guaranteed for the duration of the P/Invoke. The native audio playback can therefore retain a pointer after the managed array is movable again, causing corrupted playback or an invalid memory read. Keep each lazily loaded WAV buffer pinned for the application lifetime, pass its stable `IntPtr` to `PlaySound`, and handle a `false` return as a playback failure.",
+      "path": "src/modules/launcher/PowerLauncher/MainWindow.xaml.cs",
+      "line": 860,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "install-audible-feedback-assets",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Deploy the sound files in installed builds",
+      "confidence": {
+        "score": 99,
+        "rationale": "The MSI authoring enumerates configured directories non-recursively and has no Sounds directory/component, while the project emits both files under the Sounds subdirectory."
+      },
+      "body": "### Deploy the sound files in installed builds\r\n\r\n**Severity:** `high`\r\n\r\n`CopyToOutputDirectory` places the assets in the build output's `Sounds` subdirectory, but the MSI authoring neither declares that directory nor installs either WAV file. Installed PowerToys builds will therefore always take the missing-sound path even though local project builds work. Add a `Sounds` installer directory/component containing `open.wav` and `close.wav`, include it in `RunComponentGroup`, and remove the directory on uninstall.",
+      "path": "src/modules/launcher/PowerLauncher/PowerLauncher.csproj",
+      "line": 118,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "correct-audible-feedback-tests-and-spelling",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Exercise the non-default settings and allow winmm",
+      "confidence": {
+        "score": 97,
+        "rationale": "Both per-event switches now default true; the current opening=true assignments are no-ops, and the fork spell-check directly required winmm as a one-word allow entry."
+      },
+      "body": "### Exercise the non-default settings and allow `winmm`\r\n\r\n**Severity:** `medium`\r\n\r\nAfter the per-event defaults changed to `true`, the opening-sound assignments in the CLI and view-model tests stopped exercising that setter. Set the opening option to `false`, make the view-model test drive all three properties away from their defaults and expect three IPC callbacks, and add `winmm` as its own entry in the spell-check allow list so the new P/Invoke does not fail the spelling gate.",
+      "path": "src/settings-ui/Settings.UI.UnitTests/ViewModelTests/PowerLauncherViewModelTest.cs",
+      "line": 223,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "align-description-with-assets-and-defaults",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Align the PR description with the implementation",
+      "confidence": {
+        "score": 96,
+        "rationale": "The live body says the bundled Freesound assets are purpose-recorded and all three toggles default false, while NOTICE and code identify existing CC BY recordings and true per-event defaults."
+      },
+      "body": "### Align the PR description with the implementation\r\n\r\n**Severity:** `medium`\r\n\r\nThe summary describes purpose-recorded custom sounds and says all three settings default to `false`, while `NOTICE.md` identifies existing Freesound recordings and the code defaults both per-event switches to `true`. Update the description to call them bundled third-party CC BY 3.0 assets and document that the parent defaults off while opening and closing default on. This keeps the reviewed provenance, compatibility behavior, and validation contract consistent.",
+      "path": "NOTICE.md",
+      "line": 779,
+      "side": "RIGHT",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "safe_actions": [
+    "Do not post, label, approve, close, or otherwise mutate microsoft/PowerToys without explicit approval.",
+    "Before publishing, re-fetch upstream head 1d68df54f5b1f4d3d297ee0832033fd2bafe5f43 and the full conversation; drop or revise any item already addressed.",
+    "Use the validated review publisher rather than ad-hoc GitHub commands."
+  ],
+  "phase0": {
+    "author": "class-Avirup",
+    "author_association": "CONTRIBUTOR",
+    "bar": "full community-contributor process review",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "owes": "maintainer",
+    "note": "CLA is green; issue 11225 is linked; a working recording and detailed manual validation are present; scope is atomic; and CC BY 3.0 attribution is now in NOTICE. The upstream pr-intake failure is infrastructure-only because the workflow checked out a base revision without pr-intake.mjs. With assignees and review requests empty, the conversation fallback points to jiripolasek's request for niels9001 to judge the UI, Open-versus-Show wording, and sound strength, so product/design signoff currently belongs to maintainers."
+  },
+  "prior_review_audit": {
+    "upstream_unresolved_threads": 2,
+    "fork_unresolved_copilot_threads": 0,
+    "latest_fresh_copilot_review_at": "2026-09-02T06:03:10Z",
+    "latest_fresh_copilot_published_comments": 0,
+    "empty_assignment_fallback_used": true,
+    "suppressed_findings_rechecked": [
+      "Installer omission remained valid and was fixed fork-side.",
+      "Recurring disk checks/routine success logs were superseded by the author's SND_MEMORY update; fork-side review additionally pinned the asynchronous buffer and retained only failure diagnostics.",
+      "Changed defaults invalidated opening-sound test inputs; both affected tests were corrected fork-side."
+    ],
+    "prior_published_findings_rechecked": [
+      "Unrelated nuget.config and CalculatorEngineCommon edits are absent from the live head.",
+      "XAML formatting, NOTICE attribution, NativeMethods placement, SND_NODEFAULT, and per-event defaults are present on the live head."
+    ],
+    "current_head_finding": "SND_MEMORY combined with SND_ASYNC requires the memory buffer to remain valid until playback completes; the fork pins each lazily loaded WAV buffer for process lifetime."
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "summary": "After clearing inherited GIT_CONFIG_* variables that initially broke vcpkg, essentials, PowerToys Run, Settings UI, and Settings.UI.UnitTests builds succeeded. PowerToys.exe, PowerToys.PowerLauncher.exe, and both WAV files exist in the Debug output. Run.wxs parses as XML; a full MSI build was not run.",
+    "builds": [
+      "tools\\build\\build-essentials.cmd",
+      "src\\modules\\launcher\\PowerLauncher\\PowerLauncher.csproj",
+      "src\\settings-ui\\Settings.UI.UnitTests\\Settings.UI.UnitTests.csproj"
+    ],
+    "tests": [
+      {
+        "suite": "PowerLauncherViewModelTest and SetSettingCommandTests",
+        "result": "passed",
+        "count": 25,
+        "command": "vstest.console.exe Settings.UI.UnitTests.dll /TestCaseFilter:FullyQualifiedName~PowerLauncherViewModelTest|FullyQualifiedName~SetSettingCommandTests /Platform:x64"
+      },
+      {
+        "suite": "Patch validation",
+        "result": "passed",
+        "command": "git diff --check"
+      },
+      {
+        "suite": "Fork checks",
+        "result": "passed",
+        "command": "pr-intake and Check Spelling passed on the review branch"
+      }
+    ],
+    "outputs": [
+      "C:\\PowerToys-76aa\\x64\\Debug\\PowerToys.exe",
+      "C:\\PowerToys-76aa\\x64\\Debug\\PowerToys.PowerLauncher.exe",
+      "C:\\PowerToys-76aa\\x64\\Debug\\Sounds\\open.wav",
+      "C:\\PowerToys-76aa\\x64\\Debug\\Sounds\\close.wav"
+    ]
+  },
+  "worktree": "C:\\PowerToys-76aa",
+  "test_instructions": [
+    "Launch C:\\PowerToys-76aa\\x64\\Debug\\PowerToys.exe.",
+    "Open Settings > PowerToys Run and enable Audible feedback; verify the Opening sound and Closing sound controls become enabled.",
+    "Invoke and dismiss PowerToys Run with opening only, closing only, both, and neither selected; verify sound plays only for selected transitions and not on initial cold-start load.",
+    "For installed-build validation, build/install the MSI and verify Sounds\\open.wav and Sounds\\close.wav are deployed beside PowerToys.PowerLauncher.exe before merging."
+  ],
   "upstream_pr": {
     "number": 49412,
     "url": "https://github.com/microsoft/PowerToys/pull/49412"
   },
   "fork_pr": {
     "number": 162,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/162"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/162",
+    "state": "OPEN",
+    "updated_at": "2026-09-02T06:03:10Z",
+    "head_sha": "5716fcca588dad35eae05c352dcbb19e93ee96c2",
+    "base_sha": "d71efa3365d83ad8d5e6f27567f586ed42d81dca",
+    "branch": "pr-iterate/49412-v2"
   },
   "fork_branch": "pr-iterate/49412-v2"
 }
