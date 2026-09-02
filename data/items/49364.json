@@ -1,27 +1,58 @@
 {
+  "schemaVersion": 2,
   "number": 49364,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_blocked",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T10:57:43.0546493+08:00",
-  "evaluated_at": "2026-08-27T14:25:00Z",
-  "source_updated_at": "2026-08-27T04:23:16Z",
+  "generated_at": "2026-09-02T05:49:01Z",
+  "evaluated_at": "2026-09-02T05:49:01Z",
+  "source_updated_at": "2026-08-29T03:39:55Z",
+  "head_sha": "21024c17e5462971ef5f829194b4d79e7f87a65c",
+  "title": "CmdPal JS/TS Extensions - Phase 7: details size, prefix-select, image fix (+ design proposals)",
+  "url": "https://github.com/microsoft/PowerToys/pull/49364",
+  "author": "michaeljolley",
+  "authorAssociation": "MEMBER",
+  "isCommunity": false,
+  "state": "OPEN",
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "summary": "Member-authored CmdPal stacked PR was revalidated at live upstream head 21024c17e5462971ef5f829194b4d79e7f87a65c. Phase 0 remains clear, and the existing fork PR/branch/worktree were resumed without remirroring. Valid self-contained Copilot findings were fixed fork-side, built, tested, pushed to fork PR 474, and their threads were resolved. Current convergence is blocked because GitHub rejects fresh Copilot reviewer assignment on the fork, and two broader unresolved Copilot findings remain unsuitable for a safe upstream action from this artifact.",
   "status": {
-    "glyph": "🔄",
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "warn",
+    "label": "Current-head review blocked",
+    "detail": "Fork PR 474 is updated to 924c753b5d45c68065c785bdf44047d3ea8ae270 with addressed review fixes, but GitHub rejected a fresh Copilot reviewer request with HTTP 422 and two Copilot threads remain unresolved."
   },
   "next_action": {
-    "glyph": "🔄",
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
+    "glyph": "▶",
+    "label": "Enable and rerun fork Copilot review",
+    "reason": "Enable or restore Copilot code review access for MuyuanMS/PowerToys, then request a fresh Copilot review on fork PR 474 at 924c753b5d45c68065c785bdf44047d3ea8ae270. Continue only after zero new published comments and zero unresolved Copilot threads, or decide how to handle the two remaining design findings."
   },
-  "actions": [],
-  "needs_revalidation": true,
-  "confidence": "High",
-  "head_sha": "88d759e6d4464e8024afb7b5f2c84ec6614550bd",
+  "needs_revalidation": false,
+  "phase0": {
+    "verdict": "proceed",
+    "disposition": "Proceed when code-review convergence is available",
+    "author": "michaeljolley",
+    "author_association": "MEMBER",
+    "bar": "Member-authored review: skip routine process nags; retain only genuine blockers.",
+    "gates_tripped": [],
+    "summary": "The PR is open, not draft, labeled Ready for review/Product-Command Palette/0.102, and targets dev/mjolley/phase-6-cmdpal-docs-sample. No author-facing Phase 0 process gate was found."
+  },
+  "source_activity": {
+    "captured_at": "2026-09-02T05:49:01Z",
+    "state": "OPEN",
+    "draft": false,
+    "upstream_updated_at": "2026-08-29T03:39:55Z",
+    "upstream_head_sha": "21024c17e5462971ef5f829194b4d79e7f87a65c",
+    "base_ref": "dev/mjolley/phase-6-cmdpal-docs-sample",
+    "head_ref": "dev/mjolley/phase-7-cmdpal-protocol-additions",
+    "commit_count": 7,
+    "changed_file_count": 20,
+    "issue_comment_count": 1,
+    "review_count": 0,
+    "reported_check_count": 8
+  },
   "proposed_comments": [
     {
       "id": "observable-notification-identity-49364",
@@ -30,27 +61,131 @@
       "title": "Use a unique identity for observable notification routing",
       "confidence": {
         "score": 91,
-        "rationale": "The current notification payload keys routing by commandId, while nested command/page proxies and their containing items can reuse that identifier. The resulting registry lookup can apply overlapping properties to the wrong observable object."
+        "rationale": "The current SDK notification payload still routes property changes by commandId, while item observables and nested command/page observables can share that identifier. The unresolved Copilot thread remains open at ObservableBase.ts."
       },
       "body": "### Use a unique identity for observable notification routing\n\n**Severity:** `high`\n\n`commandId` does not uniquely identify the observable object: `CommandItemBase` and `ListItemBase` use their nested command ID, while the nested command or page proxy registers that same ID with the host. When properties overlap, an item update can therefore mutate its nested command or page, and vice versa. Include a distinct observable-object ID or target kind in the notification payload and registry key, then add coverage proving updates route only to the originating object.",
-      "disposition": "proposed"
+      "disposition": "blocked_unresolved_copilot_thread",
+      "thread_url": "https://github.com/MuyuanMS/PowerToys/pull/474#discussion_r3870685185"
     },
     {
-      "id": "bounded-json-rpc-frame-size-49364",
+      "id": "node-engine-requirement-49364",
       "kind": "companion",
-      "severity": "critical",
-      "title": "Reject oversized JSON-RPC frames before allocation",
+      "severity": "high",
+      "title": "Enforce manifest engines.node before launching extensions",
       "confidence": {
-        "score": 96,
-        "rationale": "The current HeaderDelimitedMessageHandler is constructed without a maximum Content-Length check, so an extension process can advertise a near-2 GB frame and force a corresponding allocation in the host before JSON parsing."
+        "score": 89,
+        "rationale": "JSExtensionWrapper launches the first resolved node.exe while the manifest engines.node requirement is parsed but not enforced. The unresolved Copilot thread remains open at JSExtensionWrapper.cs."
       },
-      "body": "### Reject oversized JSON-RPC frames before allocation\n\n**Severity:** `critical`\n\n`HeaderDelimitedMessageHandler` currently accepts an unbounded `Content-Length`. An extension process can advertise a near-2 GB frame, causing the Command Palette host to allocate excessive memory before JSON parsing and potentially crash with an out-of-memory failure. Restore the transport's bounded-frame contract by rejecting lengths above the established 32 MiB limit before allocating the body buffer, with a regression test for an oversized header.",
-      "disposition": "proposed"
+      "body": "### Enforce manifest engines.node before launching extensions\n\n**Severity:** `high`\n\nThe manifest's `engines.node` requirement is parsed but not enforced before launch. The SDK and sample require Node >=22, but the host accepts the first `node.exe` on PATH; npm can install with only an engine warning, so an extension can later fail at runtime with unsupported syntax or APIs. Resolve the runtime version before launch and reject or surface a clear error when it does not satisfy the manifest range.",
+      "disposition": "blocked_unresolved_copilot_thread",
+      "thread_url": "https://github.com/MuyuanMS/PowerToys/pull/474#discussion_r3872734330"
     }
   ],
+  "actions": [],
+  "verification": {
+    "result": "passed_with_copilot_blocker",
+    "configuration": "x64 Debug",
+    "builds": [
+      {
+        "name": "Microsoft.CmdPal.JsonRpc.UnitTests project",
+        "result": "passed",
+        "detail": "MSBuild restore/build completed for src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.JsonRpc.UnitTests\\Microsoft.CmdPal.JsonRpc.UnitTests.csproj."
+      },
+      {
+        "name": "Microsoft.CmdPal.UI.ViewModels.UnitTests project",
+        "result": "passed",
+        "detail": "MSBuild restore/build completed for src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj."
+      }
+    ],
+    "tests": [
+      {
+        "name": "TypeScript SDK runtime tests",
+        "result": "passed",
+        "detail": "npm test -- --run test\\init.test.ts test\\dispatch.test.ts passed 29/29 tests."
+      },
+      {
+        "name": "JsonRpc unit tests",
+        "result": "passed",
+        "detail": "vstest.console.exe Microsoft.CmdPal.JsonRpc.UnitTests.dll passed 130/130 tests."
+      },
+      {
+        "name": "Targeted NpmArtifact regression tests",
+        "result": "passed",
+        "detail": "TryCreate_RangeOrDistTagVersion_FailsClosed passed for existing range/dist-tag cases and new invalid SemVer cases."
+      },
+      {
+        "name": "Fresh current-head Copilot review request",
+        "result": "blocked",
+        "detail": "GitHub rejected POST /repos/MuyuanMS/PowerToys/pulls/474/requested_reviewers with HTTP 422: copilot-pull-request-reviewer is not a collaborator of MuyuanMS/PowerToys."
+      }
+    ],
+    "outputs": [
+      "C:\\PowerToys-49364-v2\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.JsonRpc.dll",
+      "C:\\PowerToys-49364-v2\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.ViewModels.dll"
+    ]
+  },
+  "judgment": {
+    "status": "fork_copilot_review_unavailable_with_remaining_findings",
+    "rationale": "The active drain item was stale at 88d759e6d4464e8024afb7b5f2c84ec6614550bd. The existing fork branch/worktree/PR were resumed and advanced to current upstream head without duplicating or remirroring. Valid current-head findings for bounded JSON-RPC frames, notification backpressure, undefined property clearing, late initialization rejection after disposal, strict SemVer validation, stale SDK README phase text, and rebased list-page search state were fixed on the fork. Copilot assignment cannot currently be requested, and two unresolved design/runtime-version threads remain, so no upstream review action is safe from this artifact.",
+    "evidence": [
+      "Upstream PR 49364 is open and not draft at head 21024c17e5462971ef5f829194b4d79e7f87a65c.",
+      "Fork PR 474 was preserved and updated on branch pr-iterate/49364-v2 to head 924c753b5d45c68065c785bdf44047d3ea8ae270.",
+      "The fork update includes merge commit b872b8a0b1a2be230f65470611d14df0c96bf7fa and fix commit 924c753b5d45c68065c785bdf44047d3ea8ae270.",
+      "Resolved addressed Copilot threads for bounded frame size, undefined property clearing, late init rejection after disposal, registry races now fixed upstream, synchronized proxy state, strict SemVer validation, stale README text, and notification eviction/backpressure.",
+      "Fork PR 474 still has 2 unresolved Copilot threads: observable notification identity and engines.node enforcement.",
+      "A fresh Copilot review request on fork PR 474 failed with HTTP 422 because copilot-pull-request-reviewer is not a collaborator; requested_reviewers remained empty."
+    ],
+    "recommended_action": "Blocked: enable/restore Copilot code review for MuyuanMS/PowerToys and complete a fresh review on fork PR 474, or manually decide the two remaining unresolved findings before any upstream maintainer action."
+  },
+  "workflow": {
+    "phase": "fork_copilot_review_unavailable",
+    "checkpoint_at": "2026-09-02T05:49:01Z",
+    "queued_head_sha": "88d759e6d4464e8024afb7b5f2c84ec6614550bd",
+    "live_upstream_head": "21024c17e5462971ef5f829194b4d79e7f87a65c",
+    "fork_pr": 474,
+    "fork_branch": "pr-iterate/49364-v2",
+    "fork_head_sha": "924c753b5d45c68065c785bdf44047d3ea8ae270",
+    "historical_copilot_rounds": 5,
+    "resolved_copilot_threads_this_run": 9,
+    "unresolved_copilot_threads": 2,
+    "fresh_review_result": "GitHub rejected copilot-pull-request-reviewer reviewer assignment with HTTP 422; no fresh Copilot review was submitted after the latest fork head.",
+    "blocker": "Copilot code review assignment is unavailable for fork PR 474 and two unresolved Copilot findings remain."
+  },
+  "safe_actions": [
+    "Hold all upstream posting until Copilot review is available and the fork loop reaches zero new comments and zero unresolved threads, or a maintainer explicitly decides the remaining two design findings.",
+    "Do not approve, comment, label, close, or otherwise mutate microsoft/PowerToys from this artifact.",
+    "Before continuing, revalidate upstream head 21024c17e5462971ef5f829194b4d79e7f87a65c and fork head 924c753b5d45c68065c785bdf44047d3ea8ae270."
+  ],
+  "upstream_pr": {
+    "number": 49364,
+    "url": "https://github.com/microsoft/PowerToys/pull/49364",
+    "state": "OPEN",
+    "draft": false,
+    "updated_at": "2026-08-29T03:39:55Z",
+    "head_sha": "21024c17e5462971ef5f829194b4d79e7f87a65c",
+    "base_ref": "dev/mjolley/phase-6-cmdpal-docs-sample",
+    "head_ref": "dev/mjolley/phase-7-cmdpal-protocol-additions"
+  },
   "fork_pr": {
     "number": 474,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/474"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/474",
+    "state": "OPEN",
+    "head_sha": "924c753b5d45c68065c785bdf44047d3ea8ae270",
+    "head_ref": "pr-iterate/49364-v2",
+    "base_ref": "main"
   },
-  "fork_branch": "pr-iterate/49364-v2"
+  "fork_branch": "pr-iterate/49364-v2",
+  "worktree": "C:\\PowerToys-49364-v2",
+  "copilot": {
+    "historical_rounds": 5,
+    "latest_submitted_at": "2026-08-27T14:33:19Z",
+    "latest_new_comments": 9,
+    "unresolved_threads": 2,
+    "current_head_converged": false,
+    "blocker": "Fresh Copilot reviewer request failed with HTTP 422 because copilot-pull-request-reviewer is not a collaborator of MuyuanMS/PowerToys."
+  },
+  "blockers": [
+    "Fresh current-head Copilot review unavailable on fork PR 474 because GitHub rejected copilot-pull-request-reviewer reviewer assignment.",
+    "Two unresolved Copilot findings remain: observable notification identity and engines.node enforcement."
+  ]
 }
