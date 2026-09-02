@@ -1,40 +1,167 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-48223",
   "number": 48223,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T10:57:43.0546493+08:00",
-  "evaluated_at": "2026-08-13T15:14:13.403909Z",
-  "source_updated_at": "2026-07-25T16:55:33Z",
+  "generated_at": "2026-09-02T14:58:00+08:00",
+  "evaluated_at": "2026-09-02T14:58:00+08:00",
+  "source_updated_at": "2026-08-28T07:31:45Z",
+  "head_sha": "3a607d9df11235d0c53d81245b8787b15017aa93",
+  "title": "feat: cache SVG previews in File Explorer",
+  "url": "https://github.com/microsoft/PowerToys/pull/48223",
+  "author": "Mankurj05",
+  "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
+  "isCommunity": true,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Product-File Explorer",
+    "Ready for review"
+  ],
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "codeVerdict": "request_changes",
+  "summary": "Phase 0 is clear, but the author's feedback commit only partially addresses the earlier cache review. The current upstream head still needs coordinated cache lifetime, byte-bounded eviction, reliable large-preview fallback, and cache-hit integration coverage.",
   "status": {
-    "glyph": "🔄",
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "⚠️",
+    "label": "Follow-up code review drafted",
+    "detail": "The current upstream head was re-reviewed after the author's update. CLA and intake checks pass and no process ask is owed; a consolidated current-head code follow-up is ready for maintainer approval."
   },
   "next_action": {
-    "glyph": "🔄",
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
+    "glyph": "▶",
+    "label": "Post the current-head follow-up review",
+    "reason": "The author addressed the header, invariant formatting, delimiter ambiguity, documentation, and basic write path, but important cache correctness and performance gaps remain. Recheck head 3a607d9 before posting."
   },
-  "actions": [],
-  "needs_revalidation": true,
-  "confidence": "High",
-  "head_sha": "0b509c0ef046634654aadeb4e00cda2f274e43d8",
-  "upstream_pr": {
-    "number": 48223,
-    "url": "https://github.com/microsoft/PowerToys/pull/48223"
+  "proposed_comments": [
+    {
+      "id": "finish-svg-cache-lifetime-and-bounds",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Finish the cache lifetime and bounded-storage design",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current head still performs unleased cache reads, falls back to NavigateToString after failed writes regardless of document size, limits entries rather than bytes, leaves interrupted temporary writes unmaintained, and generates thumbnail HTML before checking the cache."
+      },
+      "body": "Thanks for the update — it addresses the file header, invariant formatting, delimiter-safe keys, documentation, and the basic atomic-write path. A few current-head issues still need to be resolved before this is merge-ready:\n\n- Cache files are checked and navigated without being pinned, while other Explorer preview/thumbnail processes can overwrite or evict the same entry. Coordinate writes/pruning across processes and keep an entry leased until WebView2 finishes navigation or capture.\n- When a cache write fails, the code falls back to `NavigateToString` even for generated HTML above WebView2's size limit, so large SVG previews can still be blank. Preserve a file-backed fallback and clean it after use.\n- `ManageCacheSize` caps the number of entries, not disk bytes; large SVGs can still consume substantial space, and interrupted `*.tmp` writes are never reclaimed. Enforce a byte budget and maintain stale temporary files.\n- The thumbnail path calls `WrapSVGInHTML` before cache lookup, so cache hits still regenerate the output the cache is intended to avoid.\n\nPlease add integration coverage proving that identical SVG/settings reuse an existing entry, rendering-setting changes produce a distinct entry, large-file fallback remains file-backed, and concurrent pruning cannot remove an entry while it is loading.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-48223",
+      "type": "request_changes",
+      "label": "Post follow-up request for changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "General review note only; no inline suggestions. Recheck the upstream head and obtain explicit approval before posting.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 48223,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "3a607d9df11235d0c53d81245b8787b15017aa93",
+        "body": "### Finish the cache lifetime and bounded-storage design\n\n**Severity:** `high`\n\nThanks for the update — it addresses the file header, invariant formatting, delimiter-safe keys, documentation, and the basic atomic-write path. A few current-head issues still need to be resolved before this is merge-ready:\n\n- Cache files are checked and navigated without being pinned, while other Explorer preview/thumbnail processes can overwrite or evict the same entry. Coordinate writes/pruning across processes and keep an entry leased until WebView2 finishes navigation or capture.\n- When a cache write fails, the code falls back to `NavigateToString` even for generated HTML above WebView2's size limit, so large SVG previews can still be blank. Preserve a file-backed fallback and clean it after use.\n- `ManageCacheSize` caps the number of entries, not disk bytes; large SVGs can still consume substantial space, and interrupted `*.tmp` writes are never reclaimed. Enforce a byte budget and maintain stale temporary files.\n- The thumbnail path calls `WrapSVGInHTML` before cache lookup, so cache hits still regenerate the output the cache is intended to avoid.\n\nPlease add integration coverage proving that identical SVG/settings reuse an existing entry, rendering-setting changes produce a distinct entry, large-file fallback remains file-backed, and concurrent pruning cannot remove an entry while it is loading."
+      }
+    }
+  ],
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "PR 48223 is a first-time community contribution at upstream head 3a607d9df11235d0c53d81245b8787b15017aa93. Phase 0 passes: the CLA, intake, and telemetry checks are green; the linked issue and scope are clear; the author supplied tests and responded to the prior review. The response commit fixes several earlier findings but leaves material cache lifetime, storage-bound, fallback, and cache-hit behavior unresolved.",
+    "evidence": [
+      "Upstream microsoft/PowerToys PR 48223 is OPEN and mergeable at head 3a607d9df11235d0c53d81245b8787b15017aa93; mergeStateStatus remains blocked because review is still required.",
+      "The license/cla, pr-intake, and detect-telemetry-events checks pass. No Azure build result is present, which is expected for an external-fork PR and is not treated as a failure.",
+      "The linked feature issue 48197 is open and the PR remains atomic to SVG preview/thumbnail caching.",
+      "The author feedback commit addresses the license header, culture-invariant key inputs, delimiter ambiguity, misleading cleanup comments, a basic atomic write, and entry-count eviction.",
+      "Current-head inspection confirms that cache reads are not leased, failed writes can route oversized HTML to NavigateToString, eviction is count-based rather than byte-bounded, interrupted temporary writes are not maintained, and thumbnail HTML is generated before cache lookup."
+    ],
+    "recommended_action": "After explicit approval and a current-head freshness check, post the drafted request-for-changes review.",
+    "evaluated_at": "2026-09-02T14:58:00+08:00",
+    "source_updated_at": "2026-08-28T07:31:45Z"
+  },
+  "internalEvidence": {
+    "worktree": "C:\\PowerToys-48223-review",
+    "fork_pr": 364,
+    "fork_branch": "pr-iterate/48223-v3",
+    "fork_head_sha": "72bcacce4e79668b13ad85e1925afc688b8e33a0",
+    "fork_base_sha": "34e1005fc69c9b92e5b69d30931d5168ad65a354",
+    "fork_changed_files": 6,
+    "latest_copilot_review_submitted_at": "2026-09-02T06:56:11Z",
+    "latest_copilot_review_commit": "72bcacce4e79668b13ad85e1925afc688b8e33a0",
+    "latest_copilot_published_comment_count": 0,
+    "unresolved_copilot_threads": 0,
+    "empty_assignment_fallback_used": true,
+    "notes": [
+      "The existing fork PR, branch, and prior replies were preserved; no duplicate PR or remirror was created.",
+      "The author's latest upstream commit was incorporated into the protected fork branch without force-pushing.",
+      "Valid published Copilot findings were fixed, replied to, and resolved. Suppressed findings were audited under the skill policy; stale temporary-file cleanup was included with the final published-finding fix."
+    ]
+  },
+  "revalidation": {
+    "completed_at": "2026-09-02T14:58:00+08:00",
+    "result": "passed",
+    "copilot_review_submitted_at": "2026-09-02T06:56:11Z",
+    "copilot_new_comment_count": 0,
+    "unresolved_copilot_threads": 0,
+    "builds": [
+      "PowerToys essentials",
+      "PreviewHandlerCommon",
+      "SvgPreviewHandler",
+      "SvgThumbnailProvider",
+      "SvgPreviewHandlerCpp",
+      "SvgThumbnailProviderCpp",
+      "Preview.SvgPreviewHandler.UnitTests",
+      "Preview.SvgThumbnailProvider.UnitTests"
+    ],
+    "tests": "39/39 SVG preview and thumbnail unit tests passed",
+    "build_environment_note": "The inherited empty GIT_CONFIG_VALUE_3 broke the first runner build; removing inherited GIT_CONFIG_* variables only inside subsequent build processes allowed the standard build scripts to complete."
+  },
+  "live_snapshot": {
+    "upstream_head_sha": "3a607d9df11235d0c53d81245b8787b15017aa93",
+    "upstream_updated_at": "2026-08-28T07:31:45Z",
+    "upstream_state": "OPEN",
+    "upstream_mergeable": true,
+    "upstream_merge_state": "blocked",
+    "fork_head_sha": "72bcacce4e79668b13ad85e1925afc688b8e33a0",
+    "fork_base_sha": "34e1005fc69c9b92e5b69d30931d5168ad65a354",
+    "fork_state": "OPEN",
+    "fork_changed_file_count": 6,
+    "unresolved_copilot_threads": 0,
+    "fresh_copilot_review_submitted": true,
+    "fresh_copilot_request_requested_reviewers": [],
+    "fresh_copilot_review_submitted_at": "2026-09-02T06:56:11Z",
+    "fresh_copilot_review_commit": "72bcacce4e79668b13ad85e1925afc688b8e33a0",
+    "fresh_copilot_new_comment_count": 0,
+    "build_result": "passed",
+    "unit_test_result": "39/39 passed"
   },
   "fork_pr": {
     "number": 364,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/364",
     "state": "OPEN",
-    "updated_at": "2026-08-13T15:08:22Z",
-    "head_sha": "a41f11d160539d1219b0ba19a8050403e180f537",
-    "base_sha": "5193a1e49729bf8d9a8553e352e7c0c285e50188",
-    "commit_count": 6,
+    "head_sha": "72bcacce4e79668b13ad85e1925afc688b8e33a0",
+    "base_sha": "34e1005fc69c9b92e5b69d30931d5168ad65a354",
     "changed_file_count": 6
   },
-  "fork_branch": "pr-iterate/48223-v3"
+  "fork_branch": "pr-iterate/48223-v3",
+  "workflow": {
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-02T14:58:00+08:00"
+  },
+  "freshness": {
+    "queued_at": "2026-09-02T10:57:43.0546493+08:00",
+    "checkpoint_at": "2026-09-02T14:58:00+08:00"
+  },
+  "verify": [
+    "Launch C:\\PowerToys-48223-review\\x64\\Debug\\PowerToys.exe.",
+    "Enable SVG Preview and SVG Thumbnails under File Explorer add-ons.",
+    "Open a folder containing repeated small, transparent, and larger-than-1.5 MB SVG files; verify previews and thumbnails render and transparent backgrounds remain transparent.",
+    "Reopen the folder and verify cached previews are reused without blank output; change the SVG preview background setting and verify the preview refreshes.",
+    "Exercise many distinct SVGs and verify the SVG cache stays bounded and stale temporary/transient files are reclaimed."
+  ]
 }
