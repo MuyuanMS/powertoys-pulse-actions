@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 4,
+  "number": 50340,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_in_progress",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-09-02T19:35:00.0170075Z",
+  "evaluated_at": "2026-09-02T19:35:00.0170075Z",
+  "source_updated_at": "2026-09-02T17:22:25Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50340",
+  "title": "[Bug]: Window Hopper: Alt + ` hotkey fails to trigger, but works fine in Command Palette",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Window Hopper"
+  ],
+  "assignees": [],
+  "status": {
+    "glyph": "...",
+    "label": "Design investigation queued",
+    "detail": "The report is reproducible enough for code investigation; no additional reporter information is currently needed."
+  },
+  "next_action": {
+    "glyph": "...",
+    "label": "Investigate Window Hopper Alt-only hotkeys",
+    "reason": "Trace modifier detection in the centralized keyboard hook and compare Alt-only activation with working Win-key activation before proposing a fix."
+  },
+  "actions": [],
+  "confidence": "Medium",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report isolates the failure to Window Hopper's default Alt+VK_OEM_3 global shortcut while the same module works after switching to a Win-key shortcut, providing a focused runner/module hotkey path to investigate.",
+    "evidence": [
+      "PowerToys 0.101.2432 preview is affected on Windows 11 25H2.",
+      "Alt+backtick does not activate Window Hopper, while changing the Window Hopper shortcut to Win+backtick does.",
+      "The reporter reproduced the behavior with Microsoft Pinyin, WeChat Input Method, and a standard US keyboard.",
+      "Window Hopper publishes Alt+VK_OEM_3 and Shift+Alt+VK_OEM_3 through PowertoyModule::update_hotkeys into the runner's centralized low-level keyboard hook.",
+      "The centralized hook reconstructs modifier state with GetAsyncKeyState when processing WM_KEYDOWN or WM_SYSKEYDOWN."
+    ],
+    "recommended_action": "Perform a focused design investigation of Alt modifier detection and VK_OEM_3 matching in the centralized keyboard hook, then add regression coverage before changing the shared runner path.",
+    "evaluated_at": "2026-09-02T19:35:00.0170075Z",
+    "source_updated_at": "2026-09-02T17:22:25Z"
+  },
+  "issue_context": {
+    "summary": "Window Hopper's default Alt+backtick shortcut does not activate globally, but the module activates when configured with Win+backtick; input-method changes do not alter the result.",
+    "known_information": [
+      "The affected build is PowerToys 0.101.2432 preview on Windows 11 25H2.",
+      "Window Hopper is enabled and its default next-window shortcut is Alt+backtick.",
+      "Win+backtick successfully activates Window Hopper on the same system.",
+      "The failure persists across Microsoft Pinyin, WeChat Input Method, and a US keyboard layout.",
+      "A diagnostic ZIP is attached, although automated triage rejected an oversized archive entry.",
+      "The module defaults to virtual key 0xC0 and routes activation through the runner's centralized keyboard hook."
+    ],
+    "inferences": [
+      "The working Win-key configuration suggests Window Hopper initialization and overlay activation are functional.",
+      "The failure may be in shared Alt modifier state detection or shortcut matching, but the current evidence does not yet prove the exact failing branch.",
+      "Because the runner hook is shared by modules, a fix should avoid special-casing Window Hopper until the shared behavior is reproduced and measured."
+    ],
+    "analysis": "The report supplies a stable A/B comparison on one machine and rules out the most obvious input-method explanation. The next useful step is code-level reproduction and instrumentation of the shared low-level hook, not another generic information request.",
+    "initial_investigation": [
+      "Reviewed AltWindowCycle::get_hotkeys and AltWindowCycle::on_hotkey in src/modules/AltWindowCycle/dllmain.cpp.",
+      "Confirmed the default next-window shortcut is Alt+VK_OEM_3 in both native module and Settings UI defaults.",
+      "Traced registration through PowertoyModule::update_hotkeys to CentralizedKeyboardHook::SetHotkeyAction.",
+      "Confirmed CentralizedKeyboardHook::KeyboardHookProc derives Alt state with GetAsyncKeyState(VK_MENU) while handling WM_KEYDOWN and WM_SYSKEYDOWN."
+    ],
+    "information_gaps": [
+      {
+        "information": "A debugger or test-harness trace of KBDLLHOOKSTRUCT flags, wParam, vkCode, and reconstructed modifier state for failing Alt+backtick and working Win+backtick.",
+        "why_needed": "Identifies whether the mismatch occurs before module dispatch and distinguishes modifier detection from module activation failure.",
+        "how_to_collect": "Reproduce in a local debug build or a focused centralized keyboard-hook test harness without adding permanent logging to the hook hot path."
+      }
+    ]
+  }
+}
