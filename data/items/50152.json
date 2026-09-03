@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50152,
   "kind": "issue",
   "track": "fix",
@@ -7,7 +7,7 @@
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-03T07:18:00Z",
-  "evaluated_at": "2026-09-03T07:18:00Z",
+  "evaluated_at": "2026-09-03T10:04:54.485Z",
   "source_updated_at": "2026-09-02T00:11:36Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50152",
   "title": "Advanced Paste: Paste with AI can't find Foundry Local models",
@@ -43,9 +43,35 @@
       "Related prior Foundry work handled startup, PATH refresh, port changes, and request-time errors, but no linked fix covers this discovery failure."
     ],
     "recommended_action": "Approve the fork-side implementation design for the Foundry Local discovery fallback and error-surfacing fix.",
-    "evaluated_at": "2026-09-03T07:18:00Z",
+    "evaluated_at": "2026-09-03T10:04:54.485Z",
     "source_updated_at": "2026-09-02T00:11:36Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked or fork implementation currently fixes the model-discovery failure. The existing fork mirror is an approval-stage design, not an implementation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover and surface Foundry Local model-discovery failures",
+      "root_cause": "Foundry Local model-listing calls throw an invalid request URI/BaseAddress error while the service is healthy, and FoundryClient collapses the failed cached-model request into an empty list that the Settings UI presents as no downloaded models.",
+      "plan": [
+        "Keep the SDK listing path primary, isolate it behind a testable internal boundary, and detect the specific endpoint/BaseAddress failure.",
+        "Use a verified absolute service endpoint fallback or a confirmed compatible SDK version; if recovery is unavailable, propagate a typed discovery error instead of returning an empty success result.",
+        "Separate discovery failure from a successful empty cache in Advanced Paste Settings and add fake-manager/fake-HTTP regression tests without requiring Foundry Local."
+      ],
+      "verification": [
+        "With Foundry Local 0.10.3 healthy and a loaded model, refresh Advanced Paste and verify the model is selectable.",
+        "If discovery cannot recover, verify Settings shows a discovery-error state rather than no-model guidance.",
+        "Verify a genuinely successful empty cached-model response still shows the existing empty state."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "Diagnostics and current code identify the failing boundary and swallowed-error behavior, but the exact REST route or SDK version that reliably repairs the endpoint must be verified during implementation."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Advanced Paste cannot enumerate cached Foundry Local models from a functioning Foundry Local installation.",
     "known_information": [

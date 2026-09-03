@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50306,
   "kind": "issue",
-  "track": "triage",
+  "track": "fix",
   "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:52:53Z",
-  "evaluated_at": "2026-09-03T06:52:53Z",
+  "generated_at": "2026-09-03T10:38:00Z",
+  "evaluated_at": "2026-09-03T10:38:00Z",
   "source_updated_at": "2026-09-02T02:17:27Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50306",
   "title": "quick accent inserts `」` as `「` in the wechat desktop app",
@@ -18,89 +18,145 @@
   ],
   "assignees": [],
   "comments": 0,
-  "confidence": "Medium",
-  "summary": "Quick Accent is reported to select the closing corner bracket `」`, while WeChat Desktop receives the opening bracket `「`; the attached diagnostics confirm Quick Accent is enabled but do not prove whether PowerToys emits the wrong code point or WeChat transforms keyboard-style Unicode input.",
+  "confidence": "Low",
+  "summary": "Quick Accent reportedly produces U+300C instead of U+300D in WeChat. The mapping contains both characters and uses Unicode SendInput, but the report does not prove whether selection, handoff, WeChat, or an active IME changes the character.",
   "status": {
     "glyph": "🧪",
-    "label": "Reproduction before design",
-    "detail": "The investigator/adversary pass found the report testable but not yet implementation-designable because the root cause depends on a WeChat-versus-neutral-target comparison."
+    "label": "Controlled reproduction needed",
+    "detail": "A WeChat, Notepad, and clipboard-paste comparison is needed before selecting a compatibility implementation."
   },
   "next_action": {
     "glyph": "▶",
-    "label": "Reproduce Quick Accent in WeChat",
-    "reason": "Capture the selected character, emitted code point, receiving-app result, and whether clipboard paste of U+300D behaves differently."
+    "label": "Reproduce CJK punctuation insertion",
+    "reason": "Confirm the selected code point and isolate a PowerToys selection defect from target-specific synthetic-input handling."
   },
   "judgment": {
     "status": "reproducible",
-    "rationale": "The issue provides a specific expected/actual character pair, target application, and diagnostic archive, so it is ready for maintainer reproduction. A fix design should not be approved yet because the current evidence does not distinguish a Quick Accent mapping/injection defect from WeChat or IME smart-punctuation handling of KEYEVENTF_UNICODE input.",
+    "rationale": "The report provides a precise expected/actual character pair and target application, so a maintainer can reproduce it. The evidence does not distinguish an adjacent-character selection or handoff problem from WeChat or IME transformation of Unicode synthetic input.",
     "evidence": [
-      "The report says selecting/typing `」` through Quick Accent in WeChat Desktop produces `「` instead.",
-      "The attached PowerToysReport_2026-09-02-10-15-48.zip shows PowerToys v0.100.2 and QuickAccent enabled.",
-      "CharacterMappings.cs maps Pinyin VK_COMMA to `“`, `”`, `‘`, `’`, `「`, `」`, `『`, `』`, so both bracket code points are present and adjacent in the data.",
-      "PowerAccent.cs passes the selected string to WindowsFunctions.Insert, and WindowsFunctions.cs sends each UTF-16 code unit via SendInput with KEYEVENTF_UNICODE after optional backspace.",
-      "No duplicate issue or linked fix was found for the WeChat bracket substitution, and the timeline has no assignee or maintainer direction."
+      "The issue reports that intended U+300D `」` becomes U+300C `「` in WeChat Desktop.",
+      "The attached diagnostic confirms Quick Accent was enabled on PowerToys 0.100.2, with Pinyin enabled and usage sorting configured.",
+      "CharacterMappings.cs contains distinct U+300C and U+300D Pinyin entries.",
+      "PowerAccent sends the selected character through WindowsFunctions.Insert, which uses SendInput with KEYEVENTF_UNICODE.",
+      "The diagnostic and current Quick Accent logs do not record the picker selection or emitted Unicode code point.",
+      "Issue 44848 separately reports incorrect Quick Accent selection, so selection/handoff remains a credible alternative explanation."
     ],
-    "recommended_action": "Run a controlled reproduction in WeChat and a neutral text control, and compare SendInput Unicode insertion with clipboard paste before designing a compatibility change.",
-    "evaluated_at": "2026-09-03T06:52:53Z",
+    "recommended_action": "Run the controlled current-version reproduction and request only the WeChat, IME, picker, neutral-target, and paste evidence that differentiates the candidate causes.",
+    "evaluated_at": "2026-09-03T10:38:00Z",
     "source_updated_at": "2026-09-02T02:17:27Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No PowerToys fix attempt covers this report. A conditional compatibility direction is plausible, but must not be approved until controlled reproduction proves that Quick Accent emits U+300D and only the target path changes it."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Evaluate an opt-in clipboard insertion strategy for incompatible targets",
+      "root_cause": "Unconfirmed hypothesis: WeChat or the active IME changes the VK_PACKET/WM_CHAR sequence generated by Quick Accent after Quick Accent selects U+300D. An adjacent-character selection or handoff defect is not yet excluded.",
+      "plan": [
+        "Reproduce with the picker visibly identifying U+300D, then compare the identical commit in Notepad, WeChat, and normal clipboard paste.",
+        "If Quick Accent emits U+300D and only WeChat changes it, instrument the commit path in PowerAccent.SendInputAndHideToolbar and WindowsFunctions.Insert to preserve that evidence.",
+        "Only then design an explicitly configured application-list fallback that retains Unicode SendInput by default and selects clipboard paste for confirmed incompatible applications.",
+        "Prepare clipboard data successfully before deleting the base character, bound clipboard-contention retries, and clean up partial Ctrl+V input so a failure cannot lose text or leave modifiers pressed."
+      ],
+      "verification": [
+        "Test U+300C, U+300D, U+300E, and U+300F in current WeChat and Notepad using the same keyboard layout and IME mode.",
+        "Confirm that the default Unicode path preserves the clipboard and that an opt-in fallback inserts the chosen code point without deleting text on clipboard or SendInput failure.",
+        "Exercise clipboard contention, focus changes, elevated targets, surrogate pairs, and partial input delivery."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The target-specific synthetic-input hypothesis matches the code path and analogous public WeChat evidence, but this report has no neutral-target comparison or event evidence and does not prove the selected code point."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Quick Accent insertion of U+300D is reported as U+300C specifically in WeChat Desktop.",
+    "summary": "Quick Accent reportedly changes a selected closing corner bracket into an opening corner bracket only in WeChat Desktop.",
     "known_information": [
-      "The desired character is `」` (U+300D) and the received character is `「` (U+300C).",
-      "The affected application is WeChat Desktop.",
-      "The reporter supplied a PowerToys diagnostic ZIP; it confirms QuickAccent is enabled on PowerToys v0.100.2.",
-      "The Pinyin comma mapping contains both `「` and `」`, and the insertion helper sends the selected string through KEYEVENTF_UNICODE SendInput."
+      "The affected PowerToys version is 0.100.2 and the diagnostic archive is already attached.",
+      "Quick Accent is enabled with the Pinyin character set and usage sorting.",
+      "The source mapping contains distinct entries for U+300C and U+300D.",
+      "Quick Accent commits selected text through Unicode SendInput.",
+      "There are no comments, assignees, linked PRs, or a matching PowerToys fix attempt."
     ],
     "inferences": [
-      "If a neutral text control receives U+300D correctly, the most likely failure is WeChat or an active IME transforming keyboard-style Unicode input.",
-      "If multiple applications receive U+300C when U+300D is selected, the selected index, mapping order, or Quick Accent handoff is more likely involved.",
-      "Clipboard paste may bypass application keyboard smart-punctuation logic, but using it as a default fallback would have clipboard-state and security/UX tradeoffs."
+      "WeChat or the active IME may transform Unicode synthetic input, but that is not confirmed for this report.",
+      "A mapping typo is less likely because U+300D is present in the mapping, while selection of the adjacent entry remains unexcluded.",
+      "Clipboard paste may be a compatibility fallback, but a universal fallback would impose clipboard and UX risks."
     ],
-    "analysis": "Investigation found a plausible PowerToys insertion path but not a proven root cause. The adversary pass blocks an implementation-grade design because the same symptom could persist or disappear depending on WeChat’s handling of Unicode key events versus pasted text.",
+    "analysis": "The evidence narrows the uncertainty to selection/handoff versus target delivery. A controlled U+300D picker capture, neutral-target comparison, and paste comparison will distinguish those paths without requesting a duplicate diagnostic archive.",
     "initial_investigation": [
-      "Reviewed the live issue body, attachment, comments, labels, assignees, timeline, and closed-by-PR references.",
-      "Downloaded and inspected the diagnostic ZIP; QuickAccent is enabled and no Quick Accent SendInput error was found in the relevant logs.",
-      "Searched current issues for Quick Accent, WeChat, and bracket substitutions; only this issue matched directly.",
-      "Inspected CharacterMappings.cs, PowerAccent.cs, WindowsFunctions.cs, KeyboardListener.cpp, and CharacterMappingsTests.cs in the local PowerToys clone.",
-      "Investigator conclusion: likely failure is in target-app handling of KEYEVENTF_UNICODE or in selection/handoff, but evidence does not distinguish them.",
-      "Adversary conclusion: no approval-gate design should be written until a neutral-target comparison proves which side changes the code point."
+      "Read the complete issue, labels, attachment, and timeline.",
+      "Inspected CharacterMappings.cs, PowerAccent.SendInputAndHideToolbar, WindowsFunctions.Insert, and relevant Quick Accent tests.",
+      "Reviewed current Quick Accent input-path changes and Issue 44848.",
+      "Reviewed analogous public WeChat reports involving KEYEVENTF_UNICODE as supporting, not conclusive, evidence."
     ],
-    "information_gaps": []
-  },
-  "design_review": {
-    "investigator": "The code can emit the selected Pinyin bracket through WindowsFunctions.Insert using KEYEVENTF_UNICODE, and WeChat-specific transformation is plausible.",
-    "adversary": "Blocking objection: the issue lacks a neutral target or instrumentation proving whether PowerToys emits U+300D and WeChat changes it, or PowerToys selects/emits U+300C.",
-    "rounds": 1,
-    "outcome": "not_converged_root_cause_unproven"
+    "information_gaps": [
+      {
+        "information": "Whether the problem reproduces on the current PowerToys release, with the picker visibly showing U+300D.",
+        "why_needed": "The report version predates current input-path changes and does not prove the selected character.",
+        "how_to_collect": "Update PowerToys, enable Unicode descriptions, capture the picker showing U+300D, and record the resulting character."
+      },
+      {
+        "information": "Same-session U+300D results in WeChat, Notepad, and normal clipboard paste.",
+        "why_needed": "This separates a Quick Accent selection/handoff failure from application-specific input transformation.",
+        "how_to_collect": "Use the same gesture and keyboard/IME mode in both applications, then paste the literal `」` into the same WeChat field."
+      },
+      {
+        "information": "The exact WeChat version, installation channel, and active Windows input method and punctuation mode.",
+        "why_needed": "These identify whether the behavior is tied to a particular text-control or composition path.",
+        "how_to_collect": "Include WeChat About information and the Windows input-language indicator shown during reproduction."
+      }
+    ]
   },
   "actions": [
     {
       "id": "reproduce-50306",
       "type": "reproduce",
-      "label": "Reproduce Quick Accent bracket substitution",
+      "label": "Reproduce current WeChat punctuation insertion",
       "primary": true,
       "confirm": true,
       "reproduce": {
         "module": "Quick Accent",
-        "version_requirements": "Use PowerToys 0.100.2 if available, then retest on the current build.",
+        "version_requirement": "Current PowerToys release; repeat on 0.100.2 only for comparison if necessary.",
         "prerequisites": [
           "WeChat Desktop",
-          "Notepad or another plain Win32 text control",
-          "Quick Accent configured with the Pinyin character set containing `」`"
+          "Notepad",
+          "Quick Accent enabled with the Pinyin set",
+          "Unicode descriptions visible"
+        ],
+        "setup": [
+          "Preserve the reporter's configuration first, then repeat with Pinyin only and usage sorting disabled."
         ],
         "steps": [
-          "Open Notepad and use the same Quick Accent gesture to select `」`; record the glyph and Unicode code point inserted.",
-          "Repeat the identical selection in WeChat Desktop; record whether WeChat inserts `」` or `「`.",
-          "If Notepad receives `」` but WeChat receives `「`, paste `」` into WeChat from the clipboard and record whether paste preserves U+300D.",
-          "If both apps receive `「`, enable Quick Accent Unicode descriptions and record which item/index is highlighted before release.",
-          "Collect a fresh `/bugreport` immediately after the reproduction if the current build still differs between targets."
+          "Focus a WeChat message field and use Quick Accent to highlight U+300D `」` in the picker.",
+          "Commit the selection and record the resulting character.",
+          "Repeat the identical selection in Notepad under the same keyboard layout and IME mode.",
+          "Paste the literal `」` into the same WeChat field and compare the result.",
+          "Repeat for U+300C, U+300E, and U+300F."
         ],
-        "expected_result": "Selecting `」` should insert U+300D consistently in both applications.",
-        "setup_requirements": [
-          "Use the same keyboard layout, IME mode, Quick Accent language set, and trigger gesture for both targets."
+        "expected_result": "Each explicitly selected or pasted code point remains unchanged.",
+        "attachments": [
+          {
+            "label": "Reporter diagnostic archive",
+            "url": "https://github.com/user-attachments/files/31718250/PowerToysReport_2026-09-02-10-15-48.zip"
+          }
         ]
       }
+    },
+    {
+      "id": "request-info-50306",
+      "type": "request_info",
+      "label": "Request current target comparison",
+      "primary": false,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50306,
+        "body": "Thanks for the report and the attached diagnostic archive. It confirms that Quick Accent was enabled, but it does not show whether the picker selected U+300D or whether the change happens only in WeChat. Could you retest on the current PowerToys release and share: (1) the exact WeChat version/install channel and active Windows input method or punctuation mode; (2) a short recording or screenshots showing Quick Accent's Unicode description for U+300D followed by the result in both WeChat and Notepad; and (3) whether pasting the literal `」` into that same WeChat field keeps it unchanged? No additional bug-report ZIP is needed unless the behavior changes."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

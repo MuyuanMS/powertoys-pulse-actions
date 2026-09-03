@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50291,
   "kind": "issue",
   "track": "triage",
   "stage": "duplicate_or_handled",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:55:22Z",
-  "evaluated_at": "2026-09-03T06:55:22Z",
+  "generated_at": "2026-09-03T10:38:00Z",
+  "evaluated_at": "2026-09-03T10:38:00Z",
   "source_updated_at": "2026-09-01T17:28:04Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50291",
   "title": "calculations on powertoys run don't give expected value",
@@ -17,49 +17,59 @@
     "Needs-Triage"
   ],
   "assignees": [],
+  "comments": 0,
   "confidence": "High",
-  "summary": "PowerToys Run rounds a large integer addition because its calculator engine evaluates numeric expressions with floating-point precision. The same limitation is already tracked by issue 2265.",
+  "summary": "PowerToys Run changes the reported exact integral result while converting the calculator output. The broader calculator precision class already has an active canonical owner, so this report should not start a competing design.",
   "status": {
-    "detail": "The forced rerun found the deterministic large-integer rounding still matches the canonical calculator-engine precision tracker.",
     "glyph": "=",
-    "label": "Existing precision limitation"
+    "label": "Existing calculator precision tracker",
+    "detail": "Issue 2265 owns calculator-engine precision work, including related large-integer reports."
   },
   "next_action": {
-    "reason": "Keep implementation discussion and additional precision examples on the existing calculator-engine tracker.",
-    "glyph": ">",
-    "label": "Link the canonical issue"
+    "glyph": "💬",
+    "label": "Link the calculator precision tracker",
+    "reason": "Keep the exact expression as evidence while consolidating implementation scope with its canonical owner."
   },
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The exact expression is sufficient to reproduce the known large-number precision loss, and prior equivalent reports were closed in favor of issue 2265; the forced rerun found no new comments, assignees, linked work, or source changes that make this a separate fix.",
+    "rationale": "The exact expression exposes a real conversion-path precision defect, but calculator-engine precision is already owned by Issue 2265. Prior large-number reports were consolidated there, and no maintainer has split this narrow mitigation into separate work.",
     "evidence": [
-      "The reporter supplied the exact expression `1230954857433123+21313652323312`, expected result 1252268509756435, and actual result 1252268509756440.",
-      "Issue 41811 reported equivalent large-integer rounding and was closed by a PowerToys member as a duplicate of issue 2265.",
-      "Issue 2265 remains the open canonical tracker for replacing or improving the PowerToys Run calculator engine precision.",
-      "Current PowerToys Run calculator flow still evaluates through Mages before converting the returned value to decimal, so later decimal conversion cannot restore precision already lost during evaluation.",
-      "The live issue remains open with Issue-Bug and Needs-Triage labels, no assignee, and no comments changing the duplicate assessment."
+      "The report provides the exact expression, expected result 1252268509756435, and displayed result 1252268509756440.",
+      "For this expression Mages returns the exact integral double and CalculateEngine's Convert.ToDecimal conversion produces the reported rounded value.",
+      "Issue 2265 remains open for PowerToys Run calculator precision and engine work.",
+      "Issues 18574, 39000, and 41811 were closed as duplicates of Issue 2265.",
+      "No linked PR or maintainer scope decision creates independent ownership for this report."
     ],
-    "recommended_action": "Close this report as a duplicate of issue 2265 and retain its concrete expression as another reproduction example.",
-    "evaluated_at": "2026-09-03T06:55:22Z",
+    "recommended_action": "Consolidate the report with Issue 2265 and retain its expression as a useful regression example for the canonical calculator work.",
+    "evaluated_at": "2026-09-03T10:38:00Z",
     "source_updated_at": "2026-09-01T17:28:04Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys code change is applicable in principle, but a separate fix design for this issue would duplicate the established Issue 2265 calculator-engine precision scope. Any safe-integer conversion mitigation should be evaluated under that tracker.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/issues/2265"
+    ]
+  },
   "issue_context": {
-    "summary": "A large integer addition in PowerToys Run returns a value rounded by five, matching the existing calculator-engine precision limitation.",
+    "summary": "The reported large integer addition is changed during the Run calculator result conversion, but the applicable precision work is already consolidated under Issue 2265.",
     "known_information": [
-      "The issue reproduces on PowerToys 0.100.0 Stable on Windows 11 25H2.",
-      "The exact expected and actual values are provided in the issue body.",
-      "No diagnostic ZIP is attached and no comments or assignees changed the triage state.",
-      "Prior issue 41811 demonstrated equivalent large-number precision loss and was redirected to issue 2265.",
-      "Issue 2265 remains open as the canonical calculator-engine improvement tracker."
+      "The issue gives an exact reproducible expression and expected versus displayed values.",
+      "Mages returns the expected value as an integral double for this expression.",
+      "CalculateEngine converts the result with Convert.ToDecimal, producing the displayed rounded value.",
+      "Issue 2265 remains open for calculator-engine precision.",
+      "Related large-number reports were previously directed to that tracker."
     ],
     "inferences": [
-      "The discrepancy is consistent with precision loss during expression evaluation rather than incorrect addition logic specific to this input."
+      "A bounded safe-integer conversion mitigation may help this expression, but it would not provide arbitrary-precision arithmetic.",
+      "Values beyond the binary64 safe-integer range require broader engine work and cannot be honestly fixed by the narrow conversion change alone."
     ],
-    "analysis": "This report does not need additional diagnostics because the expression is deterministic and matches an established limitation. Consolidating it into issue 2265 avoids splitting discussion of calculator-engine precision.",
+    "analysis": "The investigation found a specific loss point, but the report belongs to the existing precision owner. Publishing a new design or approval action without a converged mirror would duplicate scope and bypass the workflow gate.",
     "initial_investigation": [
-      "Reviewed the complete live issue body, labels, assignees, timeline, and comments; there are no comments or linked fixes.",
-      "Compared the report with issues 41811 and 2265.",
-      "Inspected the current PowerToys Run calculator path, which evaluates through Mages before converting the returned value to decimal."
+      "Read the complete live issue and timeline.",
+      "Inspected CalculateEngine.Interpret and calculator tests.",
+      "Compared Issues 2265 and 41811 and related duplicate history.",
+      "Reviewed relevant calculator-engine history and the separate Command Palette calculator path."
     ],
     "information_gaps": []
   },
@@ -73,8 +83,9 @@
       "comment": {
         "target": "issue",
         "number": 50291,
-        "body": "Thanks for the exact expression and expected value. This is the same large-number precision limitation already tracked in #2265; an equivalent report in #41811 was also consolidated there. Please add any further calculator-engine precision examples or requirements to #2265 so the work stays in one place."
-      }
+        "body": "Thanks for the exact expression and expected value. This is part of the PowerToys Run calculator precision work tracked in #2265; related large-number reports, including #41811, were also consolidated there. The expression is useful as a regression example because the displayed value changes during the calculator result conversion, but any narrow mitigation needs to be considered alongside the broader precision limits in #2265. Please keep further tracking and requirements on that issue."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

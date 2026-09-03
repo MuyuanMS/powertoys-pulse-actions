@@ -1,14 +1,14 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50325,
   "kind": "issue",
   "track": "triage",
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:31:00Z",
-  "evaluated_at": "2026-09-03T06:31:00Z",
-  "source_updated_at": "2026-09-02T04:02:45Z",
+  "generated_at": "2026-09-03T18:04:54Z",
+  "evaluated_at": "2026-09-03T18:04:54Z",
+  "source_updated_at": "2026-09-02T12:02:45Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50325",
   "title": "There is no \"save as\" dialogua when using Zoomit screen recording",
   "labels": [
@@ -16,52 +16,170 @@
     "Needs-Triage"
   ],
   "assignees": [],
+  "author": "Stimux",
+  "comments": 0,
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The supplied report confirms module state but does not distinguish recording completion failure from the save/trim dialog path or an option-specific capture failure.",
+    "status": "actionable_design",
+    "rationale": "The report gives a reproducible stop-recording symptom and a diagnostic attachment, but the archive has no recording-session failure event and the active capture options are unknown.",
     "evidence": [
       "PowerToys 0.101.2362 is installed from Microsoft Store and ZoomIt is enabled.",
-      "Ctrl+5 starts recording; the second Ctrl+5 removes the border without Save As or an output file.",
-      "The attached report's ZoomIt logs contain startup/enable entries but no capture, save, or failure event.",
-      "The report does not identify format, audio capture, or webcam-overlay settings."
+      "Ctrl+5 starts recording and shows the yellow border; the second Ctrl+5 removes the border without Save As or an MP4.",
+      "The attached Event Viewer evidence has no matching ZoomIt fault, and the archive does not show the recording/save transition.",
+      "Recent history shows the recording/save workflow was substantially introduced and later changed for trim reliability and audio initialization."
     ],
-    "recommended_action": "Request the recording options, an isolation test with audio and webcam disabled, and a fresh report captured immediately after failure.",
-    "evaluated_at": "2026-09-03T06:31:00Z",
-    "source_updated_at": "2026-09-02T04:02:45Z"
+    "recommended_action": "Investigate the existing StartRecordingAsync finalization path with the low-confidence plan, while requesting one failure-time diagnostic with recording options isolated."
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No open or merged fix attempt is linked to this report; the repository recording finalization path is applicable, but the missing session log leaves multiple plausible causes."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make ZoomIt recording finalization failures observable and preserve the save handoff",
+      "root_cause": "Hypothesis: Ctrl+5 reaches the recording stop path but an exception or failed finalization before ShowSaveDialogWithTrim causes StartRecordingAsync to exit without presenting Save As. Audio initialization, capture finalization, and the UI-thread handoff are all plausible branches; the current archive does not identify which one failed.",
+      "plan": [
+        "Reproduce with MP4 and audio/webcam options recorded, then correlate the session with Zoomit.cpp StartRecordingAsync and VideoRecordingSession::StartAsync.",
+        "Audit every stop/finalization failure path between session completion and the co_await uiThread / ShowSaveDialogWithTrim call; retain the temporary file until cleanup is confirmed and log the HRESULT.",
+        "Fix the identified branch so a completed recording either reaches the save dialog or surfaces a clear error while cleaning the temp file; do not show Save As for a recording with no captured frames.",
+        "Add focused coverage for the failure branch and manual validation for plain MP4, audio, webcam, and GIF behavior."
+      ],
+      "verification": [
+        "Reproduce the reported Ctrl+5 start/stop sequence and capture a fresh report immediately after failure.",
+        "After the fix, verify Save As appears and the selected MP4 is written to the chosen folder.",
+        "Repeat with audio and webcam disabled and enabled, and verify cancellation still cleans up without silently discarding a valid recording."
+      ],
+      "confidence": {
+        "score": 47,
+        "level": "red",
+        "rationale": "The exact finalization-to-save path is present and matches the symptom, but the supplied archive does not show which operation failed."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "ZoomIt recording appears to stop, but no Save As dialog opens and no MP4 is found.",
+    "summary": "ZoomIt's Ctrl+5 recording border disappears on the second press, but no Save As dialog or MP4 appears; the attached diagnostic does not contain the failed recording session.",
     "known_information": [
-      "The affected version is 0.101.2362 on Windows build 26200.",
-      "ZoomIt is enabled and PowerToys is non-elevated.",
-      "The recording border disappears after the stop shortcut.",
-      "An existing diagnostic contains no recording/save failure entry."
+      "The issue affects PowerToys 0.101.2362 from Microsoft Store on Windows build 26200.",
+      "The reporter is not running as administrator on a company PC.",
+      "The yellow recording border appears and disappears as expected.",
+      "A PowerToys report ZIP is attached, but its Event Viewer evidence does not show a ZoomIt crash or recording/save event.",
+      "Current source enters VideoRecordingSession::ShowSaveDialogWithTrim only after StartRecordingAsync completes capture and returns to the UI thread."
     ],
     "inferences": [
-      "The stop operation may have been reached, but successful finalization and entry into the save-dialog path are not established."
+      "The stop hotkey likely reaches a recording completion path, but successful media finalization and the save-dialog handoff are not proven.",
+      "Audio, webcam, codec, filesystem, or UI-thread/COM behavior could independently prevent the dialog."
     ],
-    "analysis": "Recording-path settings and immediate failure-time diagnostics are needed to locate the failing transition without repeating information already supplied.",
+    "analysis": "The report is concrete enough for a code-focused design because the exact completion and save symbols are known. The plan remains red and paired with targeted evidence collection rather than claiming a specific exception.",
     "initial_investigation": [
-      "Reviewed the full issue and attached report metadata.",
-      "Reviewed ZoomIt's StartRecordingAsync and ShowSaveDialogWithTrim flow.",
-      "No confirmed duplicate or linked fix was found."
+      "Reviewed the complete issue body and attached archive metadata.",
+      "Inspected Zoomit.cpp StartRecordingAsync and VideoRecordingSession::ShowSaveDialogWithTrim.",
+      "Reviewed the recording feature history in the commits that introduced trim/save and later hardened audio initialization.",
+      "Searched related ZoomIt reports and fixes; no current linked fix covers this symptom."
     ],
     "information_gaps": [
       {
         "information": "Recording format and microphone, system-audio, and webcam-overlay settings.",
-        "why_needed": "Determines which capture and finalization path is active.",
+        "why_needed": "Identifies which capture and finalization branches are active.",
         "how_to_collect": "Reply with the selected format and enabled state of each option."
       },
       {
-        "information": "Whether Save As appears with audio capture and webcam overlay disabled.",
-        "why_needed": "Separates a general save-flow problem from an option-specific failure.",
-        "how_to_collect": "Temporarily disable those options, retry once, and report the result."
-      },
-      {
-        "information": "A fresh diagnostic immediately after a failed recording.",
-        "why_needed": "The existing archive does not contain the failing recording session.",
+        "information": "A fresh diagnostic immediately after one failed Ctrl+5 stop.",
+        "why_needed": "The existing archive predates or omits the recording session and cannot distinguish capture, finalization, and save-dialog failure.",
         "how_to_collect": "Immediately after reproducing, reply with `/bugreport` and attach the generated ZIP."
       }
+    ]
+  },
+  "design": {
+    "root_cause": "Unconfirmed. The strongest code-supported hypothesis is an exception or failed asynchronous finalization before StartRecordingAsync reaches the UI-thread save workflow, but the issue does not establish whether capture, audio, file creation, or dialog initialization fails.",
+    "evidence": [
+      "[Observed] The stop shortcut removes the recording border and produces no dialog or file.",
+      "[Observed] The supplied archive has no recording/save failure event.",
+      "[Observed] StartRecordingAsync releases the stream/session, awaits the UI apartment, then calls VideoRecordingSession::ShowSaveDialogWithTrim; failures before that point can explain the exact symptom.",
+      "[Observed] Recent commits changed this path for trim reliability and audio initialization, so option-specific regressions remain plausible.",
+      "[Inferred] The failure boundary should be instrumented and tested before selecting a narrower fix."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+        "purpose": "Owns asynchronous recording setup, stop completion, cleanup, and transition to Save As.",
+        "symbols": [
+          "StartRecordingAsync",
+          "StopRecording",
+          "ShowSaveDialogWithTrim"
+        ]
+      },
+      {
+        "path": "src/modules/ZoomIt/ZoomIt/VideoRecordingSession.cpp",
+        "purpose": "Finalizes video capture and implements the file-save/trim dialog.",
+        "symbols": [
+          "VideoRecordingSession::StartAsync",
+          "VideoRecordingSession::ShowSaveDialogWithTrim"
+        ]
+      },
+      {
+        "path": "src/modules/ZoomIt/ZoomIt/AudioSampleGenerator.cpp",
+        "purpose": "Initializes and supplies optional microphone/system audio samples.",
+        "symbols": [
+          "AudioSampleGenerator::InitializeAsync",
+          "AudioSampleGenerator::Stop"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+        "symbols": [
+          "StartRecordingAsync"
+        ],
+        "current_behavior": "The coroutine catches only selected recording-start errors, cleans up no-frame sessions, releases the stream/session, returns to the UI apartment, and then invokes ShowSaveDialogWithTrim.",
+        "change": "Add targeted stage/HRESULT diagnostics and ensure every failure after a valid recording stop follows one explicit cleanup/error path; preserve the no-frames early exit and never show Save As for an invalid file.",
+        "code_block": "try { co_await session->StartAsync(); }\\ncatch (hresult_error e) { log stage + e.code(); cleanup temp; show actionable error; co_return; }\\nclose stream/session -> co_await uiThread -> ShowSaveDialogWithTrim",
+        "edge_cases": [
+          "Do not block the recording STA while waiting for audio cleanup.",
+          "Do not delete the temp file while a writer or trim operation still owns it.",
+          "Cancellation of Save As must preserve existing cleanup semantics.",
+          "GIF must continue using its separate session path."
+        ],
+        "tests": [
+          "Exercise MP4 with audio off/on and webcam off/on.",
+          "Exercise no-frame and save-dialog cancellation paths.",
+          "Use existing ZoomIt recording/manual validation infrastructure; discover a narrower automated command if the module has one."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/ZoomIt/ZoomIt/VideoRecordingSession.cpp",
+        "symbols": [
+          "VideoRecordingSession::StartAsync",
+          "VideoRecordingSession::ShowSaveDialogWithTrim"
+        ],
+        "current_behavior": "The save dialog is shown only after StartAsync returns; trim and file result errors can throw or return an empty path.",
+        "change": "Preserve the dialog contract while making finalization failures distinguishable from user cancellation and ensuring the original temp file remains available until the caller has a definitive result.",
+        "code_block": "finalization failure != user cancel\\nlog HRESULT and return explicit failure to StartRecordingAsync\\nShowSaveDialogWithTrim -> selected path | canceled | failed",
+        "edge_cases": [
+          "Keep COM apartment/message pumping requirements intact.",
+          "Do not re-trim an already rendered file.",
+          "Preserve MP4/GIF extension and Videos-folder behavior."
+        ],
+        "tests": [
+          "Verify selected output exists and is playable.",
+          "Verify trim/cancel behavior and cleanup after a failed finalization."
+        ]
+      }
+    ],
+    "verify": [
+      "Reproduce with the same Ctrl+5 sequence and collect a fresh failure-time report.",
+      "Build the ZoomIt module using the repository's existing build workflow discovered during implementation.",
+      "Verify Save As appears for successful MP4 recording, the output is written, and all option combinations either succeed or surface a visible error."
+    ],
+    "risks": [
+      "Recording uses asynchronous WinRT capture, audio, COM dialogs, and STA message pumping; changing cleanup ordering can introduce deadlocks or file locks.",
+      "Additional user-visible error handling must not turn ordinary Save As cancellation into an error."
+    ],
+    "alternatives": [
+      "Disable audio/webcam by default; rejected because the report does not prove either option is causal.",
+      "Always show Save As after the border disappears; rejected because an empty or corrupt recording must not be presented as valid output.",
+      "Request diagnostics only; rejected as the sole result because the completion/save boundary is concrete and reviewable."
     ]
   },
   "actions": [
@@ -74,11 +192,9 @@
       "comment": {
         "target": "issue",
         "number": 50325,
-        "body": "Thanks for the clear Ctrl+5 steps and the existing PowerToys report. It confirms ZoomIt is enabled, but the logs do not show whether recording finalization or the save/trim dialog path failed. Please confirm whether the recording format is MP4 or GIF and whether microphone audio, system audio, or the webcam overlay is enabled. Then temporarily disable audio capture and the webcam overlay, retry the same Ctrl+5 sequence once, and report whether Save As appears. Immediately after one new failed attempt, reply with `/bugreport` and attach the generated ZIP so it captures that session."
+        "body": "Thanks for the clear Ctrl+5 steps and the attached report. It confirms ZoomIt is enabled and the border disappears, but the archive does not contain the failed recording session. Please confirm whether the format is MP4 or GIF and whether microphone audio, system audio, or webcam overlay is enabled. Then temporarily disable audio and webcam overlay, retry once, and report whether Save As appears. Immediately after one new failed attempt, reply with `/bugreport` and attach the generated ZIP."
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Draft only; no upstream comment is posted."
     }
-  ],
-  "comments": 0,
-  "author": "Stimux"
+  ]
 }

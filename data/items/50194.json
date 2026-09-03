@@ -1,13 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50194,
   "kind": "issue",
   "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-03T06:55:07.9904446Z",
-  "evaluated_at": "2026-09-03T06:55:07.9904446Z",
+  "generated_at": "2026-09-03T18:04:54Z",
+  "evaluated_at": "2026-09-03T18:04:54Z",
   "source_updated_at": "2026-08-27T22:50:53Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50194",
   "title": "Mouse Highlighter conflicting with highlight mode : Ripple",
@@ -18,54 +15,66 @@
     "Needs-Triage",
     "Product-Mouse Utilities"
   ],
-  "assignees": null,
+  "assignees": [],
   "comments": 1,
-  "confidence": "Medium",
-  "summary": "Mouse Highlighter reportedly leaves a circle visible after switching to Ripple mode, but the current author-feedback request for exact steps remains unanswered.",
+  "stage": "handled",
+  "owes": "maintainer",
+  "pending_author": false,
+  "confidence": "High",
+  "summary": "A current mainline Mouse Highlighter change addresses the class of lost-button-up and stale ripple/pressed-state failures described by the report.",
   "status": {
-    "detail": "Needs-Author-Feedback is current and there is no reporter reply, screenshot, diagnostic archive, or exact transition sequence.",
-    "glyph": "⏳",
-    "label": "Waiting on author"
+    "glyph": "✅",
+    "label": "Covered by current mainline fix",
+    "detail": "The low-level hook and lifecycle state handling were changed to prevent ripple state remaining stuck."
   },
   "next_action": {
-    "reason": "Do not post a duplicate request while the existing author-feedback request is outstanding.",
-    "glyph": "⏳",
-    "label": "Wait for reporter follow-up"
+    "glyph": "🔁",
+    "label": "Verify in a released build",
+    "reason": "The issue predates the mainline fix; confirm the reporter's stable channel contains it before closing."
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "source_updated_at": "2026-08-27T22:50:53Z",
-    "rationale": "The symptom may be real, but the report lacks the exact active-state and settings sequence needed to isolate the drawing cleanup path. The only follow-up already requests concrete reproduction steps and remains unanswered.",
-    "recommended_action": "Preserve waiting_on_author until the reporter provides the exact activation and mode-switch sequence, current-build result, and ideally a screenshot or short recording.",
-    "evaluated_at": "2026-09-03T06:55:07.9904446Z",
+    "status": "duplicate_or_handled",
+    "rationale": "The report describes a stale visual state after switching to Ripple. Commit dbff0e79 changes Mouse Highlighter's hook/event queue, button-up preservation, settings transitions, and teardown cleanup specifically to prevent ripple or pressed state becoming stuck. The exact reporter sequence remains absent, so release verification is still needed.",
     "evidence": [
-      "The issue says a circle highlight gets stuck at the last position when Ripple mode is chosen.",
-      "Current labels include Issue-Bug, Product-Mouse Utilities, Needs-Triage, and Needs-Author-Feedback.",
-      "There are no comments after the automated request, no attachments, no assignees, and no linked fix.",
-      "Duplicate search for Mouse Highlighter Ripple returned only this issue."
+      "The issue reports a circle remaining at its last position after choosing Ripple mode.",
+      "MouseHighlighter.cpp contains ClearDrawing, ProcessPendingSettings, and MouseHighlighterSwitch lifecycle paths.",
+      "Mainline commit dbff0e79 documents that a lost button-up in the low-level hook could leave ripple or pressed state stuck and resets transient visual state during stop, settings changes, and teardown.",
+      "The commit also marshals Composition work and settings application away from the low-level hook, directly addressing the relevant state/lifetime failure class.",
+      "No reporter reply or exact transition sequence is available to prove which branch was hit."
+    ],
+    "recommended_action": "Verify the behavior in a build containing dbff0e79; if it still reproduces, collect the exact activation and mode-switch sequence before designing another fix.",
+    "evaluated_at": "2026-09-03T18:04:54Z",
+    "source_updated_at": "2026-08-27T22:50:53Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "An existing mainline change covers the suspected stuck ripple/pressed-state mechanism and lifecycle cleanup.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/commit/dbff0e79"
     ]
   },
   "issue_context": {
+    "summary": "Mouse Highlighter can leave a circle visible after the user switches to Ripple mode.",
     "known_information": [
-      "PowerToys version is 0.101.2362 stable installed through WinGet.",
-      "The report describes a circle highlight stuck at the last position after Ripple mode is chosen.",
-      "No bug report ZIP, screenshot, recording, or numbered reproduction sequence is present.",
-      "The existing automated comment already asks for concrete reproduction steps."
-    ],
-    "analysis": "The missing active-state and mode-switch sequence is decision-changing. Designing against one cleanup boundary now would risk fixing a scenario different from the reporter one.",
-    "initial_investigation": [
-      "Read the complete issue body, automated follow-up, current labels, assignees, timeline, and duplicate search results.",
-      "Confirmed no author response, linked work, duplicate, or owner changes the wait state."
+      "The report targets PowerToys 0.101.2362 from WinGet.",
+      "No diagnostic archive, screenshot, recording, or numbered reproduction is attached.",
+      "The current Mouse Highlighter implementation has explicit drawing cleanup and pending-settings processing.",
+      "Commit dbff0e79 documents and fixes lost button-up and stale ripple-state handling."
     ],
     "inferences": [
-      "The symptom could be a settings-transition cleanup problem, an active input/fade state problem, or a rendering invalidation issue."
+      "The issue may be the stale transient state addressed by dbff0e79, but the missing transition sequence prevents a one-to-one reproduction match."
     ],
-    "summary": "A static Mouse Highlighter circle reportedly remains visible after switching the highlight mode to Ripple, but the report does not specify whether highlighting was active, whether a button was held, or which settings transition leaves stale drawing state.",
+    "analysis": "Because a concrete merged mainline change covers the relevant failure mechanism, a competing proposed fix would be misleading. The remaining work is release/version confirmation, not speculative redesign.",
+    "initial_investigation": [
+      "Read the complete issue and current discussion.",
+      "Inspected MouseHighlighter.cpp, dllmain.cpp, MouseHighlighter.h, and the existing UI test surface.",
+      "Reviewed recent Mouse Highlighter history and the dbff0e79 fix description."
+    ],
     "information_gaps": [
       {
-        "why_needed": "Distinguishes a settings-transition cleanup bug from an active input or fade-animation state.",
-        "information": "Exact numbered sequence of activation, click/highlight state, settings changes, and mode selection that leaves the circle visible.",
-        "how_to_collect": "Reply to the existing author-feedback request with numbered steps, noting whether Mouse Highlighter was active and whether a mouse button was held."
+        "information": "Whether the reporter's stable build includes the mainline fix and whether the exact symptom remains.",
+        "why_needed": "Determines whether the issue is resolved or requires a distinct reproduction-specific fix.",
+        "how_to_collect": "Test the same mode-switch sequence on a release containing dbff0e79 and report the result."
       }
     ]
   },

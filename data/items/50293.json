@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50293,
   "kind": "issue",
   "track": "triage",
   "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:52:53Z",
-  "evaluated_at": "2026-09-03T06:52:53Z",
+  "generated_at": "2026-09-03T10:38:00Z",
+  "evaluated_at": "2026-09-03T10:38:00Z",
   "source_updated_at": "2026-09-01T19:16:14Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50293",
   "title": "Memory leak and unreadable text in Run",
@@ -18,63 +18,74 @@
   ],
   "assignees": [],
   "comments": 0,
-  "confidence": "High",
-  "summary": "PowerToys Run can reproduce the known long-query text overlap, while the same session reportedly accumulates substantial memory after repeated occurrences. The attached diagnostics and screenshots establish the symptoms, but not whether memory remains after Run is dismissed.",
+  "confidence": "Medium",
+  "summary": "The deterministic long-query visual overlap belongs to the existing Run layout tracker. The reported 0.97.2 installation predates a shipped stale-query worker-leak fix, so a current-release memory and thread retest is needed before treating the memory report as a separate defect.",
   "status": {
     "glyph": "?",
-    "label": "Memory-growth sequence needed",
-    "detail": "The text overlap is already tracked by Issue 13554; a short repeatable sequence and memory-release observation are needed to triage the additional memory-growth symptom."
+    "label": "Current-release memory retest needed",
+    "detail": "The visual issue has existing ownership, while later shipped worker-lifetime work may cover the memory symptom."
   },
   "next_action": {
-    "glyph": ">",
-    "label": "Request focused memory observations",
-    "reason": "Separate the known visual duplicate from a potentially distinct retained-memory defect."
+    "glyph": "💬",
+    "label": "Request current-release Run retest",
+    "reason": "Separate the known visual overlap from any persistent memory or thread growth on a build containing the later fix."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The supplied string deterministically reproduces the visual overlap and a diagnostic archive is attached, but the memory symptom is described only as occurring after several attempts and does not say whether memory is released after clearing the query or dismissing Run. The visual part matches the existing long-input autocomplete tracker.",
+    "rationale": "The exact query and screenshots establish the visual overlap, but the memory observation is from PowerToys 0.97.2. PR 48394 later fixed Run stale-query worker accumulation and shipped in stable 0.101.2362.0; the available diagnostics do not prove the reported memory growth used that mechanism.",
     "evidence": [
-      "The reporter supplied a deterministic mixed-character long-query string, before/after screenshots of overlapping text, and clarified that a single repeated character does not trigger the same visual failure.",
-      "Issue 13554 is the open canonical tracker for long PowerToys Run input and suggestion text becoming misaligned.",
-      "The reporter supplied a PowerToys diagnostic archive, a text attachment, and a screenshot showing high PowerToys Run memory usage.",
-      "The issue does not record the number of repetitions, whether query results were allowed to finish, or whether memory returns after clearing or closing Run.",
-      "LauncherControl.xaml renders QueryTextBox and AutoCompleteTextBlock in the search box, and MainWindow.xaml.cs clears/updates AutoCompleteTextBlock separately from the query text."
+      "The report includes an exact long query, overlap screenshots, a diagnostic archive, a text attachment, and a screenshot of high PowerToys Run memory.",
+      "Issue 13554 remains the canonical long-input autocomplete-alignment tracker.",
+      "LauncherControl.xaml overlays QueryTextBox and AutoCompleteTextBlock while the TextBox content scrolls independently.",
+      "The supplied diagnostic has no process dump, ETL, GC dump, runtime trace, thread timeline, or memory timeline.",
+      "PR 48394 fixed stale-query worker accumulation and is included in stable 0.101.2362.0; the reported installation is 0.97.2."
     ],
-    "recommended_action": "Acknowledge the existing overlap tracker and request a minimal repeat sequence on the current PowerToys release, including memory before reproduction, after each repetition, and after clearing and dismissing Run.",
-    "evaluated_at": "2026-09-03T06:52:53Z",
+    "recommended_action": "Request a current-stable repetition with thread and memory observations before, during, and after the Run interaction.",
+    "evaluated_at": "2026-09-03T10:38:00Z",
     "source_updated_at": "2026-09-01T19:16:14Z"
   },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR 48394 plausibly covers the stale-query worker accumulation that could contribute to memory growth and has shipped in current stable. It does not fix the visual layout defect in Issue 13554 or prove it covered this report's memory observation.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/48394",
+      "https://github.com/microsoft/PowerToys/releases/tag/v0.101.2362.0",
+      "https://github.com/microsoft/PowerToys/issues/13554"
+    ]
+  },
   "issue_context": {
-    "summary": "A long Run query causes overlapping text and is followed, after repeated attempts, by slowdown and high memory use.",
+    "summary": "A long mixed-character Run query visibly overlaps the autocomplete text; after repeated editing, the reporter observed severe memory growth on a version predating later query-worker lifetime work.",
     "known_information": [
-      "The issue reproduces on PowerToys 0.97.2 on Windows 11 build 26200 with PowerToys elevated.",
-      "The reporter supplied an exact mixed-character long string that triggers the visual problem after one additional character and clarified that one repeated character type alone does not trigger it.",
-      "Before/after screenshots show the visual overlap, and another screenshot shows substantial PowerToys Run memory usage.",
-      "A PowerToys diagnostic ZIP and text attachment are already present.",
-      "Issue 13554 is the open tracker for the long-input preview-text alignment defect."
+      "The report targets PowerToys 0.97.2 on Windows 11 build 26200.",
+      "The mixed-character query produces the visual overlap after one more character.",
+      "The issue includes a screenshot showing substantial memory attributed to PowerToys Run.",
+      "The diagnostic archive includes no heap or runtime trace establishing memory retention.",
+      "Issue 13554 owns the layout symptom.",
+      "PR 48394 is merged and included in 0.101.2362.0."
     ],
     "inferences": [
-      "The visual symptom is likely another instance of Issue 13554.",
-      "The memory growth may be a separate defect, but the current report does not establish whether the process retains memory after query results and the Run window are released.",
-      "The mixed-character trigger suggests interaction between horizontal text scrolling and suggestion/autocomplete rendering rather than only raw TextBox length."
+      "The visual symptom is another instance of Issue 13554.",
+      "The separate stationary autocomplete surface likely contributes to the visual overlap.",
+      "The memory symptom may be covered by PR 48394, but no evidence ties this occurrence to its stale-query worker mechanism.",
+      "The visual defect and memory growth are not established as one root cause."
     ],
-    "analysis": "The existing evidence is sufficient to route the overlap to Issue 13554, but closing the whole report as a duplicate could discard the potentially distinct memory symptom. A short memory timeline around a deterministic repetition would show whether there is persistent retention worth investigating separately.",
+    "analysis": "The report should not be closed only as a visual duplicate because it includes a serious memory observation. A current-release timing and memory/thread comparison directly tests the later shipped coverage without inventing a second implementation plan.",
     "initial_investigation": [
-      "Reviewed the full live issue body, attachments, labels, assignees, timeline, and closed-by-PR references.",
-      "Reviewed Issue 13554 and related reports Issue 36171 and Issue 37698 for the long-query/autocomplete visual symptom.",
-      "Inspected LauncherControl.xaml, MainWindow.xaml.cs, MainViewModel.cs, and existing Wox tests around AutoCompleteTextBlock and QueryText handling.",
-      "Confirmed that the report already includes a diagnostic archive, so another generic bug-report request is unnecessary unless a fresh current-release memory timeline is produced."
+      "Read the complete issue, attached diagnostic material, and timeline.",
+      "Reviewed Issue 13554 and related duplicate history.",
+      "Inspected LauncherControl.xaml, MainWindow.xaml.cs, MainViewModel.cs, and autocomplete tests.",
+      "Reviewed PR 48394, its worker-lifetime behavior, and release containment."
     ],
     "information_gaps": [
       {
-        "information": "A minimal repetition count and memory timeline on the current PowerToys release.",
-        "why_needed": "This distinguishes transient memory used by active query results from memory retained after the Run interaction has ended.",
-        "how_to_collect": "After updating PowerToys, record PowerToys Run memory before testing, after each repetition of the supplied query, after clearing the query, and after dismissing Run for about one minute."
+        "information": "Whether memory and thread growth reproduce on stable 0.101.2362.0 or newer, including the exact repetition count and input cadence.",
+        "why_needed": "The installed 0.97.2 version predates PR 48394, so this establishes whether that shipped fix covers the memory symptom.",
+        "how_to_collect": "Update PowerToys, record PowerToys Run memory and thread count before testing, repeat the supplied long-query edit for 10 to 15 seconds, then record them after clearing the query and about one minute after dismissing Run."
       },
       {
-        "information": "Whether the memory growth occurs when autocomplete is disabled or when the query produces no suggestion.",
-        "why_needed": "The visual duplicate involves the separate suggestion text; this comparison indicates whether the memory symptom follows suggestion/result generation or the query TextBox itself.",
-        "how_to_collect": "Repeat the same long-input test once with autocomplete disabled, or with a similarly long query that produces no suggestion, and report whether memory still grows."
+        "information": "A fresh diagnostic only if growth persists after the current-release retest.",
+        "why_needed": "A new capture is needed to investigate a remaining memory defect, but the existing archive lacks the relevant runtime data.",
+        "how_to_collect": "If memory or thread counts remain elevated after clearing and dismissing Run, add a comment containing /bugreport immediately after reproducing."
       }
     ]
   },
@@ -82,14 +93,15 @@
     {
       "id": "request-info-50293",
       "type": "request_info",
-      "label": "Request focused Run memory timeline",
+      "label": "Request current-release Run retest",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 50293,
-        "body": "Thanks for the exact query, screenshots, and diagnostic ZIP. The overlapping long-input text is already tracked in Issue 13554, but the sustained memory growth may be a separate problem. After updating to the current PowerToys release, please record PowerToys Run memory before testing, after each repetition of the supplied query, after clearing the query, and about one minute after dismissing Run. Please also repeat once with autocomplete disabled, or with a similarly long query that produces no suggestion, and tell us whether memory still grows. That will show whether memory is retained after the interaction and whether it follows suggestion/result generation or the query box itself."
-      }
+        "body": "Thanks for the exact query, screenshots, log, and diagnostic ZIP. The overlapping long-input text is already tracked in #13554. The reported PowerToys 0.97.2 build predates PR #48394, which fixed PowerToys Run worker accumulation after repeated stale-query cancellation and is included in stable 0.101.2362.0. Please update to the current stable release and repeat the supplied long-query edit for 10 to 15 seconds while recording PowerToys.Run memory and thread count before testing, during repeated edits, after clearing the query, and about one minute after dismissing Run. Please also confirm whether the text overlap remains. If memory or thread counts remain elevated after dismissal, add `/bugreport` immediately after reproducing."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

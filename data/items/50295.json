@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50295,
   "kind": "issue",
   "track": "triage",
   "stage": "duplicate_or_handled",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:52:53Z",
-  "evaluated_at": "2026-09-03T06:52:53Z",
+  "generated_at": "2026-09-03T10:38:00Z",
+  "evaluated_at": "2026-09-03T10:38:00Z",
   "source_updated_at": "2026-09-02T13:26:49Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50295",
   "title": "Mouse without borders says keys dont match, when it does",
@@ -19,50 +19,55 @@
   "assignees": [],
   "comments": 1,
   "confidence": "High",
-  "summary": "Mouse Without Borders rejects cross-version pairing as InvalidKey; a second user reproduced the 0.100-to-0.101 mismatch and confirmed that updating the older peer resolves it.",
+  "summary": "Mouse Without Borders rejects pairing between 0.100.x and 0.101.x peers as InvalidKey; a corroborating reporter confirmed that updating the older peer restores connectivity.",
   "status": {
     "glyph": "=",
-    "label": "Resolved by matching peer versions",
-    "detail": "A corroborating user reports that pairing succeeds after updating the older PowerToys installation."
+    "label": "Known version-mismatch behavior",
+    "detail": "Version mismatch reporting is already tracked by Issue 29794; no separate code fix belongs in this report."
   },
   "next_action": {
     "glyph": "💬",
     "label": "Post matching-version guidance",
-    "reason": "Document the confirmed recovery and avoid requesting diagnostics unless the failure persists with both peers current."
+    "reason": "Document the confirmed recovery and consolidate the error-message gap with its existing tracker."
   },
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The original report’s strongest confounder was version skew. A second user reproduced the same cross-version failure and then confirmed that updating the older peer resolves the connection, matching Mouse Without Borders code that explicitly warns same-version peers are required when handshake/clipboard connections are rejected.",
+    "rationale": "Both reports use 0.100.x paired with 0.101.2362.0, and the corroborating reporter confirmed that updating the older peer restores operation. Clearer version-mismatch reporting is already tracked by Issue 29794.",
     "evidence": [
-      "One machine runs PowerToys 0.101.2362.0 and the other runs 0.100.0.0.",
-      "The newer machine restored a backup originating from the 0.100.0.0 machine.",
-      "The supplied status text records the remote peer as InvalidKey.",
-      "A second user reproduced the failure between PowerToys 0.100.2 and 0.101.2362.",
-      "That user reports the connection works after updating the older installation.",
-      "MouseWithoutBorders/App/Core/Clipboard.cs shows rejected connections surface “Make sure you run the same version in all machines.”"
+      "The original report pairs PowerToys 0.101.2362.0 with 0.100.0.0 and records InvalidKey.",
+      "The sole comment reproduces the problem between 0.100.2 and 0.101.2362.0 and confirms updating resolves it.",
+      "PRs 48742 and 49600 changed encrypted-stream framing and key derivation and require all peers to use the same version.",
+      "Issue 29794 tracks explicit version-mismatch detection, and Issue 41916 was closed as its duplicate."
     ],
-    "recommended_action": "Advise updating both peers to the same current PowerToys version and only collect paired diagnostics if InvalidKey persists afterward.",
-    "evaluated_at": "2026-09-03T06:52:53Z",
+    "recommended_action": "Advise updating every peer to the same current version, without regenerating the existing key, and consolidate the reporting improvement under Issue 29794.",
+    "evaluated_at": "2026-09-03T10:38:00Z",
     "source_updated_at": "2026-09-02T13:26:49Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A separate PowerToys code fix for this report would duplicate Issue 29794's version-mismatch reporting work. Mixed-version compatibility is not the appropriate fix for intentional protocol and derivation changes.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/issues/29794"
+    ]
+  },
   "issue_context": {
-    "summary": "Cross-version Mouse Without Borders peers can report InvalidKey even when the visible key matches, and updating the older peer has resolved the reported scenario.",
+    "summary": "The reported InvalidKey result follows intentional cross-version protocol changes, not evidence that the displayed key text differs.",
     "known_information": [
-      "The connection spans PowerToys 0.101.2362.0 and 0.100.0.0.",
-      "Settings from the older installation were restored on the newer machine.",
-      "The reporter manually copied the displayed key.",
-      "The supplied status output identifies the remote peer and records InvalidKey.",
-      "A corroborating user reports that the same version-skew failure is resolved by updating the older machine."
+      "The visible key was copied between the peers.",
+      "Both reported reproductions used different PowerToys versions.",
+      "Updating the older peer restored operation for the corroborating reporter.",
+      "The 0.101 release introduced deliberate encrypted-stream framing and PBKDF2 changes.",
+      "Issue 29794 owns clearer version-mismatch reporting."
     ],
     "inferences": [
-      "The confirmed matching-version recovery makes a current same-version key-comparison defect less likely.",
-      "The failure may be caused by protocol or serialized-state differences across the 0.100-to-0.101 boundary."
+      "InvalidKey is a generic handshake-failure classification and does not prove that the entered key text differs.",
+      "Either versioned cryptographic change can prevent a 0.100 peer from decoding the newer stream."
     ],
-    "analysis": "The new comment supplies the controlled outcome the earlier action requested: cross-version pairing fails and updating resolves it. The dashboard should expose matching-version guidance rather than a stale diagnostic request.",
+    "analysis": "The precise cross-version recovery and existing owner make diagnostic collection and an independent design unnecessary. The action corrects the guidance to avoid unnecessary re-pairing.",
     "initial_investigation": [
-      "Reviewed the full live issue body, the single comment, labels, assignees, timeline, and closed-by-PR references.",
-      "Searched current issues for InvalidKey/key mismatch wording and found no stronger duplicate than the live corroborating comment.",
-      "Inspected Mouse Without Borders connection-handshake messaging, which already tells users to run the same version on all machines when a connection is rejected."
+      "Read the complete issue and comment.",
+      "Compared the 0.100 and 0.101 encryption paths and release history.",
+      "Reviewed Encryption.cs, SocketStuff.cs, DATA.cs, related Issues 29794 and 41916, and PRs 48742 and 49600."
     ],
     "information_gaps": []
   },
@@ -70,13 +75,13 @@
     {
       "id": "handled-50295",
       "type": "post_comment",
-      "label": "Post matching-version MWB guidance",
+      "label": "Post matching-version Mouse Without Borders guidance",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 50295,
-        "body": "Thanks for the peer and status details. The additional report confirms that Mouse Without Borders can reject pairing when the machines use PowerToys 0.100.x and 0.101.x, and that the connection works after updating the older installation. Please update both machines to the same current PowerToys version and pair again with a newly generated key. If `InvalidKey` still occurs with both peers current, immediately submit `/bugreport` from each machine and attach both ZIP files, identifying which came from each peer."
+        "body": "Thanks for the peer and status details. The additional report confirms that Mouse Without Borders can reject pairing when the machines use PowerToys 0.100.x and 0.101.x, and that updating the older installation restores the connection. Please update every peer to the same current PowerToys version and try again; the existing key should continue to work, so generating a new key is not necessary. The clearer version-mismatch reporting needed here is tracked in #29794."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }

@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 49438,
   "kind": "issue",
   "track": "fix",
   "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:51:00.1178362Z",
-  "evaluated_at": "2026-09-03T06:51:00.1178362Z",
+  "generated_at": "2026-09-03T10:04:54.663Z",
+  "evaluated_at": "2026-09-03T10:04:54.663Z",
   "source_updated_at": "2026-08-31T16:16:52Z",
   "url": "https://github.com/microsoft/PowerToys/issues/49438",
   "title": "PowerToys Kills Itself in Background",
@@ -52,7 +52,128 @@
       "Compared the complete Issue 49438 discussion with related active Issue 50169 and draft PR 50273.",
       "Searched related Command Palette/tray/runner issues; Issue 50169 remains the specific active match."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "Fresh Runner logs captured at the exact next disappearance",
+        "why_needed": "Distinguishes session-end, close-app, crash, and internal shutdown paths.",
+        "how_to_collect": "After Runner disappears, add /bugreport immediately and identify the capture time."
+      },
+      {
+        "information": "Windows session-end, Restart Manager, update, or application-fault evidence at the same time",
+        "why_needed": "Separates an external termination request from a Runner defect.",
+        "how_to_collect": "Correlate the fresh diagnostic with Event Viewer records around the disappearance timestamp."
+      }
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No behavioral fix is confirmed. Draft PR 50273 is diagnostic logging, and the appropriate fix depends on proving whether Runner is asked to end, crashes, or shuts down internally.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Identify and handle the Runner termination path before changing shutdown behavior",
+      "root_cause": "Low-confidence hypothesis: an external Windows session-end or close-app request may terminate Runner while Command Palette survives as a separate process. The archive does not rule out an internal exit or another external source.",
+      "plan": [
+        "Use the newer investigation's session-end logging to distinguish WM_QUERYENDSESSION/WM_ENDSESSION from crash or internal shutdown evidence.",
+        "Trace tray_icon_window_proc and handle_stateless_session_end_message without changing existing return behavior.",
+        "If logs prove an unintended request, make the narrowest lifecycle change that preserves legitimate shutdown and update semantics.",
+        "If logs show an internal failure, fix that concrete path instead of changing session-end handling.",
+        "Add a regression or repeatable lifecycle test for the confirmed termination reason."
+      ],
+      "verification": [
+        "Reproduce after upgrading to current stable and capture /bugreport immediately after Runner disappears.",
+        "Correlate Runner logs, Windows session events, and Command Palette liveness.",
+        "Verify Runner and tools remain available during the reported workload while normal logoff, shutdown, and update flows still work."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The process split and Runner message path are confirmed, but the archive has no crash or termination proof and no behavioral fix can be selected honestly yet."
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "Unconfirmed external or internal Runner termination; a session-end or close-app request is plausible but unproven.",
+    "evidence": [
+      "Observed: Runner/tray disappears while Command Palette remains active.",
+      "Observed: the available archive has no direct PowerToys.exe crash entry.",
+      "Observed: tray_icon_window_proc dispatches session-end messages through handle_stateless_session_end_message.",
+      "Observed: draft PR 50273 adds session-end reason and confirmation logging.",
+      "Inferred: separate process lifetimes explain the surviving Command Palette but not the Runner exit."
+    ],
+    "affected_files": [
+      {
+        "path": "src/runner/tray_icon.cpp",
+        "purpose": "Owns the Runner tray window procedure and dispatches Windows session-end messages before normal message handling.",
+        "symbols": [
+          "tray_icon_window_proc",
+          "handle_stateless_session_end_message"
+        ]
+      },
+      {
+        "path": "src/runner/RestartManagement.cpp",
+        "purpose": "Provides the Restart Manager integration area to compare external close requests with session-end behavior.",
+        "symbols": [
+          "Restart Manager handling"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/runner/tray_icon.cpp",
+        "symbols": [
+          "tray_icon_window_proc",
+          "handle_stateless_session_end_message"
+        ],
+        "current_behavior": "The tray window procedure forwards session-end messages to handle_stateless_session_end_message and returns the handler result; the available archive does not show whether this path caused the observed exit.",
+        "change": "Capture a fresh failure with reason-specific logging, then change this path only if evidence proves an unintended session-end or close-app request. Preserve legitimate OS shutdown semantics.",
+        "code_block": "if (handle_stateless_session_end_message(window, message, wparam, lparam, result, &g_system_session_ending))\r\n{\r\n    return result;\r\n}\r\n// Apply only a cause-specific change after the termination reason is confirmed.",
+        "tests": [
+          "Add or run a focused lifecycle test for the confirmed termination reason and normal session shutdown."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/runner/RestartManagement.cpp",
+        "symbols": [
+          "Restart Manager handling"
+        ],
+        "current_behavior": "Restart Manager is a plausible external close source, but the current issue archive does not correlate a Restart Manager event with Runner disappearance.",
+        "change": "Compare Restart Manager evidence with the fresh Runner/session-end logs; modify this integration only if it is the confirmed termination source.",
+        "code_block": "if (restartManagerRequestConfirmed)\r\n{\r\n    ApplyCauseSpecificLifecycleHandling();\r\n}\r\n// Otherwise leave existing update and close behavior unchanged.",
+        "tests": [
+          "Verify normal update and Restart Manager close/restart flows after any cause-specific change."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/runner/tray_icon.cpp",
+        "symbols": [
+          "tray_icon_window_proc"
+        ],
+        "current_behavior": "No regression test currently establishes that Runner remains available while Command Palette continues as a separate process during the reported workload.",
+        "change": "After the termination cause is known, add repeatable lifecycle coverage that distinguishes Runner exit from the independent Command Palette process lifetime.",
+        "code_block": "StartRunnerAndCommandPalette();\r\nTriggerConfirmedTerminationScenario();\r\nAssertRunnerLifetimeIsExpected();",
+        "tests": [
+          "Repeat the reported workload and verify Runner, tray state, and PowerToys tools remain available when no legitimate termination request occurs."
+        ]
+      }
+    ],
+    "verify": [
+      "Correlate logs and OS events at the next disappearance.",
+      "Repeat the same workload after the cause-specific change.",
+      "Confirm normal logoff, shutdown, update, and Restart Manager flows remain unaffected."
+    ],
+    "risks": [
+      "Suppressing legitimate session-end or close-app handling could leave stale processes or interfere with updates.",
+      "Changing Runner lifetime behavior without distinguishing Command Palette's separate process could mask the cause."
+    ],
+    "alternatives": [
+      "Consolidate with Issue 50169 and collect reason-specific logs; preferred over a speculative fix.",
+      "Treat it as a crash; not supported by the available archive, though new evidence could change that."
+    ]
   },
   "actions": [
     {

@@ -1,6 +1,31 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50339,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked or fork-side implementation covers the path-only Chrome window selection identified in the existing design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Require PWA identity during Workspaces window reconciliation",
+      "root_cause": "WindowArranger.processWindow selects a Launched target using only saved name or executable path, so a saved Chrome PWA can claim an unrelated normal chrome.exe window even though GetNearestWindow already requires matching pwaAppId.",
+      "plan": [
+        "Expose and reuse a PwaHelper resolver and identity predicate across the Workspaces snapshot and arranger paths, preserving existing Chrome/Edge app-ID resolution.",
+        "In WindowArranger::processWindow and processWindows, resolve the observed browser window's PWA identity and require matching pwaAppId in addition to the existing name/path candidate condition.",
+        "Keep empty identities matching ordinary browser windows, reject missing or different identities for saved PWAs, and add pure identity-gate unit tests plus manual mixed PWA/normal-Chrome coverage."
+      ],
+      "verification": [
+        "Build the changed Workspaces projects and WorkspacesLibUnitTests using repository-supported commands.",
+        "Reproduce the mixed Chrome PWA and normal Chrome workspace scenario and verify normal Chrome remains untouched while each PWA is placed in its intended slot.",
+        "Repeat with only a saved normal Chrome window and with all saved PWAs closed to confirm ordinary matching and PWA launch behavior remain intact."
+      ],
+      "confidence": {
+        "score": 94,
+        "level": "green",
+        "rationale": "The issue scenario and the divergent GetNearestWindow/processWindow predicates directly match the reported collision; the proposed guard reuses persisted PWA identity without changing ordinary browser matching."
+      }
+    }
+  ],
   "kind": "issue",
   "track": "fix",
   "stage": "awaiting_design_approval",
@@ -8,7 +33,7 @@
   "pending_author": false,
   "generated_at": "2026-09-03T06:31:00Z",
   "evaluated_at": "2026-09-03T06:31:00Z",
-  "source_updated_at": "2026-09-02T08:49:44Z",
+  "source_updated_at": "2026-09-02T16:49:44Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50339",
   "title": "Workspaces incorrectly moves main chrome window instead of PWA app",
   "labels": [
@@ -35,7 +60,7 @@
     ],
     "recommended_action": "Approve the focused Workspaces identity-matching design and create a fork-side implementation trace.",
     "evaluated_at": "2026-09-03T06:31:00Z",
-    "source_updated_at": "2026-09-02T08:49:44Z"
+    "source_updated_at": "2026-09-02T16:49:44Z"
   },
   "issue_context": {
     "summary": "When Workspaces restores a layout containing Chrome PWAs while a normal Chrome window already exists, its later reconciliation phase can place that ordinary browser window in a PWA slot and leave the actual PWA to overlap it.",

@@ -1,13 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50196,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-03T06:55:32.8539216Z",
-  "evaluated_at": "2026-09-03T06:55:32.8539216Z",
+  "generated_at": "2026-09-03T18:04:54Z",
+  "evaluated_at": "2026-09-03T18:04:54Z",
   "source_updated_at": "2026-08-28T15:14:53Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50196",
   "title": "Unable to open BlueStacks 5 using CmdPal.",
@@ -18,78 +15,181 @@
     "Needs-Team-Response",
     "Product-Command Palette"
   ],
-  "assignees": null,
+  "assignees": [],
   "comments": 6,
-  "confidence": "Medium",
-  "summary": "Command Palette discovers BlueStacks 5 but Windows returns access denied when launching the shortcut; direct shortcut behavior and sanitized .lnk properties are still needed.",
+  "stage": "design_in_progress",
+  "owes": "maintainer",
+  "pending_author": false,
+  "confidence": "Low",
+  "summary": "CmdPal discovers the BlueStacks shortcut but Windows returns access denied; the same parameterized shortcut reportedly fails in Flow Launcher, so shortcut properties remain decisive.",
   "status": {
-    "detail": "The bug report identifies the launch failure, but cross-launcher failure means the shortcut itself may be invalid or privileged.",
-    "glyph": "💬",
-    "label": "Needs shortcut launch details"
+    "glyph": "🎯",
+    "label": "Low-confidence shortcut-launch fix candidate",
+    "detail": "Preserve shell-link arguments and launch semantics only if direct Windows launch proves the shortcut is valid."
   },
   "next_action": {
-    "reason": "This distinguishes a CmdPal launch-path defect from a shortcut or Windows-shell constraint.",
     "glyph": "💬",
-    "label": "Ask for direct shortcut behavior"
+    "label": "Request direct shortcut behavior and properties",
+    "reason": "Cross-launcher failure may be caused by the shortcut target, arguments, working directory, or elevation rather than CmdPal."
   },
   "judgment": {
-    "source_updated_at": "2026-08-28T15:14:53Z",
+    "status": "actionable_design",
+    "rationale": "The issue and diagnostic log identify a precise CmdPal launch boundary: AppCommand.StartExe receives the .lnk path and Windows returns access denied. However, the reporter also sees parameterized links fail in Flow Launcher, so a CmdPal-only fix would be speculative until direct shell launch and shortcut properties are known.",
     "evidence": [
-      "CmdPal finds and displays BlueStacks 5.lnk, so discovery succeeds.",
-      "Downloaded CmdPal log records AppCommand.cs::StartExe failing for C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\BlueStacks 5.lnk with access denied.",
-      "The reporter says .lnk files with extra startup parameters cannot be opened in both CmdPal and Flow Launcher.",
-      "Current labels are Issue-Bug, Product-Command Palette, Needs-Triage, and Needs-Team-Response; there are no assignees or linked fixes.",
-      "Duplicate search for BlueStacks CmdPal returned only this issue."
+      "CmdPal discovers and displays the BlueStacks 5 .lnk result.",
+      "The diagnostic log records AppCommand.StartExe failing to start the Start Menu .lnk with access denied.",
+      "Current CmdPal AppCommand.StartExe uses Process.Start with UseShellExecute=true and passes only the path.",
+      "The reporter says links with extra startup parameters fail in both CmdPal and Flow Launcher.",
+      "The issue has no linked PR, assignee, or duplicate that resolves the launch path.",
+      "Recent AppCommand history concerns command/icon synchronization, not shortcut launch semantics."
     ],
-    "recommended_action": "Ask whether the exact Start Menu shortcut opens directly and request sanitized Target, Start in, arguments, and elevation settings.",
-    "evaluated_at": "2026-09-03T06:55:32.8539216Z",
-    "rationale": "The downloaded report confirms AppCommand.StartExe gets access denied for the BlueStacks Start Menu shortcut. The reporter also says parameterized shortcuts fail in Flow Launcher, so the current evidence does not prove CmdPal alone mishandles a valid shortcut.",
-    "status": "needs_information"
+    "recommended_action": "Collect direct double-click behavior and sanitized shortcut properties, then implement only the launch-semantics change supported by those facts.",
+    "evaluated_at": "2026-09-03T18:04:54Z",
+    "source_updated_at": "2026-08-28T15:14:53Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository change may be applicable in CmdPal's shortcut launch path, but the shared failure across launchers makes the current plan deliberately low-confidence until Windows itself is shown to launch the shortcut."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Launch CmdPal shortcuts with their preserved shell-link semantics",
+      "root_cause": "CmdPal launches a discovered .lnk by passing its path to Process.Start, but the shortcut may require shell-link target, arguments, working directory, or elevation semantics that are not preserved by the current path-only launch path.",
+      "plan": [
+        "Inspect src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Programs/Win32Program.cs and ShellLinkHelper.cs to confirm whether AppItem.ExePath is the original .lnk or a resolved target and whether arguments/working directory/elevation are retained.",
+        "Compare the CmdPal launch path in AppCommand.StartExe with Windows shell behavior for the exact shortcut; choose ShellExecute/verb or ProcessStartInfo fields only after sanitized shortcut properties confirm the required semantics.",
+        "Keep packaged-app activation unchanged and scope the change to non-packaged shortcut items.",
+        "Add a focused test seam for launch-info construction, covering plain .lnk, arguments, working directory, and administrator verb without starting a process.",
+        "Validate against the exact BlueStacks shortcut and a normal shortcut, including direct shell launch as the control."
+      ],
+      "verification": [
+        "Open the exact .lnk directly from the Start Menu folder; record whether Windows itself succeeds.",
+        "Run CmdPal with the same shortcut and verify BlueStacks launches with its arguments and expected elevation.",
+        "Run an ordinary executable and a shortcut without arguments to ensure no regression.",
+        "If direct launch also fails, mark the CmdPal hypothesis unsupported and do not apply a competing code fix."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "CmdPal's path-only Process.Start boundary is concrete, but the same failure in another launcher suggests the shortcut or Windows policy may be the real cause."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Command Palette can discover the BlueStacks Start Menu shortcut, but pressing Enter produces no response. The uploaded bug report contains an access-denied launch error, while the reporter also observes similar failure in Flow Launcher for parameterized shortcuts.",
+    "summary": "CmdPal shows the BlueStacks 5 shortcut but pressing Enter produces no launch; logs show access denied.",
     "known_information": [
-      "PowerToys version is 0.101.2362.0 on Windows 11 Pro 25H2.",
-      "The reporter uploaded PowerToysReport.zip after a maintainer requested a bug report.",
-      "The diagnostic log shows access denied when CmdPal starts the BlueStacks shortcut from the Start Menu.",
-      "The reporter identified BlueStacks Pie x64 and said shortcuts with extra startup parameters also fail in Flow Launcher."
+      "The reporter uses PowerToys 0.101.2362.0 on Windows 11 Pro 25H2.",
+      "CmdPal discovers the Start Menu .lnk and AppCommand.StartExe logs access denied.",
+      "AppCommand.StartExe uses Process.Start with UseShellExecute=true and only the path.",
+      "The reporter says parameterized .lnk files also fail in Flow Launcher.",
+      "A maintainer discussion identifies HRESULT 0x80070005 in the diagnostic."
+    ],
+    "inferences": [
+      "The failure is after discovery, in launch or Windows shell policy.",
+      "Missing arguments, working directory, or elevation may matter.",
+      "The common failure across launchers makes a shortcut/configuration cause at least as plausible as a CmdPal defect."
+    ],
+    "analysis": "The launch boundary is identifiable and supports a testable low-confidence plan, but direct Windows behavior and sanitized properties are required before selecting the correct API or claiming CmdPal ownership.",
+    "initial_investigation": [
+      "Read the complete issue and all six comments, including the diagnostic excerpt and Flow Launcher comparison.",
+      "Inspected AppCommand.StartExe, CmdPal Win32Program, and ShellLinkHelper source.",
+      "Checked recent AppCommand history and found no shortcut-launch fix."
     ],
     "information_gaps": [
       {
-        "information": "Whether the exact BlueStacks 5.lnk opens when double-clicked from the Start Menu folder or File Explorer.",
-        "how_to_collect": "Open C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs and double-click the same shortcut.",
-        "why_needed": "Distinguishes a CmdPal-specific launch failure from a shortcut Windows itself cannot shell-open."
+        "information": "Whether the exact BlueStacks .lnk opens when double-clicked directly.",
+        "why_needed": "Separates CmdPal behavior from a shortcut or Windows access-control failure.",
+        "how_to_collect": "Double-click the same link from C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs."
       },
       {
-        "information": "Sanitized Target, Start in, command-line arguments, and Run as administrator setting from the shortcut properties.",
-        "how_to_collect": "Open the shortcut Properties dialog and copy the values with personal paths or identifiers removed.",
-        "why_needed": "Determines whether CmdPal must preserve special arguments, working directory, or elevation behavior."
+        "information": "Sanitized Target, Start in, arguments, and Run as administrator setting.",
+        "why_needed": "Determines which shell-launch semantics must be preserved.",
+        "how_to_collect": "Share shortcut Properties values with personal paths and identifiers removed."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "Possible loss of shortcut launch semantics at CmdPal.AppCommand.StartExe, but the cross-launcher failure means the root cause is not established.",
+    "evidence": [
+      "AppCommand.StartExe passes a .lnk path to Process.Start.",
+      "The diagnostic records access denied for that path.",
+      "Flow Launcher reportedly fails for the same parameterized-link class."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/AppCommand.cs",
+        "purpose": "Invokes packaged and non-packaged CmdPal app results.",
+        "symbols": [
+          "AppCommand.StartExe",
+          "AppCommand.Launch"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Programs/Win32Program.cs",
+        "purpose": "Creates app items from executables and shortcuts.",
+        "symbols": [
+          "Win32Program.CreateWin32Program"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Utils/ShellLinkHelper.cs",
+        "purpose": "Reads target and metadata from Windows shortcuts.",
+        "symbols": [
+          "ShellLinkHelper.RetrieveTargetPath",
+          "ShellLinkHelper.Arguments"
+        ]
       }
     ],
-    "inferences": [
-      "The failure is after result discovery, in the launch path.",
-      "The common failure across launchers suggests the .lnk target, arguments, working directory, or elevation behavior may be the deciding factor."
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/AppCommand.cs",
+        "symbols": [
+          "AppCommand.StartExe"
+        ],
+        "current_behavior": "Non-packaged results are launched with Process.Start(path) and UseShellExecute=true.",
+        "change": "Construct launch information from the original shortcut metadata only when confirmed necessary, preserving arguments/working directory/verb; otherwise retain the current shell launch.",
+        "code_block": "var startInfo = app.IsShortcut ? BuildShortcutStartInfo(app) : new ProcessStartInfo(app.ExePath) { UseShellExecute = true }; Process.Start(startInfo);",
+        "edge_cases": [
+          "Do not bypass Windows elevation prompts.",
+          "Do not resolve away required shortcut arguments.",
+          "Surface launch errors through the existing logger and preserve dismissal behavior."
+        ],
+        "tests": [
+          "Test launch-info construction without starting a process.",
+          "Cover plain executable, plain shortcut, parameterized shortcut, and administrator shortcut."
+        ]
+      }
     ],
-    "initial_investigation": [
-      "Read the full issue, all comments, labels, timeline, duplicate search results, and downloaded diagnostic ZIP.",
-      "Confirmed no linked issue, linked PR, assignee, or direct-shell-open result for the exact shortcut."
+    "verify": [
+      "Run the existing CmdPal Apps tests after locating the targeted command.",
+      "Compare direct Explorer launch and CmdPal launch for the exact shortcut.",
+      "Confirm normal executable and shortcut launch behavior remains unchanged."
     ],
-    "analysis": "The current diagnostic excerpt is useful and another generic archive is not the next step. Direct shell-open behavior and sanitized shortcut properties are the minimum facts needed to decide whether CmdPal should change shortcut launch handling."
+    "risks": [
+      "Incorrectly reconstructing a shortcut can drop quoting or elevation semantics.",
+      "If Windows itself rejects the link, changing CmdPal may not help."
+    ],
+    "alternatives": [
+      "Resolve every link to its target and call Process.Start(target): rejected because it can lose arguments and working-directory semantics.",
+      "Ignore the issue as external: rejected until direct shell launch is tested."
+    ]
   },
   "actions": [
     {
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
       "id": "request-info-50196",
-      "confirm": true,
+      "type": "request_info",
+      "label": "Request direct shortcut behavior and properties",
       "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
       "comment": {
+        "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50196,
-        "target": "issue",
-        "body": "Thanks for uploading the PowerToys bug report. It shows that Command Palette finds BlueStacks 5.lnk, then Windows returns access denied when CmdPal tries to launch that shortcut. You also noted that parameterized shortcuts fail in Flow Launcher, so the remaining question is whether CmdPal is mishandling a valid shortcut or whether this shortcut itself cannot be shell-opened. Please check whether C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\BlueStacks 5.lnk opens when double-clicked directly, and share the sanitized shortcut **Target**, **Start in**, command-line arguments, and whether **Run as administrator** is enabled. Those details will tell us whether the fix belongs in CmdPal's shortcut-launch path or in the shortcut/configuration. There is no need to upload another bug report unless the behavior changes."
+        "body": "Thanks for the diagnostic details. CmdPal finds BlueStacks 5.lnk, then Windows returns access denied; because you also see parameterized links fail in Flow Launcher, we first need to separate a CmdPal launch bug from a shortcut or Windows restriction. Please check whether the exact link opens when double-clicked from C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs, and share sanitized shortcut Properties values for Target, Start in, arguments, and Run as administrator."
       },
-      "type": "request_info",
-      "label": "Ask how the shortcut launches directly"
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

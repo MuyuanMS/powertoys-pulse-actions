@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50202,
   "kind": "issue",
   "track": "fix",
-  "generated_at": "2026-09-03T06:53:48Z",
-  "evaluated_at": "2026-09-03T06:53:48Z",
+  "generated_at": "2026-09-03T18:04:54Z",
+  "evaluated_at": "2026-09-03T18:04:54Z",
   "source_updated_at": "2026-08-28T09:15:52Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50202",
   "title": "power run crashes",
@@ -17,73 +17,166 @@
   ],
   "assignees": [],
   "comments": 1,
-  "stage": "needs_reply",
+  "stage": "design_in_progress",
   "owes": "author",
-  "pending_author": false,
-  "confidence": "Medium",
-  "summary": "The PowerToys Run report includes diagnostics with a handled ShellLinkHelper description exception, but the user action that causes the unresponsive state is still missing.",
+  "pending_author": true,
+  "confidence": "Low",
+  "summary": "PowerToys Run lags or becomes unresponsive; the diagnostic ShellLinkHelper exception is a plausible lead, but the triggering query and result are unknown.",
   "status": {
-    "glyph": "❓",
-    "label": "Needs specific Run repro",
-    "detail": "The diagnostic archive narrows one logged Program-plugin exception, but it does not prove the hang path without the exact query/result sequence."
+    "glyph": "🎯",
+    "label": "Low-confidence Program-plugin fix candidate",
+    "detail": "Make shell-link metadata failure non-fatal while requesting the exact Run interaction that stalls."
   },
   "next_action": {
-    "glyph": "❓",
-    "label": "Request concrete repro sequence",
-    "reason": "Ask only for the missing query/plugin/action details that would localize the stall."
+    "glyph": "💬",
+    "label": "Request exact Run repro",
+    "reason": "The missing query/result sequence is needed to distinguish shell-link metadata work from another plugin or indexing path."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The diagnostic archive gives a useful lead, but ShellLinkHelper.GetDescription exceptions are already caught and marked as known Program-plugin errors. The report lacks the exact Run interaction needed to connect the log to the unresponsive state.",
+    "status": "actionable_design",
+    "rationale": "The diagnostic log identifies ShellLinkHelper.GetDescription failure while processing a .lnk file, and current Program-plugin code has a specific shell-link retrieval boundary. A non-fatal fallback is a plausible hardening fix, but the exception is not proven to cause the reported hang and the issue predates current releases.",
     "evidence": [
-      "The issue reports PowerToys Run lagging or becoming unresponsive until PowerToys is restarted.",
-      "A diagnostic ZIP was attached and extracted.",
-      "Local code inspection shows ShellLinkHelper.GetDescription exceptions are caught and ProgramLogger classifies GetDescription from LnkProgram as a known Win32 program-load error.",
-      "The issue does not provide a query string, selected result, enabled-plugin context, or timing for the stall.",
-      "Duplicate search found no direct active ShellLinkHelper COMException hang duplicate that resolves this exact report."
+      "The issue reports PowerToys Run lagging or becoming unresponsive until restart.",
+      "The attached diagnostic summary records a COMException in ShellLinkHelper.RetrieveTargetPath/GetDescription while processing wmplayer.exe.",
+      "The Program plugin's Win32Program path calls ShellLinkHelper.RetrieveTargetPath while creating shortcut metadata.",
+      "The current issue has no query string, selected result, plugin state, or timing for the stall.",
+      "The automated triage identifies the same exception as a medium-confidence lead and requests concrete reproduction details.",
+      "Recent Mouse Highlighter history is unrelated; no targeted PowerToys Run fix is linked to this issue."
     ],
-    "recommended_action": "Post an issue-specific request for the exact PowerToys Run interaction sequence and a fresh bug report captured immediately after the stall if the existing archive was not captured at that point.",
-    "evaluated_at": "2026-09-03T06:53:48Z",
+    "recommended_action": "Use the defensive shell-link plan as a red-confidence candidate and request the exact query/result sequence plus a fresh report captured immediately after the stall.",
+    "evaluated_at": "2026-09-03T18:04:54Z",
     "source_updated_at": "2026-08-28T09:15:52Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The repository has an identifiable shell-link metadata boundary where a malformed or unsupported .lnk can fail. The plan remains red because the report does not establish that this exception is on the hang path."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep invalid shell-link metadata from disrupting Run indexing",
+      "root_cause": "A shell-link COM failure while retrieving shortcut metadata can abort Program-plugin item creation or indexing instead of degrading that item to available path/name data.",
+      "plan": [
+        "Inspect src/modules/launcher/Wox.Infrastructure/ShellLinkHelper.cs and the corresponding CmdPal Apps ShellLinkHelper implementation to identify which COM calls can throw and which metadata is required for a launchable item.",
+        "At the Program-plugin Win32Program creation boundary in src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/Win32Program.cs, preserve the shortcut path and safe defaults when description/target metadata fails, with explicit logging of the path-independent failure category.",
+        "If the report is actually using the CmdPal Apps implementation, apply the same narrow fallback at src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Programs/Win32Program.cs rather than changing unrelated launch behavior.",
+        "Add focused tests that simulate RetrieveTargetPath/GetDescription failure and verify the item is skipped or retained according to the existing repository contract without aborting the indexing batch.",
+        "Re-run the exact Run interaction and compare responsiveness; do not claim this fixes the hang without a matching repro."
+      ],
+      "verification": [
+        "Run the existing Program-plugin unit tests covering Win32ProgramRepository and shell-link parsing.",
+        "Reproduce with the query and selected result supplied by the reporter, capture /bugreport immediately after the stall, and compare the exception path.",
+        "Verify ordinary .lnk targets, links with arguments, and malformed links still index and launch according to their existing behavior."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The log and code identify a concrete failure boundary, but there is no evidence that it causes the user's unresponsive interaction rather than being a handled indexing error."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "PowerToys Run reportedly lags or becomes unresponsive and must be restarted. The attached diagnostics contain useful environment data and a Program-plugin ShellLinkHelper lead, but the live report does not say what query or result triggers the stall.",
+    "summary": "PowerToys Run becomes slow or unresponsive and needs restarting; diagnostics show a shell-link COM exception during Program-plugin processing.",
     "known_information": [
-      "PowerToys 0.100.x from WinGet on Windows 11 is reported.",
-      "The reporter attached a PowerToys diagnostic ZIP.",
-      "The report says restarting PowerToys restores operation.",
-      "The issue has no author reply after the automated request.",
-      "ShellLinkHelper exceptions while loading .lnk descriptions are handled in the current Program plugin code."
+      "The reporter used an old 0.100.21 WinGet build on Windows 11.",
+      "A diagnostic ZIP was attached and the automated triage extracted a ShellLinkHelper exception for wmplayer.exe.",
+      "Program/Win32Program invokes ShellLinkHelper.RetrieveTargetPath for shortcut metadata.",
+      "The automated response requests the exact Run interaction and a fresh diagnostic capture."
     ],
     "inferences": [
-      "The logged ShellLinkHelper exception may be noise rather than the cause of unresponsiveness unless it occurs repeatedly during the reported stall.",
-      "The stall could be in startup indexing, query execution, result rendering, or plugin activation; the current report cannot distinguish these."
+      "A shell-link metadata failure may interrupt or delay indexing.",
+      "The logged exception may be benign noise because the current Program plugin has known-error handling.",
+      "The stall could instead be startup indexing, another plugin, result rendering, or launch-time work."
     ],
-    "analysis": "A fix design would be speculative. The narrow missing evidence is the exact interaction that triggers the stall plus a diagnostic snapshot immediately after it, which would determine the owning plugin and code path.",
+    "analysis": "Focused code review supports a narrow defensive plan, but missing reproduction evidence makes a broad claim unsafe; the plan is paired with a targeted request for the evidence that would confirm or reject it.",
     "initial_investigation": [
-      "Read the complete issue body, automated diagnostic summary, labels, assignees, and timeline.",
-      "Downloaded and extracted the attached diagnostic archive.",
-      "Inspected Wox.Infrastructure.ShellLinkHelper.RetrieveTargetPath, Win32Program.LnkProgram, and ProgramLogger known-error handling.",
-      "Searched duplicates for ShellLinkHelper COMException and PowerToys Run unresponsive reports; no decisive duplicate/fix was found."
+      "Read the live issue, diagnostic triage, labels, and comments.",
+      "Inspected the Program-plugin and CmdPal shell-link helper/Win32Program boundaries.",
+      "Checked recent relevant PowerToys history and found no issue-specific fix."
     ],
     "information_gaps": [
       {
-        "information": "The exact PowerToys Run sequence that makes it unresponsive, including the query typed, the highlighted/selected result, and whether the stall happens while opening Run, typing, or launching a result.",
-        "why_needed": "This identifies whether the failing path is startup indexing, the Program plugin, result rendering, or another plugin.",
-        "how_to_collect": "Reply with numbered steps, the exact query text, and the result selected immediately before PowerToys Run stops responding."
+        "information": "Exact PowerToys Run query, visible/selected result, and whether the stall begins on opening, typing, highlighting, or launching.",
+        "why_needed": "Identifies the owning plugin and distinguishes indexing from launch or rendering.",
+        "how_to_collect": "Reply with numbered steps and the exact query/result."
       },
       {
-        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing the unresponsive state.",
-        "why_needed": "The existing archive provides a ShellLinkHelper lead but does not prove it was captured at the moment of the stall.",
-        "how_to_collect": "Reproduce the stall, then add a comment containing /bugreport before restarting PowerToys."
+        "information": "A diagnostic ZIP captured immediately after reproducing the unresponsive state.",
+        "why_needed": "Shows whether ShellLinkHelper is active at the time of the hang.",
+        "how_to_collect": "Reproduce the stall, add a comment containing /bugreport before restarting PowerToys."
       }
+    ]
+  },
+  "design": {
+    "root_cause": "Possible non-fatality gap at shell-link metadata retrieval: a COM exception from IShellLinkW.GetDescription or related retrieval may interrupt shortcut indexing, but the causal link to the hang is unconfirmed.",
+    "evidence": [
+      "Diagnostic triage names ShellLinkHelper.RetrieveTargetPath/GetDescription.",
+      "Win32Program calls the helper while constructing program entries.",
+      "The issue lacks a query and timing that tie the exception to the stall."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/launcher/Wox.Infrastructure/ShellLinkHelper.cs",
+        "purpose": "Reads Windows shortcut target and metadata.",
+        "symbols": [
+          "ShellLinkHelper.RetrieveTargetPath",
+          "ShellLinkHelper.Description"
+        ]
+      },
+      {
+        "path": "src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/Win32Program.cs",
+        "purpose": "Builds launchable Program-plugin entries from executable and shortcut paths.",
+        "symbols": [
+          "Win32Program.CreateWin32Program"
+        ]
+      },
+      {
+        "path": "src/modules/launcher/Plugins/Microsoft.Plugin.Program.UnitTests/Storage/Win32ProgramRepositoryTest.cs",
+        "purpose": "Existing seam for mocked shell-link retrieval.",
+        "symbols": [
+          "Win32ProgramRepositoryTest"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/Win32Program.cs",
+        "symbols": [
+          "Win32Program.CreateWin32Program"
+        ],
+        "current_behavior": "Shortcut metadata retrieval is part of program construction and can fail while processing a link.",
+        "change": "Handle only the shell-link metadata failure at this boundary, log it, and retain safe path/name data or skip the malformed item according to the repository's existing contract.",
+        "code_block": "try { target = ShellLinkHelper.RetrieveTargetPath(path); } catch (COMException ex) { Logger.Warn(...); target = string.Empty; } // continue with safe shortcut fields",
+        "edge_cases": [
+          "Do not swallow file-access or launch failures unrelated to metadata.",
+          "Preserve links with arguments and working directories.",
+          "Avoid changing the CmdPal path unless evidence identifies CmdPal rather than PowerToys Run."
+        ],
+        "tests": [
+          "Mock RetrieveTargetPath to throw and assert indexing remains batch-safe.",
+          "Retain existing empty-target and normal-target tests."
+        ]
+      }
+    ],
+    "verify": [
+      "Run the existing Program-plugin unit tests after locating the repository's targeted command.",
+      "Capture a fresh diagnostic immediately after the exact stall.",
+      "Confirm ordinary shortcut discovery and launching remain unchanged."
+    ],
+    "risks": [
+      "A fallback could expose an item that lacks a valid launch target.",
+      "The exception may be unrelated to the hang, leaving the actual issue unresolved."
+    ],
+    "alternatives": [
+      "Patch only the diagnostic's wmplayer link: rejected because the failure boundary should be generic and safe.",
+      "Add a broad catch around the entire Run search: rejected because it would hide plugin defects and produce incomplete results."
     ]
   },
   "actions": [
     {
       "id": "request-info-50202",
       "type": "request_info",
-      "label": "Request Run repro details",
+      "label": "Request concrete Run repro and fresh diagnostic",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -91,7 +184,7 @@
         "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50202,
-        "body": "Thanks for attaching the diagnostic archive. It gives a useful lead in the PowerToys Run Program plugin, but it does not yet show which Run interaction makes the app unresponsive. Please reply with the exact numbered steps: whether the lag starts when opening Run, typing a query, highlighting a result, or launching a result; the exact query text; and the result that was selected or visible. If you can reproduce it again, please add a comment containing `/bugreport` immediately after Run becomes unresponsive and before restarting PowerToys so the fresh ZIP captures the stall state."
+        "body": "Thanks for attaching the diagnostic archive. It gives a useful lead in shortcut metadata processing: ShellLinkHelper hit a COM exception while reading a link. To determine whether that is the cause of the lag, please reply with numbered steps, the exact PowerToys Run query, the result selected or visible, and whether the stall begins while opening Run, typing, or launching. If you can reproduce it, add a comment containing `/bugreport` immediately after Run becomes unresponsive and before restarting PowerToys."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }

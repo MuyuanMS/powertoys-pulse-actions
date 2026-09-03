@@ -1,14 +1,14 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:51:00.1178362Z",
-  "evaluated_at": "2026-09-03T06:51:00.1178362Z",
+  "generated_at": "2026-09-03T10:04:54.663Z",
+  "evaluated_at": "2026-09-03T10:04:54.663Z",
   "url": "https://github.com/microsoft/PowerToys/issues/49684",
-  "confidence": "Medium-high",
+  "confidence": "red",
   "number": 49684,
   "title": "mouse without boarder",
   "author": "Seanyim",
@@ -70,6 +70,127 @@
         "why_needed": "Allows correlation of identity, liveness, and socket/channel events across both sides.",
         "how_to_collect": "Reproduce until the host borders return red, then add /bugreport immediately on the host and one client; attach both ZIPs with roles identified."
       }
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A code fix may be needed, but the evidence only supports a bounded investigation around host-side peer-state propagation and socket lifecycle; it does not prove which branch is faulty.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve and reconcile host peer state across socket reconnects",
+      "root_cause": "Low-confidence hypothesis: the initiating host may accept peer handshakes and then fail to reconcile identity or liveness updates, leaving MachinePool or TcpSockets host-only while clients retain the topology. Network, key, and version causes remain possible.",
+      "plan": [
+        "Collect exact versions, network roles, and synchronized host/client diagnostics before changing behavior.",
+        "Trace SocketStuff.MainTCPRoutine and UpdateTCPClients with MachineStuff.AddToMachinePool, MachinePool.TryUpdateMachineID, and SetMachineDisconnected.",
+        "Compare host/client machine-pool strings, remote IDs, socket statuses, and disconnect timestamps at the blue-to-red transition.",
+        "If a confirmed reconnect path leaves peer state stale, make that update atomic and refresh the matrix only after accepted peer state is reconciled.",
+        "Add focused MachinePool tests for duplicate IDs and disconnect/reconnect ordering, then add a socket regression test for the confirmed transition."
+      ],
+      "verification": [
+        "Reproduce until host borders return red and capture /bugreport on the host and one client at the same time.",
+        "Verify the fixed build keeps all peers connected on the initiating host across reconnects and host-order changes.",
+        "Repeat the reported line and grid layouts."
+      ],
+      "confidence": {
+        "score": 32,
+        "level": "red",
+        "rationale": "The source has plausible machine-pool and socket reconciliation points, but no diagnostic evidence identifies the failing branch and no versions or network data are available."
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "Unconfirmed host-side loss or rejection of peer liveness/identity state after initial connection; network and compatibility causes remain viable alternatives.",
+    "evidence": [
+      "Observed: both clients see all machines while the initiating host loses peers.",
+      "Observed: host borders briefly turn blue, then red.",
+      "Observed: trusted handshakes update MachinePool and socket failures force disconnect timestamps.",
+      "Inferred: a host-only failure may occur between socket status and MachinePool/matrix state."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+        "purpose": "Owns TCP handshakes, socket status transitions, and reconnect/client updates that may drop host peer state.",
+        "symbols": [
+          "MainTCPRoutine",
+          "UpdateTCPClients"
+        ]
+      },
+      {
+        "path": "src/modules/MouseWithoutBorders/App/Core/MachineStuff.cs",
+        "purpose": "Reconciles discovered machines, liveness changes, and the machine matrix after peer updates.",
+        "symbols": [
+          "AddToMachinePool",
+          "RemoveDeadMachines",
+          "SendMachineMatrix"
+        ]
+      },
+      {
+        "path": "src/modules/MouseWithoutBorders/App/Class/MachinePool.cs",
+        "purpose": "Stores peer names, IDs, and timestamps used to decide whether host-side peers are alive.",
+        "symbols": [
+          "TryUpdateMachineID",
+          "SetMachineDisconnected"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+        "symbols": [
+          "MainTCPRoutine",
+          "UpdateTCPClients"
+        ],
+        "current_behavior": "Trusted handshakes update socket status and peer identity, while later socket failures can trigger client updates and peer disconnect handling; the failing host transition is not identified by current evidence.",
+        "change": "Correlate paired diagnostics first. If the host accepts a reconnect but loses the peer during a later update, keep socket, identity, and liveness reconciliation ordered and consistent at the owning transition.",
+        "code_block": "if (handshakeAccepted)\r\n{\r\n    UpdateSocketState();\r\n    ReconcilePeerIdentityAndLiveness();\r\n    UpdateClientSockets();\r\n}",
+        "tests": [
+          "Add a socket-level regression test for the confirmed reconnect or disconnect transition."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/MouseWithoutBorders/App/Core/MachineStuff.cs",
+        "symbols": [
+          "AddToMachinePool",
+          "RemoveDeadMachines",
+          "SendMachineMatrix"
+        ],
+        "current_behavior": "Machine discovery updates MachinePool and can rebuild/send the matrix, but no evidence proves that the host's blue-to-red transition is caused by stale matrix propagation.",
+        "change": "Only if diagnostics confirm stale propagation, refresh the machine matrix after accepted peer state is reconciled and avoid publishing a partially updated host topology.",
+        "code_block": "ReconcilePeerState();\r\nUpdateMachinePoolStringSetting();\r\nSendMachineMatrix();",
+        "tests": [
+          "Add a regression test proving a reconnect preserves the expected machine matrix."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/MouseWithoutBorders/App/Class/MachinePool.cs",
+        "symbols": [
+          "TryUpdateMachineID",
+          "SetMachineDisconnected"
+        ],
+        "current_behavior": "Peer IDs and timestamps are updated independently, duplicate IDs clear the old entry, and disconnects force an older timestamp; ordering or identity data could be involved but is unproven.",
+        "change": "After the failing state is confirmed, make the smallest change needed to preserve the correct peer identity and liveness ordering without weakening duplicate-ID or disconnect safeguards.",
+        "code_block": "UpdatePeerIdentity();\r\nif (peerIsDisconnected)\r\n{\r\n    SetMachineDisconnected(peerName);\r\n}",
+        "tests": [
+          "Add focused tests for duplicate IDs and disconnect/reconnect ordering."
+        ]
+      }
+    ],
+    "verify": [
+      "Collect exact machine roles and versions, reproduce the topology failure, and compare host/client diagnostics.",
+      "After a cause-specific fix, verify peer retention across reconnects, host order changes, and both matrix layouts."
+    ],
+    "risks": [
+      "Reconnect or matrix changes can create duplicate sockets, stale IDs, or two-machine regressions.",
+      "A code change is premature if diagnostics show firewall, VPN, key, or version incompatibility."
+    ],
+    "alternatives": [
+      "Request paired evidence first; preferred because the failing transition is unknown.",
+      "Treat it as network-only; not established because the role-dependent asymmetry could still be application state."
     ]
   },
   "actions": [

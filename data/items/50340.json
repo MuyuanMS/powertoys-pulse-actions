@@ -1,6 +1,33 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50340,
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked or fork-side implementation covers the Alt-modified centralized runner hotkey path identified in the existing design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Harden Alt+Backtick centralized hotkey dispatch",
+      "root_cause": "The likely failure is in centralized runner hotkey construction or dispatch for WM_SYSKEYDOWN: Alt is reconstructed only from GetAsyncKeyState, one equal descriptor is selected, and failed dispatch has no targeted diagnostic. The reporter-machine event state is not directly observed.",
+      "plan": [
+        "Extract testable hotkey construction in src/runner/centralized_kb_hook.cpp and treat LLKHF_ALTDOWN as an Alt signal alongside async state for WM_SYSKEYDOWN, while preserving injected-key filtering and other modifier behavior.",
+        "Use equal_range in CentralizedKeyboardHook::KeyboardHookProc to try all equal descriptors outside the mutex until one action succeeds, preserving one dummy event and suppression only after success.",
+        "Add bounded diagnostics around AltWindowCycle dispatch and UI-thread posting, and add regression coverage for Alt+VK_OEM_3 without blocking the low-level hook.",
+        "Audit the separate Command Palette listener for consistent Alt-state handling without routing runner module hotkeys through that listener."
+      ],
+      "verification": [
+        "Build the runner and AltWindowCycle projects plus the applicable existing unit-test targets.",
+        "Enable Window Hopper, press Alt+Backtick, and verify the overlay cycles windows while the key is swallowed.",
+        "Verify Win+Backtick remains functional and Command Palette hotkeys do not regress.",
+        "Use diagnostics on a failing machine to distinguish hook mismatch, unsuccessful action, and UI-thread post failure."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The issue's A/B behavior, settings, and centralized hook code support this targeted hardening plan, but no low-level event trace proves which Alt dispatch failure occurs on the reporter machine."
+      }
+    }
+  ],
   "kind": "issue",
   "track": "fix",
   "stage": "awaiting_design_approval",

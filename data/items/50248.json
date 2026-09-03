@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50248,
   "kind": "issue",
   "track": "fix",
@@ -34,6 +34,32 @@
     "evaluated_at": "2026-09-03T06:51:45Z",
     "source_updated_at": "2026-08-30T09:43:25Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt covers this foreground-specific Grab and Move input failure. The low-level hook state is a plausible affected path, but the report does not identify the application or input transition needed to confirm a root cause.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Grab and Move modifier state recover safely across foreground transitions",
+      "root_cause": "Unconfirmed: the low-level keyboard/mouse hook in src/modules/GrabAndMove/GrabAndMove/main.cpp may retain an absorbed Win or Alt modifier state when a fullscreen foreground application or focus transition interrupts a drag/resize interaction, causing later key-down messages to be suppressed.",
+      "plan": [
+        "Reproduce the failure with the reporter's exact foreground application and presentation mode, recording the configured activation modifier and focus/mouse sequence.",
+        "Trace the keyboard hook's absorbed and replayed modifier state together with its foreground-change reset path; identify whether an interrupted interaction can leave a held modifier or pending click state after focus changes.",
+        "Reset or replay only the stale hook-owned modifier state at the confirmed transition boundary, preserving excluded-application behavior and avoiding synthetic key-up/down events for physically held keys.",
+        "Add regression coverage for the confirmed interrupted modifier/foreground sequence and manually verify Alt+Tab, Win+Space, and Start-menu behavior in the affected fullscreen mode."
+      ],
+      "verification": [
+        "With Grab and Move enabled in Win-modifier mode, execute the confirmed fullscreen-app and focus-transition sequence and verify that keyboard key-down events and Windows shortcuts continue to work.",
+        "Repeat with an excluded application, normal desktop interaction, and a physically held modifier to confirm the reset does not regress normal hook behavior."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The diagnostic settings and hook design make a stale modifier-state transition plausible, but no reporter trace identifies the app, window mode, or exact sequence that selects this path over application-level input capture."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Grab and Move intermittently leaves Alt and Win shortcuts unusable only in certain foreground contexts, with key-up still observed and normal behavior returning outside that context.",
     "known_information": [

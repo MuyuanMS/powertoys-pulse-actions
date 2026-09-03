@@ -1,13 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50199,
   "kind": "issue",
   "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-03T06:55:07.9904446Z",
-  "evaluated_at": "2026-09-03T06:55:07.9904446Z",
+  "generated_at": "2026-09-03T18:04:54Z",
+  "evaluated_at": "2026-09-03T18:04:54Z",
   "source_updated_at": "2026-08-28T06:48:47Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50199",
   "title": "The PowerToys Run window is displaying an error and cannot be displayed correctly.",
@@ -18,57 +15,162 @@
     "Product-PowerToys Run",
     "Needs-Triage"
   ],
-  "assignees": null,
+  "assignees": [],
   "comments": 1,
-  "confidence": "High",
-  "summary": "The attached diagnostics confirm a Window Walker search exception, but the live issue still lacks the exact Run query and reproduction sequence requested from the reporter.",
+  "stage": "design_in_progress",
+  "owes": "author",
+  "pending_author": true,
+  "confidence": "Medium",
+  "summary": "The diagnostic archive identifies a Window Walker null-reference during fuzzy search, but the exact query and visible error state are still unconfirmed.",
   "status": {
-    "detail": "Needs-Author-Feedback is current and the reporter has not answered the request for concrete steps or current-version confirmation.",
-    "glyph": "⏳",
-    "label": "Waiting on author"
+    "glyph": "🎯",
+    "label": "Low-confidence Window Walker fix candidate",
+    "detail": "Harden the fuzzy-search snapshot path against null window/process data while requesting the missing repro."
   },
   "next_action": {
-    "reason": "The outstanding author-feedback request already asks for the missing steps and current-build result.",
-    "glyph": "⏳",
-    "label": "Wait for reproduction details"
+    "glyph": "💬",
+    "label": "Request exact query and current-version result",
+    "reason": "The evidence supports a cheap defensive fix candidate but does not establish that it caused the screenshot."
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "source_updated_at": "2026-08-28T06:48:47Z",
-    "rationale": "The diagnostic archive contains a PowerToys Run Window Walker NullReferenceException for query text, but the live thread still has Needs-Author-Feedback, no reporter reply, no assignee, no duplicate, and no linked fix. A design would be speculative until the reporter connects the screenshot to an exact query and current-version result.",
-    "recommended_action": "Wait for the reporter to provide exact reproduction steps, query text, and current-version confirmation; do not post a duplicate request while Needs-Author-Feedback is outstanding.",
-    "evaluated_at": "2026-09-03T06:55:07.9904446Z",
+    "status": "actionable_design",
+    "rationale": "The attached diagnostics provide a concrete Window Walker NullReferenceException in FuzzySearchOpenWindows during query processing. The current code dereferences each window and its Process without null guards, making a defensive plan plausible, but the absent query and old 0.100.2 version keep confidence in the reported UI cause below green.",
     "evidence": [
-      "Issue body supplies a screenshot and diagnostic ZIP.",
-      "Downloaded diagnostics show System.NullReferenceException in Microsoft.Plugin.WindowWalker.Components.SearchController.FuzzySearchOpenWindows from SyncOpenWindowsWithModel and UpdateSearchText during query li.",
-      "The same Run log has shortcut repository duplicate-item errors, but those do not explain the marked UI state.",
-      "Current labels include Issue-Bug, Product-PowerToys Run, Needs-Triage, and Needs-Author-Feedback; there are no assignees or linked pull requests.",
-      "Duplicate search for the title and Window Walker exception returned only this issue."
-    ]
-  },
-  "issue_context": {
-    "known_information": [
-      "PowerToys version is 0.100.2 stable from the Microsoft Store.",
-      "The diagnostic ZIP was downloaded and inspected; the relevant Run log records a Window Walker NullReferenceException in FuzzySearchOpenWindows during query li.",
-      "No author response has arrived after the automated request for concrete reproduction steps and current-version confirmation."
+      "The issue includes a screenshot and a diagnostic ZIP.",
+      "The diagnostic summary records NullReferenceException in SearchController.FuzzySearchOpenWindows during SyncOpenWindowsWithModel and UpdateSearchText.",
+      "Current SearchController code dereferences window.Title and window.Process.Name while iterating a snapshot.",
+      "The same diagnostic set reports a shortcut duplicate-item error, which is an alternative path rather than proof of the screenshot cause.",
+      "The issue has no author reply after the request for exact steps and current-version confirmation.",
+      "Window Walker history is old and broad, so no recent targeted fix is established."
     ],
-    "analysis": "The attachment gives a concrete investigation lead but not enough acceptance criteria. Without the exact query, enabled plugins, and current-version result, an implementation design could fix a plausible Window Walker null path while missing the user-visible error.",
-    "initial_investigation": [
-      "Read the full issue body, bot comment, current labels, assignees, timeline, duplicate search results, and downloaded diagnostic archive.",
-      "Confirmed no linked work, assignee, duplicate, or reporter follow-up currently changes the author-wait state."
+    "recommended_action": "Investigate the defensive Window Walker plan and request the exact query, enabled-plugin state, and result on the latest stable build before implementation approval.",
+    "evaluated_at": "2026-09-03T18:04:54Z",
+    "source_updated_at": "2026-08-28T06:48:47Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository change is applicable: the diagnostic stack names a specific search method with unsafe null assumptions. The plan is intentionally yellow because the issue's screenshot and query are not connected conclusively."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Window Walker fuzzy search tolerate invalid window snapshots",
+      "root_cause": "A window or its Process data can be null or incomplete in the snapshot consumed by FuzzySearchOpenWindows, but the method dereferences window.Title and window.Process.Name without a guard; that can abort query processing.",
+      "plan": [
+        "In src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/SearchController.cs, inspect the snapshot contract and identify whether null Window entries or null Process values are possible during window churn.",
+        "Guard invalid entries and missing process metadata in FuzzySearchOpenWindows, preserving title matching when available and treating missing process names as a non-match instead of throwing.",
+        "Add focused tests around null/incomplete snapshot entries and retain the existing empty-title filtering semantics.",
+        "Reproduce the reporter's query on the latest stable build to determine whether the visible error disappears; do not treat the defensive change as proof of the screenshot cause without that check."
+      ],
+      "verification": [
+        "Run the Window Walker/PowerToys Run unit tests covering SearchController and add a null/incomplete-window case if the existing test project exposes this seam.",
+        "Reproduce the original screenshot sequence with the exact query and confirm Run remains responsive and renders results.",
+        "Repeat after updating from 0.100.2 to the latest stable release to separate an already-fixed version issue from a current regression."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The diagnostic method and unsafe dereferences match a credible crash path, but the query, screenshot state, and current-version behavior are unconfirmed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run displays an incorrect/error state; diagnostics show Window Walker failing during fuzzy search.",
+    "known_information": [
+      "The reporter used PowerToys 0.100.2 from the Microsoft Store.",
+      "The diagnostic archive records a Window Walker NullReferenceException in FuzzySearchOpenWindows for query processing.",
+      "SearchController currently reads window.Title and window.Process.Name from a live snapshot.",
+      "The automated response requests exact steps and latest-version confirmation."
     ],
     "inferences": [
-      "The Window Walker exception may be related to the visible Run failure, but the screenshot-to-query link is not established.",
-      "The duplicate shortcut repository errors appear incidental unless the reporter identifies a shortcut query path."
+      "The null-reference may explain the visible error if it occurs on the same query path.",
+      "The shortcut duplicate-item error may be incidental.",
+      "A defensive search fix could prevent a crash without resolving a separate rendering or repository problem."
     ],
-    "summary": "PowerToys Run shows a visible error in the screenshot. The attached diagnostic archive narrows one possible cause to Window Walker failing during fuzzy search, but the issue does not say what was typed or how the UI reached the marked state.",
+    "analysis": "The stack and current code are specific enough for a low-confidence fix candidate, but the missing query and version confirmation require an explicit information request alongside the plan.",
+    "initial_investigation": [
+      "Read the live issue, screenshot reference, comments, labels, and diagnostic triage.",
+      "Read SearchController.cs from current main.",
+      "Checked Window Walker file history and found no recent issue-specific fix."
+    ],
     "information_gaps": [
       {
-        "why_needed": "Connects the diagnostic exception to the visible symptom and defines a regression case.",
-        "information": "Exact PowerToys Run query and interaction sequence that produces the marked error.",
-        "how_to_collect": "Reply with numbered steps, exact query text, and whether Window Walker is enabled on the latest stable PowerToys release."
+        "information": "Exact query and interaction sequence that produces the marked error.",
+        "why_needed": "Connects the diagnostic method to the user-visible state and selects the correct regression test.",
+        "how_to_collect": "Reply with numbered steps, exact query text, selected result, and whether the failure occurs while opening Run, typing, or launching."
+      },
+      {
+        "information": "Whether the issue reproduces on the latest stable release.",
+        "why_needed": "The report is from 0.100.2 and may predate current Window Walker changes.",
+        "how_to_collect": "Update to the latest stable PowerToys release and repeat the same sequence."
       }
     ]
   },
-  "actions": []
+  "design": {
+    "root_cause": "Likely null or incomplete Window data during fuzzy search causes SearchController.FuzzySearchOpenWindows to dereference unavailable title/process metadata.",
+    "evidence": [
+      "Diagnostic stack identifies FuzzySearchOpenWindows during UpdateSearchText.",
+      "Current source dereferences window.Title and window.Process.Name without validation.",
+      "The exact query and screenshot connection remain unconfirmed."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/SearchController.cs",
+        "purpose": "Filters and scores open-window snapshots for PowerToys Run.",
+        "symbols": [
+          "SearchController.SyncOpenWindowsWithModel",
+          "SearchController.FuzzySearchOpenWindows"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/SearchController.cs",
+        "symbols": [
+          "SearchController.FuzzySearchOpenWindows"
+        ],
+        "current_behavior": "Every snapshot entry is assumed to have a title and Process.Name.",
+        "change": "Skip null entries, require a usable title, and make process-name matching optional when process metadata is unavailable.",
+        "code_block": "foreach (var window in openWindows ?? Enumerable.Empty<Window>()) { if (window is null || string.IsNullOrEmpty(window.Title)) continue; var processName = window.Process?.Name; var titleMatch = ...; var processMatch = string.IsNullOrEmpty(processName) ? EmptyMatch : ...; ... }",
+        "edge_cases": [
+          "Preserve title-only matches.",
+          "Do not hide valid windows solely because Process is unavailable.",
+          "Keep snapshot processing deterministic and avoid a broad catch that hides unrelated defects."
+        ],
+        "tests": [
+          "Add focused cases for null entries, missing Process, empty title, and normal title/process matches."
+        ]
+      }
+    ],
+    "verify": [
+      "Run the existing targeted Window Walker/PowerToys Run tests after locating the project command.",
+      "Repeat the exact query and screenshot sequence on the latest stable build.",
+      "Confirm Run stays responsive and that normal title/process fuzzy matching is unchanged."
+    ],
+    "risks": [
+      "A null guard can hide a lifecycle defect if logging is omitted.",
+      "Title-only results may change ranking when process metadata is absent."
+    ],
+    "alternatives": [
+      "Fix only the shortcut repository duplicate error: rejected because the diagnostic stack names Window Walker fuzzy search.",
+      "Add a broad exception handler: rejected because it would conceal malformed snapshot bugs and make results silently incomplete."
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-50199",
+      "type": "request_info",
+      "label": "Request exact Run repro and current-version result",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50199,
+        "body": "The diagnostic report gives us a useful Window Walker lead: a NullReferenceException occurred during fuzzy search. To connect that trace to the marked window and choose the right regression case, please reply with numbered steps, the exact PowerToys Run query, which result was selected or visible, and whether the issue still reproduces after updating from 0.100.2 to the latest stable release."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

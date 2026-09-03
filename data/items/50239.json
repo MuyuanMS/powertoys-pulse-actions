@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50239,
   "kind": "issue",
   "track": "fix",
@@ -29,9 +29,34 @@
       "Settings maps sysConflicts to IsSystemConflict and renders strings/link claiming a default Windows-reserved shortcut."
     ],
     "recommended_action": "Approve the fork-side design to change system-conflict UI wording/link only, preserving the conservative detector and avoiding Windows-version whitelisting.",
-    "evaluated_at": "2026-09-03T06:51:45Z",
+    "evaluated_at": "2026-09-03T10:04:54Z",
     "source_updated_at": "2026-09-03T02:28:22Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete upstream or fork implementation exists beyond the design mirror; a focused Settings UI wording/link change addresses the unsupported ownership claim while preserving conservative conflict detection.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Describe system hotkey conflicts as unavailable rather than Windows-owned",
+      "root_cause": "The runner treats ERROR_HOTKEY_ALREADY_REGISTERED from a temporary RegisterHotKey probe as proof of a documented Windows-reserved shortcut, although the error does not identify the owner and Color Picker can still activate through the centralized keyboard hook.",
+      "plan": [
+        "Revise the shared system-conflict resources in src/settings-ui/Settings.UI/Strings/en-us/Resources.resw so they describe registration failure without asserting Windows ownership.",
+        "Remove the fixed Windows shortcut documentation hyperlink from ShortcutConflictWindow.xaml while keeping the existing conflict category, Ignore action, and in-app conflict presentation.",
+        "Add Settings UI regression coverage for the revised text, absent misleading link, and unchanged Ignore behavior."
+      ],
+      "verification": [
+        "Configure Color Picker to Win+Shift+C on Windows 11, open the shortcut-conflict window, confirm the warning is non-attributing and the shortcut still launches Color Picker.",
+        "Run the focused Settings UI conflict test and confirm ignored conflicts are removed from the displayed count."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The issue behavior and the runner-to-Settings resource path directly support an attribution-only fix; no detector or IPC change is required."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "The conflict detector labels a functioning Color Picker chord as a Windows system conflict and points users to documentation that does not support the classification.",
     "known_information": [
@@ -183,8 +208,8 @@
       "Show the raw Win32 error: rejected because ERROR_HOTKEY_ALREADY_REGISTERED is not actionable for end users and does not identify the owner."
     ]
   },
-  "generated_at": "2026-09-03T06:51:45Z",
-  "evaluated_at": "2026-09-03T06:51:45Z",
+  "generated_at": "2026-09-03T10:04:54Z",
+  "evaluated_at": "2026-09-03T10:04:54Z",
   "source_updated_at": "2026-09-03T02:28:22Z",
   "title": "Shortcut Conflict shown when there's no documented conflict.",
   "author": "gungfujoe",

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50175,
   "kind": "issue",
   "track": "fix",
@@ -7,7 +7,7 @@
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-03T06:55:46.8406702Z",
-  "evaluated_at": "2026-09-03T06:55:46.8406702Z",
+  "evaluated_at": "2026-09-03T10:04:54.485Z",
   "source_updated_at": "2026-09-02T14:05:47Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50175",
   "title": "CmdPal: Bookmark {placeholder} field retains last-entered value on every subsequent open",
@@ -44,9 +44,35 @@
       "Duplicate search found related Issue 46528 for Enter activation, but it is not the retained-value bug."
     ],
     "recommended_action": "Approve the fork-side plan to clear each retained placeholder run after, and only after, CommandLauncher.Launch returns true; add isolated regression coverage and an accessible parameter-field name.",
-    "evaluated_at": "2026-09-03T06:55:46.8406702Z",
+    "evaluated_at": "2026-09-03T10:04:54.485Z",
     "source_updated_at": "2026-09-02T14:05:47Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No upstream or fork implementation currently fixes the retained placeholder state. The fork mirror contains a design only, so a bounded success-path reset remains appropriate.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Clear bookmark placeholder values after a successful launch",
+      "root_cause": "BookmarkPlaceholderPage is cached for the Command Palette session and its StringParameterRun instances retain submitted text because LaunchWithCurrentValues never clears them after CommandLauncher.Launch succeeds.",
+      "plan": [
+        "Add a helper in BookmarkPlaceholderPage that clears each distinct retained placeholder run.",
+        "Invoke it only after a successful launch, preserving the evaluated target before clearing and retaining values when launch fails.",
+        "Give StringParamTemplate an accessible name and add unit/UI regression coverage for repeated opens, failed launches, and fixture restoration."
+      ],
+      "verification": [
+        "Open a dynamic bookmark, submit a value, reopen it in the same Command Palette session, and confirm the field is empty.",
+        "Confirm a failed launch keeps the entered value available for correction.",
+        "Run the existing bookmark unit and Command Palette UI test paths in the established PowerToys test environment."
+      ],
+      "confidence": {
+        "score": 94,
+        "level": "green",
+        "rationale": "The issue reproduction, independent x64/ARM64 automation, source lifetime, and feature history all directly identify the retained in-memory run state and its missing success transition."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "A dynamic bookmark such as https://example.com/issue/ABC-{n} should solicit a new value on every invocation. Instead, the parameter value is retained for the lifetime of the Command Palette process.",
     "known_information": [

@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50215,
   "kind": "issue",
   "track": "fix",
-  "generated_at": "2026-09-03T06:53:48Z",
-  "evaluated_at": "2026-09-03T06:53:48Z",
+  "generated_at": "2026-09-03T10:04:54Z",
+  "evaluated_at": "2026-09-03T10:04:54Z",
   "source_updated_at": "2026-08-28T20:16:04Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50215",
   "title": "[Text Extractor] Captures mirrored screen area (X-axis inversion) when Windows display language is Arabic (RTL)",
@@ -68,9 +68,34 @@
       "ImageMethods.GetRegionAsBitmap passes that Rectangle directly to Graphics.CopyFromScreen as an offset from the monitor origin."
     ],
     "recommended_action": "Approve the fork-side implementation design that pins/normalizes overlay coordinates before screen capture and adds RTL selection validation.",
-    "evaluated_at": "2026-09-03T06:53:48Z",
+    "evaluated_at": "2026-09-03T10:04:54Z",
     "source_updated_at": "2026-08-28T20:16:04Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete upstream or fork implementation exists. The reported RTL-only mirror symptom maps to a focused overlay-coordinate normalization change, with manual RTL validation still required to rule out double correction.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Normalize Text Extractor selection coordinates before screen capture",
+      "root_cause": "WPF overlay selection coordinates are converted directly into left-to-right physical CopyFromScreen offsets even when an Arabic session mirrors the overlay coordinate space, so the selected right-side region can map to the opposite side.",
+      "plan": [
+        "Pin the capture overlay and selection canvas to LeftToRight without changing OCR language or localized text behavior.",
+        "Centralize DIP-to-physical selection conversion in OCROverlay.xaml.cs, conditionally normalizing RTL X coordinates, clamping to the monitor bounds, and avoiding double correction when the layout pin is sufficient.",
+        "Keep ImageMethods screen capture physical-only, add bounds protection, and extend selection coverage with an Arabic RTL sentinel-region regression or an explicitly manual-gated equivalent."
+      ],
+      "verification": [
+        "With Windows display language set to Arabic, place distinct sentinel text on both sides of the screen, select the right-side region, and confirm Text Extractor copies the right sentinel rather than the left.",
+        "Repeat at 100% and non-100% DPI and, when available, on a secondary monitor."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The symptom, missing FlowDirection contract, and direct CopyFromScreen boundary align strongly, but the exact WPF mirroring behavior and whether the XAML pin alone fixes it require RTL reproduction."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Text Extractor selection and captured bitmap disagree horizontally when Windows uses an Arabic right-to-left display language: selecting text on the right captures the corresponding left-side area.",
     "known_information": [
@@ -91,7 +116,13 @@
       "Searched duplicates for Text Extractor Arabic/RTL mirrored capture and found no active duplicate beyond this issue.",
       "Created fork mirror issue for the converged design after confirming no existing [Issue 50215] fork issue existed."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "A controlled RTL reproduction after pinning the overlay direction, including the pre-normalization selection rectangle",
+        "why_needed": "This confirms whether WPF is actually mirroring the selection coordinates and prevents applying both a layout fix and an unnecessary X inversion.",
+        "how_to_collect": "Run the right-side sentinel-text reproduction under Arabic display language at two DPI scales and record the selected rectangle before screen capture."
+      }
+    ]
   },
   "design": {
     "root_cause": "Text Extractor uses WPF overlay coordinates from MouseEventArgs.GetPosition and Canvas.GetLeft as if they are already left-to-right physical screen offsets. In an Arabic/right-to-left shell session, WPF can mirror the overlay visual/input coordinate space while Graphics.CopyFromScreen remains absolute left-to-right physical pixels, so a right-side visual selection is passed to the capture API as a left-side physical region.",

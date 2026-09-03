@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50297,
   "kind": "issue",
   "track": "triage",
   "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:52:53Z",
-  "evaluated_at": "2026-09-03T06:52:53Z",
+  "generated_at": "2026-09-03T10:38:00Z",
+  "evaluated_at": "2026-09-03T10:38:00Z",
   "source_updated_at": "2026-09-01T19:14:48Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50297",
   "title": "Command Pallet Multiple Displays",
@@ -18,61 +18,73 @@
   ],
   "assignees": [],
   "comments": 0,
-  "confidence": "High",
-  "summary": "Command Palette moves to another monitor when a docked multi-display topology is connected, and its settings label the laptop panel differently from Windows Settings. The report includes a diagnostic archive and screenshot, but not the selected placement mode or reconnect stability after explicitly reselecting the physical display.",
+  "confidence": "Medium",
+  "summary": "Command Palette displays GDI device names rather than Windows Identify ordinals, explaining the numbering mismatch. The reported physical movement remains unproven after a shipped topology fix and needs a focused dock reconnect capture.",
   "status": {
     "glyph": "?",
-    "label": "Display placement behavior needs clarification",
-    "detail": "Windows display numbers are presentation labels rather than stable monitor identities; the selected Command Palette placement and reconnect behavior determine whether this is a mapping or persistence defect."
+    "label": "Placement regression needs proof",
+    "detail": "The cosmetic numbering mismatch has existing ownership; only a before-and-after physical placement capture can establish a remaining docking regression."
   },
   "next_action": {
-    "glyph": ">",
-    "label": "Request focused topology test",
-    "reason": "Determine whether Command Palette loses a selected monitor identity or only displays different numbering."
+    "glyph": "💬",
+    "label": "Request focused dock reconnect evidence",
+    "reason": "Identify whether the enabled dock configuration changes during the laptop-to-hub topology transition."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The screenshot establishes that Command Palette and Windows show different display numbers, but display numbers alone are not stable identities. The actionable question is whether an explicitly selected physical display remains selected after disconnecting and reconnecting the dock.",
+    "rationale": "The attachment confirms a GDI-name versus Windows Identify-number mismatch, but that presentation difference does not prove why the Dock physically moved. The diagnostic version already includes the recent topology-change fix, so a controlled transition is necessary before proposing another implementation.",
     "evidence": [
-      "The reporter configured Command Palette while using only the laptop panel, then connected a hub with multiple displays.",
-      "After docking, Command Palette moved to another screen.",
-      "Windows Settings labels the laptop display as 1 while Command Palette settings label it as 3.",
-      "A screenshot and PowerToys diagnostic archive are attached.",
-      "Issue 49604 tracks a different symptom: a blank Command Palette dock on a secondary display, not display numbering or placement persistence."
+      "The reporter supplied a screenshot, diagnostic ZIP, and a laptop-only to multi-display-hub scenario.",
+      "The diagnostic inventory records GDI names DISPLAY1, DISPLAY2, DISPLAY3, and DISPLAY21.",
+      "MonitorService.FormatDisplayName can turn a GDI device name such as `\\\\.\\DISPLAY21` into Display 21.",
+      "Issue 49295 already tracks the display-number mismatch.",
+      "PR 49814 addressed docking/topology changes and the diagnostic Command Palette build includes that change.",
+      "The diagnostic lacks the persisted MonitorConfigs and logs for the topology transition."
     ],
-    "recommended_action": "Request the current placement setting, monitor connection topology, and a controlled reselect/reconnect result using physical monitor descriptions rather than numeric labels.",
-    "evaluated_at": "2026-09-03T06:52:53Z",
+    "recommended_action": "Request a precise laptop-only to hub-connected Dock placement capture, including the enabled physical monitor before and after reconnection.",
+    "evaluated_at": "2026-09-03T10:38:00Z",
     "source_updated_at": "2026-09-01T19:14:48Z"
   },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR 49814 is a merged topology-change fix and Issue 49295 owns the label mismatch. Neither proves that this report's remaining physical-movement symptom is resolved, so new implementation work would be speculative.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49814",
+      "https://github.com/microsoft/PowerToys/issues/48516",
+      "https://github.com/microsoft/PowerToys/issues/49295"
+    ]
+  },
   "issue_context": {
-    "summary": "Connecting a multi-monitor hub changes Command Palette’s screen placement and exposes display numbering that differs from Windows Settings.",
+    "summary": "Command Palette presents volatile GDI display names as labels that differ from Windows Settings, while the claimed dock movement needs transition-time evidence.",
     "known_information": [
-      "The issue reproduces with PowerToys 0.100.2 installed from Microsoft Store.",
-      "The laptop panel was the only connected display when Command Palette was initially configured.",
-      "Connecting the hub adds multiple displays and Command Palette appears on a different screen.",
-      "The reporter supplied a screenshot and diagnostic ZIP.",
-      "No comments, assignees, linked work, or direct duplicate are present."
+      "The reporter used PowerToys 0.100.2 from Microsoft Store and supplied a screenshot and diagnostic archive.",
+      "Windows Identify showed displays 1 through 4 while Command Palette showed labels 1, 2, 3, and 21.",
+      "The archive identifies the laptop panel as GDI device `\\\\.\\DISPLAY3`.",
+      "Command Palette formats this GDI name as a display label when no friendly name is available.",
+      "Issue 49295 is an open report of the same numbering mismatch.",
+      "The archive's Command Palette build includes PR 49814's topology-change fix."
     ],
     "inferences": [
-      "The numeric mismatch may reflect different enumeration order rather than a wrong physical monitor identity.",
-      "If an explicitly reselected laptop panel changes again after reconnect, Command Palette may be persisting a transient display index instead of stable monitor identity."
+      "GDI-name formatting explains the numbering mismatch but does not establish incorrect monitor selection.",
+      "A remaining physical move could be a configuration-reassociation problem, but the archive cannot identify which reconciliation path ran.",
+      "The existing topology change fix may already cover the movement symptom; a controlled retest is required."
     ],
-    "analysis": "The supplied diagnostics eliminate the need for another generic log request, but the current description does not distinguish a cosmetic numbering mismatch from failed monitor-selection persistence. A reconnect test after explicitly selecting the physical panel provides that distinction.",
+    "analysis": "The report already supplies the physical-to-GDI mapping, so asking again for monitor numbering would be redundant. The action targets only the evidence that distinguishes a cosmetic label issue from a reproducible Dock placement regression.",
     "initial_investigation": [
-      "Reviewed the full live issue body, attachment presence, labels, assignees, timeline, and closed-by-PR references.",
-      "Reviewed Issue 49604 and determined it concerns a blank dock on a secondary display, not this display-identity symptom.",
-      "Searched Command Palette source for monitor/display placement handling to scope the likely area for later implementation."
+      "Read the complete issue, screenshot, diagnostic archive, labels, and timeline.",
+      "Inspected MonitorService.FormatDisplayName, DockMonitorConfigViewModel, DockSettingsPage, DockWindowManager, and MonitorConfigReconciler.",
+      "Reviewed PR 49814, Issue 48516, Issue 49295, and relevant Windows monitor-device documentation."
     ],
     "information_gaps": [
       {
-        "information": "The selected Command Palette display/placement mode and whether explicitly reselecting the laptop panel survives a dock reconnect.",
-        "why_needed": "This separates a label-number mismatch from failure to persist the chosen physical display.",
-        "how_to_collect": "With all displays connected, select the laptop panel in Command Palette settings, confirm where the palette opens, disconnect and reconnect the hub, then report which physical screen it opens on."
+        "information": "Before-and-after physical monitor placement and per-monitor Dock toggle state across a laptop-only to hub-connected transition.",
+        "why_needed": "Shows whether the Dock only appears mislabeled or its enabled monitor configuration actually changes.",
+        "how_to_collect": "Enable the Dock only on the physical laptop panel, capture Windows Identify and Command Palette's per-monitor toggles, reconnect the hub, then capture both the toggles and the physical screen where the Dock appears."
       },
       {
-        "information": "The monitor connection topology and physical descriptions associated with the numbers shown in each UI.",
-        "why_needed": "Dock, USB-C, DisplayLink, and direct GPU paths can change display enumeration order.",
-        "how_to_collect": "List each monitor model and whether it is the laptop panel, directly connected, or connected through the hub; map those physical displays to the numbers shown in Windows and Command Palette."
+        "information": "A fresh diagnostic captured immediately after a verified enabled-monitor change or physical move.",
+        "why_needed": "The supplied archive does not capture the transition or persisted monitor configuration.",
+        "how_to_collect": "If the enabled monitor changes or the Dock moves after reconnecting the hub, add a comment containing /bugreport immediately afterward."
       }
     ]
   },
@@ -80,14 +92,15 @@
     {
       "id": "request-info-50297",
       "type": "request_info",
-      "label": "Request display identity test",
+      "label": "Request dock reconnect evidence",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 50297,
-        "body": "Thanks for the screenshot and diagnostic ZIP. The display numbers shown by different apps can come from enumeration order rather than a stable monitor identity, so we need to distinguish a numbering mismatch from a placement-persistence problem. With all displays connected, please select the physical laptop panel in Command Palette settings, confirm which screen the palette opens on, then disconnect and reconnect the hub and report which physical screen it opens on afterward. Please also list each monitor model and whether it is the laptop panel, directly connected, or connected through the hub, mapping those physical displays to the numbers shown in Windows and Command Palette."
-      }
+        "body": "Thanks for the screenshot and diagnostic ZIP. The archive identifies the laptop panel as the GDI device `\\\\.\\DISPLAY3`; that identifier is not the same numbering system shown by Windows Settings, and the label mismatch is already tracked in #49295. The archive also shows a Command Palette build containing the docking/topology change from #49814. To determine whether a placement regression remains, please connect all monitors, enable the Dock only on the physical laptop panel, and capture the per-monitor toggles and physical Dock location before and after disconnecting and reconnecting the hub. If the enabled monitor changes or the Dock moves, please add a comment containing `/bugreport` immediately afterward."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

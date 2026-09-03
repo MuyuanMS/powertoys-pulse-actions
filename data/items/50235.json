@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50235,
   "kind": "issue",
   "track": "fix",
-  "generated_at": "2026-09-03T06:53:48Z",
-  "evaluated_at": "2026-09-03T06:53:48Z",
+  "generated_at": "2026-09-03T10:04:54Z",
+  "evaluated_at": "2026-09-03T10:04:54Z",
   "source_updated_at": "2026-08-29T09:40:15Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50235",
   "title": "CmdPal: Extension SDK 0.12.260812002 can't be used with project using old .NET versions",
@@ -69,9 +69,34 @@
       "src/modules/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.nuspec declares net8.0-windows10.0.19041.0 dependencies and copies the toolkit DLL into lib/net8.0-windows10.0.19041.0."
     ],
     "recommended_action": "Approve the fork-side implementation design that aligns the built toolkit assembly, nuspec metadata, and packaging verification.",
-    "evaluated_at": "2026-09-03T06:53:48Z",
+    "evaluated_at": "2026-09-03T10:04:54Z",
     "source_updated_at": "2026-08-29T09:40:15Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete upstream or fork implementation is present. The existing design targets the apparent package TFM mismatch and adds a packaging guard, but the published package payload still needs direct inspection before implementation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Align the CmdPal SDK toolkit target framework with its NuGet assets",
+      "root_cause": "The toolkit project inherits the repository net10 target while the SDK nuspec places its managed assembly and dependency group under net8, allowing a net10-built payload to be advertised as net8-compatible.",
+      "plan": [
+        "Set an explicit SDK toolkit target framework matching the package lib and dependency-group TFM, preserving CsWinRT and native runtime asset behavior.",
+        "Add a terminating BuildSDKHelper.ps1 pre-pack check that compares the toolkit assembly/deps target framework with the nuspec asset folder.",
+        "Build a minimal net8 extension consumer against the generated package and keep the existing net10 template build covered."
+      ],
+      "verification": [
+        "Inspect the generated nupkg to confirm the toolkit assembly metadata, deps runtime target, nuspec dependency group, and lib folder all agree.",
+        "Restore and build a minimal net8 Windows consumer from the local package source without requiring .NET 10."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The repository target and nuspec mismatch are directly observed and fit the report, but the exact published package payload must be confirmed before choosing the final target framework."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "A Command Palette Extension SDK package version associated with PowerToys 0.101 is not usable by older .NET extension projects because the package appears to introduce .NET 10 requirements despite net8 package metadata.",
     "known_information": [
@@ -90,7 +115,13 @@
       "Checked recent history and found the .NET 10 upgrade commit in the affected file history.",
       "Created fork mirror issue for the converged design after confirming no existing [Issue 50235] fork issue existed."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "The actual lib assembly TargetFrameworkAttribute and deps runtimeTarget from SDK version 0.12.260812002",
+        "why_needed": "This distinguishes the suspected net10 payload mismatch from a different package dependency or restore cause before implementation.",
+        "how_to_collect": "Inspect the published nupkg contents and assembly/deps metadata, then repeat with the locally generated package."
+      }
+    ]
   },
   "design": {
     "root_cause": "The SDK package advertises its managed toolkit under lib/net8.0-windows10.0.19041.0, but the toolkit project inherits the repo-wide net10.0 target from Common.Dotnet.props. After the .NET 10 upgrade, the DLL and deps.json copied into the net8 package folder can be built for .NET 10, so older extension projects restore a package that looks net8-compatible but receives net10 assets.",

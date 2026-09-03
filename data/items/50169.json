@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50169,
   "kind": "issue",
   "track": "fix",
@@ -7,7 +7,7 @@
   "owes": "author",
   "pending_author": true,
   "generated_at": "2026-09-03T06:55:07.9904446Z",
-  "evaluated_at": "2026-09-03T06:55:07.9904446Z",
+  "evaluated_at": "2026-09-03T10:04:54.485Z",
   "source_updated_at": "2026-09-02T23:59:23Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50169",
   "title": "PowerToys randomly exits",
@@ -37,7 +37,7 @@
     "source_updated_at": "2026-09-02T23:59:23Z",
     "rationale": "The full thread and downloaded diagnostics do not expose a crash or exit reason. A maintainer reviewed the log, asked about installed software, then explicitly requested that the reporter upgrade and monitor whether the issue still occurs. Draft PR 50273 adds logging for future evidence but is not a user-facing fix.",
     "recommended_action": "Wait for the reporter's current-version monitoring result and re-triage if the issue recurs with fresh diagnostics.",
-    "evaluated_at": "2026-09-03T06:55:07.9904446Z",
+    "evaluated_at": "2026-09-03T10:04:54.485Z",
     "evidence": [
       "The reporter describes PowerToys Runner/tray disappearing after hours while Command Palette stays active on multiple systems.",
       "The reporter uploaded a diagnostic after recurrence and confirmed no software was installed during the affected period.",
@@ -46,6 +46,32 @@
       "Current labels include Issue-Bug, Product-General, Needs-Triage, and Needs-Team-Response; there are no assignees."
     ]
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No user-facing fix currently covers the unexplained Runner exit. The open related PR adds diagnostics only, so a low-confidence hardening plan is retained while the maintainer-requested current-version result and exit evidence are missing.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Harden Runner shutdown handling after the exit mechanism is identified",
+      "root_cause": "A specific exit mechanism is not established. The only code-backed hypothesis is that Windows session-end or Restart Manager close-app messages may terminate Runner while Command Palette remains alive; this remains unconfirmed.",
+      "plan": [
+        "Retest on the newest PowerToys release and capture a fresh /bugreport immediately after recurrence, using the diagnostic logging from PR 50273 when available.",
+        "Trace the recorded Runner message or process-exit path to distinguish an authorized Windows session-end request from an unexpected application termination.",
+        "If an unintended shutdown path is confirmed, change only that path to preserve normal session-end behavior while preventing the unexplained exit, then add a focused regression test for the identified message or cleanup sequence."
+      ],
+      "verification": [
+        "Confirm whether the issue still reproduces on the newest release during monitoring.",
+        "If it recurs, correlate the fresh Runner log with the process exit and verify the selected code path prevents the unintended disappearance without breaking normal logoff/shutdown.",
+        "Do not treat the diagnostic-only PR as proof of a fix; require a reproduced exit mechanism before implementation."
+      ],
+      "confidence": {
+        "score": 18,
+        "level": "red",
+        "rationale": "The issue is real, but current diagnostics contain no exit signature and the maintainer is explicitly waiting for a current-version result; the session-end hypothesis is the only concrete lead and is not sufficient to claim a root cause."
+      }
+    }
+  ],
   "issue_context": {
     "known_information": [
       "The symptom occurred on multiple systems using PowerToys 0.100.2.",

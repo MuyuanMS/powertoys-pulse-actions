@@ -1,14 +1,14 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50335,
   "kind": "issue",
   "track": "triage",
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:31:00Z",
-  "evaluated_at": "2026-09-03T06:31:00Z",
-  "source_updated_at": "2026-09-02T07:39:59Z",
+  "generated_at": "2026-09-03T18:04:54Z",
+  "evaluated_at": "2026-09-03T18:04:54Z",
+  "source_updated_at": "2026-09-02T15:39:59Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50335",
   "title": "I can't open powertoys settings by double clicking",
   "labels": [
@@ -17,65 +17,158 @@
     "Needs-Triage"
   ],
   "assignees": [],
+  "author": "Septemberlemon",
+  "comments": 2,
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The current Windows 10 Settings launch failure is specific, but the diagnostic archive failed to upload and similar open reports have different crash signatures.",
+    "status": "actionable_design",
+    "rationale": "The Windows 10-only Settings launch failure is a plausible repository bug, but the failed diagnostic upload and absence of a faulting module keep the root cause uncertain.",
     "evidence": [
-      "The report uses PowerToys 0.101.2432.0 x64 from GitHub on Windows 10.",
-      "Double-clicking does not open Settings, while the reporter's Windows 11 laptop works.",
-      "The attempted current diagnostic ZIP failed to upload.",
-      "The reporter's older issue 43620 and similar issues 49011 and 38376 contain differing Settings crash evidence."
+      "The affected build is PowerToysUserSetup-0.101.2432.0-x64 from GitHub on Windows 10.",
+      "The reporter says double-clicking the icon does nothing, while the same action works on Windows 11.",
+      "The issue contains a failed diagnostic upload and the reporter says the failure still exists from an older report.",
+      "A focused search found related Windows 10 Settings reports, but no linked fix or assignee for this issue."
     ],
-    "recommended_action": "Request a fresh diagnostic immediately after reproduction, with Event Viewer faulting module and exception code as a fallback.",
-    "evaluated_at": "2026-09-03T06:31:00Z",
-    "source_updated_at": "2026-09-02T07:39:59Z"
+    "recommended_action": "Use the low-confidence Settings launch design as the current fix direction and request a failure-time diagnostic or Event Viewer signature to distinguish launch-path, runtime, and rendering failures."
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt is linked to this report; a repository change is plausibly applicable, but the missing crash signature prevents a high-confidence root cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Diagnose and harden the Windows 10 Settings launch handoff",
+      "root_cause": "Hypothesis: double-clicking the installed Settings entry reaches the PowerToys Settings/runner handoff but the Windows 10 process fails before presenting a window, possibly due to a version/runtime or IPC startup incompatibility. The issue evidence does not prove which failure branch occurs.",
+      "plan": [
+        "Capture the faulting module and exception code from a fresh reproduction; compare it with the existing Settings startup and Windows 10 compatibility reports.",
+        "Trace the installed launch path from the Settings bootstrap in src/settings-ui/Settings.UI/SettingsXAML/App.xaml.cs through Common.UI.SettingsDeepLink.OpenSettings and runner/settings_window.cpp.",
+        "Add explicit diagnostics and failure handling at the first failing handoff, then fix the identified Windows 10-compatible startup or runtime condition without changing the normal WinUI Settings IPC contract.",
+        "Add or extend a focused startup/launch test if the failing condition can be isolated without requiring an interactive Windows 10 UI test."
+      ],
+      "verification": [
+        "On Windows 10 with the affected installer, reproduce by double-clicking the PowerToys icon and confirm the failure signature is captured.",
+        "After the fix, repeat double-click launch and verify the Settings window appears and the runner-to-Settings IPC connection completes.",
+        "Verify Windows 11 launch and deep-link launches remain functional."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The launch path is identified in source, but the failed upload leaves the actual failing branch unconfirmed."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "PowerToys Settings does not open on the reporter's Windows 10 machine, while it opens on Windows 11; the current diagnostic upload failed.",
+    "summary": "PowerToys Settings does not appear after double-clicking the installed icon on Windows 10, although the same action works on Windows 11; the current diagnostic upload failed.",
     "known_information": [
-      "The affected build is PowerToys 0.101.2432.0 x64 installed from GitHub.",
-      "The affected OS is Windows 10.",
-      "The same action works on the reporter's Windows 11 laptop.",
-      "The current diagnostic ZIP did not attach successfully.",
-      "Older and similar Settings reports contain different crash modules and exception codes."
+      "The affected build is PowerToysUserSetup-0.101.2432.0-x64.",
+      "The affected OS is Windows 10 and the installation came from GitHub.",
+      "A GitHub Actions triage comment found the reproduction sufficient, but no diagnostic archive is attached.",
+      "The reporter says the failure was reported previously and remains present."
     ],
     "inferences": [
-      "This may continue the reporter's older Settings failure, but the current release's failure signature is unknown.",
-      "The Windows version contrast may indicate an OS/runtime-specific problem, but a crash, hidden window, and dependency failure cannot yet be distinguished."
+      "The failure may be in the Settings process startup, the runner handoff, or a Windows 10-specific runtime/rendering path.",
+      "The symptom is not enough to distinguish a crash, hidden window, or failed IPC connection."
     ],
-    "analysis": "A current failure-time diagnostic is needed to decide whether this matches an existing Settings crash or is a separate regression.",
+    "analysis": "The repository has a concrete installed launch path through SettingsDeepLink and runner/settings_window.cpp, so a fix direction is justified instead of only requesting information. A fresh failure signature remains necessary before selecting a specific code change.",
     "initial_investigation": [
-      "Reviewed the complete issue and same-reporter issue 43620.",
-      "Compared similar Windows 10 Settings issues 49011 and 38376."
+      "Reviewed the complete issue body, two live comments, labels, assignees, and linked-work state.",
+      "Reviewed related Windows 10 Settings reports and found no linked fix for this issue.",
+      "Inspected Common.UI.SettingsDeepLink.OpenSettings, the Settings bootstrap behavior, and runner/settings_window.cpp.",
+      "Inspected recent repository history; no current commit directly addresses this report."
     ],
     "information_gaps": [
       {
-        "information": "A fresh diagnostic ZIP captured immediately after the Windows 10 Settings launch failure.",
-        "why_needed": "Determines the current crash or launch signature and whether the report matches existing issues.",
-        "how_to_collect": "Immediately after reproducing, comment `/bugreport` and attach the generated ZIP."
+        "information": "Faulting module and exception code, or a fresh diagnostic archive immediately after reproducing.",
+        "why_needed": "Separates a Settings crash from a hidden-window or runner/IPC launch failure.",
+        "how_to_collect": "Immediately after reproducing, comment /bugreport and attach the ZIP; if upload fails, provide the PowerToys.Settings.exe Event Viewer application error."
       },
       {
-        "information": "If the ZIP fails again, the Event Viewer faulting module and exception code for PowerToys.Settings.exe.",
-        "why_needed": "Provides the minimum signature needed to compare known Settings failures.",
-        "how_to_collect": "Open Event Viewer > Windows Logs > Application and paste the PowerToys.Settings.exe faulting module and exception code."
+        "information": "Whether launching Settings from the tray or a module deep link behaves differently from double-clicking.",
+        "why_needed": "Identifies whether the failure is limited to the installed shell/shortcut entry or affects the common Settings handoff.",
+        "how_to_collect": "Try the tray Settings command and one module Settings link on the same Windows 10 installation."
       }
+    ]
+  },
+  "design": {
+    "root_cause": "Unconfirmed. The best supported hypothesis is a Windows 10-specific failure after the installed Settings launch enters the PowerToys runner/Settings startup path; no evidence currently proves whether the failure is process startup, runtime loading, window creation, or IPC.",
+    "evidence": [
+      "[Observed] The issue reproduces on Windows 10 but not on the reporter's Windows 11 laptop.",
+      "[Observed] The GitHub installer build and double-click symptom are specified; the diagnostic upload failed.",
+      "[Observed] Common.UI.SettingsDeepLink.OpenSettings starts PowerToys.exe with --open-settings, and runner/settings_window.cpp starts WinUI3Apps\\PowerToys.Settings.exe and establishes IPC.",
+      "[Inferred] The common launch path is the most useful investigation boundary, but the failing branch requires a fresh signature."
+    ],
+    "affected_files": [
+      {
+        "path": "src/common/Common.UI/SettingsDeepLink.cs",
+        "purpose": "Starts the installed PowerToys runner for Settings deep links.",
+        "symbols": [
+          "SettingsDeepLink.OpenSettings"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/SettingsXAML/App.xaml.cs",
+        "purpose": "Handles standalone Settings startup and redirects to the runner.",
+        "symbols": [
+          "App.OnStartup"
+        ]
+      },
+      {
+        "path": "src/runner/settings_window.cpp",
+        "purpose": "Creates the Settings process and configures the runner-to-Settings IPC channel.",
+        "symbols": [
+          "show_settings_window",
+          "receive_json_send_to_main_thread"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/common/Common.UI/SettingsDeepLink.cs; src/runner/settings_window.cpp",
+        "symbols": [
+          "SettingsDeepLink.OpenSettings",
+          "show_settings_window"
+        ],
+        "current_behavior": "The deep link starts PowerToys.exe and the runner constructs the WinUI3Apps PowerToys.Settings.exe path, then establishes IPC.",
+        "change": "Use the failure-time signature to add targeted diagnostics and correct only the failing Windows 10 startup/IPC condition; preserve the installed and development path resolution and authenticated IPC policy.",
+        "code_block": "OpenSettings -> PowerToys.exe --open-settings=<page>\\nrunner -> WinUI3Apps\\\\PowerToys.Settings.exe -> authenticated IPC\\nif startup/IPC fails: log HRESULT/module and surface an actionable failure instead of silently leaving no window",
+        "edge_cases": [
+          "Per-user and machine installs must continue resolving their own install folder.",
+          "Do not weaken Settings caller authentication or accept a mismatched executable.",
+          "Do not report success before the Settings process and IPC handshake are usable."
+        ],
+        "tests": [
+          "Add a focused regression test for the isolated failing condition, or document why only Windows 10 manual launch validation is possible.",
+          "Verify deep-link pages and normal Settings launch on Windows 10 and Windows 11."
+        ]
+      }
+    ],
+    "verify": [
+      "Reproduce on the affected Windows 10 installer and collect the process/exception signature.",
+      "Launch by double-click, tray command, and one deep link; confirm the intended Settings page appears.",
+      "Confirm the runner and Settings IPC handshake succeeds and no duplicate Settings process is stranded."
+    ],
+    "risks": [
+      "A change to startup sequencing or runtime loading could affect every Settings launch and both install scopes.",
+      "Windows 10 may expose an external runtime or graphics issue that cannot be fixed safely in PowerToys without the diagnostic signature."
+    ],
+    "alternatives": [
+      "Request only more diagnostics; rejected as the sole outcome because the common launch path and plausible fix boundary are identifiable.",
+      "Change the shortcut or shell association; rejected because the symptom may affect the common runner/Settings handoff, not only the icon."
     ]
   },
   "actions": [
     {
       "id": "request-info-50335",
       "type": "request_info",
-      "label": "Request current Settings crash diagnostics",
+      "label": "Request current Settings launch diagnostics",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 50335,
-        "body": "Thanks for the report. We can see this is on Windows 10 with `PowerToysUserSetup-0.101.2432.0-x64` from GitHub, that double-clicking PowerToys does not open Settings, and that the same action works on your Windows 11 laptop. We also found your earlier report #43620, where DISM/SFC were clean and older logs showed a Settings crash, but the diagnostic ZIP for this current report appears to have failed to upload.\n\nCould you reproduce the problem on the Windows 10 machine and then comment `/bugreport` immediately afterward so a fresh diagnostic ZIP is attached? If the upload fails again, please paste the Windows Event Viewer > Windows Logs > Application error for `PowerToys.Settings.exe` from the same reproduction, especially the faulting module name and exception code."
+        "body": "Thanks for the report. We can see this is PowerToysUserSetup-0.101.2432.0-x64 on Windows 10, that double-clicking PowerToys does not open Settings, and that the same action works on your Windows 11 laptop. You also mentioned this was reported previously, but the diagnostic ZIP for this report failed to upload. Please reproduce the problem and immediately comment `/bugreport` so a fresh diagnostic ZIP is attached. If the upload fails again, please paste the Event Viewer > Windows Logs > Application error for `PowerToys.Settings.exe`, especially the faulting module and exception code. If possible, also report whether Settings opens from the tray command on the same Windows 10 machine."
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Draft only; no upstream comment is posted."
     }
-  ],
-  "comments": 2,
-  "author": "Septemberlemon"
+  ]
 }
