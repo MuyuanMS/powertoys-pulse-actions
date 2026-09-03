@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-03T15:02:34.0884610+08:00",
+  "generated_at": "2026-09-03T15:14:17.3005177+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 139,
-    "open_issues": 12587,
-    "community": 11728,
+    "open_issues": 12589,
+    "community": 11730,
     "artifacts": 3425
   },
   "impact": {
-    "as_of": "2026-09-03T15:02:34.0884610+08:00",
+    "as_of": "2026-09-03T15:14:17.3005177+08:00",
     "issues_helped": 10,
     "prs_iterated": 33,
     "constructive_comments_posted": 3,
@@ -48623,6 +48623,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50348",
+      "kind": "issue",
+      "number": 50348,
+      "url": "https://github.com/microsoft/PowerToys/issues/50348",
+      "title": "CmdPal: Low-level keyboard hook toggle description is inversed",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-03T07:09:48Z",
+      "updated_at": "2026-09-03T07:09:54Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-15309",
       "kind": "issue",
       "number": 15309,
@@ -48653,6 +48686,39 @@ window.BOARD_INDEX = {
       "created_at": "2022-01-07T10:13:52Z",
       "updated_at": "2024-10-13T12:38:51Z",
       "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-50346",
+      "kind": "issue",
+      "number": 50346,
+      "url": "https://github.com/microsoft/PowerToys/issues/50346",
+      "title": "CmdPal: ListItemViewModel.AccessibleName is not used",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-03T07:00:54Z",
+      "updated_at": "2026-09-03T07:05:53Z",
+      "comments": 1,
       "priority": null
     },
     {
