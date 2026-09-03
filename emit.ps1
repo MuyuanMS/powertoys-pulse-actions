@@ -988,7 +988,6 @@ foreach ($it in $src.items) {
     state=$it.state
     is_draft=[bool]$it.is_draft
     is_community=[bool]$it.is_community; mine=[bool]$it.mine; is_cmdpal=[bool]$it.is_cmdpal
-    review_decision=$it.review_decision; ci_state=$it.ci_state; merge_state=$it.merge_state
     track=$track; stage=$stage; owes=$iowes; pending_author=$pendingAuthor
     waiting_since=$waitingSince
     has_artifact=$hasArtifact; agent_status=$agentStatus; issue_type=$issueType
@@ -996,6 +995,11 @@ foreach ($it in $src.items) {
     primary_action=if ($primary) { [pscustomobject]$primary } else { $null }
     labels=@($it.labels); assignees=@($it.assignees); created_at=$it.created_at; updated_at=$it.updated_at
     comments=$it.comments; priority=$it.priority
+  }
+  if ($it.kind -eq 'pr') {
+    $entry['review_decision'] = $it.review_decision
+    $entry['ci_state'] = $it.ci_state
+    $entry['merge_state'] = $it.merge_state
   }
   if ($mt) { $entry['mirror'] = [pscustomobject]$mt }
   $indexList.Add([pscustomobject]$entry)
