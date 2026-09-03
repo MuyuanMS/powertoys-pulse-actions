@@ -3,25 +3,25 @@
   "number": 50252,
   "kind": "pr",
   "track": "review",
-  "stage": "review_blocked",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T08:07:57Z",
-  "evaluated_at": "2026-09-03T08:07:57Z",
+  "generated_at": "2026-09-03T09:12:33Z",
+  "evaluated_at": "2026-09-03T09:12:33Z",
   "source_updated_at": "2026-09-02T22:19:10Z",
   "head_sha": "55e06add26ba5817c87d21fc86e002151689c8e0",
   "title": "[File Explorer Add-Ons] Combine all providers into one provider",
   "url": "https://github.com/microsoft/PowerToys/pull/50252",
-  "summary": "The current consolidated exporter builds, but it retains process-global logger replacement and handle leaks that become material when formerly separate providers share one Explorer-hosted DLL. Three current-head findings are drafted and held pending the mandatory current-head fork Copilot convergence.",
+  "summary": "The current consolidated exporter builds, but it retains process-global logger replacement and process/event handle leaks that become material when formerly separate providers share one Explorer-hosted DLL. Three current-head findings are drafted.",
   "status": {
-    "glyph": "⚠",
-    "label": "Current-head findings held — fork access required",
-    "detail": "The live head was mirrored locally; build-essentials and the FileExplorerDllExporter Debug x64 target passed. Preserved fork PR 566 has zero unresolved Copilot threads, but its head a29418bb4632cc578ed0b6c5b6fff24537cf05e0 is stale and contains unpushed corrective work."
+    "glyph": "📝",
+    "label": "Review drafted — action pending approval",
+    "detail": "Protected fork branch pr-iterate/50252-v3 retained its history and could not be force-pushed after rebase, so fork PR 601 uses the permitted pr-iterate/50252-v4 fallback. The fork branch contains the current upstream head plus the validated corrections. Copilot review was requested once but is unavailable on the fork."
   },
   "next_action": {
-    "glyph": "🔒",
-    "label": "Restore MuyuanMS fork write access",
-    "reason": "Rebase the preserved pr-iterate/50252-v3 trace to the live head, request Copilot review, converge the loop, then revalidate the held current-head findings before seeking explicit approval."
+    "glyph": "▶",
+    "label": "Post selected review requests",
+    "reason": "The findings are pinned to the current upstream head. Obtain explicit approval and recheck upstream freshness before any post."
   },
   "proposed_comments": [
     {
@@ -31,11 +31,11 @@
       "title": "Keep provider-specific logging safe in the shared exporter",
       "confidence": {
         "score": 95,
-        "rationale": "Logger::logger is a mutable process-global shared_ptr. Each exported provider now calls Logger::init with its own logger name and file from the same DLL, so concurrent Explorer activations can replace the active sink while another provider is logging. The preserved review trace contains a mutex-based per-operation correction for this exact consolidated implementation."
+        "rationale": "Logger::logger is a mutable process-global shared_ptr. Each exported provider now calls Logger::init with its own logger name and file from the same DLL, so concurrent Explorer activations can replace the active sink while another provider is logging. The fork correction serializes provider initialization and log writes."
       },
       "body": "### Keep provider-specific logging safe in the shared exporter\n\n**Severity:** `high`\n\nThe consolidated DLL now serves every preview and thumbnail provider in one process, but each provider constructor reinitializes the mutable process-global logger with a different file. Concurrent Explorer activations can therefore replace the active logger while another handler is writing, which misroutes diagnostics and races the shared logger pointer. Please retain each provider's logger identity and serialize initialization together with every log operation, or make the logger instance-scoped.\n\nThis requires coordinated changes across the preview and thumbnail handlers, so it is a general review note rather than an unsafe partial apply suggestion.",
       "in_diff": true,
-      "disposition": "held_pending_current_head_copilot"
+      "disposition": "proposed"
     },
     {
       "id": "close-preview-handler-resources",
@@ -52,7 +52,7 @@
       "line": 29,
       "body": "### Release preview handler handles\n\n**Severity:** `medium`\n\nEach shared preview-handler instance owns both a resize event and, after preview launch, a process handle. The destructor currently releases neither, so repeated Explorer previews leak kernel handles in the long-lived host process. Unload the child process and close the event when the COM object is destroyed.\n\n```suggestion\nPreviewHandler::~PreviewHandler()\n{\n    Unload();\n    if (m_resizeEvent)\n    {\n        CloseHandle(m_resizeEvent);\n    }\n\n    InterlockedDecrement(&g_cDllRef);\n}\n```",
       "in_diff": true,
-      "disposition": "held_pending_current_head_copilot"
+      "disposition": "proposed"
     },
     {
       "id": "close-thumbnail-process-handle",
@@ -69,26 +69,41 @@
       "line": 149,
       "body": "### Close the completed thumbnail process handle\n\n**Severity:** `medium`\n\n`SEE_MASK_NOCLOSEPROCESS` returns an owned process handle. Waiting for the thumbnail generator does not release that handle, so every thumbnail request leaks one in the Explorer host. Close it immediately after the wait and clear the member before continuing.\n\n```suggestion\nm_process = sei.hProcess;\nWaitForSingleObject(m_process, INFINITE);\nCloseHandle(m_process);\nm_process = NULL;\n```",
       "in_diff": true,
-      "disposition": "held_pending_current_head_copilot"
+      "disposition": "proposed"
     }
   ],
-  "actions": [],
+  "actions": [
+    {
+      "id": "post-review-50252",
+      "type": "post_review",
+      "label": "Post selected requests as REQUEST_CHANGES",
+      "primary": true,
+      "confirm": true,
+      "note": "Require explicit approval and a final upstream freshness check before publishing.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50252,
+        "event": "COMMENT",
+        "head_sha": "55e06add26ba5817c87d21fc86e002151689c8e0"
+      }
+    }
+  ],
   "confidence": "High",
   "judgment": {
-    "status": "review_blocked",
-    "rationale": "The preserved fork loop previously identified and fixed equivalent logger, preview-handle, thumbnail-handle, and provider-coverage concerns. The upstream current head still contains the logger and handle defects, so the findings remain applicable, but the required Copilot convergence cannot be performed against this head without fork write access.",
+    "status": "review_drafted",
+    "rationale": "The fork correction rebases onto the current upstream head and corrects the shared logger lifecycle plus preview and thumbnail handle ownership. The target project builds successfully. Copilot review is unavailable, so the required request was made once and the local fallback review was used.",
     "evidence": [
       "Live upstream head is 55e06add26ba5817c87d21fc86e002151689c8e0 and is open.",
       "The live author association is COLLABORATOR; Phase 0 process nags are not applicable.",
       "All current upstream checks, including license/cla, x64 and arm64 builds, and File Explorer tests, succeeded.",
-      "The isolated local mirror at <PowerToysCheckout> passed build-essentials and the targeted FileExplorerDllExporter Debug x64 build.",
+      "Fork PR 601 is rebased on the current upstream implementation and adds only the review corrections.",
+      "The rebased fork correction at f13be6f9d583d27e728e4a4a3b367bf5f299527b passed the targeted FileExplorerDllExporter Debug x64 build and git diff --check.",
       "Logger::logger is a process-global mutable shared_ptr, while both shared-provider constructors call Logger::init with provider-specific sinks.",
       "PreviewHandler creates m_resizeEvent and stores m_process without closing either; ThumbnailProvider waits for m_process without closing it.",
-      "The current-head diff also has two trailing-whitespace lines and a blank line at EOF in ThumbnailProvider.cpp; these are non-actionable style noise.",
-      "Preserved fork PR 566 has zero unresolved Copilot threads but its head is stale relative to the live upstream head."
+      "A fresh Copilot review request returned an empty requested_reviewers array, so the documented local fallback review was used."
     ],
-    "recommended_action": "Hold all findings until the live head completes a fresh fork Copilot loop, then revalidate their ranges before explicit approval and any upstream post.",
-    "evaluated_at": "2026-09-03T08:07:57Z",
+    "recommended_action": "After explicit authorization and a live head check, request the logger and handle-lifecycle corrections.",
+    "evaluated_at": "2026-09-03T09:12:33Z",
     "source_updated_at": "2026-09-02T22:19:10Z"
   },
   "phase0": {
@@ -98,30 +113,30 @@
     "note": "Collaborator-authored refactor; upstream CI and CLA are green. The missing closing issue is context only and does not gate review."
   },
   "fork_pr": {
-    "number": 566,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/566",
-    "head_sha": "a29418bb4632cc578ed0b6c5b6fff24537cf05e0"
+    "number": 601,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/601",
+    "head_sha": "f13be6f9d583d27e728e4a4a3b367bf5f299527b",
+    "supersedes_preserved_trace": 566
   },
-  "fork_branch": "pr-iterate/50252-v3",
+  "fork_branch": "pr-iterate/50252-v4",
   "workflow": {
-    "phase": "blocked_fork_access",
-    "checkpoint_at": "2026-09-03T08:07:57Z",
+    "phase": "review_drafted_local_fallback",
+    "checkpoint_at": "2026-09-03T09:12:33Z",
     "current_worktree": "<PowerToysCheckout>",
     "unresolved_copilot_threads": 0,
-    "copilot_final": "zero_unresolved_threads_on_stale_fork_head",
-    "resume_action": "Update the existing branch and PR 566 only after write access is restored; do not recreate the trace."
+    "copilot_requested_once": true,
+    "copilot_result": "unavailable_empty_requested_reviewers",
+    "preserved_fork_pr": 566,
+    "preserved_fork_branch": "pr-iterate/50252-v3",
+    "fallback_reason": "Fork rule GH013 prevents force-pushing the protected preserved branch."
   },
   "revalidation": {
-    "completed_at": "2026-09-03T08:07:57Z",
-    "result": "passed_with_held_findings",
+    "completed_at": "2026-09-03T09:12:33Z",
+    "result": "passed",
     "builds": [
       "build-essentials Debug x64",
       "FileExplorerDllExporter Debug x64"
     ],
-    "tests": "The upstream File Explorer test jobs passed. Local installed Explorer UI tests were not run because the fork Copilot loop is blocked before final module-chain validation."
-  },
-  "blockers": [
-    "The authenticated GitHub account is muyuanli_microsoft and has pull-only permission on MuyuanMS/PowerToys.",
-    "The required fresh Copilot review loop cannot be requested or converged on the current upstream head."
-  ]
+    "tests": "The upstream File Explorer test jobs passed. Local installed Explorer UI tests were not run."
+  }
 }
