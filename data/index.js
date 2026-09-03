@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-03T06:23:46.4931437+08:00",
+  "generated_at": "2026-09-03T08:55:52.3820042+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 142,
-    "open_issues": 12587,
-    "community": 11731,
-    "artifacts": 3440
+    "open_prs": 141,
+    "open_issues": 12586,
+    "community": 11729,
+    "artifacts": 3438
   },
   "impact": {
-    "as_of": "2026-09-03T06:23:46.4931437+08:00",
+    "as_of": "2026-09-03T08:55:52.3820042+08:00",
     "issues_helped": 10,
     "prs_iterated": 34,
     "constructive_comments_posted": 3,
@@ -190,7 +190,6 @@ window.BOARD_INDEX = {
     49323,
     49321,
     49291,
-    49287,
     49279,
     49221,
     49174,
@@ -3532,7 +3531,6 @@ window.BOARD_INDEX = {
     35081,
     33,
     35062,
-    19,
     16,
     35052,
     10,
@@ -3715,8 +3713,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-01T00:26:05Z",
-      "updated_at": "2026-09-02T22:15:24Z",
-      "comments": 7,
+      "updated_at": "2026-09-03T00:10:42Z",
+      "comments": 8,
       "priority": null,
       "mirror": {
         "kind": "pr",
@@ -3870,8 +3868,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3887,7 +3885,7 @@ window.BOARD_INDEX = {
         "MuyuanMS"
       ],
       "created_at": "2026-08-30T16:03:37Z",
-      "updated_at": "2026-09-02T13:05:30Z",
+      "updated_at": "2026-09-02T22:19:10Z",
       "comments": 3,
       "priority": null,
       "mirror": {
@@ -3963,7 +3961,7 @@ window.BOARD_INDEX = {
         "MuyuanMS"
       ],
       "created_at": "2026-08-29T23:47:06Z",
-      "updated_at": "2026-09-02T14:27:19Z",
+      "updated_at": "2026-09-03T00:33:00Z",
       "comments": 9,
       "priority": null,
       "mirror": {
@@ -7089,8 +7087,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-21T07:16:23Z",
-      "updated_at": "2026-09-02T13:16:46Z",
-      "comments": 1,
+      "updated_at": "2026-09-03T00:04:47Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -7769,50 +7767,6 @@ window.BOARD_INDEX = {
       }
     },
     {
-      "id": "pr-49287",
-      "kind": "pr",
-      "number": 49287,
-      "url": "https://github.com/microsoft/PowerToys/pull/49287",
-      "title": "[Keyboard Manager] Search, filter and bulk-delete for the remapping list",
-      "author": "MasaYan24",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Triage",
-        "Needs-Team-Response",
-        "Product-Keyboard Manager",
-        "Ready for review"
-      ],
-      "assignees": [
-        "MasaYan24"
-      ],
-      "created_at": "2026-07-12T20:31:37Z",
-      "updated_at": "2026-09-02T22:01:30Z",
-      "comments": 11,
-      "priority": null,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 556,
-        "fork_title": "[PR 49287] [Keyboard Manager] Search, filter and bulk-delete for the remapping list",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49287-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/556"
-      }
-    },
-    {
       "id": "pr-49279",
       "kind": "pr",
       "number": 49279,
@@ -8127,13 +8081,13 @@ window.BOARD_INDEX = {
       "title": "[ColorPicker] Migrate from WPF to WinUI 3",
       "author": "moooyo",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -8145,11 +8099,12 @@ window.BOARD_INDEX = {
         "Area-Localization",
         "Product-Color Picker",
         "Product-Peek",
-        "Product-Advanced Paste"
+        "Product-Advanced Paste",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-07-07T09:18:49Z",
-      "updated_at": "2026-09-01T19:56:23Z",
+      "updated_at": "2026-09-03T00:05:17Z",
       "comments": 2,
       "priority": null
     },
@@ -46904,12 +46859,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-45320",
+      "id": "issue-15405",
       "kind": "issue",
-      "number": 45320,
-      "url": "https://github.com/microsoft/PowerToys/issues/45320",
-      "title": "Add Vietnamese (vi-VN) language support for PowerToys UI",
-      "author": "minx-nie",
+      "number": 15405,
+      "url": "https://github.com/microsoft/PowerToys/issues/15405",
+      "title": "PowerToys Shortcuts in Shortcut Guide",
+      "author": "tinyTim567",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -46922,17 +46877,21 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Resolution-Duplicate",
-        "Issue-Translation"
+        "Idea-Enhancement",
+        "Product-Shortcut Guide",
+        "Status-In progress",
+        "Tracker"
       ],
-      "assignees": [],
-      "created_at": "2026-02-03T11:57:35Z",
-      "updated_at": "2026-03-07T00:23:22Z",
-      "comments": 2,
+      "assignees": [
+        "noraa-junker"
+      ],
+      "created_at": "2022-01-10T10:55:29Z",
+      "updated_at": "2026-04-19T10:05:09Z",
+      "comments": 22,
       "priority": null
     },
     {
@@ -96592,14 +96551,14 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback",
         "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-06-16T00:37:28Z",
-      "updated_at": "2026-09-02T19:38:38Z",
-      "comments": 5,
+      "updated_at": "2026-09-02T22:24:27Z",
+      "comments": 6,
       "priority": null
     },
     {
@@ -293093,18 +293052,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_reply",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "waiting_on_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "09/02/2026 23:59:23",
       "has_artifact": true,
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -293113,8 +293069,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-27T14:56:19Z",
-      "updated_at": "2026-09-02T13:14:11Z",
-      "comments": 7,
+      "updated_at": "2026-09-02T23:59:23Z",
+      "comments": 8,
       "priority": null
     },
     {
@@ -305174,42 +305130,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-15405",
-      "kind": "issue",
-      "number": 15405,
-      "url": "https://github.com/microsoft/PowerToys/issues/15405",
-      "title": "PowerToys Shortcuts in Shortcut Guide",
-      "author": "tinyTim567",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "feature",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Idea-Enhancement",
-        "Product-Shortcut Guide",
-        "Status-In progress",
-        "Tracker"
-      ],
-      "assignees": [
-        "noraa-junker"
-      ],
-      "created_at": "2022-01-10T10:55:29Z",
-      "updated_at": "2026-04-19T10:05:09Z",
-      "comments": 22,
-      "priority": null
-    },
-    {
       "id": "issue-23332",
       "kind": "issue",
       "number": 23332,
@@ -308942,9 +308862,11 @@ window.BOARD_INDEX = {
         "Area-Tests",
         "Product-Registry Preview"
       ],
-      "assignees": [],
+      "assignees": [
+        "khmyznikov"
+      ],
       "created_at": "2025-07-17T19:52:41Z",
-      "updated_at": "2026-04-18T13:52:34Z",
+      "updated_at": "2026-09-02T23:24:00Z",
       "comments": 0,
       "priority": null
     },
@@ -309006,9 +308928,11 @@ window.BOARD_INDEX = {
         "Area-Tests",
         "Product-Hosts File Editor"
       ],
-      "assignees": [],
+      "assignees": [
+        "khmyznikov"
+      ],
       "created_at": "2025-07-17T19:47:57Z",
-      "updated_at": "2026-04-18T13:52:40Z",
+      "updated_at": "2026-09-02T22:22:15Z",
       "comments": 0,
       "priority": null
     },
@@ -426262,8 +426186,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
@@ -426273,8 +426197,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2019-05-08T10:52:25Z",
-      "updated_at": "2026-07-22T19:41:51Z",
-      "comments": 39,
+      "updated_at": "2026-09-02T23:56:26Z",
+      "comments": 40,
       "priority": null
     },
     {
