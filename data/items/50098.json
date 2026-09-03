@@ -5,26 +5,45 @@
   "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-03T08:03:33.2994052Z",
-  "evaluated_at": "09/03/2026 02:09:23",
-  "source_updated_at": "09/02/2026 21:19:48",
-  "head_sha": "d891032098e8f88b76849f4fa405675df2b61415",
-  "title": "CmdPal: Fix clipboard history details image previews",
-  "url": "https://github.com/microsoft/PowerToys/pull/50098",
+  "generated_at": "2026-09-03T17:13:03.3114064+08:00",
+  "evaluated_at": "2026-09-03T09:00:00Z",
+  "source_updated_at": "2026-09-02T21:19:48Z",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Queued for review; maintainer activity does not exclude an open non-draft PR."
+    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action.",
+    "label": "Author responded — review needed",
+    "glyph": "🔄"
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
+  "next_action": {
+    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision.",
+    "label": "Run PR review",
+    "glyph": "🔄"
+  },
   "actions": [],
-  "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-03T08:03:33.2994052Z"
+  "needs_revalidation": true,
+  "schemaVersion": 3,
+  "confidence": "High",
+  "head_sha": "d891032098e8f88b76849f4fa405675df2b61415",
+  "proposed_comments": [
+    {
+      "id": "50098-clipboard-history-async-cache",
+      "type": "review",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "Each issue was reproduced by fork Copilot review against the current upstream diff, fixed on the fork branch, rebuilt, and followed by a fresh Copilot review with zero new published comments."
+      },
+      "target": "pr",
+      "number": 50098,
+      "body": "Thanks for the follow-up here. I found a few remaining issues in the new async Clipboard History loading/cache path that should be addressed before merging:\n\n1. `HistoryChanged` now starts the STA history load and materializes image cache files even before the Clipboard History page has ever been opened. That adds background WinRT and disk work to ordinary clipboard activity; gate event-triggered reloads until the page has performed its first `GetItems()` load.\n2. The first async load can race the Command Palette view-model subscription: the initial `FetchItems()` can receive the empty snapshot, then the worker can raise `ItemsChanged` before the UI subscribes. Keep the first page load synchronous, or add a handshake that guarantees a post-subscription refresh.\n3. Cache writes should be all-or-nothing. Reuse existing item-keyed cache entries, write new entries through a temporary file plus atomic replace, include temporary artifacts in cleanup, and only set `ImagePath` after a successful write; otherwise keep the previous stream-based `HeroImage` fallback.\n4. The worker thread and disposal cleanup need a real boundary. Mark the worker as background, track it during disposal, and ensure a disposed/in-flight load cannot recreate cache files that the final cleanup is trying to remove.\n\nThe same changes should also keep retry state separate from page-activation state, so a transient `GetHistoryItemsAsync` or bitmap-cache failure does not permanently suppress future clipboard-event refreshes."
+    }
+  ],
+  "upstream_pr": {
+    "number": 50098,
+    "url": "https://github.com/microsoft/PowerToys/pull/50098"
   },
-  "freshness": {
-    "queued_at": "2026-09-03T08:03:33.2994052Z",
-    "checkpoint_at": "2026-09-03T08:03:33.2994052Z"
-  }
+  "fork_pr": {
+    "number": 592,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/592"
+  },
+  "fork_branch": "pr-iterate/50098-v20260903"
 }
