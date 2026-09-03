@@ -2,25 +2,71 @@
   "number": 48524,
   "kind": "pr",
   "track": "review",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "review_in_progress",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:19:14Z",
+  "generated_at": "2026-09-03T16:48:33.8342912+08:00",
+  "evaluated_at": "2026-09-03T16:07:57.317+08:00",
   "source_updated_at": "2026-07-01T22:26:03Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Owned by the maintainers",
-    "detail": "This is a member-authored PR (bhaimicrosoft) and already sits in the maintainers' own workflow. Current checks show 1 failing context(s), so duplicating agent review would not accelerate merge."
+    "glyph": "🔄",
+    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action.",
+    "label": "Author responded — review needed"
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor maintainer-owned work",
-    "reason": "Leave the PR with its owning maintainers unless they ask for a separate external review pass."
+    "glyph": "🔄",
+    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision.",
+    "label": "Run PR review"
   },
   "actions": [],
+  "needs_revalidation": true,
   "confidence": "High",
   "head_sha": "e54b77e159f4f1bfe4f816428954b8b4333cf786",
+  "proposed_comments": [
+    {
+      "id": "rebase-remove-generated-file-and-fix-ci",
+      "kind": "companion",
+      "severity": "high",
+      "confidence": {
+        "score": 95,
+        "rationale": "GitHub reports mergeStateStatus DIRTY, merge-tree reports current-main conflicts, check-spelling is red, and App_h.h is an added generated PowerRename header unrelated to the ZoomIt eraser feature."
+      },
+      "title": "Rebase, remove unrelated generated output, and fix the red spelling check",
+      "body": "### Rebase, remove unrelated generated output, and fix the red spelling check\n\n**Severity:** `high`\n\nThe branch is currently dirty against main, and the current-main merge reports conflicts in src/modules/ZoomIt/ZoomIt/ZoomIt.rc, src/modules/ZoomIt/ZoomIt/Zoomit.cpp, and src/modules/ZoomIt/ZoomIt/resource.h. The PR also adds src/modules/powerrename/PowerRenameUILib/App_h.h, which is generated MIDL output from another module and unrelated to the ZoomIt eraser feature, and check-spelling is still red for that file plus the new \nidx variable. Please rebase, drop the generated header from the PR, and either rename the local variable or add legitimate allow-list entries so the spelling check is green.",
+      "in_diff": false,
+      "disposition": "proposed_after_required_loop"
+    },
+    {
+      "id": "fix-eraser-state-machine",
+      "kind": "companion",
+      "severity": "high",
+      "confidence": {
+        "score": 91,
+        "rationale": "The live code still allows Shift+E while g_Tracing is true and the tracing WM_MOUSEMOVE branch erases based on g_EraserMode without requiring g_EraserEngaged; these are the exact current lines from unresolved Copilot threads."
+      },
+      "title": "Guard the eraser state machine while drawing",
+      "body": "### Guard the eraser state machine while drawing\n\n**Severity:** `high`\n\nShift+E can still cycle the eraser while a normal pen stroke is in progress because the toggle condition does not require !g_Tracing. Once that happens, the tracing WM_MOUSEMOVE branch erases whenever g_EraserMode != EraserModeOff, even though the click-to-toggle eraser path says erasing should happen only while g_EraserEngaged is true. Please block mode changes during active tracing and gate the tracing erase branch on engagement so toggling modes cannot leave the drawing state machine inconsistent or unexpectedly erase while hovering.",
+      "path": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+      "line": 10160,
+      "in_diff": true,
+      "disposition": "proposed_after_required_loop"
+    },
+    {
+      "id": "localize-resource-id-and-performance",
+      "kind": "companion",
+      "severity": "medium",
+      "confidence": {
+        "score": 89,
+        "rationale": "The live code hardcodes Eraser popup text at Zoomit.cpp:6468-6470, defines IDC_ERASER as 1124 while IDC_WEBCAM_BACKGROUND_BLUR is also 1124, and allocates/copies full-screen DIBs for each stroke erase."
+      },
+      "title": "Finish eraser integration details before merge",
+      "body": "### Finish eraser integration details before merge\n\n**Severity:** `medium`\n\nThe eraser mode popup strings (Eraser: Pixel, Eraser: Stroke, and Eraser: Off) are user-facing but hardcoded in Zoomit.cpp, so they bypass the resource table and cannot be localized. IDC_ERASER is also assigned 1124, the same value already used by IDC_WEBCAM_BACKGROUND_BLUR, which makes future command/resource routing fragile. Finally, EraseConnectedStroke allocates and copies two full-screen 32-bpp DIBs on each stroke-mode erase attempt; please bound this to the touched region or cache/reuse buffers so high-resolution displays do not see repeated large allocations and UI jank.",
+      "path": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+      "line": 6468,
+      "in_diff": true,
+      "disposition": "proposed_after_required_loop"
+    }
+  ],
   "upstream_pr": {
     "number": 48524,
     "url": "https://github.com/microsoft/PowerToys/pull/48524"
