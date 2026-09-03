@@ -54,13 +54,17 @@ if (Test-Path $indexPath) {
           $errors.Add("Manifest artifact exposes a non-actionable hold/Not now action: $artifactPath")
         }
         $allowedActionTypes = if ($artifact.kind -eq 'pr') {
-          @('approve', 'post_review', 'request_changes')
+          @('approve', 'post_review', 'request_changes', 'trigger_ci')
         } else {
           @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
         }
         foreach ($action in $actions) {
           if ($action.type -notin $allowedActionTypes) {
             $errors.Add("Manifest artifact exposes unsupported $($artifact.kind) action '$($action.type)': $artifactPath")
+          }
+          if ($action.type -eq 'trigger_ci' -and
+              [string]$action.comment.body -ne '/azp run') {
+            $errors.Add("Manifest artifact trigger_ci action must post exactly /azp run: $artifactPath")
           }
           if ($action.type -eq 'reproduce') {
             if (-not $action.reproduce) {
@@ -80,6 +84,54 @@ if (Test-Path $indexPath) {
             $artifact.stage -eq 'design_in_progress'
           if (-not $issueAction -and -not $allowsNoAction) {
             $errors.Add("Issue manifest artifact has no meaningful maintainer action: $artifactPath")
+          }
+        }
+        if ($artifact.kind -eq 'issue' -and [int]$artifact.schemaVersion -ge 5) {
+          $fixStatus = [string]$artifact.fix_assessment.status
+          $proposedFixes = @($artifact.proposed_fixes | Where-Object { $null -ne $_ })
+          if (-not $artifact.fix_assessment -or
+              $fixStatus -notin @('proposed', 'existing_fix', 'not_applicable')) {
+            $errors.Add("Issue manifest artifact has invalid fix_assessment: $artifactPath")
+          }
+          if ([string]::IsNullOrWhiteSpace([string]$artifact.fix_assessment.rationale)) {
+            $errors.Add("Issue manifest artifact missing fix_assessment.rationale: $artifactPath")
+          }
+          if ($fixStatus -eq 'proposed' -and $proposedFixes.Count -eq 0) {
+            $errors.Add("Issue manifest artifact missing proposed_fixes: $artifactPath")
+          }
+          if ($fixStatus -eq 'existing_fix' -and
+              @($artifact.fix_assessment.existing_fix_urls | Where-Object {
+                -not [string]::IsNullOrWhiteSpace([string]$_)
+              }).Count -eq 0) {
+            $errors.Add("Issue manifest artifact existing_fix missing URLs: $artifactPath")
+          }
+          foreach ($fix in $proposedFixes) {
+            if (@($fix.plan | Where-Object {
+              -not [string]::IsNullOrWhiteSpace([string]$_)
+            }).Count -eq 0) {
+              $errors.Add("Issue manifest artifact proposed fix missing plan: $artifactPath")
+            }
+            if (@($fix.verification | Where-Object {
+              -not [string]::IsNullOrWhiteSpace([string]$_)
+            }).Count -eq 0) {
+              $errors.Add("Issue manifest artifact proposed fix missing verification: $artifactPath")
+            }
+            $score = 0
+            if (-not [int]::TryParse([string]$fix.confidence.score, [ref]$score) -or
+                $score -lt 0 -or $score -gt 100) {
+              $errors.Add("Issue manifest artifact has invalid fix confidence score: $artifactPath")
+              continue
+            }
+            $expectedLevel = if ($score -ge 85) {
+              'green'
+            } elseif ($score -ge 51) {
+              'yellow'
+            } else {
+              'red'
+            }
+            if ([string]$fix.confidence.level -ne $expectedLevel) {
+              $errors.Add("Issue manifest artifact has mismatched fix confidence level: $artifactPath")
+            }
           }
         }
       } catch {
@@ -421,6 +473,101 @@ if (-not (Test-Path $artifactValidator)) {
       )
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $artifactRoot 'data\items\45679.json')
     & $artifactValidator -Dashboard $artifactRoot -Numbers 45679 -RequireIssueContext | Out-Null
+
+    @{
+      schemaVersion = 5
+      number = 45680
+      kind = 'issue'
+      track = 'triage'
+      stage = 'triaged'
+      generated_at = '2026-09-03T00:00:00Z'
+      evaluated_at = '2026-09-03T00:00:00Z'
+      source_updated_at = '2026-09-03T00:00:00Z'
+      judgment = @{
+        status = 'needs_information'
+        rationale = 'The likely stale-cache path fits the symptom but still needs a targeted trace.'
+        evidence = @('The failure occurs after the source result changes and before activation.')
+        recommended_action = 'Review the proposed fix and request the trace that distinguishes cache reuse from activation failure.'
+      }
+      fix_assessment = @{
+        status = 'proposed'
+        rationale = 'No existing fix attempt covers the likely stale activation target.'
+      }
+      proposed_fixes = @(
+        @{
+          title = 'Invalidate the stale activation target'
+          root_cause = 'The cached activation target can outlive the source result that produced it.'
+          plan = @(
+            'Locate the cache and source-result version boundary.',
+            'Re-resolve the target when the source result changes.',
+            'Add a regression test for stale-result activation.'
+          )
+          verification = @(
+            'Repeat the issue activation sequence and confirm the latest target launches.'
+          )
+          confidence = @{
+            score = 72
+            level = 'yellow'
+            rationale = 'The control flow matches the symptom, but a targeted trace would confirm the stale-cache branch.'
+          }
+        }
+      )
+      issue_context = @{
+        summary = 'Activation can use an earlier result after the source updates.'
+        known_information = @('The issue reproduces only after the result list changes.')
+        inferences = @('A cached target may survive longer than its source result.')
+        analysis = 'The cache lifetime is the strongest current explanation, but activation telemetry would distinguish it from a launcher failure.'
+        initial_investigation = @('No linked PR or fork implementation currently covers this path.')
+        information_gaps = @(
+          @{
+            information = 'A trace showing the selected result identifier and activation target'
+            why_needed = 'It distinguishes stale target reuse from downstream launch failure.'
+            how_to_collect = 'Capture a fresh diagnostic archive with /bugreport immediately after reproduction.'
+          }
+        )
+      }
+      actions = @(
+        @{
+          type = 'request_info'
+          label = 'Request activation trace'
+          comment = @{
+            target = 'issue'
+            number = 45680
+            body = 'Thanks for narrowing the failure to the sequence after the result list changes. The current evidence points to a stale activation target, but it does not yet distinguish cached-target reuse from a downstream launch failure. Please reproduce once more and add a comment containing `/bugreport` immediately afterward so the fresh diagnostic archive captures both the selected result identifier and activation target.'
+          }
+        }
+      )
+    } | ConvertTo-Json -Depth 12 | Set-Content (Join-Path $artifactRoot 'data\items\45680.json')
+    & $artifactValidator -Dashboard $artifactRoot -Numbers 45680 -RequireIssueContext | Out-Null
+
+    $validFixArtifactText = Get-Content (Join-Path $artifactRoot 'data\items\45680.json') -Raw
+    $missingPlan = $validFixArtifactText | ConvertFrom-Json
+    $missingPlan.proposed_fixes[0].PSObject.Properties.Remove('plan')
+    $missingPlan | ConvertTo-Json -Depth 12 |
+      Set-Content (Join-Path $artifactRoot 'data\items\45680.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 45680 -RequireIssueContext 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a proposed fix without plan steps.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\45680.json') $validFixArtifactText
+
+    $invalidConfidence = Get-Content (Join-Path $artifactRoot 'data\items\45680.json') -Raw |
+      ConvertFrom-Json
+    $invalidConfidence.proposed_fixes[0].confidence.level = 'green'
+    $invalidConfidence | ConvertTo-Json -Depth 12 |
+      Set-Content (Join-Path $artifactRoot 'data\items\45680.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 45680 -RequireIssueContext 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a mismatched fix confidence level.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
 
     $invalidIssue = Get-Content (Join-Path $artifactRoot 'data\items\45678.json') -Raw |
       ConvertFrom-Json

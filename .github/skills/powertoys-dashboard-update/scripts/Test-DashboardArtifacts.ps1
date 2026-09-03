@@ -54,6 +54,34 @@ function Require-Date {
   }
 }
 
+function Test-FixConfidence {
+  param($Confidence, [string]$Prefix)
+
+  if (-not $Confidence) {
+    $script:errors.Add("$Prefix missing proposed_fixes[].confidence")
+    return
+  }
+
+  $score = 0
+  if (-not [int]::TryParse([string]$Confidence.score, [ref]$score) -or
+      $score -lt 0 -or $score -gt 100) {
+    $script:errors.Add("$Prefix proposed_fixes[].confidence.score must be an integer from 0 to 100")
+    return
+  }
+
+  $expectedLevel = if ($score -ge 85) {
+    'green'
+  } elseif ($score -ge 51) {
+    'yellow'
+  } else {
+    'red'
+  }
+  if ([string]$Confidence.level -ne $expectedLevel) {
+    $script:errors.Add("$Prefix proposed_fixes[].confidence.level must be '$expectedLevel' for score $score")
+  }
+  Require-Text $Confidence.rationale 'proposed_fixes[].confidence.rationale' $Prefix
+}
+
 foreach ($path in @($paths)) {
   try {
     $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json
@@ -79,12 +107,16 @@ foreach ($path in @($paths)) {
       $errors.Add("$prefix exposes a non-actionable hold/Not now action")
     }
     $allowedActionTypes = if ($artifact.kind -eq 'pr') {
-      @('approve', 'post_review', 'request_changes')
+      @('approve', 'post_review', 'request_changes', 'trigger_ci')
     } else {
       @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
     }
     if ($action.type -notin $allowedActionTypes) {
       $errors.Add("$prefix exposes unsupported $($artifact.kind) action '$($action.type)'")
+    }
+    if ($action.type -eq 'trigger_ci' -and
+        [string]$action.comment.body -ne '/azp run') {
+      $errors.Add("$prefix trigger_ci action must post exactly /azp run")
     }
     if ($action.type -eq 'reproduce') {
       if (-not $action.reproduce) {
@@ -177,6 +209,48 @@ foreach ($path in @($paths)) {
     Require-Text $artifact.judgment.recommended_action 'judgment.recommended_action' $prefix
     if (@($artifact.judgment.evidence).Count -eq 0) {
       $errors.Add("$prefix missing judgment.evidence")
+    }
+  }
+
+  if ([int]$artifact.schemaVersion -ge 5) {
+    if (-not $artifact.fix_assessment) {
+      $errors.Add("$prefix missing fix_assessment")
+    } else {
+      $fixStatus = [string]$artifact.fix_assessment.status
+      if ($fixStatus -notin @('proposed', 'existing_fix', 'not_applicable')) {
+        $errors.Add("$prefix has invalid fix_assessment.status '$fixStatus'")
+      }
+      Require-Text $artifact.fix_assessment.rationale 'fix_assessment.rationale' $prefix
+
+      $proposedFixes = @($artifact.proposed_fixes | Where-Object { $null -ne $_ })
+      if ($fixStatus -eq 'proposed' -and $proposedFixes.Count -eq 0) {
+        $errors.Add("$prefix fix_assessment.status proposed requires proposed_fixes")
+      }
+      if ($fixStatus -eq 'existing_fix' -and
+          @($artifact.fix_assessment.existing_fix_urls | Where-Object {
+            -not [string]::IsNullOrWhiteSpace([string]$_)
+          }).Count -eq 0) {
+        $errors.Add("$prefix fix_assessment.status existing_fix requires existing_fix_urls")
+      }
+      if ($fixStatus -ne 'proposed' -and $proposedFixes.Count -gt 0) {
+        $errors.Add("$prefix proposed_fixes are only valid when fix_assessment.status is proposed")
+      }
+
+      foreach ($fix in $proposedFixes) {
+        Require-Text $fix.title 'proposed_fixes[].title' $prefix
+        Require-Text $fix.root_cause 'proposed_fixes[].root_cause' $prefix
+        if (@($fix.plan | Where-Object {
+          -not [string]::IsNullOrWhiteSpace([string]$_)
+        }).Count -eq 0) {
+          $errors.Add("$prefix proposed_fixes[].plan must contain at least one step")
+        }
+        if (@($fix.verification | Where-Object {
+          -not [string]::IsNullOrWhiteSpace([string]$_)
+        }).Count -eq 0) {
+          $errors.Add("$prefix proposed_fixes[].verification must contain at least one check")
+        }
+        Test-FixConfidence $fix.confidence $prefix
+      }
     }
   }
 

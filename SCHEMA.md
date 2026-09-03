@@ -197,13 +197,37 @@ author-wait signal, the next emit clears `pending_author`, sets
 }
 ```
 
-Issue artifacts with `schemaVersion: 4` also include display-only decision
-support for the action dialog:
+Issue artifacts with `schemaVersion: 5` include a fix-coverage decision and
+display-only proposed fix plans in addition to the issue context:
 
 ```jsonc
 {
   "number": 50196,
   "kind": "issue",
+  "fix_assessment": {
+    "status": "proposed", // proposed | existing_fix | not_applicable
+    "rationale": "No linked or fork-side fix currently covers the likely failing path.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Invalidate the stale activation target",
+      "root_cause": "The cached target can outlive the result that produced it.",
+      "plan": [
+        "Locate the target cache and source-result version boundary.",
+        "Re-resolve the target after the source result changes.",
+        "Add a regression test for stale-result activation."
+      ],
+      "verification": [
+        "Repeat the issue's activation sequence and verify the latest target launches."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The code path fits the symptom, but a targeted trace would confirm the stale-cache branch."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "The report and discussion describe ...",
     "known_information": [
@@ -234,6 +258,16 @@ support for the action dialog:
   ]
 }
 ```
+
+`fix_assessment.status=proposed` requires at least one `proposed_fixes` entry.
+Use `existing_fix` when a concrete PR/fork implementation already covers the
+bug and include its public URL instead of proposing competing work. Use
+`not_applicable` only when a PowerToys code fix genuinely does not apply.
+
+Fix confidence is numeric and color-coded by a fixed contract: green is
+`85..100` (almost certain), yellow is `51..84` (likely but worth confirming),
+and red is `0..50` (best guess with at most even odds). Pulse derives no color
+from prose; `confidence.level` must match `confidence.score`.
 
 `issue_context` is shown only after opening an issue action. It is not editable
 and is never included automatically in a posted comment. `known_information`
@@ -282,6 +316,7 @@ prepare local test files or environment setup with a local agent.
 | type | GitHub call (as the member) | notes |
 |------|-----------------------------|-------|
 | `post_review` | `POST /repos/{upstream}/pulls/{n}/reviews` | selected non-withdrawn comments: `in_diff && path && line` → inline `comments[]`, the rest appended to `body`. The artifact defaults to `COMMENT`; Pulse may offer an explicit maintainer override to `REQUEST_CHANGES`. Inline-only reviews omit `body`, and an artifact-proposed overall message is optional in Pulse. |
+| `trigger_ci` | `POST /repos/{upstream}/issues/{n}/comments` | posts exactly `/azp run` after Pulse reads the live PR head's check runs and finds failed/cancelled/timed-out/stale or missing CI. Never automatic and not offered while checks are pending or passed. |
 | `open_upstream_pr` | `POST /repos/{upstream}/pulls` | `head=MuyuanMS:<branch>`, `base=main`. `body` **may** contain `Fixes #<n>` — this is the real upstream PR that closes the issue (post-approval), the one allowed use of `#<n>`. |
 | `approve_design` | `POST /repos/{fork}/issues/{mirror}/comments` | approval note on the **fork mirror issue** so the scheduled job proceeds. |
 | `reproduce` | *(none)* | display-only local reproduction plan with module, version requirement, setup/prerequisites, steps, expected result, optional public attachments, and optional copyable `setup_prompt`. |
