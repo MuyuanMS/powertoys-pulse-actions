@@ -1,30 +1,126 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-44624",
   "number": 44624,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T08:03:34.5070745Z",
-  "evaluated_at": "08/14/2026 00:19:14",
-  "source_updated_at": "08/07/2026 15:03:19",
+  "generated_at": "2026-09-03T09:35:00Z",
+  "evaluated_at": "2026-09-03T09:35:00Z",
+  "source_updated_at": "2026-08-07T15:03:19Z",
   "head_sha": "95ba732f1ae35413e1be05dd5f070d8289637caa",
   "title": "Add function to get Win32 path from file handle",
   "url": "https://github.com/microsoft/PowerToys/pull/44624",
+  "summary": "The owned_elsewhere exclusion was explicitly overridden. The current upstream head was mirrored to fork PR 593 and reviewed through Copilot/fork-side fixes. The supported current-head action is to request changes for path-representation matching, public source compatibility, and regression coverage.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Queued for review; maintainer activity does not exclude an open non-draft PR."
+    "glyph": "review",
+    "label": "Review notes drafted",
+    "detail": "Fork PR 593 converged after fixes through 482d559aa471e9bad0805cf99056be03b046dc29; unresolved fork Copilot threads are zero."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "post",
+    "label": "Review drafted request-changes action",
+    "reason": "Recheck upstream freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
+  },
+  "proposed_comments": [
+    {
+      "id": "match-dos-and-kernel-paths",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Keep fallback NT names comparable with selected paths",
+      "path": "src/modules/FileLocksmith/FileLocksmithLibInterop/FileLocksmith.cpp",
+      "body": "file_handle_to_path normally returns a DOS path but falls back to the NT kernel name when DOS resolution fails. The selected path map only stores canonical DOS paths, so a handle that falls back to an NT name can fail to match. Store both the canonical DOS path and the kernel fallback name for selected files/directories and module paths."
+    },
+    {
+      "id": "preserve-handleinfo-field-name",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Preserve HandleInfo::kernel_file_name",
+      "path": "src/modules/FileLocksmith/FileLocksmithLibInterop/NtdllExtensions.h",
+      "body": "The PR description promises source compatibility, but the current head renames HandleInfo::kernel_file_name to file_path. Keep the existing field name or provide a compatibility-preserving transition."
+    },
+    {
+      "id": "preserve-path-to-kernel-name-api",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Keep path_to_kernel_name as a compatibility wrapper",
+      "path": "src/modules/FileLocksmith/FileLocksmithLibInterop/NtdllExtensions.h",
+      "body": "Renaming the public helper to path_to_canonical_name expands the change beyond implementation behavior and can break existing source users. Retain path_to_kernel_name as a wrapper while adding the canonical helper."
+    },
+    {
+      "id": "add-canonicalization-regression-coverage",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Add regression coverage for canonical DOS paths",
+      "path": "src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLITests.cpp",
+      "body": "Add a focused test that exercises the new canonical path helper on a real temporary file and asserts the result has a DOS/UNC shape rather than accepting the NT fallback path."
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-44624",
+      "type": "post_review",
+      "label": "Post request-changes review",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 44624,
+        "event": "COMMENT",
+        "head_sha": "95ba732f1ae35413e1be05dd5f070d8289637caa",
+        "body_prefix": "Thanks for improving File Locksmith path resolution. The current head still has a couple of source-compatibility and path-representation gaps that can cause missed matches."
+      },
+      "note": "Do not post without explicit approval and a final upstream freshness check."
+    }
+  ],
+  "confidence": "High",
+  "fork_pr": {
+    "number": 593,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/593",
+    "head_sha": "482d559aa471e9bad0805cf99056be03b046dc29"
+  },
+  "fork_branch": "pr-iterate/44624",
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-03T08:03:34.5070745Z"
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-03T09:35:00Z",
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "empty_requested_reviewers_but_later_reviews_audited",
+    "latest_clean_audit": "zero unresolved Copilot threads on fork PR 593"
   },
-  "freshness": {
-    "queued_at": "2026-09-03T08:03:34.5070745Z",
-    "checkpoint_at": "2026-09-03T08:03:34.5070745Z"
+  "review_fixes": [
+    {
+      "commit": "23689cd628b981dd08ab0d174356d861880b15ce",
+      "summary": "Stored both canonical and kernel names and preserved public source-compatibility names."
+    },
+    {
+      "commit": "6a547142552c825479279c9fb23d049bb8b8fea3",
+      "summary": "Added canonical path regression coverage."
+    },
+    {
+      "commit": "482d559aa471e9bad0805cf99056be03b046dc29",
+      "summary": "Tightened the regression test to reject NT fallback-shaped canonical paths."
+    }
+  ],
+  "revalidation": {
+    "result": "passed",
+    "builds": [
+      "src/modules/FileLocksmith/FileLocksmithLibInterop/FileLocksmithLibInterop.vcxproj Debug x64",
+      "src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj Debug x64"
+    ],
+    "tests": [
+      {
+        "suite": "FileLocksmithCLI.UnitTests.dll",
+        "result": "passed",
+        "total": 7,
+        "passed": 7,
+        "failed": 0
+      }
+    ],
+    "notes": [
+      "Inherited GIT_CONFIG_* variables were cleared before local builds to avoid vcpkg registry initialization failures."
+    ]
   }
 }

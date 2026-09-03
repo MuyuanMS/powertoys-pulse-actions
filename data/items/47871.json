@@ -1,30 +1,118 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-47871",
   "number": 47871,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T08:03:34.3827275Z",
-  "evaluated_at": "08/14/2026 00:19:14",
-  "source_updated_at": "08/10/2026 14:40:03",
+  "generated_at": "2026-09-03T09:35:00Z",
+  "evaluated_at": "2026-09-03T09:35:00Z",
+  "source_updated_at": "2026-08-10T14:40:03Z",
   "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
   "title": "[Runner] Make tray icon context menu theme aware",
   "url": "https://github.com/microsoft/PowerToys/pull/47871",
+  "summary": "The owned_elsewhere exclusion was explicitly overridden. The current upstream head was mirrored to fork PR 591 and reviewed through Copilot/fork-side fixes. The supported current-head review action is to request changes for app-theme refresh, app-theme notification, high-contrast handling, and dark-mode initialization timing.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Queued for review; maintainer activity does not exclude an open non-draft PR."
+    "glyph": "review",
+    "label": "Review notes drafted",
+    "detail": "Fork PR 591 converged after fixes through 73fbd3662e57aab481aa8e2f2798ed3c5e36fada; unresolved fork Copilot threads are zero."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "post",
+    "label": "Review drafted request-changes action",
+    "reason": "Recheck upstream freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
+  },
+  "proposed_comments": [
+    {
+      "id": "refresh-immersive-color-policy",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Refresh immersive color policy before reapplying app mode",
+      "path": "src/common/Themes/dark_mode.cpp",
+      "body": "Refresh() re-queries ShouldAppsUseDarkMode without refreshing uxtheme's cached immersive-color policy, so an AppsUseLightTheme change can leave the old value in use. Load ordinal 104, RefreshImmersiveColorPolicyState, and call it before reapplying SetPreferredAppMode."
+    },
+    {
+      "id": "listen-for-app-theme",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Listen for app-theme changes",
+      "path": "src/runner/tray_icon.cpp",
+      "body": "The tray menu dark-mode decision follows the app theme, but the runner only registers a system-theme handler. Register the refresh handler for app-theme changes as well so menu mode updates when AppsUseLightTheme changes without a SystemUsesLightTheme change."
+    },
+    {
+      "id": "skip-high-contrast-menu-brush",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Respect high-contrast menu colors",
+      "path": "src/common/Themes/dark_mode.cpp",
+      "body": "The fixed dark brush overrides Windows high-contrast menu colors. Check SPI_GETHIGHCONTRAST and skip custom menu background brushes when HCF_HIGHCONTRASTON is set."
+    },
+    {
+      "id": "initialize-before-window-create",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Initialize dark-mode ordinals before creating the tray window",
+      "path": "src/runner/tray_icon.cpp",
+      "body": "SetPreferredAppMode should be initialized before the tray window is created, matching the referenced ZoomIt sequence. Move DarkMode::Initialize() before RegisterClass/CreateWindowW."
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-47871",
+      "type": "post_review",
+      "label": "Post request-changes review",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 47871,
+        "event": "COMMENT",
+        "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
+        "body_prefix": "Thanks for making the tray menu follow Windows theme preferences. I found a few current-head issues that can keep the menu from updating correctly or respecting accessibility colors."
+      },
+      "note": "Do not post without explicit approval and a final upstream freshness check."
+    }
+  ],
+  "confidence": "High",
+  "fork_pr": {
+    "number": 591,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/591",
+    "head_sha": "73fbd3662e57aab481aa8e2f2798ed3c5e36fada"
+  },
+  "fork_branch": "pr-iterate/47871",
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-03T08:03:34.3827275Z"
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-03T09:35:00Z",
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "empty_requested_reviewers_but_later_reviews_audited",
+    "latest_clean_audit": "zero unresolved Copilot threads on fork PR 591"
   },
-  "freshness": {
-    "queued_at": "2026-09-03T08:03:34.3827275Z",
-    "checkpoint_at": "2026-09-03T08:03:34.3827275Z"
+  "review_fixes": [
+    {
+      "commit": "fa032f5826e01c2e4b3bbe0e65ae68ac6ec630a0",
+      "summary": "Addressed initial theme-source, high-contrast, and initialization findings."
+    },
+    {
+      "commit": "c6d4bcb4e14d9f94ecddbd4522aa378ebe19fd00",
+      "summary": "Aligned menu theme decisions and callbacks with the app theme."
+    },
+    {
+      "commit": "73fbd3662e57aab481aa8e2f2798ed3c5e36fada",
+      "summary": "Refreshed immersive color policy before reapplying preferred app mode."
+    }
+  ],
+  "revalidation": {
+    "result": "passed",
+    "builds": [
+      "src/common/Themes/Themes.vcxproj Debug x64",
+      "src/runner/runner.vcxproj Debug x64"
+    ],
+    "tests": "No focused automated test project was changed by this PR.",
+    "notes": [
+      "Inherited GIT_CONFIG_* variables were cleared before local builds to avoid vcpkg registry initialization failures."
+    ]
   }
 }
