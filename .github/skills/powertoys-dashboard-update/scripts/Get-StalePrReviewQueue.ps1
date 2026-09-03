@@ -3,9 +3,9 @@
     Find PowerToys PRs that must go through the looped review before publishing.
 .DESCRIPTION
     Enumerates all live open upstream PRs and compares them with dashboard
-    artifacts. A PR is queued when it is open, non-draft, not in an
-    author/owner/excluded hold state, and either has no publishable proposed
-    review action for the live head or has new commits since the artifact head.
+    artifacts. A PR is queued when it is open, non-draft, not genuinely waiting
+    on its author, and either has no publishable proposed review action for the
+    live head or has new commits since the artifact head.
 
     This script is intentionally read-only. Use -FailOnStale in dashboard runs
     as a publication gate after workers finish; a non-empty queue means the
@@ -103,18 +103,7 @@ function Test-IsHoldState {
     $stage = [string]$Artifact.stage
     return $stage -in @(
         'awaiting_author',
-        'waiting_on_author',
-        'awaiting_close_decision',
-        'awaiting_maintainer_alignment',
-        'awaiting_maintainer_direction',
-        'awaiting_maintainer_direction_and_review_approval',
-        'awaiting_maintainer_takeover_approval',
-        'review_blocked',
-        'review_iteration_cap_reached',
-        'dropped',
-        'owned_elsewhere',
-        'excluded',
-        'ineligible'
+        'waiting_on_author'
     )
 }
 

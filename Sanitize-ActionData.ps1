@@ -74,7 +74,7 @@ function Get-PublicActions {
 
   $kind = [string]$Artifact.kind
   $allowedTypes = if ($kind -eq 'pr') {
-    @('approve', 'post_review', 'request_changes', 'trigger_ci')
+    @('approve', 'post_review', 'request_changes', 'trigger_ci', 'merge_pr')
   } elseif ($kind -eq 'issue') {
     @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
   } else {

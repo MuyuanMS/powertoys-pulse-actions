@@ -107,7 +107,7 @@ foreach ($path in @($paths)) {
       $errors.Add("$prefix exposes a non-actionable hold/Not now action")
     }
     $allowedActionTypes = if ($artifact.kind -eq 'pr') {
-      @('approve', 'post_review', 'request_changes', 'trigger_ci')
+      @('approve', 'post_review', 'request_changes', 'trigger_ci', 'merge_pr')
     } else {
       @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
     }
@@ -212,7 +212,9 @@ foreach ($path in @($paths)) {
     }
   }
 
-  if ([int]$artifact.schemaVersion -ge 5) {
+  if ([int]$artifact.schemaVersion -lt 5) {
+    $errors.Add("$prefix open bug artifact must use schemaVersion 5")
+  } else {
     if (-not $artifact.fix_assessment) {
       $errors.Add("$prefix missing fix_assessment")
     } else {

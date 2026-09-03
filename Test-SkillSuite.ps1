@@ -54,7 +54,7 @@ if (Test-Path $indexPath) {
           $errors.Add("Manifest artifact exposes a non-actionable hold/Not now action: $artifactPath")
         }
         $allowedActionTypes = if ($artifact.kind -eq 'pr') {
-          @('approve', 'post_review', 'request_changes', 'trigger_ci')
+          @('approve', 'post_review', 'request_changes', 'trigger_ci', 'merge_pr')
         } else {
           @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
         }
@@ -304,6 +304,21 @@ if (-not (Test-Path $checkpointScript)) {
     if ($requeued.stage -ne 'review_in_progress' -or $requeued.head_sha -ne ('c' * 40)) {
       $errors.Add('PR review checkpoint writer did not resume a completed artifact for a new head.')
     }
+
+    @{
+      number = 34568
+      stage = 'owned_elsewhere'
+      pending_author = $false
+      head_sha = ('e' * 40)
+    } | ConvertTo-Json | Set-Content (Join-Path $checkpointRoot 'data\items\34568.json')
+    & $checkpointScript -Dashboard $checkpointRoot -Number 34568 `
+      -HeadSha ('e' * 40) -SourceUpdatedAt '2026-08-25T00:00:00Z' `
+      -Phase queued -Detail 'Maintainer activity does not exclude a non-draft PR.'
+    $formerlyOwned = Get-Content (Join-Path $checkpointRoot 'data\items\34568.json') -Raw |
+      ConvertFrom-Json
+    if ($formerlyOwned.stage -ne 'review_in_progress' -or $formerlyOwned.head_sha -ne ('e' * 40)) {
+      $errors.Add('PR review checkpoint writer did not requeue a legacy owned_elsewhere artifact.')
+    }
   } catch {
     $errors.Add("PR review checkpoint validation failed: $($_.Exception.Message)")
   } finally {
@@ -348,6 +363,31 @@ if (-not (Test-Path $artifactValidator)) {
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
     & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
 
+    @{
+      number = 34569
+      kind = 'issue'
+      track = 'triage'
+      stage = 'triaged'
+      generated_at = '2026-08-24T00:00:00Z'
+      evaluated_at = '2026-08-24T00:00:00Z'
+      source_updated_at = '2026-08-24T00:00:00Z'
+      judgment = @{
+        status = 'not_actionable'
+        rationale = 'Legacy fixture'
+        evidence = @('Legacy evidence')
+        recommended_action = 'Re-triage'
+      }
+      actions = @()
+    } | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $artifactRoot 'data\items\34569.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34569 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a legacy issue artifact without schema-v5 fix coverage.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+
     $invalidArtifact = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw |
       ConvertFrom-Json
     $invalidArtifact.actions[0].review.event = 'REQUEST_CHANGES'
@@ -389,7 +429,7 @@ if (-not (Test-Path $artifactValidator)) {
     }
 
     @{
-      schemaVersion = 4
+      schemaVersion = 5
       number = 45678
       kind = 'issue'
       track = 'triage'
@@ -403,6 +443,23 @@ if (-not (Test-Path $artifactValidator)) {
         evidence = @('The reporter supplied reproduction steps but no diagnostic archive.')
         recommended_action = 'Request a fresh diagnostic archive captured after reproduction.'
       }
+      fix_assessment = @{
+        status = 'proposed'
+        rationale = 'No existing fix attempt covers the likely activation failure.'
+      }
+      proposed_fixes = @(
+        @{
+          title = 'Correct the failing activation handoff'
+          root_cause = 'The best current hypothesis is that the selected result reaches an invalid activation target.'
+          plan = @('Trace the selected result through activation and validate the target before launch.')
+          verification = @('Repeat the reported activation sequence and confirm the selected app launches.')
+          confidence = @{
+            score = 40
+            level = 'red'
+            rationale = 'The symptom fits an activation handoff failure, but diagnostics are needed to locate the rejecting component.'
+          }
+        }
+      )
       issue_context = @{
         summary = 'The issue consistently fails during app activation, but the discussion does not identify which activation stage fails.'
         known_information = @('The reporter can reproduce the failure when launching the target app.')
@@ -432,7 +489,7 @@ if (-not (Test-Path $artifactValidator)) {
     & $artifactValidator -Dashboard $artifactRoot -Numbers 45678 -RequireIssueContext | Out-Null
 
     @{
-      schemaVersion = 4
+      schemaVersion = 5
       number = 45679
       kind = 'issue'
       track = 'triage'
@@ -446,6 +503,23 @@ if (-not (Test-Path $artifactValidator)) {
         evidence = @('The reporter supplied the affected module, version, setup, and numbered steps.')
         recommended_action = 'Reproduce locally before deciding whether to design a fix or request more diagnostics.'
       }
+      fix_assessment = @{
+        status = 'proposed'
+        rationale = 'No existing fix attempt covers the reported large-file slowdown.'
+      }
+      proposed_fixes = @(
+        @{
+          title = 'Avoid repeated full-file work during rename preview'
+          root_cause = 'The large-file path may repeat expensive metadata or preview work for each update.'
+          plan = @('Profile the supplied reproduction and cache or defer repeated per-file work.')
+          verification = @('Repeat the large-file scenario and confirm preview latency remains bounded.')
+          confidence = @{
+            score = 45
+            level = 'red'
+            rationale = 'The public reproduction is sufficient to measure the failure, but profiling is needed to identify the exact hot path.'
+          }
+        }
+      )
       issue_context = @{
         summary = 'The issue describes a clear PowerRename slowdown with a large file input.'
         known_information = @('PowerRename is enabled.', 'The repro needs a file larger than 2 MB.')

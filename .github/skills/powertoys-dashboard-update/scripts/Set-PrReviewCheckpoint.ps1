@@ -65,9 +65,7 @@ if ($sameHead -and -not $Force) {
         'review_posted',
         'awaiting_review_approval',
         'awaiting_author',
-        'waiting_on_author',
-        'owned_elsewhere',
-        'excluded'
+        'waiting_on_author'
     )) {
         throw "Refusing to replace protected PR $Number artifact at stage '$protectedStage'."
     }
