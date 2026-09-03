@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-03T08:55:52.3820042+08:00",
+  "generated_at": "2026-09-03T10:00:41.5956850+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 141,
     "open_issues": 12586,
     "community": 11729,
-    "artifacts": 3438
+    "artifacts": 3434
   },
   "impact": {
-    "as_of": "2026-09-03T08:55:52.3820042+08:00",
+    "as_of": "2026-09-03T10:00:41.5956850+08:00",
     "issues_helped": 10,
     "prs_iterated": 34,
     "constructive_comments_posted": 3,
@@ -106,7 +106,6 @@ window.BOARD_INDEX = {
     50253,
     50252,
     50245,
-    50233,
     50222,
     50218,
     50217,
@@ -545,7 +544,6 @@ window.BOARD_INDEX = {
     50236,
     50235,
     50228,
-    50227,
     50224,
     50223,
     50221,
@@ -1933,7 +1931,6 @@ window.BOARD_INDEX = {
     31350,
     44453,
     44433,
-    44408,
     44404,
     26880,
     44389,
@@ -2894,7 +2891,6 @@ window.BOARD_INDEX = {
     21039,
     38530,
     47566,
-    38513,
     38511,
     20987,
     20980,
@@ -3539,6 +3535,38 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-50344",
+      "kind": "pr",
+      "number": 50344,
+      "url": "https://github.com/microsoft/PowerToys/pull/50344",
+      "title": "Make automatic per-module UI test runs blocking in CI",
+      "author": "Copilot",
+      "state": "open",
+      "is_draft": true,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [],
+      "assignees": [
+        "khmyznikov",
+        "Copilot"
+      ],
+      "created_at": "2026-09-03T01:00:31Z",
+      "updated_at": "2026-09-03T01:03:23Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "pr-50341",
       "kind": "pr",
       "number": 50341,
@@ -3713,8 +3741,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-01T00:26:05Z",
-      "updated_at": "2026-09-03T00:10:42Z",
-      "comments": 8,
+      "updated_at": "2026-09-03T01:49:25Z",
+      "comments": 10,
       "priority": null,
       "mirror": {
         "kind": "pr",
@@ -3971,51 +3999,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50245-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/560"
-      }
-    },
-    {
-      "id": "pr-50233",
-      "kind": "pr",
-      "number": 50233,
-      "url": "https://github.com/microsoft/PowerToys/pull/50233",
-      "title": "CmdPal: Virtualize grid views and polish it",
-      "author": "jiripolasek",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "review",
-      "stage": "review_drafted",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post inline review suggestion"
-      },
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2026-08-29T07:09:20Z",
-      "updated_at": "2026-08-31T21:46:58Z",
-      "comments": 1,
-      "priority": null,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 558,
-        "fork_title": "[PR 50233] CmdPal: Virtualize grid views and polish it",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50233-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/558"
       }
     },
     {
@@ -7713,7 +7696,7 @@ window.BOARD_INDEX = {
         "michaeljolley"
       ],
       "created_at": "2026-07-15T00:25:55Z",
-      "updated_at": "2026-09-01T18:20:42Z",
+      "updated_at": "2026-09-03T01:46:35Z",
       "comments": 2,
       "priority": 60,
       "mirror": {
@@ -52365,9 +52348,9 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/50227",
       "title": "CmdPal: Grid arrow navigation does not wrap at boundaries",
       "author": "jiripolasek",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": "fix",
@@ -52375,8 +52358,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -52386,9 +52369,11 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-08-29T06:11:01Z",
-      "updated_at": "2026-08-29T06:16:10Z",
+      "updated_at": "2026-09-03T01:28:53Z",
       "comments": 1,
       "priority": null
     },
@@ -156379,7 +156364,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2021-06-01T21:22:44Z",
-      "updated_at": "2026-09-01T21:58:50Z",
+      "updated_at": "2026-09-03T01:07:27Z",
       "comments": 23,
       "priority": null
     },
@@ -215399,7 +215384,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/44408",
       "title": "CmdPal: Gallery / grid view is not virtualizing",
       "author": "jiripolasek",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -215409,14 +215394,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -215426,7 +215408,7 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2025-12-23T13:00:41Z",
-      "updated_at": "2026-08-29T06:11:28Z",
+      "updated_at": "2026-09-03T01:28:53Z",
       "comments": 2,
       "priority": null
     },
@@ -352554,15 +352536,12 @@ window.BOARD_INDEX = {
       "stage": "needs_reply",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "07/28/2026 20:24:09",
-      "has_artifact": true,
-      "agent_status": "fix",
+      "waiting_since": "09/03/2026 01:14:35",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Keyboard Shortcut Manager",
@@ -352570,8 +352549,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2025-04-03T06:09:55Z",
-      "updated_at": "2026-07-28T20:24:09Z",
-      "comments": 2,
+      "updated_at": "2026-09-03T01:14:35Z",
+      "comments": 3,
       "priority": null
     },
     {
