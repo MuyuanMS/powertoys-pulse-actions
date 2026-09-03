@@ -3,42 +3,40 @@
   "number": 50348,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_design_approval",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T10:05:00Z",
-  "evaluated_at": "2026-09-03T10:05:00Z",
-  "source_updated_at": "2026-09-03T07:56:33Z",
+  "generated_at": "2026-09-03T14:19:43.373Z",
+  "evaluated_at": "2026-09-03T14:19:43.373Z",
+  "source_updated_at": "2026-09-03T12:07:14Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50348",
   "title": "CmdPal: Low-level keyboard hook toggle description is inversed",
   "labels": [
     "Issue-Bug",
-    "Needs-Author-Feedback",
     "Needs-Triage",
     "Product-Command Palette"
   ],
-  "assignees": [
-    "jiripolasek"
-  ],
-  "summary": "The General settings description for the low-level keyboard hook states the opposite of the observed behavior: enabling it is needed to reach CmdPal from elevated apps.",
+  "assignees": [],
+  "summary": "The CmdPal low-level keyboard hook description conflicts with the reporter's stated enabled-state behavior; the exact runtime semantics should be verified before changing localized copy.",
   "status": {
     "glyph": "!",
-    "label": "Design ready - needs approval",
-    "detail": "Correct the localized description and add a settings UI assertion."
+    "label": "Verify behavior before copy change",
+    "detail": "The resource entry is confirmed, but the issue's runtime claim is opposite to the prior artifact's assumption about what enabling the hook does."
   },
-  "next_action": "Approve the copy correction design; request confirmation after the updated build is tested.",
+  "next_action": "Reproduce both toggle states, then align the localized description and test with the verified behavior.",
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The localized resource is concrete and the issue provides before/after screenshots; no linked fix is present."
+    "rationale": "The localized resource is concrete, but the live report says enabling the hook prevents the elevated-app hotkey while the existing text implies it is a remedy. The supported design is therefore to verify both states first and then align only the copy and focused coverage with observed behavior."
   },
   "proposed_fixes": [
     {
       "title": "Correct the low-level keyboard hook setting description",
-      "root_cause": "The English localized description is phrased as though enabling the low-level hook causes the elevated-app limitation, although the setting exists to overcome that limitation.",
+      "root_cause": "The English description and the reporter's stated runtime behavior do not agree about whether enabling the low-level hook permits or prevents CmdPal hotkey activation from elevated applications.",
       "plan": [
-        "Rewrite Settings_GeneralPage_LowLevelHook_SettingsCard.Description in src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw so it states that enabling the hook allows the shortcut to focus Command Palette from an elevated app.",
-        "Keep the existing setting key, checkbox binding, default, and runtime semantics unchanged in src/modules/cmdpal/Microsoft.CmdPal.UI/Settings/GeneralPage.xaml.",
-        "Add or update the existing CmdPal UI test to assert the setting is discoverable and its description matches the enabled behavior."
+        "Reproduce the CmdPal hotkey from normal and elevated foreground apps with the low-level keyboard hook disabled and enabled.",
+        "Confirm which state is supported by the current implementation before editing copy.",
+        "Update Settings_GeneralPage_LowLevelHook_SettingsCard.Description in src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw to describe the verified behavior without changing the setting key, binding, default, or runtime implementation.",
+        "Add a focused CmdPal settings assertion for the description and manually verify the elevated-app path."
       ],
       "verification": [
         "Build CmdPal UI and the focused existing UI test target.",
@@ -46,46 +44,49 @@
         "Confirm normal-application behavior and the setting default remain unchanged."
       ],
       "confidence": {
-        "score": 92,
-        "level": "green",
-        "rationale": "The inverted English resource text, its GeneralPage binding, and the reporter's screenshots directly support a copy-only correction; only runtime confirmation and other-locale review remain."
+        "score": 63,
+        "level": "yellow",
+        "rationale": "The affected resource key is confirmed, but the live issue's runtime claim conflicts with the prior interpretation and has no reproducible steps or independent behavioral trace."
       }
     }
   ],
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The current resource text says to use the hook if the shortcut cannot focus CmdPal from an elevated app, while the report says enabling the setting prevents that behavior.",
+    "rationale": "This is a bounded CmdPal settings defect with a confirmed resource entry, but the live discussion does not establish which enabled-state behavior is correct. A verify-then-correct copy change is supported; changing runtime semantics is not.",
     "evidence": [
       "Observed: Resources.resw key Settings_GeneralPage_LowLevelHook_SettingsCard.Description currently says to use the setting if the shortcut cannot focus CmdPal from an elevated app.",
       "Observed: GeneralPage.xaml binds that resource to the UseLowLevelGlobalHotkey checkbox.",
       "Observed: the reporter supplies current and previous screenshots and explains the integrity-level behavior.",
-      "Inferred: this is a documentation/copy inversion, not evidence that the hook implementation itself is broken."
+      "Observed: the latest timeline activity removed Needs-Author-Feedback but added no substantive reproduction.",
+      "Inferred: the mismatch may be copy-only, or the runtime semantics may have changed; the issue does not distinguish those cases."
     ],
-    "recommended_action": "Approve a resource-only wording correction plus a UI test that asserts the intended description.",
-    "evaluated_at": "2026-09-03T10:05:00Z",
-    "source_updated_at": "2026-09-03T07:56:33Z"
+    "recommended_action": "Reproduce both toggle states, then update only the localized description and add a focused assertion if the runtime implementation is confirmed correct.",
+    "evaluated_at": "2026-09-03T14:19:43.373Z",
+    "source_updated_at": "2026-09-03T12:07:14Z"
   },
   "issue_context": {
-    "summary": "The low-level keyboard hook setting's description is inverted relative to the setting's purpose and Windows integrity-level behavior.",
+    "summary": "CmdPal's low-level keyboard hook setting has a description that the reporter says is inverted relative to enabled behavior in elevated applications.",
     "known_information": [
       "The issue is open and labeled Issue-Bug.",
-      "The issue includes screenshots showing the changed wording.",
-      "GeneralPage.xaml uses the localized resource for the checkbox description."
+      "GeneralPage.xaml uses the localized resource for the checkbox description.",
+      "The only discussion comment is automated triage requesting concrete reproduction steps.",
+      "No linked pull request, assignee, or bug report is present."
     ],
     "inferences": [
-      "The setting's implementation may already be correct; only the user-facing description appears wrong."
+      "The final change may be localized copy only, but that is conditional on verifying the current runtime behavior.",
+      "The prior artifact's assertion that enabling the hook allows elevated-app focus is not supported by the live issue body."
     ],
-    "analysis": "The exact intended wording can be stated without changing behavior: enabling the low-level hook allows the shortcut to focus CmdPal from elevated applications. The author has requested confirmation, so a maintainer-visible reproduction action is useful.",
+    "analysis": "Revalidation found no new fix activity, but it did expose an unresolved semantic contradiction. The safe maintainer action is a short two-state reproduction followed by a resource-only correction and test if implementation behavior is sound.",
     "initial_investigation": [
-      "Read the live issue and timeline.",
-      "Read GeneralPage.xaml and the English resource entry in the current checkout.",
-      "No linked PR or duplicate fix was found in the public timeline."
+      "Read the full live issue body, automated triage discussion, labels, assignees, and latest timeline activity.",
+      "Confirmed the current resource entry and GeneralPage.xaml binding in upstream CmdPal sources.",
+      "No linked code change or PR was found for this issue."
     ],
     "information_gaps": [
       {
-        "information": "Confirmation that the intended enabled/disabled behavior is unchanged in the current build",
-        "why_needed": "Prevents correcting copy while masking a behavioral regression.",
-        "how_to_collect": "Use the reproduce action to test from both a normal and elevated foreground application."
+        "information": "Observed hotkey results with the setting enabled and disabled from both normal and elevated foreground applications",
+        "why_needed": "The copy cannot be corrected truthfully until the supported state is known.",
+        "how_to_collect": "Build current main, configure the CmdPal hotkey, and repeat the same invocation sequence for both toggle states."
       }
     ]
   },
@@ -95,7 +96,7 @@
     "next_step": "After explicit approval, create the fork-side issue and implementation trace."
   },
   "design": {
-    "root_cause": "The English localized description is phrased as though enabling the low-level hook causes the elevated-app limitation, although the setting exists to overcome that limitation.",
+    "root_cause": "The English localized description and the reporter's stated enabled-state behavior disagree. The exact wording defect is confirmed, but the correct direction of the copy must be determined by reproducing both toggle states before editing the resource.",
     "evidence": [
       "src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw contains the inverted description.",
       "src/modules/cmdpal/Microsoft.CmdPal.UI/Settings/GeneralPage.xaml binds the resource to UseLowLevelGlobalHotkey."
@@ -123,9 +124,9 @@
         "symbols": [
           "Settings_GeneralPage_LowLevelHook_SettingsCard.Description"
         ],
-        "current_behavior": "The description says to use the hook if the shortcut cannot focus CmdPal from an elevated app.",
-        "change": "Rewrite it to state that enabling the hook allows the shortcut to focus CmdPal from elevated apps.",
-        "code_block": "<value>Enable this if you want the shortcut to focus Command Palette from an elevated app</value>",
+        "current_behavior": "The description says to use the hook if the shortcut cannot focus CmdPal from an elevated app, while the reporter says enabling it prevents that behavior.",
+        "change": "After reproducing both toggle states, rewrite the resource to describe the observed supported behavior without changing runtime semantics.",
+        "code_block": "<value>[Describe the verified enabled-state effect on hotkey activation from elevated apps]</value>",
         "edge_cases": [
           "Keep the change localized and concise.",
           "Do not alter the setting key or default."
@@ -141,7 +142,7 @@
           "General settings test"
         ],
         "current_behavior": "The issue has no automated assertion for this copy.",
-        "change": "Verify the setting is discoverable and its description matches the enabled behavior.",
+        "change": "Verify the setting is discoverable and its description matches the behavior established by the two-state reproduction.",
         "code_block": "Find<CheckBox>(By.AccessibilityId(\"CmdPal_GeneralPage_LowLevelHook\")).Should().HaveDescription(...)",
         "edge_cases": [
           "Use the repository's existing UI test conventions; do not add a new test framework."
@@ -153,34 +154,26 @@
     ],
     "verify": [
       "Build CmdPal UI.",
-      "From an elevated application, toggle the setting and verify the documented hotkey behavior.",
+      "From normal and elevated foreground applications, test the hotkey with the setting disabled and enabled.",
       "Confirm normal-application behavior and the setting default remain unchanged."
     ],
     "risks": [
       "Changing only English text may leave other locales with old or contradictory translations.",
-      "The report does not prove current runtime behavior on the latest build."
+      "Editing the wording before the two-state reproduction could encode the wrong runtime semantics."
     ],
     "alternatives": [
-      "Change the toggle semantics. Rejected because the report identifies wording as the inversion and no runtime defect is established.",
-      "Request another bug report. Rejected because screenshots and the resource source identify the copy defect; only behavior confirmation remains."
+      "Change the toggle semantics. Not supported until a reproducible runtime defect is established.",
+      "Change only the copy immediately. Deferred because the report's enabled-state claim conflicts with the prior interpretation."
     ],
     "adversary": {
       "rounds": 1,
       "verdict": "no blocking objections",
       "notes": [
-        "Runtime behavior should still be confirmed before release."
+        "The design is implementation-ready only after recording the two-state reproduction result; the copy direction must follow that result."
       ]
     }
   },
   "actions": [
-    {
-      "id": "approve-design-50348",
-      "type": "approve_design",
-      "label": "Approve low-level hook copy fix",
-      "primary": true,
-      "confirm": true,
-      "note": "Approve the fork-side design trace only; no upstream write is performed."
-    },
     {
       "id": "reproduce-50348",
       "type": "reproduce",
@@ -204,7 +197,7 @@
           "Enable the setting and repeat both invocations.",
           "Compare the results with the description."
         ],
-        "expected_result": "The enabled setting should allow the hotkey to focus CmdPal from an elevated app."
+        "expected_result": "The observed supported state and the localized description agree; no runtime behavior is changed by the copy fix."
       }
     }
   ]
