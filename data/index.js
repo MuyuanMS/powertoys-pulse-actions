@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T05:05:15.9374353+08:00",
+  "generated_at": "2026-09-04T06:58:59.8496840+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 140,
-    "open_issues": 12599,
+    "open_prs": 139,
+    "open_issues": 12600,
     "community": 11739,
-    "artifacts": 335
+    "artifacts": 334
   },
   "impact": {
-    "as_of": "2026-09-04T05:05:15.9374353+08:00",
+    "as_of": "2026-09-04T06:58:59.8496840+08:00",
     "issues_helped": 10,
     "prs_iterated": 29,
     "constructive_comments_posted": 3,
@@ -219,7 +219,6 @@ window.BOARD_INDEX = {
     3442,
     50214,
     50362,
-    50361,
     50359,
     50355,
     50351,
@@ -465,47 +464,12 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-09-03T20:19:50Z",
-      "updated_at": "2026-09-03T20:20:11Z",
+      "updated_at": "2026-09-03T20:38:48Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
-    },
-    {
-      "id": "pr-50363",
-      "kind": "pr",
-      "number": 50363,
-      "url": "https://github.com/microsoft/PowerToys/pull/50363",
-      "title": "CmdPal: Persist dock label visibility for new items",
-      "author": "michaeljolley",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-09-03T20:17:47Z",
-      "updated_at": "2026-09-03T20:18:24Z",
-      "comments": 0,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50357",
@@ -577,7 +541,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 605,
@@ -800,7 +764,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 579,
@@ -1017,7 +981,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 601,
@@ -1889,10 +1853,10 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-08-27T22:01:56Z",
-      "updated_at": "2026-08-28T08:52:18Z",
+      "updated_at": "2026-09-03T21:33:22Z",
       "comments": 0,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
       "merge_state": "BLOCKED",
       "mirror": {
@@ -1941,7 +1905,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 496,
@@ -2472,7 +2436,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 413,
@@ -3893,7 +3857,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49662",
@@ -3969,7 +3933,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 475,
@@ -4319,7 +4283,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-49429",
@@ -4404,7 +4368,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 344,
@@ -5025,10 +4989,10 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-07-12T23:58:06Z",
-      "updated_at": "2026-09-03T20:12:49Z",
-      "comments": 4,
+      "updated_at": "2026-09-03T21:16:21Z",
+      "comments": 5,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
       "merge_state": "BLOCKED"
     },
@@ -5104,12 +5068,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-11T21:23:17Z",
-      "updated_at": "2026-09-03T09:32:42Z",
-      "comments": 4,
+      "updated_at": "2026-09-03T21:58:30Z",
+      "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-49226",
@@ -6392,7 +6356,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "DIRTY",
       "mirror": {
         "kind": "pr",
         "fork_number": 378,
@@ -45592,13 +45556,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-44804",
+      "id": "issue-50365",
       "kind": "issue",
-      "number": 44804,
-      "url": "https://github.com/microsoft/PowerToys/issues/44804",
-      "title": "German umlauts will be incorrect rendered in",
-      "author": "axes4-lutz",
-      "state": "closed",
+      "number": 50365,
+      "url": "https://github.com/microsoft/PowerToys/issues/50365",
+      "title": "Peek doesnt work when idle for a while",
+      "author": "gabrielmulle",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -45615,13 +45579,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage",
-        "Product-Peek"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-01-19T11:24:47Z",
-      "updated_at": "2026-04-19T19:16:26Z",
-      "comments": 1,
+      "created_at": "2026-09-03T21:55:24Z",
+      "updated_at": "2026-09-03T21:55:24Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -45668,9 +45631,9 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/50361",
       "title": "CmdPal dock title and subtitle visibility resets after settings changes",
       "author": "michaeljolley",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": "fix",
@@ -45678,8 +45641,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -45687,9 +45650,11 @@ window.BOARD_INDEX = {
         "Issue-Bug",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "michaeljolley"
+      ],
       "created_at": "2026-09-03T19:29:41Z",
-      "updated_at": "2026-09-03T19:34:54Z",
+      "updated_at": "2026-09-03T21:46:43Z",
       "comments": 0,
       "priority": null
     },
@@ -46447,8 +46412,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-03T19:38:01Z",
-      "comments": 9,
+      "updated_at": "2026-09-03T22:02:50Z",
+      "comments": 10,
       "priority": null
     },
     {
@@ -104503,12 +104468,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-30782",
+      "id": "issue-48301",
       "kind": "issue",
-      "number": 30782,
-      "url": "https://github.com/microsoft/PowerToys/issues/30782",
-      "title": "Certain programs (Directory Opus, Everything Search, and more) don't completely fill zones near monitor edges",
-      "author": "conradsrc",
+      "number": 48301,
+      "url": "https://github.com/microsoft/PowerToys/issues/48301",
+      "title": "input monitor switch",
+      "author": "ivanharsh",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -104526,14 +104491,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "FancyZones-Layouts",
-        "Product-FancyZones",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-CommandNotFound"
       ],
       "assignees": [],
-      "created_at": "2024-01-06T22:34:48Z",
-      "updated_at": "2026-06-16T02:55:01Z",
-      "comments": 6,
+      "created_at": "2026-06-04T18:50:37Z",
+      "updated_at": "2026-06-04T18:51:47Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -312253,6 +312217,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-36443",
+      "kind": "issue",
+      "number": 36443,
+      "url": "https://github.com/microsoft/PowerToys/issues/36443",
+      "title": "Workspaces do not recognize some programs",
+      "author": "vovapaukoff",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Needs-Triage",
+        "Product-Workspaces"
+      ],
+      "assignees": [],
+      "created_at": "2024-12-19T09:54:31Z",
+      "updated_at": "2026-04-11T20:52:11Z",
+      "comments": 3,
+      "priority": null
+    },
+    {
       "id": "issue-5332",
       "kind": "issue",
       "number": 5332,
@@ -336605,39 +336603,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-48301",
-      "kind": "issue",
-      "number": 48301,
-      "url": "https://github.com/microsoft/PowerToys/issues/48301",
-      "title": "input monitor switch",
-      "author": "ivanharsh",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-CommandNotFound"
-      ],
-      "assignees": [],
-      "created_at": "2026-06-04T18:50:37Z",
-      "updated_at": "2026-06-04T18:51:47Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-21660",
       "kind": "issue",
       "number": 21660,
@@ -338653,6 +338618,40 @@ window.BOARD_INDEX = {
       "created_at": "2025-06-25T11:59:04Z",
       "updated_at": "2026-04-18T14:58:08Z",
       "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-30782",
+      "kind": "issue",
+      "number": 30782,
+      "url": "https://github.com/microsoft/PowerToys/issues/30782",
+      "title": "Certain programs (Directory Opus, Everything Search, and more) don't completely fill zones near monitor edges",
+      "author": "conradsrc",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "FancyZones-Layouts",
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2024-01-06T22:34:48Z",
+      "updated_at": "2026-06-16T02:55:01Z",
+      "comments": 6,
       "priority": null
     },
     {
@@ -352032,12 +352031,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-36443",
+      "id": "issue-44804",
       "kind": "issue",
-      "number": 36443,
-      "url": "https://github.com/microsoft/PowerToys/issues/36443",
-      "title": "Workspaces do not recognize some programs",
-      "author": "vovapaukoff",
+      "number": 44804,
+      "url": "https://github.com/microsoft/PowerToys/issues/44804",
+      "title": "German umlauts will be incorrect rendered in",
+      "author": "axes4-lutz",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -352055,14 +352054,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
         "Needs-Triage",
-        "Product-Workspaces"
+        "Product-Peek"
       ],
       "assignees": [],
-      "created_at": "2024-12-19T09:54:31Z",
-      "updated_at": "2026-04-11T20:52:11Z",
-      "comments": 3,
+      "created_at": "2026-01-19T11:24:47Z",
+      "updated_at": "2026-04-19T19:16:26Z",
+      "comments": 1,
       "priority": null
     },
     {
