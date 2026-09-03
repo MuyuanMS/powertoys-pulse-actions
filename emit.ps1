@@ -170,7 +170,7 @@ function Test-MeaningfulAction {
     return $type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
   }
 
-  return $type -in @('approve', 'post_review', 'request_changes')
+  return $type -in @('approve', 'post_review', 'request_changes', 'trigger_ci')
 }
 function Test-PublishableArtifact {
   param($Artifact)
@@ -968,8 +968,13 @@ foreach ($it in $src.items) {
     actions    = if ($authorWaitResolved) { @() } else { @($o.actions | Where-Object { Test-MeaningfulAction $o $_ } | ForEach-Object { Obj $_ }) }
   }
   if ($needsRevalidation) { $art.needs_revalidation = $true }
+  if ($o.schemaVersion) { $art.schemaVersion = $o.schemaVersion }
   if ($o.confidence)  { $art.confidence  = $o.confidence }
   if ($o.head_sha)    { $art.head_sha    = $o.head_sha }        # staleness anchor vs live PR head
+  if ($o.judgment)    { $art.judgment    = Obj $o.judgment }
+  if ($o.issue_context) { $art.issue_context = Obj $o.issue_context }
+  if ($o.fix_assessment) { $art.fix_assessment = Obj $o.fix_assessment }
+  if ($o.proposed_fixes) { $art.proposed_fixes = @($o.proposed_fixes | ForEach-Object { Obj $_ }) }
   if ($o.design)      { $art.design      = Obj $o.design }
   if ($o.proposed_comments) { $art.proposed_comments = @($o.proposed_comments | ForEach-Object { Obj $_ }) }
   if ($o.upstream_pr) { $art.upstream_pr = Obj $o.upstream_pr } elseif ($it.upstream_pr) { $art.upstream_pr = $it.upstream_pr }

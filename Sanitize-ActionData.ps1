@@ -74,7 +74,7 @@ function Get-PublicActions {
 
   $kind = [string]$Artifact.kind
   $allowedTypes = if ($kind -eq 'pr') {
-    @('approve', 'post_review', 'request_changes')
+    @('approve', 'post_review', 'request_changes', 'trigger_ci')
   } elseif ($kind -eq 'issue') {
     @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
   } else {
@@ -89,6 +89,11 @@ function Get-PublicActions {
   })
 
   if ($kind -eq 'pr') {
+    foreach ($action in $actions | Where-Object { $_.type -eq 'trigger_ci' }) {
+      if (-not $action.comment -or [string]$action.comment.body -ne '/azp run') {
+        throw "PR $($Artifact.number) trigger_ci action must post exactly /azp run"
+      }
+    }
     $proposedComments = @($Artifact.proposed_comments | Where-Object {
       $_.disposition -eq 'proposed'
     })
