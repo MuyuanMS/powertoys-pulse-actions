@@ -1,35 +1,185 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-49947",
   "number": 49947,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T02:43:51.7395148Z",
-  "evaluated_at": "09/02/2026 14:45:39",
+  "generated_at": "2026-09-03T03:02:01Z",
+  "evaluated_at": "2026-09-03T03:02:01Z",
   "source_updated_at": "2026-09-01T15:09:05Z",
   "head_sha": "4c44273d76903411b946f1ea0357022f22997514",
   "title": "CmdPal: Shelf (6/n) - Add numbered shortcuts (Alt+#) to list pages",
   "url": "https://github.com/microsoft/PowerToys/pull/49947",
+  "author": "jiripolasek",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Product-Command Palette"
+  ],
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "summary": "Fork review loop converged on commit dea25b392409218c3b2431aefa6217f4d9f36df5 with zero unresolved Copilot threads and a fresh zero-comment Copilot pass. Four current review findings are drafted from the validated fork patch; no upstream review has been posted.",
   "status": {
-    "glyph": "...",
-    "label": "Copilot review requested",
-    "detail": "Third fork fix was committed, pushed, and the current Copilot thread resolved; fresh Copilot review requested for convergence."
+    "glyph": "DRAFT",
+    "label": "Review drafted",
+    "detail": "The fork loop fixed stale numbered shortcut cue tracking, stale IsInteractive accelerator metadata, missing UI coverage, and non-HC_ACTION keyboard hook processing. Final Copilot pass on the fork produced zero new comments."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Recheck that upstream head 4c44273d76903411b946f1ea0357022f22997514 is unchanged, then post the drafted review only if the maintainer explicitly approves.",
+  "proposed_comments": [
+    {
+      "id": "process-only-hc-action-keyboard-hook-callbacks",
+      "kind": "inline",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The Win32 keyboard hook contract requires hooks to process only HC_ACTION callbacks; other codes must be passed to the next hook."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/LocalKeyboardListener.cs",
+      "startLine": 149,
+      "line": 149,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Process only actionable keyboard hook callbacks",
+      "body": "### Process only actionable keyboard hook callbacks\n\n**Severity:** `high`\n\n`WH_KEYBOARD` can call the hook with non-`HC_ACTION` codes, including peek/no-remove callbacks. Treating every non-negative code as a real key action can run the Alt+number suppression path more than once for the same key state, so the shortcut may invoke twice. Only process `HC_ACTION`; all other codes should be forwarded unchanged.\n\n```suggestion\n            if (nCode == 0)\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "refresh-shortcut-cue-tracking-after-layout-change",
+      "kind": "inline",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "The cue visual host depends on IsGridView and the active ListViewModel, both of which can change independently from cue visibility."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml.cs",
+      "startLine": 735,
+      "line": 739,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Refresh numbered shortcut cue tracking when the hosted list changes",
+      "body": "### Refresh numbered shortcut cue tracking when the hosted list changes\n\n**Severity:** `medium`\n\nThe cue host is selected from the current list layout, but this only refreshes while cues are already visible. If the page switches between list/grid layout or swaps in a populated nested list before access-key mode is active, the cue canvas and UIA accelerator metadata can remain wired to the old host. Track the view model lifecycle while loaded and queue an update whenever the layout changes.\n\n```suggestion\n            if (@this._isLoaded)\n            {\n                @this.EnsureNumberedShortcutCueTracking();\n                @this.QueueNumberedShortcutCueUpdate();\n            }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "refresh-shortcut-metadata-when-item-interactivity-changes",
+      "kind": "inline",
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "Shortcut numbering skips non-interactive entries; without per-item refresh, cue labels and UIA accelerators can become stale."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml.cs",
+      "startLine": 719,
+      "line": 720,
+      "side": "RIGHT",
+      "in_diff": true,
+      "title": "Recompute accelerator assignments when item interactivity changes",
+      "body": "### Recompute accelerator assignments when item interactivity changes\n\n**Severity:** `medium`\n\nThe shortcut numbers skip non-interactive items, but the current cue metadata is only recomputed on full item updates. If an item toggles `IsInteractive` while the filtered collection stays the same, the visible cue numbers and automation accelerators can point at stale items. Subscribe to filtered collection changes and each visible item's `PropertyChanged`, then queue a cue update when `IsInteractive` changes; gate those subscriptions to views with `ShowNumberedShortcutCues` enabled so parameter lists do not pay the tracking cost.\n\n```suggestion\n                page.ItemsUpdated += @this.Page_ItemsUpdated;\n                page.PropertyChanged += @this.ViewModel_PropertyChanged;\n                if (@this.ShowNumberedShortcutCues)\n                {\n                    page.FilteredItems.CollectionChanged += @this.FilteredItems_CollectionChanged;\n                    @this.RefreshNumberedShortcutItemTracking();\n                }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "add-numbered-shortcut-ui-automation-coverage",
+      "kind": "companion",
+      "severity": "medium",
+      "confidence": {
+        "score": 88,
+        "rationale": "The behavior crosses keyboard hook, focus, invocation, and selection logic and was not covered by the current tests."
+      },
+      "title": "Add end-to-end coverage for numbered shortcut invocation and selection",
+      "body": "### Add end-to-end coverage for numbered shortcut invocation and selection\n\n**Severity:** `medium`\n\nThis feature depends on the local keyboard hook, Alt latching, WinUI focus, and the distinction between invoking and selecting. Add UI automation coverage for Alt+1 invocation, latched Alt then 1 invocation, and Alt+Shift+1 selecting without invoking so regressions in the hook and focus path fail deterministically.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49947",
+      "type": "post_review",
+      "label": "Post four CmdPal numbered-shortcut findings",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "COMMENT",
+        "pr": 49947,
+        "head_sha": "4c44273d76903411b946f1ea0357022f22997514"
+      }
+    }
+  ],
   "workflow": {
-    "phase": "review_requested",
-    "checkpoint_at": "2026-09-03T02:43:51.7395148Z"
+    "phase": "review_drafted",
+    "review_iterations": 5,
+    "checkpoint_at": "2026-09-03T03:02:01Z"
   },
   "freshness": {
-    "queued_at": "09/02/2026 02:45:50",
-    "checkpoint_at": "2026-09-03T02:43:51.7395148Z"
+    "queued_at": "2026-09-02T02:45:50Z",
+    "checkpoint_at": "2026-09-03T03:02:01Z"
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "4c44273d76903411b946f1ea0357022f22997514",
+    "updated_at": "2026-09-01T15:09:05Z",
+    "issue_comment_count": 1,
+    "review_comment_count": 5,
+    "review_count": 2,
+    "review_decision": "CHANGES_REQUESTED",
+    "assignees": [
+      "jiripolasek"
+    ],
+    "reported_checks": {
+      "total": 13,
+      "successful": 12,
+      "failing": 0,
+      "pending": 0,
+      "cancelled": 1,
+      "note": "The only cancelled check is an older pr-intake run; latest pr-intake, CI, dependency review, telemetry detection, and CLA are successful."
+    }
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "builds": [
+      "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UITests\\Microsoft.CmdPal.UITests.csproj"
+    ],
+    "tests": [
+      {
+        "suite": "CmdPal UI automation tests",
+        "result": "built-not-run",
+        "reason": "Targeted UI test project builds successfully; interactive UI execution was not run in this drain."
+      }
+    ],
+    "copilot": {
+      "fork_pr": 571,
+      "head_sha": "dea25b392409218c3b2431aefa6217f4d9f36df5",
+      "submitted_at": "2026-09-03T02:58:38Z",
+      "comments_generated": 0,
+      "unresolved_threads": 0
+    }
+  },
+  "upstream_pr": {
+    "number": 49947,
+    "url": "https://github.com/microsoft/PowerToys/pull/49947"
   },
   "fork_pr": {
     "number": 571,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/571"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/571",
+    "state": "OPEN",
+    "updated_at": "2026-09-03T02:58:38Z",
+    "head_sha": "dea25b392409218c3b2431aefa6217f4d9f36df5"
   },
-  "fork_branch": "pr-iterate/49947"
+  "fork_branch": "pr-iterate/49947",
+  "fork": {
+    "owner": "MuyuanMS",
+    "repo": "MuyuanMS/PowerToys",
+    "pr": 571,
+    "branch": "pr-iterate/49947",
+    "head_sha": "dea25b392409218c3b2431aefa6217f4d9f36df5",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/571"
+  }
 }

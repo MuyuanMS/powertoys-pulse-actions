@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-03T10:59:51.8732407+08:00",
+  "generated_at": "2026-09-03T11:13:03.9493577+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 140,
     "open_issues": 12586,
     "community": 11728,
-    "artifacts": 3432
+    "artifacts": 3431
   },
   "impact": {
-    "as_of": "2026-09-03T10:59:51.8732407+08:00",
+    "as_of": "2026-09-03T11:13:03.9493577+08:00",
     "issues_helped": 10,
     "prs_iterated": 33,
     "constructive_comments_posted": 3,
@@ -1153,7 +1153,6 @@ window.BOARD_INDEX = {
     30694,
     30692,
     48208,
-    48204,
     48202,
     48196,
     48190,
@@ -5799,15 +5798,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_drafted",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 4,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post four CmdPal numbered-shortcut findings"
+      },
       "labels": [
         "Product-Command Palette"
       ],
@@ -7247,15 +7249,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "Product-Awake",
         "Ready for review"
@@ -110174,8 +110179,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -110185,7 +110190,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-05-29T13:19:26Z",
-      "updated_at": "2026-06-02T05:07:07Z",
+      "updated_at": "2026-09-03T03:00:14Z",
       "comments": 1,
       "priority": null
     },
@@ -265245,7 +265250,7 @@ window.BOARD_INDEX = {
       "number": 26274,
       "url": "https://github.com/microsoft/PowerToys/issues/26274",
       "title": "Peek should always on top and can possible new selected files in explorer to update Peek Content",
-      "author": "honinbo",
+      "author": "getorobo",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
