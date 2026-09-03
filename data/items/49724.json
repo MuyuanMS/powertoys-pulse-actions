@@ -2,29 +2,100 @@
   "number": 49724,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_ready",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T08:03:33.7796731Z",
-  "evaluated_at": "08/14/2026 00:19:14",
-  "source_updated_at": "08/14/2026 17:14:41",
+  "generated_at": "2026-09-03T09:45:30.4932526Z",
+  "evaluated_at": "2026-09-03T09:45:30.4932526Z",
+  "source_updated_at": "2026-08-14T17:14:41Z",
   "head_sha": "531e116c4586dd3b54a3de7e9a27af5864587944",
   "title": "[Peek] Add CLI support for previewing multiple files/folders. Fix multiple CLI issues",
   "url": "https://github.com/microsoft/PowerToys/pull/49724",
+  "confidence": "high",
+  "summary": "Collaborator-authored Peek CLI update reviewed at current head. The fork review loop fixed two current-head issues: blank names for trailing-separator/root folder CLI paths and title-bar multi-item counters appearing for ordinary Explorer single-file activation. One companion action remains for CLI end-to-end UI coverage.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Queued for review; maintainer activity does not exclude an open non-draft PR."
+    "glyph": "review",
+    "label": "Review ready with drafted changes",
+    "detail": "Fork PR 595 converged after two fix commits. Final fork head 498e516a983fc2a6c1a05325141028e49337d903 has zero unresolved Copilot threads; the latest completed Copilot review generated zero new comments."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
+  "next_action": "Request changes with the drafted Peek fixes/coverage note after rechecking that upstream head 531e116c4586dd3b54a3de7e9a27af5864587944 is unchanged.",
+  "proposed_comments": [
+    {
+      "id": "preserve-cli-folder-display-name",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Preserve folder names for separator-terminated CLI paths",
+      "body": "### Preserve folder names for separator-terminated CLI paths\n\n**Severity:** `medium`\n\n`Path.GetFullPath` can preserve a trailing directory separator, and `Path.GetFileName` returns an empty string for paths such as `C:\\folder\\` or a drive root. That creates a `FolderItem` with a blank name, which then propagates into the Peek title and heading. Trim directory separators before deriving the display name and fall back to the original path for roots.\n\n```suggestion\n                string name = GetDisplayName(path);\n                items.Add(Directory.Exists(path)\n                    ? new FolderItem(path, name, path)\n                    : new FileItem(path, name));\n            }\n\n            Items = items;\n            CurrentItem = items.Count > 0 ? items[0] : null;\n        }\n\n        private static string GetDisplayName(string path)\n        {\n            var trimmedPath = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);\n            var name = Path.GetFileName(trimmedPath.Length > 0 ? trimmedPath : path);\n\n            return string.IsNullOrEmpty(name) ? path : name;\n        }\n```",
+      "path": "src/modules/peek/Peek.UI/MainWindowViewModel.cs",
+      "line": 208,
+      "start_line": 186,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 92,
+        "rationale": "The bug follows directly from Path.GetFileName behavior for trailing separators and roots, and the fix is localized to CLI item construction."
+      }
+    },
+    {
+      "id": "preserve-explorer-activation-multiplicity",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Do not show multi-item counters for ordinary Explorer activation",
+      "body": "### Do not show multi-item counters for ordinary Explorer activation\n\n**Severity:** `high`\n\n`Items` contains the whole neighboring directory for Explorer activation, so using `Items.Count > 1` makes the title bar show an index/total counter even when the user selected one file. The previous behavior only showed that counter for true multi-selection. Track activation multiplicity separately: use `NeighboringItemsQuery.IsMultipleFilesActivation` for Explorer and `paths.Count > 1` for CLI.\n\n```suggestion\n        [ObservableProperty]\n        [NotifyPropertyChangedFor(nameof(DisplayItemCount))]\n        [NotifyPropertyChangedFor(nameof(HasMultipleItems))]\n        private IReadOnlyList<IFileSystemItem>? _items;\n\n        [ObservableProperty]\n        [NotifyPropertyChangedFor(nameof(HasMultipleItems))]\n        private bool _isMultipleItemsActivation;\n```",
+      "path": "src/modules/peek/Peek.UI/MainWindowViewModel.cs",
+      "line": 80,
+      "start_line": 75,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 90,
+        "rationale": "The reviewed code replaced the old IsMultipleFilesActivation condition with Items.Count, which is known to include neighbors for single Explorer activation."
+      }
+    },
+    {
+      "id": "add-cli-e2e-coverage",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Add end-to-end coverage for the direct CLI launch path",
+      "body": "### Add end-to-end coverage for the direct CLI launch path\n\n**Severity:** `medium`\n\nThe new unit tests cover argument classification, but the core direct-CLI workflow still has no regression test that launches Peek with multiple paths and verifies relative-path expansion, mixed file/folder item creation, navigation, and invalid-input exit behavior. Please extend the Peek UI test coverage for the CLI activation path so these cross-process regressions are observable.",
+      "path": "src/modules/peek/Peek.UI/PeekXAML/App.xaml.cs",
+      "line": 125,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 78,
+        "rationale": "Existing tests cover classifier and Explorer activation, while the direct CLI launch branch is a separate cross-process path."
+      }
+    }
+  ],
   "actions": [],
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-03T08:03:33.7796731Z"
+    "phase": "review_ready",
+    "checkpoint_at": "2026-09-03T09:45:30.4932526Z",
+    "copilot_rounds": 3,
+    "unresolved_copilot_threads": 0
   },
   "freshness": {
-    "queued_at": "2026-09-03T08:03:33.7796731Z",
-    "checkpoint_at": "2026-09-03T08:03:33.7796731Z"
-  }
+    "queued_at": "2026-09-03T08:18:15.126539Z",
+    "checkpoint_at": "2026-09-03T09:45:30.4932526Z"
+  },
+  "fork_pr": {
+    "number": 595,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/595",
+    "state": "OPEN",
+    "head_sha": "498e516a983fc2a6c1a05325141028e49337d903",
+    "base": "pr-review-base/49724-20260903",
+    "changed_file_count": 8
+  },
+  "fork_branch": "pr-iterate/49724-v2",
+  "verify": [
+    "Fork PR scope exactly matches the eight upstream changed files.",
+    "build-essentials passed in <PowerToysCheckout>",
+    "Targeted <PowerToysCheckout>\\src\\modules\\peek\\Peek.UI build passed.",
+    "Final completed fork Copilot review at 2026-09-03T09:16:00Z produced zero new comments; unresolved fork Copilot threads: 0."
+  ],
+  "blockers": []
 }
