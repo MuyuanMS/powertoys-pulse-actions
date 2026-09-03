@@ -5,123 +5,39 @@
   "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-03T17:55:52.3688535+08:00",
-  "evaluated_at": "2026-09-03T09:45:30.4932526Z",
-  "source_updated_at": "2026-09-01T06:43:41Z",
-  "status": {
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action.",
-    "glyph": "🔄"
-  },
-  "next_action": {
-    "label": "Run PR review",
-    "glyph": "🔄",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
-  },
-  "actions": [],
-  "needs_revalidation": true,
-  "confidence": "high",
+  "generated_at": "2026-09-03T12:40:55.6315740Z",
+  "evaluated_at": "09/03/2026 09:45:30",
+  "source_updated_at": "09/01/2026 06:43:41",
   "head_sha": "795c8b0f305e4d9d189ba545ae8a37a9dcff0033",
-  "proposed_comments": [
+  "title": "Light Switch: add Follow Screen Brightness mode",
+  "url": "https://github.com/microsoft/PowerToys/pull/49625",
+  "status": {
+    "glyph": "...",
+    "label": "Reviewing findings",
+    "detail": "A fresh Copilot review landed during the bounded run and has one unresolved finding; checkpointed for the next resume without starting another round."
+  },
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
+  "actions": [
     {
-      "id": "phase0-powerdisplay-validation",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Complete PowerDisplay compatibility validation",
-      "body": "### Complete PowerDisplay compatibility validation\n\n**Severity:** `medium`\n\nThanks for adding the demo and validation details. Before this can move forward, please also test the new Follow Screen Brightness mode with PowerDisplay profile switching enabled for both light and dark profiles, as requested in the thread. The important thing to confirm is that brightness changes caused by applying a PowerDisplay profile do not create a repeated light/dark feedback loop.",
-      "disposition": "proposed",
-      "confidence": {
-        "score": 88,
-        "rationale": "A maintainer explicitly requested this compatibility test, and the feature shares LightSwitch theme notifications with PowerDisplay profile application."
-      }
-    },
-    {
-      "id": "bound-brightness-observer-shutdown",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Bound shutdown when WMI is unavailable",
-      "body": "### Bound shutdown when WMI is unavailable\n\n**Severity:** `high`\n\n`WBEM_FLAG_CONNECT_USE_MAX_WAIT` can still block a synchronous `ConnectServer` call long enough for `Stop()` to wait on the observer thread during service shutdown or mode changes. This can make disabling Follow Brightness or stopping the service exceed expected shutdown timing when WMI is unavailable. Keep the worker state alive independently and bound `Stop()` so shutdown can continue after cancellation is requested.\n\n```suggestion\n    void Stop()\n    {\n        _state->stop = true;\n        if (_thread.joinable())\n        {\n            auto done = _state->done.get_future();\n            if (done.wait_for(std::chrono::seconds(2)) == std::future_status::ready)\n            {\n                _thread.join();\n            }\n            else\n            {\n                _thread.detach();\n            }\n        }\n    }\n```",
-      "path": "src/modules/LightSwitch/LightSwitchService/BrightnessObserver.h",
-      "line": 45,
-      "start_line": 36,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 86,
-        "rationale": "The worker performs synchronous WMI calls and Stop joins that worker; the proposed pattern was built in the fork service project."
-      }
-    },
-    {
-      "id": "enumerate-brightness-panels",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Use a deterministic value when multiple built-in panels report brightness",
-      "body": "### Use a deterministic value when multiple built-in panels report brightness\n\n**Severity:** `medium`\n\n`WmiMonitorBrightness` can expose more than one active internal panel, but the current code reads only the first row from an unordered WMI result set. On dual-panel devices the selected brightness source can be arbitrary and can ignore changes on the other panel. Enumerate the active rows and apply a documented deterministic policy; this suggestion uses the maximum reported brightness so bright outdoor conditions on any built-in panel keep the theme in light mode.\n\n```suggestion\n                    IWbemClassObject* pObj = nullptr;\n                    ULONG returned = 0;\n                    std::optional<int> maxBrightness;\n                    while (!state->stop &&\n                           pEnum->Next(kNextTimeoutMs, 1, &pObj, &returned) == WBEM_S_NO_ERROR &&\n                           returned)\n                    {\n                        VARIANT vt;\n                        VariantInit(&vt);\n                        if (SUCCEEDED(pObj->Get(L\"CurrentBrightness\", 0, &vt, nullptr, nullptr)))\n                        {\n                            int brightness = static_cast<int>(vt.bVal);\n                            maxBrightness = maxBrightness && *maxBrightness > brightness ? *maxBrightness : brightness;\n                        }\n                        VariantClear(&vt);\n                        pObj->Release();\n                        pObj = nullptr;\n                    }\n```",
-      "path": "src/modules/LightSwitch/LightSwitchService/BrightnessObserver.h",
-      "line": 133,
-      "start_line": 121,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 82,
-        "rationale": "The WMI class can return multiple rows and the current implementation requests one row; maximum aggregation is a simple deterministic policy but product may choose a different one."
-      }
-    },
-    {
-      "id": "invalidate-empty-brightness-results",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Invalidate cached brightness when no active panel is reported",
-      "body": "### Invalidate cached brightness when no active panel is reported\n\n**Severity:** `medium`\n\nWhen a successful WMI query returns no active brightness rows, the previous brightness remains cached indefinitely. Later settings changes or external-theme checks can then act on a disconnected panel's stale value instead of entering the existing unknown-brightness path. Reset both observer and manager state with a sentinel and avoid treating that invalidation as a threshold crossing.\n\n```suggestion\n                    else if (!state->stop && !maxBrightness && lastBrightness != -1)\n                    {\n                        lastBrightness = -1;\n                        try\n                        {\n                            state->callback(lastBrightness);\n                        }\n                        catch (...) {}\n                    }\n```",
-      "path": "src/modules/LightSwitch/LightSwitchService/BrightnessObserver.h",
-      "line": 171,
-      "start_line": 164,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 84,
-        "rationale": "The state manager already treats -1 as unknown brightness, but the observer previously never emitted that state after losing all active rows."
-      }
-    },
-    {
-      "id": "clarify-built-in-display-limitation",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Clarify that the mode follows supported built-in displays",
-      "body": "### Clarify that the mode follows supported built-in displays\n\n**Severity:** `medium`\n\nThe Settings description currently implies general display support, but the backend listens only to `WmiMonitorBrightness`, which is the built-in-display brightness path and does not cover ordinary external-monitor DDC/CI changes. Users on external-monitor-only systems could otherwise select a mode that silently receives no samples. Make the limitation explicit in the description.\n\n```suggestion\n    <value>Switch to light mode when built-in display brightness reaches this percentage, and to dark mode when it drops below it. Works with ambient light sensors and manual adjustments on supported built-in displays.</value>\n```",
-      "path": "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw",
-      "line": 6530,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 91,
-        "rationale": "The backend query is explicitly WmiMonitorBrightness and the changed resource text is user-facing."
-      }
-    },
-    {
-      "id": "add-follow-brightness-ui-coverage",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Add integration coverage for the new mode visibility and persistence",
-      "body": "### Add integration coverage for the new mode visibility and persistence\n\n**Severity:** `medium`\n\nThe added tests cover view-model cloning, clamping, and selection, but the Settings UI state and service interaction remain untested. Please add coverage that selects Follow Screen Brightness in Settings, verifies the threshold card appears, saves a non-default threshold, and exercises switching away from the mode so observer shutdown and stale-brightness invalidation stay covered.",
-      "disposition": "proposed",
-      "confidence": {
-        "score": 74,
-        "rationale": "The PR adds XAML state and service lifecycle behavior not covered by the current unit tests; exact UI-test plumbing is broader than a safe inline suggestion."
-      }
+      "id": "continue-review-49625",
+      "type": "continue_review",
+      "label": "Continue review loop",
+      "primary": true,
+      "note": "Review progress is checkpointed; no upstream action has been posted."
     }
   ],
+  "workflow": {
+    "phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-03T12:40:55.6315740Z"
+  },
+  "freshness": {
+    "queued_at": "09/03/2026 12:18:39",
+    "checkpoint_at": "2026-09-03T12:40:55.6315740Z"
+  },
   "fork_pr": {
     "number": 603,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/603",
-    "state": "OPEN",
-    "head_sha": "b7642ddeba068c2b0a4d499296d70ee120f600d1",
-    "base": "pr-review-base/49625-20260903",
-    "changed_file_count": 18
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/603"
   },
   "fork_branch": "pr-iterate/49625-v5"
 }

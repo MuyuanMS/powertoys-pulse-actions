@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-03T20:13:51.3327919+08:00",
+  "generated_at": "2026-09-03T20:49:28.8634502+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 139,
     "open_issues": 12594,
     "community": 11734,
-    "artifacts": 330
+    "artifacts": 332
   },
   "impact": {
-    "as_of": "2026-09-03T20:13:51.3327919+08:00",
+    "as_of": "2026-09-03T20:49:28.8634502+08:00",
     "issues_helped": 10,
     "prs_iterated": 31,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50352,
     50347,
     50344,
     50334,
@@ -287,6 +288,7 @@ window.BOARD_INDEX = {
     50148,
     50147,
     50137,
+    50125,
     50124,
     50121,
     50117,
@@ -442,13 +444,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -465,7 +467,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 605,
+        "fork_title": "[PR 50352] [Keyboard Manager] UI tests for remapping search, filters and bulk delete",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50352",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/605"
+      }
     },
     {
       "id": "pr-50347",
@@ -2425,15 +2435,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "Ready for review"
       ],
@@ -3316,7 +3329,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 604,
+        "fork_title": "[PR 49862] Build(deps): Bump actions/setup-dotnet from 5.4.0 to 6.0.0",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/49862",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/604"
+      }
     },
     {
       "id": "pr-49860",
@@ -3557,7 +3578,7 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-08-07T23:25:57Z",
-      "updated_at": "2026-08-29T15:50:22Z",
+      "updated_at": "2026-09-03T12:36:42Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -3954,7 +3975,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 6,
+      "proposed_open": 0,
       "primary_action": null,
       "labels": [],
       "assignees": [],
@@ -52803,8 +52824,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -107235,7 +107256,7 @@ window.BOARD_INDEX = {
       "number": 48212,
       "url": "https://github.com/microsoft/PowerToys/issues/48212",
       "title": "Light Switch service log file can grow to several GB without size rotation",
-      "author": "tohsakrat",
+      "author": "tohsakarat",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -157467,8 +157488,8 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-08-07T23:11:04Z",
-      "updated_at": "2026-08-07T23:11:04Z",
-      "comments": 0,
+      "updated_at": "2026-09-03T12:35:57Z",
+      "comments": 1,
       "priority": null
     },
     {
