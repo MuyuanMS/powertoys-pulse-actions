@@ -1,35 +1,215 @@
 {
+  "schemaVersion": 3,
   "number": 49325,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T19:37:58.4533319Z",
-  "evaluated_at": "09/02/2026 14:46:51",
+  "generated_at": "2026-09-03T07:24:54Z",
+  "evaluated_at": "2026-09-03T07:24:54Z",
   "source_updated_at": "2026-09-01T22:01:01Z",
   "head_sha": "8893ed927557cf54b5f6b32fc598b41ce83565d1",
   "title": "CmdPal JS/TS Extensions - Phase 4: extension service, wrapper, discovery + host wiring",
   "url": "https://github.com/microsoft/PowerToys/pull/49325",
+  "author": "michaeljolley",
+  "authorAssociation": "MEMBER",
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "High",
+  "summary": "The preserved fork-side review loop resolved the valid current findings for CmdPal JS extension lifecycle, recovery, status ordering, and provider/list publication races. Targeted CmdPal builds and 60 focused tests passed. Copilot reviewer assignment returned empty after prior review iterations; the fallback audit found zero unresolved fork Copilot threads after resolving the final lifecycle-gate finding. Four companion requests are drafted for maintainer approval.",
   "status": {
-    "glyph": "...",
-    "label": "Reviewing findings",
-    "detail": "The immediate fork check found three new Copilot comments, including shutdown and debounce concurrency concerns, with eight unresolved Copilot threads. Finding resolution is checkpointed without polling."
+    "glyph": "!",
+    "label": "Review drafted - CmdPal lifecycle fixes",
+    "detail": "Upstream remains at 8893ed927557cf54b5f6b32fc598b41ce83565d1 with successful reported checks and review still required. Fork PR 573 is at b13863634980a1cc026b48a24d5441a4bb4dfb01; all fork Copilot threads are resolved after the bounded lifecycle-gate fix."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-02T19:37:58.4533319Z"
+  "next_action": {
+    "glyph": ">",
+    "label": "Review drafted companion requests",
+    "reason": "The review is pinned to the current upstream head and requires explicit maintainer approval plus a final freshness check before any upstream post."
   },
-  "freshness": {
-    "queued_at": "08/27/2026 11:15:19",
-    "checkpoint_at": "2026-09-02T19:37:58.4533319Z"
+  "actions": [
+    {
+      "id": "request-changes-49325",
+      "type": "request_changes",
+      "label": "Request changes with four companion comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49325,
+        "pr": 49325,
+        "head_sha": "8893ed927557cf54b5f6b32fc598b41ce83565d1",
+        "body_prefix": "Thanks for continuing the CmdPal JS/TS extension service work. The service boundaries are close, but I found several lifecycle and concurrency paths that can leave stale UI state, publish disposed providers, or hang extension removal. Please address these before this phase merges."
+      },
+      "note": "Draft only; no upstream review, comment, label, or assignment has been posted."
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
+    "Post nothing upstream until the pinned head, checks, comments, reviews, and threads are revalidated",
+    "Hold the review without changing labels, review state, or PR state",
+    "Re-run the review if the upstream head changes"
+  ],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "serialize-status-and-provider-disposal",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Serialize status updates through provider disposal",
+      "confidence": {
+        "score": 95,
+        "rationale": "The host status APIs are asynchronous, and unordered show/hide/dispose work can visibly resurrect stale status UI after a provider has gone away."
+      },
+      "body": "### Serialize status updates through provider disposal\n\n**Severity:** `high`\n\n`ShowStatus`, `HideStatus`, provider disconnect, and provider disposal need to execute in request order. Today a hide or dispose path can race with an earlier asynchronous show, and startup notifications can interleave with live notifications before initialization has fully drained. Please serialize status host operations, track anonymous statuses as well as ID-backed statuses, and make disposal drain the queued cleanup so a disconnected JS provider cannot leave stale status UI behind.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "fence-provider-publication-and-list-cache",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Fence provider publication and list-page cache updates",
+      "confidence": {
+        "score": 94,
+        "rationale": "Reload, remove, ItemsChanged, and slow GetItems responses share mutable provider/list state; without generation checks, stale work can republish removed providers or cache invalid list adapters."
+      },
+      "body": "### Fence provider publication and list-page cache updates\n\n**Severity:** `high`\n\nProvider add/remove/reload and `ItemsChanged` work should be generation-fenced before publishing commands or committing list-page caches. A slow publication or completed `GetItems` response can otherwise win after a newer reload/removal and re-enable a disposed provider or stale adapter set. Please publish provider wrappers only if they are still registered for the current generation, reject invalidated list results, and release page-owned adapter caches during disposal.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "make-recovery-and-removal-cancellable",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep crash recovery and extension removal bounded",
+      "confidence": {
+        "score": 93,
+        "rationale": "Crash recovery and directory lifecycle gates guard the same extension directory; an unbounded wait after a timed-out recovery drain can make uninstall or hot reload hang indefinitely."
+      },
+      "body": "### Keep crash recovery and extension removal bounded\n\n**Severity:** `high`\n\nCrash recovery, hot reload, directory watcher work, and explicit extension removal need a single bounded ownership model for each extension directory. If recovery cancellation times out while recovery still owns the directory lifecycle gate, removal must not wait on that gate forever. Please propagate cancellation through extension task coordination, serialize load/stop decisions for a directory, route rename as remove-then-add, reset crash counts on source edits through the production path, and bound the post-recovery gate acquisition so uninstall can continue best-effort instead of hanging.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-wrapper-identity-and-constructor-cleanup",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Preserve wrapper identity and cleanup on initialization failure",
+      "confidence": {
+        "score": 90,
+        "rationale": "Wrapper equality and failed initialization cleanup feed top-level provider bookkeeping; treating all valid wrappers as equal or leaking partially-created hosts corrupts multi-provider state."
+      },
+      "body": "### Preserve wrapper identity and cleanup on initialization failure\n\n**Severity:** `medium`\n\n`CommandProviderWrapper` instances should compare by reference identity, not by shared validity state. Otherwise two valid providers can collapse into the same collection entry and provider removal/reload can touch the wrong host. Please also make wrapper construction rethrow initialization failures after disposing any partially-created host so cleanup paths run consistently and failed extensions do not leave retained event handlers or host state.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "phase0": {
+    "author": "michaeljolley",
+    "author_association": "MEMBER",
+    "bar": "member-authored PR review",
+    "disposition": "Proceed",
+    "owes_after_posting": "author",
+    "gates_tripped": [],
+    "summary": "Community-contributor process gates are not applicable to this member-authored PR. The PR is open, non-draft, assigned to the author, labeled Ready for review, and has a pending maintainer review request."
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "review_decision": "REVIEW_REQUIRED",
+    "head_sha": "8893ed927557cf54b5f6b32fc598b41ce83565d1",
+    "updated_at": "2026-09-01T22:01:01Z",
+    "author": "michaeljolley",
+    "author_association": "MEMBER",
+    "assignees": [
+      "michaeljolley"
+    ],
+    "review_requests": [
+      "chatasweetie"
+    ],
+    "issue_comment_count": 2,
+    "review_count": 11,
+    "review_thread_count": 11,
+    "unresolved_upstream_review_threads": 3,
+    "reported_checks": {
+      "total": 8,
+      "successful": 8,
+      "failing": 0,
+      "pending": 0,
+      "note": "Reported upstream checks are successful, including dependency-review, pr-intake, telemetry, CLA, and PowerToys CI variants."
+    }
+  },
+  "copilot_review": {
+    "latest_current_head_request": "2026-09-03T07:24:00Z",
+    "latest_review_with_zero_comments": {
+      "submitted_at": "2026-09-03T06:49:59Z",
+      "commit_id": "39679d2d99587c58bc770847b0b03154b8ebd578",
+      "comments_generated": 0
+    },
+    "final_addressed_thread": {
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/CrashRecoveryTracker.cs",
+      "line": 193,
+      "submitted_at": "2026-09-03T07:18:33Z",
+      "resolved": true,
+      "fix_commit": "b13863634980a1cc026b48a24d5441a4bb4dfb01"
+    },
+    "result": "empty_assignment_fallback",
+    "unresolved_threads": 0,
+    "note": "After the final fix was pushed, the reviewer-request API returned an empty requested_reviewers list. Per the resumed-drain fallback, later reviews and threads were audited; all published fork Copilot threads are resolved and no unresolved Copilot work remains."
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "summary": "Targeted CmdPal JsonRpc and UI ViewModels test projects built successfully. Focused VSTest filters passed 11 JsonRpc tests and 49 UI ViewModels lifecycle tests.",
+    "builds": [
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.JsonRpc.UnitTests\\Microsoft.CmdPal.JsonRpc.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj"
+    ],
+    "tests": [
+      {
+        "suite": "Microsoft.CmdPal.JsonRpc.UnitTests",
+        "filter": "JSAdapterLifecycleTests | JSCommandProviderProxyStartupNotificationTests | JSCommandProviderProxyStatusDisposeRaceTests | JSCommandProviderProxyStatusLifecycleTests",
+        "passed": 11,
+        "failed": 0
+      },
+      {
+        "suite": "Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "filter": "HotReloadDebouncerTests | SerialNotificationDispatcherTests | JSExtensionWrapperBootstrapTests | ReloadCancellationTests | ExtensionTaskCoordinatorTests | JsonRpcExtensionServiceCrashRecoveryTests",
+        "passed": 49,
+        "failed": 0
+      }
+    ]
   },
   "fork_pr": {
     "number": 573,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/573"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/573",
+    "state": "OPEN",
+    "updated_at": "2026-09-03T07:21:11Z",
+    "head_sha": "b13863634980a1cc026b48a24d5441a4bb4dfb01",
+    "branch": "pr-iterate/49325-v6"
   },
-  "fork_branch": "pr-iterate/49325-v6"
+  "fork_branch": "pr-iterate/49325-v6",
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-03T07:24:54Z",
+    "fork_head_sha": "b13863634980a1cc026b48a24d5441a4bb4dfb01",
+    "upstream_head_sha": "8893ed927557cf54b5f6b32fc598b41ce83565d1",
+    "unresolved_copilot_threads": 0,
+    "empty_assignment_fallback": true,
+    "notes": [
+      "Set-PrReviewCheckpoint.ps1 was used before this terminal artifact update.",
+      "Existing fork PR 573, branch pr-iterate/49325-v6, and local checkout <PowerToysCheckout> were preserved.",
+      "An accidental upstream branch push was immediately deleted; no upstream review, comment, label, assignment, or PR-state mutation was made."
+    ]
+  },
+  "freshness": {
+    "evaluated_at": "2026-09-03T07:24:54Z",
+    "head_sha": "8893ed927557cf54b5f6b32fc598b41ce83565d1",
+    "head_updated_at": "2026-09-01T22:01:01Z",
+    "status": "fresh"
+  }
 }
