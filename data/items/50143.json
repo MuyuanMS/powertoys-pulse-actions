@@ -1,84 +1,123 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50143,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "waiting_since": "2026-08-26T14:35:20Z",
-  "generated_at": "2026-09-02T07:20:00Z",
-  "evaluated_at": "2026-09-02T07:20:00Z",
-  "source_updated_at": "2026-08-26T14:35:20Z",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-03T18:34:35Z",
+  "evaluated_at": "2026-09-03T18:34:35Z",
+  "source_updated_at": "2026-09-03T17:00:41Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50143",
   "title": "BSOD triggered when AlwaysOnTop module is enabled, especially around display sleep/reconfiguration",
   "author": "MickyLangello",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
-    "Needs-Author-Feedback",
     "Product-Always On Top",
-    "Needs-Triage"
+    "Needs-Triage",
+    "Needs-Team-Response"
   ],
   "assignees": [],
-  "comments": 1,
-  "confidence": "High",
-  "summary": "Strong crash-dump correlation exists, but the supplied archive was rejected and the author has not retested the current release or supplied fresh diagnostics.",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author diagnostics",
-    "detail": "Needs-Author-Feedback is active after an invalid archive plus a request for a current-version retest and fresh diagnostics."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for requested evidence",
-    "reason": "The issue already asks for the decision-changing current-build retest and valid diagnostic archive."
-  },
+  "comments": 2,
+  "summary": "The reporter correlates repeated display sleep, wake, lock, or monitor power changes with a repeatable win32kbase stack-recursion BSOD while Always On Top is enabled, and has supplied a replacement diagnostic archive after the initial archive was rejected.",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The crash correlation is strong, but a kernel BSOD cannot be assigned to a PowerToys fix without the already-requested current-release reproduction and a valid fresh diagnostic archive.",
+    "status": "reproducible",
+    "rationale": "The report provides an actionable module, environment, control condition, repeatable display-state sequence, and kernel failure signature. The author has now supplied a replacement archive and the issue is marked Needs-Team-Response, so a maintainer should reproduce on a current build before selecting a code fix.",
     "evidence": [
-      "The issue reports three 0x7F double-fault dumps with win32kbase PDEV recursion and no recurrence after disabling Always On Top.",
-      "The report was on PowerToys 0.100.2 and the triage comment requested a retest on 0.101.2362.0.",
-      "The attached report archive was rejected as invalid.",
-      "Needs-Author-Feedback remains active, with no later author reply, assignee, or linked fix."
+      "The reporter describes three matching UNEXPECTED_KERNEL_MODE_TRAP (0x7F) double-fault dumps with recursion in win32kbase!vUnreferencePdevWorker.",
+      "The reported trigger is repeated sleep/wake, lock/display timeout, or monitor power cycling with two 1440p 180Hz DisplayPort displays while Always On Top is enabled.",
+      "The reporter says recurrence stopped after disabling Always On Top while other PowerToys modules remained enabled.",
+      "A replacement PowerToys report archive was attached in a new author comment on 2026-09-03, and the live labels changed from Needs-Author-Feedback to Needs-Team-Response.",
+      "Recent history for AlwaysOnTop.cpp includes a WM_ENDSESSION shutdown-hang fix, but no focused fix for this display-stack kernel recursion."
     ],
-    "recommended_action": "Wait for current-version reproduction and a valid fresh diagnostic archive before routing a PowerToys root cause or design.",
-    "evaluated_at": "2026-09-02T07:20:00Z",
-    "source_updated_at": "2026-08-26T14:35:20Z"
+    "recommended_action": "Reproduce the display reconfiguration scenario on a current build with Always On Top alternately enabled and disabled, then use the resulting logs and crash signature to determine whether a safe PowerToys-side mitigation is possible.",
+    "evaluated_at": "2026-09-03T18:34:35Z",
+    "source_updated_at": "2026-09-03T17:00:41Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys-side mitigation may be applicable if current-build reproduction confirms that Always On Top's display-related window-event activity triggers the kernel recursion. No linked PR or other existing fix currently covers the reported failure.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate and mitigate Always On Top activity during display reconfiguration",
+      "root_cause": "Unconfirmed hypothesis: Always On Top window-event activity during repeated display topology changes contributes to a win32k display-object lifetime recursion on the affected Windows and graphics configuration. The kernel stack trace and module-disable control establish correlation, not a PowerToys user-mode root cause.",
+      "plan": [
+        "Reproduce the reported display sleep/wake or monitor power-cycle sequence on a current build with Always On Top enabled and disabled as paired control runs.",
+        "Correlate the replacement diagnostic archive and any reproduction logs with Always On Top's display-related event handling to identify a specific user-mode operation preceding the failure.",
+        "If a repeatable PowerToys operation is identified, make the smallest scoped change to suppress, defer, or safely reinitialize that operation during display reconfiguration.",
+        "Add focused regression coverage where the isolated event boundary is testable and retain manual multi-monitor validation for the display-stack scenario."
+      ],
+      "verification": [
+        "Run repeated sleep/wake, lock/display-timeout, and single-monitor power-cycle scenarios on a multi-monitor system with Always On Top enabled and disabled.",
+        "Confirm no recurrence of the reported 0x7F failure and that normal pin, unpin, and foreground-window behavior continue to work.",
+        "Validate the change on a current stable Windows build before treating an older OS or graphics-stack interaction as a PowerToys defect."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The reproduction boundary and control condition are unusually specific, but the kernel-mode fault does not identify a PowerToys call site and the replacement archive has not yet been analyzed."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Display sleep/wake and monitor reconfiguration correlate with a kernel stack-recursion crash only while Always On Top is enabled, but current-build confirmation and a valid archive remain outstanding.",
+    "summary": "A display-state transition stress scenario is reported to trigger a repeatable kernel stack-recursion BSOD only while Always On Top is enabled; the reporter has now supplied a replacement diagnostic archive.",
     "known_information": [
-      "Three dumps reportedly show UNEXPECTED_KERNEL_MODE_TRAP 0x7F parameter 8 and win32kbase PDEV recursion.",
-      "The scenario uses two 1440p 180Hz DisplayPort monitors and repeated sleep, lock, wake, or monitor power cycling.",
-      "Disabling Always On Top stopped recurrence for the reporter while other PowerToys modules remained enabled.",
-      "Windhawk taskbar modules were installed, FancyZones was disabled, and the system was running Windows 11 24H2 build 26100.",
-      "The only upstream comment is the automated request for a valid bug report ZIP and a latest-stable retest."
+      "The original report used PowerToys 0.100.2 on Windows 11 24H2 build 26100 with two 1440p 180Hz DisplayPort displays.",
+      "The report names repeated sleep/wake, monitor power cycling, and lock/display timeout as triggers.",
+      "Three dumps reportedly share the 0x7F double-fault and win32kbase PDEV recursion signature.",
+      "The reporter says disabling Always On Top stopped recurrence while other listed PowerToys modules remained enabled.",
+      "The first archive was rejected, but the author supplied a replacement archive on 2026-09-03.",
+      "There is no assignee, linked issue, linked PR, or existing fix associated with this report."
     ],
     "inferences": [
-      "Always On Top window-event activity may be a trigger, but user-mode hooks do not by themselves establish a kernel-mode root cause.",
-      "Display driver, shell modification, OS display-stack, and PowerToys event-hook interactions remain plausible until current diagnostics exist."
+      "Always On Top may be a trigger during display reconfiguration, but the kernel stack does not establish that its code is the root cause.",
+      "A current-build control reproduction can distinguish a stale version-specific interaction from an ongoing module interaction."
     ],
-    "analysis": "The useful crash signature is already recorded, and the existing author request targets exactly what is missing. A new clickable request would duplicate that request rather than create a new maintainer action.",
+    "analysis": "The updated author evidence and Needs-Team-Response label mean this should no longer remain in an author-waiting state. The report is sufficiently detailed for a maintainer-controlled reproduction, while a low-confidence investigation plan preserves the possible fix path without fabricating exact affected symbols.",
     "initial_investigation": [
-      "Forced 2026-09-02 pass read the complete issue body, one triage comment, labels, empty assignee list, and timeline links; no linked work appeared.",
-      "Read src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp: Always On Top registers out-of-context WinEvent hooks for location, minimize, move/size, foreground, destroy, focus, and menu events.",
-      "No current-version author reply, valid diagnostic archive, assignee, duplicate, or fix PR is present.",
-      "Forced second pass on 2026-09-02 re-read the complete body, existing request, labels, empty assignee list, and timeline and checked recent Always On Top history; nothing supersedes the outstanding author request or establishes a user-mode root cause."
+      "Read the complete live issue body, both comments, labels, assignees, and timeline.",
+      "Confirmed the author supplied a replacement diagnostic archive after the earlier automated request.",
+      "Checked recent public history for AlwaysOnTop.cpp; the current display-adjacent change addresses WM_ENDSESSION shutdown hangs rather than the reported display-stack BSOD.",
+      "No linked or cross-referenced public fix attempt was visible."
     ],
     "information_gaps": [
       {
-        "why_needed": "Determines whether current code is affected and avoids designing against an already-fixed build.",
-        "information": "Whether the BSOD reproduces on current stable PowerToys.",
-        "how_to_collect": "Update to the current stable release, repeat the display sleep/wake or monitor power-cycle scenario, and report the result."
-      },
-      {
-        "why_needed": "Current module logs and configuration are needed to correlate PowerToys activity with the display-stack failure window.",
-        "information": "A valid fresh diagnostic archive captured immediately after reproduction.",
-        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport and attach the generated ZIP."
+        "information": "A current-build control reproduction and correlation of the replacement diagnostic archive with the display-state transition.",
+        "why_needed": "Determines whether the issue persists in current code and identifies whether a specific Always On Top operation can be safely mitigated.",
+        "how_to_collect": "Use the maintainer reproduction procedure with Always On Top enabled and disabled, retaining logs and crash details from each run."
       }
     ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "reproduce-50143",
+      "type": "reproduce",
+      "label": "Reproduce the display-transition BSOD",
+      "primary": true,
+      "reproduce": {
+        "title": "Validate Always On Top during display reconfiguration",
+        "module": "Always On Top",
+        "version_requirement": "Current PowerToys stable or current main build",
+        "prerequisites": [
+          "A multi-monitor Windows system, preferably with two high-refresh DisplayPort displays",
+          "Always On Top enabled",
+          "A test window available for normal pin and unpin validation"
+        ],
+        "setup": [
+          "Record the Windows build, display topology, graphics driver version, and PowerToys version.",
+          "Run one control session with Always On Top disabled.",
+          "Run a paired session with Always On Top enabled without pinning a window initially."
+        ],
+        "steps": [
+          "Repeat sleep and wake, lock and display timeout, and one-monitor power-cycle transitions over multiple cycles.",
+          "During the enabled session, also pin and unpin the test window between transitions.",
+          "Retain PowerToys logs and any crash information for each enabled and disabled run."
+        ],
+        "expected_result": "The current build remains stable in both control and enabled sessions; any recurrence is correlated to the exact display transition and Always On Top state."
+      }
+    }
+  ]
 }
