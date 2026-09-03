@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-03T16:48:33.8342912+08:00",
+  "generated_at": "2026-09-03T17:13:03.3114064+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,9 +91,9 @@ window.BOARD_INDEX = {
     "artifacts": 3424
   },
   "impact": {
-    "as_of": "2026-09-03T16:48:33.8342912+08:00",
+    "as_of": "2026-09-03T17:13:03.3114064+08:00",
     "issues_helped": 10,
-    "prs_iterated": 33,
+    "prs_iterated": 32,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
@@ -3537,8 +3537,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "stage": "review_blocked",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3647,8 +3647,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "stage": "review_blocked",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3934,8 +3934,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "stage": "review_blocked",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -5005,8 +5005,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "stage": "review_in_progress",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -6221,7 +6221,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "owned_elsewhere",
+      "stage": "reviewed_clean",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6258,8 +6258,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "stage": "review_in_progress",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -6696,15 +6696,7 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-05T20:17:28Z",
       "updated_at": "2026-08-15T18:18:30Z",
       "comments": 2,
-      "priority": null,
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 245,
-        "fork_title": "[PR 49709] [Settings] Incremental search index generation",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49709-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/245"
-      }
+      "priority": null
     },
     {
       "id": "pr-49662",
@@ -7136,11 +7128,11 @@ window.BOARD_INDEX = {
       "priority": 60,
       "mirror": {
         "kind": "pr",
-        "fork_number": 471,
+        "fork_number": 597,
         "fork_title": "[PR 49429] [CmdPal] Add tabbed pages to Command Palette",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49429-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/471"
+        "fork_branch": "pr-iterate/49429-v4",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/597"
       }
     },
     {
@@ -8074,7 +8066,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-07-07T09:18:49Z",
       "updated_at": "2026-09-03T06:19:04Z",
       "comments": 2,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 598,
+        "fork_title": "[PR 49174] [ColorPicker] Migrate from WPF to WinUI 3",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/49174",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/598"
+      }
     },
     {
       "id": "pr-49100",
@@ -8473,7 +8473,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-06-12T07:00:07Z",
       "updated_at": "2026-07-01T22:26:03Z",
       "comments": 2,
-      "priority": 60
+      "priority": 60,
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 599,
+        "fork_title": "[PR 48524] Added eraser tool with pixel and stroke modes in ZoomIt suite",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/48524",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/599"
+      }
     },
     {
       "id": "pr-48483",
@@ -48661,12 +48669,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Keyboard Manager"
       ],
       "assignees": [],
       "created_at": "2026-09-03T08:37:07Z",
-      "updated_at": "2026-09-03T08:40:58Z",
-      "comments": 0,
+      "updated_at": "2026-09-03T08:48:34Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -49321,7 +49330,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/50329",
       "title": "Trying to disable a key, failed miserably",
       "author": "sophiaartillero105-star",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -49342,7 +49351,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T12:14:12Z",
-      "updated_at": "2026-09-02T12:14:12Z",
+      "updated_at": "2026-09-03T09:01:36Z",
       "comments": 0,
       "priority": null
     },
