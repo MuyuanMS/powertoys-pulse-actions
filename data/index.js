@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-03T15:48:15.1006272+08:00",
+  "generated_at": "2026-09-03T16:05:59.8016559+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,18 +86,19 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 140,
-    "open_issues": 12589,
-    "community": 11730,
-    "artifacts": 3424
+    "open_issues": 12590,
+    "community": 11731,
+    "artifacts": 3425
   },
   "impact": {
-    "as_of": "2026-09-03T15:48:15.1006272+08:00",
+    "as_of": "2026-09-03T16:05:59.8016559+08:00",
     "issues_helped": 10,
     "prs_iterated": 33,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50347,
     50344,
     50334,
     50333,
@@ -3536,13 +3537,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -3577,7 +3578,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "Ready for review"
       ],
@@ -48689,7 +48693,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-03T07:09:48Z",
-      "updated_at": "2026-09-03T07:22:32Z",
+      "updated_at": "2026-09-03T07:56:33Z",
       "comments": 1,
       "priority": null
     },
@@ -54650,7 +54654,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Status-Reproducible"
       ],
-      "assignees": [],
+      "assignees": [
+        "noraa-junker"
+      ],
       "created_at": "2026-08-26T18:48:02Z",
       "updated_at": "2026-09-02T14:34:48Z",
       "comments": 3,
@@ -313519,6 +313525,39 @@ window.BOARD_INDEX = {
       "created_at": "2020-08-01T08:58:19Z",
       "updated_at": "2026-05-23T16:35:23Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-50349",
+      "kind": "issue",
+      "number": 50349,
+      "url": "https://github.com/microsoft/PowerToys/issues/50349",
+      "title": "CmdPal: App is not being properly disposed",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-03T08:03:12Z",
+      "updated_at": "2026-09-03T08:03:12Z",
+      "comments": 0,
       "priority": null
     },
     {
