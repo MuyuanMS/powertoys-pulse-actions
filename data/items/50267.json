@@ -3,55 +3,96 @@
   "number": 50267,
   "kind": "issue",
   "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-02T02:24:28Z",
-  "evaluated_at": "2026-09-02T02:24:28Z",
+  "stage": "needs_information",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-03T06:55:22Z",
+  "evaluated_at": "2026-09-03T06:55:22Z",
   "source_updated_at": "2026-08-31T15:08:12Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50267",
   "title": "PowerToys autoupdate configured for Stable update channel, installed Preview release",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "The existing request for update-channel and reproduction evidence remains unanswered."
+    "detail": "The diagnostic archive is readable and confirms prerelease opt-in is false after the update, but it does not contain the updater decision that selected the preview installer.",
+    "glyph": "?",
+    "label": "Needs updater-selection evidence"
   },
   "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for update evidence",
-    "reason": "The attached archive could not be analyzed and a duplicate request would add no value."
+    "reason": "A post-update settings snapshot alone cannot distinguish a release-channel bug from metadata, cache, or manual/update-now flow.",
+    "glyph": ">",
+    "label": "Request update decision evidence"
   },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The stable-to-preview claim needs configured-channel and update-sequence evidence already requested upstream.",
+    "status": "needs_information",
+    "rationale": "The forced rerun successfully analyzed the diagnostic archive and found `include_prerelease_updates=false` with installed version v0.101.2373, but the update state is reset to up-to-date and does not preserve the release URL, installer filename, or selection path that installed the preview build. The current evidence is stronger than before but still not enough for a safe implementation design.",
     "evidence": [
       "The reporter says auto-update moved from stable 0.101.2362.0 to preview 0.101.2373.0.",
-      "The diagnostic archive was rejected because it contained an oversized entry."
+      "The diagnostic archive is readable and contains `settings.json` with `download_updates_automatically=true`, `include_prerelease_updates=false`, and `powertoys_version=v0.101.2373`.",
+      "Runner logs show first run after update with `product_version=v0.101.2373` and `last_version_run=v0.101.2362`.",
+      "Module logs show old 0.101.2362 log folders deleted after 0.101.2373 started.",
+      "`UpdateState.json` is reset to up-to-date with empty release URL and installer filename and `isPrerelease=false`, so it does not show which release metadata or installer was selected.",
+      "The update code gates GitHub all-releases/prerelease checks on `include_prerelease_updates`, but the archive lacks the actual pre-update check/download log needed to prove where that gate failed."
     ],
-    "recommended_action": "Wait for the existing author-feedback request.",
-    "evaluated_at": "2026-09-02T02:24:28Z",
+    "recommended_action": "Request the precise update time, any retained updater/download logs or installer filename, and confirmation of whether the update was automatic versus manually triggered from the Settings update UI; then design only if the updater selected a prerelease while prerelease opt-in was false.",
+    "evaluated_at": "2026-09-03T06:55:22Z",
     "source_updated_at": "2026-08-31T15:08:12Z"
   },
   "issue_context": {
-    "summary": "Automatic update reportedly installed a Preview build despite an expected Stable channel.",
+    "summary": "Automatic update reportedly installed a Preview build despite prerelease updates being disabled; the diagnostic now confirms the post-update setting but not the update-selection decision.",
     "known_information": [
-      "The before and after versions were provided.",
-      "The supplied archive could not be analyzed."
+      "The before version was 0.101.2362.0 and the after version was 0.101.2373.0.",
+      "The issue states the install method was PowerToys auto-update.",
+      "The supplied diagnostic archive was downloaded and inspected successfully during this forced rerun.",
+      "Current `settings.json` in the archive has `download_updates_automatically=true` and `include_prerelease_updates=false`.",
+      "Current `settings.json` reports `powertoys_version` as v0.101.2373.",
+      "Runner logs record `product_version=v0.101.2373 last_version_run=v0.101.2362`.",
+      "`UpdateState.json` no longer contains a release page URL, downloaded installer filename, or prerelease selection state for the installed update."
     ],
     "inferences": [
-      "The evidence cannot yet distinguish channel selection from configuration or release metadata behavior."
+      "The reporter likely had prerelease updates disabled after the update, but the archive cannot prove whether that setting was the same at the moment the update check selected the installer.",
+      "The issue could reflect updater channel selection, stale update state, release metadata, or a manual update-now path; the current logs do not distinguish those mechanisms."
     ],
-    "analysis": "The unanswered upstream request covers the smallest evidence set needed for triage.",
+    "analysis": "The prior artifact said the archive could not be analyzed; that is now corrected. The diagnostic makes the report more credible, but the key root-cause evidence is the pre-install update decision, not the post-install state. Without the selected release URL/asset or a timestamped update-check trace, a design would risk fixing the wrong layer.",
     "initial_investigation": [
-      "Reviewed the full live issue body, automated triage comment, labels, assignees, project items, closed-by references, and timeline; no maintainer reply or linked fix is present."
+      "Reviewed the complete live issue body, labels, assignees, project/timeline context, and linked-work state; no maintainer diagnosis or linked fix is present.",
+      "Downloaded and extracted the diagnostic archive despite the earlier automated oversized-entry rejection.",
+      "Inspected root `settings.json`, `UpdateState.json`, runner logs, and installer/module log version transitions.",
+      "Inspected current updater code paths for prerelease gating and update-state persistence."
     ],
     "information_gaps": [
       {
-        "information": "Configured update channel and exact stable-to-preview update sequence.",
-        "why_needed": "Distinguishes an updater defect from expected configuration.",
-        "how_to_collect": "Reply to the existing request with screenshots and the approximate update time."
+        "why_needed": "Distinguishes periodic automatic update from manual Check for updates / Update now behavior and lets logs be correlated to the decision.",
+        "information": "The exact time and UI path that initiated the 0.101.2373 install.",
+        "how_to_collect": "Reply with the approximate local time, whether any update toast or Settings button was clicked, and whether PowerToys restarted automatically."
+      },
+      {
+        "why_needed": "Identifies whether the updater selected a prerelease release while prerelease opt-in was disabled, or whether another install path ran.",
+        "information": "Any retained updater/download evidence for the selected release or installer asset.",
+        "how_to_collect": "Attach any PowerToys.Update.exe event/log details, the installer filename if visible under Updates or downloads, and another /bugreport immediately after the next unexpected channel update if it happens."
       }
     ]
   },
-  "actions": []
+  "actions": [
+    {
+      "confirm": true,
+      "comment": {
+        "number": 50267,
+        "target": "issue",
+        "body": "Thanks for the report and diagnostic archive. The archive now confirms PowerToys is on v0.101.2373 with automatic downloads enabled and prerelease updates disabled, but the update state no longer shows the release URL, installer filename, or exact update path that selected that build. Please share the approximate local time of the update, whether it was fully automatic or triggered by an update toast / Settings button, and any retained PowerToys.Update.exe event, installer filename, or download/update log. If it happens again, please comment `/bugreport` immediately after the unexpected channel update and attach the generated ZIP."
+      },
+      "id": "request-info-50267",
+      "note": "Draft only; no upstream comment is posted without explicit approval.",
+      "type": "request_info",
+      "label": "Request updater-selection evidence",
+      "primary": true
+    }
+  ],
+  "author": "edwardmcguire",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "confidence": "Medium"
 }

@@ -3,11 +3,11 @@
   "number": 50152,
   "kind": "issue",
   "track": "fix",
-  "stage": "reproduction_ready",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T02:36:38Z",
-  "evaluated_at": "2026-09-02T02:36:38Z",
+  "generated_at": "2026-09-03T07:18:00Z",
+  "evaluated_at": "2026-09-03T07:18:00Z",
   "source_updated_at": "2026-09-02T00:11:36Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50152",
   "title": "Advanced Paste: Paste with AI can't find Foundry Local models",
@@ -21,81 +21,263 @@
   "assignees": [],
   "comments": 2,
   "confidence": "High",
-  "summary": "Foundry Local 0.10.3 is healthy with loaded models, but PowerToys 0.101.2362 Advanced Paste shows an empty Foundry Local model list; a second reporter has now confirmed the same behavior.",
+  "summary": "Foundry Local 0.10.3 is healthy with loaded models, but PowerToys 0.101.2362 Advanced Paste shows an empty Foundry Local model list; diagnostics identify repeated SDK invalid-request-URI failures in model discovery.",
   "status": {
     "glyph": "🛠️",
-    "label": "Provider compatibility design remains queued",
-    "detail": "The issue supplies enough CLI/service evidence, and the newer confirmation strengthens the Advanced Paste discovery failure without adding a separate root cause."
+    "label": "Design ready for approval",
+    "detail": "The investigation/adversary loop converged on a Foundry SDK endpoint/listing failure that PowerToys currently collapses into an empty cached-model UI."
   },
   "next_action": {
-    "glyph": "▶",
-    "label": "Reproduce Foundry model discovery",
-    "reason": "Capture the SDK discovery result and PowerToys logs against the confirmed healthy Foundry Local setup before finalizing the compatibility design."
+    "glyph": "✅",
+    "label": "Approve Foundry Local discovery fix design",
+    "reason": "The design is implementation-grade and captured in the fork mirror issue."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "This remains a credible Advanced Paste / Foundry Local integration defect. The reporter demonstrated that Foundry Local itself is ready with loaded models, PowerToys still renders an empty model list, and current source can convert provider discovery failures into an empty-list UI.",
+    "rationale": "This is a confirmed Advanced Paste / Foundry Local integration defect: the service is running with loaded models, but Settings logs show catalog and cached-model listing calls failing with an invalid request URI and then rendering the failure as an empty model list.",
     "evidence": [
-      "Foundry Local 0.10.3 reports service Ready and loaded phi-4-mini.",
-      "The model works in Foundry CLI, and installing/loading another model produced the same PowerToys result.",
-      "Refresh, Foundry server restart, and PowerToys restart did not resolve the empty model list.",
-      "A second user commented that they can confirm the same experience.",
-      "FoundryClient.ListCachedModels catches exceptions, logs the error, and returns an empty list; Advanced Paste then displays a no-local-model state.",
-      "Closed issue 45340 is related Foundry integration history but covered request-time 400 errors rather than current discovery on Foundry Local 0.10.3."
+      "The issue shows Foundry Local 0.10.3 Ready with phi-4-mini loaded and CLI chat working.",
+      "PowerToys Settings diagnostics repeatedly log FoundryClient.ListCatalogModels and ListCachedModels failures: An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.",
+      "FoundryClient.ListCachedModels catches exceptions and returns an empty list; AdvancedPastePage then displays the no-local-model state.",
+      "A second reporter confirmed the same experience.",
+      "Related prior Foundry work handled startup, PATH refresh, port changes, and request-time errors, but no linked fix covers this discovery failure."
     ],
-    "recommended_action": "Queue a compatibility and error-surfacing design; keep approval gated until exact SDK behavior and tests are established.",
-    "evaluated_at": "2026-09-02T02:36:38Z",
+    "recommended_action": "Approve the fork-side implementation design for the Foundry Local discovery fallback and error-surfacing fix.",
+    "evaluated_at": "2026-09-03T07:18:00Z",
     "source_updated_at": "2026-09-02T00:11:36Z"
   },
   "issue_context": {
-    "summary": "Advanced Paste cannot enumerate models from a functioning current Foundry Local installation.",
+    "summary": "Advanced Paste cannot enumerate cached Foundry Local models from a functioning Foundry Local installation.",
     "known_information": [
-      "Foundry Local 0.10.3 has phi-4-mini loaded and the service is reachable on localhost.",
-      "Foundry CLI chat works with phi-4-mini.",
-      "PowerToys is 0.101.2362 on Windows 11 Enterprise 25H2 and is running as admin.",
-      "The reporter tried refresh, Foundry server restart, PowerToys restart, and another loaded model without success.",
-      "A second reporter confirmed the same experience after the initial triage."
+      "Foundry Local 0.10.3 reports Ready and exposes a localhost service endpoint.",
+      "The reporter loaded phi-4-mini and successfully used Foundry CLI chat.",
+      "PowerToys 0.101.2362 Settings shows no downloaded Foundry Local models despite refresh, service restart, PowerToys restart, and loading another model.",
+      "The diagnostic archive contains repeated Settings log entries for invalid request URI failures in Foundry catalog and cached model listing.",
+      "No upstream assignee or linked fix currently owns this discovery failure."
     ],
     "inferences": [
-      "The Foundry SDK call may throw or return data incompatible with the installed service, and PowerToys may be presenting that failure as an empty catalog.",
-      "Because another user confirmed the symptom, this is less likely to be a single-machine setup issue, but exact SDK response data is still needed during design."
+      "The failure is in PowerToys/SDK model discovery rather than the reporter lacking downloaded models.",
+      "The current UI likely presents a transport/SDK failure as a genuine empty cache because the lower layer returns an empty list after logging."
     ],
-    "analysis": "The behavior is isolated to provider discovery. Another generic ZIP request would not change the next step; the useful work is to reproduce against Foundry Local 0.10.3, distinguish failures from a genuine empty catalog, and surface the failure mode in Settings.",
+    "analysis": "The report plus diagnostics identify the failing mechanism and exact code path, so another generic log request would not materially improve triage. The safe maintainer action is to approve a bounded fix design that keeps SDK listing as primary, adds a fallback or SDK-upgrade path for the known endpoint failure, and separates discovery errors from true empty-model state in Settings.",
     "initial_investigation": [
-      "Inspected FoundryClient.ListCachedModels, which calls FoundryLocalManager.ListCachedModelsAsync, maps cached models through the catalog, and returns an empty list after logging any exception.",
-      "Inspected AdvancedPastePage Foundry Local loading, where an empty cached model collection renders the no-local-model state.",
-      "Searched PowerToys issues and found only this issue for the exact no-models-downloaded Foundry Local symptom; 45340 is a closed related request-time integration issue."
+      "Downloaded and inspected the public diagnostic archive; Settings logs repeatedly show FoundryClient listing failures with invalid request URI errors.",
+      "Read FoundryClient, FoundryLocalModelProvider, FoundryLocalModelPicker, AdvancedPastePage, and FoundryLocalPasteProvider.",
+      "Reviewed Foundry integration history: PR 43529, PR 43600, PR 43662, PR 43716, and PR 45362.",
+      "Searched related issues; Issue 45340 is a closed request-time Foundry integration issue, while Issue 50152 is the only exact current no-model discovery report."
     ],
     "information_gaps": []
   },
-  "actions": [
-    {
-      "id": "reproduce-50152",
-      "type": "reproduce",
-      "label": "Reproduce Foundry Local discovery failure",
-      "primary": true,
-      "confirm": true,
-      "reproduce": {
-        "module": "Advanced Paste / Foundry Local",
-        "version_requirements": "PowerToys 0.101.2362 with Foundry Local 0.10.3, then retest on current builds if available.",
-        "prerequisites": [
-          "Foundry Local reports Ready.",
-          "At least one cached model works through Foundry CLI.",
-          "Advanced Paste is enabled."
-        ],
-        "steps": [
-          "Confirm the Foundry service is Ready and list cached models.",
-          "Run a short Foundry CLI chat with one cached model.",
-          "Select Foundry Local in Advanced Paste Settings.",
-          "Refresh the model list and record whether cached models appear.",
-          "Capture the SDK ListCachedModels result and corresponding PowerToys logs.",
-          "Restart Foundry Local and PowerToys and repeat once."
-        ],
-        "expected_result": "Advanced Paste should list cached models or display a specific discovery error instead of silently showing an empty catalog.",
-        "setup_requirements": [
-          "Record Foundry Local version, PowerToys version, model identifiers, and service endpoint."
+  "design": {
+    "root_cause": "PowerToys trusts Microsoft.AI.Foundry.Local.FoundryLocalManager model-listing methods after service startup. With Foundry Local 0.10.3, the manager can start or detect the service, but ListCatalogModelsAsync and ListCachedModelsAsync throw an invalid request URI/BaseAddress error. FoundryClient.ListCachedModels catches that exception and returns an empty list, so AdvancedPastePage renders the failure as No models downloaded instead of surfacing discovery failure or recovering through a valid service URI.",
+    "evidence": [
+      "Observed: Foundry CLI reports the service Ready at a localhost endpoint with phi-4-mini loaded and usable in chat.",
+      "Observed: PowerToys Settings logs repeatedly show FoundryClient.ListCatalogModels and ListCachedModels failing with invalid request URI/BaseAddress errors.",
+      "Observed: FoundryClient.ListCachedModels catches any exception and returns an empty list.",
+      "Observed: AdvancedPastePage.ShowFoundryAvailableState shows the no-models guidance whenever the provider is available and _foundryCachedModels is empty.",
+      "Inferred: the empty picker is caused by a discovery transport/SDK endpoint failure, not by absence of cached models."
+    ],
+    "affected_files": [
+      {
+        "path": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
+        "purpose": "Foundry SDK wrapper and model discovery boundary",
+        "symbols": [
+          "FoundryClient.CreateAsync",
+          "FoundryClient.TryCreateClientAsync",
+          "FoundryClient.ListCatalogModels",
+          "FoundryClient.ListCachedModels",
+          "FoundryClient.GetServiceUri",
+          "FoundryClient.GetServiceUrl"
+        ]
+      },
+      {
+        "path": "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs",
+        "purpose": "Maps cached Foundry models into Advanced Paste ModelDetails",
+        "symbols": [
+          "FoundryLocalModelProvider.GetModelsAsync",
+          "FoundryLocalModelProvider.InitializeAsync"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/AdvancedPastePage.xaml.cs",
+        "purpose": "Settings UI loading and error state for Foundry Local provider",
+        "symbols": [
+          "AdvancedPastePage.LoadFoundryLocalModelsAsync",
+          "AdvancedPastePage.ShowFoundryAvailableState",
+          "AdvancedPastePage.ShowFoundryUnavailableState",
+          "AdvancedPastePage.UpdateFoundrySaveButtonState"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw",
+        "purpose": "User-facing localized discovery-error text",
+        "symbols": [
+          "AdvancedPaste Foundry Local resource strings"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI.UnitTests",
+        "purpose": "Regression tests for model discovery and Settings state",
+        "symbols": [
+          "new Foundry Local model discovery tests"
         ]
       }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
+        "symbols": [
+          "FoundryClient",
+          "IFoundryLocalManager adapter"
+        ],
+        "current_behavior": "FoundryClient directly constructs FoundryLocalManager and directly calls SDK listing APIs, so the invalid request URI failure cannot be isolated in tests and is later collapsed to an empty cached list.",
+        "change": "Introduce a small internal adapter interface around the SDK manager so service URI, service state, and listing calls can be tested. Keep PATH refresh and service startup behavior unchanged in CreateAsync/TryCreateClientAsync.",
+        "code_block": "internal interface IFoundryLocalManager { bool IsServiceRunning { get; } Uri? ServiceUri { get; } Uri? Endpoint { get; } Task StartServiceAsync(); Task<IEnumerable<...>> ListCachedModelsAsync(); Task<IEnumerable<...>> ListCatalogModelsAsync(); }\ninternal sealed class FoundryClient { private readonly IFoundryLocalManager _foundryManager; internal FoundryClient(IFoundryLocalManager foundryManager) { _foundryManager = foundryManager; } }",
+        "edge_cases": [
+          "Do not expose SDK types outside the internal adapter boundary.",
+          "Do not remove the existing retry-after-PATH-refresh behavior.",
+          "Preserve cancellation for newly async discovery paths."
+        ],
+        "tests": [
+          "Fake manager starts successfully but throws the invalid request URI error from list calls; assert the client does not silently return an empty success result."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
+        "symbols": [
+          "FoundryClient.ListCatalogModels",
+          "FoundryClient.ListCachedModels",
+          "FoundryLocalDiscoveryException"
+        ],
+        "current_behavior": "ListCatalogModels logs SDK failures and returns the prior cache; ListCachedModels logs any exception and returns an empty list, making transport failure indistinguishable from a true empty model cache.",
+        "change": "For endpoint/BaseAddress failures, use ServiceUri or Endpoint to perform an absolute-URI fallback against Foundry Local, or throw a typed FoundryLocalDiscoveryException when no valid URI/fallback result is available. Return an empty list only after a successful empty response.",
+        "code_block": "catch (Exception ex) when (IsEndpointConfigurationFailure(ex)) { var baseUri = GetServiceUri() ?? NormalizeEndpoint(_foundryManager.Endpoint); if (baseUri is null) throw new FoundryLocalDiscoveryException(\"Foundry Local service URI is unavailable.\", ex); return await ListCachedModelsViaHttpAsync(baseUri, cancellationToken).ConfigureAwait(false); }",
+        "edge_cases": [
+          "Keep SDK as the primary path and scope fallback to the logged endpoint/BaseAddress failure.",
+          "Preserve the original exception as InnerException and log fallback use.",
+          "Use a short timeout and cancellation token; do not log prompts, responses, or private file paths.",
+          "Verify actual Foundry Local REST routes during implementation before hard-coding endpoint paths."
+        ],
+        "tests": [
+          "SDK list throws invalid request URI and fallback HTTP returns phi-4-mini; assert phi-4-mini is returned.",
+          "SDK list throws and fallback has no valid URI; assert FoundryLocalDiscoveryException.",
+          "Successful SDK empty list returns an empty collection without error."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs",
+        "symbols": [
+          "FoundryLocalModelProvider.GetModelsAsync",
+          "FoundryLocalModelProvider.InitializeAsync"
+        ],
+        "current_behavior": "GetModelsAsync relies on FoundryClient.ListCachedModels, which currently returns [] for both real empty caches and discovery failures.",
+        "change": "Let typed discovery failures bubble to the Settings caller while mapping successful cached models, including unmatched catalog entries, into ModelDetails.",
+        "code_block": "var cachedModels = await _foundryClient.ListCachedModels(cancellationToken).ConfigureAwait(false);\nreturn cachedModels.Select(model => new ModelDetails { Id = $\"fl-{model.Name}\", Name = model.Name, Url = $\"fl://{model.Name}\", HardwareAccelerators = [HardwareAccelerator.FOUNDRYLOCAL], ProviderModelDetails = model });",
+        "edge_cases": [
+          "Honor cancellation tokens.",
+          "Refresh the client at most once for stale service URI state.",
+          "Do not block the async Settings loading path with synchronous waits."
+        ],
+        "tests": [
+          "Cached model without a catalog match still maps to a selectable ModelDetails.",
+          "Discovery exception from FoundryClient is not converted to an empty model set."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/settings-ui/Settings.UI/SettingsXAML/Views/AdvancedPastePage.xaml.cs",
+        "symbols": [
+          "AdvancedPastePage.LoadFoundryLocalModelsAsync",
+          "AdvancedPastePage.ShowFoundryAvailableState",
+          "AdvancedPastePage.ShowFoundryUnavailableState"
+        ],
+        "current_behavior": "An available provider with zero cached models always shows No local models detected, including when the zero came from a swallowed discovery exception.",
+        "change": "Catch FoundryLocalDiscoveryException separately and show an available-but-discovery-failed status. Keep the provider unavailable state for actual service detection failures, and keep the existing empty-cache panel only for successful empty results.",
+        "code_block": "catch (FoundryLocalDiscoveryException ex) { Logger.LogError(\"Foundry Local model discovery failed\", ex); DispatcherQueue.TryEnqueue(() => { UpdateFoundryCollections([]); ShowFoundryAvailableState(\"Foundry Local is running, but PowerToys could not read the model list. Restart or update Foundry Local, then refresh.\"); }); }",
+        "edge_cases": [
+          "Marshal UI updates through DispatcherQueue.",
+          "Keep Save disabled when no model is selected.",
+          "Localize the new message in Settings resources.",
+          "Do not mark the provider unavailable if the service is running but listing failed."
+        ],
+        "tests": [
+          "Settings load with a discovery exception shows the discovery-error message, not the no-models guidance.",
+          "Successful empty cached list still shows the no-models guidance."
+        ]
+      },
+      {
+        "order": 5,
+        "file": "src/settings-ui/Settings.UI.UnitTests or a new LanguageModelProvider test project",
+        "symbols": [
+          "FoundryLocal discovery regression tests"
+        ],
+        "current_behavior": "There are no Foundry-specific unit tests covering SDK endpoint failure, fallback, or UI-state separation.",
+        "change": "Add focused tests for the new adapter, fallback/error paths, and Settings UI state; keep tests isolated from a real Foundry Local installation by using fakes.",
+        "code_block": "[TestMethod]\npublic async Task ListCachedModels_WhenSdkUsesRelativeUriFailureAndFallbackSucceeds_ReturnsCachedModels() { ... }\n[TestMethod]\npublic async Task LoadFoundryLocalModels_WhenDiscoveryFails_ShowsDiscoveryError() { ... }",
+        "edge_cases": [
+          "Do not require Foundry Local installed for tests.",
+          "Keep tests deterministic and avoid network calls by injecting fake HTTP/message handlers."
+        ],
+        "tests": [
+          "dotnet test src\\settings-ui\\Settings.UI.UnitTests\\Settings.UI.UnitTests.csproj -c Release -p:Platform=x64",
+          "Build src\\common\\LanguageModelProvider\\LanguageModelProvider.csproj, src\\settings-ui\\Settings.UI\\PowerToys.Settings.csproj, and src\\modules\\AdvancedPaste\\AdvancedPaste\\AdvancedPaste.csproj for x64 Release if the implementation changes those assemblies."
+        ]
+      }
+    ],
+    "verify": [
+      "Run Foundry Local 0.10.3, load phi-4-mini, and confirm foundry status reports Ready and foundry model list --loaded includes phi-4-mini.",
+      "Open Settings > Advanced Paste > Paste with AI > Add model > Foundry Local and press refresh.",
+      "Expected: phi-4-mini appears as a selectable model; if discovery still fails, Settings shows a specific discovery-error message rather than No models downloaded.",
+      "Select phi-4-mini, save, and run Paste with AI on a small text selection; expected: the request uses the selected Foundry Local model and returns a response.",
+      "Run targeted unit tests and builds listed in the implementation steps."
+    ],
+    "risks": [
+      "Direct REST fallback can drift if Foundry Local endpoint shapes change; keep SDK primary and log fallback usage.",
+      "Changing error semantics can affect Settings save-button state; keep no-selection disabled and test service-unavailable separately.",
+      "Upgrading the Foundry SDK may fix the issue but could change startup, port, or model identifier behavior; regression-test those paths."
+    ],
+    "alternatives": [
+      "Only change the UI message: rejected because it would leave healthy cached models unusable when an absolute service URI fallback can recover discovery.",
+      "Only request more diagnostics: rejected because the supplied archive already identifies the failing code path.",
+      "Only upgrade Microsoft.AI.Foundry.Local: acceptable only if implementation verifies the newer SDK fixes the logged invalid URI failure and preserves existing port-change behavior; otherwise still need explicit error surfacing."
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 583,
+    "fork_title": "[Issue 50152] Advanced Paste: Paste with AI cannot find Foundry Local models",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/583"
+  },
+  "adversary": {
+    "rounds": 1,
+    "sign_off": "No blocking objections.",
+    "non_blocking_notes": [
+      "Verify the exact Foundry Local REST routes or SDK-fixed version during implementation before hard-coding fallback paths."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-50152",
+      "type": "approve_design",
+      "label": "Approve Foundry Local discovery fix design",
+      "primary": true,
+      "confirm": true,
+      "issue": {
+        "repository": "MuyuanMS/PowerToys",
+        "number": 583,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/583"
+      },
+      "comment": {
+        "target": "fork_issue",
+        "repository": "MuyuanMS/PowerToys",
+        "number": 583,
+        "body": "Approved design for Issue 50152: proceed to implementation from the converged Foundry Local model discovery fix plan."
+      },
+      "note": "Approval is fork-side only; no upstream action is posted."
     }
   ]
 }

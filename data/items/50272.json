@@ -6,76 +6,95 @@
   "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T02:36:38Z",
-  "evaluated_at": "2026-09-02T06:30:00Z",
+  "generated_at": "2026-09-03T06:55:22Z",
+  "evaluated_at": "2026-09-03T06:55:22Z",
   "source_updated_at": "2026-09-02T03:18:27Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50272",
   "title": "Keyboard manager bug",
   "status": {
-    "glyph": "🧪",
-    "label": "Current-build reproduction confirmed",
-    "detail": "The author retested on prerelease 0.101.2373 and confirmed that the stuck synthetic modifier behavior persists."
+    "detail": "The author retested on prerelease 0.101.2373, but current Keyboard Manager changes and the CapsLock-as-modifier tracker make a root-cause design premature without maintainer reproduction.",
+    "glyph": "T",
+    "label": "Current-build reproduction ready"
   },
   "next_action": {
-    "glyph": "▶",
-    "label": "Reproduce modifier key-up handling",
-    "reason": "The author has cleared the current-version question; maintainers can now verify the remap sequence and inspect synthetic key release behavior."
+    "reason": "Verify whether the reported old remap pattern is still a bug, is covered by the new Alone/tap behavior, or should be consolidated into the canonical CapsLock-as-modifier issue.",
+    "glyph": ">",
+    "label": "Reproduce against current Keyboard Manager"
   },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The author replied after the automated request and confirmed that the defect persists on prerelease 0.101.2373. The deterministic modifier-remap sequence is now ready for maintainer reproduction.",
+    "status": "reproducible",
+    "rationale": "The author cleared the version question by confirming the problem on prerelease 0.101.2373, but the forced rerun found recently merged Keyboard Manager Alone/tap-condition work and the long-running CapsLock-as-modifier tracker. The report is ready for maintainer reproduction, but a new implementation-grade design would be speculative until the exact current configuration is replayed against those code paths.",
     "evidence": [
-      "The reported remap leaves synthetic Right Shift pressed until physical Right Shift is pressed.",
-      "The author retested on PowerToys prerelease 0.101.2373 and confirmed that the problem persists.",
-      "The issue is now labeled Needs-Team-Response rather than waiting for author feedback."
+      "The original report maps a Shift/CapsLock combination for Emacs-like shortcuts and says the synthetic Right Shift state remains active until physical Right Shift is pressed.",
+      "The automated triage asked for concrete steps and a current-version confirmation.",
+      "The author replied that the problem still persists on PowerToys prerelease v0.101.2373.",
+      "Current main includes PR 49136, which added Keyboard Manager Alone/tap-condition support for single-key remaps and changed the relevant hook dispatch flow.",
+      "Issue 3326 remains the canonical CapsLock-as-modifier feature tracker.",
+      "The current source dispatches Alone remap handling before regular single-key remaps and shortcut remaps, so the old configuration must be replayed to determine whether this is a remaining bug, a configuration now handled by Alone, or a duplicate feature request."
     ],
-    "recommended_action": "Reproduce the remap and shortcut sequence while tracing injected modifier down/up events.",
-    "evaluated_at": "2026-09-02T06:30:00Z",
+    "recommended_action": "Run a controlled maintainer reproduction on current main/prerelease with the reporter configuration, trace physical and injected key down/up events, and then either consolidate into the canonical CapsLock-as-modifier path or open a focused design from the observed failure path.",
+    "evaluated_at": "2026-09-03T06:55:22Z",
     "source_updated_at": "2026-09-02T03:18:27Z"
   },
   "issue_context": {
-    "summary": "A Keyboard Manager modifier remap appears to leave a synthetic modifier pressed after a shortcut is released.",
+    "summary": "A Keyboard Manager modifier remap appears to leave a synthetic Right Shift pressed after a CapsLock-based shortcut, but recent Keyboard Manager Alone/tap-condition changes mean the exact current failing path is not yet proven.",
     "known_information": [
-      "The setup maps Right Shift to Left Caps Lock and uses CapsLock-based shortcuts.",
+      "The setup maps a Shift/CapsLock key relationship and uses CapsLock-based shortcuts such as CapsLock+H for Backspace.",
       "The original report targets PowerToys 0.100.2.",
-      "The author confirmed the same behavior on prerelease 0.101.2373."
+      "The author confirmed the same user-visible behavior on prerelease 0.101.2373.",
+      "Current main includes PR 49136 adding Alone/tap-condition support for single-key remaps.",
+      "Issue 3326 is the canonical CapsLock-as-modifier tracker.",
+      "The live issue is labeled Issue-Bug, Needs-Triage, Needs-Team-Response, and Product-Keyboard Manager with no assignee."
     ],
     "inferences": [
-      "Synthetic modifier key-up handling may be involved, but no root cause is established."
+      "Synthetic modifier key-up handling or interaction between single-key remaps and shortcut remaps may be involved, but the precise failing branch is not established.",
+      "The new Alone/tap-condition feature may be the intended configuration path for some CapsLock-as-modifier workflows, so a fresh design should not assume the old single-key remap path is the correct fix layer."
     ],
-    "analysis": "The author's current-build reply clears the previous waiting state. The remaining useful step is a controlled maintainer reproduction that records physical and synthetic modifier transitions.",
+    "analysis": "The issue is no longer blocked on author response because the author supplied current-version confirmation. However, the codebase changed in the same area after the original report, and existing canonical tracking covers CapsLock-as-modifier behavior. Maintainer reproduction should capture the exact Keyboard Manager configuration and injected event sequence before deciding whether this is a new bug design or consolidation into existing work.",
     "initial_investigation": [
-      "Reviewed the full issue, labels, discussion, and visible references.",
-      "Confirmed the author replied after the author-wait signal and that the live label now requests a team response."
+      "Reviewed the complete live issue body, automated triage comment, author follow-up, labels, assignees, timeline, and related references.",
+      "Inspected current Keyboard Manager hook dispatch and remap handling around Alone remaps, regular single-key remaps, and shortcut remaps.",
+      "Reviewed merged PR 49136 for the new Alone/tap-condition feature.",
+      "Reviewed issue 3326 as the canonical CapsLock-as-modifier tracker.",
+      "Performed an adversarial design check and rejected an implementation-grade design for now because the exact failing branch is not proven after the recent Keyboard Manager changes."
     ],
     "information_gaps": []
   },
   "actions": [
     {
+      "confirm": true,
       "id": "reproduce-50272",
+      "reproduce": {
+        "steps": [
+          "Configure the reported Shift/CapsLock single-key remap and CapsLock+H Backspace shortcut exactly as described.",
+          "Press and release CapsLock+H, then type normal characters and observe whether Shift remains logically active.",
+          "Press and release physical Right Shift and observe whether the stuck state clears.",
+          "Trace physical and KBM-injected key down/up events through Alone remap, regular single-key remap, and shortcut remap handling.",
+          "Repeat with the current Alone/tap-condition configuration if it represents the same intended CapsLock-as-modifier behavior."
+        ],
+        "expected_result": "Releasing the shortcut should release every injected modifier without requiring physical Right Shift, or the current feature path should clearly handle the intended CapsLock-as-modifier workflow.",
+        "setup_requirements": [
+          "Use the exact remap JSON/settings and record whether the build includes PR 49136 behavior."
+        ],
+        "prerequisites": [
+          "Capture the exact Keyboard Manager single-key and shortcut remap entries from the reporter configuration.",
+          "Include a comparison using the current Alone/tap-condition feature if the same user intent can be represented there."
+        ],
+        "version_requirements": "PowerToys prerelease 0.101.2373, current main, or a newer build containing the current Alone remap code.",
+        "module": "Keyboard Manager"
+      },
       "type": "reproduce",
       "label": "Reproduce stuck remapped modifier",
-      "primary": true,
-      "confirm": true,
-      "reproduce": {
-        "module": "Keyboard Manager",
-        "version_requirements": "PowerToys prerelease 0.101.2373 or a newer current build.",
-        "prerequisites": [
-          "Map Right Shift to Left Caps Lock.",
-          "Create the reported CapsLock+H shortcut that sends Backspace."
-        ],
-        "steps": [
-          "Apply the reported remap and shortcut.",
-          "Press and release CapsLock+H.",
-          "Type normal characters and observe whether Shift remains active.",
-          "Press and release physical Right Shift and observe whether the state clears.",
-          "Trace physical and injected modifier down/up events."
-        ],
-        "expected_result": "Releasing the shortcut should release every injected modifier without requiring physical Right Shift.",
-        "setup_requirements": [
-          "Capture the exact Keyboard Manager remap and shortcut configuration."
-        ]
-      }
+      "primary": true
     }
-  ]
+  ],
+  "author": "SMatsushi",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "confidence": "Medium"
 }

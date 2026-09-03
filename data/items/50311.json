@@ -6,8 +6,8 @@
   "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T06:30:00Z",
-  "evaluated_at": "2026-09-02T06:30:00Z",
+  "generated_at": "2026-09-03T06:52:53Z",
+  "evaluated_at": "2026-09-03T06:52:53Z",
   "source_updated_at": "2026-09-02T03:40:59Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50311",
   "title": "我无法通过快捷键使用文本提取器",
@@ -19,41 +19,46 @@
   "assignees": [],
   "comments": 0,
   "confidence": "High",
-  "summary": "Text Extractor does not activate from its keyboard shortcut, but the report does not describe the configured shortcut, visible response, or whether the module works from Settings.",
+  "summary": "Text Extractor does not activate from its keyboard shortcut, but the report gives no reproduction steps, expected behavior, configured shortcut, visible response, or diagnostic archive.",
   "status": {
     "glyph": "?",
     "label": "Activation evidence needed",
-    "detail": "A focused activation comparison and fresh diagnostic archive are needed to separate shortcut conflict, disabled-module state, and module startup failure."
+    "detail": "A focused activation comparison and fresh diagnostic archive are needed to separate shortcut conflict, disabled-module state, and Text Extractor startup failure."
   },
   "next_action": {
     "glyph": ">",
     "label": "Request Text Extractor activation details",
-    "reason": "The current report does not establish what happens when either activation path is used."
+    "reason": "The report does not establish whether the shortcut is registered, blocked by another app, or launching Text Extractor and failing afterward."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The title identifies the failing feature but not the configured input or actual behavior. These details directly determine whether triage should investigate shortcut registration or Text Extractor startup.",
+    "rationale": "The live issue only says the reporter cannot use Text Extractor through the shortcut and provides environment details. The Text Extractor module has a settings-driven runner hotkey path and a separate overlay process, so the missing observed behavior determines which layer to investigate.",
     "evidence": [
-      "The report states that Text Extractor cannot be used through its shortcut.",
-      "No reproduction steps, configured shortcut, screenshot, diagnostic archive, or comparison with Settings activation is supplied."
+      "The body lists PowerToys 0.101.2362, GitHub install, TextExtractor area, Windows NT 10.0.26200.0, .NET 10.0.11, non-elevated per-user install, and zh-Hans-HK locale.",
+      "The reproduction and expected-behavior fields contain only “无”, and no actual behavior, screenshot, comments, or diagnostic ZIP are supplied.",
+      "The timeline contains only Issue-Bug and Needs-Triage labels; there are no assignees, linked closing PRs, or maintainer comments.",
+      "Code inspection found Text Extractor shortcut parsing/defaulting in src/modules/PowerOCR/PowerOCRModuleInterface/dllmain.cpp and overlay activation under src/modules/PowerOCR/PowerOCR/Keyboard, but the issue does not identify which path fails."
     ],
-    "recommended_action": "Request the exact shortcut, the observed response, a Settings activation comparison, and a fresh diagnostic archive after reproducing.",
-    "evaluated_at": "2026-09-02T06:30:00Z",
+    "recommended_action": "Request the exact shortcut, observed response, Settings activation comparison, shortcut-conflict state, and a fresh diagnostic archive after reproducing.",
+    "evaluated_at": "2026-09-03T06:52:53Z",
     "source_updated_at": "2026-09-02T03:40:59Z"
   },
   "issue_context": {
-    "summary": "Text Extractor shortcut activation fails without enough detail to identify the failing activation layer.",
+    "summary": "A Text Extractor shortcut activation failure is reported, but the current issue lacks enough behavioral evidence to identify the failing activation layer.",
     "known_information": [
-      "The affected feature is Text Extractor.",
-      "The reporter cannot use it through the keyboard shortcut."
+      "The affected feature is Text Extractor on PowerToys 0.101.2362.",
+      "PowerToys is running non-elevated as a per-user install on Windows NT 10.0.26200.0 with zh-Hans-HK locale.",
+      "No comments, attachments, assignees, linked work, or duplicate-confirming maintainer activity are present."
     ],
     "inferences": [
-      "The failure could occur in global shortcut registration, module enablement, or Text Extractor startup; the current evidence does not distinguish them."
+      "The failure could be a global shortcut conflict, disabled or blocked module state, failure to launch PowerToys.PowerOCR.exe, or overlay startup failure.",
+      "Locale is probably incidental, but fresh logs are needed before ruling out OCR language or startup-resource issues."
     ],
-    "analysis": "Comparing the shortcut with the Settings launch control is the shortest way to isolate shortcut registration from module startup. A fresh diagnostic ZIP is useful only after that controlled attempt.",
+    "analysis": "Text Extractor’s module interface registers a configured/default Win+Shift+T shortcut and starts PowerToys.PowerOCR.exe, while the app-level keyboard monitor opens the overlay. Without the configured shortcut and visible result, the issue cannot be mapped to shortcut registration versus process/overlay startup.",
     "initial_investigation": [
-      "Reviewed the complete issue, labels, assignees, and timeline.",
-      "No attachment, existing maintainer request, duplicate, or linked fix is present."
+      "Reviewed the complete live issue body, comments, labels, assignees, timeline, and closed-by-PR references.",
+      "Searched for candidate duplicates; results were generic Text Extractor shortcut/screen issues, not a direct match to this no-detail report.",
+      "Inspected the Text Extractor hotkey and overlay activation code paths in the local PowerToys clone."
     ],
     "information_gaps": [
       {
@@ -62,14 +67,14 @@
         "how_to_collect": "Include a screenshot of the Text Extractor shortcut setting and describe any notification, cursor change, selection overlay, or complete lack of response."
       },
       {
-        "information": "Whether Text Extractor starts from its activation control in PowerToys Settings.",
-        "why_needed": "This separates a global-hotkey conflict from a module startup problem.",
-        "how_to_collect": "Enable Text Extractor, activate it from PowerToys Settings, and report whether the selection overlay appears."
+        "information": "Whether Text Extractor starts from PowerToys Settings or another activation surface.",
+        "why_needed": "This separates a global-hotkey conflict from Text Extractor process or overlay startup failure.",
+        "how_to_collect": "Enable Text Extractor, trigger it from Settings if available, and report whether the selection overlay appears."
       },
       {
-        "information": "Fresh PowerToys diagnostics after reproducing the failure.",
-        "why_needed": "The log can show shortcut registration conflicts or module launch failures.",
-        "how_to_collect": "Immediately after reproducing, submit a comment containing `/bugreport` and attach the generated ZIP."
+        "information": "Fresh PowerToys diagnostics captured immediately after reproducing.",
+        "why_needed": "The logs can show shortcut registration conflicts, process launch failures, or overlay startup exceptions.",
+        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport and attach the generated ZIP."
       }
     ]
   },
@@ -83,7 +88,7 @@
       "comment": {
         "target": "issue",
         "number": 50311,
-        "body": "Thanks for reporting the Text Extractor shortcut problem. Please share a screenshot of the configured Text Extractor shortcut and describe exactly what happens when you press it, including whether there is no response, a notification, cursor change, or selection overlay. Also confirm whether Text Extractor starts when activated from PowerToys Settings. Immediately after reproducing the failure, please submit a comment containing `/bugreport` and attach the generated ZIP. The Settings comparison will separate a shortcut conflict from a module startup failure, and the fresh logs can identify the failing path."
+        "body": "Thanks for reporting the Text Extractor shortcut problem. Please share a screenshot of the configured Text Extractor shortcut and describe exactly what happens when you press it, including whether there is no response, a notification, cursor change, or the selection overlay. Also confirm whether Text Extractor starts from PowerToys Settings or another activation surface. Immediately after reproducing the failure, please add a comment containing `/bugreport` and attach the generated ZIP. The activation comparison will separate a shortcut conflict from a module startup problem, and the fresh logs can identify the failing path."
       }
     }
   ]

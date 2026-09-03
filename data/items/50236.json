@@ -3,75 +3,83 @@
   "number": 50236,
   "kind": "issue",
   "track": "fix",
-  "stage": "handled",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-02T02:17:49.57Z",
-  "evaluated_at": "2026-09-02T02:17:49.57Z",
+  "generated_at": "2026-09-03T06:53:48Z",
+  "evaluated_at": "2026-09-03T06:53:48Z",
   "source_updated_at": "2026-08-29T14:06:50Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50236",
   "title": "PowerToys运行时ALT键松发BUG问题：Alt 物理按下不触发，物理松开立刻触发按下与松开",
   "author": "x123ly",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Author-Feedback",
     "Needs-Triage",
     "Product-Grab And Move"
   ],
+  "assignees": [],
   "comments": 1,
+  "stage": "handled",
+  "owes": "maintainer",
+  "pending_author": false,
   "confidence": "High",
+  "summary": "Grab and Move is reported to suppress Alt keydown and replay Alt keydown/keyup on release; current duplicate evidence points to the newer trigger-key soft-lock thread with diagnostics.",
   "status": {
     "glyph": "🔁",
-    "label": "duplicate or handled",
-    "detail": "A newer issue, #50248, reports the same Grab and Move trigger-key soft-lock with KeyUp-only observations and includes a fresh diagnostic archive; #49037 also tracks Alt interception conflicts."
+    "label": "Consolidate with active Grab and Move soft-lock issue",
+    "detail": "The same KeyUp-only/trigger-key soft-lock pattern is tracked in Issue 50248, with related Alt interception evidence in Issue 49037."
   },
   "next_action": {
-    "glyph": "➡️",
-    "label": "Consolidate investigation in #50248, which has stronger current diagnostic evidence.",
-    "reason": "Consolidate investigation in #50248, which has stronger current diagnostic evidence."
+    "glyph": "🔁",
+    "label": "Post consolidation comment",
+    "reason": "Keep the low-level hook evidence in the newer diagnostic thread instead of opening a parallel design."
   },
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "A newer issue, #50248, reports the same Grab and Move trigger-key soft-lock with KeyUp-only observations and includes a fresh diagnostic archive; #49037 also tracks Alt interception conflicts.",
+    "rationale": "Issue 50248 reports the same Grab and Move trigger-key soft-lock/KeyUp-only behavior and includes a diagnostic archive; Issue 49037 tracks related Alt interception conflicts. This issue adds a FancyZones co-enabled observation but no diagnostic ZIP or distinct confirmed root cause.",
     "evidence": [
-      "This report observes Alt keydown being suppressed and keydown/keyup replayed together on release.",
-      "#50248 reports Grab and Move leaving Alt/Win shortcuts unusable and an online tester seeing only KeyUp, with a bug-report ZIP.",
-      "#49037 tracks Grab and Move blocking Alt behavior in PowerShell and desktop drag scenarios.",
-      "Current GrabAndMove hook code intentionally swallows and may replay the configured modifier."
+      "The report says physical Alt down is not delivered and Alt keydown/keyup arrive together on release with near-zero duration.",
+      "The reporter states uninstalling or disabling Grab and Move removes the Alt-key problem.",
+      "Issue 50248 reports Grab and Move leaving Alt/Win shortcuts unusable with online keyboard tests seeing only KeyUp, and includes diagnostics.",
+      "Issue 49037 reports Grab and Move blocking Alt behavior in PowerShell and desktop drag scenarios.",
+      "Focused code inspection of src/modules/GrabAndMove/GrabAndMove/main.cpp found an intentional low-level hook path that absorbs configured modifier keydown and conditionally replays it."
     ],
-    "recommended_action": "Consolidate investigation in #50248, which has stronger current diagnostic evidence.",
-    "evaluated_at": "2026-09-02T02:17:49.57Z",
+    "recommended_action": "Post a consolidation comment directing follow-up to Issue 50248 while noting the FancyZones co-enabled detail as potentially distinct evidence.",
+    "evaluated_at": "2026-09-03T06:53:48Z",
     "source_updated_at": "2026-08-29T14:06:50Z"
   },
   "issue_context": {
-    "summary": "Grab and Move can leave Alt behavior split between physical state and delivered keyboard messages, breaking global shortcuts. A newer report captures the same soft-lock pattern with diagnostics.",
+    "summary": "The Chinese-language report describes Alt entering an input-state split while Grab and Move and FancyZones are enabled: physical Alt remains down according to GetAsyncKeyState, but delivered keyboard messages show the press only when the key is released.",
     "known_information": [
-      "The reporter observed near-zero delivered keydown/keyup timing on physical release.",
-      "#50248 reports KeyUp-only trigger-key behavior and includes a current diagnostic ZIP.",
-      "#49037 reports additional Alt interception failures."
+      "PowerToys 0.101.2211.0 Preview from Microsoft Store is reported.",
+      "Grab and Move is identified by the reporter as the on/off switch for the symptom.",
+      "FancyZones was also enabled when the reporter observed the race-like behavior.",
+      "No PowerToys diagnostic ZIP was attached.",
+      "Issue 50248 and Issue 49037 are open and cover related Grab and Move modifier interception failures."
     ],
     "inferences": [
-      "The reports likely share the modifier swallowing/replay path, but a common root cause is not confirmed."
+      "The reports likely share the configured-modifier absorption/replay path, but the FancyZones timing detail could still be an additional trigger rather than a separate root cause."
     ],
-    "analysis": "One diagnostic thread avoids splitting evidence for the same low-level hook behavior; #50248 is the best current consolidation target.",
+    "analysis": "The best current maintainer action is consolidation, not a new fix design, because a newer active issue has stronger diagnostic evidence for the same low-level hook symptom and the remaining distinction can be added there.",
     "initial_investigation": [
-      "Reviewed GrabAndMove/main.cpp KeyboardProc, which swallows configured modifier keydown and conditionally replays it on keyup.",
-      "Compared complete live reports #50248 and #49037."
+      "Read the complete live issue body, bot comment, labels, assignees, and timeline.",
+      "Searched upstream duplicates for Grab and Move Alt/key soft-lock reports and reviewed Issues 50248 and 49037.",
+      "Inspected GrabAndMove/main.cpp modifier state and hook globals including g_altPressed, g_shouldAbsorbAlt, g_altAbsorbed, g_dragConsumedAlt, and the foreground-reset path.",
+      "No assignee, linked PR, or fork mirror existed for Issue 50236."
     ],
     "information_gaps": []
   },
   "actions": [
     {
-      "id": "post-duplicate-50236",
+      "id": "post-consolidate-50236",
       "type": "post_comment",
-      "label": "Post duplicate/consolidation comment",
+      "label": "Post consolidation comment",
       "primary": true,
       "confirm": true,
+      "requiresApproval": true,
       "comment": {
         "target": "issue",
+        "repository": "microsoft/PowerToys",
         "number": 50236,
-        "body": "This appears to be covered by #50248, which reports the same Grab and Move trigger-key soft-lock / KeyUp-only behavior and includes a fresh diagnostic archive; #49037 also tracks related Alt interception failures. Please continue the investigation in #50248 so the hook evidence stays in one place. If the FancyZones combination produces a distinct sequence, add that exact difference there."
+        "body": "This appears to overlap with Issue 50248, which reports the same Grab and Move trigger-key soft-lock / KeyUp-only behavior and includes a fresh diagnostic archive. Issue 49037 also tracks related Alt interception failures. Please continue the investigation in Issue 50248 so the hook evidence stays in one place. If the FancyZones combination produces a distinct sequence, please add that exact difference there."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }

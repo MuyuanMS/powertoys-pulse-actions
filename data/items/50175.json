@@ -6,8 +6,8 @@
   "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T14:42:57Z",
-  "evaluated_at": "2026-09-02T14:42:57Z",
+  "generated_at": "2026-09-03T06:55:46.8406702Z",
+  "evaluated_at": "2026-09-03T06:55:46.8406702Z",
   "source_updated_at": "2026-09-02T14:05:47Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50175",
   "title": "CmdPal: Bookmark {placeholder} field retains last-entered value on every subsequent open",
@@ -35,15 +35,16 @@
     "status": "actionable_design",
     "rationale": "The report, cross-architecture reproduction, current source, and feature history independently identify a retained session object whose values are never reset. The narrow success-only reset has a clear lifecycle boundary and preserves input after a failed launch.",
     "evidence": [
-      "The reporter's deterministic reproduction starts with an empty field, submits a value, and finds that value on every subsequent opening during the session.",
-      "The independent UI Automation reproduction on x64 and ARM64 observed the same retention and confirmed that restarting Command Palette clears it without changing bookmarks.json.",
-      "BookmarkListItem.ClassifyAsync constructs BookmarkPlaceholderPage only during initial classification or a BookmarkUpdated event; opening the item does not reconstruct the page.",
-      "BookmarkPlaceholderPage.BuildParameterRuns creates and retains StringParameterRun objects in _placeholderRuns, and LaunchWithCurrentValues dismisses after CommandLauncher.Launch succeeds without clearing them.",
-      "StringParameterRun.ClearValue resets Text and raises property notifications; StringParameterRunViewModel.FetchProperty mirrors model-side Text changes to TextForUI.",
-      "Merged PR #47886 (commit 2d3f93537fad47540c57342310b5004d87d3fcf2) introduced the ParametersPage implementation. No later history touching LaunchWithCurrentValues adds a reset."
+      "The reporter gives deterministic steps: first open empty, submit value, subsequent opens pre-filled.",
+      "The independent UI Automation reproduction observed the same session-only retention on x64 and ARM64 and confirmed restart clearing.",
+      "BookmarkListItem.ClassifyAsync constructs BookmarkPlaceholderPage only during classification or edit, not every open.",
+      "BookmarkPlaceholderPage.BuildParameterRuns retains StringParameterRun objects in _placeholderRuns.",
+      "LaunchWithCurrentValues launches and dismisses without clearing the runs.",
+      "PR 47886 introduced parameters for bookmark placeholders; no later history adds a reset.",
+      "Duplicate search found related Issue 46528 for Enter activation, but it is not the retained-value bug."
     ],
     "recommended_action": "Approve the fork-side plan to clear each retained placeholder run after, and only after, CommandLauncher.Launch returns true; add isolated regression coverage and an accessible parameter-field name.",
-    "evaluated_at": "2026-09-02T14:42:57Z",
+    "evaluated_at": "2026-09-03T06:55:46.8406702Z",
     "source_updated_at": "2026-09-02T14:05:47Z"
   },
   "issue_context": {
@@ -61,10 +62,8 @@
     ],
     "analysis": "The evidence identifies both the state owner and the missing lifecycle transition. A successful launch is the intended completion boundary: the evaluated target is computed before values are cleared, dismissal follows as it does today, and an unsuccessful launch retains the visible values for correction. The toolkit and view model already propagate ClearValue notifications, so no binding-mode or page-recreation change is warranted.",
     "initial_investigation": [
-      "Inspected BookmarkListItem.ClassifyAsync, BookmarkPlaceholderPage.BuildParameterRuns, BuildEvaluatedBookmark, LaunchWithCurrentValues, and Dispose on current main.",
-      "Inspected StringParameterRun.ClearValue and StringParameterRunViewModel.InitializeProperties, SetTextFromUi, and FetchProperty; model resets update TextForUI through the existing property-change path.",
-      "Inspected current CmdPal bookmark unit tests and UI test harness. The bookmarks assembly exposes internals to Microsoft.CmdPal.Ext.Bookmarks.UnitTests, and the CmdPal solution filter includes both bookmark unit tests and Microsoft.CmdPal.UITests.",
-      "Reviewed merged PR #47886, the introducing change, and searched matching upstream issues. Issue #46528 concerns Enter activation rather than retained values and is not a duplicate."
+      "Read the complete upstream report and comment, current labels/assignees/timeline, duplicate search results, related history, BookmarkListItem, BookmarkPlaceholderPage, StringParameterRun, SearchBar.StringParamTemplate, and current test surfaces.",
+      "Ran the investigator/adversary design loop against reset ordering, failed launch retention, repeated placeholders, UI locator ambiguity, and fixture-state safety; it converged with no blocking objections."
     ],
     "information_gaps": []
   },
@@ -254,11 +253,13 @@
     }
   },
   "fork_trace": {
-    "kind": "design_artifact",
-    "id": "issue-design-50175",
-    "status": "design_ready",
-    "implementation_branch": null,
-    "note": "This validated artifact is the durable fork-side design trace. A fork branch and PR remain approval-gated and have not been created."
+    "kind": "issue",
+    "fork_number": 587,
+    "fork_title": "[Issue 50175] CmdPal: Bookmark {placeholder} field retains last-entered value on every subsequent open",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/587",
+    "status": "awaiting_design_approval",
+    "note": "Fork mirror issue created by the refreshed issue-to-design workflow; upstream references are plain text only."
   },
   "actions": [
     {

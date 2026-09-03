@@ -2,331 +2,44 @@
   "number": 49321,
   "kind": "pr",
   "track": "review",
-  "stage": "post_review",
-  "owes": "maintainer",
+  "stage": "waiting_copilot",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-29T02:40:19.8242316Z",
-  "evaluated_at": "2026-09-02T02:25:56.323Z",
-  "source_updated_at": "2026-09-01T18:20:42Z",
-  "head_sha": "afaf0351b4a2fc14d8e6bdab90539b852986aa96",
+  "generated_at": "2026-09-03T06:51:26.7501467Z",
+  "evaluated_at": "2026-09-03T06:51:26.7501467Z",
+  "source_updated_at": "2026-09-03T02:17:15Z",
+  "head_sha": "177a6590370223400874ef11a71b4967cc891b71",
   "title": "CmdPal JS/TS Extensions - Phase 1: TypeScript SDK",
   "url": "https://github.com/microsoft/PowerToys/pull/49321",
-  "summary": "The refreshed current-head review contains 16 runtime, protocol, lifetime, accessibility, and regression-coverage findings. The final audit found zero unresolved Copilot threads, and 131 tests plus typecheck, lint, build, and package verification passed.",
+  "confidence": "high",
+  "summary": "The member-authored stacked SDK PR advanced with a README-only upstream commit. The existing fork review was preserved, refreshed, and its three unresolved Copilot findings were fixed; fresh Copilot review cannot currently be requested on the fork.",
   "status": {
-    "glyph": "warn",
-    "label": "Review comments ready",
-    "detail": "16 current-head review comments are ready for maintainer selection."
+    "glyph": "...",
+    "label": "Waiting for Copilot review",
+    "detail": "Fork review 429 is refreshed to the current upstream head and has no unresolved Copilot threads. A fresh reviewer request after the round-8 fixes was rejected with an empty requested_reviewers response."
   },
-  "next_action": "Review and selectively post the drafted request-changes comments.",
-  "proposed_comments": [
-    {
-      "id": "bootstrap-windows-path",
-      "kind": "inline",
-      "title": "Treat Windows absolute paths as file URLs",
-      "severity": "high",
-      "confidence": {
-        "score": 96,
-        "rationale": "The condition directly matches the current line and the failure follows from Node ESM treating drive-letter strings as unsupported URL schemes."
-      },
-      "body": "### Treat Windows absolute paths as file URLs\n\n**Severity:** `high`\n\nOn Windows, an entry like `C:\\extensions\\main.js` matches the generic URI-scheme regex because of the drive-letter colon, so the bootstrapper returns it unchanged. Dynamic `import()` then treats that string as an unsupported URL scheme instead of a filesystem path, which prevents normal Windows extension entries from starting.\n\n```suggestion\n  if (/^[a-zA-Z][a-zA-Z\\d+.-]*:/.test(raw) && !/^[a-zA-Z]:[\\\\/]/.test(raw)) {\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/bootstrap.ts",
-      "start_line": 57,
-      "line": 57,
-      "side": "RIGHT"
-    },
-    {
-      "id": "strict-content-length",
-      "kind": "inline",
-      "title": "Reject malformed Content-Length headers",
-      "severity": "medium",
-      "confidence": {
-        "score": 93,
-        "rationale": "The current parser uses parseInt on the wire framing length, and the replacement preserves valid lengths while rejecting malformed or unsafe values."
-      },
-      "body": "### Reject malformed Content-Length headers\n\n**Severity:** `medium`\n\n`Number.parseInt()` accepts partially numeric values such as `12junk` and silently truncates decimal values, so a malformed frame can consume the wrong number of bytes and desynchronize subsequent JSON-RPC messages. Validate the header as a non-negative safe integer before accepting it.\n\n```suggestion\n    const rawValue = line.slice(separator + 1).trim();\n    if (!/^(?:0|[1-9]\\d*)$/.test(rawValue)) {\n      return null;\n    }\n\n    const value = Number(rawValue);\n    return Number.isSafeInteger(value) ? value : null;\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/framing.ts",
-      "start_line": 44,
-      "line": 45,
-      "side": "RIGHT"
-    },
-    {
-      "id": "jsonrpc-version-and-null-id",
-      "kind": "inline",
-      "title": "Validate JSON-RPC 2.0 messages and allow error responses with null ids",
-      "severity": "medium",
-      "confidence": {
-        "score": 92,
-        "rationale": "The existing guards omit the JSON-RPC version check, and JSON-RPC requires null ids for parse/invalid-request responses when no request id is available."
-      },
-      "body": "### Validate JSON-RPC 2.0 messages and allow error responses with null ids\n\n**Severity:** `medium`\n\nThe current guards accept requests and notifications even when the `jsonrpc: \"2.0\"` marker is missing or wrong, which lets unsupported protocol messages flow into normal dispatch. JSON-RPC parse and invalid-request errors also need `id: null`, so the response type should permit that standard error shape.\n\n```suggestion\nexport interface JsonRpcResponse {\n  jsonrpc: typeof JSONRPC_VERSION;\n  id: number | string | null;\n  result?: unknown;\n  error?: JsonRpcError;\n}\n\nexport type JsonRpcMessage = JsonRpcRequest | JsonRpcNotification | JsonRpcResponse;\n\nfunction isObject(value: unknown): value is Record<string, unknown> {\n  return typeof value === 'object' && value !== null;\n}\n\n/** Narrows a parsed value to a JSON-RPC request (has both `id` and `method`). */\nexport function isRequest(message: unknown): message is JsonRpcRequest {\n  if (!isObject(message) || message.jsonrpc !== JSONRPC_VERSION) {\n    return false;\n  }\n  const hasId = typeof message.id === 'number' || typeof message.id === 'string';\n  return hasId && typeof message.method === 'string';\n}\n\n/** Narrows a parsed value to a JSON-RPC notification (has `method`, no `id`). */\nexport function isNotification(message: unknown): message is JsonRpcNotification {\n  if (!isObject(message) || message.jsonrpc !== JSONRPC_VERSION) {\n    return false;\n  }\n  return message.id === undefined && typeof message.method === 'string';\n}\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/jsonrpc.ts",
-      "start_line": 40,
-      "line": 68,
-      "side": "RIGHT"
-    },
-    {
-      "id": "server-invalid-jsonrpc-errors",
-      "kind": "inline",
-      "title": "Return protocol errors for malformed or unsupported input",
-      "severity": "medium",
-      "confidence": {
-        "score": 88,
-        "rationale": "The current code has explicit continue/drop paths for parse failures and unsupported messages, and dispose finalization is currently invoked without chaining behind queued work."
-      },
-      "body": "### Return protocol errors for malformed or unsupported input\n\n**Severity:** `medium`\n\nMalformed JSON frames and unsupported protocol messages are currently dropped without any response, leaving the host waiting for a request that will never complete. Return JSON-RPC parse/invalid-request errors and wait for queued work before finalizing so dispose does not race ahead of an in-flight request.\n\n```suggestion\n  const enqueue = (message: unknown): void => {\n    chain = chain\n      .then(async () => {\n        if (isRequest(message)) {\n          await runtime.handleRequest(message);\n        } else if (isNotification(message)) {\n          if (message.method === 'dispose') {\n            const params = message.params;\n            if (params && typeof params === 'object' && 'timeoutMs' in params) {\n              const value = (params as { timeoutMs?: unknown }).timeoutMs;\n              if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {\n                disposeTimeoutMs = value;\n              }\n            }\n          }\n          await runtime.handleNotification(message);\n        } else {\n          writeMessage({\n            jsonrpc: JSONRPC_VERSION,\n            id: null,\n            error: { code: -32600, message: 'Invalid Request' },\n          });\n        }\n      })\n      .catch((error: unknown) => {\n        process.stderr.write(`cmdpal-sdk: message handling failed: ${describeError(error)}\\n`);\n      });\n  };\n\n  process.stdin.on('data', (chunk: Buffer) => {\n    for (const body of framer.push(chunk)) {\n      let parsed: unknown;\n      try {\n        parsed = JSON.parse(body);\n      } catch {\n        writeMessage({\n          jsonrpc: JSONRPC_VERSION,\n          id: null,\n          error: { code: -32700, message: 'Parse error' },\n        });\n        continue;\n      }\n      enqueue(parsed);\n    }\n  });\n\n  process.stdin.on('end', () => {\n    void chain.then(() => finalize(0));\n  });\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/server.ts",
-      "start_line": 111,
-      "line": 150,
-      "side": "RIGHT"
-    },
-    {
-      "id": "retire-empty-fallback-scope",
-      "kind": "inline",
-      "title": "Retire stale fallback commands when no fallbacks are returned",
-      "severity": "medium",
-      "confidence": {
-        "score": 94,
-        "rationale": "The stale registry is observable in the current control flow: the early return skips the same retireMissing path used when a replacement fallback list exists."
-      },
-      "body": "### Retire stale fallback commands when no fallbacks are returned\n\n**Severity:** `medium`\n\nIf a provider previously returned fallback commands and later returns `null` or `undefined`, the old command scope stays registered even though the provider no longer exposes those commands. Clear the fallback registry and retire the previous scope before responding with no fallback items.\n\n```suggestion\n    const items = (await provider.fallbackCommands?.()) ?? null;\n    if (!items) {\n      const previous = this.fallbackScope;\n      this.fallbackScope = new Map<string, ICommand>();\n      this.fallbacks.clear();\n      this.retireMissing(previous.keys(), this.fallbackScope);\n      this.respond(id, null);\n      return;\n    }\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts",
-      "start_line": 431,
-      "line": 434,
-      "side": "RIGHT"
-    },
-    {
-      "id": "reserve-form-ids",
-      "kind": "inline",
-      "title": "Prevent generated form ids from colliding with explicit ids",
-      "severity": "medium",
-      "confidence": {
-        "score": 90,
-        "rationale": "The current map assignment overwrites duplicate form ids, and generated ids are predictable strings that can collide with explicit content ids."
-      },
-      "body": "### Prevent generated form ids from colliding with explicit ids\n\n**Severity:** `medium`\n\nGenerated form ids are only based on a counter, while explicit form ids are written straight into the same map. A later generated form can reuse an explicit id such as `form-0`, overwriting the earlier submit handler and routing submissions to the wrong form.\n\n```suggestion\nfunction createFormCollector(scope: PageScope): FormCollector {\n  let counter = 0;\n  const allocatedIds = new Set<string>();\n  const registeredIds = new Set<string>();\n  return {\n    nextId(): string {\n      while (\n        allocatedIds.has(`form-${String(counter)}`) ||\n        registeredIds.has(`form-${String(counter)}`)\n      ) {\n        counter += 1;\n      }\n      const id = `form-${String(counter)}`;\n      counter += 1;\n      allocatedIds.add(id);\n      return id;\n    },\n    register(formId: string, handler: FormSubmitHandler): void {\n      if (registeredIds.has(formId)) {\n        throw new Error(`Duplicate form id: ${formId}`);\n      }\n      if (allocatedIds.has(formId)) {\n        allocatedIds.delete(formId);\n      }\n      registeredIds.add(formId);\n      scope.forms.set(formId, handler);\n    },\n  };\n}\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts",
-      "start_line": 849,
-      "line": 860,
-      "side": "RIGHT"
-    },
-    {
-      "id": "surface-list-filter-callback",
-      "kind": "inline",
-      "title": "Expose list filter changes to extension pages",
-      "severity": "medium",
-      "confidence": {
-        "score": 91,
-        "rationale": "The runtime already calls setFilter by method name, but the public TypeScript interface omits it from implementable list pages."
-      },
-      "body": "### Expose list filter changes to extension pages\n\n**Severity:** `medium`\n\nThe runtime dispatches filter changes to `page.setFilter`, but `IListPage` does not declare that callback. TypeScript extension authors therefore cannot implement host filter changes without casting around the SDK types.\n\n```suggestion\n  /** Whether more items can be loaded (infinite scroll). */\n  hasMoreItems?: boolean;\n  /** Handles a filter selection change from the host. */\n  setFilter?(filterId: string): void | Promise<void>;\n  /** Item shown when the list is empty, or `null` for none. */\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/types.ts",
-      "start_line": 412,
-      "line": 414,
-      "side": "RIGHT"
-    },
-    {
-      "id": "adaptive-card-input-labels",
-      "kind": "inline",
-      "title": "Put setting labels on the Adaptive Card inputs",
-      "severity": "low",
-      "confidence": {
-        "score": 86,
-        "rationale": "Adaptive Cards support input labels, and the current generated JSON leaves the label outside the associated input control."
-      },
-      "body": "### Put setting labels on the Adaptive Card inputs\n\n**Severity:** `low`\n\nEach setting label is emitted as a separate `TextBlock`, while the actual Adaptive Card inputs have an empty title or no label. That weakens accessibility and can disconnect validation/errors from the control; put the label on the input element itself and keep the description as supporting text.\n\n```suggestion\n    for (const setting of this.items) {\n      if (setting.description) {\n        body.push({\n          type: 'TextBlock',\n          text: setting.description,\n          isSubtle: true,\n          wrap: true,\n          spacing: 'none',\n        });\n      }\n\n      if (setting instanceof ToggleSetting) {\n        const input: Record<string, unknown> = {\n          type: 'Input.Toggle',\n          id: setting.key,\n          title: setting.label,\n          value: String(setting.value),\n          valueOn: 'true',\n          valueOff: 'false',\n        };\n        applyRequired(input, setting);\n        body.push(input);\n      } else if (setting instanceof TextSetting) {\n        const input: Record<string, unknown> = {\n          type: 'Input.Text',\n          id: setting.key,\n          label: setting.label,\n          placeholder: setting.placeholder ?? '',\n          value: setting.value,\n          isMultiline: setting.multiline ?? false,\n        };\n        applyRequired(input, setting);\n        body.push(input);\n      } else {\n        const input: Record<string, unknown> = {\n          type: 'Input.ChoiceSet',\n          id: setting.key,\n          label: setting.label,\n          value: setting.value,\n          choices: setting.choices.map((choice) => ({\n            title: choice.title,\n            value: choice.value,\n          })),\n        };\n        applyRequired(input, setting);\n        body.push(input);\n      }\n    }\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/base/Settings.ts",
-      "start_line": 253,
-      "line": 303,
-      "side": "RIGHT"
-    },
-    {
-      "id": "handle-url-opener-error",
-      "kind": "inline",
-      "title": "Handle asynchronous launcher failures",
-      "severity": "medium",
-      "confidence": {
-        "score": 95,
-        "rationale": "The Node child_process API emits spawn failures asynchronously, and the current code detaches without registering an error listener."
-      },
-      "body": "### Handle asynchronous launcher failures\n\n**Severity:** `medium`\n\nA failed `spawn()` can emit an asynchronous `error` event after `openUrlInDefaultBrowser` returns. Because the detached child currently has no error listener, failures such as process creation errors can become uncaught exceptions and terminate the extension process.\n\n```suggestion\nimport { spawn, type ChildProcess } from 'node:child_process';\n\n/** Opens the given URL. Injected into {@link OpenUrlCommand} for testing. */\nexport type UrlOpener = (url: string) => void;\n\nfunction hasControlCharacters(value: string): boolean {\n  for (let index = 0; index < value.length; index += 1) {\n    if (value.charCodeAt(index) < 0x20) {\n      return true;\n    }\n  }\n  return false;\n}\n\nfunction detachLauncher(child: ChildProcess): void {\n  child.on('error', (error) => {\n    process.stderr.write(`Failed to launch URL opener: ${error.message}\\n`);\n  });\n  child.unref();\n}\n\n/**\n * Opens a URL in the default browser via the platform launcher.\n *\n * @throws Error when the URL contains a double quote or a control character,\n * which could break out of the launcher command line.\n */\nexport const openUrlInDefaultBrowser: UrlOpener = (url) => {\n  if (url.includes('\"') || hasControlCharacters(url)) {\n    throw new Error(`Refusing to open a URL with quote or control characters: ${url}`);\n  }\n\n  if (process.platform === 'win32') {\n    // The empty `\"\"` title keeps `start` from treating the quoted URL as a\n    // window title, and verbatim arguments preserve the quotes we add so that\n    // characters such as `&` inside the query string are not reinterpreted.\n    const child = spawn('cmd.exe', ['/s', '/c', 'start', '\"\"', `\"${url}\"`], {\n      windowsVerbatimArguments: true,\n      detached: true,\n      stdio: 'ignore',\n      windowsHide: true,\n    });\n    detachLauncher(child);\n    return;\n  }\n\n  const launcher = process.platform === 'darwin' ? 'open' : 'xdg-open';\n  const child = spawn(launcher, [url], { detached: true, stdio: 'ignore' });\n  detachLauncher(child);\n};\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/openUrl.ts",
-      "start_line": 11,
-      "line": 53,
-      "side": "RIGHT"
-    },
-    {
-      "id": "late-provider-disposal",
-      "kind": "inline",
-      "title": "Dispose providers that resolve after shutdown",
-      "severity": "medium",
-      "confidence": {
-        "score": 90,
-        "rationale": "The asynchronous init continuation currently writes provider state unconditionally, even after the disposed flag has been set."
-      },
-      "body": "### Dispose providers that resolve after shutdown\n\n**Severity:** `medium`\n\nIf the provider factory is still pending when shutdown starts, `dispose()` currently completes with no provider and the factory continuation can later install a ready provider. That late provider is never disposed and can keep resources alive after the host disconnects.\n\n```suggestion\n  beginInitialization(init: Promise<ICommandProvider>): void {\n    this.initState = 'pending';\n    this.initError = null;\n    this.initSettled = init.then(\n      async (provider) => {\n        if (this.disposed) {\n          if (provider.dispose) {\n            try {\n              await withTimeout(Promise.resolve(provider.dispose()), DEFAULT_DISPOSE_TIMEOUT_MS);\n            } catch (error) {\n              process.stderr.write(`cmdpal-sdk: provider disposal failed: ${describeError(error)}\\n`);\n            }\n          }\n          return;\n        }\n\n        this.provider = provider;\n        this.primed = false;\n        this.initState = 'ready';\n      },\n      (error: unknown) => {\n        if (this.disposed) {\n          return;\n        }\n\n        this.initState = 'failed';\n        this.initError = { code: JsonRpcErrorCode.InternalError, message: describeError(error) };\n        this.reportFatal?.(1);\n      },\n    );\n  }\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts",
-      "start_line": 197,
-      "line": 212,
-      "side": "RIGHT"
-    },
-    {
-      "id": "safe-observable-propchanged",
-      "kind": "inline",
-      "title": "Do not send command-bearing objects through propChanged",
-      "severity": "medium",
-      "confidence": {
-        "score": 87,
-        "rationale": "The listed complex properties can contain commands or page objects, while this helper bypasses the WireSerializer registry."
-      },
-      "body": "### Do not send command-bearing objects through propChanged\n\n**Severity:** `medium`\n\n`command/propChanged` sends values directly, but properties such as `command`, `emptyContent`, `commands`, `moreCommands`, and `details` can contain command objects that need serializer registration. Sending them through this helper drops functions during JSON encoding and can leave the host with command ids that cannot be invoked.\n\n```suggestion\nimport type { ObservablePropertyName } from '../types.js';\nimport { sendNotification } from '../runtime/notifications.js';\n\nconst DirectObservablePropertyNames = new Set<ObservablePropertyName>([\n  'id',\n  'name',\n  'icon',\n  'title',\n  'isLoading',\n  'accentColor',\n  'searchText',\n  'placeholderText',\n  'showDetails',\n  'filters',\n  'gridProperties',\n  'hasMoreItems',\n  'subtitle',\n  'tags',\n  'section',\n  'textToSuggest',\n  'displayTitle',\n]);\n\n/** Shared property-change notification support for observable SDK models. */\nexport abstract class ObservableBase {\n  protected abstract readonly notificationId: string;\n\n  /**\n   * Tells the host that one of this object's ABI properties changed.\n   * The current value is included so the host can update without a round trip.\n   */\n  protected notifyPropChanged(propertyName: ObservablePropertyName): void {\n    if (!DirectObservablePropertyNames.has(propertyName)) {\n      throw new Error(`Property \"${propertyName}\" requires an items-changed notification.`);\n    }\n\n    sendNotification('command/propChanged', {\n      commandId: this.notificationId,\n      properties: { [propertyName]: Reflect.get(this, propertyName) },\n    });\n  }\n}\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/base/ObservableBase.ts",
-      "start_line": 5,
-      "line": 21,
-      "side": "RIGHT"
-    },
-    {
-      "id": "deterministic-tree-form-ids",
-      "kind": "inline",
-      "title": "Serialize tree children in deterministic form-id order",
-      "severity": "medium",
-      "confidence": {
-        "score": 90,
-        "rationale": "The shared FormCollector is mutable, and Promise.all allows generated IDs to depend on asynchronous completion order instead of content traversal order."
-      },
-      "body": "### Serialize tree children in deterministic form-id order\n\n**Severity:** `medium`\n\nTree children currently serialize with `Promise.all` while sharing one form collector, so asynchronous child branches can allocate generated `form-N` IDs in completion order. Serializing children in traversal order keeps generated IDs stable across refreshes and prevents form submissions from targeting the wrong handler.\n\n```suggestion\n      case 'tree': {\n        const children = await content.getChildren();\n        const serializedChildren: Record<string, unknown>[] = [];\n        for (const child of children) {\n          serializedChildren.push(await this.content(child, forms));\n        }\n        return {\n          type: 'tree',\n          rootContent: await this.content(content.rootContent, forms),\n          children: serializedChildren,\n        };\n      }\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/serialize.ts",
-      "start_line": 227,
-      "line": 233,
-      "side": "RIGHT"
-    },
-    {
-      "id": "deterministic-content-form-ids",
-      "kind": "inline",
-      "title": "Serialize content blocks in deterministic form-id order",
-      "severity": "medium",
-      "confidence": {
-        "score": 90,
-        "rationale": "The current top-level Promise.all shares one mutable FormCollector across async content blocks, creating the same ordering hazard as nested tree serialization."
-      },
-      "body": "### Serialize content blocks in deterministic form-id order\n\n**Severity:** `medium`\n\nTop-level content blocks share the same form collector, but `Promise.all` lets generated IDs depend on whichever block finishes first. Serializing the blocks in array order preserves stable form identities after refreshes and avoids routing a stale rendered form to a different handler.\n\n```suggestion\n    const collector = createFormCollector(scope);\n    const serialized = await this.withScopeSink(scope, async () => {\n      const result: Record<string, unknown>[] = [];\n      for (const item of content) {\n        result.push(await this.serializer.content(item, collector));\n      }\n      return result;\n    });\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts",
-      "start_line": 609,
-      "line": 612,
-      "side": "RIGHT"
-    },
-    {
-      "id": "list-page-refresh-notification",
-      "kind": "inline",
-      "title": "Let all list pages notify item refreshes",
-      "severity": "medium",
-      "confidence": {
-        "score": 88,
-        "rationale": "The current helper is implemented only on DynamicListPageBase even though the host refresh method applies to list pages generally."
-      },
-      "body": "### Let all list pages notify item refreshes\n\n**Severity:** `medium`\n\nOnly dynamic list pages currently expose `notifyItemsChanged()`, so a normal list page cannot ask the host to re-fetch items after background data changes or `loadMore()`. Static list pages still have mutable item collections, so the refresh helper belongs on the shared list page base class.\n\n```suggestion\nimport type {\n  Filters,\n  GridProperties,\n  ICommandItem,\n  IListItem,\n  IListPage,\n  IconInfo,\n  OptionalColor,\n} from '../types.js';\nimport { sendNotification } from '../runtime/notifications.js';\nimport { ObservableBase } from './ObservableBase.js';\n\n/**\n * Base class for a page that shows a scrollable, static list of items.\n *\n * @example\n * ```typescript\n * class MyListPage extends ListPageBase {\n *   readonly id = 'my-list';\n *   readonly name = 'My List';\n *   readonly title = 'My List Page';\n *\n *   getItems(): IListItem[] {\n *     return [new ListItemBase({ command: new NoOpCommand(), title: 'Item 1' })];\n *   }\n * }\n * ```\n */\nexport abstract class ListPageBase extends ObservableBase implements IListPage {\n  /** Unique identifier for the page. */\n  abstract readonly id: string;\n  /** Internal name of the page. */\n  abstract readonly name: string;\n  /** Title shown at the top of the page. */\n  abstract readonly title: string;\n  protected get notificationId(): string {\n    return this.id;\n  }\n\n  /** Icon shown for the page. */\n  icon?: IconInfo | null = null;\n  /** Whether the page is currently loading; shows a progress indicator. */\n  isLoading?: boolean = false;\n  /** Accent color applied to the page. Uses the host default when unset. */\n  accentColor?: OptionalColor | null = null;\n  /** Current text in the search box. */\n  searchText?: string = '';\n  /** Placeholder shown in the search box while it is empty. */\n  placeholderText?: string = '';\n  /** Show the details panel next to the list. */\n  showDetails?: boolean = false;\n  /** Filter dropdown shown above the list, or `null` for none. */\n  filters?: Filters | null = null;\n  /** Grid layout settings, or `null` to render a plain list. */\n  gridProperties?: GridProperties | null = null;\n  /** Whether more items can be loaded (infinite scroll). */\n  hasMoreItems?: boolean = false;\n  /** Item shown when the list is empty, or `null` for none. */\n  emptyContent?: ICommandItem | null = null;\n\n  /**\n   * Produces the items to display.\n   *\n   * @returns The current list items, synchronously or as a promise.\n   */\n  abstract getItems(): IListItem[] | Promise<IListItem[]>;\n\n  /**\n   * Loads the next page of items when {@link ListPageBase.hasMoreItems} is\n   * `true`. Does nothing by default; override to support infinite scroll.\n   */\n  loadMore(): void | Promise<void> {\n    // Override when the page supports infinite scroll.\n  }\n\n  /**\n   * Tells the host that this page's items have changed and should be re-fetched.\n   */\n  protected notifyItemsChanged(): void {\n    sendNotification('listPage/itemsChanged', { pageId: this.id });\n  }\n}\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/base/ListPageBase.ts",
-      "start_line": 5,
-      "line": 78,
-      "side": "RIGHT"
-    },
-    {
-      "id": "dynamic-list-inherits-refresh",
-      "kind": "inline",
-      "title": "Avoid duplicating the inherited list refresh helper",
-      "severity": "low",
-      "confidence": {
-        "score": 82,
-        "rationale": "This is the companion cleanup required after adding notifyItemsChanged to ListPageBase; otherwise the dynamic page class retains redundant implementation."
-      },
-      "body": "### Avoid duplicating the inherited list refresh helper\n\n**Severity:** `low`\n\nAfter moving item refresh notification support to `ListPageBase`, `DynamicListPageBase` can inherit the same helper. Removing the duplicate method keeps the API surface consistent for static and dynamic list pages.\n\n```suggestion\nimport type { IDynamicListPage } from '../types.js';\nimport { ListPageBase } from './ListPageBase.js';\n\n/**\n * Base class for a list page that receives the search text as the user types\n * and produces results dynamically.\n *\n * Call {@link ListPageBase.notifyItemsChanged} after updating internal\n * state so the host re-fetches the visible items.\n *\n * @example\n * ```typescript\n * class SearchPage extends DynamicListPageBase {\n *   readonly id = 'search';\n *   readonly name = 'Search';\n *   readonly title = 'Search';\n *   private query = '';\n *\n *   setSearchText(text: string): void {\n *     this.query = text;\n *     this.notifyItemsChanged();\n *   }\n *\n *   getItems(): IListItem[] {\n *     return allItems.filter((item) => item.title.includes(this.query));\n *   }\n * }\n * ```\n */\nexport abstract class DynamicListPageBase extends ListPageBase implements IDynamicListPage {\n  /**\n   * Called whenever the search text changes so the page can update its results.\n   * Typically stores the query and calls\n   * {@link ListPageBase.notifyItemsChanged}.\n   *\n   * @param text The current text in the search box.\n   */\n  abstract setSearchText(text: string): void | Promise<void>;\n}\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/cmdpal/ts-sdk/src/base/DynamicListPageBase.ts",
-      "start_line": 5,
-      "line": 51,
-      "side": "RIGHT"
-    },
-    {
-      "id": "ci-and-regression-coverage",
-      "kind": "companion",
-      "title": "Add SDK CI and regression coverage",
-      "severity": "medium",
-      "confidence": {
-        "score": 84,
-        "rationale": "The current PR introduces a standalone SDK with many runtime protocol edge cases, and the fixes above are regression-prone without automated coverage and CI."
-      },
-      "body": "### Add SDK CI and regression coverage\n\n**Severity:** `medium`\n\nPlease add coverage for the protocol and lifecycle fixes above, including Windows path bootstrap resolution, malformed frame resynchronization, JSON-RPC parse/invalid-request responses, fallback retirement, form id collision handling, deterministic form ids across async content, list-page refresh notifications, and asynchronous URL launcher failures. It would also help to add a dedicated SDK workflow that runs install, typecheck, lint, tests, build, and package verification whenever the TypeScript SDK changes.",
-      "in_diff": false,
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-49321",
-      "type": "request_changes",
-      "label": "Request changes with 16 review comments",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
-      "review": {
-        "pr": 49321,
-        "pullRequest": 49321,
-        "repository": "microsoft/PowerToys",
-        "head_sha": "afaf0351b4a2fc14d8e6bdab90539b852986aa96",
-        "event": "REQUEST_CHANGES",
-        "body_prefix": "Thanks for the substantial TypeScript SDK work. I found several runtime correctness issues that should be addressed before merging, mostly around protocol robustness, stale command lifetime, and Windows extension startup behavior. If applying multiple suggestions in src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts individually, use Commit suggestion from bottom to top, or batch them with Add suggestion to batch and then Commit suggestions."
-      }
-    }
-  ],
-  "confidence": "High",
-  "judgment": {
-    "status": "review_comments_ready",
-    "rationale": "The current-head SDK review found 16 supported issues across startup, framing, JSON-RPC handling, lifecycle, form routing, notifications, accessibility, and regression coverage. The loop converged with zero unresolved threads.",
-    "evidence": [
-      "The current upstream head was reviewed without remirroring the durable fork state.",
-      "The final Copilot audit found zero unresolved threads and no later findings.",
-      "npm run typecheck, lint, test, build, and verify:pack all passed; 131 tests passed.",
-      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
-    ],
-    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes comments.",
-    "evaluated_at": "2026-09-02T02:25:56.323Z",
-    "source_updated_at": "2026-09-01T18:20:42Z"
-  },
+  "next_action": "Re-enable or restore Copilot code review for MuyuanMS/PowerToys, then request a fresh review of fork PR 429 before drafting any upstream action.",
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-08-29T02:40:19.8242316Z",
-    "fork_head_sha": "c3d0cf44af242fc7c90a9b86bb2eccfd1dfd3eae",
+    "phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-03T06:51:26.7501467Z",
+    "copilot_rounds": 9,
     "unresolved_copilot_threads": 0,
-    "build_result": "passed",
-    "unit_test_result": "131 tests passed"
-  }
+    "blocker": "Copilot reviewer request was not accepted because requested_reviewers was empty."
+  },
+  "freshness": {
+    "queued_at": "2026-09-03T06:19:26.254Z",
+    "checkpoint_at": "2026-09-03T06:51:26.7501467Z"
+  },
+  "fork_pr": {
+    "number": 429,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/429"
+  },
+  "fork_branch": "pr-iterate/49321-v2",
+  "verify": [
+    "Merged the current upstream README-only head into the preserved fork branch.",
+    "npm run typecheck, npm run lint, npm run test, npm run build, and npm run verify:pack succeeded in <PowerToysCheckout>\\src\\modules\\cmdpal\\ts-sdk.",
+    "The targeted SDK suite passed 134 tests and zero Copilot review threads remain unresolved."
+  ]
 }

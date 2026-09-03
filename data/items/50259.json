@@ -6,22 +6,9 @@
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T02:24:28Z",
-  "evaluated_at": "2026-09-02T02:24:28Z",
-  "source_updated_at": "2026-08-31T01:01:24Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50259",
-  "title": "[Mouse Without Borders] Impossible to run without elevated privileges, Impossible to change layout",
-  "author": "HattDroid",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-Mouse Without Borders"
-  ],
-  "assignees": [],
-  "comments": 1,
+  "authorAssociation": null,
   "confidence": "Medium-high",
-  "summary": "Mouse Without Borders blocks layout drag-and-drop because the running Settings process is elevated; the report does not yet show whether PowerToys still launches elevated after a complete normal restart.",
   "status": {
     "glyph": "💬",
     "label": "Needs elevation-state evidence",
@@ -34,15 +21,16 @@
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "This is not yet proven to be a 0.101 regression. The visible message matches an intentional elevated-process safeguard, while the unresolved part is whether PowerToys can restart unelevated after the setting is disabled.",
+    "rationale": "The visible warning is expected while PowerToys is elevated, but the report does not prove whether the process remains elevated after a full exit and normal restart. Without that distinction, designing a code fix would risk solving the intentional WinUI drag/drop safeguard instead of any startup-elevation defect.",
     "evidence": [
-      "The issue reports PowerToys 0.101.2362 installed with WinGet and quotes the Mouse Without Borders elevated-process drag-and-drop warning.",
-      "The reporter says disabling the Run as administrator toggle did not restore layout editing.",
-      "MouseWithoutBordersViewModel.cs assigns CanDragDrop = !IsElevated, and MouseWithoutBordersPage.xaml binds drag/drop to that value because elevated WinUI drag can crash.",
-      "There are no assignees, linked fixes, or duplicate issues in the current timeline."
+      "The body reports PowerToys 0.101.2362 installed with WinGet and quotes the Mouse Without Borders elevated drag-and-drop restriction message.",
+      "The reporter states disabling the Run as administrator toggle did not restore layout editing, but no full tray-exit/restart elevation check or diagnostic archive is present.",
+      "MouseWithoutBordersViewModel.cs sets DeviceViewModel.CanDragDrop to !IsElevated, and MouseWithoutBordersPage.xaml binds AllowDrop and CanDrag to that property.",
+      "The source comment points to a WinUI elevated-drag crash workaround; this makes the layout lock intentional while elevated.",
+      "Duplicate search found related issue 27092 about making restart into non-admin mode easier, but no linked fix or owner for this specific 0.101 report."
     ],
     "recommended_action": "Ask for the elevation state after a full tray exit/restart and request /bugreport only if PowerToys still starts elevated.",
-    "evaluated_at": "2026-09-02T02:24:28Z",
+    "evaluated_at": "2026-09-03T06:51:45Z",
     "source_updated_at": "2026-08-31T01:01:24Z"
   },
   "issue_context": {
@@ -59,10 +47,10 @@
     ],
     "analysis": "The repository evidence explains why dragging is disabled while elevated, but it does not explain whether this reporter is stuck elevated after a clean restart. That distinction determines whether the response is usage guidance or an elevation/startup bug investigation.",
     "initial_investigation": [
-      "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs sets each device tile CanDragDrop to false when GeneralSettingsConfig.IsElevated is true.",
-      "src/settings-ui/Settings.UI/SettingsXAML/Views/MouseWithoutBordersPage.xaml binds AllowDrop and CanDrag to CanDragDrop and documents the WinUI elevated-drag crash workaround.",
-      "Targeted duplicate search found only this issue for Mouse Without Borders elevated layout editing.",
-      "Reviewed the full live issue body, automated triage comment, labels, assignees, project items, closed-by references, and timeline."
+      "Reviewed the complete issue body, automated triage comment, current labels, assignees, project items, and timeline.",
+      "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs sets CanDragDrop=false when GeneralSettingsConfig.IsElevated is true.",
+      "src/settings-ui/Settings.UI/SettingsXAML/Views/MouseWithoutBordersPage.xaml binds AllowDrop and CanDrag to CanDragDrop and documents the elevated WinUI drag crash workaround.",
+      "GitHub duplicate search found issue 27092 as related restart UX context, not a current linked fix."
     ],
     "information_gaps": [
       {
@@ -93,5 +81,18 @@
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }
-  ]
+  ],
+  "generated_at": "2026-09-03T06:51:45Z",
+  "evaluated_at": "2026-09-03T06:51:45Z",
+  "source_updated_at": "2026-08-31T01:01:24Z",
+  "title": "[Mouse Without Borders] Impossible to run without elevated privileges, Impossible to change layout",
+  "author": "HattDroid",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "Mouse Without Borders intentionally disables layout drag/drop while the running Settings process is elevated; the unresolved current question is why this installation appears unable to restart unelevated after the administrator toggle is disabled."
 }

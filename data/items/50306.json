@@ -6,8 +6,8 @@
   "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T06:30:00Z",
-  "evaluated_at": "2026-09-02T06:30:00Z",
+  "generated_at": "2026-09-03T06:52:53Z",
+  "evaluated_at": "2026-09-03T06:52:53Z",
   "source_updated_at": "2026-09-02T02:17:27Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50306",
   "title": "quick accent inserts `」` as `「` in the wechat desktop app",
@@ -18,48 +18,61 @@
   ],
   "assignees": [],
   "comments": 0,
-  "confidence": "High",
-  "summary": "Quick Accent selects the closing corner bracket `」`, but WeChat Desktop receives the opening bracket `「`; the report includes deterministic app-specific behavior and a diagnostic attachment.",
+  "confidence": "Medium",
+  "summary": "Quick Accent is reported to select the closing corner bracket `」`, while WeChat Desktop receives the opening bracket `「`; the attached diagnostics confirm Quick Accent is enabled but do not prove whether PowerToys emits the wrong code point or WeChat transforms keyboard-style Unicode input.",
   "status": {
     "glyph": "🧪",
-    "label": "App-specific character reproduction ready",
-    "detail": "A controlled comparison between WeChat and another text target can identify whether the emitted Unicode input or WeChat handling changes the character."
+    "label": "Reproduction before design",
+    "detail": "The investigator/adversary pass found the report testable but not yet implementation-designable because the root cause depends on a WeChat-versus-neutral-target comparison."
   },
   "next_action": {
     "glyph": "▶",
     "label": "Reproduce Quick Accent in WeChat",
-    "reason": "Capture the selected character, emitted code point, and receiving-app result before requesting more evidence."
+    "reason": "Capture the selected character, emitted code point, receiving-app result, and whether clipboard paste of U+300D behaves differently."
   },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue provides a specific expected and actual character, a named application, and a diagnostic archive. Maintainers can reproduce and instrument the input path without a generic information request.",
+    "status": "reproducible",
+    "rationale": "The issue provides a specific expected/actual character pair, target application, and diagnostic archive, so it is ready for maintainer reproduction. A fix design should not be approved yet because the current evidence does not distinguish a Quick Accent mapping/injection defect from WeChat or IME smart-punctuation handling of KEYEVENTF_UNICODE input.",
     "evidence": [
-      "Quick Accent selection is expected to insert U+300D `」`.",
-      "WeChat Desktop receives U+300C `「` instead.",
-      "The report includes a PowerToys bug-report attachment.",
-      "No assignee, duplicate, or linked fix is present."
+      "The report says selecting/typing `」` through Quick Accent in WeChat Desktop produces `「` instead.",
+      "The attached PowerToysReport_2026-09-02-10-15-48.zip shows PowerToys v0.100.2 and QuickAccent enabled.",
+      "CharacterMappings.cs maps Pinyin VK_COMMA to `“`, `”`, `‘`, `’`, `「`, `」`, `『`, `』`, so both bracket code points are present and adjacent in the data.",
+      "PowerAccent.cs passes the selected string to WindowsFunctions.Insert, and WindowsFunctions.cs sends each UTF-16 code unit via SendInput with KEYEVENTF_UNICODE after optional backspace.",
+      "No duplicate issue or linked fix was found for the WeChat bracket substitution, and the timeline has no assignee or maintainer direction."
     ],
-    "recommended_action": "Reproduce in WeChat and a neutral text control, then compare the selected glyph, Unicode code point, and injected input sequence.",
-    "evaluated_at": "2026-09-02T06:30:00Z",
+    "recommended_action": "Run a controlled reproduction in WeChat and a neutral text control, and compare SendInput Unicode insertion with clipboard paste before designing a compatibility change.",
+    "evaluated_at": "2026-09-03T06:52:53Z",
     "source_updated_at": "2026-09-02T02:17:27Z"
   },
   "issue_context": {
-    "summary": "Quick Accent emits or WeChat interprets a closing Japanese corner bracket as its opening counterpart.",
+    "summary": "Quick Accent insertion of U+300D is reported as U+300C specifically in WeChat Desktop.",
     "known_information": [
-      "The desired character is `」` and the received character is `「`.",
+      "The desired character is `」` (U+300D) and the received character is `「` (U+300C).",
       "The affected application is WeChat Desktop.",
-      "A PowerToys diagnostic ZIP is attached to the issue."
+      "The reporter supplied a PowerToys diagnostic ZIP; it confirms QuickAccent is enabled on PowerToys v0.100.2.",
+      "The Pinyin comma mapping contains both `「` and `」`, and the insertion helper sends the selected string through KEYEVENTF_UNICODE SendInput."
     ],
     "inferences": [
-      "The failure may be application-specific if the same Quick Accent selection inserts correctly into a standard text control.",
-      "If multiple applications receive the wrong code point, the Quick Accent character mapping or injection path is more likely involved."
+      "If a neutral text control receives U+300D correctly, the most likely failure is WeChat or an active IME transforming keyboard-style Unicode input.",
+      "If multiple applications receive U+300C when U+300D is selected, the selected index, mapping order, or Quick Accent handoff is more likely involved.",
+      "Clipboard paste may bypass application keyboard smart-punctuation logic, but using it as a default fallback would have clipboard-state and security/UX tradeoffs."
     ],
-    "analysis": "The expected/actual pair and target application make the report directly testable. Cross-application reproduction plus input instrumentation will decide whether PowerToys emits the wrong value or WeChat transforms it.",
+    "analysis": "Investigation found a plausible PowerToys insertion path but not a proven root cause. The adversary pass blocks an implementation-grade design because the same symptom could persist or disappear depending on WeChat’s handling of Unicode key events versus pasted text.",
     "initial_investigation": [
-      "Reviewed the complete issue, attachment presence, labels, assignees, and timeline.",
-      "No existing maintainer response or linked remediation is present."
+      "Reviewed the live issue body, attachment, comments, labels, assignees, timeline, and closed-by-PR references.",
+      "Downloaded and inspected the diagnostic ZIP; QuickAccent is enabled and no Quick Accent SendInput error was found in the relevant logs.",
+      "Searched current issues for Quick Accent, WeChat, and bracket substitutions; only this issue matched directly.",
+      "Inspected CharacterMappings.cs, PowerAccent.cs, WindowsFunctions.cs, KeyboardListener.cpp, and CharacterMappingsTests.cs in the local PowerToys clone.",
+      "Investigator conclusion: likely failure is in target-app handling of KEYEVENTF_UNICODE or in selection/handoff, but evidence does not distinguish them.",
+      "Adversary conclusion: no approval-gate design should be written until a neutral-target comparison proves which side changes the code point."
     ],
     "information_gaps": []
+  },
+  "design_review": {
+    "investigator": "The code can emit the selected Pinyin bracket through WindowsFunctions.Insert using KEYEVENTF_UNICODE, and WeChat-specific transformation is plausible.",
+    "adversary": "Blocking objection: the issue lacks a neutral target or instrumentation proving whether PowerToys emits U+300D and WeChat changes it, or PowerToys selects/emits U+300C.",
+    "rounds": 1,
+    "outcome": "not_converged_root_cause_unproven"
   },
   "actions": [
     {
@@ -70,22 +83,22 @@
       "confirm": true,
       "reproduce": {
         "module": "Quick Accent",
-        "version_requirements": "Use the reported PowerToys version and retest on the current build if different.",
+        "version_requirements": "Use PowerToys 0.100.2 if available, then retest on the current build.",
         "prerequisites": [
           "WeChat Desktop",
-          "Notepad",
-          "Quick Accent configured with the character set containing `」`"
+          "Notepad or another plain Win32 text control",
+          "Quick Accent configured with the Pinyin character set containing `」`"
         ],
         "steps": [
-          "Insert `」` into Notepad through Quick Accent.",
-          "Record the glyph and Unicode code point.",
-          "Repeat the identical selection in WeChat Desktop.",
-          "Record whether WeChat inserts `」` or `「`.",
-          "If results differ, log the Unicode input sequence sent to each target."
+          "Open Notepad and use the same Quick Accent gesture to select `」`; record the glyph and Unicode code point inserted.",
+          "Repeat the identical selection in WeChat Desktop; record whether WeChat inserts `」` or `「`.",
+          "If Notepad receives `」` but WeChat receives `「`, paste `」` into WeChat from the clipboard and record whether paste preserves U+300D.",
+          "If both apps receive `「`, enable Quick Accent Unicode descriptions and record which item/index is highlighted before release.",
+          "Collect a fresh `/bugreport` immediately after the reproduction if the current build still differs between targets."
         ],
         "expected_result": "Selecting `」` should insert U+300D consistently in both applications.",
         "setup_requirements": [
-          "Use the same keyboard layout and Quick Accent configuration for both targets."
+          "Use the same keyboard layout, IME mode, Quick Accent language set, and trigger gesture for both targets."
         ]
       }
     }

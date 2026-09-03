@@ -3,74 +3,299 @@
   "number": 50340,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "us",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T19:35:00.0170075Z",
-  "evaluated_at": "2026-09-02T19:35:00.0170075Z",
+  "generated_at": "2026-09-03T06:31:00Z",
+  "evaluated_at": "2026-09-03T06:31:00Z",
   "source_updated_at": "2026-09-02T17:22:25Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50340",
   "title": "[Bug]: Window Hopper: Alt + ` hotkey fails to trigger, but works fine in Command Palette",
+  "author": "cmixed",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Window Hopper"
   ],
   "assignees": [],
-  "status": {
-    "glyph": "...",
-    "label": "Design investigation queued",
-    "detail": "The report is reproducible enough for code investigation; no additional reporter information is currently needed."
-  },
-  "next_action": {
-    "glyph": "...",
-    "label": "Investigate Window Hopper Alt-only hotkeys",
-    "reason": "Trace modifier detection in the centralized keyboard hook and compare Alt-only activation with working Win-key activation before proposing a fix."
-  },
-  "actions": [],
+  "comments": 1,
   "confidence": "Medium",
+  "summary": "Window Hopper is enabled and configured for Alt+Backtick, but that Alt-only runner hotkey is not claimed on the reporter machine while Win+Backtick works.",
+  "status": {
+    "glyph": "!",
+    "label": "Design ready - needs approval",
+    "detail": "Harden and instrument the shared runner hotkey path for Alt+Backtick before creating a fork-side fix trace."
+  },
+  "next_action": "Approve the Window Hopper Alt-hotkey design to create the fork-side implementation trace.",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report isolates the failure to Window Hopper's default Alt+VK_OEM_3 global shortcut while the same module works after switching to a Win-key shortcut, providing a focused runner/module hotkey path to investigate.",
+    "rationale": "The report gives a focused A/B result: the same Window Hopper module works after changing the shortcut to Win+Backtick, while the default Alt+Backtick fails across Microsoft Pinyin, WeChat Input Method, and US keyboard layouts. The diagnostic confirms AltWindowCycle is enabled and configured with the default Alt+Backtick settings, so code investigation can target the runner centralized keyboard-hook dispatch path.",
     "evidence": [
-      "PowerToys 0.101.2432 preview is affected on Windows 11 25H2.",
-      "Alt+backtick does not activate Window Hopper, while changing the Window Hopper shortcut to Win+backtick does.",
-      "The reporter reproduced the behavior with Microsoft Pinyin, WeChat Input Method, and a standard US keyboard.",
-      "Window Hopper publishes Alt+VK_OEM_3 and Shift+Alt+VK_OEM_3 through PowertoyModule::update_hotkeys into the runner's centralized low-level keyboard hook.",
-      "The centralized hook reconstructs modifier state with GetAsyncKeyState when processing WM_KEYDOWN or WM_SYSKEYDOWN."
+      "Issue 50340 uses PowerToys v0.101.2432 Preview on Windows 11 25H2 build 26200.9278, installed from GitHub and running elevated/admin.",
+      "The attached diagnostic contains AltWindowCycle/settings.json with next_window_shortcut { alt: true, shift: false, code: 192 } and previous_window_shortcut { alt: true, shift: true, code: 192 }.",
+      "Global settings in the diagnostic show AltWindowCycle enabled; the module interface log initializes in the captured session.",
+      "AltWindowCycle::get_hotkeys returns the next/previous shortcuts and PowertoyModule::update_hotkeys registers them through CentralizedKeyboardHook::SetHotkeyAction.",
+      "CentralizedKeyboardHook::KeyboardHookProc handles WM_KEYDOWN and WM_SYSKEYDOWN, reconstructs modifier state with GetAsyncKeyState, uses a single multiset find by Hotkey, and only swallows the key when the selected action returns true.",
+      "Command Palette has a separate low-level keyboard listener, so its success does not prove the runner centralized hook dispatched Window Hopper's Alt+Backtick event."
     ],
-    "recommended_action": "Perform a focused design investigation of Alt modifier detection and VK_OEM_3 matching in the centralized keyboard hook, then add regression coverage before changing the shared runner path.",
-    "evaluated_at": "2026-09-02T19:35:00.0170075Z",
+    "recommended_action": "Approve a focused design that makes runner Alt-hotkey construction robust, dispatches all equal descriptors until one succeeds, and adds regression coverage for Alt+VK_OEM_3.",
+    "evaluated_at": "2026-09-03T06:31:00Z",
     "source_updated_at": "2026-09-02T17:22:25Z"
   },
   "issue_context": {
-    "summary": "Window Hopper's default Alt+backtick shortcut does not activate globally, but the module activates when configured with Win+backtick; input-method changes do not alter the result.",
+    "summary": "Window Hopper does not respond to its default Alt+Backtick shortcut, although the module is enabled, the diagnostic stores that exact shortcut, input-method changes do not help, and switching the same feature to Win+Backtick works.",
     "known_information": [
-      "The affected build is PowerToys 0.101.2432 preview on Windows 11 25H2.",
-      "Window Hopper is enabled and its default next-window shortcut is Alt+backtick.",
-      "Win+backtick successfully activates Window Hopper on the same system.",
-      "The failure persists across Microsoft Pinyin, WeChat Input Method, and a US keyboard layout.",
-      "A diagnostic ZIP is attached, although automated triage rejected an oversized archive entry.",
-      "The module defaults to virtual key 0xC0 and routes activation through the runner's centralized keyboard hook."
+      "PowerToys version is v0.101.2432 Preview / 0.101.2432.0 on Windows 11 25H2 build 26200.9278.",
+      "The installation is from GitHub and is running elevated/admin.",
+      "Window Hopper is enabled and configured with default Alt+Backtick and Shift+Alt+Backtick shortcuts.",
+      "Win+Backtick activates Window Hopper after the reporter changes the shortcut.",
+      "The failure persists with Microsoft Pinyin, WeChat Input Method, and a standard US keyboard layout.",
+      "The diagnostic archive was downloaded and inspected; it contains settings and module logs but no low-level keyboard event trace."
     ],
     "inferences": [
-      "The working Win-key configuration suggests Window Hopper initialization and overlay activation are functional.",
-      "The failure may be in shared Alt modifier state detection or shortcut matching, but the current evidence does not yet prove the exact failing branch.",
-      "Because the runner hook is shared by modules, a fix should avoid special-casing Window Hopper until the shared behavior is reproduced and measured."
+      "Window Hopper initialization and overlay logic are likely functional because a Win-key shortcut activates the same module.",
+      "The failing branch is likely before or at the runner centralized hotkey dispatch rather than in app-window enumeration.",
+      "Alt handling is the risky boundary because Alt-modified low-level keyboard events arrive as WM_SYSKEYDOWN with LLKHF_ALTDOWN, while the current runner code relies on GetAsyncKeyState for Alt state.",
+      "The exact reporter-machine event state is not logged, so the implementation should include testable helper extraction and bounded diagnostics rather than a blind one-line patch."
     ],
-    "analysis": "The report supplies a stable A/B comparison on one machine and rules out the most obvious input-method explanation. The next useful step is code-level reproduction and instrumentation of the shared low-level hook, not another generic information request.",
+    "analysis": "The runner path is small and specific: Window Hopper publishes a visible Alt+Backtick hotkey, the runner registers it, KeyboardHookProc builds a Hotkey from the low-level event, finds a matching descriptor, invokes an action, and suppresses the key only when the action returns true. A robust fix should remove ambiguity from this path by deriving Alt from both async state and LLKHF_ALTDOWN, trying all equal descriptors until one succeeds, and logging the rare failure modes that otherwise look like a silent no-op.",
     "initial_investigation": [
-      "Reviewed AltWindowCycle::get_hotkeys and AltWindowCycle::on_hotkey in src/modules/AltWindowCycle/dllmain.cpp.",
-      "Confirmed the default next-window shortcut is Alt+VK_OEM_3 in both native module and Settings UI defaults.",
-      "Traced registration through PowertoyModule::update_hotkeys to CentralizedKeyboardHook::SetHotkeyAction.",
-      "Confirmed CentralizedKeyboardHook::KeyboardHookProc derives Alt state with GetAsyncKeyState(VK_MENU) while handling WM_KEYDOWN and WM_SYSKEYDOWN."
+      "Read the complete upstream issue body, bot triage comment, labels, assignees, linked PR references, and timeline; no assignee, linked PR, duplicate closure, or maintainer red flag is present.",
+      "Downloaded and extracted PowerToysReport_2026-09-03-01-13-08.zip; confirmed AltWindowCycle is enabled and configured with Alt+Backtick / Shift+Alt+Backtick.",
+      "Traced src/modules/AltWindowCycle/dllmain.cpp for default VK_OEM_3 settings, get_hotkeys, and on_hotkey dispatch.",
+      "Traced src/runner/powertoy_module.cpp and src/runner/centralized_kb_hook.cpp for centralized registration and low-level hook dispatch.",
+      "Compared src/modules/cmdpal/CmdPalKeyboardService/KeyboardListener.cpp and confirmed Command Palette runs a separate hook, not the runner module hotkey path.",
+      "Searched duplicate issues and git history; only the current issue matched the narrow Window Hopper Alt+Backtick search, and history shows the new module plus release/docs updates but no existing fix."
     ],
-    "information_gaps": [
+    "information_gaps": []
+  },
+  "fork_trace": {
+    "state": "not_created",
+    "reason": "No existing [Issue 50340] fork mirror was found. This rerun stops at the dashboard design-approval gate and does not create fork traces before approval.",
+    "next_step": "After maintainer approval, create or update a fork-side issue/branch trace without upstream back-references and implement the approved design."
+  },
+  "design": {
+    "root_cause": "Window Hopper reaches the runner centralized low-level keyboard hook with a valid Alt+Backtick registration, but the hook currently treats Alt shortcut dispatch as an opaque one-shot decision: it reconstructs Alt solely from GetAsyncKeyState(VK_MENU), performs a single equal-hotkey descriptor lookup, invokes only that action, and drops through without targeted diagnostics if the action is not selected or returns false. On the reporter machine this leaves Alt+Backtick unclaimed even though the same module works when switched to a Win-key shortcut. The fix is to make centralized hotkey construction and dispatch robust for WM_SYSKEYDOWN/LLKHF_ALTDOWN and deterministic across matching descriptors, then add regression coverage around Alt+VK_OEM_3.",
+    "evidence": [
+      "Observed: diagnostic AltWindowCycle settings store Alt+Backtick as code 192 with alt=true, shift=false.",
+      "Observed: AltWindowCycle is enabled and its module logger initializes in the captured v0.101.2432 session.",
+      "Observed: AltWindowCycle::get_hotkeys returns both configured hotkeys and on_hotkey forwards them to HandleAltWindowCycleHotkey.",
+      "Observed: PowertoyModule::update_hotkeys registers shown module hotkeys in CentralizedKeyboardHook.",
+      "Observed: CentralizedKeyboardHook::KeyboardHookProc accepts WM_SYSKEYDOWN but ignores KBDLLHOOKSTRUCT::flags LLKHF_ALTDOWN when constructing the Hotkey.",
+      "Observed: the centralized hook stores hotkeys in a multiset but dispatches with find(dummy), so only one equal descriptor is attempted.",
+      "Inferred: a timing-sensitive Alt-state read or a false-returning first descriptor can make the hook pass the keystroke through, producing the no-op symptom."
+    ],
+    "affected_files": [
       {
-        "information": "A debugger or test-harness trace of KBDLLHOOKSTRUCT flags, wParam, vkCode, and reconstructed modifier state for failing Alt+backtick and working Win+backtick.",
-        "why_needed": "Identifies whether the mismatch occurs before module dispatch and distinguishes modifier detection from module activation failure.",
-        "how_to_collect": "Reproduce in a local debug build or a focused centralized keyboard-hook test harness without adding permanent logging to the hook hot path."
+        "path": "src/runner/centralized_kb_hook.cpp",
+        "purpose": "Shared runner low-level keyboard hook that dispatches module hotkeys, including Window Hopper.",
+        "symbols": [
+          "CentralizedKeyboardHook::KeyboardHookProc",
+          "CentralizedKeyboardHook::HotkeyDescriptor",
+          "CentralizedKeyboardHook::SetHotkeyAction"
+        ]
+      },
+      {
+        "path": "src/runner/centralized_kb_hook.h",
+        "purpose": "Header boundary if the implementation extracts a small testable helper from the hook.",
+        "symbols": [
+          "CentralizedKeyboardHook",
+          "CentralizedKeyboardHook::SetHotkeyAction"
+        ]
+      },
+      {
+        "path": "src/modules/AltWindowCycle/dllmain.cpp",
+        "purpose": "Window Hopper module interface that publishes Alt+Backtick and receives hotkey callbacks.",
+        "symbols": [
+          "AltWindowCycle::get_hotkeys",
+          "AltWindowCycle::on_hotkey",
+          "ModifierMaskFromHotkey"
+        ]
+      },
+      {
+        "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+        "purpose": "UI-thread handoff and overlay lifecycle called by the runner hook action.",
+        "symbols": [
+          "HandleAltWindowCycleHotkey",
+          "PostHotkeyToUIThread",
+          "Switcher::OnHotkey"
+        ]
+      },
+      {
+        "path": "src/modules/AltWindowCycle/UnitTests/AltWindowCycleLogicTests.cpp",
+        "purpose": "Existing native Window Hopper test project for pure helper regression coverage.",
+        "symbols": [
+          "AltWindowCycleLogicTests"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/CmdPalKeyboardService/KeyboardListener.cpp",
+        "purpose": "Separate Command Palette hook to audit for Alt-state consistency, not the primary failing path.",
+        "symbols": [
+          "KeyboardListener::DoLowLevelKeyboardProc"
+        ]
       }
-    ]
-  }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/runner/centralized_kb_hook.cpp",
+        "symbols": [
+          "BuildHotkeyFromLowLevelEvent",
+          "CentralizedKeyboardHook::KeyboardHookProc"
+        ],
+        "current_behavior": "KeyboardHookProc constructs Hotkey inline using GetAsyncKeyState for modifiers and KBDLLHOOKSTRUCT::vkCode for the key. Alt-specific LLKHF_ALTDOWN is ignored even for WM_SYSKEYDOWN.",
+        "change": "Extract hotkey construction into a helper that receives wParam, KBDLLHOOKSTRUCT, and an async-state callback. Compute Alt as async VK_MENU down OR LLKHF_ALTDOWN OR vkCode == VK_MENU on keydown. Keep Win/Ctrl/Shift behavior unchanged and use the helper before descriptor lookup.",
+        "code_block": "Hotkey BuildHotkeyFromLowLevelEvent(WPARAM message, const KBDLLHOOKSTRUCT& info, AsyncKeyState getState)\n{\n    return {\n        .win = IsDown(getState(VK_LWIN)) || IsDown(getState(VK_RWIN)),\n        .ctrl = IsDown(getState(VK_CONTROL)),\n        .shift = IsDown(getState(VK_SHIFT)),\n        .alt = IsDown(getState(VK_MENU)) || (info.flags & LLKHF_ALTDOWN) || info.vkCode == VK_MENU,\n        .key = static_cast<unsigned char>(info.vkCode)\n    };\n}",
+        "edge_cases": [
+          "Only Alt should use LLKHF_ALTDOWN.",
+          "Keep WM_KEYUP and WM_SYSKEYUP ignored for activation.",
+          "Preserve injected-key filtering with CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG."
+        ],
+        "tests": [
+          "Unit test WM_SYSKEYDOWN + VK_OEM_3 + LLKHF_ALTDOWN producing alt=true when async VK_MENU is false.",
+          "Unit test ordinary non-Alt keydown preserving current modifier behavior."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/runner/centralized_kb_hook.cpp",
+        "symbols": [
+          "CentralizedKeyboardHook::KeyboardHookProc",
+          "hotkeyDescriptors.equal_range"
+        ],
+        "current_behavior": "The hook uses hotkeyDescriptors.find(dummy) and invokes at most one action for a matching shortcut. If an equal descriptor exists or the selected action returns false, other matching actions are never attempted.",
+        "change": "Use equal_range(dummy), copy all matching actions and module names under the lock, then invoke outside the lock in registration order until one returns true. Send the dummy key and swallow once when any action succeeds. If no action succeeds for an Alt+VK_OEM_3 match, emit bounded trace/warn data naming the matched modules.",
+        "code_block": "std::vector<HotkeyAction> matches;\n{\n    std::unique_lock lock{ mutex };\n    const auto [first, last] = hotkeyDescriptors.equal_range({ .hotkey = hotkey });\n    for (auto it = first; it != last; ++it)\n        matches.push_back({ it->moduleName, it->action });\n}\nfor (const auto& match : matches)\n{\n    if (match.action && match.action())\n        return SuppressInvokedHotkey();\n}\nreturn CallNextHookEx(hHook, nCode, wParam, lParam);",
+        "edge_cases": [
+          "Do not hold the mutex while running module callbacks.",
+          "Preserve behavior when there is exactly one match.",
+          "Do not send duplicate dummy key events."
+        ],
+        "tests": [
+          "Unit test first matching action false and second matching action true.",
+          "Unit test no matching action succeeds and the event is passed through."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/AltWindowCycle/dllmain.cpp",
+        "symbols": [
+          "AltWindowCycle::on_hotkey",
+          "ModifierMaskFromHotkey"
+        ],
+        "current_behavior": "on_hotkey returns the boolean from HandleAltWindowCycleHotkey; a UI-thread post failure is indistinguishable from a hook mismatch in diagnostics.",
+        "change": "Keep the return contract, but add targeted trace/warn logging around HotkeyNext and HotkeyPrevious: log the computed hold-modifier mask at trace level and warn if HandleAltWindowCycleHotkey returns false.",
+        "code_block": "const auto holdModifiers = ModifierMaskFromHotkey(m_nextHotkey);\nconst bool posted = HandleAltWindowCycleHotkey(true, holdModifiers);\nif (!posted)\n{\n    Logger::warn(\"AltWindowCycle hotkey dispatch failed before reaching UI thread\");\n}\nreturn posted;",
+        "edge_cases": [
+          "Do not block the runner hook waiting for the UI thread.",
+          "Do not change Shift+Alt+Backtick behavior.",
+          "A false return should still pass the key through."
+        ],
+        "tests": [
+          "Manual log verification for failed UI-thread post.",
+          "Existing AltWindowCycle logic tests remain passing."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+        "symbols": [
+          "PostHotkeyToUIThread",
+          "HandleAltWindowCycleHotkey",
+          "Switcher::OnHotkey"
+        ],
+        "current_behavior": "HandleAltWindowCycleHotkey reports only whether PostThreadMessageW succeeded; missing UI thread, shutdown, and post failure look the same to maintainers.",
+        "change": "Preserve the nonblocking hook path but log distinct failure modes: no UI thread, shutdown requested, or PostThreadMessageW/GetLastError failure. Do not retry from the hook hot path.",
+        "code_block": "if (!g_uiThread || g_shutdownRequested.load())\n{\n    Logger::warn(\"AltWindowCycle hotkey ignored because UI thread is not ready\");\n    return false;\n}\nif (!PostHotkeyToUIThread(forward, holdModifiers))\n{\n    Logger::warn(\"AltWindowCycle failed to post hotkey to UI thread: {}\", GetLastError());\n    return false;\n}\nreturn true;",
+        "edge_cases": [
+          "Avoid noisy logs while a held key repeats.",
+          "Preserve disable/destroy semantics.",
+          "Keep the overlay timer and modifier-release behavior unchanged."
+        ],
+        "tests": [
+          "Manual enable/disable verification has no stale UI-thread warnings.",
+          "Manual Alt+Backtick verification reaches the UI thread without warning."
+        ]
+      },
+      {
+        "order": 5,
+        "file": "src/modules/cmdpal/CmdPalKeyboardService/KeyboardListener.cpp",
+        "symbols": [
+          "KeyboardListener::DoLowLevelKeyboardProc"
+        ],
+        "current_behavior": "Command Palette has a separate low-level hook with similar GetAsyncKeyState-based modifier reconstruction.",
+        "change": "Audit for shared helper reuse or mirror the LLKHF_ALTDOWN fallback locally so Alt shortcut semantics remain consistent. Do not route Command Palette commands through the runner hook.",
+        "code_block": ".alt = static_cast<bool>(GetAsyncKeyState(VK_MENU) & 0x8000) ||\n       static_cast<bool>(keyPressInfo.flags & LLKHF_ALTDOWN),",
+        "edge_cases": [
+          "Do not regress Command Palette command-specific hotkeys.",
+          "Keep CmdPal swallowing behavior unchanged after successful command dispatch."
+        ],
+        "tests": [
+          "Manual Command Palette hotkey regression.",
+          "Optional CmdPal test-seam coverage if available during implementation."
+        ]
+      },
+      {
+        "order": 6,
+        "file": "src/modules/AltWindowCycle/UnitTests/AltWindowCycleLogicTests.cpp",
+        "symbols": [
+          "AltWindowCycleLogicTests"
+        ],
+        "current_behavior": "Existing tests cover hold-modifier selection and overlay/window-list pure logic, but not runner hotkey event construction.",
+        "change": "Prefer a small runner-hook unit target. If adding one is too expensive, place the extracted construction/dispatch helpers behind a testable header and include them in a native unit test without installing a real WH_KEYBOARD_LL hook.",
+        "code_block": "TEST_METHOD(BuildHotkeyTreatsSysKeyAltFlagAsAlt)\n{\n    KBDLLHOOKSTRUCT info{ .vkCode = VK_OEM_3, .flags = LLKHF_ALTDOWN };\n    const auto hotkey = BuildHotkeyForTest(WM_SYSKEYDOWN, info, AlwaysUp);\n    Assert::IsTrue(hotkey.alt);\n    Assert::AreEqual(static_cast<unsigned char>(VK_OEM_3), hotkey.key);\n}",
+        "edge_cases": [
+          "Do not require an installed global keyboard hook in CI.",
+          "Do not depend on keyboard layout; VK_OEM_3 is the stored shortcut contract."
+        ],
+        "tests": [
+          "Build and run AltWindowCycle.UnitTests or the new runner hook test target.",
+          "Run Settings.UI.UnitTests AltWindowCycle defaults tests."
+        ]
+      }
+    ],
+    "verify": [
+      "Build src\\runner\\runner.vcxproj for x64 Debug or the repository-supported narrow runner build target.",
+      "Build src\\modules\\AltWindowCycle\\AltWindowCycle.vcxproj for x64 Debug.",
+      "Build and run src\\modules\\AltWindowCycle\\UnitTests\\AltWindowCycleUnitTests.vcxproj or the new extracted runner-hook unit test target.",
+      "Run the existing Settings.UI AltWindowCycle tests that verify default shortcut serialization remains code 0xC0 with Alt and Shift+Alt.",
+      "Manual E2E: enable Window Hopper, keep at least two windows of the same app open, press Alt+Backtick, and verify the overlay cycles/windows switch while the key is swallowed.",
+      "Manual regression: change Window Hopper to Win+Backtick and verify that path remains functional.",
+      "Manual regression: verify Command Palette hotkeys still trigger and no duplicate handling occurs when both runner and CmdPal hooks are active.",
+      "Manual diagnostic check on a failing machine: logs distinguish hook mismatch, no successful action, and UI-thread post failure."
+    ],
+    "risks": [
+      "The centralized runner hook is shared by multiple modules; modifier or dispatch changes can affect other global shortcuts if not covered with exact tests.",
+      "Trying every equal descriptor can invoke an extra callback when a previous callback returns false; callbacks must remain quick and side-effect safe.",
+      "LLKHF_ALTDOWN is Alt-specific and must not be generalized to other modifiers.",
+      "Additional diagnostics in a low-level hook can become noisy or slow unless bounded to rare failure paths.",
+      "If the true reporter-machine root cause is outside the runner hook, the hardening patch may need a second iteration, but the added diagnostics will make that clear."
+    ],
+    "alternatives": [
+      "Change Window Hopper's default away from Alt+Backtick. Rejected because Win+Backtick is only a workaround and would abandon the shipped behavior.",
+      "Special-case AltWindowCycle in the hook. Rejected because hotkey construction and dispatch are shared runner responsibilities.",
+      "Request another bug report before designing. Rejected because the next missing evidence is hook-level instrumentation that maintainers can add locally; the existing ZIP already confirms settings.",
+      "Only add logging. Rejected because LLKHF_ALTDOWN and equal-range dispatch are low-risk hardening steps directly tied to plausible no-op paths.",
+      "Route Window Hopper through Command Palette's hook. Rejected because CmdPal is a separate process and not the owner of runner-loaded module hotkeys."
+    ],
+    "adversary": {
+      "rounds": 2,
+      "verdict": "no blocking objections",
+      "notes": [
+        "The first same-hotkey-conflict theory was rejected after the diagnostic showed no other enabled Alt+Backtick PowerToys shortcut.",
+        "The converged design keeps confidence medium, includes diagnostics for the unobserved machine-local hook state, and avoids overclaiming a fully reproduced trace."
+      ]
+    }
+  },
+  "actions": [
+    {
+      "id": "approve-design-50340",
+      "type": "approve_design",
+      "label": "Approve Window Hopper Alt hotkey design",
+      "primary": true,
+      "confirm": true,
+      "note": "Approve creation of the fork-side fix trace only. This artifact does not post upstream, label, assign, close, or open a PR."
+    }
+  ]
 }
