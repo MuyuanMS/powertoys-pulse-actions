@@ -317,6 +317,7 @@ prepare local test files or environment setup with a local agent.
 |------|-----------------------------|-------|
 | `post_review` | `POST /repos/{upstream}/pulls/{n}/reviews` | selected non-withdrawn comments: `in_diff && path && line` → inline `comments[]`, the rest appended to `body`. The artifact defaults to `COMMENT`; Pulse may offer an explicit maintainer override to `REQUEST_CHANGES`. Inline-only reviews omit `body`, and an artifact-proposed overall message is optional in Pulse. |
 | `trigger_ci` | `POST /repos/{upstream}/issues/{n}/comments` | posts exactly `/azp run` after Pulse reads the live PR head's check runs and finds failed/cancelled/timed-out/stale or missing CI. Never automatic and not offered while checks are pending or passed. |
+| `merge_pr` | `PUT /repos/{upstream}/pulls/{n}/merge` | squash-merges only after Pulse revalidates the current head, a current approval, passing checks, and GitHub's clean merge state. Never automatic. |
 | `open_upstream_pr` | `POST /repos/{upstream}/pulls` | `head=MuyuanMS:<branch>`, `base=main`. `body` **may** contain `Fixes #<n>` — this is the real upstream PR that closes the issue (post-approval), the one allowed use of `#<n>`. |
 | `approve_design` | `POST /repos/{fork}/issues/{mirror}/comments` | approval note on the **fork mirror issue** so the scheduled job proceeds. |
 | `reproduce` | *(none)* | display-only local reproduction plan with module, version requirement, setup/prerequisites, steps, expected result, optional public attachments, and optional copyable `setup_prompt`. |

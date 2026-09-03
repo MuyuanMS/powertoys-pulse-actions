@@ -57,8 +57,35 @@ function Get-LiveCollection {
   $pages = gh api --paginate --slurp $Endpoint 2>$null | ConvertFrom-Json
   @($pages | ForEach-Object { @($_) })
 }
+function Get-CiState {
+  param($StatusCheckRollup)
+  $latestByName = @{}
+  foreach ($check in @($StatusCheckRollup)) {
+    $name = if ($check.name) { [string]$check.name } elseif ($check.context) { [string]$check.context } else { [string]$check.__typename }
+    $timestamp = if ($check.completedAt) { [datetime]$check.completedAt } elseif ($check.completed_at) { [datetime]$check.completed_at } elseif ($check.startedAt) { [datetime]$check.startedAt } elseif ($check.started_at) { [datetime]$check.started_at } else { [datetime]::MinValue }
+    if (-not $latestByName.ContainsKey($name) -or $timestamp -gt $latestByName[$name].timestamp) {
+      $latestByName[$name] = @{ timestamp=$timestamp; check=$check }
+    }
+  }
+  $checks = @($latestByName.Values | ForEach-Object { $_.check })
+  if ($checks.Count -eq 0) { return 'missing' }
+  foreach ($check in $checks) {
+    $status = if ($check.status) { [string]$check.status } else { [string]$check.state }
+    if ($status -notin @('COMPLETED', 'SUCCESS', 'FAILURE', 'ERROR')) {
+      return 'pending'
+    }
+  }
+  $passing = @('SUCCESS', 'NEUTRAL', 'SKIPPED')
+  foreach ($check in $checks) {
+    $conclusion = if ($check.conclusion) { [string]$check.conclusion } else { [string]$check.state }
+    if ($conclusion -notin $passing) {
+      return 'failed'
+    }
+  }
+  return 'passed'
+}
 function Convert-LiveItem {
-  param($Raw, [string]$Kind, $Previous, [int]$CommentCount)
+  param($Raw, [string]$Kind, $Previous, [int]$CommentCount, $Readiness)
   $labels = @($Raw.labels | ForEach-Object { $_.name })
   $assignees = @($Raw.assignees | ForEach-Object { $_.login } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
   $author = if ($Raw.user.login) { $Raw.user.login } else { 'unknown' }
@@ -74,16 +101,58 @@ function Convert-LiveItem {
     labels = $labels; created_at = $Raw.created_at; updated_at = $Raw.updated_at
     assignees = $assignees
     comments = $CommentCount
+    review_decision = if ($Kind -eq 'pr' -and $Readiness.reviewDecision) { [string]$Readiness.reviewDecision } else { $null }
+    ci_state = if ($Kind -eq 'pr' -and $Readiness.ci_state) { [string]$Readiness.ci_state } else { $null }
+    merge_state = if ($Kind -eq 'pr' -and $Readiness.mergeStateStatus) { [string]$Readiness.mergeStateStatus } else { $null }
     track = if ($Previous) { $Previous.track } else { $null }
     stage = if ($Previous) { $Previous.stage } else { $null }
     owes = if ($Previous) { $Previous.owes } else { 'us' }
     priority = if ($Previous) { $Previous.priority } else { $null }
   }
 }
+function Get-PrReadiness {
+  $query = 'query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){pullRequests(first:30,after:$cursor,states:OPEN,orderBy:{field:UPDATED_AT,direction:DESC}){nodes{number reviewDecision mergeStateStatus} pageInfo{hasNextPage endCursor}}}}'
+  $results = [System.Collections.Generic.List[object]]::new()
+  $cursor = $null
+  do {
+    $arguments = @('api', 'graphql', '-f', "query=$query", '-F', 'owner=microsoft', '-F', 'name=PowerToys')
+    if ($cursor) {
+      $arguments += @('-F', "cursor=$cursor")
+    }
+    $raw = & gh @arguments
+    if ($LASTEXITCODE -ne 0) {
+      throw 'GitHub PR readiness query failed.'
+    }
+    $page = ($raw -join "`n") | ConvertFrom-Json
+    foreach ($node in @($page.data.repository.pullRequests.nodes)) {
+      $results.Add($node)
+    }
+    $pageInfo = $page.data.repository.pullRequests.pageInfo
+    $cursor = [string]$pageInfo.endCursor
+  } while ($pageInfo.hasNextPage)
+  return $results.ToArray()
+}
 $previousByNumber = @{}
 foreach ($old in @($src.items)) { $previousByNumber[[int]$old.number] = $old }
 try {
   $livePrs = Get-LiveCollection "repos/$UP/pulls?state=open&per_page=100"
+  $livePrByNumber = @{}
+  foreach ($livePr in $livePrs) {
+    $livePrByNumber[[int]$livePr.number] = $livePr
+  }
+  $prReadinessByNumber = @{}
+  $prReadiness = @(Get-PrReadiness)
+  foreach ($readiness in $prReadiness) {
+    if ([string]$readiness.reviewDecision -eq 'APPROVED') {
+      $livePr = $livePrByNumber[[int]$readiness.number]
+      $checkRuns = gh api "repos/$UP/commits/$($livePr.head.sha)/check-runs?per_page=100" 2>$null | ConvertFrom-Json
+      if ($LASTEXITCODE -ne 0) {
+        throw "GitHub CI readiness query failed for PR $($readiness.number)."
+      }
+      $readiness | Add-Member -NotePropertyName ci_state -NotePropertyValue (Get-CiState $checkRuns.check_runs)
+    }
+    $prReadinessByNumber[[int]$readiness.number] = $readiness
+  }
   $liveOpenEntries = Get-LiveCollection "repos/$UP/issues?state=open&per_page=100"
   $liveOpenIssues = @($liveOpenEntries | Where-Object { -not $_.pull_request })
   $openPrIssueByNumber = @{}
@@ -130,10 +199,10 @@ try {
     } else {
       0
     }
-    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'pr' $previousByNumber[[int]$raw.number] $discussionCount))
+    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'pr' $previousByNumber[[int]$raw.number] $discussionCount $prReadinessByNumber[[int]$raw.number]))
   }
   foreach ($raw in $liveIssues) {
-    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[[int]$raw.number] ([int]$raw.comments)))
+    $liveItems.Add([pscustomobject](Convert-LiveItem $raw 'issue' $previousByNumber[[int]$raw.number] ([int]$raw.comments) $null))
   }
   $src.items = $liveItems.ToArray()
   "live upstream backlog loaded: prs=$($livePrs.Count) openIssues=$($liveOpenIssues.Count) recentIssues=$($liveIssues.Count)"
@@ -170,7 +239,7 @@ function Test-MeaningfulAction {
     return $type -in @('request_info', 'approve_design', 'open_upstream_pr', 'post_comment', 'reproduce')
   }
 
-  return $type -in @('approve', 'post_review', 'request_changes', 'trigger_ci')
+  return $type -in @('approve', 'post_review', 'request_changes', 'trigger_ci', 'merge_pr')
 }
 function Test-PublishableArtifact {
   param($Artifact)
@@ -826,11 +895,15 @@ foreach ($it in $src.items) {
   $hasArtifact = Test-PublishableArtifact $o
   $issueNeedsRevalidation = $false
   if ($it.kind -eq 'issue' -and $hasArtifact) {
+    $labels = @($it.labels) -join '|'
+    $isOpenBug = $it.state -eq 'open' -and $labels -match '(?i)Issue-Bug|\bbug\b'
     try {
       $issueNeedsRevalidation =
-        $o.source_updated_at -and
-        $it.updated_at -and
-        ([datetime]$it.updated_at -gt [datetime]$o.source_updated_at)
+        ($isOpenBug -and
+          ([int]$o.schemaVersion -lt 5 -or -not $o.fix_assessment)) -or
+        ($o.source_updated_at -and
+          $it.updated_at -and
+          ([datetime]$it.updated_at -gt [datetime]$o.source_updated_at))
     } catch {
       $issueNeedsRevalidation = $true
     }
@@ -886,9 +959,7 @@ foreach ($it in $src.items) {
   }
   $needsRevalidation = ($o -and $o.needs_revalidation) -or $issueNeedsRevalidation -or $authorWaitResolved
   $primary = $null
-  if ($hasArtifact -and $stage -eq 'owned_elsewhere') {
-    $primary = $null
-  } elseif ($hasArtifact -and $stage -eq 'ci_blocked') {
+  if ($hasArtifact -and $stage -eq 'ci_blocked') {
     $primary = $null
   } elseif ($hasArtifact -and $needsRevalidation) {
     $primary = $null
@@ -924,6 +995,11 @@ foreach ($it in $src.items) {
     primary_action=if ($primary) { [pscustomobject]$primary } else { $null }
     labels=@($it.labels); assignees=@($it.assignees); created_at=$it.created_at; updated_at=$it.updated_at
     comments=$it.comments; priority=$it.priority
+  }
+  if ($it.kind -eq 'pr') {
+    $entry['review_decision'] = $it.review_decision
+    $entry['ci_state'] = $it.ci_state
+    $entry['merge_state'] = $it.merge_state
   }
   if ($mt) { $entry['mirror'] = [pscustomobject]$mt }
   $indexList.Add([pscustomobject]$entry)
