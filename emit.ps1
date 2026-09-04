@@ -972,6 +972,7 @@ foreach ($it in $src.items) {
     $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'request_info' }) | Select-Object -First 1
     if (-not $action) { $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'open_upstream_pr' }) | Select-Object -First 1 }
     if (-not $action) { $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'approve_design' }) | Select-Object -First 1 }
+    if (-not $action) { $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'reproduce' }) | Select-Object -First 1 }
     if (-not $action) { $action = @($o.actions | Where-Object { (Test-MeaningfulAction $o $_) -and $_.type -eq 'post_comment' }) | Select-Object -First 1 }
     if ($action) {
       $label = switch ($action.type) {

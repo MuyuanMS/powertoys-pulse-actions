@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T09:42:31.3223945+08:00",
+  "generated_at": "2026-09-04T10:01:15.0601588+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 339
   },
   "impact": {
-    "as_of": "2026-09-04T09:42:31.3223945+08:00",
+    "as_of": "2026-09-04T10:01:15.0601588+08:00",
     "issues_helped": 10,
     "prs_iterated": 29,
     "constructive_comments_posted": 3,
@@ -18654,7 +18654,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Reproduce the display-transition BSOD"
+      },
       "labels": [
         "Issue-Bug",
         "Product-Always On Top",
@@ -45512,7 +45515,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Reproduce locally"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
@@ -46119,7 +46125,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Reproduce elevated-app shortcut behavior"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -47057,7 +47066,10 @@ window.BOARD_INDEX = {
       "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Reproduce Insider Store identity issue"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
@@ -48496,7 +48508,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Reproduce stuck remapped modifier"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -52820,7 +52835,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Reproduce the ZoomIt AltGr collision"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
