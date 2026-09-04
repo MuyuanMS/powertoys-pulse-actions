@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T17:37:13.4411098+08:00",
+  "generated_at": "2026-09-04T19:49:35.9565427+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 142,
-    "open_issues": 12604,
+    "open_issues": 12605,
     "community": 11992,
     "artifacts": 355
   },
   "impact": {
-    "as_of": "2026-09-04T17:37:13.4411098+08:00",
+    "as_of": "2026-09-04T19:49:35.9565427+08:00",
     "issues_helped": 10,
     "prs_iterated": 28,
     "constructive_comments_posted": 3,
@@ -45537,6 +45537,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50378",
+      "kind": "issue",
+      "number": 50378,
+      "url": "https://github.com/microsoft/PowerToys/issues/50378",
+      "title": "Не открывается приложение",
+      "author": "Renlov",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-04T09:48:52Z",
+      "updated_at": "2026-09-04T10:02:58Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-32857",
       "kind": "issue",
       "number": 32857,
@@ -77597,8 +77631,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-10T18:29:26Z",
-      "updated_at": "2026-07-10T18:42:21Z",
-      "comments": 2,
+      "updated_at": "2026-09-04T10:29:16Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -209437,7 +209471,7 @@ window.BOARD_INDEX = {
       "author": "niels9001",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
@@ -209454,7 +209488,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Cursor Wrap"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-08-27T13:49:13Z",
       "updated_at": "2026-08-27T13:57:02Z",
       "comments": 1,
