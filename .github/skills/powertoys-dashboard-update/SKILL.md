@@ -353,11 +353,28 @@ state.
 
 ### Fast issue judgment
 
-Every open `Issue-Bug` issue with no `judgment`, or with live `updatedAt` newer
-than `source_updated_at`, receives a lightweight judgment during the run. This
-pass is deliberately cheaper than `powertoys-issue-to-design`: inspect the
-body, latest comments, labels, assignees, linked PRs/issues, and obvious
-repository ownership signals, then emit one of:
+Before selecting issue work, enumerate the contract/freshness queue:
+
+```powershell
+pwsh -NoProfile -File `
+  "$SkillRoot\scripts\Get-StaleIssueTriageQueue.ps1" `
+  -Dashboard $Dashboard -AsJson
+```
+
+Every returned issue must receive the lightweight correction pass during the
+run. Re-run the command before publication and report any remaining entries as
+explicitly deferred; do not count them as updated or action-ready.
+
+Every open `Issue-Bug` issue with no `judgment`, with live `updatedAt` newer
+than `source_updated_at`, or whose artifact fails the complete current
+schema-v5 contract receives a lightweight judgment during the run. Contract
+failure includes missing issue context, an invalid fix-assessment status,
+missing proposed fixes, missing confidence, a proposed fix without
+`approve_design`, or a yellow/red fix without matching `request_info` and
+information gaps. Recently generated timestamps never exempt these bugs from
+re-triage. This pass is deliberately cheaper than `powertoys-issue-to-design`:
+inspect the body, latest comments, labels, assignees, linked PRs/issues, and
+obvious repository ownership signals, then emit one of:
 
 | `judgment.status` | Dashboard result |
 | --- | --- |
@@ -470,6 +487,12 @@ Every yellow or red proposed fix must additionally include a targeted
 materially improve or disprove the current plan. A green plan may omit
 `request_info` only when no material uncertainty remains. The display-only
 `proposed_fixes[].confidence` is the canonical score shown by Pulse.
+
+The emitter must apply this complete contract before marking an open bug
+artifact as publishable. A timestamped but partial artifact is not a valid
+result: hide its actions, mark it for re-triage, and keep it out of
+`artifact_numbers` until it passes schema-v5 context, fix-assessment, confidence,
+and paired-action validation.
 
 When an issue is already clearly reproducible from the public report or
 attachments but does not yet justify a fix design, emit a `reproduce` action
@@ -595,8 +618,11 @@ in-progress, and deferred counts. Run the `-FailOnStale` gate only in explicit
 drain mode after the drain attempt finishes.
 
 Issue **judgment and fix coverage** are exhaustive for every open bug lacking a
-current schema-v5 assessment, as well as new/changed bugs. Normal-mode full design
-work is bounded: rank `actionable_design` judgments by confidence,
+fully valid current schema-v5 artifact, as well as new/changed bugs. Build and
+report this invalid-artifact re-triage queue separately from the bounded
+full-design queue. The lightweight correction pass is not limited by
+`$DesignBatchSize`; only implementation-grade design expansion is bounded.
+Normal-mode full design work is bounded: rank `actionable_design` judgments by confidence,
 reproducibility, scope, recency, and lack of existing ownership, then run at
 most `$DesignBatchSize` (default 4) through `powertoys-issue-to-design`; leave
 the rest queued with explicit `Design fix` actions. Drain mode removes this
@@ -925,6 +951,8 @@ Return one concise report containing:
 1. PR coverage: total eligible, current, fully reviewed, context-revalidated,
    waiting/owned/excluded, and still queued;
 2. issue judgments by status and full designs completed/deferred;
+   include the number of contract-invalid bugs discovered, corrected, and
+   still queued so a recent but malformed artifact cannot be reported as done;
 3. stale workflows resumed/rerun and their resulting stages;
 4. closed/superseded/author-waiting items;
 5. counts in the regenerated board and the published Pages URL;

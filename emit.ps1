@@ -257,6 +257,94 @@ function Test-PublishableArtifact {
   # Pulse needs to display. Action filtering remains in Test-MeaningfulAction.
   return $hasFreshness
 }
+function Test-CurrentOpenBugArtifact {
+  param($Artifact)
+
+  if ($null -eq $Artifact -or [int](Get-PropertyValue $Artifact 'schemaVersion') -lt 5) {
+    return $false
+  }
+
+  $fixAssessment = Get-PropertyValue $Artifact 'fix_assessment'
+  $fixStatus = [string](Get-PropertyValue $fixAssessment 'status')
+  if ($fixStatus -notin @('proposed', 'existing_fix', 'not_applicable')) {
+    return $false
+  }
+  if ([string]::IsNullOrWhiteSpace([string](Get-PropertyValue $fixAssessment 'rationale'))) {
+    return $false
+  }
+
+  $context = Get-PropertyValue $Artifact 'issue_context'
+  if ($null -eq $context -or
+      [string]::IsNullOrWhiteSpace([string](Get-PropertyValue $context 'summary')) -or
+      [string]::IsNullOrWhiteSpace([string](Get-PropertyValue $context 'analysis')) -or
+      @((Get-PropertyValue $context 'known_information')).Count -eq 0 -or
+      $null -eq (Get-PropertyValue $context 'inferences') -or
+      @((Get-PropertyValue $context 'initial_investigation')).Count -eq 0) {
+    return $false
+  }
+
+  $actions = @((Get-PropertyValue $Artifact 'actions') | Where-Object {
+    Test-MeaningfulAction $Artifact $_
+  })
+  $proposedFixes = @((Get-PropertyValue $Artifact 'proposed_fixes') | Where-Object {
+    $null -ne $_
+  })
+  if ($fixStatus -eq 'proposed') {
+    if ($proposedFixes.Count -eq 0 -or
+        @($actions | Where-Object { $_.type -eq 'approve_design' }).Count -eq 0) {
+      return $false
+    }
+    foreach ($fix in $proposedFixes) {
+      $score = 0
+      if ([string]::IsNullOrWhiteSpace([string]$fix.title) -or
+          [string]::IsNullOrWhiteSpace([string]$fix.root_cause) -or
+          @($fix.plan | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }).Count -eq 0 -or
+          @($fix.verification | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }).Count -eq 0 -or
+          -not [int]::TryParse([string]$fix.confidence.score, [ref]$score) -or
+          $score -lt 0 -or $score -gt 100) {
+        return $false
+      }
+      $expectedLevel = if ($score -ge 85) { 'green' } elseif ($score -ge 51) { 'yellow' } else { 'red' }
+      if ([string]$fix.confidence.level -ne $expectedLevel -or
+          [string]::IsNullOrWhiteSpace([string]$fix.confidence.rationale)) {
+        return $false
+      }
+    }
+    $hasNonGreenFix = @($proposedFixes | Where-Object {
+      [string]$_.confidence.level -in @('yellow', 'red')
+    }).Count -gt 0
+    if ($hasNonGreenFix -and
+        (@($actions | Where-Object { $_.type -eq 'request_info' }).Count -eq 0 -or
+         @((Get-PropertyValue $context 'information_gaps')).Count -eq 0)) {
+      return $false
+    }
+    if ($hasNonGreenFix) {
+      $requestInfo = @($actions | Where-Object { $_.type -eq 'request_info' }) | Select-Object -First 1
+      $commentBody = [string]$requestInfo.comment.body
+      if ($commentBody.Trim().Length -lt 160) {
+        return $false
+      }
+      foreach ($gap in @((Get-PropertyValue $context 'information_gaps'))) {
+        if ([string]::IsNullOrWhiteSpace([string]$gap.information) -or
+            [string]::IsNullOrWhiteSpace([string]$gap.why_needed) -or
+            ([string]$gap.how_to_collect -match '(?i)/bugreport' -and
+             $commentBody -notmatch '(?i)/bugreport')) {
+          return $false
+        }
+      }
+    }
+  } elseif ($fixStatus -eq 'existing_fix') {
+    if (@((Get-PropertyValue $fixAssessment 'existing_fix_urls') | Where-Object {
+      -not [string]::IsNullOrWhiteSpace([string]$_)
+    }).Count -eq 0) {
+      return $false
+    }
+  } elseif ($proposedFixes.Count -gt 0) {
+    return $false
+  }
+
+  return $true
+}
 
 $prAuthorWaitCache = @{}
 function ConvertTo-DateTimeOrNull {
@@ -899,8 +987,7 @@ foreach ($it in $src.items) {
     $isOpenBug = $it.state -eq 'open' -and $labels -match '(?i)Issue-Bug|\bbug\b'
     try {
       $issueNeedsRevalidation =
-        ($isOpenBug -and
-          ([int]$o.schemaVersion -lt 5 -or -not $o.fix_assessment)) -or
+        ($isOpenBug -and -not (Test-CurrentOpenBugArtifact $o)) -or
         ($o.source_updated_at -and
           $it.updated_at -and
           ([datetime]$it.updated_at -gt [datetime]$o.source_updated_at))

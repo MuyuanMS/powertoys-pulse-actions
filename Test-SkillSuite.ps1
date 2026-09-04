@@ -327,8 +327,11 @@ if (-not (Test-Path $checkpointScript)) {
 }
 
 $artifactValidator = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Test-DashboardArtifacts.ps1'
+$staleIssueQueue = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-StaleIssueTriageQueue.ps1'
 if (-not (Test-Path $artifactValidator)) {
   $errors.Add("Missing dashboard artifact validator: $artifactValidator")
+} elseif (-not (Test-Path $staleIssueQueue)) {
+  $errors.Add("Missing stale issue triage queue: $staleIssueQueue")
 } else {
   $artifactRoot = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-artifact-$PID"
   try {
@@ -698,6 +701,35 @@ if (-not (Test-Path $artifactValidator)) {
       Set-Content (Join-Path $artifactRoot 'data\items\45680.json')
     & $artifactValidator -Dashboard $artifactRoot -Numbers 45680 -RequireIssueContext | Out-Null
     Set-Content (Join-Path $artifactRoot 'data\items\45680.json') $validFixArtifactText
+
+    @{
+      items = @(
+        @{
+          number = 45680
+          kind = 'issue'
+          state = 'open'
+          title = 'Valid current bug'
+          labels = @('Issue-Bug')
+          issue_type = 'bug'
+          updated_at = '2026-09-03T00:00:00Z'
+        },
+        @{
+          number = 45681
+          kind = 'issue'
+          state = 'open'
+          title = 'Missing bug artifact'
+          labels = @('Issue-Bug')
+          issue_type = 'bug'
+          updated_at = '2026-09-03T00:00:00Z'
+        }
+      )
+    } | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $artifactRoot 'data\index.json')
+    $issueQueueResult = & $staleIssueQueue -Dashboard $artifactRoot -AsJson |
+      ConvertFrom-Json
+    if ($issueQueueResult.count -ne 1 -or
+        [int]$issueQueueResult.issues[0].number -ne 45681) {
+      $errors.Add('Stale issue triage queue did not isolate the missing artifact.')
+    }
 
     $invalidConfidence = Get-Content (Join-Path $artifactRoot 'data\items\45680.json') -Raw |
       ConvertFrom-Json
