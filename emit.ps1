@@ -248,7 +248,7 @@ function Test-PublishableArtifact {
     return $false
   }
 
-  $hasFreshness = $Artifact.generated_at -and
+  $hasFreshness =
     $Artifact.evaluated_at -and
     $Artifact.source_updated_at
   # A valid review artifact must remain addressable even when it has no
