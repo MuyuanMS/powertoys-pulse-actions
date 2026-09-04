@@ -6,9 +6,9 @@
   "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-04T02:51:14Z",
-  "evaluated_at": "2026-09-04T02:51:14Z",
-  "source_updated_at": "2026-09-01T19:16:14Z",
+  "generated_at": "2026-09-04T23:04:13Z",
+  "evaluated_at": "2026-09-04T23:04:13Z",
+  "source_updated_at": "2026-09-04T22:53:56Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50293",
   "title": "Memory leak and unreadable text in Run",
   "author": "CircuitDaemon",
@@ -17,7 +17,7 @@
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0,
+  "comments": 1,
   "confidence": "Medium",
   "summary": "The reproducible long-query overlap is the known PowerToys Run autocomplete rendering defect; the reported memory growth is unproven by the supplied diagnostics and predates the released stale-query worker-lifetime fix.",
   "status": {
@@ -32,21 +32,22 @@
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The exact query and screenshots establish a known visual overlap, but the memory observation is from PowerToys 0.97.2. PR 48394 later fixed Run stale-query worker accumulation and shipped in stable 0.101.2362.0; the available diagnostics do not prove the reported memory growth used that mechanism. Three independent design critiques found that a new duplicate autocomplete surface is unsafe without a broader bidirectional-text rendering design, so no competing UI implementation is proposed here.",
+    "rationale": "The exact query and screenshots establish a known visual overlap, while the memory observation is from PowerToys 0.97.2. The maintainer confirms that the later Run worker-lifetime fix covers the known memory mechanism and is included in stable 0.101.2362.0. The supplied diagnostics do not prove that mechanism caused this report, and the visual defect remains separately tracked. A current-release retest is therefore needed before any new memory fix is proposed.",
     "evidence": [
       "The report includes an exact long query, overlap screenshots, a diagnostic archive, a text attachment, and a screenshot of high PowerToys Run memory.",
       "Issue 13554 remains the canonical long-input autocomplete-alignment tracker.",
       "LauncherControl.xaml overlays QueryTextBox and AutoCompleteTextBlock while the TextBox content scrolls independently.",
       "The supplied diagnostic has no process dump, ETL, GC dump, runtime trace, thread timeline, or memory timeline; its current PowerToys Run log records startup and restart only.",
-      "PR 48394 fixed stale-query worker accumulation and is included in stable 0.101.2362.0; the reported installation is 0.97.2."
+      "PR 48394 fixed stale-query worker accumulation and is included in the latest stable 0.101.2362.0; the reported installation is 0.97.2.",
+      "A maintainer comment on 2026-09-04 directs the reporter to update because the Window Walker memory issue was fixed several months ago."
     ],
-    "recommended_action": "Keep the visual report with its canonical tracker and request a current-stable, time-series memory and thread retest before treating memory growth as a remaining defect.",
-    "evaluated_at": "2026-09-04T02:51:14Z",
-    "source_updated_at": "2026-09-01T19:16:14Z"
+    "recommended_action": "Keep the visual symptom with Issue 13554 and request a current-stable, time-series memory and thread retest; only investigate a new memory defect if growth persists after update and dismissal.",
+    "evaluated_at": "2026-09-04T23:04:13Z",
+    "source_updated_at": "2026-09-04T22:53:56Z"
   },
   "fix_assessment": {
     "status": "existing_fix",
-    "rationale": "PR 48394 concretely fixes the stale-query worker accumulation mechanism that can cause Run worker and memory growth and is in current stable. It does not fix the separately tracked visual layout defect or prove this report used that mechanism; that portion needs a current-release retest.",
+    "rationale": "PR 48394 concretely fixes the stale-query worker accumulation mechanism that can cause Run worker and memory growth and is in the latest stable release, matching the maintainer's direction. It does not fix the separately tracked visual layout defect or prove this report used that mechanism; that portion needs a current-release retest.",
     "existing_fix_urls": [
       "https://github.com/microsoft/PowerToys/pull/48394",
       "https://github.com/microsoft/PowerToys/releases/tag/v0.101.2362.0",
@@ -61,22 +62,24 @@
       "The issue includes a screenshot showing substantial memory attributed to PowerToys Run.",
       "The diagnostic archive includes no heap or runtime trace establishing memory retention.",
       "Issue 13554 owns the layout symptom.",
-      "PR 48394 is merged and included in 0.101.2362.0."
+      "PR 48394 is merged and included in the latest stable 0.101.2362.0.",
+      "A maintainer advised updating to the latest version because the reported memory issue was fixed several months ago."
     ],
     "inferences": [
       "The visual symptom is another instance of Issue 13554.",
       "The separate stationary autocomplete surface likely contributes to the visual overlap.",
-      "The memory symptom may be covered by PR 48394, but no evidence ties this occurrence to its stale-query worker mechanism.",
+      "The memory symptom is likely covered by PR 48394, but no evidence ties this occurrence to its stale-query worker mechanism.",
       "The visual defect and memory growth are not established as one root cause."
     ],
-    "analysis": "The issue combines two mechanisms that must not be conflated. The visual symptom follows the existing independent autocomplete rendering path. The historical memory observation may be the stale-query worker accumulation fixed after 0.97.2, but the supplied archive cannot establish that. A current-release time series is the narrow evidence needed before a new memory investigation. A separate adversarial review also rejected a duplicate-overlay UI change: matching offsets does not guarantee matching TextBox glyph geometry, can regress mixed bidirectional text, and risks exposing a second Edit control to accessibility tools.",
+    "analysis": "The issue combines two mechanisms that must not be conflated. The visual symptom follows the existing independent autocomplete rendering path and belongs with Issue 13554. The historical memory observation may be the stale-query worker accumulation fixed after 0.97.2, consistent with the maintainer's update guidance, but the supplied archive cannot establish that. A current-release time series is the narrow evidence needed before a new memory investigation. A separate adversarial review rejected a duplicate-overlay UI change because matching offsets do not guarantee matching TextBox glyph geometry, can regress mixed-direction text, and risk exposing a second Edit control to accessibility tools.",
     "initial_investigation": [
-      "Read the complete issue, zero-comment timeline, screenshots, text attachment, and diagnostic archive.",
+      "Read the complete issue, its new maintainer comment, timeline, screenshots, text attachment, and diagnostic archive.",
       "Reviewed Issue 13554 and related duplicate history.",
       "Inspected LauncherControl.xaml, MainWindow.xaml.cs, MainViewModel.cs, and autocomplete tests.",
       "Reviewed PR 48394, its worker-lifetime behavior, release containment, and focused QuerySession tests.",
       "Inspected CustomSearchBox, LauncherControl, MainWindow autocomplete handlers, MainViewModel autocomplete helpers, and current WPF test coverage.",
-      "Completed three independent adversary passes; all concrete competing overlay designs were rejected before code was proposed."
+      "Completed three independent adversary passes; all concrete competing overlay designs were rejected before code was proposed.",
+      "Confirmed ownership signals: the report is labeled Issue-Bug and Needs-Triage, has no assignee, and the maintainer points to the existing Run fix and current-release retest rather than a new owner or implementation."
     ],
     "information_gaps": [
       {
@@ -128,7 +131,7 @@
           "QueryTextBox",
           "AutoCompleteTextBlock"
         ],
-        "role": "Defines the independent editable and autocomplete visuals and exposes the mismatched scrolling boundary."
+        "purpose": "Defines the independent editable and autocomplete visuals and exposes the mismatched scrolling boundary."
       },
       {
         "path": "src/modules/launcher/PowerLauncher/MainWindow.xaml.cs",
@@ -137,7 +140,7 @@
           "ClearAutoCompleteText",
           "SearchBox_UpdateFlowDirection"
         ],
-        "role": "Updates and clears the autocomplete surface and controls language flow direction."
+        "purpose": "Updates and clears the autocomplete surface and controls language flow direction."
       },
       {
         "path": "src/modules/launcher/PowerLauncher/ViewModel/MainViewModel.cs",
@@ -146,7 +149,7 @@
           "GetAutoCompleteText",
           "ShouldAutoCompleteTextBeEmpty"
         ],
-        "role": "Owns query lifetime and defines the ordinal autocomplete-prefix contract."
+        "purpose": "Owns query lifetime and defines the ordinal autocomplete-prefix contract."
       },
       {
         "path": "src/modules/launcher/PowerLauncher/ViewModel/QuerySession.cs",
@@ -156,7 +159,7 @@
           "DisposeWhenComplete",
           "CancelAndWait"
         ],
-        "role": "Current released owner of captured per-query cancellation and deferred disposal."
+        "purpose": "Current released owner of captured per-query cancellation and deferred disposal."
       },
       {
         "path": "src/modules/launcher/Wox.Test/QuerySessionTest.cs",
@@ -165,7 +168,7 @@
           "DisposeWhenCompleteDoesNotDisposeSourceWhileQueryRuns",
           "CancelAndWaitDefersDisposalWhenPluginIgnoresCancellation"
         ],
-        "role": "Regression coverage for the released worker-lifetime fix."
+        "purpose": "Regression coverage for the released worker-lifetime fix."
       },
       {
         "path": "src/modules/launcher/Wox.Test/MainViewModelTest.cs",
@@ -173,7 +176,7 @@
           "MainViewModelGetAutoCompleteTextReturnsMatchingStringWhenIndexIsZeroAndMatch",
           "ShouldAutoCompleteTextBeEmptyShouldReturnTrueWhenQueryTextDoesNotMatchAutoCompleteText"
         ],
-        "role": "Existing pure logic coverage, which cannot validate WPF rendering geometry."
+        "purpose": "Existing pure logic coverage, which cannot validate WPF rendering geometry."
       }
     ],
     "implementation_steps": [
@@ -181,18 +184,18 @@
         "step": 1,
         "file": "No new production code",
         "symbol": "Issue 50293 triage disposition",
-        "current_flow": "The same report combines a reproducible legacy autocomplete presentation defect and an unmeasured memory allegation.",
+        "current_behavior": "The same report combines a reproducible legacy autocomplete presentation defect and an unmeasured memory allegation.",
         "change": "Do not implement a competing visual fix from this report. Keep the rendering work with the canonical visual tracker and gate a new memory fix on the current-release retest.",
-        "pseudo_diff": "if currentStableRetest shows sustained post-dismissal memory or thread growth:\\n    collect /bugreport immediately after reproduction\\n    open a focused memory investigation\\nelse:\\n    treat the old memory observation as covered by the released query-session lifecycle fix",
+        "code_block": "if (currentStableRetestShowsSustainedGrowth) {\\n    collectFreshDiagnosticsImmediatelyAfterReproduction();\\n    openFocusedMemoryInvestigation();\\n} else {\\n    recordCoverageByReleasedQuerySessionLifecycleFix();\\n}",
         "handling": "Do not close the report solely as visual duplication until the retest resolves the independent memory claim. Do not infer a heap leak from a working-set screenshot."
       },
       {
         "step": 2,
         "file": "src/modules/launcher/PowerLauncher/ViewModel/MainViewModel.cs and ViewModel/QuerySession.cs",
         "symbol": "QueryResults and QuerySession",
-        "current_flow": "The pre-release implementation let stale workers read mutable cancellation state after a newer query replaced it, while disposal could race active consumers.",
+        "current_behavior": "The pre-release implementation let stale workers read mutable cancellation state after a newer query replaced it, while disposal could race active consumers.",
         "change": "No new change is proposed: retain the released QuerySession model. Each query captures its own token, prior sessions are cancelled, and CTS disposal waits for the tracked completion task.",
-        "pseudo_diff": "previousSession?.Cancel()\\npreviousSession?.DisposeWhenComplete()\\ncurrentSession = QuerySession.StartSuspended(token => RunQueryPipelineAsync(token))\\n_currentQuerySession = currentSession\\ncurrentSession.Resume()",
+        "code_block": "previousSession?.Cancel()\\npreviousSession?.DisposeWhenComplete()\\ncurrentSession = QuerySession.StartSuspended(token => RunQueryPipelineAsync(token))\\n_currentQuerySession = currentSession\\ncurrentSession.Resume()",
         "handling": "Keep generation checks, per-plugin execution gating, cancellation propagation, and bounded shutdown waiting intact. A future memory fix must prove a distinct retained object or work source before modifying these lifetime guarantees.",
         "tests": "Retain QuerySessionTest token ownership, deferred-disposal, timeout, and suspended-start tests; add a focused regression only after a current-build reproduction identifies a different mechanism."
       },
@@ -200,9 +203,9 @@
         "step": 3,
         "file": "src/modules/launcher/PowerLauncher/LauncherControl.xaml and MainWindow.xaml.cs",
         "symbol": "QueryTextBox, AutoCompleteTextBlock, SuggestionsList_SelectionChanged, ClearAutoCompleteText",
-        "current_flow": "The editable TextBox scrolls inside PART_ContentHost while a full autocomplete string is rendered by a separate sibling TextBlock.",
+        "current_behavior": "The editable TextBox scrolls inside PART_ContentHost while a full autocomplete string is rendered by a separate sibling TextBlock.",
         "change": "No competing pseudo-fix is approved. Independent reviews rejected offset synchronization and duplicate TextBox variants because they do not establish matching glyph geometry, fail mixed-direction text, can lose sync on content replacement, and can expose a second editable automation control.",
-        "pseudo_diff": "defer UI change\\nrequire a canonical design that proves: rendered completion region does not intersect rendered query glyphs\\nrequire: one accessible edit control, current caret/IME behavior, and production-template LTR/RTL visual tests",
+        "code_block": "defer UI change\\nrequire a canonical design that proves: rendered completion region does not intersect rendered query glyphs\\nrequire: one accessible edit control, current caret/IME behavior, and production-template LTR/RTL visual tests",
         "handling": "A future design may render only a safely non-intersecting completion suffix or use a shared text-layout primitive, but it must suppress ambiguous bidirectional cases rather than overlap text."
       }
     ],
