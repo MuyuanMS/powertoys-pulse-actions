@@ -1,0 +1,128 @@
+{
+  "number": 50368,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triaging",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-04T01:15:48Z",
+  "evaluated_at": "2026-09-04T01:15:48Z",
+  "source_updated_at": "2026-09-04T00:07:17Z",
+  "status": {
+    "glyph": "🧪",
+    "label": "Reproducible bug",
+    "detail": "The report provides a complete Foundry Local 0.10.3.0 reproduction and a diagnostic log showing an empty service URL."
+  },
+  "next_action": {
+    "glyph": "🧪",
+    "label": "Reproduce locally",
+    "reason": "Verify the endpoint-resolution failure with the reported PowerToys and Foundry Local versions before approving a fix design."
+  },
+  "actions": [
+    {
+      "id": "reproduce-50368",
+      "type": "reproduce",
+      "label": "Reproduce locally",
+      "primary": true,
+      "confirm": false,
+      "note": "The issue includes sufficient public steps and a public diagnostic attachment for local verification.",
+      "reproduce": {
+        "title": "Verify Advanced Paste Foundry Local endpoint resolution",
+        "module": "Advanced Paste",
+        "version_requirement": "PowerToys v0.101.2362.0 with Foundry Local 0.10.3.0",
+        "prerequisites": [
+          "Windows 11 24H2",
+          "Foundry Local 0.10.3.0 installed through WinGet",
+          "The phi-4-mini model available to Foundry Local"
+        ],
+        "setup": [
+          "Install Foundry Local 0.10.3.0.",
+          "Confirm the installed package is Microsoft.FoundryLocal_0.10.3.0_x64__8wekyb3d8bbwe."
+        ],
+        "steps": [
+          "Run `foundry server start`.",
+          "Run `foundry run phi-4-mini` and confirm interactive chat responds.",
+          "Open PowerToys Settings and navigate to Advanced Paste > Foundry Local provider configuration.",
+          "Check whether the provider detects the loaded model and inspect the AdvancedPaste/Settings log for FoundryLocal and FoundryClient entries."
+        ],
+        "expected_result": "The provider resolves a usable service endpoint and lists the loaded or cached phi-4-mini model instead of showing no downloaded models or an invalid request URI error.",
+        "setup_prompt": "Prepare a Windows 11 24H2 test environment with PowerToys v0.101.2362.0 and Foundry Local 0.10.3.0, then make phi-4-mini available through the Foundry Local CLI.",
+        "attachments": [
+          {
+            "label": "Reporter diagnostic log",
+            "url": "https://github.com/user-attachments/files/31814121/Log_2026-09-04.log"
+          }
+        ]
+      }
+    }
+  ],
+  "confidence": "Medium",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The failure is in a PowerToys-owned Foundry integration path and no open or merged work was found that covers the Foundry Local 0.10.x endpoint/API transition."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Adapt the Foundry Local integration to the 0.10.x endpoint contract",
+      "root_cause": "Likely SDK contract drift: the current FoundryClient obtains the service URL from FoundryLocalManager.Endpoint and calls SDK model-list APIs, while the reported 0.10.3.0 CLI/daemon leaves that URL empty and those calls fail with an invalid request URI.",
+      "plan": [
+        "Confirm the Microsoft.AI.Foundry.Local package/API contract used by the PowerToys branch against Foundry Local 0.10.3.0, including Endpoint, ServiceUri, and catalog/cached-model APIs.",
+        "Update FoundryClient to resolve the endpoint through the supported 0.10.x SDK path and to fail availability clearly when no absolute endpoint is returned.",
+        "Keep Advanced Paste model enumeration and OpenAI client construction on the same resolved endpoint, with regression coverage for empty, relative, and valid endpoint values.",
+        "Validate model discovery and Advanced Paste execution with the reported CLI and phi-4-mini sequence."
+      ],
+      "verification": [
+        "Run the reported Foundry Local 0.10.3.0 setup and confirm the provider log contains a non-empty absolute service URL.",
+        "Confirm catalog/cached model enumeration lists phi-4-mini without invalid request URI errors.",
+        "Run Advanced Paste with phi-4-mini and confirm the request reaches the loaded model."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The public log and current FoundryClient flow identify a focused endpoint/API compatibility boundary, but the exact 0.10.x SDK replacement contract still needs confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Advanced Paste cannot enumerate a Foundry Local model after Foundry Local 0.10.3.0 is started through the new CLI, even though the CLI loads phi-4-mini successfully.",
+    "known_information": [
+      "The issue is open, labeled Issue-Bug and Needs-Triage, and has no assignee or comments.",
+      "The reporter used PowerToys v0.101.2362.0 installed through WinGet on Windows 11 24H2.",
+      "The reporter installed Foundry Local 0.10.3.0, started its server, and successfully ran phi-4-mini interactively.",
+      "Advanced Paste shows no downloaded models and the supplied log records an empty FoundryLocal service URL followed by invalid request URI errors while listing catalog and cached models.",
+      "The report includes a public diagnostic log attachment.",
+      "Related issue #45340 was closed by merged PR #45362, which addressed a manual-port/400-Bad-Request problem in the older Foundry Local service-based scenario."
+    ],
+    "inferences": [
+      "The failure is likely specific to endpoint discovery or SDK API compatibility between PowerToys and the Foundry Local 0.10.x architecture, rather than model loading itself.",
+      "The existing #45362 fix does not appear to cover this report because the symptom is an empty endpoint and invalid URI during model enumeration, not a 400 response after a manual port change."
+    ],
+    "analysis": "The reproduction is specific enough for a maintainer to verify without requesting another diagnostic archive. The code path is PowerToys-owned, and the current FoundryClient uses both Endpoint-based URL discovery and SDK listing calls at exactly the operations reported as failing, so a targeted compatibility fix is plausible but should be confirmed by local reproduction and the 0.10.x SDK contract.",
+    "initial_investigation": [
+      "Current FoundryLocalModelProvider.cs initializes FoundryClient, records GetServiceUrl(), and uses the client for catalog and cached-model enumeration.",
+      "Current FoundryClient.cs returns FoundryLocalManager.Endpoint from GetServiceUrl(), while GetServiceUri() is a separate path used by chat-client creation; catalog and cached model listing call the manager SDK methods directly.",
+      "No open PowerToys pull request matching Foundry Local was found, and the only directly linked work is merged PR #45362 for issue #45340."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact endpoint/API behavior exposed by the Microsoft.AI.Foundry.Local package used by the current PowerToys branch with Foundry Local 0.10.3.0.",
+        "why_needed": "This distinguishes a package-version mismatch from a required endpoint fallback or broader SDK migration.",
+        "how_to_collect": "Reproduce with the stated versions and inspect the non-sensitive provider log and SDK/API response behavior."
+      }
+    ]
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report supplies exact versions, prerequisites, numbered steps, successful model loading, the failing Advanced Paste state, and a public diagnostic log showing the endpoint and URI errors.",
+    "evidence": [
+      "PowerToys v0.101.2362.0 and Foundry Local 0.10.3.0 are specified.",
+      "The reporter gives commands to start the server and load phi-4-mini, then exact Advanced Paste settings navigation.",
+      "The expected and actual behavior are explicit: a loaded model should be detected, but the service URL is empty and model listing fails with an invalid request URI.",
+      "The public log attachment corroborates the reported FoundryClient and FoundryLocal messages.",
+      "No comments, assignee, or current fix PR indicate that the issue is already handled."
+    ],
+    "recommended_action": "Reproduce the endpoint-resolution failure locally with the stated versions, then use the proposed compatibility investigation to prepare a maintainer-approved fix design.",
+    "evaluated_at": "2026-09-04T01:15:48Z",
+    "source_updated_at": "2026-09-04T00:07:17Z"
+  }
+}
