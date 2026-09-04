@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T12:36:51.4329854+08:00",
+  "generated_at": "2026-09-04T13:30:37.8966254+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 140,
-    "open_issues": 12605,
-    "community": 11993,
-    "artifacts": 354
+    "open_issues": 12607,
+    "community": 11994,
+    "artifacts": 353
   },
   "impact": {
-    "as_of": "2026-09-04T12:36:51.4329854+08:00",
+    "as_of": "2026-09-04T13:30:37.8966254+08:00",
     "issues_helped": 10,
     "prs_iterated": 29,
     "constructive_comments_posted": 3,
@@ -226,7 +226,6 @@ window.BOARD_INDEX = {
     50362,
     50359,
     50355,
-    50351,
     50348,
     50346,
     50335,
@@ -686,12 +685,12 @@ window.BOARD_INDEX = {
         "Copilot"
       ],
       "created_at": "2026-09-03T01:00:31Z",
-      "updated_at": "2026-09-03T16:36:45Z",
+      "updated_at": "2026-09-04T05:09:27Z",
       "comments": 2,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
         "fork_number": 581,
@@ -4421,11 +4420,11 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-21T00:41:33Z",
-      "updated_at": "2026-09-04T02:18:17Z",
+      "updated_at": "2026-09-04T05:20:51Z",
       "comments": 4,
       "priority": 10,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
@@ -32756,6 +32755,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-15334",
+      "kind": "issue",
+      "number": 15334,
+      "url": "https://github.com/microsoft/PowerToys/issues/15334",
+      "title": "Listing of currently assigned activation shortcuts for PT utilities",
+      "author": "kristopherting",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Product-Settings",
+        "Cost-Large"
+      ],
+      "assignees": [],
+      "created_at": "2022-01-07T19:05:31Z",
+      "updated_at": "2026-04-16T19:00:46Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
       "id": "issue-47559",
       "kind": "issue",
       "number": 47559,
@@ -45521,13 +45553,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-15334",
+      "id": "issue-50372",
       "kind": "issue",
-      "number": 15334,
-      "url": "https://github.com/microsoft/PowerToys/issues/15334",
-      "title": "Listing of currently assigned activation shortcuts for PT utilities",
-      "author": "kristopherting",
-      "state": "closed",
+      "number": 50372,
+      "url": "https://github.com/microsoft/PowerToys/issues/50372",
+      "title": "[Peek]: Provide video playback features such as seeking with keyboard shortcuts and changing video playback speed",
+      "author": "saikatdas0790",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -45539,18 +45571,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-Settings",
-        "Cost-Large"
+        "Needs-Triage",
+        "Product-Peek"
       ],
       "assignees": [],
-      "created_at": "2022-01-07T19:05:31Z",
-      "updated_at": "2026-04-16T19:00:46Z",
-      "comments": 4,
+      "created_at": "2026-09-04T04:51:32Z",
+      "updated_at": "2026-09-04T04:56:24Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -45577,14 +45608,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Author-Feedback",
         "Needs-Triage",
+        "Needs-Team-Response",
         "Product-General"
       ],
       "assignees": [],
       "created_at": "2026-09-04T04:14:58Z",
-      "updated_at": "2026-09-04T04:24:47Z",
-      "comments": 1,
+      "updated_at": "2026-09-04T05:14:21Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -46169,14 +46200,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -46184,8 +46212,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-03T08:37:07Z",
-      "updated_at": "2026-09-03T08:48:34Z",
-      "comments": 1,
+      "updated_at": "2026-09-04T04:54:56Z",
+      "comments": 2,
       "priority": null,
       "mirror": {
         "kind": "issue",
@@ -46633,8 +46661,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-04T04:16:55Z",
-      "comments": 12,
+      "updated_at": "2026-09-04T05:17:12Z",
+      "comments": 13,
       "priority": null
     },
     {
@@ -51871,7 +51899,7 @@ window.BOARD_INDEX = {
       "author": "niels9001",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
@@ -51888,7 +51916,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-FancyZones"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-08-27T13:49:13Z",
       "updated_at": "2026-08-27T13:56:56Z",
       "comments": 1,
@@ -124285,12 +124315,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-30127",
+      "id": "issue-47646",
       "kind": "issue",
-      "number": 30127,
-      "url": "https://github.com/microsoft/PowerToys/issues/30127",
-      "title": "[Quick accent] Remapped keys using the scancode map registry setting are not recognised by the program",
-      "author": "matteocoder",
+      "number": 47646,
+      "url": "https://github.com/microsoft/PowerToys/issues/47646",
+      "title": "Advanced Paste: categories, resizable window, character counter, drag-and-drop reorder, and expanded pinned item limit",
+      "author": "GoodKarmaKid",
       "state": "open",
       "is_draft": false,
       "is_community": true,
@@ -124308,12 +124338,11 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Needs-Triage",
-        "Needs-Team-Response",
-        "Product-Quick Accent"
+        "Product-Advanced Paste"
       ],
       "assignees": [],
-      "created_at": "2023-12-03T23:35:37Z",
-      "updated_at": "2023-12-07T19:20:47Z",
+      "created_at": "2026-05-05T01:56:16Z",
+      "updated_at": "2026-05-12T12:55:22Z",
       "comments": 2,
       "priority": null
     },
@@ -267051,13 +267080,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47646",
+      "id": "issue-42442",
       "kind": "issue",
-      "number": 47646,
-      "url": "https://github.com/microsoft/PowerToys/issues/47646",
-      "title": "Advanced Paste: categories, resizable window, character counter, drag-and-drop reorder, and expanded pinned item limit",
-      "author": "GoodKarmaKid",
-      "state": "open",
+      "number": 42442,
+      "url": "https://github.com/microsoft/PowerToys/issues/42442",
+      "title": "Quick Accent - unable to see and scroll letters with accent outside of screen",
+      "author": "papadopoules",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -267069,16 +267098,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Issue-Bug",
         "Needs-Triage",
-        "Product-Advanced Paste"
+        "Product-Quick Accent"
       ],
       "assignees": [],
-      "created_at": "2026-05-05T01:56:16Z",
-      "updated_at": "2026-05-12T12:55:22Z",
+      "created_at": "2025-10-16T18:33:53Z",
+      "updated_at": "2026-04-18T18:32:59Z",
       "comments": 2,
       "priority": null
     },
@@ -269517,6 +269547,39 @@ window.BOARD_INDEX = {
       "created_at": "2025-10-14T11:37:55Z",
       "updated_at": "2026-04-30T09:56:20Z",
       "comments": 4,
+      "priority": null
+    },
+    {
+      "id": "issue-30127",
+      "kind": "issue",
+      "number": 30127,
+      "url": "https://github.com/microsoft/PowerToys/issues/30127",
+      "title": "[Quick accent] Remapped keys using the scancode map registry setting are not recognised by the program",
+      "author": "matteocoder",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Needs-Team-Response",
+        "Product-Quick Accent"
+      ],
+      "assignees": [],
+      "created_at": "2023-12-03T23:35:37Z",
+      "updated_at": "2023-12-07T19:20:47Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -313826,6 +313889,38 @@ window.BOARD_INDEX = {
       "created_at": "2025-10-11T11:46:18Z",
       "updated_at": "2026-04-11T20:56:05Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-50373",
+      "kind": "issue",
+      "number": 50373,
+      "url": "https://github.com/microsoft/PowerToys/issues/50373",
+      "title": "PowerToys Run crashes with \"Desktop composition is disabled\" when using Parsec",
+      "author": "Januaraine",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-04T05:09:32Z",
+      "updated_at": "2026-09-04T05:12:20Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -379684,39 +379779,6 @@ window.BOARD_INDEX = {
       "created_at": "2025-01-30T14:52:20Z",
       "updated_at": "2026-04-19T19:19:17Z",
       "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-42442",
-      "kind": "issue",
-      "number": 42442,
-      "url": "https://github.com/microsoft/PowerToys/issues/42442",
-      "title": "Quick Accent - unable to see and scroll letters with accent outside of screen",
-      "author": "papadopoules",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-Quick Accent"
-      ],
-      "assignees": [],
-      "created_at": "2025-10-16T18:33:53Z",
-      "updated_at": "2026-04-18T18:32:59Z",
-      "comments": 2,
       "priority": null
     },
     {
