@@ -250,6 +250,10 @@ display-only proposed fix plans in addition to the issue context:
   },
   "actions": [
     {
+      "type": "approve_design",
+      "label": "Approve activation-target design"
+    },
+    {
       "type": "request_info",
       "comment": {
         "body": "Thanks for confirming ... Please reproduce once more, then add a comment containing `/bugreport` ..."
@@ -260,6 +264,17 @@ display-only proposed fix plans in addition to the issue context:
 ```
 
 `fix_assessment.status=proposed` requires at least one `proposed_fixes` entry.
+It also requires an `approve_design` action. Pulse renders that action with the
+existing fork-side approval control and a local-only **Copy fix prompt**
+control. The copied prompt is synthesized from the issue identity,
+`issue_context`, `proposed_fixes`, and `design`; it is not stored as duplicated
+freeform text and does not require a PAT.
+
+If any proposed fix is yellow or red, the artifact also requires a
+`request_info` action and matching `issue_context.information_gaps`. Green
+plans may omit the information request only when no material evidence gap
+remains.
+
 Use `existing_fix` when a concrete PR/fork implementation already covers the
 bug and include its public URL instead of proposing competing work. Use
 `not_applicable` only when a PowerToys code fix genuinely does not apply.
@@ -278,13 +293,12 @@ ambiguity, and request the exact `information_gaps`. When `how_to_collect`
 references `/bugreport`, the proposed comment must use that command rather than
 generic instructions to upload logs.
 
-Issue artifacts may expose more than one concrete maintainer action when that
-helps the reviewer make a better decision. For example, a bug can include an
-`approve_design` action for a confidence-scored likely fix and a companion
-`request_info` action asking for the specific evidence that would raise or lower
-that confidence. The action list must stay concrete and issue-specific; never
-emit a generic log request when code/history/duplicate investigation can support
-a higher-confidence fix path.
+Issue artifacts expose both paths whenever uncertainty remains: an
+`approve_design` action for the confidence-scored likely fix and a companion
+`request_info` action asking for the specific evidence that would raise or
+lower that confidence. The action list must stay concrete and issue-specific;
+never emit a generic log request when code/history/duplicate investigation can
+support a higher-confidence fix path.
 
 Issue artifacts may also expose a `reproduce` action when the public report is
 clear enough for a maintainer to verify locally before a fix design exists:

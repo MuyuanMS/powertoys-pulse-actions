@@ -476,6 +476,10 @@ if (-not (Test-Path $artifactValidator)) {
       }
       actions = @(
         @{
+          type = 'approve_design'
+          label = 'Approve activation handoff design'
+        },
+        @{
           type = 'request_info'
           label = 'Request activation diagnostics'
           comment = @{
@@ -526,9 +530,28 @@ if (-not (Test-Path $artifactValidator)) {
         inferences = @('The failure is likely in preview generation rather than shell integration.')
         analysis = 'The report is concrete enough for a maintainer to verify before asking for logs.'
         initial_investigation = @('No duplicate currently proves this specific large-file preview path.')
-        information_gaps = @()
+        information_gaps = @(
+          @{
+            information = 'A maintainer profiling trace from the supplied large-file reproduction'
+            why_needed = 'It identifies which repeated preview operation should be cached or deferred.'
+            how_to_collect = 'Run the supplied reproduction under the existing PowerRename performance profiler.'
+          }
+        )
       }
       actions = @(
+        @{
+          type = 'approve_design'
+          label = 'Approve large-file preview design'
+        },
+        @{
+          type = 'request_info'
+          label = 'Request a profiling trace'
+          comment = @{
+            target = 'issue'
+            number = 45679
+            body = 'Thanks for providing a complete large-file reproduction for PowerRename. The steps are sufficient to measure the slowdown, but they do not identify which repeated preview operation consumes the time, so the current caching plan remains a best hypothesis. Could a maintainer run the supplied scenario under the existing PowerRename performance profiler and share the trace that identifies the repeated preview or metadata operation? That evidence will determine exactly which work should be cached or deferred.'
+          }
+        },
         @{
           type = 'reproduce'
           label = 'Reproduce locally'
@@ -602,6 +625,10 @@ if (-not (Test-Path $artifactValidator)) {
       }
       actions = @(
         @{
+          type = 'approve_design'
+          label = 'Approve stale-target design'
+        },
+        @{
           type = 'request_info'
           label = 'Request activation trace'
           comment = @{
@@ -629,6 +656,49 @@ if (-not (Test-Path $artifactValidator)) {
     }
     Set-Content (Join-Path $artifactRoot 'data\items\45680.json') $validFixArtifactText
 
+    $missingApproveDesign = $validFixArtifactText | ConvertFrom-Json
+    $missingApproveDesign.actions = @($missingApproveDesign.actions | Where-Object {
+      $_.type -ne 'approve_design'
+    })
+    $missingApproveDesign | ConvertTo-Json -Depth 12 |
+      Set-Content (Join-Path $artifactRoot 'data\items\45680.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 45680 -RequireIssueContext 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a proposed fix without approve_design.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+
+    $missingRequestInfo = $validFixArtifactText | ConvertFrom-Json
+    $missingRequestInfo.actions = @($missingRequestInfo.actions | Where-Object {
+      $_.type -ne 'request_info'
+    })
+    $missingRequestInfo | ConvertTo-Json -Depth 12 |
+      Set-Content (Join-Path $artifactRoot 'data\items\45680.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 45680 -RequireIssueContext 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a yellow fix without request_info.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+
+    $greenFix = $validFixArtifactText | ConvertFrom-Json
+    $greenFix.proposed_fixes[0].confidence.score = 90
+    $greenFix.proposed_fixes[0].confidence.level = 'green'
+    $greenFix.proposed_fixes[0].confidence.rationale = 'The source and reproduction establish the stale-cache path and its invalidation boundary.'
+    $greenFix.issue_context.information_gaps = @()
+    $greenFix.actions = @($greenFix.actions | Where-Object {
+      $_.type -ne 'request_info'
+    })
+    $greenFix | ConvertTo-Json -Depth 12 |
+      Set-Content (Join-Path $artifactRoot 'data\items\45680.json')
+    & $artifactValidator -Dashboard $artifactRoot -Numbers 45680 -RequireIssueContext | Out-Null
+    Set-Content (Join-Path $artifactRoot 'data\items\45680.json') $validFixArtifactText
+
     $invalidConfidence = Get-Content (Join-Path $artifactRoot 'data\items\45680.json') -Raw |
       ConvertFrom-Json
     $invalidConfidence.proposed_fixes[0].confidence.level = 'green'
@@ -645,7 +715,10 @@ if (-not (Test-Path $artifactValidator)) {
 
     $invalidIssue = Get-Content (Join-Path $artifactRoot 'data\items\45678.json') -Raw |
       ConvertFrom-Json
-    $invalidIssue.actions[0].comment.body = 'Please send more logs and information.'
+    $invalidRequestInfo = @($invalidIssue.actions | Where-Object {
+      $_.type -eq 'request_info'
+    }) | Select-Object -First 1
+    $invalidRequestInfo.comment.body = 'Please send more logs and information.'
     $invalidIssue | ConvertTo-Json -Depth 10 |
       Set-Content (Join-Path $artifactRoot 'data\items\45678.json')
     try {

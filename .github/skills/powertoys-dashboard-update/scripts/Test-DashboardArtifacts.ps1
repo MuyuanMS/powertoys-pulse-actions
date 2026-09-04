@@ -259,6 +259,26 @@ foreach ($path in @($paths)) {
   $requestInfoAction = @($artifact.actions | Where-Object {
     $_.type -eq 'request_info'
   }) | Select-Object -First 1
+  $approveDesignAction = @($artifact.actions | Where-Object {
+    $_.type -eq 'approve_design'
+  }) | Select-Object -First 1
+  if ($fixStatus -eq 'proposed') {
+    if (-not $approveDesignAction) {
+      $errors.Add("$prefix proposed fix requires an approve_design action")
+    }
+
+    $nonGreenFixes = @($proposedFixes | Where-Object {
+      [string]$_.confidence.level -in @('yellow', 'red')
+    })
+    if ($nonGreenFixes.Count -gt 0 -and -not $requestInfoAction) {
+      $errors.Add("$prefix yellow/red proposed fix requires a request_info action")
+    }
+    if ($nonGreenFixes.Count -gt 0 -and
+        @($artifact.issue_context.information_gaps).Count -eq 0) {
+      $errors.Add("$prefix yellow/red proposed fix requires issue_context.information_gaps")
+    }
+  }
+
   $requiresIssueContext = $RequireIssueContext -or [int]$artifact.schemaVersion -ge 4
   if ($requiresIssueContext -and $issueAction) {
     if (-not $artifact.issue_context) {
