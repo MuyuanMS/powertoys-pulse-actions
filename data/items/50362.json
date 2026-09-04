@@ -3,8 +3,9 @@
   "number": 50362,
   "kind": "issue",
   "track": "triage",
-  "generated_at": "2026-09-04T10:41:50+08:00",
-  "evaluated_at": "2026-09-04T10:41:50+08:00",
+  "stage": "awaiting_author_information",
+  "generated_at": "2026-09-04T07:30:00Z",
+  "evaluated_at": "2026-09-04T07:30:00Z",
   "source_updated_at": "2026-09-03T20:09:40Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50362",
   "title": "Grab And Move may crop the captured bounding box",
@@ -16,31 +17,50 @@
   ],
   "assignees": [],
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The issue has screenshots but no actual-behavior description or reproducible capture sequence; the upstream automated-triage request remains unanswered.",
+    "status": "needs_information",
+    "rationale": "The issue contains before/after images but no text describing the actual crop discrepancy, no interaction sequence, and no display scaling or capture context. Multiple coordinate paths are plausible, so a source fix would be speculative.",
     "evidence": [
-      "No textual steps.",
-      "No description of which pixels are missing or shifted.",
-      "Needs-Author-Feedback remains present.",
-      "No linked PR or duplicate resolution."
+      "The report identifies PowerToys 0.101.2432 preview and Windows 11 Insider build 29639.1000.",
+      "The Steps to reproduce and Expected Behavior fields contain images, while Actual Behavior is empty.",
+      "The only discussion comment requests concrete reproduction steps and the Needs-Author-Feedback label remains present.",
+      "Grab And Move uses GetWindowRect and DwmGetWindowAttribute extended-frame bounds for its overlay geometry, but the supplied report does not identify which geometry is wrong."
     ],
-    "recommended_action": "Request the invocation, target, selection gesture, and annotated actual-versus-expected crop."
+    "recommended_action": "Request a precise Grab And Move interaction sequence and annotated actual-versus-expected result before selecting a coordinate or crop path."
   },
   "fix_assessment": {
-    "status": "not_designable",
-    "rationale": "Selection, coordinate conversion, and final cropping are all plausible paths; choosing one without reproduction would fabricate a fix.",
+    "status": "not_applicable",
+    "rationale": "A PowerToys code change is not yet defensible because the report does not identify a reproducible failing path or the geometry that differs.",
     "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "Screenshots suggest a Grab And Move crop discrepancy, but the failing interaction is unspecified.",
+    "summary": "Screenshots suggest a Grab And Move bounding-box or visible-frame discrepancy on an Insider build, but the operation and the incorrect region are not described.",
     "known_information": [
-      "Preview build and Windows Insider build are identified.",
-      "Only screenshots establish the symptom."
+      "The issue is labeled Product-Grab And Move and Issue-Bug.",
+      "The reporter identifies PowerToys 0.101.2432 preview and Windows 11 Insider Experimental build 29639.1000.",
+      "Two images are supplied, but there is no textual actual behavior or diagnostic archive.",
+      "Automated triage already requested concrete steps and the issue is still labeled Needs-Author-Feedback."
+    ],
+    "inferences": [
+      "The discrepancy may involve DPI, invisible frame margins, or the selected target bounds, but the current images do not establish which.",
+      "A local reproduction could be possible once the capture operation and expected bounds are specified."
+    ],
+    "analysis": "The module computes overlay geometry from both window and DWM extended-frame rectangles, but the report does not state whether the capture refers to the overlay, move target, resize target, or a visual comparison. Asking for the minimum sequence and annotated discrepancy is more useful than a generic log request and avoids guessing a coordinate conversion fix.",
+    "initial_investigation": [
+      "Reviewed src/modules/GrabAndMove/GrabAndMove/main.cpp: the drag/resize overlay derives visible margins from GetWindowRect and DWMWA_EXTENDED_FRAME_BOUNDS.",
+      "Reviewed the full issue body and its sole automated-triage comment; no human reproduction steps, duplicate, linked fix, or assignee is present.",
+      "Checked current upstream references and fork traces; no related open fix or fork mirror was found."
     ],
     "information_gaps": [
-      "Numbered reproduction steps.",
-      "Annotated missing/extra region.",
-      "Display scaling and capture mode."
+      {
+        "information": "A numbered sequence covering the modifier/button gesture, target window, and what is meant by capture or bounding box.",
+        "why_needed": "It identifies the specific Grab And Move flow to reproduce instead of guessing between move, resize, overlay, and target-selection paths.",
+        "how_to_collect": "Describe each input from enabling Grab And Move through observing the result, including whether Alt or Win mode and left or right mouse button were used."
+      },
+      {
+        "information": "An annotated image or short recording showing the expected bounds and the exact missing, shifted, or extra region, plus display scaling and monitor arrangement.",
+        "why_needed": "It distinguishes DWM frame-margin, DPI, multi-monitor, and target-window coordinate mismatches.",
+        "how_to_collect": "Mark the intended and actual rectangle on the existing image or attach a short recording, then state each monitor's scaling percentage and which monitor contained the target."
+      }
     ]
   },
   "actions": [
@@ -54,7 +74,7 @@
         "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50362,
-        "body": "Please provide the exact numbered sequence used to open Grab And Move, select the target, perform the capture, and view the result. Also mark or describe which part of the selected bounding box is missing, shifted, or unexpectedly included, and include the display scaling/capture mode."
+        "body": "Thanks for the screenshots and the Insider-build details. To identify whether this is a move, resize, overlay, DPI, or frame-boundary problem, please provide the numbered sequence from enabling Grab And Move through the result: include Alt or Win mode, left or right mouse button, target window, and what you mean by capture/bounding box. Please also annotate the expected and actual rectangles (or attach a short recording) and state the scaling percentage and monitor arrangement used."
       },
       "note": "Draft only; no upstream comment posted."
     }

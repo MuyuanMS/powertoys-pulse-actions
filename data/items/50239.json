@@ -3,84 +3,90 @@
   "number": 50239,
   "kind": "issue",
   "track": "fix",
-  "evaluated_at": "2026-09-04T03:00:00Z",
+  "stage": "awaiting_design_approval",
+  "evaluated_at": "2026-09-04T07:14:14Z",
   "source_updated_at": "2026-09-03T02:28:22Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50239",
+  "title": "Shortcut Conflict shown when there's no documented conflict.",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "Win+Shift+C works but is reported as a system conflict on Windows 11.",
+    "rationale": "The activation chord works on Windows 11 but Settings reports a system conflict for the historically assigned Win+Shift+C chord, supporting a stale catalog applicability fix.",
     "evidence": [
-      "Reproduced on 0.101.2362 and Windows 11 build 26200.",
-      "Current shortcut documentation omits Win+Shift+C.",
-      "The chord historically belonged to Cortana/Charms, not current Windows 11."
+      "The reporter confirms the warning on 0.101.2362 and Windows 11 build 26200 while Color Picker activation works.",
+      "A maintainer states Win+Shift+C was historical Cortana/Charms behavior and is generally deprecated on modern Windows 11.",
+      "The conflict system is implemented by GlobalHotkeyConflictManager and HotkeyConflictInfo."
     ],
-    "recommended_action": "Approve an OS-aware conflict-catalog fix."
+    "recommended_action": "Approve an OS-applicability design while requesting confirmation of the actual catalog entry and supported-version policy."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt covers the stale conflict entry."
+    "rationale": "No linked fix covers the stale system-shortcut applicability decision.",
+    "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Remove obsolete Win+Shift+C conflict reporting",
-      "root_cause": "A historical system shortcut is matched unconditionally on modern Windows.",
+      "title": "Exclude obsolete Win+Shift+C from current Windows system conflicts",
+      "root_cause": "Likely: conflict metadata treats the historical Cortana/Charms chord as current without an OS applicability condition.",
       "plan": [
-        "Locate the system shortcut catalog and matcher.",
-        "Remove or OS-gate the legacy entry.",
-        "Add positive and negative conflict tests."
+        "Locate the entry that emits the system conflict and verify that it represents Win+Shift+C rather than Win+C or Win+Ctrl+C.",
+        "Add supported-version applicability to that entry, excluding it where Windows no longer reserves the chord.",
+        "Keep active system and module conflicts unchanged and add positive and negative matcher coverage."
       ],
       "verification": [
-        "Set Color Picker to Win+Shift+C on Windows 11 and confirm no warning while activation still works."
+        "On Windows 11 configure Color Picker as Win+Shift+C and confirm no system-conflict warning while activation works.",
+        "Confirm known current system conflicts still appear and validate any supported older Windows behavior."
       ],
       "confidence": {
         "score": 78,
         "level": "yellow",
-        "rationale": "Behavior isolates the catalog, but the exact entry needs source confirmation."
+        "rationale": "The user result and maintainer history isolate obsolete metadata, but the exact catalog entry and version policy need source confirmation."
       }
     }
   ],
   "issue_context": {
-    "summary": "Color Picker's Win+Shift+C activation works, but Settings shows a misleading system conflict.",
+    "summary": "Color Picker works with Win+Shift+C on Windows 11, but Settings reports an undocumented system shortcut conflict.",
     "known_information": [
-      "Reporter confirmed the warning after upgrading.",
-      "The linked current shortcut page has no matching chord.",
-      "The report is on Windows 11."
+      "The reporter reproduced on 0.101.2362 stable and Windows 11 build 26200.",
+      "The shortcut still activates Color Picker.",
+      "Maintainer discussion identifies historical Cortana or Charms ownership.",
+      "Settings has GlobalHotkeyConflictManager and HotkeyConflictInfo conflict surfaces."
     ],
     "inferences": [
-      "The source is likely stale conflict metadata, not hotkey registration.",
-      "The fix must preserve genuine conflicts."
+      "The warning likely comes from stale system-conflict metadata rather than hotkey registration.",
+      "Version gating is safer than hiding the conflict for Color Picker alone."
     ],
-    "analysis": "Only the warning is wrong, so investigation should focus on conflict metadata and OS applicability.",
+    "analysis": "The visible warning is incorrect on the reporter's current OS, but the code entry and its compatibility policy must be confirmed before changing shared conflict behavior.",
     "initial_investigation": [
-      "Relevant areas are Settings.UI Helpers/HotkeyConflictHelper.cs and Services/GlobalHotkeyConflictManager.cs.",
-      "No linked PR or fork fix exists."
+      "Read the issue and maintainer clarification.",
+      "Located the Settings conflict manager and conflict metadata types."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "The exact conflict-catalog entry and its intended supported Windows versions",
+        "why_needed": "It distinguishes an obsolete Win+Shift+C entry from key normalization and prevents suppressing a valid conflict on a supported OS.",
+        "how_to_collect": "Inspect the system shortcut catalog and run its matcher for Win+Shift+C, Win+C, and Win+Ctrl+C on supported Windows versions; record the intended compatibility policy."
+      }
+    ]
   },
   "design": {
-    "root_cause": "A legacy Win+Shift+C system mapping is treated as active on Windows 11.",
+    "root_cause": "Unconfirmed but likely stale system-shortcut metadata that lacks current-Windows applicability.",
     "evidence": [
-      "Observed: activation succeeds.",
-      "Observed: warning persists after update.",
-      "Inferred: static catalog lacks OS gating."
+      "[Observed] Win+Shift+C activates Color Picker despite the warning.",
+      "[Observed] A maintainer describes the chord as legacy Cortana/Charms behavior.",
+      "[Observed] Shared Settings conflict-manager and metadata types own the warning.",
+      "[Inferred] The exact catalog entry needs OS-aware filtering."
     ],
     "affected_files": [
       {
-        "path": "src/settings-ui/Settings.UI/Helpers/HotkeyConflictHelper.cs",
-        "purpose": "Matches configured hotkeys against system conflicts.",
-        "symbols": [
-          "HotkeyConflictHelper"
-        ]
-      },
-      {
         "path": "src/settings-ui/Settings.UI/Services/GlobalHotkeyConflictManager.cs",
-        "purpose": "Aggregates conflict results.",
+        "purpose": "Initializes and publishes shortcut conflict results.",
         "symbols": [
           "GlobalHotkeyConflictManager"
         ]
       },
       {
         "path": "src/settings-ui/Settings.UI.Library/HotkeyConflicts/HotkeyConflictInfo.cs",
-        "purpose": "Carries conflict metadata.",
+        "purpose": "Defines conflict metadata.",
         "symbols": [
           "HotkeyConflictInfo"
         ]
@@ -89,19 +95,19 @@
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/settings-ui/Settings.UI/Helpers/HotkeyConflictHelper.cs",
+        "file": "src/settings-ui/Settings.UI.Library/HotkeyConflicts/HotkeyConflictInfo.cs and the source catalog",
         "symbols": [
-          "HotkeyConflictHelper"
+          "HotkeyConflictInfo"
         ],
-        "current_behavior": "Matches the legacy chord whenever configured.",
-        "change": "Filter the catalog by supported OS applicability before exact chord matching.",
-        "code_block": "var active = GetSystemShortcuts().Where(x => x.IsActiveOnCurrentWindows());\n+return active.Any(x => x.Hotkey == candidate);",
+        "current_behavior": "The source conflict is surfaced without a confirmed current-OS applicability condition.",
+        "change": "Represent supported Windows applicability on the proven Win+Shift+C entry.",
+        "code_block": "if (!conflict.IsApplicableToCurrentWindows()) skip conflict before publishing.",
         "edge_cases": [
-          "Do not conflate Win+C or Win+Ctrl+C.",
-          "Use a safe baseline if OS version lookup fails."
+          "Do not collapse Shift/Ctrl modifiers during matching.",
+          "Preserve any still-supported legacy Windows behavior."
         ],
         "tests": [
-          "Unit-test Win+Shift+C exclusion and a known active conflict."
+          "Matcher tests for Win+Shift+C exclusion and known current conflicts."
         ]
       },
       {
@@ -110,37 +116,47 @@
         "symbols": [
           "GlobalHotkeyConflictManager"
         ],
-        "current_behavior": "Publishes helper results without applicability metadata.",
-        "change": "Publish only applicable conflicts while preserving module/system classification.",
-        "code_block": "var conflicts = helper.GetConflicts(settings).Where(x => x.IsApplicable);",
+        "current_behavior": "Manager publishes conflict metadata to Settings.",
+        "change": "Filter only entries outside their declared OS applicability before the UI receives them.",
+        "code_block": "activeConflicts = matchedConflicts.Where(conflict => conflict.IsApplicableToCurrentWindows());",
         "edge_cases": [
-          "Do not suppress module conflicts."
+          "Do not suppress module conflicts.",
+          "Use existing platform-version helpers."
         ],
         "tests": [
-          "Service test verifies inactive entries do not reach the dashboard."
+          "Service test that an inactive system entry does not reach Settings."
         ]
       }
     ],
     "verify": [
-      "Build Settings UI with the existing repository build path.",
-      "Run focused Settings UI tests.",
-      "On Windows 11 configure Win+Shift+C and verify zero warning plus working Color Picker."
+      "Build Settings UI with tools\\build\\build.cmd.",
+      "Run focused conflict matcher tests.",
+      "On Windows 11 verify the warning disappears and Color Picker continues to activate."
     ],
     "risks": [
-      "Older supported Windows versions may still need the historical mapping.",
-      "Incorrect normalization could hide real conflicts."
+      "Incorrect version detection could hide a real conflict.",
+      "A Color Picker-specific suppression would leave shared metadata wrong."
     ],
     "alternatives": [
-      "Suppress only Color Picker; rejected because the catalog remains wrong.",
-      "Change the help link only; rejected because the warning itself is false."
+      "Change only the help link; rejected because the false warning remains.",
+      "Suppress all Win+C-family conflicts; rejected because modifier distinctions matter."
     ]
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "No blocking objection to the conditional catalog design; exact entry and version policy must be confirmed.",
+    "notes": "Do not implement a Color Picker-only suppression."
   },
   "actions": [
     {
       "type": "approve_design",
-      "label": "Approve shortcut-conflict fix design",
-      "design": {
-        "title": "Remove obsolete Win+Shift+C conflict reporting"
+      "label": "Approve shortcut-conflict design"
+    },
+    {
+      "type": "request_info",
+      "label": "Request conflict-catalog verification",
+      "comment": {
+        "body": "The working Win+Shift+C activation on Windows 11 and the historical Cortana/Charms context point to an obsolete system-conflict entry, not a Color Picker registration failure. Please verify the catalog entry for Win+Shift+C separately from Win+C and Win+Ctrl+C, then confirm the Windows versions on which it should remain a real conflict; that evidence will keep the shared matcher from hiding valid warnings."
       }
     }
   ]
