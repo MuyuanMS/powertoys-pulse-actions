@@ -1,33 +1,92 @@
 {
+  "schemaVersion": 5,
   "number": 48547,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "handled",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-04T09:24:43Z",
+  "evaluated_at": "2026-09-04T09:24:43Z",
   "source_updated_at": "2026-07-01T21:10:39Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/48547",
+  "title": "EnviromentVariable crush when run as Admin",
+  "author": "yishifengyin",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Status-In progress",
+    "Product-Environment Variables",
+    "0.101"
+  ],
+  "comments": 0,
+  "confidence": "High",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "CHECK",
+    "label": "Covered by merged title-bar startup fix",
+    "detail": "Merged PR 49069 added a non-empty Environment Variables title fallback before the WinUI TitleBar can read an empty native window title during startup."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "LINK",
+    "label": "Post merged-fix status",
+    "reason": "The issue has no discussion update, while merged PR 49069 explicitly identifies it as a covered title-bar startup fault. A competing design would duplicate completed upstream work."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "rationale": "Merged PR 49069 explicitly covers this issue's Environment Variables startup crash. It prevents the elevated resource-title path from leaving the native window title empty before the WinUI TitleBar reads it.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports that Environment Variables opens normally without elevation but shows a blank window and crashes within 3-5 seconds when run as administrator.",
+      "The issue is labeled Product-Environment Variables and 0.101.",
+      "PR 49069 was merged on 2026-07-02 and its summary explicitly says it fixes a class of bugs including this issue.",
+      "PR 49069 changed EnvironmentVariablesXAML/MainWindow.xaml.cs so an empty WindowAdminTitle or WindowTitle resource falls back to the non-empty string \"Environment Variables\" before assigning Window.Title and titleBar.Title."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Post a merged-fix status pointing reporters to PR 49069; do not create a competing design.",
+    "evaluated_at": "2026-09-04T09:24:43Z",
     "source_updated_at": "2026-07-01T21:10:39Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Merged PR 49069 implements the concrete fix for the reported elevated startup failure in the affected Environment Variables window.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49069"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Environment Variables crashes shortly after opening elevated, while the non-elevated window works. The merged title-bar startup fix covers the empty-title path in the affected window.",
+    "known_information": [
+      "The reporter used PowerToys 0.100.0 installed through auto-update.",
+      "The failure occurs when Environment Variables is run as administrator; the reporter sees a blank window followed by a crash after 3-5 seconds.",
+      "The report includes a PowerToys diagnostic ZIP attachment.",
+      "PR 49069 merged on 2026-07-02 and explicitly lists this issue among the title-bar startup faults it addresses.",
+      "The merged Environment Variables change obtains WindowAdminTitle for an elevated window, substitutes \"Environment Variables\" when the resource lookup yields an empty value, then assigns both Window.Title and titleBar.Title."
+    ],
+    "inferences": [
+      "The elevated-only symptom is consistent with the WindowAdminTitle resource lookup being the empty-title source, but the original diagnostic archive was not needed to establish that the merged PR covers this issue.",
+      "The issue label Status-In progress appears not to have been reconciled after the merged fix."
+    ],
+    "analysis": "The report identifies an elevation-specific startup crash, and the merged PR directly documents the matching failure mechanism: WinUI TitleBar can fault during deferred layout if AppWindow.Title is empty. Its Environment Variables change handles both elevated and non-elevated resource lookup results before the title bar reads the title. This is concrete completed coverage, so proposing another implementation would duplicate upstream work.",
+    "initial_investigation": [
+      "Read the complete issue body, labels, assignees, discussion, and linked pull-request references; the issue has no comments, no assignee, and no direct linked PR reference.",
+      "Searched upstream pull requests for the issue number and found merged PR 49069.",
+      "Read PR 49069's summary, merge state, changed-file list, and commits.",
+      "Inspected merged commit de4859454cd0750fe560adcc85cd7220c9cbda99 and the current EnvironmentVariablesXAML/MainWindow.xaml.cs implementation."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "post-merged-fix-48547",
+      "type": "post_comment",
+      "label": "Post merged-fix status",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 48547,
+        "body": "Thanks for the elevation-specific report and diagnostic archive. This crash is covered by merged PR 49069: Environment Variables now falls back to a non-empty window title when the elevated or standard resource title cannot be resolved, before the WinUI TitleBar reads the native title during startup. That prevents the blank-window startup fault described here. The fix was merged on July 2; please use a build that includes it and report back if the elevated launch still crashes."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

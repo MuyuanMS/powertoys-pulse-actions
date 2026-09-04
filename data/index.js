@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T17:22:33.3902878+08:00",
+  "generated_at": "2026-09-04T17:37:13.4411098+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 142,
     "open_issues": 12604,
     "community": 11992,
-    "artifacts": 354
+    "artifacts": 355
   },
   "impact": {
-    "as_of": "2026-09-04T17:22:33.3902878+08:00",
+    "as_of": "2026-09-04T17:37:13.4411098+08:00",
     "issues_helped": 10,
     "prs_iterated": 28,
     "constructive_comments_posted": 3,
@@ -315,6 +315,7 @@ window.BOARD_INDEX = {
     49013,
     48820,
     48803,
+    48547,
     30973,
     48432,
     48204,
@@ -97770,15 +97771,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "owned_elsewhere",
+      "stage": "handled",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Post merged-fix status"
+      },
       "labels": [
         "Issue-Bug",
         "Status-In progress",
