@@ -9,13 +9,193 @@
   "source_updated_at": "2026-08-31T15:08:12Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50267",
   "title": "PowerToys autoupdate configured for Stable update channel, installed Preview release",
-  "judgment": {"status": "actionable_design", "rationale": "The updater's cached ready-to-install path can bypass the current channel preference.", "evidence": ["The issue reports stable settings but installation of prerelease 0.101.2373.0.", "Fresh stable queries use the stable endpoint.", "ObtainInstaller accepts a cached ready-to-install installer before rechecking the channel."], "recommended_action": "Approve provenance-aware cached installer validation."},
-  "fix_assessment": {"status": "proposed", "rationale": "No issue-specific fix covers cached prerelease provenance at installation time.", "existing_fix_urls": []},
-  "proposed_fixes": [{"title": "Reject cached Preview installers when Stable is selected", "root_cause": "A preview installer downloaded under an earlier channel selection remains readyToInstall and is consumed without revalidating the current effective setting and GPO.", "plan": ["Read the effective Preview setting before accepting cached state.", "Invalidate prerelease or provenance-less cached installers when Preview is disabled.", "Add updater state and channel regression tests."], "verification": ["Seed a cached prerelease readyToInstall state, select Stable, and verify it is discarded rather than launched.", "Repeat with Preview enabled and with GPO disabling Preview."], "confidence": {"score": 78, "level": "yellow", "rationale": "The cached bypass explains the symptom, but the report lacks the pre-install selection trace."}}],
-  "issue_context": {"summary": "Automatic update installed a Preview build even though the report says Preview updates were disabled; post-update state does not preserve the selection path.", "known_information": ["Before version was 0.101.2362.0 and after version was 0.101.2373.0.", "The diagnostic reports automatic downloads enabled and prerelease updates disabled after the update.", "UpdateState is reset after installation and lacks the selected release URL/asset."], "inferences": ["A cached preview may have been selected before the setting changed or before installation.", "The post-update setting alone cannot prove the setting at selection time."], "analysis": "The early cached-installer return is the most actionable code path while retaining offline update behavior, but implementation should preserve legacy state safety.", "initial_investigation": ["Inspected updating.cpp, UpdateUtils.cpp, PowerToys.Update.cpp, UpdateState serialization, and GeneralViewModel channel changes.", "Checked release metadata and found the reported after-version is prerelease."], "information_gaps": [{"information": "Exact update time and whether Settings or an automatic update initiated it.", "why_needed": "Distinguishes cached/manual/update-check paths.", "how_to_collect": "Reply with approximate local time and whether an update toast or Settings action was used."}]},
-  "design": {"root_cause": "ObtainInstaller trusts readyToInstall cached state before current channel evaluation, allowing a previously selected prerelease asset to install on Stable.", "evidence": ["Stable API selection excludes prereleases.", "The cached installer path occurs before a fresh selection.", "UpdateState persists isPrerelease and installer filename during download."], "affected_files": [{"path": "src/Update/PowerToys.Update.cpp", "purpose": "Cached installer selection.", "symbols": ["ObtainInstaller"]}, {"path": "src/common/updating/updateState.h", "purpose": "Persisted update provenance.", "symbols": ["UpdateState"]}, {"path": "src/common/updating/updateState.cpp", "purpose": "State serialization.", "symbols": ["serialize", "deserialize"]}, {"path": "src/common/updating/UnitTests/UpdatingTests.cpp", "purpose": "Updater regression coverage.", "symbols": ["update-state tests"]}], "implementation_steps": [{"order": 1, "file": "src/Update/PowerToys.Update.cpp", "symbols": ["ObtainInstaller"], "current_behavior": "A valid cached installer is returned without checking current Preview policy.", "change": "Evaluate the effective user setting and GPO; reject prerelease or provenance-less cached state when Preview is disabled, clean state atomically, then continue normal selection.", "code_block": "if (readyToInstall && cached.isPrerelease && !effectivePreview) { cleanup_cached_update(); reset_state_for_retry(); } else return validated_cached_installer;", "edge_cases": ["Keep safe path validation.", "Do not delete before state decision is serialized.", "Preserve retryable state if network selection fails."], "tests": ["Stable plus cached Preview is rejected.", "Preview plus cached Preview is accepted.", "GPO override and missing provenance are covered."]}, {"order": 2, "file": "src/common/updating/updateState.h/.cpp", "symbols": ["UpdateState", "serialize", "deserialize"], "current_behavior": "Older state may lack reliable release provenance.", "change": "Persist release version/provenance and treat absent provenance conservatively.", "code_block": "missing provenance => invalidate and re-query instead of assuming Stable.", "edge_cases": ["Backward compatibility with existing state files.", "Mutex-protected writes."], "tests": ["Round-trip prerelease provenance and legacy state."]}], "verify": ["Build updater unit tests and x64 Debug/Release.", "Exercise cached Preview on Stable and confirm no Preview installer launches.", "Verify Preview-enabled and GPO-disabled cases."], "risks": ["Users who intentionally changed channels lose an old cached installer, but receive the correct current channel.", "Always re-query would break offline install support."], "alternatives": ["Clear cache only on setting change misses races.", "Always re-query is stronger but changes established offline behavior."]},
-  "fork_issue": {"number": 648, "url": "https://github.com/MuyuanMS/PowerToys/issues/648"},
-  "actions": [{"id": "approve-design-50267", "type": "approve_design", "label": "Approve cached-update channel design", "primary": true, "confirm": true, "requiresApproval": true, "note": "Fork-side implementation only; no upstream action."}, {"id": "request-info-50267", "type": "request_info", "label": "Request updater-selection evidence", "confirm": true, "comment": {"target": "issue", "number": 50267, "body": "Thanks for the diagnostic archive. It confirms the installed Preview version and the post-update Stable preference, but not whether the update was automatic, manually triggered, or consumed a cached installer. Please share the approximate update time, whether an update toast or Settings action was used, and any retained PowerToys.Update.exe log or installer filename. If it happens again, comment `/bugreport` immediately after the unexpected update."}}],
-  "adversary": {"rounds": 2, "verdict": "no blocking objections", "non_blocking_notes": ["Retain the evidence gap in the artifact and verify the cached path with tests."]},
-  "approval_gate": {"fork_issue_number": 648, "status": "awaiting_design_approval"}
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The updater's cached ready-to-install path can bypass the current channel preference.",
+    "evidence": [
+      "The issue reports stable settings but installation of prerelease 0.101.2373.0.",
+      "Fresh stable queries use the stable endpoint.",
+      "ObtainInstaller accepts a cached ready-to-install installer before rechecking the channel."
+    ],
+    "recommended_action": "Approve provenance-aware cached installer validation."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No issue-specific fix covers cached prerelease provenance at installation time.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reject cached Preview installers when Stable is selected",
+      "root_cause": "A preview installer downloaded under an earlier channel selection remains readyToInstall and is consumed without revalidating the current effective setting and GPO.",
+      "plan": [
+        "Read the effective Preview setting before accepting cached state.",
+        "Invalidate prerelease or provenance-less cached installers when Preview is disabled.",
+        "Add updater state and channel regression tests."
+      ],
+      "verification": [
+        "Seed a cached prerelease readyToInstall state, select Stable, and verify it is discarded rather than launched.",
+        "Repeat with Preview enabled and with GPO disabling Preview."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The cached bypass explains the symptom, but the report lacks the pre-install selection trace."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Automatic update installed a Preview build even though the report says Preview updates were disabled; post-update state does not preserve the selection path.",
+    "known_information": [
+      "Before version was 0.101.2362.0 and after version was 0.101.2373.0.",
+      "The diagnostic reports automatic downloads enabled and prerelease updates disabled after the update.",
+      "UpdateState is reset after installation and lacks the selected release URL/asset."
+    ],
+    "inferences": [
+      "A cached preview may have been selected before the setting changed or before installation.",
+      "The post-update setting alone cannot prove the setting at selection time."
+    ],
+    "analysis": "The early cached-installer return is the most actionable code path while retaining offline update behavior, but implementation should preserve legacy state safety.",
+    "initial_investigation": [
+      "Inspected updating.cpp, UpdateUtils.cpp, PowerToys.Update.cpp, UpdateState serialization, and GeneralViewModel channel changes.",
+      "Checked release metadata and found the reported after-version is prerelease."
+    ],
+    "information_gaps": [
+      {
+        "information": "Exact update time and whether Settings or an automatic update initiated it.",
+        "why_needed": "Distinguishes cached/manual/update-check paths.",
+        "how_to_collect": "Reply with approximate local time and whether an update toast or Settings action was used."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "ObtainInstaller trusts readyToInstall cached state before current channel evaluation, allowing a previously selected prerelease asset to install on Stable.",
+    "evidence": [
+      "Stable API selection excludes prereleases.",
+      "The cached installer path occurs before a fresh selection.",
+      "UpdateState persists isPrerelease and installer filename during download."
+    ],
+    "affected_files": [
+      {
+        "path": "src/Update/PowerToys.Update.cpp",
+        "purpose": "Cached installer selection.",
+        "symbols": [
+          "ObtainInstaller"
+        ]
+      },
+      {
+        "path": "src/common/updating/updateState.h",
+        "purpose": "Persisted update provenance.",
+        "symbols": [
+          "UpdateState"
+        ]
+      },
+      {
+        "path": "src/common/updating/updateState.cpp",
+        "purpose": "State serialization.",
+        "symbols": [
+          "serialize",
+          "deserialize"
+        ]
+      },
+      {
+        "path": "src/common/updating/UnitTests/UpdatingTests.cpp",
+        "purpose": "Updater regression coverage.",
+        "symbols": [
+          "update-state tests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/Update/PowerToys.Update.cpp",
+        "symbols": [
+          "ObtainInstaller"
+        ],
+        "current_behavior": "A valid cached installer is returned without checking current Preview policy.",
+        "change": "Evaluate the effective user setting and GPO; reject prerelease or provenance-less cached state when Preview is disabled, clean state atomically, then continue normal selection.",
+        "code_block": "if (readyToInstall && cached.isPrerelease && !effectivePreview) { cleanup_cached_update(); reset_state_for_retry(); } else return validated_cached_installer;",
+        "edge_cases": [
+          "Keep safe path validation.",
+          "Do not delete before state decision is serialized.",
+          "Preserve retryable state if network selection fails."
+        ],
+        "tests": [
+          "Stable plus cached Preview is rejected.",
+          "Preview plus cached Preview is accepted.",
+          "GPO override and missing provenance are covered."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/common/updating/updateState.h/.cpp",
+        "symbols": [
+          "UpdateState",
+          "serialize",
+          "deserialize"
+        ],
+        "current_behavior": "Older state may lack reliable release provenance.",
+        "change": "Persist release version/provenance and treat absent provenance conservatively.",
+        "code_block": "missing provenance => invalidate and re-query instead of assuming Stable.",
+        "edge_cases": [
+          "Backward compatibility with existing state files.",
+          "Mutex-protected writes."
+        ],
+        "tests": [
+          "Round-trip prerelease provenance and legacy state."
+        ]
+      }
+    ],
+    "verify": [
+      "Build updater unit tests and x64 Debug/Release.",
+      "Exercise cached Preview on Stable and confirm no Preview installer launches.",
+      "Verify Preview-enabled and GPO-disabled cases."
+    ],
+    "risks": [
+      "Users who intentionally changed channels lose an old cached installer, but receive the correct current channel.",
+      "Always re-query would break offline install support."
+    ],
+    "alternatives": [
+      "Clear cache only on setting change misses races.",
+      "Always re-query is stronger but changes established offline behavior."
+    ]
+  },
+  "fork_issue": {
+    "number": 648,
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/648"
+  },
+  "actions": [
+    {
+      "id": "approve-design-50267",
+      "type": "approve_design",
+      "label": "Approve cached-update channel design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Fork-side implementation only; no upstream action."
+    },
+    {
+      "id": "request-info-50267",
+      "type": "request_info",
+      "label": "Request updater-selection evidence",
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50267,
+        "body": "Thanks for the diagnostic archive. It confirms the installed Preview version and the post-update Stable preference, but not whether the update was automatic, manually triggered, or consumed a cached installer. Please share the approximate update time, whether an update toast or Settings action was used, and any retained PowerToys.Update.exe log or installer filename. If it happens again, comment `/bugreport` immediately after the unexpected update."
+      }
+    }
+  ],
+  "adversary": {
+    "rounds": 2,
+    "verdict": "no blocking objections",
+    "non_blocking_notes": [
+      "Retain the evidence gap in the artifact and verify the cached path with tests."
+    ]
+  },
+  "approval_gate": {
+    "fork_issue_number": 648,
+    "status": "awaiting_design_approval"
+  }
 }

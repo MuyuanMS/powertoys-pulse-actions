@@ -83,21 +83,59 @@
       "[Inferred] A stack-exact reporting mitigation could be considered only after confirming the UI remains healthy."
     ],
     "affected_files": [
-      {"path": "src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs", "purpose": "Applies system theme and resource updates.", "symbols": ["OnUserPreferenceChanged", "SetSystemTheme", "UpdateThemeWithRetryAsync"]},
-      {"path": "src/modules/launcher/PowerLauncher/Helper/ErrorReporting.cs", "purpose": "Handles dispatcher exceptions and user-facing reports.", "symbols": ["DispatcherUnhandledException", "HandleException"]},
-      {"path": "src/modules/launcher/PowerLauncher/LauncherControl.xaml", "purpose": "Contains candidate DataTrigger bindings.", "symbols": ["QueryTextBoxStyle"]},
-      {"path": "src/modules/launcher/PowerLauncher/ResultList.xaml", "purpose": "Contains result-list dynamic resource and trigger paths.", "symbols": ["result list styles"]}
+      {
+        "path": "src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs",
+        "purpose": "Applies system theme and resource updates.",
+        "symbols": [
+          "OnUserPreferenceChanged",
+          "SetSystemTheme",
+          "UpdateThemeWithRetryAsync"
+        ]
+      },
+      {
+        "path": "src/modules/launcher/PowerLauncher/Helper/ErrorReporting.cs",
+        "purpose": "Handles dispatcher exceptions and user-facing reports.",
+        "symbols": [
+          "DispatcherUnhandledException",
+          "HandleException"
+        ]
+      },
+      {
+        "path": "src/modules/launcher/PowerLauncher/LauncherControl.xaml",
+        "purpose": "Contains candidate DataTrigger bindings.",
+        "symbols": [
+          "QueryTextBoxStyle"
+        ]
+      },
+      {
+        "path": "src/modules/launcher/PowerLauncher/ResultList.xaml",
+        "purpose": "Contains result-list dynamic resource and trigger paths.",
+        "symbols": [
+          "result list styles"
+        ]
+      }
     ],
     "implementation_steps": [
       {
         "order": 1,
         "file": "src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs and candidate XAML files",
-        "symbols": ["ThemeManager::SetSystemTheme", "LauncherControl.xaml triggers", "ResultList.xaml resources"],
+        "symbols": [
+          "ThemeManager::SetSystemTheme",
+          "LauncherControl.xaml triggers",
+          "ResultList.xaml resources"
+        ],
         "current_behavior": "WPF reevaluates theme resources and bindings during a system-theme message, but the failing target is not identified.",
         "change": "Collect exact target-element and binding diagnostics first; only rewrite the proven binding or resource path.",
         "code_block": "OnThemeChanged -> capture target FrameworkElement + DependencyProperty + resource key -> reproduce -> replace only the proven trigger/binding with a theme-safe property path.",
-        "edge_cases": ["Keep all resource mutation on the dispatcher thread.", "Test light/dark, high contrast, monitor changes, and sleep/wake.", "Do not conflate DWM composition exceptions with this WPF binding exception."],
-        "tests": ["Add an exact-stack ExceptionHelper test only if a mitigation is approved.", "Add manual theme regression coverage for the identified XAML path."]
+        "edge_cases": [
+          "Keep all resource mutation on the dispatcher thread.",
+          "Test light/dark, high contrast, monitor changes, and sleep/wake.",
+          "Do not conflate DWM composition exceptions with this WPF binding exception."
+        ],
+        "tests": [
+          "Add an exact-stack ExceptionHelper test only if a mitigation is approved.",
+          "Add manual theme regression coverage for the identified XAML path."
+        ]
       }
     ],
     "verify": [
@@ -106,11 +144,27 @@
       "If a binding is identified, build PowerLauncher with the existing tools\\build\\build.cmd workflow and repeat theme, high-contrast, sleep, and dock scenarios.",
       "Ensure unrelated UI exceptions still produce the error report."
     ],
-    "risks": ["A broad NullReferenceException suppression could hide broken UI state.", "A speculative XAML rewrite could miss the framework defect and churn unrelated templates."],
-    "alternatives": ["Wait for a confirmed dotnet/WPF servicing fix if the target is framework-owned.", "Use an exact-stack mitigation only with repeat-count monitoring and proof that Run remains functional."]
+    "risks": [
+      "A broad NullReferenceException suppression could hide broken UI state.",
+      "A speculative XAML rewrite could miss the framework defect and churn unrelated templates."
+    ],
+    "alternatives": [
+      "Wait for a confirmed dotnet/WPF servicing fix if the target is framework-owned.",
+      "Use an exact-stack mitigation only with repeat-count monitoring and proof that Run remains functional."
+    ]
   },
-  "mirror": {"kind": "issue", "fork_number": 643, "fork_title": "[Issue 50355] Something went wrong", "fork_state": "OPEN", "url": "https://github.com/MuyuanMS/PowerToys/issues/643"},
-  "adversary": {"rounds": 1, "verdict": "Blocking objection remains: the failing binding and safe ownership are unknown.", "notes": "Do not claim implementation-ready design."},
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 643,
+    "fork_title": "[Issue 50355] Something went wrong",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/643"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "Blocking objection remains: the failing binding and safe ownership are unknown.",
+    "notes": "Do not claim implementation-ready design."
+  },
   "actions": [
     {
       "type": "request_info",

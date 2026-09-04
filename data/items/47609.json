@@ -79,6 +79,11 @@
       "The classic Win10 handler explicitly rejects Windows 11.",
       "A related compatibility issue remains open."
     ],
+    "inferences": [
+      "The missing classic-menu entry is likely caused by the classic handler declining Windows 11 invocation before it contributes New+ menu items.",
+      "A fix must distinguish classic Explorer invocation from modern menu registration so restoring the classic path does not create duplicate entries."
+    ],
+    "analysis": "The reported symptom is scoped to the Windows 11 classic context menu, and the current New+ classic shell extension contains a direct Windows 11 rejection path. That makes handler eligibility and registration reconciliation the most likely PowerToys-owned fix boundary while still requiring Windows 11 registration validation before implementation.",
     "information_gaps": [
       "Exact classic-shell registration state on the reporter's build.",
       "Whether the modern handler is already visible or duplicated."
@@ -87,9 +92,27 @@
   "design": {
     "root_cause": "The classic shell extension returns E_FAIL on Windows 11 before adding its menu items.",
     "affected_files": [
-      "src/modules/newplus/NewShellExtensionContextMenu.win10/shell_context_menu_win10.cpp",
-      "src/modules/newplus/NewShellExtensionContextMenu/RuntimeRegistration.h",
-      "src/modules/newplus/NewShellExtensionContextMenu/powertoys_module.cpp"
+      {
+        "path": "src/modules/newplus/NewShellExtensionContextMenu.win10/shell_context_menu_win10.cpp",
+        "purpose": "Classic Explorer shell extension handler that decides whether New+ contributes menu items.",
+        "symbols": [
+          "shell_context_menu_win10::QueryContextMenu"
+        ]
+      },
+      {
+        "path": "src/modules/newplus/NewShellExtensionContextMenu/RuntimeRegistration.h",
+        "purpose": "Registration contract for the New+ shell extension entries.",
+        "symbols": [
+          "runtime registration specification"
+        ]
+      },
+      {
+        "path": "src/modules/newplus/NewShellExtensionContextMenu/powertoys_module.cpp",
+        "purpose": "New+ module enable/disable flow that applies and removes shell extension registration.",
+        "symbols": [
+          "New+ enable/disable registration flow"
+        ]
+      }
     ],
     "implementation_steps": [
       {
@@ -98,8 +121,9 @@
         "symbols": [
           "QueryContextMenu"
         ],
+        "current_behavior": "The classic handler returns E_FAIL on Windows 11 before it can add New+ menu entries.",
         "change": "Gate classic-handler rejection on actual unsupported invocation/capability rather than Windows 11 version alone; preserve HRESULT/error handling.",
-        "code_shape": "if (classicShellPathUnsupported()) return E_FAIL; return AddNewPlusItems(...);",
+        "code_block": "if (classicShellPathUnsupported()) {\n    return E_FAIL;\n}\nreturn AddNewPlusItems(...);",
         "edge_cases": [
           "Avoid duplicate modern and classic entries.",
           "Preserve disabled state and non-folder restrictions."
@@ -115,8 +139,9 @@
         "symbols": [
           "registration enable/disable"
         ],
+        "current_behavior": "Registration is split between classic and modern shell paths, but the classic handler's Windows 11 rejection prevents the classic path from surfacing New+.",
         "change": "Make registration selection and removal consistent with the handler decision and idempotent across restart.",
-        "code_shape": "RegisterClassicIfSupported(); RegisterModernIfSupported();",
+        "code_block": "RegisterClassicIfSupported();\nRegisterModernIfSupported();\nUnregisterUnsupportedOrDisabledEntries();",
         "edge_cases": [
           "Packaged and unpackaged installs.",
           "Explorer restart."

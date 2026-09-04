@@ -74,29 +74,49 @@
       {
         "path": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
         "purpose": "Registers and handles ZoomIt global hotkeys.",
-        "symbols": ["RegisterZoomItHotkeys", "MIRROR_WINDOW_HOTKEY", "RECORD_WINDOW_HOTKEY"]
+        "symbols": [
+          "RegisterZoomItHotkeys",
+          "MIRROR_WINDOW_HOTKEY",
+          "RECORD_WINDOW_HOTKEY"
+        ]
       },
       {
         "path": "src/modules/ZoomIt/ZoomIt/ZoomItSettings.h",
         "purpose": "Defines persisted shortcut defaults.",
-        "symbols": ["g_MirrorToggleKey", "shortcut settings entries"]
+        "symbols": [
+          "g_MirrorToggleKey",
+          "shortcut settings entries"
+        ]
       },
       {
         "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs",
         "purpose": "Contains existing shortcut conflict warning patterns.",
-        "symbols": ["AltGr conflict validation pattern"]
+        "symbols": [
+          "AltGr conflict validation pattern"
+        ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
         "file": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
-        "symbols": ["RegisterZoomItHotkeys", "new IsAltGrRisk"],
+        "symbols": [
+          "RegisterZoomItHotkeys",
+          "new IsAltGrRisk"
+        ],
         "current_behavior": "Every generated Alt-derived variant is passed to RegisterHotKey without checking whether Ctrl+Alt+key is printable AltGr input.",
         "change": "Enumerate installed layouts and suppress generated Ctrl+Alt-without-Win variants when the key participates in AltGr text entry.",
         "code_block": "if (IsCtrlAltNoWin(derivedModifiers) && AnyLayoutUsesAltGr(vk)) { LogSuppressedDerivedHotkey(); } else { RegisterHotKey(...); }",
-        "edge_cases": ["Use GetKeyboardLayoutList and ToUnicodeEx/VkKeyScanEx rather than hard-coding German keys.", "Do not suppress Win-containing variants.", "Apply the rule to both Mirror and Record derived shortcuts."],
-        "tests": ["Test German and Danish AltGr keys with a fake registration sink.", "Test safe non-AltGr and Win-containing chords.", "Manually verify the original bracket sequence in Notepad."]
+        "edge_cases": [
+          "Use GetKeyboardLayoutList and ToUnicodeEx/VkKeyScanEx rather than hard-coding German keys.",
+          "Do not suppress Win-containing variants.",
+          "Apply the rule to both Mirror and Record derived shortcuts."
+        ],
+        "tests": [
+          "Test German and Danish AltGr keys with a fake registration sink.",
+          "Test safe non-AltGr and Win-containing chords.",
+          "Manually verify the original bracket sequence in Notepad."
+        ]
       }
     ],
     "verify": [
@@ -104,8 +124,14 @@
       "Add German and Danish layouts, select each, restart PowerToys, and press AltGr+9 in Notepad.",
       "Confirm the bracket appears and no Mirror action occurs; confirm the base Mirror shortcut still works."
     ],
-    "risks": ["Users may lose an undocumented derived shortcut on layouts where it conflicts; preserve the base action and offer explicit safe configuration.", "Layout enumeration and Unicode translation can be sensitive to current keyboard layout state."],
-    "alternatives": ["Ignoring VK_RMENU in WM_HOTKEY is too late.", "Disabling all Ctrl+Alt shortcuts is unnecessarily broad."]
+    "risks": [
+      "Users may lose an undocumented derived shortcut on layouts where it conflicts; preserve the base action and offer explicit safe configuration.",
+      "Layout enumeration and Unicode translation can be sensitive to current keyboard layout state."
+    ],
+    "alternatives": [
+      "Ignoring VK_RMENU in WM_HOTKEY is too late.",
+      "Disabling all Ctrl+Alt shortcuts is unnecessarily broad."
+    ]
   },
   "mirror": {
     "kind": "issue",

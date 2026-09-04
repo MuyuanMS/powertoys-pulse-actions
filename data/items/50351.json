@@ -8,13 +8,157 @@
   "source_updated_at": "2026-09-03T08:48:34Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50351",
   "title": "Keyboard Manager shortcuts cannot override Windows shortcuts",
-  "judgment": {"status": "needs_information", "rationale": "The public reproduction proves a shell-hotkey conflict but cannot distinguish hook matching, suppression timing, injection failure, elevation, or settings state.", "evidence": ["Win+Left and Win+Right mappings are reported to invoke Windows Snap.", "Keyboard Manager already has a low-level hook and shortcut-to-key suppression path.", "Related issues describe both shell-reserved and elevation-related failures.", "No diagnostic archive or hook/injection trace is supplied."], "recommended_action": "Request a fresh diagnostic and a focused comparison matrix before approving a code design."},
-  "fix_assessment": {"status": "proposed", "rationale": "A product fix may apply, but the failing boundary is not proven; retain a red provisional investigation plan rather than inventing a root cause.", "existing_fix_urls": []},
-  "proposed_fixes": [{"title": "Instrument and isolate Win+Arrow remapping before changing suppression", "root_cause": "Provisional: the shell may receive Win+Arrow because the low-level hook misses or suppresses the physical event too late, or because replacement input fails; current evidence cannot choose among these.", "plan": ["Capture hook initialization, settings load, match detection, modifier restoration, SendInput result, and suppression return for Win+Arrow.", "Compare normal and elevated PowerToys, Snap enabled/disabled, and a non-shell Win shortcut.", "Only after the trace identifies the boundary, add a narrowly scoped suppression or deferred injection fix and matching tests."], "verification": ["The diagnostic matrix identifies whether matching, suppression, or injection is failing before implementation begins."], "confidence": {"score": 46, "level": "red", "rationale": "The current code suggests several plausible mechanisms and the issue lacks the evidence needed to select one."}}],
-  "issue_context": {"summary": "Keyboard Manager mappings for Win+Arrow do not prevent Windows Snap, but the report lacks the trace needed to identify where the remap path fails.", "known_information": ["The report uses Win+Left to Home and Win+Right to End.", "The actual result is Windows Snap left/right.", "The affected versions include stable and preview builds on Windows 11.", "Related issues cover shell-reserved shortcuts and elevation/UIPI behavior."], "inferences": ["The defect may be specific to shell-reserved Win+Arrow handling rather than all shortcut-to-key mappings.", "A deferred injection design is only one possible fix and must not be implemented without a trace."], "analysis": "Local code contains a nominal suppression path and existing tests, so changing it blindly could regress other mappings. A fresh bug report plus a small controlled matrix can distinguish hook installation, shortcut matching, physical suppression, and SendInput failure.", "initial_investigation": ["Inspected KeyboardManager::HookProc, HandleKeyboardHookEvent, KeyboardEventHandlers::HandleShortcutRemapEvent, Shortcut modifier checks, and OS-level remapping tests.", "Reviewed related issues 26001 and 40012 for alternate failure classes.", "Fork mirror Issue 638 records the provisional design and adversary determination."], "information_gaps": [{"information": "A fresh PowerToys diagnostic archive captured immediately after reproducing Win+Arrow", "why_needed": "It can show hook initialization, settings load, and input injection errors.", "how_to_collect": "Reproduce once, then add a comment containing /bugreport immediately afterward."}, {"information": "Comparison of normal versus elevated PowerToys, Snap enabled versus disabled, and Win+Arrow versus Win+A", "why_needed": "It separates shell reservation and integrity-level failures from general remapping failures.", "how_to_collect": "Record the result for each case in a numbered comment on the issue."}]},
-  "design": {"root_cause": "Not yet established. The leading alternatives are a low-level hook/match failure, physical Win+Arrow suppression occurring too late for the shell, or replacement input failure under shell/elevation conditions.", "evidence": ["[Observed] The shell action occurs instead of the mapped Home/End key.", "[Observed] Existing Keyboard Manager code returns suppression after a shortcut match and sends virtual input.", "[Inferred] Instrumentation is required before selecting a safe code change."], "affected_files": [{"path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp", "purpose": "Installs the low-level hook and decides suppression.", "symbols": ["KeyboardManager::HookProc", "KeyboardManager::HandleKeyboardHookEvent"]}, {"path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp", "purpose": "Matches shortcuts and injects replacement keys.", "symbols": ["HandleShortcutRemapEvent", "HandleOSLevelShortcutRemapEvent"]}, {"path": "src/modules/keyboardmanager/KeyboardManagerEngineTest/OSLevelShortcutRemappingTests.cpp", "purpose": "Existing shortcut-to-key and modifier tests.", "symbols": ["Win shortcut remapping tests"]}], "implementation_steps": [{"order": 1, "file": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp", "symbols": ["HandleShortcutRemapEvent"], "current_behavior": "The code matches shortcuts, restores modifiers, injects replacement input, and returns suppression, but the failure point for Win+Arrow is unknown.", "change": "Add temporary or test-gated diagnostics for match, modifier state, SendInput result, and return value; do not ship a behavioral change until the trace is reviewed.", "code_block": "log(match, vkCode, modifiers, extraInfo);\\nconst auto sent = SendVirtualInput(inputs);\\nlog(sent);\\nreturn matched ? 1 : 0;", "edge_cases": ["Do not log sensitive text or leave verbose diagnostics enabled in production.", "Preserve AltGr, repeat, elevation, and modifier restoration behavior."], "tests": ["Extend existing tests with Win+Left/Right and both Win keys once the failing branch is known."]}], "verify": ["Have the reporter reproduce and add `/bugreport` immediately afterward.", "Run the four-case comparison matrix: normal/elevated and Snap on/off, plus Win+A control.", "Inspect hook and SendInput diagnostics; only then finalize an implementation-grade fix.", "Manual E2E must verify Home/End insertion and no Snap action in an interactive desktop."], "risks": ["A guessed suppression change could break modifier state or repeat behavior.", "Deferred injection could alter shortcut timing and elevation semantics."], "alternatives": ["Declaring Win+Arrow unsupported conflicts with the current remapping expectation.", "Blindly changing SendInput timing is unsafe without evidence."]
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The public reproduction proves a shell-hotkey conflict but cannot distinguish hook matching, suppression timing, injection failure, elevation, or settings state.",
+    "evidence": [
+      "Win+Left and Win+Right mappings are reported to invoke Windows Snap.",
+      "Keyboard Manager already has a low-level hook and shortcut-to-key suppression path.",
+      "Related issues describe both shell-reserved and elevation-related failures.",
+      "No diagnostic archive or hook/injection trace is supplied."
+    ],
+    "recommended_action": "Request a fresh diagnostic and a focused comparison matrix before approving a code design."
   },
-  "mirror": {"kind": "issue", "fork_number": 638, "fork_title": "[Issue 50351] Keyboard Manager shortcuts cannot override Windows shortcuts", "fork_state": "OPEN", "url": "https://github.com/MuyuanMS/PowerToys/issues/638"},
-  "adversary": {"rounds": 1, "verdict": "Blocking objection remains: evidence does not identify the failing boundary; request information.", "notes": "Do not claim implementation-ready design."},
-  "actions": [{"type": "request_info", "label": "Request focused Keyboard Manager diagnostics", "comment": {"body": "The Win+Arrow reproduction and mappings are useful, but the current code already has a low-level hook and suppression path, so the failure could be hook matching, shell timing, or replacement-input failure. Please reproduce once and add a comment containing `/bugreport` immediately afterward, then report results for normal versus elevated PowerToys, Windows Snap enabled versus disabled, and a control mapping such as Win+A. Those cases will identify the safe fix path."}}]
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A product fix may apply, but the failing boundary is not proven; retain a red provisional investigation plan rather than inventing a root cause.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Instrument and isolate Win+Arrow remapping before changing suppression",
+      "root_cause": "Provisional: the shell may receive Win+Arrow because the low-level hook misses or suppresses the physical event too late, or because replacement input fails; current evidence cannot choose among these.",
+      "plan": [
+        "Capture hook initialization, settings load, match detection, modifier restoration, SendInput result, and suppression return for Win+Arrow.",
+        "Compare normal and elevated PowerToys, Snap enabled/disabled, and a non-shell Win shortcut.",
+        "Only after the trace identifies the boundary, add a narrowly scoped suppression or deferred injection fix and matching tests."
+      ],
+      "verification": [
+        "The diagnostic matrix identifies whether matching, suppression, or injection is failing before implementation begins."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "The current code suggests several plausible mechanisms and the issue lacks the evidence needed to select one."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager mappings for Win+Arrow do not prevent Windows Snap, but the report lacks the trace needed to identify where the remap path fails.",
+    "known_information": [
+      "The report uses Win+Left to Home and Win+Right to End.",
+      "The actual result is Windows Snap left/right.",
+      "The affected versions include stable and preview builds on Windows 11.",
+      "Related issues cover shell-reserved shortcuts and elevation/UIPI behavior."
+    ],
+    "inferences": [
+      "The defect may be specific to shell-reserved Win+Arrow handling rather than all shortcut-to-key mappings.",
+      "A deferred injection design is only one possible fix and must not be implemented without a trace."
+    ],
+    "analysis": "Local code contains a nominal suppression path and existing tests, so changing it blindly could regress other mappings. A fresh bug report plus a small controlled matrix can distinguish hook installation, shortcut matching, physical suppression, and SendInput failure.",
+    "initial_investigation": [
+      "Inspected KeyboardManager::HookProc, HandleKeyboardHookEvent, KeyboardEventHandlers::HandleShortcutRemapEvent, Shortcut modifier checks, and OS-level remapping tests.",
+      "Reviewed related issues 26001 and 40012 for alternate failure classes.",
+      "Fork mirror Issue 638 records the provisional design and adversary determination."
+    ],
+    "information_gaps": [
+      {
+        "information": "A fresh PowerToys diagnostic archive captured immediately after reproducing Win+Arrow",
+        "why_needed": "It can show hook initialization, settings load, and input injection errors.",
+        "how_to_collect": "Reproduce once, then add a comment containing /bugreport immediately afterward."
+      },
+      {
+        "information": "Comparison of normal versus elevated PowerToys, Snap enabled versus disabled, and Win+Arrow versus Win+A",
+        "why_needed": "It separates shell reservation and integrity-level failures from general remapping failures.",
+        "how_to_collect": "Record the result for each case in a numbered comment on the issue."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "Not yet established. The leading alternatives are a low-level hook/match failure, physical Win+Arrow suppression occurring too late for the shell, or replacement input failure under shell/elevation conditions.",
+    "evidence": [
+      "[Observed] The shell action occurs instead of the mapped Home/End key.",
+      "[Observed] Existing Keyboard Manager code returns suppression after a shortcut match and sends virtual input.",
+      "[Inferred] Instrumentation is required before selecting a safe code change."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp",
+        "purpose": "Installs the low-level hook and decides suppression.",
+        "symbols": [
+          "KeyboardManager::HookProc",
+          "KeyboardManager::HandleKeyboardHookEvent"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+        "purpose": "Matches shortcuts and injects replacement keys.",
+        "symbols": [
+          "HandleShortcutRemapEvent",
+          "HandleOSLevelShortcutRemapEvent"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineTest/OSLevelShortcutRemappingTests.cpp",
+        "purpose": "Existing shortcut-to-key and modifier tests.",
+        "symbols": [
+          "Win shortcut remapping tests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+        "symbols": [
+          "HandleShortcutRemapEvent"
+        ],
+        "current_behavior": "The code matches shortcuts, restores modifiers, injects replacement input, and returns suppression, but the failure point for Win+Arrow is unknown.",
+        "change": "Add temporary or test-gated diagnostics for match, modifier state, SendInput result, and return value; do not ship a behavioral change until the trace is reviewed.",
+        "code_block": "log(match, vkCode, modifiers, extraInfo);\\nconst auto sent = SendVirtualInput(inputs);\\nlog(sent);\\nreturn matched ? 1 : 0;",
+        "edge_cases": [
+          "Do not log sensitive text or leave verbose diagnostics enabled in production.",
+          "Preserve AltGr, repeat, elevation, and modifier restoration behavior."
+        ],
+        "tests": [
+          "Extend existing tests with Win+Left/Right and both Win keys once the failing branch is known."
+        ]
+      }
+    ],
+    "verify": [
+      "Have the reporter reproduce and add `/bugreport` immediately afterward.",
+      "Run the four-case comparison matrix: normal/elevated and Snap on/off, plus Win+A control.",
+      "Inspect hook and SendInput diagnostics; only then finalize an implementation-grade fix.",
+      "Manual E2E must verify Home/End insertion and no Snap action in an interactive desktop."
+    ],
+    "risks": [
+      "A guessed suppression change could break modifier state or repeat behavior.",
+      "Deferred injection could alter shortcut timing and elevation semantics."
+    ],
+    "alternatives": [
+      "Declaring Win+Arrow unsupported conflicts with the current remapping expectation.",
+      "Blindly changing SendInput timing is unsafe without evidence."
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 638,
+    "fork_title": "[Issue 50351] Keyboard Manager shortcuts cannot override Windows shortcuts",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/638"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "Blocking objection remains: evidence does not identify the failing boundary; request information.",
+    "notes": "Do not claim implementation-ready design."
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Request focused Keyboard Manager diagnostics",
+      "comment": {
+        "body": "The Win+Arrow reproduction and mappings are useful, but the current code already has a low-level hook and suppression path, so the failure could be hook matching, shell timing, or replacement-input failure. Please reproduce once and add a comment containing `/bugreport` immediately afterward, then report results for normal versus elevated PowerToys, Windows Snap enabled versus disabled, and a control mapping such as Win+A. Those cases will identify the safe fix path."
+      }
+    }
+  ]
 }

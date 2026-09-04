@@ -79,15 +79,96 @@
       "[Inferred] Cached positive capabilities can safely keep a row visible if writes remain guarded."
     ],
     "affected_files": [
-      {"path": "src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs", "purpose": "Discovers physical monitors and capabilities.", "symbols": ["FetchCapabilitiesWithFallbackAsync", "DiscoverFromHandleAsync", "BuildMonitorFromPhysical"]},
-      {"path": "src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/VcpDiscoveryEvidence.cs", "purpose": "Stores and reconciles capability evidence.", "symbols": ["Reconcile", "capability synthesis"]},
-      {"path": "src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorSettingsRebuilder.cs", "purpose": "Retains and rebuilds persisted monitor identities.", "symbols": ["Rebuild", "same-model deduplication"]},
-      {"path": "src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Monitors.cs", "purpose": "Updates visible monitor state.", "symbols": ["RefreshMonitorsAsync", "UpdateMonitorList"]}
+      {
+        "path": "src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs",
+        "purpose": "Discovers physical monitors and capabilities.",
+        "symbols": [
+          "FetchCapabilitiesWithFallbackAsync",
+          "DiscoverFromHandleAsync",
+          "BuildMonitorFromPhysical"
+        ]
+      },
+      {
+        "path": "src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/VcpDiscoveryEvidence.cs",
+        "purpose": "Stores and reconciles capability evidence.",
+        "symbols": [
+          "Reconcile",
+          "capability synthesis"
+        ]
+      },
+      {
+        "path": "src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorSettingsRebuilder.cs",
+        "purpose": "Retains and rebuilds persisted monitor identities.",
+        "symbols": [
+          "Rebuild",
+          "same-model deduplication"
+        ]
+      },
+      {
+        "path": "src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Monitors.cs",
+        "purpose": "Updates visible monitor state.",
+        "symbols": [
+          "RefreshMonitorsAsync",
+          "UpdateMonitorList"
+        ]
+      }
     ],
     "implementation_steps": [
-      {"order": 1, "file": "src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs", "symbols": ["FetchCapabilitiesWithFallbackAsync", "DiscoverFromHandleAsync"], "current_behavior": "A monitor with no live capability string is discarded.", "change": "Use recent known-good VCP or persisted capabilities to construct a degraded monitor; discard only when no evidence exists or the physical handle is invalid.", "code_block": "if (evidence.Capabilities == null && cache.TryGet(monitorId, out var cached)) evidence = FromCached(cached, degraded: true);\\nif (evidence.Capabilities == null) return null;\\nreturn BuildMonitorFromPhysical(evidence);", "edge_cases": ["Never synthesize support without prior positive evidence.", "Writes must still fail safely and trigger refresh.", "Keep extra probing disabled in normal mode."], "tests": ["Empty live caps plus cache yields degraded monitor.", "Empty live caps without cache preserves existing discard behavior."]},
-      {"order": 2, "file": "src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorSettingsRebuilder.cs", "symbols": ["Rebuild"], "current_behavior": "Recent DevicePath variants can coexist.", "change": "Merge only stale non-current entries sharing normalized EdidId and name; preserve two current identities.", "code_block": "candidates = retained.Where(!currentlyDiscovered || id != current);\\ncoalesce(key: EdidId + normalizedName, prefer: current then newest);", "edge_cases": ["Do not merge two simultaneously discovered identical monitors.", "Preserve user flags conservatively."], "tests": ["One current plus one stale duplicate becomes one.", "Two current identical monitors remain two."]},
-      {"order": 3, "file": "src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Monitors.cs", "symbols": ["UpdateMonitorList"], "current_behavior": "The UI removes a monitor when DDC discovery omits it.", "change": "Retain degraded rows and show unavailable controls until refresh recovers capabilities.", "code_block": "if (monitor.IsDegraded) { row.ShowUnavailableState(); row.DisableUnsupportedControls(); }", "edge_cases": ["Do not batch-write unavailable controls.", "Clear degraded state only after successful live reads."], "tests": ["View model retains row and disables unsupported controls."]}
+      {
+        "order": 1,
+        "file": "src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs",
+        "symbols": [
+          "FetchCapabilitiesWithFallbackAsync",
+          "DiscoverFromHandleAsync"
+        ],
+        "current_behavior": "A monitor with no live capability string is discarded.",
+        "change": "Use recent known-good VCP or persisted capabilities to construct a degraded monitor; discard only when no evidence exists or the physical handle is invalid.",
+        "code_block": "if (evidence.Capabilities == null && cache.TryGet(monitorId, out var cached)) evidence = FromCached(cached, degraded: true);\\nif (evidence.Capabilities == null) return null;\\nreturn BuildMonitorFromPhysical(evidence);",
+        "edge_cases": [
+          "Never synthesize support without prior positive evidence.",
+          "Writes must still fail safely and trigger refresh.",
+          "Keep extra probing disabled in normal mode."
+        ],
+        "tests": [
+          "Empty live caps plus cache yields degraded monitor.",
+          "Empty live caps without cache preserves existing discard behavior."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorSettingsRebuilder.cs",
+        "symbols": [
+          "Rebuild"
+        ],
+        "current_behavior": "Recent DevicePath variants can coexist.",
+        "change": "Merge only stale non-current entries sharing normalized EdidId and name; preserve two current identities.",
+        "code_block": "candidates = retained.Where(!currentlyDiscovered || id != current);\\ncoalesce(key: EdidId + normalizedName, prefer: current then newest);",
+        "edge_cases": [
+          "Do not merge two simultaneously discovered identical monitors.",
+          "Preserve user flags conservatively."
+        ],
+        "tests": [
+          "One current plus one stale duplicate becomes one.",
+          "Two current identical monitors remain two."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Monitors.cs",
+        "symbols": [
+          "UpdateMonitorList"
+        ],
+        "current_behavior": "The UI removes a monitor when DDC discovery omits it.",
+        "change": "Retain degraded rows and show unavailable controls until refresh recovers capabilities.",
+        "code_block": "if (monitor.IsDegraded) { row.ShowUnavailableState(); row.DisableUnsupportedControls(); }",
+        "edge_cases": [
+          "Do not batch-write unavailable controls.",
+          "Clear degraded state only after successful live reads."
+        ],
+        "tests": [
+          "View model retains row and disables unsupported controls."
+        ]
+      }
     ],
     "verify": [
       "Build PowerDisplay.Lib.UnitTests with tools\\build\\build.ps1 -Platform x64 -Configuration Release -Project src\\modules\\powerdisplay\\PowerDisplay.Lib.UnitTests\\PowerDisplay.Lib.UnitTests.csproj.",
@@ -95,13 +176,42 @@
       "Reproduce standby/wake or inject an empty capability response while QueryDisplayConfig remains present; confirm a degraded row remains.",
       "Recover DDC and refresh; confirm live capabilities replace degraded state and stale duplicate rows are not recreated."
     ],
-    "risks": ["Cached capabilities can become stale; guard writes and require live success to clear degraded state.", "Over-aggressive deduplication could merge identical monitors; current-discovery exclusion prevents that."],
-    "alternatives": ["Only enabling maximum compatibility mode leaves the default drop path.", "Increasing retries improves timing but does not solve persisted duplicates or permanent transient failure."]
+    "risks": [
+      "Cached capabilities can become stale; guard writes and require live success to clear degraded state.",
+      "Over-aggressive deduplication could merge identical monitors; current-discovery exclusion prevents that."
+    ],
+    "alternatives": [
+      "Only enabling maximum compatibility mode leaves the default drop path.",
+      "Increasing retries improves timing but does not solve persisted duplicates or permanent transient failure."
+    ]
   },
-  "mirror": {"kind": "issue", "fork_number": 635, "fork_title": "[Issue 48977] Power Display transient DDC discovery drops and duplicate monitor rows", "fork_state": "OPEN", "url": "https://github.com/MuyuanMS/PowerToys/issues/635"},
-  "adversary": {"rounds": 1, "verdict": "No blocking objections; approve design with hardware validation.", "notes": "The confidence remains yellow because the exact wake failure should be reproduced on current hardware."},
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 635,
+    "fork_title": "[Issue 48977] Power Display transient DDC discovery drops and duplicate monitor rows",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/635"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "No blocking objections; approve design with hardware validation.",
+    "notes": "The confidence remains yellow because the exact wake failure should be reproduced on current hardware."
+  },
   "actions": [
-    {"type": "approve_design", "label": "Approve design for Issue 48977", "mirror_issue": 635, "comment": {"body": "Approve the fork-side Power Display degraded-discovery design for Issue 48977, with hardware validation during implementation."}},
-    {"type": "request_info", "label": "Request a current Power Display trace", "comment": {"body": "The report and diagnostic archive identify transient DDC capability failure. Please reproduce the disappearance after standby or wake on the current build, then add a comment containing `/bugreport` immediately afterward so the degraded-monitor path can be validated against current hardware."}}
+    {
+      "type": "approve_design",
+      "label": "Approve design for Issue 48977",
+      "mirror_issue": 635,
+      "comment": {
+        "body": "Approve the fork-side Power Display degraded-discovery design for Issue 48977, with hardware validation during implementation."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Request a current Power Display trace",
+      "comment": {
+        "body": "The report and diagnostic archive identify transient DDC capability failure. Please reproduce the disappearance after standby or wake on the current build, then add a comment containing `/bugreport` immediately afterward so the degraded-monitor path can be validated against current hardware."
+      }
+    }
   ]
 }

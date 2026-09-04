@@ -8,13 +8,210 @@
   "source_updated_at": "2026-09-03T03:00:14Z",
   "url": "https://github.com/microsoft/PowerToys/issues/48204",
   "title": "Can't disable Runner Logs",
-  "judgment": {"status": "actionable_design", "rationale": "Source confirms an existing logLevel setting is hidden and file creation precedes level application; the requested size bound also has a concrete Runner-only design.", "evidence": ["The reporter has about 500 MB of Runner logs.", "Logger initializes a daily file sink with fixed retention and no size cap.", "logLevel is stored in log_settings.json but is not surfaced in Settings.", "Related Issue 8419 covers retention and Issue 47467 covers open log handles."], "recommended_action": "Approve the hard-off and Runner-scoped cap design, with maintainer choice on UI placement."},
-  "fix_assessment": {"status": "proposed", "rationale": "No existing fix attempt exposes a true logging disable or Runner-specific size cap.", "existing_fix_urls": []},
-  "proposed_fixes": [{"title": "Make Runner logging disableable and bounded", "root_cause": "Logger::init opens a daily sink before applying logLevel, while retention is by day count and no Runner file-size cap or Settings control exists.", "plan": ["Return through a null logger before opening a sink when logLevel is off.", "Add validated Runner-specific maximum file size and file count settings using a rotating or capped sink.", "Expose logging controls in Settings with restart semantics and preserve unknown settings fields."], "verification": ["With logging disabled, Runner creates or modifies no log file; with a tiny test cap, rotation bounds file count and size."], "confidence": {"score": 78, "level": "yellow", "rationale": "The disable path is strongly supported; exact cap defaults and UI policy need maintainer validation."}}],
-  "issue_context": {"summary": "Runner logs can grow substantially because logging has no user-facing disable control and daily retention does not bound file size.", "known_information": ["The report names Runner Logs and approximately 500 MB of files.", "The requested outcomes are disablement or a file-size limit.", "The native logger has a hidden logLevel setting and fixed daily retention.", "Related work addresses cleanup and handles but not a hard off switch."], "inferences": ["logLevel off should avoid opening a sink, not merely suppress messages.", "A Runner-scoped cap avoids changing diagnostic behavior for every module."], "analysis": "The logger initialization order explains why the existing hidden setting is not a complete disable. A null logger path and explicit Runner cap address the two user requests while limiting blast radius.", "initial_investigation": ["Inspected logger settings, Logger::init, logger_helper, Runner startup, Settings API location, and General settings seams.", "Reviewed related cleanup and handle issues.", "Fork mirror Issue 640 contains the detailed design and adversary approval."], "information_gaps": [{"information": "Maintainer preference for default Runner cap and whether to expose it in the General page or diagnostics page", "why_needed": "Defaults and UI placement affect compatibility and supportability but do not block the hard-off implementation.", "how_to_collect": "Choose the policy during design approval and record the selected defaults in the implementation PR."}]},
-  "design": {"root_cause": "The common logger creates a daily file sink before applying the configured level, and daily retention limits file count rather than total size. Runner has no Settings UI for logLevel or a size policy.", "evidence": ["[Observed] Logger::init opens the sink before setting level.", "[Observed] log_settings.json contains a logLevel option but no user-facing control.", "[Observed] Runner uses the common logger and can accumulate daily files.", "[Inferred] Null logger plus Runner-only rotation is the least disruptive fix."], "affected_files": [{"path": "src/common/logger/logger.cpp", "purpose": "Creates sinks and applies log levels.", "symbols": ["Logger::init", "Logger::getLogLevel"]}, {"path": "src/common/logger/logger_settings.h", "purpose": "Defines persisted logging options.", "symbols": ["LogSettings::logLevelOption", "LogSettings::runnerLogPath"]}, {"path": "src/runner/main.cpp", "purpose": "Initializes Runner logging.", "symbols": ["Runner logger initialization"]}, {"path": "src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs", "purpose": "Potentially persists user-facing logging controls.", "symbols": ["new LoggingEnabled", "RunnerLogMaxSizeMb"]}, {"path": "src/settings-ui/Settings.UI/SettingsXAML/Views/GeneralPage.xaml", "purpose": "Potential Settings surface.", "symbols": ["new logging settings card"]}], "implementation_steps": [{"order": 1, "file": "src/common/logger/logger.cpp", "symbols": ["Logger::init"], "current_behavior": "A daily file sink is opened before logLevel is applied.", "change": "When the resolved level is off, register a null logger and return before creating a file sink.", "code_block": "auto level = getLogLevel(settingsPath);\\nif (level == spdlog::level::off) { logger = spdlog::null_logger_mt(name); return; }\\ncreate_daily_sink();", "edge_cases": ["Replace an already registered logger in isolated tests or avoid duplicate registration.", "Do not show an error for intentional off.", "Preserve existing module logger behavior for non-off levels."], "tests": ["Assert off creates no file and logging calls are no-ops."]}, {"order": 2, "file": "src/common/logger/logger_settings.h and src/runner/main.cpp", "symbols": ["LogSettings", "Runner logger initialization"], "current_behavior": "Runner uses daily retention without a size bound.", "change": "Add validated Runner maximum bytes and file count and initialize a rotating/capped Runner sink.", "code_block": "runnerMaxBytes = max(1, configuredBytes);\\nrunnerMaxFiles = max(1, configuredFiles);\\nLogger::init_rotating(runnerName, path, settingsPath, runnerMaxBytes, runnerMaxFiles);", "edge_cases": ["Invalid or zero values fall back to conservative defaults.", "Keep daily naming for modules unless explicitly migrated.", "Preserve sharing needed for diagnostics."], "tests": ["Write enough test messages to rotate and assert configured bounds."]}, {"order": 3, "file": "src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs and SettingsXAML/Views/GeneralPage.xaml", "symbols": ["LoggingEnabled", "RunnerLogMaxSizeMb"], "current_behavior": "No visible logging controls exist.", "change": "Expose a logging toggle and Runner size control, persist through the existing settings location, and state that restart is required if initialization remains one-shot.", "code_block": "LoggingEnabled = logLevel != \"off\";\\nset { logLevel = value ? \"trace\" : \"off\"; SaveLogSettings(); }", "edge_cases": ["Preserve unknown JSON fields.", "Respect future policy/GPO controls.", "Do not claim live disable if Logger is initialized only at startup."], "tests": ["View-model defaults, toggle persistence, invalid cap validation, and unknown-field preservation."]}], "verify": ["Build logger and Runner targets with the existing tools\\build\\build.cmd workflow.", "Build Settings UI if controls are added and run targeted tests with vstest.console.exe.", "Set logLevel off, restart PowerToys, start Runner, and confirm RunnerLogs is not created or modified.", "Use a small test cap, generate log traffic, and confirm file count/size remain bounded and files can be copied while PowerToys runs."], "risks": ["Hard-off reduces diagnostics; the UI should explain the trade-off.", "Changing Runner file naming can affect support scripts; keep the cap Runner-scoped and preserve compatibility where possible.", "A global cap would alter other modules and is rejected."], "alternatives": ["Only increasing retention or retrying cleanup does not meet disablement.", "Relying on maximum compatibility mode does not address default Runner logging.", "A custom capped daily sink preserves names but has higher maintenance than a rotating Runner sink."]
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Source confirms an existing logLevel setting is hidden and file creation precedes level application; the requested size bound also has a concrete Runner-only design.",
+    "evidence": [
+      "The reporter has about 500 MB of Runner logs.",
+      "Logger initializes a daily file sink with fixed retention and no size cap.",
+      "logLevel is stored in log_settings.json but is not surfaced in Settings.",
+      "Related Issue 8419 covers retention and Issue 47467 covers open log handles."
+    ],
+    "recommended_action": "Approve the hard-off and Runner-scoped cap design, with maintainer choice on UI placement."
   },
-  "mirror": {"kind": "issue", "fork_number": 640, "fork_title": "[Issue 48204] Runner logs cannot be disabled or size-limited", "fork_state": "OPEN", "url": "https://github.com/MuyuanMS/PowerToys/issues/640"},
-  "adversary": {"rounds": 1, "verdict": "No blocking objections; approve design with cap-policy decision.", "notes": "The hard-off path is clear; defaults and UI placement are policy choices."},
-  "actions": [{"type": "approve_design", "label": "Approve design for Issue 48204", "mirror_issue": 640, "comment": {"body": "Approve the fork-side Runner logging disable and size-limit design for Issue 48204, with cap defaults selected during implementation."}}]
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt exposes a true logging disable or Runner-specific size cap.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Runner logging disableable and bounded",
+      "root_cause": "Logger::init opens a daily sink before applying logLevel, while retention is by day count and no Runner file-size cap or Settings control exists.",
+      "plan": [
+        "Return through a null logger before opening a sink when logLevel is off.",
+        "Add validated Runner-specific maximum file size and file count settings using a rotating or capped sink.",
+        "Expose logging controls in Settings with restart semantics and preserve unknown settings fields."
+      ],
+      "verification": [
+        "With logging disabled, Runner creates or modifies no log file; with a tiny test cap, rotation bounds file count and size."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The disable path is strongly supported; exact cap defaults and UI policy need maintainer validation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Runner logs can grow substantially because logging has no user-facing disable control and daily retention does not bound file size.",
+    "known_information": [
+      "The report names Runner Logs and approximately 500 MB of files.",
+      "The requested outcomes are disablement or a file-size limit.",
+      "The native logger has a hidden logLevel setting and fixed daily retention.",
+      "Related work addresses cleanup and handles but not a hard off switch."
+    ],
+    "inferences": [
+      "logLevel off should avoid opening a sink, not merely suppress messages.",
+      "A Runner-scoped cap avoids changing diagnostic behavior for every module."
+    ],
+    "analysis": "The logger initialization order explains why the existing hidden setting is not a complete disable. A null logger path and explicit Runner cap address the two user requests while limiting blast radius.",
+    "initial_investigation": [
+      "Inspected logger settings, Logger::init, logger_helper, Runner startup, Settings API location, and General settings seams.",
+      "Reviewed related cleanup and handle issues.",
+      "Fork mirror Issue 640 contains the detailed design and adversary approval."
+    ],
+    "information_gaps": [
+      {
+        "information": "Maintainer preference for default Runner cap and whether to expose it in the General page or diagnostics page",
+        "why_needed": "Defaults and UI placement affect compatibility and supportability but do not block the hard-off implementation.",
+        "how_to_collect": "Choose the policy during design approval and record the selected defaults in the implementation PR."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "The common logger creates a daily file sink before applying the configured level, and daily retention limits file count rather than total size. Runner has no Settings UI for logLevel or a size policy.",
+    "evidence": [
+      "[Observed] Logger::init opens the sink before setting level.",
+      "[Observed] log_settings.json contains a logLevel option but no user-facing control.",
+      "[Observed] Runner uses the common logger and can accumulate daily files.",
+      "[Inferred] Null logger plus Runner-only rotation is the least disruptive fix."
+    ],
+    "affected_files": [
+      {
+        "path": "src/common/logger/logger.cpp",
+        "purpose": "Creates sinks and applies log levels.",
+        "symbols": [
+          "Logger::init",
+          "Logger::getLogLevel"
+        ]
+      },
+      {
+        "path": "src/common/logger/logger_settings.h",
+        "purpose": "Defines persisted logging options.",
+        "symbols": [
+          "LogSettings::logLevelOption",
+          "LogSettings::runnerLogPath"
+        ]
+      },
+      {
+        "path": "src/runner/main.cpp",
+        "purpose": "Initializes Runner logging.",
+        "symbols": [
+          "Runner logger initialization"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs",
+        "purpose": "Potentially persists user-facing logging controls.",
+        "symbols": [
+          "new LoggingEnabled",
+          "RunnerLogMaxSizeMb"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/GeneralPage.xaml",
+        "purpose": "Potential Settings surface.",
+        "symbols": [
+          "new logging settings card"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/common/logger/logger.cpp",
+        "symbols": [
+          "Logger::init"
+        ],
+        "current_behavior": "A daily file sink is opened before logLevel is applied.",
+        "change": "When the resolved level is off, register a null logger and return before creating a file sink.",
+        "code_block": "auto level = getLogLevel(settingsPath);\\nif (level == spdlog::level::off) { logger = spdlog::null_logger_mt(name); return; }\\ncreate_daily_sink();",
+        "edge_cases": [
+          "Replace an already registered logger in isolated tests or avoid duplicate registration.",
+          "Do not show an error for intentional off.",
+          "Preserve existing module logger behavior for non-off levels."
+        ],
+        "tests": [
+          "Assert off creates no file and logging calls are no-ops."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/common/logger/logger_settings.h and src/runner/main.cpp",
+        "symbols": [
+          "LogSettings",
+          "Runner logger initialization"
+        ],
+        "current_behavior": "Runner uses daily retention without a size bound.",
+        "change": "Add validated Runner maximum bytes and file count and initialize a rotating/capped Runner sink.",
+        "code_block": "runnerMaxBytes = max(1, configuredBytes);\\nrunnerMaxFiles = max(1, configuredFiles);\\nLogger::init_rotating(runnerName, path, settingsPath, runnerMaxBytes, runnerMaxFiles);",
+        "edge_cases": [
+          "Invalid or zero values fall back to conservative defaults.",
+          "Keep daily naming for modules unless explicitly migrated.",
+          "Preserve sharing needed for diagnostics."
+        ],
+        "tests": [
+          "Write enough test messages to rotate and assert configured bounds."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs and SettingsXAML/Views/GeneralPage.xaml",
+        "symbols": [
+          "LoggingEnabled",
+          "RunnerLogMaxSizeMb"
+        ],
+        "current_behavior": "No visible logging controls exist.",
+        "change": "Expose a logging toggle and Runner size control, persist through the existing settings location, and state that restart is required if initialization remains one-shot.",
+        "code_block": "LoggingEnabled = logLevel != \"off\";\\nset { logLevel = value ? \"trace\" : \"off\"; SaveLogSettings(); }",
+        "edge_cases": [
+          "Preserve unknown JSON fields.",
+          "Respect future policy/GPO controls.",
+          "Do not claim live disable if Logger is initialized only at startup."
+        ],
+        "tests": [
+          "View-model defaults, toggle persistence, invalid cap validation, and unknown-field preservation."
+        ]
+      }
+    ],
+    "verify": [
+      "Build logger and Runner targets with the existing tools\\build\\build.cmd workflow.",
+      "Build Settings UI if controls are added and run targeted tests with vstest.console.exe.",
+      "Set logLevel off, restart PowerToys, start Runner, and confirm RunnerLogs is not created or modified.",
+      "Use a small test cap, generate log traffic, and confirm file count/size remain bounded and files can be copied while PowerToys runs."
+    ],
+    "risks": [
+      "Hard-off reduces diagnostics; the UI should explain the trade-off.",
+      "Changing Runner file naming can affect support scripts; keep the cap Runner-scoped and preserve compatibility where possible.",
+      "A global cap would alter other modules and is rejected."
+    ],
+    "alternatives": [
+      "Only increasing retention or retrying cleanup does not meet disablement.",
+      "Relying on maximum compatibility mode does not address default Runner logging.",
+      "A custom capped daily sink preserves names but has higher maintenance than a rotating Runner sink."
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 640,
+    "fork_title": "[Issue 48204] Runner logs cannot be disabled or size-limited",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/640"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "No blocking objections; approve design with cap-policy decision.",
+    "notes": "The hard-off path is clear; defaults and UI placement are policy choices."
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve design for Issue 48204",
+      "mirror_issue": 640,
+      "comment": {
+        "body": "Approve the fork-side Runner logging disable and size-limit design for Issue 48204, with cap defaults selected during implementation."
+      }
+    }
+  ]
 }

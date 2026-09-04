@@ -8,12 +8,147 @@
   "source_updated_at": "2026-09-03T12:07:14Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50348",
   "title": "CmdPal: Low-level keyboard hook toggle description is inversed",
-  "judgment": {"status": "actionable_design", "rationale": "The issue is a wording-only defect with confirmed runtime semantics and exact resource ownership.", "evidence": ["The setting text claims low-level hook mode fixes elevated-app activation.", "WH_KEYBOARD_LL cannot observe higher-integrity input from a non-elevated process.", "The setting only selects KeyboardListener versus RegisterHotKey; runtime behavior need not change."], "recommended_action": "Approve the resource-only wording design."},
-  "fix_assessment": {"status": "proposed", "rationale": "No existing fix attempt corrects the misleading setting description.", "existing_fix_urls": []},
-  "proposed_fixes": [{"title": "Correct the CmdPal low-level hook explanation", "root_cause": "The English resource string describes the elevated-app limitation as the reason to enable the hook, reversing the actual tradeoff.", "plan": ["Update the English resource to describe reserved shortcut support and the elevated-process limitation.", "Keep SettingsViewModel, hotkey selection, persistence, and localization mechanics unchanged.", "Validate the text in the General settings page and confirm toggling still changes modes."], "verification": ["The description no longer promises elevated-app activation and the existing setting behavior remains unchanged."], "confidence": {"score": 93, "level": "green", "rationale": "The resource string and the two runtime branches are directly identified in source."}}],
-  "issue_context": {"summary": "CmdPal's low-level keyboard hook setting has inverted explanatory text; the setting's implementation is not itself implicated.", "known_information": ["The issue targets the Command Palette settings page.", "The current text says to use the hook when activation from an elevated app fails.", "KeyboardListener uses WH_KEYBOARD_LL while the alternate path uses RegisterHotKey.", "The report links the integrity-level reason for the observed behavior."], "inferences": ["A resource-only fix is sufficient.", "The copy should mention reserved Windows shortcuts while avoiding an absolute guarantee for elevated apps."], "analysis": "The setting's persisted flag and runtime mode selection are already coherent. Correcting only the English description prevents a misleading expectation without changing hotkey behavior.", "initial_investigation": ["Inspected GeneralPage.xaml, SettingsViewModel, MainWindow setup, KeyboardListener, and the en-us resource.", "Reviewed related activation issues and git history; they concern capability behavior rather than this copy defect.", "Fork mirror Issue 641 contains the detailed design and adversary approval."], "information_gaps": []},
-  "design": {"root_cause": "Settings_GeneralPage_LowLevelHook_SettingsCard.Description says the hook helps activation from elevated apps, but WH_KEYBOARD_LL is subject to integrity-level restrictions and the hook is intended for shortcuts intercepted or reserved by Windows.", "evidence": ["[Observed] The resource string contains the inverted elevated-app claim.", "[Observed] SetupHotkey selects KeyboardListener when enabled and RegisterHotKey otherwise.", "[Observed] KeyboardListener installs WH_KEYBOARD_LL.", "[Inferred] No code change is required for this issue."], "affected_files": [{"path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw", "purpose": "Stores the visible setting description.", "symbols": ["Settings_GeneralPage_LowLevelHook_SettingsCard.Description"]}, {"path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs", "purpose": "Confirms unchanged runtime mode selection.", "symbols": ["SetupHotkey", "HotReloadSettings"]}, {"path": "src/modules/cmdpal/CmdPalKeyboardService/KeyboardListener.cpp", "purpose": "Confirms low-level hook integrity behavior.", "symbols": ["KeyboardListener::Start", "DoLowLevelKeyboardProc"]}], "implementation_steps": [{"order": 1, "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw", "symbols": ["Settings_GeneralPage_LowLevelHook_SettingsCard.Description"], "current_behavior": "The description implies enabling the hook remedies elevated-app focus.", "change": "Explain that the hook can help with Windows-reserved shortcuts but may not work while an elevated app is focused unless PowerToys is also elevated.", "code_block": "- Use this if the shortcut cannot focus Command Palette from an elevated app\\n+ Use this for shortcuts reserved by Windows, such as Win plus Space. It may not work while an elevated app is focused unless PowerToys is running as administrator.", "edge_cases": ["Keep the wording short enough for the existing settings card.", "Update translations through the normal localization process; do not alter runtime bindings."], "tests": ["Manual settings-page resource validation.", "Confirm toggling still switches between KeyboardListener and RegisterHotKey."]}], "verify": ["Build the CmdPal UI project with the repository's existing build script.", "Open CmdPal settings and verify the corrected description.", "Test a reserved shortcut and an elevated-app focus case to ensure the text matches behavior."], "risks": ["Users may find integrity terminology technical; use plain elevated-app wording.", "Translations will lag until the localization workflow updates them."], "alternatives": ["Adding a runtime warning is broader than this copy issue.", "Changing hook mechanics would not address the inverted text."]},
-  "mirror": {"kind": "issue", "fork_number": 641, "fork_title": "[Issue 50348] CmdPal ListItemViewModel AccessibleName is not used", "fork_state": "OPEN", "url": "https://github.com/MuyuanMS/PowerToys/issues/641"},
-  "adversary": {"rounds": 1, "verdict": "No blocking objections; approve wording-only design.", "notes": "Runtime behavior is intentionally unchanged."},
-  "actions": [{"type": "approve_design", "label": "Approve design for Issue 50348", "mirror_issue": 641, "comment": {"body": "Approve the fork-side CmdPal wording design for Issue 50348."}}]
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue is a wording-only defect with confirmed runtime semantics and exact resource ownership.",
+    "evidence": [
+      "The setting text claims low-level hook mode fixes elevated-app activation.",
+      "WH_KEYBOARD_LL cannot observe higher-integrity input from a non-elevated process.",
+      "The setting only selects KeyboardListener versus RegisterHotKey; runtime behavior need not change."
+    ],
+    "recommended_action": "Approve the resource-only wording design."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt corrects the misleading setting description.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Correct the CmdPal low-level hook explanation",
+      "root_cause": "The English resource string describes the elevated-app limitation as the reason to enable the hook, reversing the actual tradeoff.",
+      "plan": [
+        "Update the English resource to describe reserved shortcut support and the elevated-process limitation.",
+        "Keep SettingsViewModel, hotkey selection, persistence, and localization mechanics unchanged.",
+        "Validate the text in the General settings page and confirm toggling still changes modes."
+      ],
+      "verification": [
+        "The description no longer promises elevated-app activation and the existing setting behavior remains unchanged."
+      ],
+      "confidence": {
+        "score": 93,
+        "level": "green",
+        "rationale": "The resource string and the two runtime branches are directly identified in source."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "CmdPal's low-level keyboard hook setting has inverted explanatory text; the setting's implementation is not itself implicated.",
+    "known_information": [
+      "The issue targets the Command Palette settings page.",
+      "The current text says to use the hook when activation from an elevated app fails.",
+      "KeyboardListener uses WH_KEYBOARD_LL while the alternate path uses RegisterHotKey.",
+      "The report links the integrity-level reason for the observed behavior."
+    ],
+    "inferences": [
+      "A resource-only fix is sufficient.",
+      "The copy should mention reserved Windows shortcuts while avoiding an absolute guarantee for elevated apps."
+    ],
+    "analysis": "The setting's persisted flag and runtime mode selection are already coherent. Correcting only the English description prevents a misleading expectation without changing hotkey behavior.",
+    "initial_investigation": [
+      "Inspected GeneralPage.xaml, SettingsViewModel, MainWindow setup, KeyboardListener, and the en-us resource.",
+      "Reviewed related activation issues and git history; they concern capability behavior rather than this copy defect.",
+      "Fork mirror Issue 641 contains the detailed design and adversary approval."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "Settings_GeneralPage_LowLevelHook_SettingsCard.Description says the hook helps activation from elevated apps, but WH_KEYBOARD_LL is subject to integrity-level restrictions and the hook is intended for shortcuts intercepted or reserved by Windows.",
+    "evidence": [
+      "[Observed] The resource string contains the inverted elevated-app claim.",
+      "[Observed] SetupHotkey selects KeyboardListener when enabled and RegisterHotKey otherwise.",
+      "[Observed] KeyboardListener installs WH_KEYBOARD_LL.",
+      "[Inferred] No code change is required for this issue."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw",
+        "purpose": "Stores the visible setting description.",
+        "symbols": [
+          "Settings_GeneralPage_LowLevelHook_SettingsCard.Description"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
+        "purpose": "Confirms unchanged runtime mode selection.",
+        "symbols": [
+          "SetupHotkey",
+          "HotReloadSettings"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/CmdPalKeyboardService/KeyboardListener.cpp",
+        "purpose": "Confirms low-level hook integrity behavior.",
+        "symbols": [
+          "KeyboardListener::Start",
+          "DoLowLevelKeyboardProc"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw",
+        "symbols": [
+          "Settings_GeneralPage_LowLevelHook_SettingsCard.Description"
+        ],
+        "current_behavior": "The description implies enabling the hook remedies elevated-app focus.",
+        "change": "Explain that the hook can help with Windows-reserved shortcuts but may not work while an elevated app is focused unless PowerToys is also elevated.",
+        "code_block": "- Use this if the shortcut cannot focus Command Palette from an elevated app\\n+ Use this for shortcuts reserved by Windows, such as Win plus Space. It may not work while an elevated app is focused unless PowerToys is running as administrator.",
+        "edge_cases": [
+          "Keep the wording short enough for the existing settings card.",
+          "Update translations through the normal localization process; do not alter runtime bindings."
+        ],
+        "tests": [
+          "Manual settings-page resource validation.",
+          "Confirm toggling still switches between KeyboardListener and RegisterHotKey."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the CmdPal UI project with the repository's existing build script.",
+      "Open CmdPal settings and verify the corrected description.",
+      "Test a reserved shortcut and an elevated-app focus case to ensure the text matches behavior."
+    ],
+    "risks": [
+      "Users may find integrity terminology technical; use plain elevated-app wording.",
+      "Translations will lag until the localization workflow updates them."
+    ],
+    "alternatives": [
+      "Adding a runtime warning is broader than this copy issue.",
+      "Changing hook mechanics would not address the inverted text."
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 641,
+    "fork_title": "[Issue 50348] CmdPal ListItemViewModel AccessibleName is not used",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/641"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "No blocking objections; approve wording-only design.",
+    "notes": "Runtime behavior is intentionally unchanged."
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve design for Issue 50348",
+      "mirror_issue": 641,
+      "comment": {
+        "body": "Approve the fork-side CmdPal wording design for Issue 50348."
+      }
+    }
+  ]
 }

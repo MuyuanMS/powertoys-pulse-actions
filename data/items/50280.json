@@ -12,42 +12,159 @@
   "judgment": {
     "status": "actionable_design",
     "rationale": "The exact expression deterministically exposes a parser rewrite bug.",
-    "evidence": ["The issue reports =0-1e0 returning 0 instead of -1.", "CheckScientificNotation consumes an optional mantissa minus and rewrites the signed token before implicit multiplication.", "The analogous Command Palette fix did not modify PowerToys Run."],
+    "evidence": [
+      "The issue reports =0-1e0 returning 0 instead of -1.",
+      "CheckScientificNotation consumes an optional mantissa minus and rewrites the signed token before implicit multiplication.",
+      "The analogous Command Palette fix did not modify PowerToys Run."
+    ],
     "recommended_action": "Approve the narrow PowerToys Run parser fix and regression coverage."
   },
-  "fix_assessment": {"status": "proposed", "rationale": "No existing fix covers the PowerToys Run calculator implementation.", "existing_fix_urls": []},
-  "proposed_fixes": [{
-    "title": "Preserve binary subtraction around scientific notation",
-    "root_cause": "The optional leading minus in CheckScientificNotation can absorb the binary subtraction operator, producing an adjacent numeric-parenthesis expression that later becomes implicit multiplication.",
-    "plan": ["Update CalculateHelper.CheckScientificNotation to match an unsigned mantissa while retaining a signed exponent.", "Keep unary minus outside the rewritten scientific literal and verify validation still accepts it.", "Add transformation and end-to-end regression cases."],
-    "verification": ["Verify 0-1e0 transforms as 0-(1 * 10^(0)) and evaluates to -1.", "Cover -1e0, 1e-3, .1e2, 1.e2, addition, multiplication, whitespace, and culture-normalized decimals."],
-    "confidence": {"score": 92, "level": "green", "rationale": "The source transformation reproduces the reported result and the analogous fix establishes the intended boundary."}
-  }],
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix covers the PowerToys Run calculator implementation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve binary subtraction around scientific notation",
+      "root_cause": "The optional leading minus in CheckScientificNotation can absorb the binary subtraction operator, producing an adjacent numeric-parenthesis expression that later becomes implicit multiplication.",
+      "plan": [
+        "Update CalculateHelper.CheckScientificNotation to match an unsigned mantissa while retaining a signed exponent.",
+        "Keep unary minus outside the rewritten scientific literal and verify validation still accepts it.",
+        "Add transformation and end-to-end regression cases."
+      ],
+      "verification": [
+        "Verify 0-1e0 transforms as 0-(1 * 10^(0)) and evaluates to -1.",
+        "Cover -1e0, 1e-3, .1e2, 1.e2, addition, multiplication, whitespace, and culture-normalized decimals."
+      ],
+      "confidence": {
+        "score": 92,
+        "level": "green",
+        "rationale": "The source transformation reproduces the reported result and the analogous fix establishes the intended boundary."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "PowerToys Run binds the subtraction sign to the following scientific-notation literal, so the expression is evaluated as implicit multiplication.",
-    "known_information": ["The reporter supplied =0-1e0, expected -1, actual 0, and a screenshot.", "Current Run code permits a leading mantissa minus.", "Existing tests omit binary subtraction immediately before scientific notation."],
-    "inferences": ["The mantissa sign likely consumes the binary operator.", "A context-aware unary-sign boundary is required."],
+    "known_information": [
+      "The reporter supplied =0-1e0, expected -1, actual 0, and a screenshot.",
+      "Current Run code permits a leading mantissa minus.",
+      "Existing tests omit binary subtraction immediately before scientific notation."
+    ],
+    "inferences": [
+      "The mantissa sign likely consumes the binary operator.",
+      "A context-aware unary-sign boundary is required."
+    ],
     "analysis": "The failure is reproducible from the current parser rewrite, so no diagnostic archive is needed before design approval.",
-    "initial_investigation": ["Inspected CalculateHelper, CalculateEngine, NumberTranslator, QueryTests, and the related Command Palette fix history."],
+    "initial_investigation": [
+      "Inspected CalculateHelper, CalculateEngine, NumberTranslator, QueryTests, and the related Command Palette fix history."
+    ],
     "information_gaps": []
   },
   "design": {
     "root_cause": "CheckScientificNotation matches -1e0 as one token after 0-, then the implicit-multiplication pass changes 0(-1 * 10^(0)) into multiplication.",
-    "evidence": ["Current regex includes an optional mantissa minus.", "The following rewrite inserts multiplication between a number and an opening parenthesis.", "The issue's exact input reproduces the resulting zero."],
+    "evidence": [
+      "Current regex includes an optional mantissa minus.",
+      "The following rewrite inserts multiplication between a number and an opening parenthesis.",
+      "The issue's exact input reproduces the resulting zero."
+    ],
     "affected_files": [
-      {"path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs", "purpose": "Scientific-notation and implicit-multiplication rewrites.", "symbols": ["CalculateHelper.CheckScientificNotation", "CalculateHelper.FixHumanMultiplicationExpressions", "CalculateHelper.RegValidExpressChar"]},
-      {"path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs", "purpose": "Parser transformation and result regression coverage.", "symbols": ["QueryTests.RightHumanMultiplicationExpressionTransformation", "QueryTests.RightAnswerForHumanMultiplicationExpressions"]}
+      {
+        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs",
+        "purpose": "Scientific-notation and implicit-multiplication rewrites.",
+        "symbols": [
+          "CalculateHelper.CheckScientificNotation",
+          "CalculateHelper.FixHumanMultiplicationExpressions",
+          "CalculateHelper.RegValidExpressChar"
+        ]
+      },
+      {
+        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs",
+        "purpose": "Parser transformation and result regression coverage.",
+        "symbols": [
+          "QueryTests.RightHumanMultiplicationExpressionTransformation",
+          "QueryTests.RightAnswerForHumanMultiplicationExpressions"
+        ]
+      }
     ],
     "implementation_steps": [
-      {"order": 1, "file": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs", "symbols": ["CheckScientificNotation", "RegValidExpressChar"], "current_behavior": "The scientific token owns a leading minus.", "change": "Match only the unsigned mantissa and preserve unary minus as ordinary expression syntax.", "code_block": "pattern = \"(\\\\d+(?:\\\\.\\\\d*)?|\\\\.\\\\d+)[eE](-?\\\\d+)\"; replace with \"($1 * 10^($2))\".", "edge_cases": ["Preserve unary negative literals.", "Preserve negative exponents and leading/trailing decimal points.", "Do not consume binary subtraction."], "tests": ["Transformation assertions for 0-1e0 and -1e0.", "End-to-end cases for negative exponents and decimal mantissas."]},
-      {"order": 2, "file": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs", "symbols": ["RightHumanMultiplicationExpressionTransformation", "RightAnswerForHumanMultiplicationExpressions"], "current_behavior": "Standalone notation is covered but the operator boundary is not.", "change": "Add binary, unary, whitespace, and culture cases.", "code_block": "[DataRow(\"0-1e0\", -1)] [DataRow(\"-1e0\", -1)] [DataRow(\"1e-3\", 0.001)]", "edge_cases": ["Run both explicit equals and normal calculator query paths.", "Retain existing rounding expectations."], "tests": ["Run the existing calculator unit-test project."]}
+      {
+        "order": 1,
+        "file": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs",
+        "symbols": [
+          "CheckScientificNotation",
+          "RegValidExpressChar"
+        ],
+        "current_behavior": "The scientific token owns a leading minus.",
+        "change": "Match only the unsigned mantissa and preserve unary minus as ordinary expression syntax.",
+        "code_block": "pattern = \"(\\\\d+(?:\\\\.\\\\d*)?|\\\\.\\\\d+)[eE](-?\\\\d+)\"; replace with \"($1 * 10^($2))\".",
+        "edge_cases": [
+          "Preserve unary negative literals.",
+          "Preserve negative exponents and leading/trailing decimal points.",
+          "Do not consume binary subtraction."
+        ],
+        "tests": [
+          "Transformation assertions for 0-1e0 and -1e0.",
+          "End-to-end cases for negative exponents and decimal mantissas."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs",
+        "symbols": [
+          "RightHumanMultiplicationExpressionTransformation",
+          "RightAnswerForHumanMultiplicationExpressions"
+        ],
+        "current_behavior": "Standalone notation is covered but the operator boundary is not.",
+        "change": "Add binary, unary, whitespace, and culture cases.",
+        "code_block": "[DataRow(\"0-1e0\", -1)] [DataRow(\"-1e0\", -1)] [DataRow(\"1e-3\", 0.001)]",
+        "edge_cases": [
+          "Run both explicit equals and normal calculator query paths.",
+          "Retain existing rounding expectations."
+        ],
+        "tests": [
+          "Run the existing calculator unit-test project."
+        ]
+      }
     ],
-    "verify": ["Build the PowerToys Run calculator and unit tests in x64 Debug.", "Run focused QueryTests.", "Launch PowerToys Run and verify =0-1e0 returns -1 and existing scientific notation remains correct."],
-    "risks": ["Changing the intermediate form of unary negatives could regress validation if not covered.", "A broad regex change could affect decimal forms."],
-    "alternatives": ["A full tokenizer is more robust but unnecessarily broad for this isolated defect.", "Whitespace-dependent parsing was rejected because it would preserve incorrect behavior for compact expressions."]
+    "verify": [
+      "Build the PowerToys Run calculator and unit tests in x64 Debug.",
+      "Run focused QueryTests.",
+      "Launch PowerToys Run and verify =0-1e0 returns -1 and existing scientific notation remains correct."
+    ],
+    "risks": [
+      "Changing the intermediate form of unary negatives could regress validation if not covered.",
+      "A broad regex change could affect decimal forms."
+    ],
+    "alternatives": [
+      "A full tokenizer is more robust but unnecessarily broad for this isolated defect.",
+      "Whitespace-dependent parsing was rejected because it would preserve incorrect behavior for compact expressions."
+    ]
   },
-  "fork_issue": {"number": 561, "url": "https://github.com/MuyuanMS/PowerToys/issues/561"},
-  "actions": [{"id": "approve-design-50280", "type": "approve_design", "label": "Approve scientific-notation parser design", "primary": true, "confirm": true, "requiresApproval": true, "note": "Fork-side implementation only; no upstream action."}],
-  "adversary": {"rounds": 2, "verdict": "no blocking objections", "non_blocking_notes": ["Prove both unary-negative and binary-subtraction transformations."]},
-  "approval_gate": {"fork_issue_number": 561, "status": "awaiting_design_approval"}
+  "fork_issue": {
+    "number": 561,
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/561"
+  },
+  "actions": [
+    {
+      "id": "approve-design-50280",
+      "type": "approve_design",
+      "label": "Approve scientific-notation parser design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Fork-side implementation only; no upstream action."
+    }
+  ],
+  "adversary": {
+    "rounds": 2,
+    "verdict": "no blocking objections",
+    "non_blocking_notes": [
+      "Prove both unary-negative and binary-subtraction transformations."
+    ]
+  },
+  "approval_gate": {
+    "fork_issue_number": 561,
+    "status": "awaiting_design_approval"
+  }
 }
