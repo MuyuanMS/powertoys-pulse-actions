@@ -3,210 +3,77 @@
   "number": 47609,
   "kind": "issue",
   "track": "fix",
-  "generated_at": "2026-09-04T10:41:50+08:00",
-  "evaluated_at": "2026-09-04T10:41:50+08:00",
-  "source_updated_at": "2026-09-04T02:16:50Z",
+  "generated_at": "2026-09-04T14:31:22Z",
+  "evaluated_at": "2026-09-04T14:31:22Z",
+  "source_updated_at": "2026-09-04T12:33:19Z",
   "url": "https://github.com/microsoft/PowerToys/issues/47609",
-  "title": "New+ missing from Windows 11 classic context menu",
+  "title": "[BUG] New+ menu hasn't been working on Win11 with classic context menu enabled for several versions (Currently not working in v0.99.1)",
   "labels": [
     "Issue-Bug",
-    "Product-New+",
-    "Needs-Triage"
+    "Needs-Triage",
+    "Product-New+"
   ],
   "assignees": [],
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is a reproducible Windows 11 classic-shell integration failure. Current New+ code explicitly returns E_FAIL on Windows 11 in the classic handler while a separate modern registration path exists, making handler eligibility and registration the concrete design target.",
+    "status": "duplicate_or_handled",
+    "rationale": "The issue's classic Windows 11 context-menu symptom is directly covered by the more detailed open tracker #48512. The original reporter now says formatting Windows 11 resolved their instance, while a later commenter reports a related Nilesoft Shell case; neither supports starting a separate PowerToys fix workflow from this issue.",
     "evidence": [
-      "The issue reports New+ absent from the Windows 11 classic context menu while the modern menu path is separate.",
-      "Related Issue 48512 describes the same Windows 11 classic-context-menu compatibility area.",
-      "NewShellExtensionContextMenu.win10\\shell_context_menu_win10.cpp returns E_FAIL from QueryContextMenu when IsWin11OrGreater() is true.",
-      "RuntimeRegistration.h and powertoys_module.cpp define a distinct classic registration path that must be reconciled with the Windows 11 shell."
+      "The issue body reports that New+ is missing from the Windows 11 classic context menu when the classic menu is enabled.",
+      "The original reporter said on 2026-09-04 that formatting Windows 11 resolved the original instance.",
+      "Issue #48512 is an open New+ tracker for the same Windows 11 classic-context-menu behavior and includes registration, handler-loading, and runtime evidence.",
+      "Issue #48512 documents that the current classic handler is loaded but produces no visible entry, and that restoring the modern menu makes New+ appear.",
+      "Current PowerToys main still has an explicit Windows 11 rejection in NewShellExtensionContextMenu.win10/shell_context_menu_win10.cpp::QueryContextMenu.",
+      "The recent history for that handler includes the runtime shell-extension registration refactor in PR #41275."
     ],
-    "recommended_action": "Approve the fork-side design for a Windows 11 classic-shell-compatible registration and handler eligibility change, followed by paired classic/modern menu testing."
+    "recommended_action": "Close or mark this report as covered by issue #48512 and direct any still-reproducible classic-menu or Nilesoft-specific evidence to that canonical tracker."
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No linked upstream fix was found. The current unconditional Windows 11 E_FAIL is directly coupled to the reported missing classic-menu entry.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "A separate fix plan would duplicate the active investigation in issue #48512. This issue is suitable for deduplication rather than an independent implementation design.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/issues/48512"
+    ]
   },
-  "proposed_fixes": [
-    {
-      "title": "Restore New+ in the Windows 11 classic context menu",
-      "root_cause": "The Win10 shell extension rejects QueryContextMenu on Windows 11, so the classic Explorer path cannot contribute New+ even when its registration is present.",
-      "plan": [
-        "Confirm the classic Explorer activation path and registration used on supported Windows 11 builds, including the interaction with the packaged modern registration.",
-        "Replace the unconditional Windows 11 rejection with an explicit capability/registration decision that permits the classic path when invoked by classic Explorer and avoids duplicate modern entries.",
-        "Keep Win10 behavior unchanged and make registration enable/disable state transitions idempotent.",
-        "Add shell integration coverage or a documented manual matrix for classic Explorer, modern Explorer, folders, and files."
-      ],
-      "verification": [
-        "On Windows 11, enable New+, restart Explorer if required, and verify the entry appears in the classic context menu.",
-        "Verify the modern context menu has no duplicate entry and that disabling New+ removes both registrations.",
-        "Retest Windows 10 and packaged/unpackaged installation variants."
-      ],
-      "affected_files": [
-        {
-          "path": "src/modules/newplus/NewShellExtensionContextMenu.win10/shell_context_menu_win10.cpp",
-          "symbols": [
-            "shell_context_menu_win10::QueryContextMenu"
-          ]
-        },
-        {
-          "path": "src/modules/newplus/NewShellExtensionContextMenu/RuntimeRegistration.h",
-          "symbols": [
-            "runtime registration specification"
-          ]
-        },
-        {
-          "path": "src/modules/newplus/NewShellExtensionContextMenu/powertoys_module.cpp",
-          "symbols": [
-            "New+ enable/disable registration flow"
-          ]
-        }
-      ],
-      "confidence": {
-        "score": 76,
-        "level": "yellow",
-        "rationale": "The unconditional Windows 11 rejection is strong code evidence, but the exact shell registration signal and duplicate-avoidance behavior require validation on Windows 11."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "New+ is unavailable in the Windows 11 classic context menu.",
+    "summary": "New+ was reported missing from the Windows 11 classic context menu, but the reporter later said their instance was resolved by formatting Windows 11. A later commenter still reports a related failure with Nilesoft Shell.",
     "known_information": [
-      "The issue is open and unassigned.",
-      "The classic Win10 handler explicitly rejects Windows 11.",
-      "A related compatibility issue remains open."
+      "The issue is open, unassigned, and labeled Issue-Bug, Needs-Triage, and Product-New+.",
+      "The original report targets PowerToys 0.99.1 and describes enabling the Windows 11 classic context menu before checking the desktop or folder background menu.",
+      "The original reporter supplied a PowerToys bug-report ZIP attachment.",
+      "The original reporter stated that formatting Windows 11 resolved the original problem.",
+      "A later commenter said New+ also did not appear with Nilesoft Shell.",
+      "Issue #48512 is open and describes the same classic-menu compatibility problem with more detailed public diagnostics.",
+      "Current main's classic New+ handler returns E_FAIL when New+ is disabled or Windows 11 is detected.",
+      "The handler's recent history includes the runtime registration migration associated with PR #41275."
     ],
     "inferences": [
-      "The missing classic-menu entry is likely caused by the classic handler declining Windows 11 invocation before it contributes New+ menu items.",
-      "A fix must distinguish classic Explorer invocation from modern menu registration so restoring the classic path does not create duplicate entries."
+      "The original failure may have been caused by machine-specific shell registration or environment state rather than a currently isolated reproducible defect in this report.",
+      "The Nilesoft Shell comment may represent the same underlying classic-handler limitation, but it is not enough to establish that Nilesoft is PowerToys-supported or that the two environments fail for the same reason.",
+      "Issue #48512 is the appropriate place to consolidate investigation of the Windows 11 classic-handler rejection and registration behavior."
     ],
-    "analysis": "The reported symptom is scoped to the Windows 11 classic context menu, and the current New+ classic shell extension contains a direct Windows 11 rejection path. That makes handler eligibility and registration reconciliation the most likely PowerToys-owned fix boundary while still requiring Windows 11 registration validation before implementation.",
-    "information_gaps": [
-      {
-        "information": "Exact classic-shell registration state on the reporter's Windows 11 build.",
-        "why_needed": "This confirms whether the missing menu entry is caused only by handler eligibility or also by packaged registration state.",
-        "how_to_collect": "Inspect the New+ classic and modern shell registration entries on a Windows 11 repro machine with New+ enabled."
-      },
-      {
-        "information": "Whether the modern Windows 11 context menu already shows New+ or creates a duplicate when the classic handler is enabled.",
-        "why_needed": "This determines the duplicate-avoidance guard needed before implementation.",
-        "how_to_collect": "Compare modern and classic Explorer context menus for a folder with New+ enabled on the same repro machine."
-      }
-    ]
-  },
-  "design": {
-    "root_cause": "The classic shell extension returns E_FAIL on Windows 11 before adding its menu items.",
-    "affected_files": [
-      {
-        "path": "src/modules/newplus/NewShellExtensionContextMenu.win10/shell_context_menu_win10.cpp",
-        "purpose": "Classic Explorer shell extension handler that decides whether New+ contributes menu items.",
-        "symbols": [
-          "shell_context_menu_win10::QueryContextMenu"
-        ]
-      },
-      {
-        "path": "src/modules/newplus/NewShellExtensionContextMenu/RuntimeRegistration.h",
-        "purpose": "Registration contract for the New+ shell extension entries.",
-        "symbols": [
-          "runtime registration specification"
-        ]
-      },
-      {
-        "path": "src/modules/newplus/NewShellExtensionContextMenu/powertoys_module.cpp",
-        "purpose": "New+ module enable/disable flow that applies and removes shell extension registration.",
-        "symbols": [
-          "New+ enable/disable registration flow"
-        ]
-      }
+    "analysis": "The public evidence supports deduplication: #48512 has the same user-visible behavior, an explicit classic-menu reproduction, and concrete handler/registration observations. The new comments reduce confidence that #47609 still represents an independently reproducible bug, because the reporter says the original instance was resolved. The Nilesoft report should be preserved as context for the canonical tracker rather than used to create competing fix work.",
+    "initial_investigation": [
+      "Compared the full body and latest comments of #47609 with open issue #48512; the reproduction and expected behavior overlap directly.",
+      "Read the current public New+ classic handler source. QueryContextMenu returns E_FAIL on Windows 11 before adding New+ menu items.",
+      "Read the current public Win10 registration specification, which registers the classic handler under the Directory Background ShellEx ContextMenuHandlers key.",
+      "Checked recent New+ history; the classic handler was affected by the runtime shell-extension registration refactor described in PR #41275.",
+      "Searched related public issues and found no more specific open duplicate than #48512."
     ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/newplus/NewShellExtensionContextMenu.win10/shell_context_menu_win10.cpp",
-        "symbols": [
-          "QueryContextMenu"
-        ],
-        "current_behavior": "The classic handler returns E_FAIL on Windows 11 before it can add New+ menu entries.",
-        "change": "Gate classic-handler rejection on actual unsupported invocation/capability rather than Windows 11 version alone; preserve HRESULT/error handling.",
-        "code_block": "if (classicShellPathUnsupported()) {\n    return E_FAIL;\n}\nreturn AddNewPlusItems(...);",
-        "edge_cases": [
-          "Avoid duplicate modern and classic entries.",
-          "Preserve disabled state and non-folder restrictions."
-        ],
-        "tests": [
-          "Classic and modern Explorer menu checks on Windows 11.",
-          "Windows 10 regression check."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/newplus/NewShellExtensionContextMenu/powertoys_module.cpp",
-        "symbols": [
-          "registration enable/disable"
-        ],
-        "current_behavior": "Registration is split between classic and modern shell paths, but the classic handler's Windows 11 rejection prevents the classic path from surfacing New+.",
-        "change": "Make registration selection and removal consistent with the handler decision and idempotent across restart.",
-        "code_block": "RegisterClassicIfSupported();\nRegisterModernIfSupported();\nUnregisterUnsupportedOrDisabledEntries();",
-        "edge_cases": [
-          "Packaged and unpackaged installs.",
-          "Explorer restart."
-        ],
-        "tests": [
-          "Enable/disable and Explorer restart matrix."
-        ]
-      }
-    ],
-    "verify": [
-      "Build the existing New+ targets.",
-      "Exercise classic and modern Windows 11 menus with New+ enabled and disabled.",
-      "Retest Windows 10."
-    ],
-    "risks": [
-      "Shell extensions are sensitive to registration and Explorer caching.",
-      "A broad Windows 11 enablement could duplicate entries."
-    ],
-    "alternatives": [
-      "Only document modern-menu use: rejected because the reported classic path is a supported user experience.",
-      "Always enable both handlers: rejected because it risks duplicate entries."
-    ]
-  },
-  "fork_trace": {
-    "fork_number": 620,
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/620",
-    "status": "OPEN",
-    "note": "Fork-only design mirror; no upstream action implied."
-  },
-  "adversarial_review": {
-    "rounds": 1,
-    "conclusion": "No blocking objections; validate the exact Windows 11 registration and duplicate-entry behavior before implementation.",
-    "non_blocking_notes": [
-      "Preserve Windows 10 behavior.",
-      "Test packaged and unpackaged registration."
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "approve-design-47609",
-      "type": "approve_design",
-      "label": "Approve New+ classic-menu design",
+      "id": "post-comment-47609-duplicate-48512",
+      "type": "post_comment",
+      "label": "Link the canonical New+ classic-menu issue",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Fork-side design approval only."
-    },
-    {
-      "id": "request-info-47609",
-      "type": "request_info",
-      "label": "Ask for New+ shell registration details",
-      "primary": false,
-      "confirm": true,
+      "note": "Maintainer-facing duplicate/handled comment; no upstream comment has been posted.",
       "comment": {
         "target": "issue",
         "number": 47609,
-        "body": "Thanks for reporting the Windows 11 classic context-menu gap for New+. The current evidence points to the classic shell handler declining Windows 11 before it contributes menu items, but before implementing the fix we need to confirm the registration/duplicate-menu boundary. Could you confirm whether New+ appears in the modern Windows 11 context menu when the module is enabled, and whether enabling the classic path on the same machine would create a duplicate entry? If you can also share the non-sensitive New+ classic/modern shell registration state from that repro machine, it would confirm whether the fix belongs only in handler eligibility or also in registration."
+        "body": "Thanks for the detailed report. This behavior is already tracked in the more detailed New+ classic-context-menu issue: https://github.com/microsoft/PowerToys/issues/48512. That issue covers the same Windows 11 classic-menu path and includes the relevant registration and handler diagnostics. Since you also reported that formatting Windows 11 resolved your original instance, please add any still-reproducible classic-menu or Nilesoft Shell details to #48512 so the investigation stays consolidated."
       }
     }
   ]
