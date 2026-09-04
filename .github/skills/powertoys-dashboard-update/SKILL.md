@@ -127,7 +127,7 @@ the dashboard artifact validators in the same change.
 | PR | `trigger_ci` | Post `/azp run` to request an Azure Pipelines run when live checks are failed, cancelled, timed out, stale, or missing. | Exact comment body `/azp run`; current live head/check state displayed to the maintainer; explicit confirmation before posting. | Posting while all checks pass, treating CI as a substitute for review/build evidence, or auto-posting without a maintainer click. |
 | PR | `merge_pr` | Squash-merge an approved PR after review and CI are complete. | Current live head, at least one current approval, passing checks, clean GitHub merge state, and explicit confirmation immediately before merging. | Automatic merging, merging a draft, merging stale data, or merging without revalidating approval, CI, and mergeability. |
 | Issue | `request_info` | Ask the reporter for specific missing evidence. | An issue-specific upstream comment that summarizes the relevant facts already supplied, explains why they are insufficient, asks for exact missing evidence, and gives the established collection method when one exists (for example, `/bugreport` for a fresh PowerToys diagnostic ZIP). | "Not now", wait, monitor, a generic checklist, or "send logs/more information" without explaining the gap. |
-| Issue | `approve_design` | Approve/start a fork-side fix plan after design convergence. | Detailed design artifact and fork issue/trace for the fix workflow. | A speculative or incomplete design. |
+| Issue | `approve_design` | Approve/start a fork-side fix plan after design convergence. Pulse also derives a local-agent implementation prompt from the same public artifact. | Detailed design artifact and fork issue/trace for the fix workflow. | A speculative or incomplete design. |
 | Issue | `post_comment` | Post a close, duplicate, handled, out-of-scope, or maintainer-direction comment. | Specific rationale and linked duplicate/fix/ownership evidence when applicable. | Silent close, vague "won't fix", or no-op status comments. |
 | Issue | `open_upstream_pr` | Open the completed fork fix upstream. | Fork PR/head, implementation evidence, and approval gate. | Opening without explicit approval or without a reviewed fork fix. |
 
@@ -456,13 +456,20 @@ The editable `request_info` comment and display-only context must agree:
 `issue_context.information_gaps`, and any gap whose `how_to_collect` names
 `/bugreport` must use `/bugreport` in the proposed comment.
 
-When the evidence supports it, emit multiple issue actions rather than a single
-default request-info path: an `approve_design` action for the best currently
-supportable fix plan, plus a `request_info` action that asks only for evidence
-that would materially improve or disprove that plan. The display-only
-`proposed_fixes[].confidence` is the canonical score shown by Pulse. Prefer
-this split for vague or long issues where the discussion already narrows the
-component but still lacks a decisive diagnostic.
+Every `fix_assessment.status=proposed` artifact must include an
+`approve_design` action so the maintainer can either approve the fork-side
+workflow or copy an artifact-specific implementation prompt for a local
+Copilot agent. Pulse derives that prompt from the issue identity,
+`issue_context`, `proposed_fixes`, and the implementation-grade `design` when
+present. Copying the prompt is display-only: it requires no PAT and performs no
+GitHub write.
+
+Every yellow or red proposed fix must additionally include a targeted
+`request_info` action and one or more matching
+`issue_context.information_gaps`. The request asks only for evidence that would
+materially improve or disprove the current plan. A green plan may omit
+`request_info` only when no material uncertainty remains. The display-only
+`proposed_fixes[].confidence` is the canonical score shown by Pulse.
 
 When an issue is already clearly reproducible from the public report or
 attachments but does not yet justify a fix design, emit a `reproduce` action
