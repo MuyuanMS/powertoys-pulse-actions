@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T23:01:23.6837553+08:00",
+  "generated_at": "2026-09-05T00:09:17.1374804+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 143,
-    "open_issues": 12605,
+    "open_prs": 142,
+    "open_issues": 12607,
     "community": 11992,
-    "artifacts": 358
+    "artifacts": 356
   },
   "impact": {
-    "as_of": "2026-09-04T23:01:23.6837553+08:00",
+    "as_of": "2026-09-05T00:09:17.1374804+08:00",
     "issues_helped": 10,
     "prs_iterated": 28,
     "constructive_comments_posted": 3,
@@ -194,7 +194,6 @@ window.BOARD_INDEX = {
     49288,
     49279,
     49221,
-    49174,
     49077,
     48904,
     48816,
@@ -366,7 +365,6 @@ window.BOARD_INDEX = {
     20312,
     4358,
     3397,
-    50169,
     23724,
     6151,
     50209,
@@ -485,11 +483,11 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-04T14:45:55Z",
-      "updated_at": "2026-09-04T14:46:17Z",
+      "updated_at": "2026-09-04T15:11:41Z",
       "comments": 2,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
       "merge_state": "BLOCKED"
     },
     {
@@ -526,7 +524,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50375",
@@ -561,7 +559,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "CLEAN"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50370",
@@ -598,7 +596,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50364",
@@ -677,7 +675,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 651,
@@ -725,7 +723,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 605,
@@ -770,7 +768,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 600,
@@ -818,7 +816,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "CLEAN",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 581,
@@ -1065,7 +1063,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 557,
@@ -1114,7 +1112,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 552,
@@ -1162,7 +1160,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 601,
@@ -1206,7 +1204,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50245",
@@ -1289,7 +1287,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 530,
@@ -1338,7 +1336,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 526,
@@ -1384,7 +1382,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 527,
@@ -1464,7 +1462,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 517,
@@ -1514,7 +1512,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 503,
@@ -2034,12 +2032,12 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-08-27T22:01:56Z",
-      "updated_at": "2026-09-04T06:43:18Z",
+      "updated_at": "2026-09-04T15:06:13Z",
       "comments": 0,
       "priority": null,
-      "review_decision": "CHANGES_REQUESTED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
         "fork_number": 497,
@@ -2081,12 +2079,12 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-08-27T22:01:23Z",
-      "updated_at": "2026-09-04T08:45:17Z",
+      "updated_at": "2026-09-04T15:04:41Z",
       "comments": 1,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
         "fork_number": 496,
@@ -2131,7 +2129,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 465,
@@ -2173,7 +2171,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 483,
@@ -2218,7 +2216,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 452,
@@ -2266,7 +2264,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 537,
@@ -2351,7 +2349,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 450,
@@ -2393,7 +2391,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 454,
@@ -2440,7 +2438,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 440,
@@ -2485,7 +2483,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 443,
@@ -2530,7 +2528,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 477,
@@ -2575,7 +2573,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 421,
@@ -2665,7 +2663,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 456,
@@ -2711,7 +2709,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 414,
@@ -2751,7 +2749,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49988",
@@ -2833,7 +2831,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49966",
@@ -2870,7 +2868,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 400,
@@ -2916,7 +2914,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 415,
@@ -2958,7 +2956,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49953",
@@ -2993,7 +2991,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49951",
@@ -3025,7 +3023,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49950",
@@ -3057,7 +3055,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49949",
@@ -3089,7 +3087,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49947",
@@ -3408,7 +3406,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 392,
@@ -3455,7 +3453,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 464,
@@ -3501,7 +3499,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 604,
@@ -3541,7 +3539,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 589,
@@ -3581,7 +3579,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 590,
@@ -3624,7 +3622,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 594,
@@ -3666,7 +3664,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49793",
@@ -3706,7 +3704,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 485,
@@ -3755,7 +3753,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 538,
@@ -3797,7 +3795,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 323,
@@ -3846,7 +3844,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 482,
@@ -3886,7 +3884,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49746",
@@ -3918,7 +3916,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49726",
@@ -3952,7 +3950,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 356,
@@ -3998,7 +3996,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 595,
@@ -4044,7 +4042,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49662",
@@ -4078,7 +4076,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 390,
@@ -4160,7 +4158,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 603,
@@ -4203,7 +4201,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 365,
@@ -4245,7 +4243,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 338,
@@ -4287,7 +4285,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49502",
@@ -4321,7 +4319,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49474",
@@ -4358,7 +4356,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49472",
@@ -4392,7 +4390,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 354,
@@ -4435,7 +4433,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49431",
@@ -4509,7 +4507,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 597,
@@ -4553,7 +4551,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 344,
@@ -4599,7 +4597,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49394",
@@ -4634,7 +4632,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49388",
@@ -4672,7 +4670,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 574,
@@ -4763,7 +4761,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 332,
@@ -4805,7 +4803,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49329",
@@ -5082,7 +5080,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 429,
@@ -5126,7 +5124,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 359,
@@ -5166,7 +5164,7 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-07-12T23:58:06Z",
-      "updated_at": "2026-09-04T12:47:20Z",
+      "updated_at": "2026-09-04T15:36:57Z",
       "comments": 5,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
@@ -5216,7 +5214,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49276",
@@ -5250,7 +5248,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49226",
@@ -5284,7 +5282,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49225",
@@ -5318,7 +5316,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49224",
@@ -5353,7 +5351,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49223",
@@ -5392,7 +5390,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49222",
@@ -5426,7 +5424,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49221",
@@ -5464,7 +5462,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 270,
@@ -5508,51 +5506,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
-    },
-    {
-      "id": "pr-49174",
-      "kind": "pr",
-      "number": 49174,
-      "url": "https://github.com/microsoft/PowerToys/pull/49174",
-      "title": "[ColorPicker] Migrate from WPF to WinUI 3",
-      "author": "moooyo",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "blocked_upstream_advanced",
-      "owes": "review-worker",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Area-Localization",
-        "Product-Color Picker",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-07-07T09:18:49Z",
-      "updated_at": "2026-09-04T14:29:18Z",
-      "comments": 6,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "pending",
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 598,
-        "fork_title": "[PR 49174] [ColorPicker] Migrate from WPF to WinUI 3",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49174",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/598"
-      }
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49100",
@@ -5587,7 +5541,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49077",
@@ -5627,7 +5581,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48904",
@@ -5664,7 +5618,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 385,
@@ -5710,7 +5664,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48816",
@@ -5748,7 +5702,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 335,
@@ -5839,7 +5793,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 345,
@@ -5887,7 +5841,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 352,
@@ -5932,7 +5886,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 599,
@@ -5972,7 +5926,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48223",
@@ -6010,7 +5964,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 364,
@@ -6060,7 +6014,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 435,
@@ -6103,7 +6057,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-47871",
@@ -6143,7 +6097,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 591,
@@ -6186,7 +6140,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 381,
@@ -6230,7 +6184,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 379,
@@ -6275,7 +6229,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 575,
@@ -6318,7 +6272,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-45581",
@@ -6354,7 +6308,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-44624",
@@ -6394,7 +6348,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 593,
@@ -6436,7 +6390,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 376,
@@ -6483,7 +6437,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 336,
@@ -6531,7 +6485,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 378,
@@ -26343,38 +26297,6 @@ window.BOARD_INDEX = {
       "created_at": "2024-07-22T09:42:34Z",
       "updated_at": "2026-04-18T14:59:30Z",
       "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-32198",
-      "kind": "issue",
-      "number": 32198,
-      "url": "https://github.com/microsoft/PowerToys/issues/32198",
-      "title": "Bind the layout of FancyZones to the monitor resolution",
-      "author": "tiiiiiy",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-FancyZones",
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2024-04-03T03:00:32Z",
-      "updated_at": "2026-04-19T09:50:28Z",
-      "comments": 2,
       "priority": null
     },
     {
@@ -46895,8 +46817,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-04T07:07:16Z",
-      "comments": 14,
+      "updated_at": "2026-09-04T15:40:41Z",
+      "comments": 16,
       "priority": null
     },
     {
@@ -52004,7 +51926,7 @@ window.BOARD_INDEX = {
       "author": "niels9001",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
@@ -52021,7 +51943,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Screen Ruler"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-08-27T13:49:41Z",
       "updated_at": "2026-08-27T13:59:10Z",
       "comments": 1,
@@ -68210,17 +68134,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-49589",
+      "id": "issue-50382",
       "kind": "issue",
-      "number": 49589,
-      "url": "https://github.com/microsoft/PowerToys/issues/49589",
-      "title": "System.Runtime.InteropServices.COMException (0x80263001): {Desktop composition is disabled} The operation could not be completed because desktop composition is disabled. (0x80263001)",
-      "author": "sudhirbrahma",
-      "state": "closed",
+      "number": 50382,
+      "url": "https://github.com/microsoft/PowerToys/issues/50382",
+      "title": "[CmdPal] Default sort order to installed+name in the extension gallery",
+      "author": "lin-ycv",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -68228,17 +68152,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Resolution-Duplicate"
+        "Issue-Feature",
+        "Product-Command Palette"
       ],
       "assignees": [],
-      "created_at": "2026-07-30T15:43:30Z",
-      "updated_at": "2026-07-30T17:00:58Z",
-      "comments": 2,
+      "created_at": "2026-09-02T04:10:10Z",
+      "updated_at": "2026-09-04T15:18:10Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -85008,37 +84932,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-49000",
+      "id": "issue-31481",
       "kind": "issue",
-      "number": 49000,
-      "url": "https://github.com/microsoft/PowerToys/issues/49000",
-      "title": "Migrate Color Picker to WinUI3",
-      "author": "moooyo",
+      "number": 31481,
+      "url": "https://github.com/microsoft/PowerToys/issues/31481",
+      "title": "Keyboard Manager remaps do not work if Casting to a monitor and allow input from this device checked",
+      "author": "rabbibotton",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "other",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Color Picker",
-        "Issue-Task"
+        "Issue-Bug",
+        "Product-Keyboard Shortcut Manager",
+        "Needs-Triage"
       ],
-      "assignees": [
-        "moooyo"
-      ],
-      "created_at": "2026-06-29T06:03:10Z",
-      "updated_at": "2026-08-14T17:14:40Z",
-      "comments": 1,
+      "assignees": [],
+      "created_at": "2024-02-19T01:10:04Z",
+      "updated_at": "2024-02-19T21:15:10Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -115946,17 +115869,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-47930",
+      "id": "issue-49589",
       "kind": "issue",
-      "number": 47930,
-      "url": "https://github.com/microsoft/PowerToys/issues/47930",
-      "title": "Command Pallette crashed in 26300.8493",
-      "author": "NaClO4H2O",
+      "number": 49589,
+      "url": "https://github.com/microsoft/PowerToys/issues/49589",
+      "title": "System.Runtime.InteropServices.COMException (0x80263001): {Desktop composition is disabled} The operation could not be completed because desktop composition is disabled. (0x80263001)",
+      "author": "sudhirbrahma",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": true,
+      "is_cmdpal": false,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -115969,13 +115892,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage",
-        "Product-Command Palette"
+        "Resolution-Duplicate"
       ],
       "assignees": [],
-      "created_at": "2026-05-16T13:46:18Z",
-      "updated_at": "2026-05-22T02:17:59Z",
-      "comments": 0,
+      "created_at": "2026-07-30T15:43:30Z",
+      "updated_at": "2026-07-30T17:00:58Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -212637,6 +212559,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-24035",
+      "kind": "issue",
+      "number": 24035,
+      "url": "https://github.com/microsoft/PowerToys/issues/24035",
+      "title": "PowerToys cannot be opened",
+      "author": "alistairx256",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback"
+      ],
+      "assignees": [],
+      "created_at": "2023-02-10T04:40:18Z",
+      "updated_at": "2026-09-04T15:21:58Z",
+      "comments": 4,
+      "priority": null
+    },
+    {
       "id": "issue-26907",
       "kind": "issue",
       "number": 26907,
@@ -213330,7 +213284,7 @@ window.BOARD_INDEX = {
         "moooyo"
       ],
       "created_at": "2026-03-24T08:22:29Z",
-      "updated_at": "2026-08-05T03:12:31Z",
+      "updated_at": "2026-09-04T15:32:20Z",
       "comments": 2,
       "priority": null
     },
@@ -287481,8 +287435,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-06-29T11:28:20Z",
-      "updated_at": "2026-07-01T01:39:20Z",
-      "comments": 1,
+      "updated_at": "2026-09-04T15:18:00Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -290849,15 +290803,12 @@ window.BOARD_INDEX = {
       "stage": "waiting_on_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "09/02/2026 23:59:23",
-      "has_artifact": true,
-      "agent_status": "fix",
+      "waiting_since": "09/04/2026 15:40:46",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -290866,8 +290817,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-27T14:56:19Z",
-      "updated_at": "2026-09-02T23:59:23Z",
-      "comments": 8,
+      "updated_at": "2026-09-04T15:40:46Z",
+      "comments": 10,
       "priority": null
     },
     {
@@ -312092,6 +312043,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-49000",
+      "kind": "issue",
+      "number": 49000,
+      "url": "https://github.com/microsoft/PowerToys/issues/49000",
+      "title": "Migrate Color Picker to WinUI3",
+      "author": "moooyo",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Color Picker",
+        "Issue-Task"
+      ],
+      "assignees": [
+        "moooyo"
+      ],
+      "created_at": "2026-06-29T06:03:10Z",
+      "updated_at": "2026-09-04T15:27:42Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-22886",
       "kind": "issue",
       "number": 22886,
@@ -314032,36 +314017,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-31481",
+      "id": "issue-32198",
       "kind": "issue",
-      "number": 31481,
-      "url": "https://github.com/microsoft/PowerToys/issues/31481",
-      "title": "Keyboard Manager remaps do not work if Casting to a monitor and allow input from this device checked",
-      "author": "rabbibotton",
-      "state": "open",
+      "number": 32198,
+      "url": "https://github.com/microsoft/PowerToys/issues/32198",
+      "title": "Bind the layout of FancyZones to the monitor resolution",
+      "author": "tiiiiiy",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
+      "track": null,
+      "stage": null,
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Product-Keyboard Shortcut Manager",
+        "Product-FancyZones",
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-02-19T01:10:04Z",
-      "updated_at": "2024-02-19T21:15:10Z",
-      "comments": 0,
+      "created_at": "2024-04-03T03:00:32Z",
+      "updated_at": "2026-04-19T09:50:28Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -380053,8 +380037,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2025-01-30T09:37:33Z",
-      "updated_at": "2026-04-18T10:52:34Z",
-      "comments": 13,
+      "updated_at": "2026-09-04T15:21:33Z",
+      "comments": 14,
       "priority": null
     },
     {
@@ -389000,6 +388984,39 @@ window.BOARD_INDEX = {
       "created_at": "2022-10-10T07:54:59Z",
       "updated_at": "2026-04-19T16:13:54Z",
       "comments": 2,
+      "priority": null
+    },
+    {
+      "id": "issue-47930",
+      "kind": "issue",
+      "number": 47930,
+      "url": "https://github.com/microsoft/PowerToys/issues/47930",
+      "title": "Command Pallette crashed in 26300.8493",
+      "author": "NaClO4H2O",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-05-16T13:46:18Z",
+      "updated_at": "2026-05-22T02:17:59Z",
+      "comments": 0,
       "priority": null
     },
     {
