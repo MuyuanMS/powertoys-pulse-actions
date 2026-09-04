@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T15:00:16.9958523+08:00",
+  "generated_at": "2026-09-04T15:10:38.9715409+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 140,
-    "open_issues": 12604,
+    "open_issues": 12605,
     "community": 11991,
     "artifacts": 329
   },
   "impact": {
-    "as_of": "2026-09-04T15:00:16.9958523+08:00",
+    "as_of": "2026-09-04T15:10:38.9715409+08:00",
     "issues_helped": 10,
     "prs_iterated": 28,
     "constructive_comments_posted": 3,
@@ -45497,6 +45497,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50374",
+      "kind": "issue",
+      "number": 50374,
+      "url": "https://github.com/microsoft/PowerToys/issues/50374",
+      "title": "A crash after coming back from sleep",
+      "author": "davidkhudaverdyan",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-04T06:59:48Z",
+      "updated_at": "2026-09-04T06:59:48Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-47552",
       "kind": "issue",
       "number": 47552,
@@ -46629,8 +46661,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-04T05:17:12Z",
-      "comments": 13,
+      "updated_at": "2026-09-04T07:07:16Z",
+      "comments": 14,
       "priority": null
     },
     {
@@ -209306,7 +209338,7 @@ window.BOARD_INDEX = {
       "author": "niels9001",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
@@ -209323,7 +209355,9 @@ window.BOARD_INDEX = {
         "Idea-Enhancement",
         "Product-Cursor Wrap"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-08-27T13:49:13Z",
       "updated_at": "2026-08-27T13:57:02Z",
       "comments": 1,
