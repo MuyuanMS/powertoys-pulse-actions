@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T11:25:59.7096218+08:00",
+  "generated_at": "2026-09-04T11:37:34.6011684+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 139,
     "open_issues": 12604,
     "community": 11742,
-    "artifacts": 340
+    "artifacts": 335
   },
   "impact": {
-    "as_of": "2026-09-04T11:25:59.7096218+08:00",
+    "as_of": "2026-09-04T11:37:34.6011684+08:00",
     "issues_helped": 10,
     "prs_iterated": 29,
     "constructive_comments_posted": 3,
@@ -225,10 +225,6 @@ window.BOARD_INDEX = {
     50365,
     50362,
     50359,
-    50355,
-    50351,
-    50348,
-    50346,
     50335,
     4649,
     15288,
@@ -288,10 +284,8 @@ window.BOARD_INDEX = {
     50158,
     50156,
     50152,
-    50149,
     50147,
     50137,
-    50125,
     50124,
     50121,
     50117,
@@ -330,6 +324,7 @@ window.BOARD_INDEX = {
     10942,
     279,
     45816,
+    45630,
     26,
     16762,
     1642,
@@ -389,7 +384,6 @@ window.BOARD_INDEX = {
     3326,
     3309,
     3269,
-    50349,
     2694,
     2774,
     20008,
@@ -397,6 +391,7 @@ window.BOARD_INDEX = {
     2686,
     2151,
     50256,
+    37143,
     1643,
     1585,
     5962,
@@ -5371,7 +5366,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-07T09:18:49Z",
-      "updated_at": "2026-09-03T06:19:04Z",
+      "updated_at": "2026-09-04T03:18:54Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -45511,7 +45506,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/50369",
       "title": "Image resize and change format",
       "author": "SteveManningPerth",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -45531,7 +45526,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-04T02:51:22Z",
-      "updated_at": "2026-09-04T02:57:43Z",
+      "updated_at": "2026-09-04T03:16:16Z",
       "comments": 1,
       "priority": null
     },
@@ -45944,14 +45939,11 @@ window.BOARD_INDEX = {
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/03/2026 12:54:22",
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
@@ -45962,7 +45954,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-09-03T12:47:06Z",
       "updated_at": "2026-09-03T12:54:22Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 643,
+        "fork_title": "[Issue 50355] Something went wrong",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/643"
+      }
     },
     {
       "id": "issue-50354",
@@ -46074,18 +46074,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "triage",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -46095,7 +46092,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-09-03T08:37:07Z",
       "updated_at": "2026-09-03T08:48:34Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 638,
+        "fork_title": "[Issue 50351] Keyboard Manager shortcuts cannot override Windows shortcuts",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/638"
+      }
     },
     {
       "id": "issue-50350",
@@ -46174,18 +46179,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "fix",
-      "stage": "triage",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce elevated-app shortcut behavior"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -46195,7 +46197,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-09-03T07:09:48Z",
       "updated_at": "2026-09-03T12:07:14Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 641,
+        "fork_title": "[Issue 50348] CmdPal: Low-level keyboard hook toggle description is inversed",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/641"
+      }
     },
     {
       "id": "issue-15309",
@@ -46247,14 +46257,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -46264,7 +46271,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-09-03T07:00:54Z",
       "updated_at": "2026-09-03T07:14:11Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 639,
+        "fork_title": "[Issue 50346] CmdPal ListItemViewModel AccessibleName is not used",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/639"
+      }
     },
     {
       "id": "issue-50345",
@@ -47549,18 +47564,18 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
-      "stage": "duplicate_or_handled",
-      "owes": "maintainer",
+      "track": "fix",
+      "stage": "awaiting_design_approval",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Close as duplicate of the FancyZones PWA tracker"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -47570,7 +47585,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-09-01T22:38:52Z",
       "updated_at": "2026-09-01T22:38:52Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 637,
+        "fork_title": "[Issue 50304] FancyZones Issue with msedge.exe Apps",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/637"
+      }
     },
     {
       "id": "issue-50303",
@@ -47996,7 +48019,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-09-01T17:28:04Z",
       "updated_at": "2026-09-01T17:28:04Z",
       "comments": 0,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 631,
+        "fork_title": "[Issue 50291] calculations on powertoys run don't give expected value",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/631"
+      }
     },
     {
       "id": "issue-50290",
@@ -48640,7 +48671,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_reply",
+      "stage": "needs_information",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -48743,7 +48774,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "waiting_on_author",
+      "stage": "needs_information",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "08/31/2026 14:22:27",
@@ -48751,7 +48782,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
@@ -48961,7 +48995,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-31T00:56:05Z",
       "updated_at": "2026-08-31T01:01:24Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 632,
+        "fork_title": "[Issue 50259] [Mouse Without Borders] Impossible to run without elevated privileges, Impossible to change layout",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/632"
+      }
     },
     {
       "id": "issue-50258",
@@ -49075,18 +49117,18 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": "triage",
+      "track": "fix",
       "stage": "triaged",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Draft duplicate guidance"
+        "type": "reproduce",
+        "label": "Reproduce inherited secondary bands"
       },
       "labels": [
         "Issue-Bug",
@@ -49097,7 +49139,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-30T20:52:42Z",
       "updated_at": "2026-08-30T20:57:03Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 636,
+        "fork_title": "[Issue 50255] Command Palette Dock is empty on secondary monitors in multi-monitor setup",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/636"
+      }
     },
     {
       "id": "issue-32735",
@@ -50154,7 +50204,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "handled",
+      "stage": "needs_information",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -50163,8 +50213,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Post duplicate guidance"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -50176,7 +50226,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-29T00:10:19Z",
       "updated_at": "2026-08-31T22:16:21Z",
       "comments": 2,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 644,
+        "fork_title": "[Issue 50221] Botched install recovery design",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/644"
+      }
     },
     {
       "id": "issue-32701",
@@ -52091,7 +52149,7 @@ window.BOARD_INDEX = {
       "mirror": {
         "kind": "issue",
         "fork_number": 583,
-        "fork_title": "[Issue 50152] Advanced Paste: Paste with AI cannot find Foundry Local models",
+        "fork_title": "[Issue 50152] Advanced Paste: Paste with AI can't find Foundry Local models",
         "fork_state": "OPEN",
         "fork_branch": null,
         "url": "https://github.com/MuyuanMS/PowerToys/issues/583"
@@ -52176,18 +52234,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_comment",
-        "label": "Explain intentional shortcut change"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-FancyZones",
@@ -52197,7 +52252,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-26T21:14:25Z",
       "updated_at": "2026-09-03T12:58:14Z",
       "comments": 5,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 633,
+        "fork_title": "[Issue 50149] FancyZones quick layout switching during drag",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/633"
+      }
     },
     {
       "id": "issue-50148",
@@ -52942,18 +53005,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce the ZoomIt AltGr collision"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -72133,7 +72193,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "needs_information",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -72142,8 +72202,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Post consolidation guidance"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -107752,12 +107812,12 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "owned_elsewhere",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -107769,7 +107829,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-05-29T13:19:26Z",
       "updated_at": "2026-09-03T03:00:14Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 640,
+        "fork_title": "[Issue 48204] Runner logs cannot be disabled or size-limited",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/640"
+      }
     },
     {
       "id": "issue-48203",
@@ -142612,7 +142680,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_information",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -142634,7 +142702,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-31T15:01:35Z",
       "updated_at": "2026-08-31T15:08:12Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 645,
+        "fork_title": "[Issue 50267] Prevent cached Preview install on Stable channel",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/645"
+      }
     },
     {
       "id": "issue-29494",
@@ -181643,15 +181719,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "owned_elsewhere",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -181661,7 +181740,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-02-16T11:07:22Z",
       "updated_at": "2026-08-31T14:33:03Z",
       "comments": 2,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 646,
+        "fork_title": "[Issue 45630] Persist Quick Accent usage ordering across restart",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/646"
+      }
     },
     {
       "id": "issue-11056",
@@ -299845,7 +299932,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-08-20T15:26:31Z",
       "updated_at": "2026-08-29T21:24:10Z",
       "comments": 13,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 630,
+        "fork_title": "[Issue 50036] [Shortcut Guide] Appear and immediately disappear",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/630"
+      }
     },
     {
       "id": "issue-40966",
@@ -360012,12 +360107,12 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "owned_elsewhere",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -360030,7 +360125,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-06-28T09:06:23Z",
       "updated_at": "2026-09-03T08:13:32Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 635,
+        "fork_title": "[Issue 48977] Power Display transient DDC discovery drops and duplicate monitor rows",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/635"
+      }
     },
     {
       "id": "issue-38059",
@@ -364486,14 +364589,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -364503,7 +364603,15 @@ window.BOARD_INDEX = {
       "created_at": "2026-09-03T08:03:12Z",
       "updated_at": "2026-09-03T09:23:05Z",
       "comments": 1,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 642,
+        "fork_title": "[Issue 50349] CmdPal: App is not being properly disposed",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/642"
+      }
     },
     {
       "id": "issue-37859",
@@ -380163,15 +380271,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_reply",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -380182,7 +380293,15 @@ window.BOARD_INDEX = {
       "created_at": "2025-01-29T14:49:30Z",
       "updated_at": "2026-08-31T18:19:00Z",
       "comments": 13,
-      "priority": null
+      "priority": null,
+      "mirror": {
+        "kind": "issue",
+        "fork_number": 634,
+        "fork_title": "[Issue 37143] Distinguish AltGr from ZoomIt Ctrl shortcuts",
+        "fork_state": "OPEN",
+        "fork_branch": null,
+        "url": "https://github.com/MuyuanMS/PowerToys/issues/634"
+      }
     },
     {
       "id": "issue-37142",

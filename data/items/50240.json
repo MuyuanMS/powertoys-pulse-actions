@@ -13,7 +13,12 @@
   "title": "The updated version is not available",
   "author": "JohnnyB-ro",
   "authorAssociation": "NONE",
-  "labels": ["Issue-Bug", "Needs-Triage", "Needs-Team-Response", "Product-General"],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-General"
+  ],
   "assignees": [],
   "comments": 4,
   "confidence": "High",
@@ -108,79 +113,137 @@
       {
         "path": "src/common/version/helper.h",
         "purpose": "Declares the comparable version value and parser API.",
-        "symbols": ["VersionHelper", "VersionHelper::fromString"]
+        "symbols": [
+          "VersionHelper",
+          "VersionHelper::fromString"
+        ]
       },
       {
         "path": "src/common/version/helper.cpp",
         "purpose": "Parses release/file versions and formats comparable values.",
-        "symbols": ["VersionHelper::VersionHelper", "fromString<CharT>", "VersionHelper::fromString(std::string_view)", "VersionHelper::fromString(std::wstring_view)", "VersionHelper::toString", "VersionHelper::toWstring"]
+        "symbols": [
+          "VersionHelper::VersionHelper",
+          "fromString<CharT>",
+          "VersionHelper::fromString(std::string_view)",
+          "VersionHelper::fromString(std::wstring_view)",
+          "VersionHelper::toString",
+          "VersionHelper::toWstring"
+        ]
       },
       {
         "path": "src/common/updating/updating.cpp",
         "purpose": "Reads release metadata and parses tag_name through VersionHelper.",
-        "symbols": ["the release-fetching function containing release_object.GetNamedString(L\"tag_name\")"]
+        "symbols": [
+          "the release-fetching function containing release_object.GetNamedString(L\"tag_name\")"
+        ]
       },
       {
         "path": "src/common/UnitTests-CommonLib/UnitTestsVersionHelper.cpp",
         "purpose": "Native regression tests for construction, parsing, comparison, and formatting.",
-        "symbols": ["UnitTestsVersionHelper"]
+        "symbols": [
+          "UnitTestsVersionHelper"
+        ]
       },
       {
         "path": "src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj",
         "purpose": "Builds the native CommonLib unit-test binary.",
-        "symbols": ["UnitTestsVersionHelper.cpp compilation item"]
+        "symbols": [
+          "UnitTestsVersionHelper.cpp compilation item"
+        ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
         "file": "src/common/version/helper.h",
-        "symbols": ["VersionHelper"],
+        "symbols": [
+          "VersionHelper"
+        ],
         "current_behavior": "The affected baseline stores only major, minor, and revision.",
         "change": "Add a defaulted build component so existing three-part call sites remain source-compatible while four-part release versions are represented and compared.",
         "code_block": "- VersionHelper(size_t major, size_t minor, size_t revision);\n+ VersionHelper(size_t major, size_t minor, size_t revision, size_t build = 0);\n  size_t major;\n  size_t minor;\n  size_t revision;\n+ size_t build;",
-        "edge_cases": ["Keep build zero as the legacy absent component.", "Preserve defaulted constructor behavior and comparison ordering."],
-        "tests": ["Constructor initializes build to zero by default and to the supplied value when present.", "Comparison includes build after revision."]
+        "edge_cases": [
+          "Keep build zero as the legacy absent component.",
+          "Preserve defaulted constructor behavior and comparison ordering."
+        ],
+        "tests": [
+          "Constructor initializes build to zero by default and to the supplied value when present.",
+          "Comparison includes build after revision."
+        ]
       },
       {
         "order": 2,
         "file": "src/common/version/helper.cpp",
-        "symbols": ["fromString<CharT>", "VersionHelper::toString", "VersionHelper::toWstring"],
+        "symbols": [
+          "fromString<CharT>",
+          "VersionHelper::toString",
+          "VersionHelper::toWstring"
+        ],
         "current_behavior": "The old stream parser reads three integers and requires EOF, rejecting four-part tags.",
         "change": "Parse exactly three or four dot-separated decimal tokens after trimming v/V and a supported preview suffix; reject malformed or extra components; construct the build-aware VersionHelper and preserve three-part formatting for build zero.",
         "code_block": "+ trim optional v/V and supported suffix\n+ size_t parts[4]{};\n+ parse each non-empty decimal token until the full string is consumed\n+ accept only 3 or 4 tokens\n+ return VersionHelper(parts[0], parts[1], parts[2], parts[3])",
-        "edge_cases": ["Reject empty, partial, nonnumeric, extra-part, invalid-suffix, and overflow inputs.", "Preserve narrow and wide overloads.", "Do not accept arbitrary trailing text."],
-        "tests": ["Four-part stable tag and leading-zero build parse.", "Accepted preview suffix parses; malformed suffix rejects.", "Three-part parsing and zero/non-zero formatting remain unchanged."]
+        "edge_cases": [
+          "Reject empty, partial, nonnumeric, extra-part, invalid-suffix, and overflow inputs.",
+          "Preserve narrow and wide overloads.",
+          "Do not accept arbitrary trailing text."
+        ],
+        "tests": [
+          "Four-part stable tag and leading-zero build parse.",
+          "Accepted preview suffix parses; malformed suffix rejects.",
+          "Three-part parsing and zero/non-zero formatting remain unchanged."
+        ]
       },
       {
         "order": 3,
         "file": "src/common/updating/updating.cpp",
-        "symbols": ["release-fetching function containing release_object.GetNamedString(L\"tag_name\")"],
+        "symbols": [
+          "release-fetching function containing release_object.GetNamedString(L\"tag_name\")"
+        ],
         "current_behavior": "An unparsable four-part tag is ignored, leaving no newer release candidate.",
         "change": "Consume the corrected VersionHelper result without changing stable-release selection, Store behavior, or existing non-fatal parse-failure handling.",
         "code_block": "auto parsed = VersionHelper::fromString(release_object.GetNamedString(L\"tag_name\"));\nif (!parsed) { existing ignore/log path; }\n// compare parsed value with installed version",
-        "edge_cases": ["Keep malformed release metadata non-fatal.", "Do not enable preview releases for stable users as a side effect."],
-        "tests": ["Use a four-part stable tag in the update comparison path and assert it is newer than 0.100.2."]
+        "edge_cases": [
+          "Keep malformed release metadata non-fatal.",
+          "Do not enable preview releases for stable users as a side effect."
+        ],
+        "tests": [
+          "Use a four-part stable tag in the update comparison path and assert it is newer than 0.100.2."
+        ]
       },
       {
         "order": 4,
         "file": "src/common/UnitTests-CommonLib/UnitTestsVersionHelper.cpp",
-        "symbols": ["UnitTestsVersionHelper"],
+        "symbols": [
+          "UnitTestsVersionHelper"
+        ],
         "current_behavior": "Existing tests cover the current four-part implementation on main but not the shipped old baseline's regression behavior.",
         "change": "Retain and, if needed on the servicing branch, add tests for four-part narrow/wide parsing, build comparison, leading zeros, suffix validation, malformed input, and formatting.",
         "code_block": "auto parsed = VersionHelper::fromString(\"v0.101.2362.0\");\nAssert::IsTrue(parsed.has_value());\nAssert::AreEqual(2362ull, parsed->revision);\nAssert::AreEqual(0ull, parsed->build);",
-        "edge_cases": ["Tests must be deterministic and network-free.", "Use the existing Microsoft Native CppUnitTestFramework conventions."],
-        "tests": ["Run the existing CommonLib native test binary through Visual Studio Test Explorer or vstest.console.exe."]
+        "edge_cases": [
+          "Tests must be deterministic and network-free.",
+          "Use the existing Microsoft Native CppUnitTestFramework conventions."
+        ],
+        "tests": [
+          "Run the existing CommonLib native test binary through Visual Studio Test Explorer or vstest.console.exe."
+        ]
       },
       {
         "order": 5,
         "file": "servicing release pipeline and Store package metadata",
-        "symbols": ["existing release/build entry points for the supported servicing branch"],
+        "symbols": [
+          "existing release/build entry points for the supported servicing branch"
+        ],
         "current_behavior": "Users on the published 0.100.2 package cannot receive the parser change already present on current main.",
         "change": "Build and publish a supported servicing package containing the parser fix, preserving package identity and update-channel policy; validate embedded version and release tag before rollout.",
         "code_block": "build servicing package -> verify embedded four-part version -> publish through existing Store/release path -> test Check for updates",
-        "edge_cases": ["Coordinate release numbering and Store propagation.", "Do not create an upstream PR in this design-only workflow.", "Validate per-user Store installation specifically."],
-        "tests": ["Install 0.100.2 as a reproduction control, then install servicing build and verify detection, update, restart, and reported version."]
+        "edge_cases": [
+          "Coordinate release numbering and Store propagation.",
+          "Do not create an upstream PR in this design-only workflow.",
+          "Validate per-user Store installation specifically."
+        ],
+        "tests": [
+          "Install 0.100.2 as a reproduction control, then install servicing build and verify detection, update, restart, and reported version."
+        ]
       }
     ],
     "verify": [
@@ -205,7 +268,10 @@
     "rounds": 2,
     "final_verdict": "no blocking objections",
     "sign_off": "No blocking objections after two independent adversary rounds.",
-    "non_blocking_notes": ["The parser fix is already present on current main; the remaining deliverable is a servicing release for the affected Store binary.", "Release-channel and Store propagation checks must remain explicit."]
+    "non_blocking_notes": [
+      "The parser fix is already present on current main; the remaining deliverable is a servicing release for the affected Store binary.",
+      "Release-channel and Store propagation checks must remain explicit."
+    ]
   },
   "mirror": {
     "kind": "issue",
@@ -238,14 +304,10 @@
         "body": "Approved design for Issue 50240: backport the strict four-component VersionHelper parser and regression tests, then validate a servicing Store release. Keep package identity, stable-channel selection, and update error handling unchanged. This approval is for the fork design gate only; no upstream action is taken automatically."
       },
       "note": "Draft only; no GitHub write occurs without explicit maintainer approval."
-    },
-    {
-      "id": "rerun-50240",
-      "type": "rerun",
-      "label": "Rerun investigation",
-      "confirm": false,
-      "note": "Re-read Issue 50240 and refresh the design if the upstream issue or release state changes."
     }
   ],
-  "allowed_actions": ["approve_design", "rerun"]
+  "allowed_actions": [
+    "approve_design",
+    "rerun"
+  ]
 }

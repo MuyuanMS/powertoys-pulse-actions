@@ -8,14 +8,160 @@
   "source_updated_at": "2026-09-04T00:07:17Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50368",
   "title": "Advanced Paste cannot discover Foundry Local 0.10.x models",
-  "labels": ["Issue-Bug", "Product-Advanced Paste", "Needs-Triage"],
+  "labels": [
+    "Issue-Bug",
+    "Product-Advanced Paste",
+    "Needs-Triage"
+  ],
   "assignees": [],
-  "judgment": {"status": "actionable_design", "rationale": "The reporter provides a complete Foundry Local 0.10.3.0 reproduction and a diagnostic showing an empty service URL. Current provider initialization depends on legacy Endpoint/ServiceUri accessors before catalog calls, a concrete compatibility boundary.", "evidence": ["Foundry Local 0.10.3.0 is running and the CLI responds.", "The diagnostic reports an empty service URL and invalid absolute-URI behavior.", "FoundryClient.GetServiceUrl/GetServiceUri expose manager properties and FoundryLocalModelProvider.InitializeAsync consumes them before listing models.", "No linked upstream fix was found."], "recommended_action": "Approve the fork-side endpoint discovery design with explicit SDK-version compatibility and actionable diagnostics."},
-  "fix_assessment": {"status": "proposed", "rationale": "The current endpoint accessor contract appears incompatible with Foundry Local 0.10.x; a provider-side compatibility adapter is supportable.", "existing_fix_urls": []},
-  "proposed_fixes": [{"title": "Resolve Foundry Local 0.10.x endpoint reliably", "root_cause": "FoundryLocalModelProvider assumes FoundryClient's legacy manager Endpoint/ServiceUri values are populated, but Foundry Local 0.10.x can expose a running service through a different discovery contract, leaving the URI empty.", "plan": ["Identify the supported 0.10.x endpoint accessor and normalize it to an absolute base URI.", "Centralize endpoint validation in FoundryClient; reject empty or non-absolute values with a diagnostic that names the discovery state.", "Use the normalized URI consistently for catalog, cached-model, and chat-client requests.", "Retain compatibility with older SDKs and add mocked tests for endpoint-present, endpoint-empty, and alternate-accessor cases."], "verification": ["Reproduce with PowerToys v0.101.2362.0 and Foundry Local 0.10.3.0.", "Confirm phi-4-mini is listed and Advanced Paste can create a client.", "Retest an older supported Foundry Local version and service-not-running failure."], "affected_files": [{"path": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs", "symbols": ["CreateAsync", "GetServiceUrl", "GetServiceUri", "ListCatalogModels", "ListCachedModels"]}, {"path": "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs", "symbols": ["InitializeAsync", "GetModelsAsync", "GetIChatClient", "IsAvailable"]}], "confidence": {"score": 78, "level": "yellow", "rationale": "The empty URI is direct evidence and the endpoint wrapper is localized, but the exact 0.10.x SDK accessor must be confirmed during implementation."}}],
-  "issue_context": {"summary": "Advanced Paste cannot discover a model from Foundry Local 0.10.3.0 even though the Foundry CLI server is usable.", "known_information": ["Windows 11 24H2 and Foundry Local 0.10.3.0.", "Diagnostic shows empty service URL.", "No assignee or linked fix."], "information_gaps": ["Exact SDK endpoint accessor and URI path semantics."]},
-  "design": {"root_cause": "Provider initialization receives no usable absolute URI from the current Foundry manager wrapper.", "affected_files": ["src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs", "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs"], "implementation_steps": [{"order": 1, "file": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs", "symbols": ["GetServiceUrl", "GetServiceUri"], "change": "Resolve and normalize the 0.10.x endpoint, validate absolute URI, and expose one source of truth.", "code_shape": "var endpoint = manager.NewEndpoint ?? manager.Endpoint ?? manager.ServiceUri; return NormalizeAbsolute(endpoint);", "edge_cases": ["Empty endpoint.", "Missing API path.", "Service stopped."], "tests": ["Mock each accessor and assert normalized URI/error."]}, {"order": 2, "file": "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs", "symbols": ["InitializeAsync", "GetModelsAsync"], "change": "Use the validated URI for all requests and surface discovery failure without pretending no models exist.", "code_shape": "var uri = await client.GetRequiredServiceUriAsync(); await client.ListCachedModels(uri);", "edge_cases": ["Cancellation and startup race.", "Older SDK compatibility."], "tests": ["Provider initialization and model-listing tests."]}], "verify": ["Build Advanced Paste/common provider targets using existing repository workflow.", "Run the reported Foundry Local reproduction and older-version compatibility checks."], "risks": ["SDK API drift.", "Incorrect path normalization could break older versions."], "alternatives": ["Hard-code localhost:5272: rejected because the service port and path are deployment-specific.", "Treat empty URI as no models: rejected because it hides a discovery failure."]},
-  "fork_trace": {"fork_number": 623, "url": "https://github.com/MuyuanMS/PowerToys/issues/623", "status": "OPEN", "note": "Fork-only design mirror; no upstream action implied."},
-  "adversarial_review": {"rounds": 1, "conclusion": "No blocking objections; confirm the exact 0.10.x SDK contract and preserve older versions.", "non_blocking_notes": ["Keep endpoint errors distinct from empty catalog results."]},
-  "actions": [{"id": "approve-design-50368", "type": "approve_design", "label": "Approve Foundry endpoint design", "primary": true, "confirm": true, "requiresApproval": true, "note": "Fork-side design approval only."}]
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reporter provides a complete Foundry Local 0.10.3.0 reproduction and a diagnostic showing an empty service URL. Current provider initialization depends on legacy Endpoint/ServiceUri accessors before catalog calls, a concrete compatibility boundary.",
+    "evidence": [
+      "Foundry Local 0.10.3.0 is running and the CLI responds.",
+      "The diagnostic reports an empty service URL and invalid absolute-URI behavior.",
+      "FoundryClient.GetServiceUrl/GetServiceUri expose manager properties and FoundryLocalModelProvider.InitializeAsync consumes them before listing models.",
+      "No linked upstream fix was found."
+    ],
+    "recommended_action": "Approve the fork-side endpoint discovery design with explicit SDK-version compatibility and actionable diagnostics."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current endpoint accessor contract appears incompatible with Foundry Local 0.10.x; a provider-side compatibility adapter is supportable.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve Foundry Local 0.10.x endpoint reliably",
+      "root_cause": "FoundryLocalModelProvider assumes FoundryClient's legacy manager Endpoint/ServiceUri values are populated, but Foundry Local 0.10.x can expose a running service through a different discovery contract, leaving the URI empty.",
+      "plan": [
+        "Identify the supported 0.10.x endpoint accessor and normalize it to an absolute base URI.",
+        "Centralize endpoint validation in FoundryClient; reject empty or non-absolute values with a diagnostic that names the discovery state.",
+        "Use the normalized URI consistently for catalog, cached-model, and chat-client requests.",
+        "Retain compatibility with older SDKs and add mocked tests for endpoint-present, endpoint-empty, and alternate-accessor cases."
+      ],
+      "verification": [
+        "Reproduce with PowerToys v0.101.2362.0 and Foundry Local 0.10.3.0.",
+        "Confirm phi-4-mini is listed and Advanced Paste can create a client.",
+        "Retest an older supported Foundry Local version and service-not-running failure."
+      ],
+      "affected_files": [
+        {
+          "path": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
+          "symbols": [
+            "CreateAsync",
+            "GetServiceUrl",
+            "GetServiceUri",
+            "ListCatalogModels",
+            "ListCachedModels"
+          ]
+        },
+        {
+          "path": "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs",
+          "symbols": [
+            "InitializeAsync",
+            "GetModelsAsync",
+            "GetIChatClient",
+            "IsAvailable"
+          ]
+        }
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The empty URI is direct evidence and the endpoint wrapper is localized, but the exact 0.10.x SDK accessor must be confirmed during implementation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Advanced Paste cannot discover a model from Foundry Local 0.10.3.0 even though the Foundry CLI server is usable.",
+    "known_information": [
+      "Windows 11 24H2 and Foundry Local 0.10.3.0.",
+      "Diagnostic shows empty service URL.",
+      "No assignee or linked fix."
+    ],
+    "information_gaps": [
+      "Exact SDK endpoint accessor and URI path semantics."
+    ]
+  },
+  "design": {
+    "root_cause": "Provider initialization receives no usable absolute URI from the current Foundry manager wrapper.",
+    "affected_files": [
+      "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
+      "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs"
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
+        "symbols": [
+          "GetServiceUrl",
+          "GetServiceUri"
+        ],
+        "change": "Resolve and normalize the 0.10.x endpoint, validate absolute URI, and expose one source of truth.",
+        "code_shape": "var endpoint = manager.NewEndpoint ?? manager.Endpoint ?? manager.ServiceUri; return NormalizeAbsolute(endpoint);",
+        "edge_cases": [
+          "Empty endpoint.",
+          "Missing API path.",
+          "Service stopped."
+        ],
+        "tests": [
+          "Mock each accessor and assert normalized URI/error."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs",
+        "symbols": [
+          "InitializeAsync",
+          "GetModelsAsync"
+        ],
+        "change": "Use the validated URI for all requests and surface discovery failure without pretending no models exist.",
+        "code_shape": "var uri = await client.GetRequiredServiceUriAsync(); await client.ListCachedModels(uri);",
+        "edge_cases": [
+          "Cancellation and startup race.",
+          "Older SDK compatibility."
+        ],
+        "tests": [
+          "Provider initialization and model-listing tests."
+        ]
+      }
+    ],
+    "verify": [
+      "Build Advanced Paste/common provider targets using existing repository workflow.",
+      "Run the reported Foundry Local reproduction and older-version compatibility checks."
+    ],
+    "risks": [
+      "SDK API drift.",
+      "Incorrect path normalization could break older versions."
+    ],
+    "alternatives": [
+      "Hard-code localhost:5272: rejected because the service port and path are deployment-specific.",
+      "Treat empty URI as no models: rejected because it hides a discovery failure."
+    ]
+  },
+  "fork_trace": {
+    "fork_number": 623,
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/623",
+    "status": "OPEN",
+    "note": "Fork-only design mirror; no upstream action implied."
+  },
+  "adversarial_review": {
+    "rounds": 1,
+    "conclusion": "No blocking objections; confirm the exact 0.10.x SDK contract and preserve older versions.",
+    "non_blocking_notes": [
+      "Keep endpoint errors distinct from empty catalog results."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-50368",
+      "type": "approve_design",
+      "label": "Approve Foundry endpoint design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Fork-side design approval only."
+    }
+  ]
 }

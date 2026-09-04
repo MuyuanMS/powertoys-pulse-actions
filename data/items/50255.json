@@ -2,81 +2,12 @@
   "schemaVersion": 5,
   "number": 50255,
   "kind": "issue",
-  "track": "triage",
+  "track": "fix",
   "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
   "url": "https://github.com/microsoft/PowerToys/issues/50255",
   "authorAssociation": "NONE",
-  "confidence": "High",
-  "status": {
-    "glyph": "🔗",
-    "label": "Duplicate Dock report",
-    "detail": "Issue 49604 already tracks the same empty secondary-monitor Dock behavior and contains maintainer investigation."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Draft duplicate guidance",
-    "reason": "Consolidate monitor layout and Dock settings evidence in the canonical report."
-  },
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The symptom is not distinct from the canonical open Dock issue: display detection and per-display enablement work, the Dock bar appears, and configured contents are missing only on secondary displays.",
-    "evidence": [
-      "The report describes three monitors, working per-display toggles, a populated primary Dock, and empty secondary Dock bars.",
-      "Automated triage also identified issue 49604 as a likely duplicate.",
-      "Issue 49604 reports the same blank secondary-display Dock and includes a maintainer hypothesis that secondary Dock state may be initialized incorrectly.",
-      "Related issues 48466 and 48516 concern other multi-monitor Dock positioning/display-change behavior rather than this empty-content symptom."
-    ],
-    "recommended_action": "Keep this as duplicate/handled by issue 49604 and, if a maintainer wants to comment, use plain issue-number wording rather than creating an automatic upstream cross-reference.",
-    "evaluated_at": "2026-09-03T06:51:45Z",
-    "source_updated_at": "2026-08-30T20:57:03Z"
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "This report is covered by the existing canonical Dock issue 49604. A separate fix plan would duplicate the same secondary-monitor band-initialization investigation rather than identify a distinct failing path.",
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/issues/49604"
-    ]
-  },
-  "issue_context": {
-    "summary": "Command Palette creates a Dock bar on each enabled secondary display, but only the primary display renders the configured Dock items.",
-    "known_information": [
-      "The report covers PowerToys 0.101.2362.0 installed through WinGet on a three-monitor system.",
-      "All displays are detected and their Dock enable switches work.",
-      "Issue 49604 reports the same blank secondary-display Dock and already has maintainer investigation."
-    ],
-    "inferences": [
-      "This likely shares issue 49604's secondary-Dock state or band-initialization path, but no root cause is confirmed."
-    ],
-    "analysis": "The distinguishing symptoms are identical to issue 49604, including a visible bar, working monitor selection, and absent configured contents. A second implementation effort would fragment evidence without adding a distinct failure mode.",
-    "initial_investigation": [
-      "Reviewed the complete report, automated triage comment, labels, assignees, project items, and timeline cross-references.",
-      "Reviewed issue 49604, including the maintainer comment that secondary Dock state may be initialized wrong and that only some related Dock reports are duplicates.",
-      "Duplicate search also found 49018 as another open Dock-on-non-primary report, but issue 49604 remains the closest canonical technical thread."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "post-comment-50255",
-      "type": "post_comment",
-      "label": "Draft duplicate guidance",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 50255,
-        "body": "Thanks for the detailed three-monitor reproduction. This appears to match issue 49604, which tracks the Command Palette Dock bar appearing on a secondary display without rendering its configured bands. Please add any monitor layout, per-display scaling, or Dock configuration details that differ from issue 49604 there so the investigation remains consolidated.",
-        "repository": "microsoft/PowerToys"
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "requiresApproval": true
-    }
-  ],
-  "generated_at": "2026-09-03T06:51:45Z",
-  "evaluated_at": "2026-09-03T06:51:45Z",
-  "source_updated_at": "2026-08-30T20:57:03Z",
   "title": "Command Palette Dock is empty on secondary monitors in multi-monitor setup",
   "author": "Or-Ka",
   "labels": [
@@ -84,7 +15,268 @@
     "Needs-Triage",
     "Product-Command Palette"
   ],
-  "assignees": [],
   "comments": 1,
-  "summary": "Command Palette Dock shows its bar on secondary monitors but renders no bands, matching the open canonical secondary-Dock report in issue 49604."
+  "confidence": "Medium",
+  "status": {
+    "glyph": "!",
+    "label": "Existing fork candidate needs policy decision",
+    "detail": "Fork PR 177 directly addresses the blank secondary Dock path, but its legacy empty-layout migration cannot distinguish automatic defaults from intentionally empty historical layouts."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Decide legacy migration policy",
+    "reason": "Approve a narrowly scoped conversion policy, or preserve all legacy empty secondary layouts and leave existing affected settings unchanged."
+  },
+  "summary": "Secondary Docks resolve automatically-created empty per-monitor band lists instead of the populated global Dock bands.",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Issue 50255 has the same deterministic empty-secondary-Dock symptom as canonical Issue 49604. A concrete fork candidate already targets that shared root cause, but it needs a legacy-settings policy and current-main revalidation before it is ready.",
+    "evidence": [
+      "The report says monitor detection and per-display Dock enabling work, the primary Dock renders configured items, and every enabled secondary Dock is an empty visible bar.",
+      "Issue 49604 records the same symptom and maintainer intent that secondary Docks copy the original bands until customized.",
+      "MonitorConfigReconciler creates secondary monitor configurations with IsCustomized=true and three empty band lists.",
+      "DockViewModel.GetActiveBands resolves those non-null empty custom lists rather than the global bands."
+    ],
+    "recommended_action": "Keep evidence consolidated with canonical Issue 49604 and resolve the legacy migration policy before advancing fork PR 177.",
+    "evaluated_at": "2026-09-04T02:48:25Z",
+    "source_updated_at": "2026-08-30T20:57:03Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Fork PR 177 contains a concrete implementation for this exact shared empty-secondary-band path: new secondary configurations inherit global bands and generated legacy empty secondary configurations are normalized. It is not current-main ready because it needs a rebase and an explicit decision about legacy intentional empty layouts.",
+    "existing_fix_urls": [
+      "https://github.com/MuyuanMS/PowerToys/pull/177"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "On PowerToys 0.101.2362.0, enabled Command Palette Docks on two secondary displays show their top bar but no configured bands, while the primary Dock renders the same configured content.",
+    "known_information": [
+      "The reporter uses three displays and installed PowerToys with WinGet.",
+      "All displays are discovered and their individual Dock enable switches work.",
+      "The primary Dock renders configured Clock, Performance Monitor, memory/CPU, and other pinned items; both secondary Docks render no content.",
+      "There is no bug-report ZIP, screenshot, video, or other attachment on Issue 50255.",
+      "Canonical Issue 49604 describes the same empty secondary Dock symptom. Its maintainer discussion says secondary Docks were intended to copy original bands until customized.",
+      "Issue 48466 concerns sizing and positioning, and Issue 48516's merged topology-change fix does not cover this deterministic empty-band initialization path.",
+      "MuyuanMS/PowerToys fork PR 177 is open and implements the candidate correction on branch copilot/fix-dock-secondary-blank."
+    ],
+    "inferences": [
+      "The reporter's secondary monitor settings likely have the automatically-created customized configuration with three empty band lists.",
+      "The reported behavior is covered by the same root cause as Issue 49604, rather than a monitor detection, enablement, or rendering-window failure."
+    ],
+    "analysis": "MonitorConfigReconciler persists a newly found secondary monitor with IsCustomized=true plus empty StartBands, CenterBands, and EndBands. DockViewModel.GetActiveBands delegates to DockMonitorConfig.ResolveStartBands, ResolveCenterBands, and ResolveEndBands, which select those non-null empty lists for a customized monitor. The Dock window therefore has a valid monitor and visible bar but zero band view models. Creating secondaries uncustomized is the correct path because the existing resolvers then inherit global bands; changing the resolvers would also erase intentional empty custom layouts.",
+    "initial_investigation": [
+      "Inspected the live Issue 50255 body, comments, labels, timeline, and attachment references. No contributor assignment, linked PR, reproduction attachment, or upstream fix link exists.",
+      "Inspected canonical Issue 49604 and related Issues 48466 and 48516, including their maintainer guidance and linked merged PR 49814.",
+      "Inspected current Command Palette Dock code, DockMultiMonitorTests, and multi-monitor history.",
+      "Inspected the existing MuyuanMS fork mirror for canonical Issue 49604, fork PR 177, branch copilot/fix-dock-secondary-blank, its commits, and review state.",
+      "Ran an independent adversary review of the inferred cause and candidate design."
+    ],
+    "information_gaps": [
+      {
+        "information": "Approved policy for pre-marker secondary configurations with all three custom band lists empty",
+        "why_needed": "Older settings do not record whether this shape was automatically created or intentionally emptied by the user. Automatic normalization can restore content for affected users but may overwrite an intentional historical empty layout.",
+        "how_to_collect": "Obtain maintainer product guidance on whether to favor automatic recovery of the generated default or preservation of every pre-existing intentional empty secondary layout."
+      },
+      {
+        "information": "Current-main rebase and validation of fork PR 177",
+        "why_needed": "The candidate is behind current main and its unit-test edits conflict with newer test-file changes, so its current-main build and test status is not established.",
+        "how_to_collect": "After the migration policy is chosen, rebase the candidate on main, resolve the test changes, build the Command Palette view-model unit-test project, and run DockMultiMonitorTests."
+      }
+    ]
+  },
+  "design": {
+    "state": "needs_information",
+    "root_cause": "New secondary monitor configurations are initialized as customized with three empty per-monitor band lists. The band resolvers select those empty lists for the secondary Dock instead of the populated global lists, yielding a visible Dock bar with no content.",
+    "evidence": [
+      {
+        "kind": "observed",
+        "detail": "Issue 50255 reports working monitor detection and enable switches, a populated primary Dock, and empty visible secondary Dock bars."
+      },
+      {
+        "kind": "observed",
+        "detail": "The Issue 49604 maintainer description says new secondary Docks should copy original bands until customized."
+      },
+      {
+        "kind": "observed",
+        "detail": "MonitorConfigReconciler.Reconcile creates non-primary monitor configs with IsCustomized=true and empty StartBands, CenterBands, and EndBands."
+      },
+      {
+        "kind": "observed",
+        "detail": "DockViewModel.GetActiveBands calls DockMonitorConfig.Resolve*Bands, which uses non-null per-monitor lists when IsCustomized is true."
+      },
+      {
+        "kind": "inferred",
+        "detail": "The reporter is affected by the generated legacy empty-secondary configuration, not an intentionally empty custom Dock."
+      }
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
+        "symbols": [
+          "MonitorConfigReconciler.Reconcile"
+        ],
+        "role": "Creates new per-monitor defaults and is the only safe normalization boundary for persisted generated settings."
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/DockSettings.cs",
+        "symbols": [
+          "DockMonitorConfig.ResolveStartBands",
+          "DockMonitorConfig.ResolveCenterBands",
+          "DockMonitorConfig.ResolveEndBands",
+          "DockMonitorConfig.ForkFromGlobal"
+        ],
+        "role": "Defines global inheritance and explicit per-monitor band ownership."
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs",
+        "symbols": [
+          "DockViewModel.GetActiveBands"
+        ],
+        "role": "Consumes resolved lists to populate each Dock window; no behavior change is required here."
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockMultiMonitorTests.cs",
+        "symbols": [
+          "Reconciler_NewSecondaryMonitor_StartsWithEmptyBands"
+        ],
+        "role": "Covers new-secondary defaults, legacy migration, reconnection, serialization, and intentional customization behavior."
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
+        "symbol": "MonitorConfigReconciler.Reconcile",
+        "current_flow": "A newly discovered secondary is disabled but marked customized with three explicit empty lists, which opt it out of global band inheritance.",
+        "change": "Create secondary configs disabled but uncustomized, with null per-monitor lists. When a user enables the Dock without customization, the existing resolver path supplies the global bands.",
+        "key_code_shape": "new DockMonitorConfig { MonitorDeviceId = monitor.StableId, Enabled = false, IsPrimary = false, LastSeen = utcNow }",
+        "edge_and_state_handling": "Do not alter primary defaults, stable monitor matching, monitor enablement, side overrides, or actual per-monitor customizations."
+      },
+      {
+        "order": 2,
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/DockSettings.cs",
+        "symbol": "DockMonitorConfig.Resolve*Bands and ForkFromGlobal",
+        "current_flow": "Resolvers correctly use global bands for uncustomized configs and explicit lists for customized configs.",
+        "change": "Leave resolution semantics unchanged. If legacy normalization is approved, add or retain an explicit persisted customization marker so a future deliberate empty layout remains distinguishable from an automatic default.",
+        "key_code_shape": "IsCustomized && StartBands is not null ? StartBands : globalBands",
+        "edge_and_state_handling": "Never redefine every empty list as inheritance; that would immediately break intentionally empty custom Docks."
+      },
+      {
+        "order": 3,
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
+        "symbol": "legacy empty-configuration normalization helper",
+        "current_flow": "Historical configurations have no provenance for whether three empty custom lists were generated or user-created.",
+        "change": "Do not finalize this step until maintainers approve the migration tradeoff. If automatic recovery is chosen, normalize only non-primary configurations having exactly three explicit empty lists and no explicit-customization marker; preserve partial/null lists, marked customizations, and primary settings.",
+        "key_code_shape": "if (isSecondary && hasExactlyThreeEmptyLists && !hasExplicitCustomization) return config with { IsCustomized = false, StartBands = null, CenterBands = null, EndBands = null };",
+        "edge_and_state_handling": "The historical ambiguity is irreducible. The selected policy must explicitly accept either the narrow reset risk or the decision not to repair legacy affected settings automatically."
+      },
+      {
+        "order": 4,
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockMultiMonitorTests.cs",
+        "symbol": "secondary-default, legacy-migration, serialization, and reconnection tests",
+        "current_flow": "Current-main tests assert the older empty customized secondary default.",
+        "change": "After rebasing, replace that assertion with inherited global-band coverage and add policy-consistent regression tests for migrated legacy settings, deliberate empty secondary layouts created after a marker exists, primary empty layouts, partial custom lists, JSON round trips, and monitor reconnects.",
+        "key_code_shape": "Assert.IsFalse(secondary.IsCustomized); Assert.AreSame(globalStartBands, secondary.ResolveStartBands(globalStartBands));",
+        "edge_and_state_handling": "Resolve the current test-file conflict during rebase; do not claim current-main validation from the older branch."
+      }
+    ],
+    "verify": {
+      "build_and_test": "After rebase, build src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj with the existing PowerToys build workflow, then run the DockMultiMonitorTests subset with vstest.console.exe.",
+      "reproduction": [
+        "Use two or more monitors with Command Palette Dock enabled and at least one populated global Dock band.",
+        "Enable a previously unconfigured secondary Dock and verify it displays inherited global bands rather than only an empty bar.",
+        "Exercise the chosen legacy-empty configuration migration, restart Command Palette, and verify its approved outcome.",
+        "Create a deliberate empty secondary layout after explicit-customization tracking is available, restart and reconnect the monitor, and verify it remains empty.",
+        "Verify primary Docks, partial custom layouts, side overrides, and per-monitor enablement are unchanged."
+      ]
+    },
+    "risks": [
+      "Pre-marker legacy data cannot identify whether three empty secondary lists were automatic defaults or a user's intentional empty layout.",
+      "Fork PR 177 is behind current main and has a test-file conflict, so it needs integration work before build and test claims are current.",
+      "Changing the resolver instead of defaults would expand the regression to all intentionally empty custom layouts."
+    ],
+    "alternatives": [
+      {
+        "option": "Treat all empty customized lists as global inheritance in DockMonitorConfig.Resolve*Bands",
+        "decision": "Rejected because it changes explicit custom semantics for every monitor and destroys deliberate empty layouts."
+      },
+      {
+        "option": "Preserve every legacy empty secondary configuration",
+        "decision": "Rejected as a complete fix because it leaves existing users with the exact reported blank Dock state."
+      },
+      {
+        "option": "Automatically migrate the exact legacy secondary shape and accept the historical ambiguity",
+        "decision": "Candidate approach in fork PR 177; requires explicit maintainer approval before the design can converge."
+      }
+    ],
+    "adversary": {
+      "rounds": 1,
+      "status": "blocking_objection",
+      "blocking_objections": [
+        "Older deliberately empty secondary layouts have no persisted marker, so they are indistinguishable from automatically-created legacy empty defaults. The candidate migration could silently restore global bands for those users."
+      ],
+      "non_blocking_notes": [
+        "Fork PR 177 is 153 commits behind current main and its test-file edits require rebase and revalidation."
+      ]
+    },
+    "confidence": {
+      "score": 78,
+      "level": "yellow",
+      "rationale": "The initialization-to-resolution path directly matches the visible symptom and the maintainer's intended behavior, but a safe legacy-data policy and current-main validation remain unresolved."
+    },
+    "mirror_issue": {
+      "number": 636,
+      "url": "https://github.com/MuyuanMS/PowerToys/issues/636",
+      "state": "OPEN"
+    },
+    "existing_fork_candidate": {
+      "number": 177,
+      "url": "https://github.com/MuyuanMS/PowerToys/pull/177",
+      "branch": "copilot/fix-dock-secondary-blank",
+      "state": "OPEN"
+    }
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce inherited secondary bands",
+      "note": "Display-only reproduction plan. Use it after the candidate is rebased; it does not post to GitHub.",
+      "reproduce": {
+        "title": "Verify Command Palette Dock content on a secondary monitor",
+        "module": "Command Palette Dock",
+        "version_requirement": "Current main after the candidate is rebased",
+        "prerequisites": [
+          "Windows with at least two active extended displays",
+          "Command Palette and Dock enabled",
+          "At least one configured global Dock band"
+        ],
+        "setup": [
+          "Start with no per-monitor configuration for the secondary display, or use the policy-approved legacy test configuration."
+        ],
+        "steps": [
+          "Enable the Dock for a secondary display.",
+          "Confirm the primary Dock remains populated.",
+          "Restart Command Palette and reconnect the secondary display."
+        ],
+        "expected_result": "The enabled secondary Dock renders inherited global bands. A deliberate post-marker empty custom layout remains empty, and other per-monitor settings remain unchanged."
+      }
+    }
+  ],
+  "fork": {
+    "mirror_issue": {
+      "number": 636,
+      "url": "https://github.com/MuyuanMS/PowerToys/issues/636",
+      "state": "OPEN"
+    },
+    "candidate_pr": {
+      "number": 177,
+      "url": "https://github.com/MuyuanMS/PowerToys/pull/177",
+      "branch": "copilot/fix-dock-secondary-blank",
+      "state": "OPEN"
+    }
+  },
+  "generated_at": "2026-09-04T02:48:25Z",
+  "evaluated_at": "2026-09-04T02:48:25Z",
+  "source_updated_at": "2026-08-30T20:57:03Z"
 }

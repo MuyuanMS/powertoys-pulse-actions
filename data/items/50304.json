@@ -2,12 +2,12 @@
   "schemaVersion": 5,
   "number": 50304,
   "kind": "issue",
-  "track": "triage",
-  "stage": "duplicate_or_handled",
-  "owes": "maintainer",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-03T10:38:00Z",
-  "evaluated_at": "2026-09-03T10:38:00Z",
+  "generated_at": "2026-09-04T03:00:00Z",
+  "evaluated_at": "2026-09-04T03:00:00Z",
   "source_updated_at": "2026-09-01T22:38:52Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50304",
   "title": "FancyZones Issue with msedge.exe Apps",
@@ -18,75 +18,279 @@
   ],
   "assignees": [],
   "comments": 0,
-  "confidence": "High",
-  "summary": "Distinct Edge PWAs share FancyZones last-known-zone placement, matching the established Chromium PWA identity tracker and its open AUMID-qualified implementation attempt.",
-  "status": {
-    "glyph": "=",
-    "label": "Existing PWA placement work",
-    "detail": "Issue 652 owns the behavior, and PR 41656 contains an unmerged implementation attempt."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Post duplicate guidance",
-    "reason": "Consolidate the Edge PWA report with the active canonical tracker and implementation attempt."
-  },
+  "confidence": "high",
+  "summary": "A converged design completes the existing FancyZones PWA history-identity work: use a non-empty window AppUserModelID alongside the process path, while preserving legacy history and safe fallback behavior.",
+  "next_action": "Review and approve the converged fork design before resuming the active FancyZones implementation.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The report is the same FancyZones browser/PWA last-known-zone identity collision tracked by Issue 652. Current code keys history by process path, and the open PR 41656 implements the matching AppUserModelID-qualified approach.",
+    "status": "existing_fix",
+    "rationale": "The report matches the open FancyZones browser/PWA placement tracker and its active, unmerged implementation. The refreshed design is for completing that implementation safely, not opening a competing fix.",
     "evidence": [
-      "The reporter describes multiple Edge PWAs hosted by msedge.exe or msedge_proxy.exe sharing last-known-zone placement.",
-      "Issue 652 remains open for Chromium Edge PWA last-known-zone support.",
-      "Issue 34713 was closed as a duplicate of Issue 652.",
-      "Current AppZoneHistory history lookup is process-path based.",
-      "PR 41656 appends PKEY_AppUserModel_ID to the process identity used for zone history, but remains open and unmerged."
+      "The report says separate Edge PWAs sharing msedge.exe or msedge_proxy.exe restore another PWA's last-known zone.",
+      "AppZoneHistory currently keys save, lookup, remove, and instance checks only by get_process_path_waiting_uwp(window).",
+      "The open implementation obtains PKEY_AppUserModel_ID from the window property store to qualify that key.",
+      "A related Chrome PWA report was explicitly closed as a duplicate of the canonical FancyZones tracker.",
+      "The active implementation branch contains follow-up migration, tombstone, and test-support work, but must be rebased and validated."
     ],
-    "recommended_action": "Close as a duplicate of Issue 652 while directing validation and implementation discussion to that tracker and PR 41656.",
-    "evaluated_at": "2026-09-03T10:38:00Z",
+    "recommended_action": "Approve the fork design, then rebase and finish the active implementation with the specified empty-AUMID and persisted-tombstone corrections.",
+    "evaluated_at": "2026-09-04T03:00:00Z",
     "source_updated_at": "2026-09-01T22:38:52Z"
   },
   "fix_assessment": {
     "status": "existing_fix",
-    "rationale": "PR 41656 is a concrete but unmerged implementation attempt for the same AUMID-qualified history identity. It is not a released fix, so this assessment records active coverage rather than claiming resolution.",
+    "rationale": "An open implementation already covers the same process-identity collision. It is not merged or release-validated; the design captures the remaining corrections and validation required to make that active work safe.",
     "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/41656",
-      "https://github.com/microsoft/PowerToys/issues/652"
+      "https://github.com/microsoft/PowerToys/pull/41656"
     ]
   },
   "issue_context": {
-    "summary": "Edge PWAs share a browser executable but need distinct FancyZones placement identities; the scenario is already under active canonical tracking.",
+    "summary": "On PowerToys 0.100.2, Edge PWAs that share a browser executable share FancyZones last-known-zone history even though they are logically distinct applications.",
     "known_information": [
-      "The report concerns approximately a dozen Edge PWAs on PowerToys 0.100.2.",
-      "Different PWAs can open in the zone most recently used by another PWA.",
-      "Issue 652 remains open for this behavior and Issue 34713 was consolidated there.",
-      "Current AppZoneHistory uses process-path identity.",
-      "PR 41656 provides an unmerged AppUserModelID-qualified history-key implementation."
+      "The reporter uses about a dozen Edge PWAs on Windows 11 Pro 25H2 with three displays.",
+      "Opening a PWA can restore the zone last used by another PWA.",
+      "The report has no comments, diagnostics, screenshots, or other attachments.",
+      "AppZoneHistory's current map key is the process path returned by get_process_path_waiting_uwp(window).",
+      "The existing implementation uses SHGetPropertyStoreForWindow and PKEY_AppUserModel_ID to distinguish shell identities.",
+      "The related canonical tracker remains open; a related Chrome PWA report was closed as its duplicate."
     ],
     "inferences": [
-      "The shared process identity is likely the mechanism, but it was not independently reproduced with the reporter's PWAs.",
-      "The AUMID approach is already being implemented, so another competing design would duplicate active work."
+      "Because Edge PWAs share an executable path but expose separate non-empty AppUserModelIDs, process-path identity is the direct mechanism for the cross-PWA collision.",
+      "A property-store failure or an absent, null, or empty AppUserModelID must preserve the existing unqualified process-path behavior.",
+      "The active implementation should be completed rather than recreated, provided it is rebased and its outstanding edge cases are corrected."
     ],
-    "analysis": "The live report matches the canonical PWA placement tracker and its concrete implementation attempt. The public action accurately distinguishes active, unmerged coverage from a shipped fix.",
+    "analysis": "The report's expected and actual behavior align with the current AppZoneHistory key boundary. The maintained work is conceptually correct but needs an explicit non-empty AUMID guard, exact fallback tests, durable qualified tombstone coverage, and current-base validation before it can be treated as ready.",
     "initial_investigation": [
-      "Read the full live issue and timeline.",
-      "Reviewed Issues 652 and 34713.",
-      "Inspected AppZoneHistory.cpp and AppZoneHistory.h history-key use.",
-      "Reviewed upstream PR 41656 and the active fork-side adaptation referenced by its work."
+      "Read the complete Issue 50304 report and confirmed it has no discussion or attachments.",
+      "Read the full canonical tracker and the related duplicate report.",
+      "Reviewed the open implementation, its review discussion, and current check state.",
+      "Inspected AppZoneHistory.cpp, AppZoneHistory.h, and AppZoneHistoryTests.Spec.cpp on current main.",
+      "Compared the maintained active implementation branch with current main and examined its migration, removal, tombstone, and UI-test-support changes.",
+      "Ran an independent adversary pass against the diagnosis and design."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "A manual Edge PWA verification on the rebased build, including two distinct PWAs and a no-AUMID control application",
+        "why_needed": "The report has no diagnostic archive and native property-store behavior must be confirmed on a real shell-integrated Edge configuration.",
+        "how_to_collect": "After implementation, enable Move newly created windows to their last known zone, place two installed Edge PWAs in different zones, close and reopen them in reverse order, then repeat after restarting PowerToys."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "AppZoneHistory uses the executable path as its sole persistent identity in SetAppLastZones, RemoveAppLastZone, IsAnotherWindowOfApplicationInstanceZoned, and GetAppLastZoneIndexSet. Edge PWAs therefore collide on one msedge.exe or msedge_proxy.exe history record. Their window AppUserModelIDs are stable shell identities that can distinguish those PWAs, but current main does not include them in the key.",
+    "evidence": [
+      {
+        "kind": "observed",
+        "detail": "Issue 50304 reports that Edge PWAs sharing msedge.exe or msedge_proxy.exe restore a different PWA's last-known zone."
+      },
+      {
+        "kind": "observed",
+        "detail": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp obtains get_process_path_waiting_uwp(window) and directly uses it to find or mutate m_history in all four behaviorally relevant methods."
+      },
+      {
+        "kind": "observed",
+        "detail": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.h defines TAppZoneHistoryMap as a std::unordered_map keyed by std::wstring; the persisted app-path field is a history identity, not a path used to access a file."
+      },
+      {
+        "kind": "observed",
+        "detail": "The active implementation queries SHGetPropertyStoreForWindow for PKEY_AppUserModel_ID and includes maintained follow-up work for legacy migration, removal, sync, tombstones, native tests, and UI-test helper parsing."
+      },
+      {
+        "kind": "inferred",
+        "detail": "Appending only a non-empty AppUserModelID to the base process-path key separates PWAs and browser profiles without changing behavior for windows whose shell identity is absent or cannot be read."
+      }
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.h",
+        "symbols": [
+          "AppZoneHistory",
+          "TAppZoneHistoryMap",
+          "GetProcessPathWithAUMID",
+          "GetProcessPathWithoutAUMID",
+          "IsAnotherWindowOfApplicationInstanceZoned"
+        ],
+        "role": "Declares the persistent history identity helpers and lets operations pass a single computed identity into same-instance checks."
+      },
+      {
+        "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
+        "symbols": [
+          "JsonUtils::AppZoneHistoryJSON::FromJson",
+          "GetProcessPathWithAUMID",
+          "GetProcessPathWithoutAUMID",
+          "SetAppLastZones",
+          "RemoveAppLastZone",
+          "IsAnotherWindowOfApplicationInstanceZoned",
+          "GetAppLastZoneIndexSet",
+          "SyncVirtualDesktops"
+        ],
+        "role": "Computes identity, persists history, and owns set/lookup/removal/migration behavior."
+      },
+      {
+        "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/AppZoneHistoryTests.Spec.cpp",
+        "symbols": [
+          "AppZoneHistoryUnitTests",
+          "AppZoneHistorySyncVirtualDesktops"
+        ],
+        "role": "Provides focused native regression tests for identity, migration, reload, removal, and virtual-desktop synchronization."
+      },
+      {
+        "path": "src/modules/fancyzones/FancyZones.UITests.Next/Utils/FancyZonesFiles.cs",
+        "symbols": [
+          "FancyZonesFiles",
+          "AppZoneHistory"
+        ],
+        "role": "Reads the persisted history in UI tests and must tolerate an optional AUMID suffix."
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
+        "symbols": [
+          "GetProcessPathWithAUMID",
+          "GetProcessPathWithoutAUMID"
+        ],
+        "current_flow": "Each caller obtains an executable path itself; no shell window identity participates in the history key.",
+        "change": "Centralize identity construction. First obtain the process path; if it is empty, return empty. Query the window property store for PKEY_AppUserModel_ID and append '?' plus the value only for a successful, non-null, non-empty VT_LPWSTR result. Do not declare this allocating helper noexcept.",
+        "pseudo_diff": "key = processPath(window)\\nif key.empty(): return {}\\nif property(AppUserModelID) is VT_LPWSTR and non-null and non-empty:\\n    key += L\\\"?\\\" + appUserModelId\\nreturn key",
+        "edge_cases": "Property-store lookup failure, unsupported windows, null property values, and empty AUMIDs must return the base path. Never produce '?' alone or an AUMID-only key. Use correct COM/PROPVARIANT ownership and project-consistent includes/linkage."
+      },
+      {
+        "order": 2,
+        "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
+        "symbols": [
+          "SetAppLastZones",
+          "RemoveAppLastZone",
+          "IsAnotherWindowOfApplicationInstanceZoned",
+          "GetAppLastZoneIndexSet"
+        ],
+        "current_flow": "Every map operation and zoned-instance check uses the executable path, merging all Edge PWAs into one record.",
+        "change": "Compute one canonical key per public operation and use it for every map lookup, insert, removal, and same-instance check. Pass the computed key to the helper instead of making it query the window again.",
+        "pseudo_diff": "key = GetProcessPathWithAUMID(window)\\nif key.empty(): return failure_or_empty_zones\\nif IsAnotherWindowOfApplicationInstanceZoned(key, window, workArea): return false\\nhistory[key] = ...",
+        "edge_cases": "Retain existing process-ID/HWND behavior inside one identity, but do not let a browser process shared by two differently identified PWAs suppress either PWA's update or removal."
+      },
+      {
+        "order": 3,
+        "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
+        "symbols": [
+          "JsonUtils::AppZoneHistoryJSON::FromJson",
+          "SetAppLastZones",
+          "RemoveAppLastZone",
+          "SyncVirtualDesktops"
+        ],
+        "current_flow": "Persisted entries are unqualified executable keys; a direct identity switch would discard existing placements for AUMID-bearing windows.",
+        "change": "When a qualified key is absent and an unqualified legacy key exists, copy the history vector into the qualified key and clear transient process-ID/HWND maps. Preserve the legacy entry. Retain, serialize, parse, and synchronize an empty qualified entry as a tombstone so removal or pruning cannot revive legacy history after restart.",
+        "pseudo_diff": "if qualifiedKey absent and legacyKey exists:\\n    copied = legacyHistory\\n    clear copied.processIdToHandleMap values\\n    history.emplace(qualifiedKey, copied)\\nif qualified history becomes empty:\\n    retain empty qualified entry as persisted tombstone",
+        "edge_cases": "Only treat a delimiter as an AUMID suffix when present; do not migrate when base-path resolution failed. Do not erase unqualified history while removing qualified history. Retain the existing JSON field name because it stores an identity rather than a usable filesystem path."
+      },
+      {
+        "order": 4,
+        "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/AppZoneHistoryTests.Spec.cpp",
+        "symbols": [
+          "AppZoneHistoryUnitTests",
+          "AppZoneHistorySyncVirtualDesktops"
+        ],
+        "current_flow": "Current tests cover normal set/get/remove and some maintained-branch migration cases, but do not assert the exact unavailable or empty-AUMID key.",
+        "change": "Add deterministic seams or fixtures for process-path/property-store outcomes. Test exact fallback keys for unavailable, null, and empty AUMIDs; test two non-empty AUMIDs from one executable; test legacy copy with cleared transient handles; and test removal plus reload and desktop synchronization preserve a qualified tombstone without erasing or reviving unqualified history.",
+        "pseudo_diff": "Assert(history.contains(basePath)) for unavailable_or_empty_AUMID\\nAssert(!history.contains(basePath + L\\\"?\\\"))\\nAssert(zone(AUMID_A) != zone(AUMID_B))\\nRemove(qualified); Reload(); Assert(no qualified fallback to legacy)",
+        "edge_cases": "Use exact map-key assertions so a trailing '?' regression cannot pass merely through successful set/get behavior."
+      },
+      {
+        "order": 5,
+        "path": "src/modules/fancyzones/FancyZones.UITests.Next/Utils/FancyZonesFiles.cs",
+        "symbols": [
+          "FancyZonesFiles",
+          "AppZoneHistory"
+        ],
+        "current_flow": "UI-test history readers assume each persisted key ends in an executable name.",
+        "change": "Strip an optional suffix from a history identity before executable-name matching so existing UI tests remain valid for both legacy and AUMID-qualified keys.",
+        "pseudo_diff": "baseKey = historyKey.Split('?', 2)[0]\\nmatch executableName against baseKey",
+        "edge_cases": "Do not change behavior for unqualified keys; preserve any tests that intentionally inspect full raw JSON."
+      },
+      {
+        "order": 6,
+        "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/UnitTests.vcxproj",
+        "symbols": [
+          "FancyZones.UnitTests"
+        ],
+        "current_flow": "The active implementation branch is behind current main and does not establish a current build/unit-test pass.",
+        "change": "Rebase the active work onto current main, resolve any affected interfaces, build the FancyZones module and unit-test project using existing repository scripts, then run the resulting unit-test DLL filtered to AppZoneHistory tests before offering the implementation for review.",
+        "pseudo_diff": "rebase active work on current main\\nbuild FancyZones and UnitTests.vcxproj\\nrun FancyZones.UnitTests.dll with AppZoneHistory filter",
+        "edge_cases": "Do not duplicate the active implementation or claim validation from spelling-only checks. Treat rebase conflicts or unit-test failures as implementation blockers."
+      }
+    ],
+    "verify": {
+      "automated": [
+        "Build src/modules/fancyzones/FancyZonesTests/UnitTests/UnitTests.vcxproj using the repository's existing build workflow.",
+        "Run the produced FancyZones unit-test DLL with an AppZoneHistory filter.",
+        "Build the FancyZones module chain after rebasing the active branch to current main."
+      ],
+      "manual": [
+        "Enable Move newly created windows to their last known zone.",
+        "Launch two installed Edge PWAs with distinct non-empty AppUserModelIDs, place them in different zones, close both, and reopen them in reverse order.",
+        "Confirm each PWA returns only to its own zone; restart PowerToys and repeat.",
+        "Unsnap or remove one PWA history entry, restart, and confirm qualified tombstone behavior prevents fallback to legacy browser history.",
+        "Repeat with an application whose AppUserModelID is unavailable or empty and confirm legacy process-path placement is unchanged."
+      ]
+    },
+    "risks": [
+      "Applications with non-empty AppUserModelIDs receive a qualified history identity, so their old placement is copied once and can intentionally diverge.",
+      "An empty-AUMID error would create a spurious trailing-delimiter key and apply tombstone behavior to ordinary windows.",
+      "Incorrect removal or synchronization handling could resurrect stale legacy placement after restart.",
+      "Property-store access must be best-effort for elevated, protected, unsupported, or otherwise inaccessible windows."
+    ],
+    "alternatives": [
+      {
+        "option": "Special-case Edge or parse browser command-line application IDs.",
+        "rejected_because": "It is browser-specific, fragile, and misses other shell-distinguished applications."
+      },
+      {
+        "option": "Use window titles as the persistent key.",
+        "rejected_because": "Titles are mutable and localized and do not provide a stable application identity."
+      },
+      {
+        "option": "Move rather than copy legacy history during migration.",
+        "rejected_because": "It destructively changes behavior for unqualified browser windows and makes rollback/recovery worse."
+      }
+    ],
+    "confidence": {
+      "score": 89,
+      "level": "green",
+      "rationale": "The reported behavior follows directly from the current shared process-path key, the shell property supplies the intended discriminator, and active work already covers the primary implementation. The score is conditional on the specified empty-value, tombstone, rebase, and validation gates."
+    },
+    "adversary": {
+      "rounds": 1,
+      "sign_off": "No blocking objections remain after the stated corrections and validation gates.",
+      "resolved_blockers": [
+        "Append the delimiter only for a non-empty AppUserModelID.",
+        "Add exact unavailable and empty-AUMID fallback-key tests.",
+        "Strengthen persisted tombstone and virtual-desktop synchronization tests.",
+        "Rebase to current main and complete native build, unit, and manual verification."
+      ],
+      "non_blocking_notes": [
+        "The implementation attempt has existing review feedback and should be completed in place, not duplicated.",
+        "UI-test history readers need optional-suffix parsing because qualified keys no longer necessarily end in the executable name."
+      ]
+    }
+  },
+  "fork": {
+    "owner": "MuyuanMS",
+    "repository": "PowerToys",
+    "issue": 637,
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/637",
+    "title": "[Issue 50304] FancyZones Issue with msedge.exe Apps",
+    "trace": "Created or refreshed as the public-safe design mirror. The title and body use the plain-text Issue 50304 form and include no upstream link."
   },
   "actions": [
     {
-      "id": "duplicate-50304",
-      "type": "post_comment",
-      "label": "Close as duplicate of the FancyZones PWA tracker",
+      "type": "approve_design",
+      "label": "Approve the FancyZones PWA identity design",
       "primary": true,
       "confirm": true,
+      "issue": 637,
       "comment": {
-        "target": "issue",
-        "number": 50304,
-        "body": "Thanks for the detailed report. This is the same FancyZones last-known-zone identity problem already tracked in #652. The current implementation attempt is #41656, which qualifies FancyZones' zone-history identity with the window's AppUserModelID so Edge PWAs and browser profiles can be distinguished. That PR is still open and under review, so the change is not yet available in a PowerToys release. Closing this issue as a duplicate of #652; please keep further tracking and validation on that issue."
+        "body": "Approved the converged design for Issue 50304. Resume the active FancyZones implementation, first applying the empty-AUMID, exact fallback-test, persisted-tombstone, rebase, and validation gates recorded in this design."
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Posts only to the MuyuanMS/PowerToys mirror issue; implementation remains gated on this approval."
     }
   ]
 }

@@ -3,140 +3,129 @@
   "number": 50125,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-03T12:15:18Z",
-  "evaluated_at": "2026-09-03T12:15:18Z",
+  "stage": "awaiting_design_approval",
+  "evaluated_at": "2026-09-04T10:45:19Z",
   "source_updated_at": "2026-09-03T11:50:05Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50125",
   "title": "Default Mirror Activation shortcut conflicts with non-US keyboard layouts",
-  "author": "lennartb-",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-ZoomIt"
-  ],
-  "assignees": [],
-  "comments": 4,
-  "confidence": "High",
-  "summary": "ZoomIt registers a generated Ctrl+Alt+9 DemoMirror window shortcut from its Ctrl+9 default; Windows delivers German and Danish AltGr+9 as that chord, so the system-wide registration consumes the closing-bracket keystroke.",
-  "status": {
-    "glyph": "🛠️",
-    "label": "Fix design ready",
-    "detail": "A reproducible, source-cited report establishes the registration-level collision. Open issue #37143 covers the same broader ZoomIt AltGr behavior, but no upstream fix PR exists."
-  },
-  "next_action": {
-    "glyph": "🧭",
-    "label": "Review the companion-hotkey design",
-    "reason": "Choose and validate a non-AltGr-consuming way to retain the derived window actions before implementation."
-  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The 2026-09-03 discussion supplies a reproducible CI result and matches the current source: ZoomIt derives and registers a Ctrl+Alt companion from the default Ctrl+9 Mirror shortcut. That registration, not a character comparison or a handler-side decision, consumes AltGr+9 before ZoomIt can distinguish it. Related open issue #37143 confirms this is a broader Record/DemoMirror class, but it is not an existing implementation and the linked mangokingTW/PowerToys PR is explicitly a draft reproduction, not a merge candidate.",
+    "rationale": "The supplied German-layout reproduction and source both identify an internally derived Ctrl+Alt shortcut that collides with AltGr.",
     "evidence": [
-      "The original German report and a Danish confirmation both show AltGr+9 being consumed by DemoMirror; changing the DemoMirror base shortcut moves the collision to the corresponding AltGr chord.",
-      "The latest commenter reproduced the failure on stock hosted x64 and Arm runners with German layout, including a physical VK_RMENU AltGr injection; AltGr+9 did not type ], while an adjacent AltGr+8 control typed [.",
-      "src/modules/ZoomIt/ZoomIt/Zoomit.cpp derives mirrorWindowMod as g_MirrorToggleMod ^ MOD_ALT and registers MIRROR_WINDOW_HOTKEY with it; the default g_MirrorToggleKey is Ctrl+9 in ZoomItSettings.h.",
-      "The same file derives and registers the Record window companion from g_RecordToggleMod ^ MOD_ALT, so a DemoMirror-only change would leave the demonstrated class of collision in Record.",
-      "The issue's diagnostic ZIP was inspected: its ZoomIt logs only record initialization and settings reloads, so they neither add a competing cause nor identify a different failing path.",
-      "Open issue #37143 has the same Product-ZoomIt scope and related AltGr reports. Draft PR https://github.com/mangokingTW/PowerToys/pull/5 contains CI reproduction tests only and states it is not for merge."
+      "AltGr+9 is expected to type a right bracket but opens ZoomIt Mirror.",
+      "The report includes a PowerToys diagnostic ZIP and related Issue 37143 reports the same class of collision.",
+      "ZoomIt derives a Mirror Window shortcut by toggling Alt on a Ctrl+9 base shortcut."
     ],
-    "recommended_action": "Approve a focused design that removes or replaces unsafe generated Ctrl+Alt companion registrations across Mirror and Record, then validate all registration, options-validation, settings-display, and reload paths with an AltGr regression scenario.",
-    "evaluated_at": "2026-09-03T12:15:18Z",
-    "source_updated_at": "2026-09-03T11:50:05Z"
+    "recommended_action": "Approve the fork design for implementation."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No concrete upstream or fork implementation fixes the registration path. The only linked PR is a draft, explicitly non-merge reproduction suite; #37143 is an open related issue, not a fix.",
+    "rationale": "No existing fix attempt covers internally generated AltGr-conflicting ZoomIt variants.",
     "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Stop derived ZoomIt window hotkeys from claiming AltGr chords",
-      "root_cause": "Observed source behavior: ZoomIt derives window-mode shortcuts by toggling MOD_ALT on the configured base hotkey and passes them to RegisterHotKey. With the default Ctrl+9 Mirror hotkey, that creates a Ctrl+Alt+9 registration. Windows delivers AltGr keyboard input through the Ctrl+Alt modifier form, and the global registration consumes the character before ZoomIt's WM_HOTKEY handler runs.",
+      "title": "Do not register internally derived ZoomIt shortcuts that steal AltGr text input",
+      "root_cause": "The derived Mirror Window and Record Window shortcuts can become Ctrl+Alt+digit; Windows represents AltGr as Ctrl+Alt and RegisterHotKey consumes the printable character.",
       "plan": [
-        "Define the supported replacement behavior for the generated window-mode actions before code changes: the design must not register a Ctrl+Alt companion that aliases AltGr, and must preserve or intentionally replace access to Record and DemoMirror window capture.",
-        "Centralize the decision for generated companion shortcuts in src/modules/ZoomIt/ZoomIt/Zoomit.cpp so RegisterAllHotkeys, the options-dialog collision validation, initial startup registration, and settings-reload registration all apply the identical safe set for Record and Mirror.",
-        "Update src/settings-ui/Settings.UI/ViewModels/ZoomItViewModel.cs and src/settings-ui/Settings.UI/SettingsXAML/Views/ZoomItPage.xaml if the selected behavior changes which derived window shortcut is available or displayed; do not continue displaying a shortcut that is deliberately no longer registered.",
-        "Add a focused ZoomIt regression scenario based on the linked draft reproduction: with German layout and ZoomIt armed, AltGr+9 must type ] and must not show the mirror dialog. Cover the chosen replacement activation for window mirroring and the equivalent Record companion path."
+        "Add a layout-aware safety check before registering generated Ctrl+Alt-without-Win variants.",
+        "Apply the same policy to Mirror and Record derived variants and log when one is suppressed.",
+        "Keep the base shortcut and allow an explicit Win-containing safe shortcut."
       ],
       "verification": [
-        "On a German layout with the default DemoMirror configuration, type AltGr+9 in a text editor and verify that ] is inserted and no ZoomIt window-mirror action or dialog appears.",
-        "Repeat the Danish AltGr+9 and changed-base-shortcut cases reported in the issue to confirm the fix is not limited to the digit 9 or one layout.",
-        "Exercise full-screen, region, and window Mirror modes plus full-screen, region, and window Record modes using the approved post-design activation model.",
-        "Re-run the issue-linked x64 and Arm64 reproduction controls: the neighboring AltGr+8 control still types [, and a known ZoomIt hotkey proves the module is armed."
+        "With German or Danish input selected, AltGr+9 types the bracket and does not open Mirror.",
+        "The base Mirror shortcut and an explicit Win-containing shortcut continue to work."
       ],
       "confidence": {
-        "score": 91,
+        "score": 92,
         "level": "green",
-        "rationale": "The latest issue comment reproduces the effect across architectures and physical AltGr delivery, and the cited current registration code directly creates the conflicting Ctrl+Alt chord. The remaining product decision is how to retain window-mode activation without that registration."
+        "rationale": "The reported key, generated modifier combination, Windows AltGr semantics, and registration point agree."
       }
     }
   ],
   "issue_context": {
-    "summary": "PowerToys 0.101.2362 users on German and Danish layouts cannot type a closing bracket with AltGr+9 while ZoomIt DemoMirror is enabled because its generated window-mode shortcut takes the same system-wide chord.",
+    "summary": "ZoomIt consumes a character-producing AltGr chord on non-US layouts because an invisible derived Mirror shortcut is registered globally.",
     "known_information": [
-      "The issue is open, labeled Issue-Bug, Needs-Triage, and Product-ZoomIt, with no assignee or linked upstream fix PR.",
-      "The reporter uses PowerToys 0.101.2362 installed through WinGet and reports German AltGr+9 should type ].",
-      "A Danish user reproduced AltGr+9 and showed that changing DemoMirror from Ctrl+9 to Ctrl+0 makes AltGr+0 collide instead.",
-      "The latest discussion reproduces the loss of ] in CI on stock hosted x64 and Arm64 runners and records the resulting ZoomIt dialog.",
-      "The attached diagnostic archive contains only ZoomIt initialization and settings-reload entries, not a hotkey failure trace.",
-      "Issue #37143 is an open ZoomIt AltGr tracker with related French and German reports; its discussion cross-references this issue."
+      "The issue reproduces on a German layout with ZoomIt version 0.101.2362.",
+      "AltGr+9 should produce a closing square bracket.",
+      "The diagnostic archive and related Issue 37143 show the collision is not limited to one report."
     ],
     "inferences": [
-      "Because the collision follows the configured base key and the source derives the Alt companion, changing the default number alone would not eliminate the class of issue.",
-      "A WM_HOTKEY handler check for right Alt would not restore a character already consumed by RegisterHotKey; the registration strategy must change."
+      "Checking VK_RMENU after WM_HOTKEY would be too late because RegisterHotKey already consumed the character.",
+      "The safest compatibility boundary is registration of internally derived variants, not the WM_HOTKEY handler."
     ],
-    "analysis": "The fresh report moves this beyond duplicate triage. The failure is tied to a current, concrete RegisterHotKey call and independently reproducible behavior, while the related tracker establishes that the Record companion uses the same pattern. A code fix is appropriate, but its user-facing window-mode replacement must be deliberately designed rather than silently removing functionality.",
+    "analysis": "The derived shortcut is not an independently visible user choice, so existing shortcut validation does not warn about it. Suppressing only unsafe generated variants avoids stealing text input while retaining the base action.",
     "initial_investigation": [
-      "Read the complete issue body and all four comments, current labels, empty assignee list, cross-references, and linked draft reproduction PR.",
-      "Inspected the issue ZIP and its ZoomIt and ModuleInterface logs; they contain initialization/enabling/reload records only.",
-      "Read the current Zoomit.cpp registration, options validation, startup, reload, and WM_HOTKEY handling paths.",
-      "Read the current ZoomIt settings defaults and Settings UI derived-shortcut display code.",
-      "Reviewed the DemoMirror introduction commit d2c53bf38 ([ZoomIt] Add DemoMirror feature, #49607), which documents Ctrl+9, Ctrl+Shift+9, and Ctrl+Alt+9 as the three generated modes."
+      "Local source inspection found the Mirror/Record registration blocks and settings serialization.",
+      "The fork investigator confirmed Ctrl+9 becomes Ctrl+Alt+9 through modifier XOR logic.",
+      "Fork mirror Issue 634 contains the detailed design and adversary approval."
     ],
-    "information_gaps": [
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "ZoomIt generates a window variant by XOR-ing MOD_ALT with the base Ctrl+9 shortcut. That registers Ctrl+Alt+9, which is the same modifier chord Windows uses for AltGr+9 on affected layouts, so the global hotkey intercepts the bracket before the foreground application receives it.",
+    "evidence": [
+      "[Observed] The reporter's AltGr+9 opens Mirror instead of typing a bracket.",
+      "[Observed] The diagnostic report and related Issue 37143 show non-US layout collisions.",
+      "[Observed] ZoomIt registration derives the Ctrl+Alt variant before WM_HOTKEY dispatch.",
+      "[Inferred] Layout-aware registration suppression is safer than handler filtering."
+    ],
+    "affected_files": [
       {
-        "information": "The intended supported activation model for Record and DemoMirror window modes after unsafe Ctrl+Alt companions are removed or changed.",
-        "why_needed": "The observed defect establishes what must not be registered, but product behavior must decide whether window mode becomes independently configurable or uses another non-conflicting invocation.",
-        "how_to_collect": "Confirm the desired UX in the fix-design review, then exercise all three capture modes on an international keyboard layout."
+        "path": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+        "purpose": "Registers and handles ZoomIt global hotkeys.",
+        "symbols": ["RegisterZoomItHotkeys", "MIRROR_WINDOW_HOTKEY", "RECORD_WINDOW_HOTKEY"]
+      },
+      {
+        "path": "src/modules/ZoomIt/ZoomIt/ZoomItSettings.h",
+        "purpose": "Defines persisted shortcut defaults.",
+        "symbols": ["g_MirrorToggleKey", "shortcut settings entries"]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs",
+        "purpose": "Contains existing shortcut conflict warning patterns.",
+        "symbols": ["AltGr conflict validation pattern"]
       }
-    ]
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+        "symbols": ["RegisterZoomItHotkeys", "new IsAltGrRisk"],
+        "current_behavior": "Every generated Alt-derived variant is passed to RegisterHotKey without checking whether Ctrl+Alt+key is printable AltGr input.",
+        "change": "Enumerate installed layouts and suppress generated Ctrl+Alt-without-Win variants when the key participates in AltGr text entry.",
+        "code_block": "if (IsCtrlAltNoWin(derivedModifiers) && AnyLayoutUsesAltGr(vk)) { LogSuppressedDerivedHotkey(); } else { RegisterHotKey(...); }",
+        "edge_cases": ["Use GetKeyboardLayoutList and ToUnicodeEx/VkKeyScanEx rather than hard-coding German keys.", "Do not suppress Win-containing variants.", "Apply the rule to both Mirror and Record derived shortcuts."],
+        "tests": ["Test German and Danish AltGr keys with a fake registration sink.", "Test safe non-AltGr and Win-containing chords.", "Manually verify the original bracket sequence in Notepad."]
+      }
+    ],
+    "verify": [
+      "Build ZoomIt with tools\\build\\build.ps1 -Platform x64 -Configuration Release -Project src\\modules\\ZoomIt\\ZoomIt\\ZoomIt.vcxproj.",
+      "Add German and Danish layouts, select each, restart PowerToys, and press AltGr+9 in Notepad.",
+      "Confirm the bracket appears and no Mirror action occurs; confirm the base Mirror shortcut still works."
+    ],
+    "risks": ["Users may lose an undocumented derived shortcut on layouts where it conflicts; preserve the base action and offer explicit safe configuration.", "Layout enumeration and Unicode translation can be sensitive to current keyboard layout state."],
+    "alternatives": ["Ignoring VK_RMENU in WM_HOTKEY is too late.", "Disabling all Ctrl+Alt shortcuts is unnecessarily broad."]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 634,
+    "fork_title": "[Issue 50125] ZoomIt Mirror AltGr shortcut collision",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/634"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "No blocking objections; approve design.",
+    "notes": "The fix is placed before RegisterHotKey, where the text-stealing behavior begins."
   },
   "actions": [
     {
-      "id": "reproduce-50125-altgr",
-      "type": "reproduce",
-      "label": "Reproduce the ZoomIt AltGr collision",
-      "primary": true,
-      "note": "The public report and linked CI reproduction provide enough detail to reproduce before implementation.",
-      "reproduce": {
-        "title": "Verify DemoMirror does not consume German AltGr+9",
-        "module": "ZoomIt",
-        "version_requirement": "PowerToys 0.101.2362 or a build containing the proposed fix",
-        "prerequisites": [
-          "Windows with the German keyboard layout enabled",
-          "ZoomIt enabled and its first-run options dialog dismissed",
-          "DemoMirror configured with its default Ctrl+9 base shortcut"
-        ],
-        "setup": [
-          "Open a text editor and place the caret in an empty document.",
-          "Keep a single-monitor setup if available so the current defect produces the Screen mirroring requires a second monitor dialog."
-        ],
-        "steps": [
-          "Press a known ZoomIt shortcut such as Ctrl+1 to confirm ZoomIt hotkeys are armed, then close the overlay.",
-          "Press AltGr+8 as a neighboring control and verify that [ is inserted.",
-          "Press AltGr+9 in the text editor."
-        ],
-        "expected_result": "Before the fix, ] is consumed and DemoMirror activates or displays its mirror dialog. After the fix, ] is inserted, no ZoomIt action occurs, and the approved window-mirroring activation remains available.",
-        "attachments": [
-          {
-            "label": "Linked x64 and Arm64 CI reproduction",
-            "url": "https://github.com/mangokingTW/PowerToys/actions/runs/33750872144"
-          }
-        ]
+      "type": "approve_design",
+      "label": "Approve design for Issue 50125",
+      "mirror_issue": 634,
+      "comment": {
+        "body": "Approve the fork-side ZoomIt AltGr compatibility design for Issue 50125 and allow implementation to begin."
       }
     }
   ]

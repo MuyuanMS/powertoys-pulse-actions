@@ -3,98 +3,14 @@
   "number": 50270,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-03T10:10:00Z",
-  "evaluated_at": "2026-09-03T10:10:00Z",
+  "stage": "needs_information",
+  "generated_at": "2026-09-04T03:00:00Z",
+  "evaluated_at": "2026-09-04T03:00:00Z",
   "source_updated_at": "2026-08-31T23:35:24Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50270",
   "title": "PowerToys silently crashing",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs crash-correlated diagnostics",
-    "detail": "The supplied report contains settings errors but does not connect them to the random process exit."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused crash evidence",
-    "reason": "A fresh report and matching Windows failure event can distinguish the exit path."
-  },
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The random exit has no deterministic reproduction, and forced inspection of the diagnostic archive found historical malformed settings JSON errors but no fatal/error entry correlated with the reported silent exit or the latest runner sessions.",
-    "evidence": [
-      "The tray icon and modules disappear at random, and the author confirmed there are no reproduction steps.",
-      "The diagnostic archive includes runner logs through 2026-09-01 and 2026-08-31 showing startup/module activity but no crash-time fatal/error evidence.",
-      "Older runner logs contain repeated malformed settings JSON errors for CmdNotFound, EnvironmentVariables, FancyZones, Hosts, and NewPlus.",
-      "The malformed settings errors are historical and not tied to a reported silent-exit timestamp.",
-      "No Event Viewer crash entry or Windows Error Reporting failure details are attached."
-    ],
-    "recommended_action": "Request a fresh post-failure diagnostic and matching Event Viewer entry.",
-    "evaluated_at": "2026-09-03T10:10:00Z",
-    "source_updated_at": "2026-08-31T23:35:24Z"
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The report and diagnostic archive do not correlate a crash or exit with a specific PowerToys failure path. Historical settings parse errors alone are insufficient to propose a code change.",
-    "existing_fix_urls": []
-  },
-  "issue_context": {
-    "summary": "PowerToys intermittently exits without a visible error; historical settings parsing errors are present but not proven causal.",
-    "known_information": [
-      "The exit is intermittent and removes the tray icon.",
-      "The author confirmed there are no steps to reproduce; PowerToys exits silently at random.",
-      "A diagnostic archive was supplied and inspected during the forced rerun.",
-      "The report identifies Windows NT 10.0.26200.0, .NET 10.0.9, non-elevated per-user PowerToys, and mk-MK locale.",
-      "Recent runner logs around 2026-08-31 and 2026-09-01 do not include a crash-correlated fatal/error entry."
-    ],
-    "inferences": [
-      "Settings corruption may contribute, but a crash, update restart, process kill, or another exit path remains possible.",
-      "The previous automated triage likely over-weighted old malformed JSON errors because they are not correlated with the random exit."
-    ],
-    "analysis": "The supplied archive was useful, but it does not prove a root cause. A fresh diagnostic captured immediately after the next exit and a matching Windows Application Error/WER event are needed before designing a fix.",
-    "initial_investigation": [
-      "Reviewed the complete live issue body, automated triage comment, author response, labels, assignees, project/timeline context, and linked-work state.",
-      "Downloaded and extracted the diagnostic attachment.",
-      "Inspected recent runner logs and confirmed they show startup/module activity without a crash-correlated fatal/error.",
-      "Reviewed older runner log settings parse errors and determined they are not sufficient to identify the random exit path."
-    ],
-    "information_gaps": [
-      {
-        "information": "A fresh diagnostic archive captured immediately after the next exit.",
-        "why_needed": "Aligns runner and module logs with the failing session.",
-        "how_to_collect": "Immediately after reproducing, comment /bugreport and attach the generated ZIP."
-      },
-      {
-        "information": "The matching Application Error or Windows Error Reporting event.",
-        "why_needed": "Identifies whether and how the process crashed.",
-        "how_to_collect": "Copy the faulting module, exception code, and timestamp from Event Viewer."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "id": "request-info-50270",
-      "type": "request_info",
-      "label": "Request crash-correlated diagnostics",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 50270,
-        "body": "Thanks for confirming that the exit is intermittent and for attaching the existing report. It shows malformed settings JSON for several modules, but those entries are not tied to the moment PowerToys exits. After the next silent exit, please comment `/bugreport` immediately and attach the generated ZIP. Please also include the matching **Event Viewer > Windows Logs > Application** error or Windows Error Reporting entry, including its timestamp, faulting module, and exception code."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ],
-  "author": "KKire",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Needs-Team-Response",
-    "Product-General"
-  ],
-  "assignees": [],
-  "confidence": "Medium"
+  "judgment": {"status": "needs_information", "rationale": "The report confirms silent exits but does not prove whether Runner crashed, exited cleanly, lost only its tray icon, or was terminated externally.", "evidence": ["The user reports random exits in 0.100.2 and supplied a diagnostic archive.", "The triage comment reports malformed JSON for several module settings, but the raw archive was discarded.", "The user confirms there are no deterministic reproduction steps."], "recommended_action": "Request process-level crash/exit evidence before selecting a behavioral fix."},
+  "fix_assessment": {"status": "not_applicable", "rationale": "Release crash-observability hardening is plausible but is not a confirmed fix for this incident.", "existing_fix_urls": []},
+  "issue_context": {"summary": "PowerToys disappears silently at random, while dependent features stop working; the failing process and termination mode remain unknown.", "known_information": ["PowerToys runs per-user and non-elevated on Windows 10.0.26200.0.", "The issue includes a report archive and a later statement that no steps reproduce it.", "Automated triage identified malformed JSON errors for multiple module settings."], "inferences": ["Malformed settings may contribute, but could also be incidental.", "Command Palette may be independent of Runner, so its continued availability does not identify the surviving process."], "analysis": "The correct next step is to correlate Runner lifetime, crash markers, event logs, module lifecycle, and update/restart activity before changing module isolation or settings handling.", "initial_investigation": ["Inspected runner/main.cpp, unhandled exception handling, settings JSON loading, module lifecycle, restart management, and tray paths.", "Found release diagnostics and exception coverage insufficient to establish a cause, but no safe issue-specific behavior fix."], "information_gaps": [{"information": "Runner process lifetime, exit code, and Windows Error Reporting/Event Viewer evidence at the failure time.", "why_needed": "Distinguishes crash, clean exit, external termination, and tray-only failure.", "how_to_collect": "Reproduce if possible, then immediately comment /bugreport and include the exact local timestamp."}, {"information": "Whether Command Palette remains in a separate process and which modules were enabled.", "why_needed": "Separates Runner failure from an individual module or shell component.", "how_to_collect": "Record Task Manager process names/PIDs and the enabled module list immediately after the failure."}]},
+  "actions": [{"id": "request-info-50270", "type": "request_info", "label": "Request crash correlation evidence", "primary": true, "confirm": true, "comment": {"target": "issue", "number": 50270, "body": "Thanks for confirming that the exit is random and has no fixed reproduction steps. The current report and triage note show malformed settings JSON, but they do not establish whether Runner crashed, exited cleanly, or only lost its tray icon. Please reproduce if possible, then immediately comment `/bugreport` with the local time, and include any Windows Error Reporting/Event Viewer entry. Also record whether Command Palette remains as a separate process and which PowerToys modules were enabled."}}]
 }

@@ -9,7 +9,12 @@
   "url": "https://github.com/microsoft/PowerToys/issues/30973",
   "title": "PowerToys has detected an app... Always On Top message",
   "author": "TheAssurer2009",
-  "labels": ["Issue-Bug", "Product-Always On Top", "Needs-Triage", "Needs-Team-Response"],
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
   "assignees": [],
   "comments": 23,
   "stage": "design_in_progress",
@@ -111,74 +116,125 @@
       {
         "path": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
         "purpose": "Processes foreground accessibility events and raises the elevation warning.",
-        "symbols": ["AlwaysOnTop::HandleWinHookEvent"]
+        "symbols": [
+          "AlwaysOnTop::HandleWinHookEvent"
+        ]
       },
       {
         "path": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.h",
         "purpose": "Owns Always On Top state; optional declaration for a testable name-selection helper.",
-        "symbols": ["AlwaysOnTop"]
+        "symbols": [
+          "AlwaysOnTop"
+        ]
       },
       {
         "path": "src/modules/alwaysontop/AlwaysOnTop/Resources.resx",
         "purpose": "Neutral localized strings for the elevation toast.",
-        "symbols": ["System_Foreground_Elevated_With_Name"]
+        "symbols": [
+          "System_Foreground_Elevated_With_Name"
+        ]
       },
       {
         "path": "src/common/utils/elevation.h",
         "purpose": "Elevation and limited-information process identity helpers.",
-        "symbols": ["IsProcessOfWindowElevated", "GetProcessImageNameOfWindow (new)"]
+        "symbols": [
+          "IsProcessOfWindowElevated",
+          "GetProcessImageNameOfWindow (new)"
+        ]
       },
       {
         "path": "src/common/UnitTests-CommonUtils/Elevation.Tests.cpp",
         "purpose": "Common elevation helper safety coverage.",
-        "symbols": ["ElevationTests", "IsProcessOfWindowElevated_* tests"]
+        "symbols": [
+          "ElevationTests",
+          "IsProcessOfWindowElevated_* tests"
+        ]
       },
       {
         "path": "src/modules/alwaysontop/Tests/AlwaysOnTop.UITests/AlwaysOnTopTests.cs",
         "purpose": "Existing Always On Top UI test location; extend only if notification text is observable deterministically.",
-        "symbols": ["AlwaysOnTopTests"]
+        "symbols": [
+          "AlwaysOnTopTests"
+        ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
         "file": "src/common/utils/elevation.h",
-        "symbols": ["GetProcessImageNameOfWindow(HWND)"],
+        "symbols": [
+          "GetProcessImageNameOfWindow(HWND)"
+        ],
         "current_behavior": "The existing helper checks the HWND's process token but exposes only a boolean result.",
         "change": "Add an additive helper using GetWindowThreadProcessId, OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION), and QueryFullProcessImageNameW; return an empty string for invalid or inaccessible windows.",
         "code_block": "inline std::wstring GetProcessImageNameOfWindow(HWND window) noexcept { DWORD pid{}; if (!window || !GetWindowThreadProcessId(window, &pid) || !pid) return {}; wil::unique_handle process{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid) }; if (!process) return {}; wchar_t path[...]; DWORD length = ARRAYSIZE(path); return QueryFullProcessImageNameW(process.get(), 0, path, &length) ? std::wstring(path, length) : std::wstring{}; }",
-        "edge_cases": ["Foreground HWND may be destroyed between PID and process-open calls.", "Protected processes may deny the query.", "Do not require VM_READ or expose command-line arguments."],
-        "tests": ["Invalid/null HWND returns without crashing.", "Desktop window returns either a path or empty result without crashing.", "Current-process path may be asserted only through a reliable test window seam."]
+        "edge_cases": [
+          "Foreground HWND may be destroyed between PID and process-open calls.",
+          "Protected processes may deny the query.",
+          "Do not require VM_READ or expose command-line arguments."
+        ],
+        "tests": [
+          "Invalid/null HWND returns without crashing.",
+          "Desktop window returns either a path or empty result without crashing.",
+          "Current-process path may be asserted only through a reliable test window seam."
+        ]
       },
       {
         "order": 2,
         "file": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
-        "symbols": ["AlwaysOnTop::HandleWinHookEvent"],
+        "symbols": [
+          "AlwaysOnTop::HandleWinHookEvent"
+        ],
         "current_behavior": "Every elevated foreground event sends a static generic message.",
         "change": "For the already-elevated branch, resolve the filename from the foreground HWND, fall back to a bounded window title, then to a neutral generic label; format the message and call the existing notification utility.",
         "code_block": "const auto path = GetProcessImageNameOfWindow(data->hwnd); const auto name = FileNameOrBoundedTitleOrFallback(path, data->hwnd); const auto message = fmt::format(GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_WITH_NAME), name); m_notificationUtil->WarnIfElevationIsRequired(title, message, learnMore, dontShowAgain);",
-        "edge_cases": ["Strip directory components and never display a full path.", "Bound title length and tolerate empty/destroyed HWND.", "Keep !is_process_elevated(), m_warningShown, actions, and hook threading unchanged."],
-        "tests": ["Unit-test pure filename/fallback selection if extracted.", "Manual elevated Task Scheduler/Task Manager verification.", "Manual regression for ordinary non-elevated foreground and pin/unpin."]
+        "edge_cases": [
+          "Strip directory components and never display a full path.",
+          "Bound title length and tolerate empty/destroyed HWND.",
+          "Keep !is_process_elevated(), m_warningShown, actions, and hook threading unchanged."
+        ],
+        "tests": [
+          "Unit-test pure filename/fallback selection if extracted.",
+          "Manual elevated Task Scheduler/Task Manager verification.",
+          "Manual regression for ordinary non-elevated foreground and pin/unpin."
+        ]
       },
       {
         "order": 3,
         "file": "src/modules/alwaysontop/AlwaysOnTop/Resources.resx",
-        "symbols": ["System_Foreground_Elevated_With_Name"],
+        "symbols": [
+          "System_Foreground_Elevated_With_Name"
+        ],
         "current_behavior": "Only the generic static message is defined.",
         "change": "Add a localized format template such as `We've detected \"{}\" running with administrator privileges. This will prevent certain interactions with this application.` and regenerate resource headers through the normal build.",
         "code_block": "<data name=\"System_Foreground_Elevated_With_Name\"><value>We've detected \"{}\" running with administrator privileges. This will prevent certain interactions with this application.</value></data>",
-        "edge_cases": ["Keep the existing generic resource as a fallback.", "Use the repository's existing fmt formatting convention.", "Do not hand-edit generated resource output."],
-        "tests": ["Confirm the generated resource identifier builds and the toast includes the executable filename."]
+        "edge_cases": [
+          "Keep the existing generic resource as a fallback.",
+          "Use the repository's existing fmt formatting convention.",
+          "Do not hand-edit generated resource output."
+        ],
+        "tests": [
+          "Confirm the generated resource identifier builds and the toast includes the executable filename."
+        ]
       },
       {
         "order": 4,
         "file": "src/common/UnitTests-CommonUtils/Elevation.Tests.cpp and existing Always On Top test project",
-        "symbols": ["ElevationTests", "AlwaysOnTopTests"],
+        "symbols": [
+          "ElevationTests",
+          "AlwaysOnTopTests"
+        ],
         "current_behavior": "Elevation tests cover boolean helper safety; UI tests do not provide a deterministic toast-text assertion.",
         "change": "Add focused helper safety coverage and use the existing UI test project only if notification text can be observed reliably; otherwise document the manual end-to-end validation.",
         "code_block": "TEST_METHOD(GetProcessImageNameOfWindow_InvalidHwnd_DoesNotCrash) { auto path = GetProcessImageNameOfWindow(nullptr); Assert::IsTrue(path.empty()); }",
-        "edge_cases": ["Avoid flaky toast timing assertions.", "Preserve repository test-runner guidance and do not use dotnet test for this native path."],
-        "tests": ["Build the common elevation unit-test project and run its existing tests.", "Build Always On Top native project and perform the manual toast regression."]
+        "edge_cases": [
+          "Avoid flaky toast timing assertions.",
+          "Preserve repository test-runner guidance and do not use dotnet test for this native path."
+        ],
+        "tests": [
+          "Build the common elevation unit-test project and run its existing tests.",
+          "Build Always On Top native project and perform the manual toast regression."
+        ]
       }
     ],
     "verify": [
@@ -211,7 +267,9 @@
   "adversary": {
     "rounds": 1,
     "final_verdict": "No blocking objections.",
-    "non_blocking_notes": ["Validate whether the first logon foreground event is a real application window; retain generic fallback for shell/protected windows."]
+    "non_blocking_notes": [
+      "Validate whether the first logon foreground event is a real application window; retain generic fallback for shell/protected windows."
+    ]
   },
   "actions": [
     {
@@ -221,8 +279,13 @@
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "design": {"title": "Name the elevated foreground application in the Always On Top warning"},
-      "mirror": {"repository": "MuyuanMS/PowerToys", "number": 629},
+      "design": {
+        "title": "Name the elevated foreground application in the Always On Top warning"
+      },
+      "mirror": {
+        "repository": "MuyuanMS/PowerToys",
+        "number": 629
+      },
       "note": "Draft only; no upstream code, PR, comment, or issue write is authorized by this artifact."
     }
   ]

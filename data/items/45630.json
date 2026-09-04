@@ -1,33 +1,21 @@
 {
+  "schemaVersion": 5,
   "number": 45630,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-07-10T03:04:30Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
-    "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-    ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-07-10T03:04:30Z"
-  }
+  "stage": "awaiting_design_approval",
+  "generated_at": "2026-09-04T03:00:00Z",
+  "evaluated_at": "2026-09-04T03:00:00Z",
+  "source_updated_at": "2026-08-31T14:33:03Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/45630",
+  "title": "Quick Accent not remembering frequent accents after restart (persists after 0.94 fix)",
+  "judgment": {"status": "actionable_design", "rationale": "Usage data is saved at shutdown, but the current hard-exit path explicitly skips saving.", "evidence": ["Reports reproduce after sign-out/restart through 0.100.2.", "IncrementUsageFrequency mutates memory and Save is normally called during disposal.", "Program.Terminate can call Environment.Exit when the dispatcher queue is unavailable."], "recommended_action": "Approve write-through atomic persistence and process-boundary tests."},
+  "fix_assessment": {"status": "proposed", "rationale": "The prior fix added persistence but does not cover the documented hard-exit path.", "existing_fix_urls": []},
+  "proposed_fixes": [{"title": "Persist usage ordering before shutdown", "root_cause": "Quick Accent holds usage counters in memory until shutdown, so sign-out, dispatcher races, and hard exits can discard the updated ordering.", "plan": ["Save immediately after IncrementUsageFrequency when sorting is enabled.", "Use atomic temporary-file replacement in CharactersUsageInfo.Save.", "Add reload and real process-boundary tests."], "verification": ["Use a character repeatedly, restart the module, and verify it remains first.", "Cover malformed JSON, write failure, sorting disabled, and shutdown fallback."], "confidence": {"score": 78, "level": "yellow", "rationale": "The source documents the unsaved exit path and matches the symptom, but a current process-boundary repro is still desirable."}}],
+  "issue_context": {"summary": "Quick Accent's usage-frequency ordering can reset after sign-out or restart because updates remain in memory until shutdown.", "known_information": ["The original fix was intended to persist usage frequency.", "Comments reproduce the reset on 0.100.2 and after reboot/sign-out.", "The UI disposal path saves, but Program.Terminate has an Environment.Exit fallback that does not."], "inferences": ["Shutdown-only persistence likely loses the latest usage data during session teardown or dispatcher failure.", "Atomic replacement is needed to avoid corrupting the previous valid file."], "analysis": "Immediate UI-thread persistence is a narrow robustness fix that preserves the existing setting semantics while covering the documented loss path.", "initial_investigation": ["Inspected CharactersUsageInfo, PowerAccent, MainWindow disposal, Program.Terminate, unit tests, and E2E helpers.", "Confirmed no process-boundary persistence test exists."], "information_gaps": []},
+  "design": {"root_cause": "Usage frequency is incremented in memory and normally written only by SaveUsageInfo during disposal; Environment.Exit bypasses disposal.", "evidence": ["PowerAccent calls IncrementUsageFrequency after commit.", "SaveUsageInfo is shutdown-bound.", "Program.Terminate documents a hard-exit fallback without saving."], "affected_files": [{"path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs", "purpose": "Usage update flow.", "symbols": ["SendInputAndHideToolbar", "SaveUsageInfo"]}, {"path": "src/modules/poweraccent/PowerAccent.Core/Tools/CharactersUsageInfo.cs", "purpose": "Usage storage.", "symbols": ["IncrementUsageFrequency", "Save", "GetUsageInfoData"]}, {"path": "src/modules/poweraccent/PowerAccent.UI/Program.cs", "purpose": "Termination behavior.", "symbols": ["Terminate"]}, {"path": "src/modules/poweraccent/PowerAccent.UITests/PowerAccentEndToEndTests.cs", "purpose": "Process-boundary verification.", "symbols": ["PowerAccentEndToEndTests"]}], "implementation_steps": [{"order": 1, "file": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs", "symbols": ["SendInputAndHideToolbar"], "current_behavior": "Increment updates memory; persistence waits for shutdown.", "change": "Save immediately after increment when sorting is enabled, without blocking insertion on write failure.", "code_block": "if (sortingEnabled) { usage.IncrementUsageFrequency(character); usage.Save(); }", "edge_cases": ["Remain on the UI thread.", "Log write failures and preserve character insertion.", "Keep sorting-disabled behavior unchanged."], "tests": ["Increment then construct a new store and verify the counter/order."]}, {"order": 2, "file": "src/modules/poweraccent/PowerAccent.Core/Tools/CharactersUsageInfo.cs", "symbols": ["Save"], "current_behavior": "Direct write can be interrupted.", "change": "Write a unique temporary file and atomically replace the prior file.", "code_block": "write temp; flush/close; replace destination; clean temp on failure.", "edge_cases": ["Preserve prior valid data on failure.", "Avoid collisions and stale temp cleanup."], "tests": ["Simulate replacement/write failure and verify previous JSON remains valid."]}, {"order": 3, "file": "src/modules/poweraccent/PowerAccent.UITests/PowerAccentEndToEndTests.cs", "symbols": ["PowerAccentEndToEndTests"], "current_behavior": "Coverage is same-process.", "change": "Add a restart/sign-out process-boundary assertion.", "code_block": "use character; stop process; start process; trigger same letter; assert prior frequent character is first.", "edge_cases": ["Use existing test helpers and avoid parallel UI tests."], "tests": ["Run the existing Core and UI test projects."]}], "verify": ["Build PowerAccent Core and UI tests in x64 Debug.", "Run persistence unit tests.", "Restart the module after repeated use and verify ordering survives."], "risks": ["Per-selection I/O may add latency; debounce only after measuring.", "A write failure must not break input."], "alternatives": ["Periodic saves reduce I/O but still lose recent data.", "Session-event-only saves do not protect against crashes or hard exit."]},
+  "fork_issue": {"number": 646, "url": "https://github.com/MuyuanMS/PowerToys/issues/646"},
+  "actions": [{"id": "approve-design-45630", "type": "approve_design", "label": "Approve Quick Accent persistence design", "primary": true, "confirm": true, "requiresApproval": true, "note": "Fork-side implementation only; no upstream action."}],
+  "adversary": {"rounds": 2, "verdict": "no blocking objections", "non_blocking_notes": ["Validate write-through performance and a real process boundary."]},
+  "approval_gate": {"fork_issue_number": 646, "status": "awaiting_design_approval"}
 }

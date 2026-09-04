@@ -1,61 +1,21 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 37143,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2026-08-27T09:16:58Z",
+  "stage": "awaiting_design_approval",
+  "generated_at": "2026-09-04T03:00:00Z",
+  "evaluated_at": "2026-09-04T03:00:00Z",
+  "source_updated_at": "2026-08-31T18:19:00Z",
   "url": "https://github.com/microsoft/PowerToys/issues/37143",
   "title": "ZoomIt activates on AltGr+key instead of Ctrl+key",
-  "author": "jsandr",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Needs-Team-Response",
-    "Product-ZoomIt"
-  ],
-  "comments": 12,
-  "confidence": "Medium",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
-  },
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
-    "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Needs-Team-Response, Product-ZoomIt",
-      "Candidate sources: updated_week",
-      "Missing: fresh PowerToys bug-report ZIP."
-    ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2026-08-27T09:16:58Z"
-  },
-  "actions": [
-    {
-      "id": "request-info-37143",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 37143,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include monitor layout/DPI, the configured PowerToys settings for this utility, and a short recording showing the failure."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ]
+  "judgment": {"status": "actionable_design", "rationale": "Multiple current-layout reports and the current aggregate RegisterHotKey implementation establish a reproducible modifier-identity defect.", "evidence": ["French AZERTY and German QWERTZ reports reproduce through 0.101.2362.", "AltGr is right Alt plus synthetic left Ctrl.", "ZoomIt registers aggregate MOD_CONTROL/MOD_ALT hotkeys and cannot distinguish modifier sides."], "recommended_action": "Approve a physical-modifier matching design for ZoomIt."},
+  "fix_assessment": {"status": "proposed", "rationale": "No existing fix distinguishes AltGr from intentional Ctrl/Ctrl+Alt ZoomIt shortcuts.", "existing_fix_urls": []},
+  "proposed_fixes": [{"title": "Match physical modifiers so AltGr is not Ctrl", "root_cause": "RegisterHotKey and the current shortcut representation collapse left/right modifier identity, allowing AltGr's synthetic Ctrl to activate ZoomIt shortcuts.", "plan": ["Replace the affected global shortcut path with a physical-key matcher or shared low-level hook.", "Preserve settings compatibility while matching left/right Ctrl and Alt and treating AltGr distinctly.", "Add layout-specific regression coverage and ensure reload/unregister are atomic."], "verification": ["French AZERTY AltGr+5 must type [ without recording.", "German QWERTZ AltGr+8/9 must type brackets without mirror activation.", "Intentional Ctrl+Alt shortcuts must still work and Ctrl alone must not trigger them."], "confidence": {"score": 91, "level": "green", "rationale": "The same mechanism is independently reported across layouts and is visible in current ZoomIt registration code."}}],
+  "issue_context": {"summary": "ZoomIt activates configured Ctrl shortcuts when users type AltGr characters on non-US layouts.", "known_information": ["Reports cover French AZERTY and German QWERTZ keyboards.", "Current reports include ZoomIt recording and mirror actions on 0.101.2362.", "A related existing fork mirror for Issue 50125 does not cover this issue."], "inferences": ["Aggregate modifier matching treats AltGr as ordinary Ctrl or Ctrl+Alt.", "Derived shortcut registration increases collisions for characters requiring AltGr."], "analysis": "The issue is reproducible from keyboard layout semantics and current Win32 registration limitations; a physical modifier boundary is preferable to suppressing valid shortcuts.", "initial_investigation": ["Inspected Zoomit.cpp registration, reload, WM_HOTKEY dispatch, settings interop, and existing zero-modifier derived-shortcut history.", "Checked the discussion for current-layout confirmations and workarounds."], "information_gaps": []},
+  "design": {"root_cause": "ZoomIt uses aggregate modifier bits, so the synthetic left Ctrl emitted with right Alt for AltGr satisfies Ctrl-based registrations.", "evidence": ["Current code uses RegisterHotKey with MOD_CONTROL/MOD_ALT.", "The issue contains repeated AltGr collisions on French and German layouts.", "Existing fixes only address zero-modifier derived shortcuts."], "affected_files": [{"path": "src/modules/zoomit/ZoomIt/Zoomit.cpp", "purpose": "Hotkey registration, dispatch, reload, and cleanup.", "symbols": ["RegisterAllHotkeys", "UnregisterAllHotkeys", "WM_HOTKEY handling"]}, {"path": "src/modules/zoomit/ZoomIt/ZoomItSettings.h", "purpose": "Shortcut persistence model.", "symbols": ["shortcut settings"]}, {"path": "src/modules/zoomit/ZoomItSettingsInterop/ZoomItSettings.cpp", "purpose": "Shortcut serialization.", "symbols": ["LoadSettingsJson", "SaveSettingsJson"]}], "implementation_steps": [{"order": 1, "file": "src/modules/zoomit/ZoomIt/Zoomit.cpp", "symbols": ["RegisterAllHotkeys", "WM_HOTKEY handling"], "current_behavior": "Windows reports only aggregate modifier state.", "change": "Match VK plus physical left/right modifier state in a fast low-level hook or equivalent shared path and post actions to the UI thread.", "code_block": "if (rightAlt && leftCtrl) classify as AltGr; match configured physical modifiers; enqueue action.", "edge_cases": ["Hook callback must do no I/O.", "Avoid duplicate WM_HOTKEY and hook dispatch.", "Unhook on shutdown and surface installation failure.", "Retain zero-modifier derived shortcut guard."], "tests": ["Test AltGr, Ctrl+Alt, Ctrl-only, and reload/unregister behavior."]}, {"order": 2, "file": "src/modules/zoomit/ZoomItSettingsInterop/ZoomItSettings.cpp", "symbols": ["LoadSettingsJson", "SaveSettingsJson"], "current_behavior": "Persisted shortcuts have no side-aware semantics.", "change": "Keep old settings readable and define matching semantics without silently rewriting existing shortcuts.", "code_block": "deserialize legacy shortcut; runtime matcher applies physical modifier policy.", "edge_cases": ["Preserve existing configurations and US-layout behavior."], "tests": ["Round-trip legacy and new shortcut representations."]}], "verify": ["Build ZoomIt and native tests in x64 Debug.", "Run layout-specific hotkey tests.", "Exercise French AZERTY and German QWERTZ E2E scenarios and confirm valid Ctrl+Alt shortcuts remain usable."], "risks": ["Low-level hooks add lifecycle and latency concerns.", "Changing AltGr semantics may affect users who intentionally configured it."], "alternatives": ["Centralizing all shortcuts in Runner expands IPC scope.", "Suppressing all Ctrl+Alt-derived shortcuts breaks valid configurations."]},
+  "fork_issue": {"number": 647, "url": "https://github.com/MuyuanMS/PowerToys/issues/647"},
+  "actions": [{"id": "approve-design-37143", "type": "approve_design", "label": "Approve AltGr hotkey design", "primary": true, "confirm": true, "requiresApproval": true, "note": "Fork-side implementation only; no upstream action."}],
+  "adversary": {"rounds": 2, "verdict": "no blocking objections", "non_blocking_notes": ["Validate both layout-specific AltGr behavior and intentional Ctrl+Alt shortcuts."]},
+  "approval_gate": {"fork_issue_number": 647, "status": "awaiting_design_approval"}
 }
