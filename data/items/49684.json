@@ -5,8 +5,8 @@
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T10:04:54.663Z",
-  "evaluated_at": "2026-09-03T10:04:54.663Z",
+  "generated_at": "2026-09-04T02:48:26.865Z",
+  "evaluated_at": "2026-09-04T02:48:26.865Z",
   "url": "https://github.com/microsoft/PowerToys/issues/49684",
   "confidence": "red",
   "number": 49684,
@@ -19,193 +19,266 @@
   ],
   "comments": 1,
   "source_updated_at": "2026-08-30T18:03:49Z",
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 611,
+    "fork_title": "[Issue 49684] mouse without boarder",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/611"
+  },
   "status": {
     "glyph": "💬",
     "label": "needs synchronized topology evidence",
-    "detail": "The new comment adds a reproducible three-machine asymmetry, but versions and paired diagnostics are missing."
+    "detail": "The three-machine report reliably describes a host-only loss after a brief connected state, but does not identify the failing connection, identity, liveness, or matrix transition."
   },
   "next_action": {
     "glyph": "➡️",
-    "label": "Request versions and paired /bugreport files",
-    "reason": "Correlate host and client liveness/socket state."
+    "label": "Reproduce on three physical devices and collect paired diagnostics",
+    "reason": "The initiating host and one healthy peer must be captured in the same red-border reproduction window before a PowerToys code change is defensible."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The new commenter adds a reproducible three-machine asymmetric topology, but versions and usable current diagnostics from the host/client pair are still missing.",
+    "rationale": "The live issue has no diagnostic attachment, detailed expected behavior, topology, network data, or maintainer diagnosis. The sole follow-up proves a repeatable asymmetric symptom but cannot distinguish a host-side application-state defect from version, identity, firewall, VPN, subnet, or configuration causes.",
     "evidence": [
-      "The original report only said Mouse Without Borders does not work.",
-      "A commenter reports both clients see all machines while whichever host starts the connection sees only itself.",
-      "The host peer borders briefly turn blue, then return red.",
-      "The behavior survives restarts, clean reinstall, and line/grid layouts.",
-      "Related searches found no exact active duplicate for host-only topology loss."
+      "Observed: the original reporter used PowerToys 0.100.2 from Microsoft Store and said Mouse Without Borders did not work even when rerun as administrator.",
+      "Observed: a second reporter describes three machines where whichever machine initiates the connection sees only itself while both additional machines see all three machines.",
+      "Observed: the initiating host's peer borders briefly turn blue after refresh and return red within seconds.",
+      "Observed: the follow-up reproduces across connection order, elevation, line and grid layouts, restart, and clean reinstall.",
+      "Observed: the live timeline has only the two initial labels and the follow-up comment; there is no assignee, linked pull request, duplicate marker, sub-issue, or attachment.",
+      "Observed: fork search and local branch/history search found no existing MuyuanMS mirror, branch, or implementation trace for Issue 49684 before this rerun.",
+      "Observed: broad upstream issue search found related reconnection and multi-machine reports, but no issue was identified as an exact duplicate of this host-only topology loss."
     ],
-    "recommended_action": "Request exact versions/topology and fresh host plus client diagnostics captured immediately after the red-border state.",
-    "evaluated_at": "2026-09-03T06:51:00.1178362Z",
+    "recommended_action": "Use the local three-device reproduction action, then request exact environment data and paired host/client bug reports captured immediately after the host returns from blue to red.",
+    "evaluated_at": "2026-09-04T02:48:26.865Z",
     "source_updated_at": "2026-08-30T18:03:49Z"
   },
   "issue_context": {
-    "summary": "In a three-machine Mouse Without Borders setup, clients can see the full topology while the initiating host cannot retain peer connections.",
+    "summary": "Mouse Without Borders reportedly establishes a transient connection in a three-machine topology, but the initiating host soon treats both peers as disconnected while the two peers continue to display the complete topology.",
     "known_information": [
-      "The commenter tested different host/order combinations, line/grid modes, restarts, and reinstall.",
-      "The host’s peer indicators transition briefly blue then return red.",
-      "No versions, transport details, or diagnostics are attached."
+      "The original report identifies PowerToys 0.100.2, Microsoft Store installation, Mouse Without Borders, and attempted elevation.",
+      "The corroborating report uses a desktop and two laptops and says the failure follows the initiating-host role rather than a particular device or connection order.",
+      "The corroborating report says the host's connection borders change from red to blue during refresh and revert to red after a few seconds.",
+      "The reporters tested restart, clean reinstall, line layout, and grid layout.",
+      "No issue participant provided exact version parity for the three machines, Windows builds, security-key setup, network path, firewall/VPN state, or diagnostic ZIP."
     ],
     "inferences": [
-      "The asymmetry may involve machine-pool propagation or host-side connectivity, but networking, identity, and stale configuration are not distinguished."
+      "The short blue-to-red interval is consistent with an initial connection being accepted before a later liveness, socket, identity, or matrix-state decision marks the peer unavailable, but the report does not establish which decision occurs.",
+      "The role-dependent asymmetry makes a pure device-specific failure less likely, but it does not rule out network policy or configuration that differs by initiating connection direction.",
+      "A code fix should be gated on synchronized evidence because several independent paths can produce a red border."
     ],
-    "analysis": "A synchronized host/client snapshot is decision-changing because Mouse Without Borders maintains per-machine liveness and socket/channel state.",
+    "analysis": "The current Mouse Without Borders code has multiple state owners that could produce the visible symptom. SocketStuff.MainTCPRoutine trusts a handshake, assigns the remote machine ID, and updates MachinePool; when that TCP loop exits it calls RemoveDeadMachines for the last remote ID. MachinePool.TryUpdateMachineID owns peer identity and the liveness timestamp, while SetMachineDisconnected forces an entry toward timeout after a socket/channel failure. MachineStuff.SendMachineMatrix publishes the configured topology and UpdateMachineMatrix triggers client socket updates. The issue does not contain the log entries needed to identify whether any of these transitions occurred, whether the peer was rejected, or whether the configured network prevented the later connection. These files are investigation targets, not a confirmed patch surface.",
     "initial_investigation": [
-      "Reviewed the full live issue body, comment, labels, assignees, project items, closed-by references, and timeline.",
-      "Reviewed MouseWithoutBorders MachinePool and machine-matrix ownership areas.",
-      "Searched related issues; no exact host-only topology duplicate was found."
+      "Read the live upstream issue body, all comments, labels, assignees, issue state, timeline, sub-issue/dependency summaries, and attachment-bearing fields.",
+      "Searched upstream Mouse Without Borders issues for host and connection-related reports; related reports concern reconnecting after network loss or adding a third machine, but none establishes this exact host-only topology mechanism as a duplicate.",
+      "Searched the MuyuanMS fork for existing Issue 49684 mirrors and pull requests and searched local branches and all local history for 49684; no prior trace was found.",
+      "Read SocketStuff.MainTCPRoutine and UpdateTCPClients, MachinePool.TryUpdateMachineID and SetMachineDisconnected, and MachineStuff.AddToMachinePool, RemoveDeadMachines, SendMachineMatrix, and UpdateMachineMatrix.",
+      "Confirmed that MouseWithoutBorders.UnitTests references the application project but currently contains only an ignored single test, so no existing focused socket or machine-pool regression suite can validate a proposed lifecycle patch without adding coverage during implementation."
     ],
     "information_gaps": [
       {
-        "information": "Exact versions and connection topology on all three machines",
-        "why_needed": "Determines compatibility and whether hostname/IP/network segmentation matters.",
-        "how_to_collect": "List each host/client with PowerToys version, Windows version, and wired/Wi-Fi/VPN status."
+        "information": "Exact PowerToys version and Windows version for every machine, plus the initiating machine and client roles during the failing run.",
+        "why_needed": "The original version is only known for one reporter. Version skew or platform-specific behavior cannot be excluded without per-machine facts.",
+        "how_to_collect": "List each machine by role with its PowerToys version, Windows edition/build, installation channel, and whether Mouse Without Borders is elevated."
       },
       {
-        "information": "Fresh diagnostics from the failing host and one client at the same reproduction time",
-        "why_needed": "Allows correlation of identity, liveness, and socket/channel events across both sides.",
-        "how_to_collect": "Reproduce until the host borders return red, then add /bugreport immediately on the host and one client; attach both ZIPs with roles identified."
+        "information": "Network topology and policy information for the failing run.",
+        "why_needed": "A directional firewall rule, VPN, subnet separation, IPv4/IPv6 path selection, or network-profile policy can make the initiating host lose only outbound or returned peer connectivity.",
+        "how_to_collect": "State wired or Wi-Fi use, SSID or subnet relationship, VPN/virtual-network adapters, Windows network profile, firewall/security products, and whether each machine can reach the others by name and LAN IP."
+      },
+      {
+        "information": "Synchronized diagnostics from the initiating host and one peer after the host returns to a red border.",
+        "why_needed": "Paired logs are required to correlate handshake acknowledgement, machine ID changes, heartbeat/liveness expiry, matrix receipt, socket status, and reconnect attempts across both sides.",
+        "how_to_collect": "Reproduce until the initiating host's peer borders return red, immediately add `/bugreport` on that host and one peer, attach both ZIPs, and identify which machine produced each report."
+      },
+      {
+        "information": "A precise expected outcome and whether mouse/keyboard crossing fails in both directions when the host border is red.",
+        "why_needed": "The report describes topology display but does not establish whether the failure is presentation-only, connection-state-only, or input routing.",
+        "how_to_collect": "After the red-border transition, state whether input crosses from the initiator to each peer and from each peer back to the initiator, and include the configured matrix order."
       }
     ]
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A code fix may be needed, but the evidence only supports a bounded investigation around host-side peer-state propagation and socket lifecycle; it does not prove which branch is faulty.",
+    "rationale": "No linked or fork-side implementation covers the report. The only responsible proposal is an evidence-gated investigation and reproduction path: the code exposes plausible socket, liveness, identity, and matrix transitions, but the issue does not prove a faulty branch. No implementation patch or design approval is proposed.",
     "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Preserve and reconcile host peer state across socket reconnects",
-      "root_cause": "Low-confidence hypothesis: the initiating host may accept peer handshakes and then fail to reconcile identity or liveness updates, leaving MachinePool or TcpSockets host-only while clients retain the topology. Network, key, and version causes remain possible.",
+      "title": "Establish the host peer-state transition before changing Mouse Without Borders",
+      "root_cause": "Unconfirmed. The initiating host may lose a trusted peer after handshake because of a socket failure, liveness timeout, duplicate or stale identity update, or matrix/client-socket transition. Equally viable non-code causes include version mismatch, security-key/configuration mismatch, directional firewall policy, VPN/virtual adapter routing, and network segmentation.",
       "plan": [
-        "Collect exact versions, network roles, and synchronized host/client diagnostics before changing behavior.",
-        "Trace SocketStuff.MainTCPRoutine and UpdateTCPClients with MachineStuff.AddToMachinePool, MachinePool.TryUpdateMachineID, and SetMachineDisconnected.",
-        "Compare host/client machine-pool strings, remote IDs, socket statuses, and disconnect timestamps at the blue-to-red transition.",
-        "If a confirmed reconnect path leaves peer state stale, make that update atomic and refresh the matrix only after accepted peer state is reconciled.",
-        "Add focused MachinePool tests for duplicate IDs and disconnect/reconnect ordering, then add a socket regression test for the confirmed transition."
+        "Do not alter SocketStuff, MachinePool, or MachineStuff from the current evidence.",
+        "Reproduce the three-device role rotation on physical devices and capture paired bug reports at the red-border transition.",
+        "Correlate the host and peer logs in temporal order for handshake acknowledgement, remote machine ID assignment, heartbeat activity, machine-pool updates, matrix send/receive, socket status changes, and reconnect attempts.",
+        "Only after the failing transition is identified, constrain a code change to the owning symbol and add a regression test for that observed sequence."
       ],
       "verification": [
-        "Reproduce until host borders return red and capture /bugreport on the host and one client at the same time.",
-        "Verify the fixed build keeps all peers connected on the initiating host across reconnects and host-order changes.",
-        "Repeat the reported line and grid layouts."
+        "Use the reproduction action to establish whether the host-only red-border transition occurs with matching versions and a documented LAN topology.",
+        "Confirm paired diagnostics identify one causal state transition rather than only the visible border color.",
+        "After a future evidence-backed implementation, rotate the initiating role across all three machines and test both line and grid layouts without peers returning to red or losing input connectivity."
       ],
       "confidence": {
-        "score": 32,
+        "score": 18,
         "level": "red",
-        "rationale": "The source has plausible machine-pool and socket reconciliation points, but no diagnostic evidence identifies the failing branch and no versions or network data are available."
+        "rationale": "The report supports a real, role-dependent failure and narrows the code area, but supplies none of the telemetry needed to select a safe code branch or rule out environmental causes."
       }
     }
   ],
   "design": {
-    "root_cause": "Unconfirmed host-side loss or rejection of peer liveness/identity state after initial connection; network and compatibility causes remain viable alternatives.",
+    "status": "needs_information",
+    "converged": false,
+    "adversary_rounds": 0,
+    "adversary_sign_off": "Not applicable: no implementation-grade design was drafted because the available evidence cannot establish a root cause.",
+    "root_cause": "Not established. The report proves a transient, host-only topology failure but not the component or condition that invalidates the peers.",
     "evidence": [
-      "Observed: both clients see all machines while the initiating host loses peers.",
-      "Observed: host borders briefly turn blue, then red.",
-      "Observed: trusted handshakes update MachinePool and socket failures force disconnect timestamps.",
-      "Inferred: a host-only failure may occur between socket status and MachinePool/matrix state."
+      {
+        "kind": "observed",
+        "detail": "The initiating host briefly reaches the blue connected state before both peers return to red; the two peers retain a complete topology."
+      },
+      {
+        "kind": "observed",
+        "detail": "The report is reproducible across host/order changes, elevation attempts, restart/reinstall, and both line and grid layouts."
+      },
+      {
+        "kind": "observed",
+        "detail": "SocketStuff.MainTCPRoutine updates a trusted peer's ID and machine-pool timestamp, then marks the peer dead when its TCP loop ends."
+      },
+      {
+        "kind": "observed",
+        "detail": "MachinePool.SetMachineDisconnected can move a peer timestamp into the heartbeat-timeout window after a socket or channel exception."
+      },
+      {
+        "kind": "inferred",
+        "detail": "A later liveness, socket, identity, or matrix decision could explain the blue-to-red sequence, but neither logs nor a deterministic reproduction identify the decision."
+      }
     ],
     "affected_files": [
       {
         "path": "src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
-        "purpose": "Owns TCP handshakes, socket status transitions, and reconnect/client updates that may drop host peer state.",
+        "purpose": "Candidate investigation surface for trusted handshakes, client socket creation, socket status updates, and the disconnect path.",
         "symbols": [
-          "MainTCPRoutine",
-          "UpdateTCPClients"
-        ]
-      },
-      {
-        "path": "src/modules/MouseWithoutBorders/App/Core/MachineStuff.cs",
-        "purpose": "Reconciles discovered machines, liveness changes, and the machine matrix after peer updates.",
-        "symbols": [
-          "AddToMachinePool",
-          "RemoveDeadMachines",
-          "SendMachineMatrix"
-        ]
+          "SocketStuff.MainTCPRoutine",
+          "SocketStuff.UpdateTCPClients"
+        ],
+        "status": "investigation target only"
       },
       {
         "path": "src/modules/MouseWithoutBorders/App/Class/MachinePool.cs",
-        "purpose": "Stores peer names, IDs, and timestamps used to decide whether host-side peers are alive.",
+        "purpose": "Candidate investigation surface for machine identity and liveness timestamps.",
         "symbols": [
-          "TryUpdateMachineID",
-          "SetMachineDisconnected"
-        ]
+          "MachinePool.TryUpdateMachineID",
+          "MachinePool.SetMachineDisconnected"
+        ],
+        "status": "investigation target only"
+      },
+      {
+        "path": "src/modules/MouseWithoutBorders/App/Core/MachineStuff.cs",
+        "purpose": "Candidate investigation surface for discovery, dead-machine handling, matrix publication, and socket refresh.",
+        "symbols": [
+          "MachineStuff.AddToMachinePool",
+          "MachineStuff.RemoveDeadMachines",
+          "MachineStuff.SendMachineMatrix",
+          "MachineStuff.UpdateMachineMatrix"
+        ],
+        "status": "investigation target only"
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
-        "symbols": [
-          "MainTCPRoutine",
-          "UpdateTCPClients"
-        ],
-        "current_behavior": "Trusted handshakes update socket status and peer identity, while later socket failures can trigger client updates and peer disconnect handling; the failing host transition is not identified by current evidence.",
-        "change": "Correlate paired diagnostics first. If the host accepts a reconnect but loses the peer during a later update, keep socket, identity, and liveness reconciliation ordered and consistent at the owning transition.",
-        "code_block": "if (handshakeAccepted)\r\n{\r\n    UpdateSocketState();\r\n    ReconcilePeerIdentityAndLiveness();\r\n    UpdateClientSockets();\r\n}",
+        "scope": "Evidence collection",
+        "current_behavior": "The public report gives only a visual connection-state transition and no diagnostic trace.",
+        "change": "Collect synchronized host/peer diagnostics and environmental facts before selecting an implementation file or symbol.",
+        "edge_error_state_handling": "Preserve the distinction between a code failure and a blocked, mismatched, or unavailable peer; do not normalize or suppress either condition without evidence.",
         "tests": [
-          "Add a socket-level regression test for the confirmed reconnect or disconnect transition."
+          "No source test is appropriate until the log-backed transition is known."
         ]
       },
       {
         "order": 2,
-        "file": "src/modules/MouseWithoutBorders/App/Core/MachineStuff.cs",
-        "symbols": [
-          "AddToMachinePool",
-          "RemoveDeadMachines",
-          "SendMachineMatrix"
-        ],
-        "current_behavior": "Machine discovery updates MachinePool and can rebuild/send the matrix, but no evidence proves that the host's blue-to-red transition is caused by stale matrix propagation.",
-        "change": "Only if diagnostics confirm stale propagation, refresh the machine matrix after accepted peer state is reconciled and avoid publishing a partially updated host topology.",
-        "code_block": "ReconcilePeerState();\r\nUpdateMachinePoolStringSetting();\r\nSendMachineMatrix();",
+        "scope": "Future implementation gate",
+        "current_behavior": "Socket, liveness, identity, and matrix code operate in different state owners.",
+        "change": "When diagnostics pinpoint a transition, modify only its owner and add a regression case that reproduces the exact ordering of handshake, peer update, and disconnect or reconnect events.",
+        "edge_error_state_handling": "A future fix must retain duplicate-ID protection, legitimate disconnect handling, socket disposal safety, and the four-machine limit.",
         "tests": [
-          "Add a regression test proving a reconnect preserves the expected machine matrix."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/MouseWithoutBorders/App/Class/MachinePool.cs",
-        "symbols": [
-          "TryUpdateMachineID",
-          "SetMachineDisconnected"
-        ],
-        "current_behavior": "Peer IDs and timestamps are updated independently, duplicate IDs clear the old entry, and disconnects force an older timestamp; ordering or identity data could be involved but is unproven.",
-        "change": "After the failing state is confirmed, make the smallest change needed to preserve the correct peer identity and liveness ordering without weakening duplicate-ID or disconnect safeguards.",
-        "code_block": "UpdatePeerIdentity();\r\nif (peerIsDisconnected)\r\n{\r\n    SetMachineDisconnected(peerName);\r\n}",
-        "tests": [
-          "Add focused tests for duplicate IDs and disconnect/reconnect ordering."
+          "Add focused unit coverage in MouseWithoutBorders.UnitTests for the confirmed state sequence.",
+          "Verify on at least three physical machines because Mouse Without Borders requires multiple physical computers."
         ]
       }
     ],
     "verify": [
-      "Collect exact machine roles and versions, reproduce the topology failure, and compare host/client diagnostics.",
-      "After a cause-specific fix, verify peer retention across reconnects, host order changes, and both matrix layouts."
+      "Prepare three physical Windows computers with documented versions, network configuration, and shared-key setup.",
+      "Configure Mouse Without Borders in line layout, rotate the initiating machine through all three roles, refresh the connection, and record peer-border state plus bidirectional mouse/keyboard crossing.",
+      "Repeat in grid layout.",
+      "If the initiating host alone turns peers from blue to red, immediately capture `/bugreport` on that host and one peer before restarting or refreshing again.",
+      "Use the paired logs to determine whether the host accepted a handshake and then timed out, closed, rejected, or failed to publish the peer state."
     ],
     "risks": [
-      "Reconnect or matrix changes can create duplicate sockets, stale IDs, or two-machine regressions.",
-      "A code change is premature if diagnostics show firewall, VPN, key, or version incompatibility."
+      "Changing reconnect, liveness, or matrix behavior without causal evidence could leave stale peers connected, create duplicate client sockets, weaken duplicate-ID safeguards, or regress legitimate sleep/disconnect recovery.",
+      "Treating an environmental failure as an application bug can create an ineffective code change while leaving reporters unable to diagnose firewall, VPN, or network policy problems.",
+      "The existing test project has insufficient focused socket/machine-pool coverage, so an eventual code change must add a narrow regression test rather than relying on the current ignored test."
     ],
     "alternatives": [
-      "Request paired evidence first; preferred because the failing transition is unknown.",
-      "Treat it as network-only; not established because the role-dependent asymmetry could still be application state."
+      {
+        "option": "Patch host-side socket or matrix reconciliation now",
+        "decision": "Rejected",
+        "reason": "Multiple code paths can yield the reported state and the issue has no logs that identify one."
+      },
+      {
+        "option": "Classify the report as a network-only problem",
+        "decision": "Rejected",
+        "reason": "The initiator-role asymmetry is compatible with application state as well as directional network policy."
+      },
+      {
+        "option": "Request only generic logs",
+        "decision": "Rejected",
+        "reason": "A paired, time-aligned host/peer capture with topology facts is necessary to distinguish the relevant state transition."
+      }
     ]
   },
   "actions": [
     {
-      "id": "request-info-49684",
+      "id": "reproduce-49684-three-device-topology",
+      "type": "reproduce",
+      "label": "Reproduce the three-device host topology loss",
+      "note": "Display-only reproduction plan. It is intended to establish a causal transition before requesting or approving a code fix.",
+      "reproduce": {
+        "title": "Verify whether the initiating Mouse Without Borders host loses both peers after a transient connection",
+        "module": "Mouse Without Borders",
+        "version_requirement": "Use documented, matching PowerToys builds on three physical Windows computers; record any version difference.",
+        "prerequisites": [
+          "Three physical Windows computers, not virtual machines",
+          "Mouse Without Borders enabled with a shared security key",
+          "Known host/client role and documented wired/Wi-Fi/VPN/firewall configuration"
+        ],
+        "setup": [
+          "Record the PowerToys and Windows versions, network path, and elevation state for every machine.",
+          "Set up one desktop and two laptops (or equivalent) as a three-machine Mouse Without Borders topology.",
+          "Configure a line matrix first; repeat with a grid matrix."
+        ],
+        "steps": [
+          "Choose one machine to initiate the connection and connect the other two peers.",
+          "Refresh the connection and observe the initiating host's peer borders for at least several seconds.",
+          "Record whether all machines display the expected topology and whether input crosses in both directions for each pair.",
+          "Repeat after rotating the initiating role to each machine, then repeat in grid layout.",
+          "If the initiating host's peers return from blue to red, immediately collect `/bugreport` on that host and one peer before restarting or refreshing."
+        ],
+        "expected_result": "All three machines retain connected peer borders, display the intended topology, and allow bidirectional mouse and keyboard crossing regardless of which machine initiated setup.",
+        "setup_prompt": "Prepare three physical Windows PCs for Mouse Without Borders testing, record each PC's PowerToys/Windows version and wired/Wi-Fi/VPN/firewall state, configure a shared security key, then rotate the initiating host through line and grid layouts while recording the blue-to-red peer-border transition."
+      }
+    },
+    {
+      "id": "request-paired-diagnostics-49684",
       "type": "request_info",
-      "label": "Request synchronized host/client diagnostics",
+      "label": "Request synchronized host and peer diagnostics",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 49684,
-        "body": "The three-machine details are useful: both clients see the full topology, while whichever machine starts as host loses its peers and their borders return from blue to red. To separate version/topology problems from host-side connection state, please list each machine’s PowerToys version, Windows version, host/client role, and wired/Wi-Fi/VPN status. Then reproduce until the host borders return red and add /bugreport immediately on the host and one client; attach both generated ZIPs and identify which machine produced each one."
+        "body": "Thanks for the three-machine details. The host-only blue-to-red transition is useful, but it can come from either peer-state handling or a directional environment problem. Please list the PowerToys version, Windows version, host/client role, wired or Wi-Fi/VPN state, and firewall/security software for every machine. Then reproduce until the initiating host's borders return red and immediately add `/bugreport` on that host and one peer. Attach both ZIPs and identify which machine produced each report. Please also say whether mouse and keyboard crossing fails in each direction after the borders turn red."
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Draft only. This artifact does not post or otherwise modify the upstream issue."
     }
   ]
 }

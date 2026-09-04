@@ -1,33 +1,232 @@
 {
+  "schemaVersion": 5,
   "number": 45816,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-02-27T18:51:32Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
+  "generated_at": "2026-09-04T02:45:20Z",
+  "evaluated_at": "2026-09-04T02:45:20Z",
+  "source_updated_at": "2026-09-02T14:05:51Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/45816",
+  "title": "Command Palette keyboard shortcuts do not work after clicking outside search input",
+  "author": "RuggMatt",
+  "labels": [
+    "Issue-Bug",
+    "Status-Reproducible",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 2,
   "confidence": "High",
+  "summary": "Command Palette loses keyboard navigation after an inert click moves focus to the Content Island host on a page without a search box.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue has a deterministic cross-surface reproduction and an independent reproduction identifies the exact focus transition. Current Command Palette navigation can be fixed at the host/page keyboard-routing boundary without changing pages that contain editable controls.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue reports that Escape and Enter work before an inert click but stop working afterward on pages without a search input.",
+      "The independent reproduction reports focus moving to InputSiteWindowClass after clicking inert content, with reopening Command Palette restoring behavior.",
+      "The affected scenario is reproducible using the built-in bookmark placeholder form and does not require a third-party extension.",
+      "ShellPage registers bubbling and tunneling key handlers, but focus on the Content Island host can bypass the descendant event path observed by the reproduction."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-02-27T18:51:32Z"
-  }
+    "recommended_action": "Approve the fork-side design to route unhandled Escape/Enter from the Content Island host to the active page and add a no-search regression test.",
+    "evaluated_at": "2026-09-04T03:00:00Z",
+    "source_updated_at": "2026-09-02T14:05:51Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked implementation covers this focus-routing regression; the fork mirror contains a converged design only.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore Command Palette keyboard routing after inert-content focus",
+      "root_cause": "Clicking inert content on a page without a search box moves focus to the WinUI Content Island host, which does not route unhandled Escape and Enter to the active page.",
+      "plan": [
+        "Identify the root Content Island/page keyboard hook and its existing descendant-control handling.",
+        "Route only unhandled Escape and Enter to the active page when it declares back/default-action capability, while preserving text-box and dialog handling.",
+        "Provide an accessible fallback focus target for no-search pages and add deterministic UI regression coverage."
+      ],
+      "verification": [
+        "On a bookmark placeholder form, click inert content and press Escape; verify return to the list.",
+        "Click inert content and press Enter; verify the page default action invokes.",
+        "Repeat with a page containing a search box and with text editing to confirm no routing regression."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The independent reproduction directly observes the focus target and the exact keys that stop working; only the final current host symbol needs confirmation during implementation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "On Command Palette form pages without a search box, clicking inert content transfers focus to the Content Island host and disables Escape/Enter navigation until the window is reopened.",
+    "known_information": [
+      "The issue is marked reproducible and affects Command Palette.",
+      "Escape and Enter work before the inert click and fail afterward.",
+      "The independent reproduction uses the built-in bookmark placeholder form and observes InputSiteWindowClass as the focused element.",
+      "Reopening Command Palette restores keyboard behavior.",
+      "The issue has no assignee or linked fix."
+    ],
+    "inferences": [
+      "The Content Island host is not forwarding unhandled navigation keys to the active page.",
+      "A page-level routing fallback is preferable to adding a dummy search box to every page."
+    ],
+    "analysis": "The evidence identifies a stable focus boundary and a narrow set of affected keys. A host/page routing fix can preserve normal descendant control behavior by handling only unconsumed keys and can be proven with the existing UI automation surface.",
+    "initial_investigation": [
+      "Read the full issue and both discussion comments, including the deterministic built-in bookmark reproduction.",
+      "Reviewed the Command Palette focus and keyboard-routing surfaces and existing UI test entry points.",
+      "An independent adversary review found no blocking objection to the root-cause boundary, routing precedence, or proposed regression coverage."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "Command Palette navigation depends on focus remaining in a recognized control. Clicking inert content on a no-search page focuses the WinUI Content Island host (`InputSiteWindowClass`), which does not route unhandled Escape and Enter to the active page.",
+    "evidence": [
+      "[Observed] Escape returns to the list before the inert click and fails after it.",
+      "[Observed] Enter fails to invoke after the same click.",
+      "[Observed] The independent reproduction sees focus move to InputSiteWindowClass and behavior recover after reopening.",
+      "[Inferred] The missing behavior is host-to-page routing for unhandled navigation keys."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+        "purpose": "Registers ShellPage preview/key handlers and emits navigation and activation messages.",
+        "symbols": [
+          "ShellPage_OnPreviewKeyDown",
+          "ShellPage_OnKeyDown",
+          "TryHandleItemAction"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml",
+        "purpose": "Contains the ShellPage visual root and focusable navigation surface.",
+        "symbols": [
+          "ShellPage root layout"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContentFormControl.xaml.cs",
+        "purpose": "Hosts generated form content and currently attaches key handling to the rendered form element.",
+        "symbols": [
+          "ContentFormControl.DisplayCard",
+          "ContentFormControl.OnFormKeyDown"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/CommandPaletteTestBase.cs",
+        "purpose": "Existing UI automation base for Command Palette keyboard and page tests.",
+        "symbols": [
+          "CommandPaletteTestBase.SetSearchBox"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests",
+        "purpose": "Existing UI automation fixtures for keyboard navigation and bookmark forms.",
+        "symbols": [
+          "Command Palette keyboard and bookmark test fixtures"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+        "symbols": [
+          "ShellPage_OnPreviewKeyDown",
+          "ShellPage_OnKeyDown",
+          "TryHandleItemAction"
+        ],
+        "current_behavior": "ShellPage handles Escape in KeyDown and Enter through TryHandleItemAction, while ContentFormControl attaches its handler to the rendered form element. When the Content Island host owns focus, neither route receives the key.",
+        "change": "Move or duplicate the unhandled Escape/Enter fallback at the ShellPage root boundary so host-focused events reach ShellPage. Preserve descendant precedence and emit the same existing navigation/activation messages.",
+        "code_block": "ShellPage_OnPreviewKeyDown or root KeyDown:\n    if e.Handled: return\n    if e.Key == Escape:\n        Send NavigateBackMessage; e.Handled = true\n    else if e.Key == Enter and no descendant consumed it:\n        Send ActivateSelectedListItemMessage; e.Handled = true",
+        "edge_cases": [
+          "Run on the UI thread.",
+          "Do not intercept text-box editing, dialogs, or page controls that consume Enter/Escape.",
+          "Prevent duplicate invocation when bubbling and tunneling handlers both observe the key.",
+          "Keep navigation state and command lifetime aligned with the active page."
+        ],
+        "tests": [
+          "Unit-test routing precedence where a descendant consumes the key versus the host fallback.",
+          "Add UI coverage for Escape and Enter after an inert-content click."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContentFormControl.xaml.cs",
+        "symbols": [
+          "ContentFormControl.DisplayCard",
+          "ContentFormControl.OnFormKeyDown"
+        ],
+        "current_behavior": "Generated form key handling is attached to the rendered adaptive-card framework element, so clicks that focus the outer Content Island host bypass the form handler.",
+        "change": "Keep form-specific handling for descendant controls, but ensure the parent ShellPage fallback remains available for host-focused keys. Add a stable focus target only if the existing visual root cannot receive routed events.",
+        "code_block": "renderedCard.FrameworkElement.KeyDown += OnFormKeyDown;\n// retain control-specific handling\n// ShellPage handles unhandled Escape/Enter when focus is on the host",
+        "edge_cases": [
+          "Do not steal focus from an editable field.",
+          "Keep the target out of the visual layout and screen-reader content where appropriate.",
+          "Do not change initial focus behavior for pages with MainSearchBox."
+        ],
+        "tests": [
+          "Verify form-specific actions still receive Enter before the ShellPage fallback.",
+          "Verify pages with search inputs retain their existing initial focus."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests",
+        "symbols": [
+          "Bookmark placeholder keyboard regression fixture"
+        ],
+        "current_behavior": "Existing tests cover the search box but not keyboard routing after an inert click on a no-search form.",
+        "change": "Seed or use the built-in placeholder form, click inert content, assert Escape returns to the list, and assert Enter invokes the default action. Repeat with ordinary text entry and a search page.",
+        "code_block": "openPlaceholderForm();\nclickInertContent();\npress(Escape); assertListPage();\nopenPlaceholderForm(); clickInertContent(); press(Enter); assertLaunched();",
+        "edge_cases": [
+          "Restore test-owned bookmark state after the test.",
+          "Avoid relying on a third-party extension or timing-sensitive window recreation.",
+          "Run on both x64 and ARM64 where the existing test matrix supports it."
+        ],
+        "tests": [
+          "Run the existing Command Palette UI test target with the new regression fixture.",
+          "Run a current smoke test for a page with MainSearchBox."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the Command Palette UI test targets using the repository's established workflow.",
+      "Open the built-in bookmark placeholder form, click inert content, press Escape, and verify return to the list without reopening.",
+      "Open the form again, click inert content, press Enter, and verify the default action runs.",
+      "Repeat on a page with MainSearchBox and while editing text; verify existing control behavior is unchanged."
+    ],
+    "risks": [
+      "Global key routing can interfere with text editing, dialogs, accessibility focus, or commands that intentionally consume Enter/Escape.",
+      "Focus restoration can cause unwanted focus theft if applied while a descendant control is active."
+    ],
+    "alternatives": [
+      "Recreate Command Palette after focus loss; rejected because it masks the routing defect and loses session state.",
+      "Add a dummy search box to every page; rejected because it changes the UX and does not model no-search pages.",
+      "Handle only the bookmark page; rejected because the same host-focus failure can affect any no-search page."
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 610,
+    "fork_title": "[Issue 45816] Command Palette keyboard shortcuts lose focus after inert click",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/610"
+  },
+  "actions": [
+    {
+      "id": "approve-design-45816",
+      "type": "approve_design",
+      "label": "Approve Command Palette focus-routing design",
+      "primary": true,
+      "confirm": true,
+      "mirror": {
+        "number": 610,
+        "repository": "MuyuanMS/PowerToys"
+      },
+      "note": "Approval applies only to the fork-side design; no upstream action is proposed."
+    }
+  ]
 }

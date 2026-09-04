@@ -1,61 +1,229 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 30973,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2026-08-11T14:56:31Z",
+  "generated_at": "2026-09-04T03:00:00Z",
+  "evaluated_at": "2026-09-04T03:00:00Z",
+  "source_updated_at": "2026-09-01T19:40:49Z",
   "url": "https://github.com/microsoft/PowerToys/issues/30973",
   "title": "PowerToys has detected an app... Always On Top message",
   "author": "TheAssurer2009",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Product-Always On Top",
-    "Needs-Triage",
-    "Needs-Team-Response"
-  ],
-  "comments": 22,
+  "labels": ["Issue-Bug", "Product-Always On Top", "Needs-Triage", "Needs-Team-Response"],
+  "assignees": [],
+  "comments": 23,
+  "stage": "design_in_progress",
+  "owes": "maintainer",
+  "pending_author": false,
   "confidence": "Medium",
+  "summary": "Always On Top warns about an elevated foreground application but discards the foreground window identity, so the toast never says which application triggered it.",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🎯",
+    "label": "Medium-confidence Always On Top fix design",
+    "detail": "Add filename-safe identity lookup from the foreground HWND and format it into the existing elevation warning, with bounded title and generic fallbacks."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "✅",
+    "label": "Approve the forked fix design",
+    "reason": "The exact warning call site and static resource are confirmed; implementation remains gated on design approval."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The issue's screenshots and discussion show a static elevation warning without an application name. Current Always On Top code receives the foreground HWND, checks only a boolean elevation result, and sends an unformatted resource string. A focused identity lookup and message-template change is implementation-ready, with fallbacks for protected or short-lived windows.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Always On Top, Needs-Triage, Needs-Team-Response",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "Issue report expects the particular application to be identified and says the notification appears at logon, sometimes twice.",
+      "Two attached screenshots show the static AlwaysOnTop toast with no application name.",
+      "AlwaysOnTop::HandleWinHookEvent handles EVENT_SYSTEM_FOREGROUND and passes IDS_SYSTEM_FOREGROUND_ELEVATED unchanged.",
+      "IsProcessOfWindowElevated resolves the foreground HWND to a PID only to return TokenIsElevated.",
+      "NotificationUtil::WarnIfElevationIsRequired displays the supplied message and suppresses later warnings per module instance.",
+      "No active linked fix, assignee, or fork mirror existed before this run; the historical duplicate target is closed."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2026-08-11T14:56:31Z"
+    "recommended_action": "Approve the mirror design, then hand off to the design-to-PR workflow; do not post upstream changes from this artifact.",
+    "evaluated_at": "2026-09-04T03:00:00Z",
+    "source_updated_at": "2026-09-01T19:40:49Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete upstream or fork-side implementation covers the missing application identity. The repository-local call path supports a focused fix without changing shared notification suppression or activation behavior."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Name the elevated foreground application in the Always On Top warning",
+      "root_cause": "AlwaysOnTop::HandleWinHookEvent receives the foreground HWND but reduces it to a boolean elevation check, then sends a static resource message to NotificationUtil; process identity is therefore lost before the toast is created.",
+      "plan": [
+        "Add an additive limited-information image-path helper beside IsProcessOfWindowElevated in src/common/utils/elevation.h, returning an empty result for invalid, inaccessible, or raced processes.",
+        "In AlwaysOnTop::HandleWinHookEvent, derive only the executable filename from the elevated foreground HWND, with a bounded window-title and generic fallback when image lookup is unavailable.",
+        "Add a localized formatted resource template in Resources.resx and pass the formatted message through the existing NotificationUtil::WarnIfElevationIsRequired API; preserve m_warningShown, actions, and elevation gating.",
+        "Add focused common-helper safety tests and validate the native Always On Top build plus a manual elevated-window toast scenario."
+      ],
+      "verification": [
+        "Run PowerToys unelevated, foreground elevated Task Scheduler or Task Manager, and confirm the toast names the executable or safe title fallback.",
+        "Confirm normal non-elevated foreground changes do not show the warning and normal pin/unpin behavior remains unchanged.",
+        "Confirm protected or destroyed windows produce a generic safe message rather than a failure or full path."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The missing identity is directly confirmed by screenshots and the exact call site; protected/UWP windows may deny image-path access, so fallback behavior must be tested."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Users receive an Always On Top elevation warning but cannot tell which application triggered it; reports include logon, Task Scheduler, and post-Outlook pinning scenarios.",
+    "known_information": [
+      "The report is for PowerToys 0.77.0 on Windows 11 Pro and says PowerToys is running as administrator.",
+      "The warning body is static and contains no process or window identity.",
+      "The foreground event handler has the triggering HWND and calls IsProcessOfWindowElevated.",
+      "The shared notification utility accepts a caller-supplied message and suppresses repeated warnings per instance.",
+      "The discussion requests application identity, an ignore option, and a specific disable control.",
+      "Two screenshots were retrieved and both show the same unnamed AlwaysOnTop toast."
+    ],
+    "inferences": [
+      "The primary defect is loss of identity at the Always On Top call site, not toast rendering.",
+      "The first qualifying foreground event may be a shell or protected window, so identity lookup must have safe fallbacks.",
+      "Duplicate appearances can involve multiple qualifying foreground notifications or module instances; naming the triggering window is the directly supported scope, while suppression semantics should remain unchanged."
+    ],
+    "analysis": "The code path is sufficiently concrete for a design: the foreground HWND is available exactly where the warning is raised, and Windows permits a limited-information image-name query in more cases than a full process query. The design avoids exposing full paths and keeps common notification policy stable.",
+    "initial_investigation": [
+      "Read the complete issue body, all 23 comments, issue events, and the two attached screenshots.",
+      "Inspected AlwaysOnTop::HandleWinHookEvent, NotificationUtil::WarnIfElevationIsRequired, IsProcessOfWindowElevated, process-path helpers, and the existing elevation unit tests.",
+      "Reviewed the history that introduced the Always On Top warning (commit cd57659ef) and found no later fix for application identity.",
+      "Checked MuyuanMS/PowerToys for an existing mirror and found none before creating fork issue 629."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the first logon foreground event is always a real application window or sometimes a shell/protected window.",
+        "why_needed": "Determines whether implementation should filter non-application HWNDs or rely on the generic fallback without suppressing a legitimate warning.",
+        "how_to_collect": "During manual verification, record the foreground executable/title at logon and when opening Task Scheduler; do not include full local paths in public artifacts."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "AlwaysOnTop::HandleWinHookEvent receives the foreground HWND but only uses it for a boolean elevation test; the process identity is discarded before NotificationUtil creates a static unnamed toast.",
+    "evidence": [
+      "Observed: the two screenshots show the same static message with no application identity.",
+      "Observed: AlwaysOnTop.cpp lines 808-818 call IsProcessOfWindowElevated(data->hwnd) and pass IDS_SYSTEM_FOREGROUND_ELEVATED unchanged.",
+      "Observed: elevation.h lines 545-570 resolve a PID and return TokenIsElevated without returning the PID or image path.",
+      "Observed: NotificationUtil.cpp lines 33-48 displays the caller message and sets m_warningShown.",
+      "Inferred: adding identity extraction at the existing foreground-event boundary fixes the missing information without changing toast policy."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
+        "purpose": "Processes foreground accessibility events and raises the elevation warning.",
+        "symbols": ["AlwaysOnTop::HandleWinHookEvent"]
+      },
+      {
+        "path": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.h",
+        "purpose": "Owns Always On Top state; optional declaration for a testable name-selection helper.",
+        "symbols": ["AlwaysOnTop"]
+      },
+      {
+        "path": "src/modules/alwaysontop/AlwaysOnTop/Resources.resx",
+        "purpose": "Neutral localized strings for the elevation toast.",
+        "symbols": ["System_Foreground_Elevated_With_Name"]
+      },
+      {
+        "path": "src/common/utils/elevation.h",
+        "purpose": "Elevation and limited-information process identity helpers.",
+        "symbols": ["IsProcessOfWindowElevated", "GetProcessImageNameOfWindow (new)"]
+      },
+      {
+        "path": "src/common/UnitTests-CommonUtils/Elevation.Tests.cpp",
+        "purpose": "Common elevation helper safety coverage.",
+        "symbols": ["ElevationTests", "IsProcessOfWindowElevated_* tests"]
+      },
+      {
+        "path": "src/modules/alwaysontop/Tests/AlwaysOnTop.UITests/AlwaysOnTopTests.cs",
+        "purpose": "Existing Always On Top UI test location; extend only if notification text is observable deterministically.",
+        "symbols": ["AlwaysOnTopTests"]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/common/utils/elevation.h",
+        "symbols": ["GetProcessImageNameOfWindow(HWND)"],
+        "current_behavior": "The existing helper checks the HWND's process token but exposes only a boolean result.",
+        "change": "Add an additive helper using GetWindowThreadProcessId, OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION), and QueryFullProcessImageNameW; return an empty string for invalid or inaccessible windows.",
+        "code_block": "inline std::wstring GetProcessImageNameOfWindow(HWND window) noexcept { DWORD pid{}; if (!window || !GetWindowThreadProcessId(window, &pid) || !pid) return {}; wil::unique_handle process{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid) }; if (!process) return {}; wchar_t path[...]; DWORD length = ARRAYSIZE(path); return QueryFullProcessImageNameW(process.get(), 0, path, &length) ? std::wstring(path, length) : std::wstring{}; }",
+        "edge_cases": ["Foreground HWND may be destroyed between PID and process-open calls.", "Protected processes may deny the query.", "Do not require VM_READ or expose command-line arguments."],
+        "tests": ["Invalid/null HWND returns without crashing.", "Desktop window returns either a path or empty result without crashing.", "Current-process path may be asserted only through a reliable test window seam."]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
+        "symbols": ["AlwaysOnTop::HandleWinHookEvent"],
+        "current_behavior": "Every elevated foreground event sends a static generic message.",
+        "change": "For the already-elevated branch, resolve the filename from the foreground HWND, fall back to a bounded window title, then to a neutral generic label; format the message and call the existing notification utility.",
+        "code_block": "const auto path = GetProcessImageNameOfWindow(data->hwnd); const auto name = FileNameOrBoundedTitleOrFallback(path, data->hwnd); const auto message = fmt::format(GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_WITH_NAME), name); m_notificationUtil->WarnIfElevationIsRequired(title, message, learnMore, dontShowAgain);",
+        "edge_cases": ["Strip directory components and never display a full path.", "Bound title length and tolerate empty/destroyed HWND.", "Keep !is_process_elevated(), m_warningShown, actions, and hook threading unchanged."],
+        "tests": ["Unit-test pure filename/fallback selection if extracted.", "Manual elevated Task Scheduler/Task Manager verification.", "Manual regression for ordinary non-elevated foreground and pin/unpin."]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/alwaysontop/AlwaysOnTop/Resources.resx",
+        "symbols": ["System_Foreground_Elevated_With_Name"],
+        "current_behavior": "Only the generic static message is defined.",
+        "change": "Add a localized format template such as `We've detected \"{}\" running with administrator privileges. This will prevent certain interactions with this application.` and regenerate resource headers through the normal build.",
+        "code_block": "<data name=\"System_Foreground_Elevated_With_Name\"><value>We've detected \"{}\" running with administrator privileges. This will prevent certain interactions with this application.</value></data>",
+        "edge_cases": ["Keep the existing generic resource as a fallback.", "Use the repository's existing fmt formatting convention.", "Do not hand-edit generated resource output."],
+        "tests": ["Confirm the generated resource identifier builds and the toast includes the executable filename."]
+      },
+      {
+        "order": 4,
+        "file": "src/common/UnitTests-CommonUtils/Elevation.Tests.cpp and existing Always On Top test project",
+        "symbols": ["ElevationTests", "AlwaysOnTopTests"],
+        "current_behavior": "Elevation tests cover boolean helper safety; UI tests do not provide a deterministic toast-text assertion.",
+        "change": "Add focused helper safety coverage and use the existing UI test project only if notification text can be observed reliably; otherwise document the manual end-to-end validation.",
+        "code_block": "TEST_METHOD(GetProcessImageNameOfWindow_InvalidHwnd_DoesNotCrash) { auto path = GetProcessImageNameOfWindow(nullptr); Assert::IsTrue(path.empty()); }",
+        "edge_cases": ["Avoid flaky toast timing assertions.", "Preserve repository test-runner guidance and do not use dotnet test for this native path."],
+        "tests": ["Build the common elevation unit-test project and run its existing tests.", "Build Always On Top native project and perform the manual toast regression."]
+      }
+    ],
+    "verify": [
+      "Discover and use the existing repository build configuration for the Always On Top native project and common unit tests.",
+      "Run the targeted elevation tests with Visual Studio Test Explorer or vstest.console.exe per repository guidance.",
+      "Run PowerToys unelevated, foreground an elevated Task Scheduler or Task Manager window, and verify the toast names the executable or safe title fallback.",
+      "Verify no warning for ordinary non-elevated windows, existing Learn more and Don't show again actions remain, and Always On Top pin/unpin behavior is unchanged.",
+      "Exercise a protected or short-lived foreground window and verify safe generic fallback without a crash or full path disclosure."
+    ],
+    "risks": [
+      "Process identity can race with window destruction or be denied for protected processes; mitigate with empty-result fallbacks.",
+      "Window titles may contain sensitive or misleading text; use executable filename first, bound the title fallback, and never expose a full path.",
+      "Resource formatting and generated headers can affect localization/build output; regenerate through the normal project build.",
+      "The shared elevation header is used by other modules; keep the helper additive and preserve IsProcessOfWindowElevated semantics."
+    ],
+    "alternatives": [
+      "Change only the static English message: rejected because it cannot identify the triggering application.",
+      "Move process enumeration into NotificationUtil: rejected because it loses the precise foreground HWND and broadens unrelated callers.",
+      "Show the full executable path: rejected because it leaks unnecessary local path information.",
+      "Enumerate every elevated process: rejected because the warning concerns the foreground window and would create false positives."
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 629,
+    "fork_title": "[Issue 30973] PowerToys has detected an app... Always On Top message",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/629"
+  },
+  "adversary": {
+    "rounds": 1,
+    "final_verdict": "No blocking objections.",
+    "non_blocking_notes": ["Validate whether the first logon foreground event is a real application window; retain generic fallback for shell/protected windows."]
   },
   "actions": [
     {
-      "id": "request-info-30973",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-30973",
+      "type": "approve_design",
+      "label": "Approve Always On Top application-name fix",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 30973,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "requiresApproval": true,
+      "design": {"title": "Name the elevated foreground application in the Always On Top warning"},
+      "mirror": {"repository": "MuyuanMS/PowerToys", "number": 629},
+      "note": "Draft only; no upstream code, PR, comment, or issue write is authorized by this artifact."
     }
   ]
 }

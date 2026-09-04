@@ -1,33 +1,127 @@
 {
+  "schemaVersion": 5,
   "number": 47446,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-30T12:37:47Z",
+  "generated_at": "2026-09-04T02:48:27Z",
+  "evaluated_at": "2026-09-04T02:48:27Z",
+  "source_updated_at": "2026-08-31T14:08:17Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47446",
+  "title": "Windows Key stuck",
+  "author": "OttoRED",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "comments": 2,
+  "fork": {
+    "issue": 624,
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/624"
+  },
+  "confidence": "Low",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🔬",
+    "label": "Needs matched diagnostic evidence",
+    "detail": "The original Windows-key/Game Bar event-ordering path has an existing fix, but a later report on 0.100.2 describes recurrence without a matching diagnostic trace."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Reproduce and request matched diagnostics",
+    "reason": "First reproduce the stated Windows-key sequence on a current development build, then obtain a fresh diagnostic archive captured with Windows selected as the Grab And Move modifier."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The reports establish an actionable Windows-modifier symptom, but the supplied diagnostic archive records Alt as the Grab And Move modifier and predates the 0.100.2 recurrence report. It cannot distinguish the historical replay race from a different current hook-state failure.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original report gives a stable sequence: Windows opens Start, a second Windows press closes it, then G alone invokes Game Bar.",
+      "A second reporter observed a similar intermittent stuck Windows modifier on two machines using PowerToys 0.100.2.",
+      "The submitted diagnostic archive's GrabAndMove settings contain modifierKey value 0; the module maps value 1 to the Windows modifier and value 0 to Alt.",
+      "PR 47326 merged a targeted replay-order fix for the same Windows-key/Game Bar symptom by swallowing the physical key-up and replaying an ordered key-down/key-up pair.",
+      "Current Grab And Move keyboard handling remains concentrated in src/modules/GrabAndMove/GrabAndMove/main.cpp, including KeyboardProc and ReplayAbsorbedModifier."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-30T12:37:47Z"
-  }
+    "recommended_action": "Run the concrete local reproduction first and request a fresh /bugreport archive immediately after a confirmed recurrence with Windows selected as the modifier.",
+    "evaluated_at": "2026-09-04T02:48:27Z",
+    "source_updated_at": "2026-08-31T14:08:17Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "A merged upstream fix already addresses the confirmed historical event-order race: it replays the absorbed Windows key-down and key-up together instead of allowing the physical key-up to race the injected key-down. The new 0.100.2 report needs a matched trace before determining whether that fixed path regressed or a different state transition is failing.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/47326"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Grab And Move configured with the Windows modifier can leave Windows logically pressed after opening and closing Start, causing a later G keypress to invoke Game Bar. A second user reports periodic recurrence on a newer release, but the available diagnostic does not capture the stated Windows-modifier configuration.",
+    "known_information": [
+      "The original reporter used PowerToys 0.99.1 on Windows 11 23H2 and supplied a diagnostic archive.",
+      "The original report identifies Grab And Move and states that Windows was selected as its activation modifier.",
+      "The original sequence opens Start with Windows, closes Start with a second Windows press, then observes Windows shortcuts from subsequent keys.",
+      "The later commenter reports the problem on two machines with PowerToys 0.100.2, at a frequency of roughly three to ten times daily, and can often clear it by pressing Windows repeatedly.",
+      "The supplied archive records Grab And Move modifierKey value 0, which the current loader treats as Alt rather than Windows.",
+      "A related Windows-key replay race was fixed in merged PR 47326; later main-branch work also changed Grab And Move modifier-click handling in PR 49121."
+    ],
+    "inferences": [
+      "The original report may describe the historical event-order race addressed by PR 47326, but that is not confirmed for the later recurrence.",
+      "The intermittent 0.100.2 behavior may involve a different key-hook state transition or an environment-dependent event sequence; the existing evidence cannot identify which one.",
+      "A current trace captured immediately after reproduction would materially distinguish a regression in the replay path from a separate failure."
+    ],
+    "analysis": "The code absorbs the Windows key-down when Windows is the configured modifier and later uses ReplayAbsorbedModifier from KeyboardProc to restore the event sequence. PR 47326 specifically changed the no-drag key-up path to prevent the physical key-up racing an injected key-down. That is strong evidence for the historical symptom, but the current report is newer and intermittent, while its archive was captured with the conflicting Alt setting. The responsible hook branch, event ordering, and any recovery path cannot be selected safely without reproducing the current configuration and collecting matched diagnostics.",
+    "initial_investigation": [
+      "Read the complete live issue body, both comments, labels, assignees, and timeline; the issue is open, unassigned, and has no linked implementation work.",
+      "Downloaded and inspected the public diagnostic archive. Its GrabAndMove settings are present but do not match the reported Windows-modifier configuration; its Grab And Move module logs do not provide a confirmed stuck-key event sequence.",
+      "Reviewed the current module source: KeyboardProc handles Win key absorption and key-up replay, while ReplayAbsorbedModifier issues the injected event pair.",
+      "Reviewed the history for src/modules/GrabAndMove/GrabAndMove/main.cpp, including merged PR 47326 and the later modifier-click passthrough change in PR 49121.",
+      "Searched related upstream reports. Historical Grab And Move Windows-key/Game Bar reports were closed after PR 47326; no current duplicate or linked PR was found for this issue.",
+      "Checked MuyuanMS/PowerToys for existing Issue 47446 mirrors, PR traces, and copilot/issue-47446 branches. None existed before this run; fork issue 624 now records the triage handoff."
+    ],
+    "information_gaps": [
+      {
+        "information": "A fresh PowerToys diagnostic archive captured immediately after the stuck Windows modifier is reproduced with Windows selected as the Grab And Move activation modifier.",
+        "why_needed": "It will tie logs and settings to the reported path and distinguish a recurrence of the historical replay-order defect from a different hook-state or environment-dependent failure.",
+        "how_to_collect": "Reproduce the problem, confirm Windows is selected in Grab And Move settings, then add a comment containing /bugreport immediately without restarting PowerToys."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce locally",
+      "note": "The original sequence is concrete enough to validate the current Windows-modifier behavior before attributing a fix.",
+      "reproduce": {
+        "title": "Verify Grab And Move does not leave Windows logically pressed",
+        "module": "Grab And Move",
+        "version_requirement": "Current development build with the Windows activation modifier available",
+        "prerequisites": [
+          "Windows 11",
+          "Grab And Move enabled",
+          "Windows selected as the activation modifier",
+          "Xbox Game Bar shortcut enabled, or a text field to verify a plain G keypress"
+        ],
+        "setup": [
+          "Open a normal application window and make it the foreground window."
+        ],
+        "steps": [
+          "Press and release Windows to open Start.",
+          "Press and release Windows again to close Start.",
+          "Press G without holding any modifier.",
+          "Repeat the sequence under ordinary workload; if available, also repeat while memory-intensive applications are open."
+        ],
+        "expected_result": "G is delivered as an unmodified keypress and does not invoke Game Bar; Windows is not shown as held in the on-screen keyboard.",
+        "setup_prompt": "Prepare a Windows 11 test session with a current PowerToys development build, Grab And Move enabled, Windows selected as the activation modifier, and a foreground text editor plus the on-screen keyboard."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Request a matched diagnostic archive",
+      "comment": {
+        "body": "Thanks for the clear Windows-key sequence, the diagnostic archive, and the later confirmation that this can still occur on 0.100.2. The supplied archive records Alt as the Grab And Move modifier, so it cannot identify the hook path used when Windows is selected. Could a reporter reproduce the stuck state once more with Windows confirmed as the Grab And Move activation modifier, then immediately add a comment containing `/bugreport` before restarting PowerToys? That matched capture will show whether this is a recurrence of the earlier Windows key replay ordering problem or a different intermittent state transition."
+      }
+    }
+  ]
 }

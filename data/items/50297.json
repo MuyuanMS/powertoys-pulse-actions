@@ -2,12 +2,12 @@
   "schemaVersion": 5,
   "number": 50297,
   "kind": "issue",
-  "track": "triage",
-  "stage": "needs_information",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T10:38:00Z",
-  "evaluated_at": "2026-09-03T10:38:00Z",
+  "generated_at": "2026-09-04T03:10:00Z",
+  "evaluated_at": "2026-09-04T03:10:00Z",
   "source_updated_at": "2026-09-01T19:14:48Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50297",
   "title": "Command Pallet Multiple Displays",
@@ -18,89 +18,238 @@
   ],
   "assignees": [],
   "comments": 0,
-  "confidence": "Medium",
-  "summary": "Command Palette displays GDI device names rather than Windows Identify ordinals, explaining the numbering mismatch. The reported physical movement remains unproven after a shipped topology fix and needs a focused dock reconnect capture.",
+  "confidence": "medium",
+  "summary": "The GDI-versus-Windows display numbering mismatch is confirmed, but a physical Dock move is not proven after the current topology handling; the design gates any reassociation change on a focused hub reconnect capture.",
+  "next_action": "Review and approve the fork design only after collecting the focused before/after dock reconnect evidence.",
   "status": {
     "glyph": "?",
-    "label": "Placement regression needs proof",
-    "detail": "The cosmetic numbering mismatch has existing ownership; only a before-and-after physical placement capture can establish a remaining docking regression."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused dock reconnect evidence",
-    "reason": "Identify whether the enabled dock configuration changes during the laptop-to-hub topology transition."
+    "label": "Design is evidence-gated",
+    "detail": "The cosmetic label mismatch has a confirmed code explanation; the physical placement regression needs a controlled transition capture before implementation."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The attachment confirms a GDI-name versus Windows Identify-number mismatch, but that presentation difference does not prove why the Dock physically moved. The diagnostic version already includes the recent topology-change fix, so a controlled transition is necessary before proposing another implementation.",
+    "rationale": "The attachment maps the laptop panel to GDI device DISPLAY3, while the report compares it with Windows Identify ordinal 1. Current code persists stable monitor paths and already retries, debounces, and conservatively reconciles topology changes. A new reassociation rule without transition evidence could move customized Dock settings to the wrong display.",
     "evidence": [
-      "The reporter supplied a screenshot, diagnostic ZIP, and a laptop-only to multi-display-hub scenario.",
-      "The diagnostic inventory records GDI names DISPLAY1, DISPLAY2, DISPLAY3, and DISPLAY21.",
-      "MonitorService.FormatDisplayName can turn a GDI device name such as `\\\\.\\DISPLAY21` into Display 21.",
-      "Issue 49295 already tracks the display-number mismatch.",
-      "PR 49814 addressed docking/topology changes and the diagnostic Command Palette build includes that change.",
-      "The diagnostic lacks the persisted MonitorConfigs and logs for the topology transition."
+      "The upstream report has no comments, assignee, or linked implementation in its discussion.",
+      "The attachment includes a screenshot, diagnostic ZIP, Command Palette logs, monitor inventory, and settings.",
+      "The inventory maps the laptop panel to \\\\.\\DISPLAY3 and lists DISPLAY1, DISPLAY2, DISPLAY3, and DISPLAY21.",
+      "MonitorService.FormatDisplayName formats a GDI device name as Display N when no friendly name is available.",
+      "Persisted Dock configurations use MonitorInfo.StableId rather than DisplayName.",
+      "The inspected code already contains retry, debounce, main-window notification forwarding, and conservative reconciliation for topology changes."
     ],
-    "recommended_action": "Request a precise laptop-only to hub-connected Dock placement capture, including the enabled physical monitor before and after reconnection.",
-    "evaluated_at": "2026-09-03T10:38:00Z",
+    "recommended_action": "Request a controlled laptop-only to hub-connected capture of enabled stable IDs, per-monitor toggles, bounds, and physical Dock location; then implement only a deterministic identity correlation if the failure reproduces.",
+    "evaluated_at": "2026-09-04T03:10:00Z",
     "source_updated_at": "2026-09-01T19:14:48Z"
   },
   "fix_assessment": {
-    "status": "existing_fix",
-    "rationale": "PR 49814 is a merged topology-change fix and Issue 49295 owns the label mismatch. Neither proves that this report's remaining physical-movement symptom is resolved, so new implementation work would be speculative.",
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/49814",
-      "https://github.com/microsoft/PowerToys/issues/48516",
-      "https://github.com/microsoft/PowerToys/issues/49295"
-    ]
+    "status": "proposed",
+    "rationale": "The label mismatch has a confirmed presentation cause. A physical-placement fix is proposed conditionally: first capture the transition, then add only a deterministic stable-identity correlation if current reconciliation demonstrably reassigns the enabled Dock configuration.",
+    "existing_fix_urls": []
   },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Dock configuration across a proven topology transition",
+      "root_cause": "The report's label mismatch is caused by displaying a volatile GDI device number as if it were Windows Identify numbering. The physical move remains an unproven possibility of configuration reassociation during hub topology settling; current retry/debounce logic may already cover it.",
+      "plan": [
+        "Capture the enabled MonitorDeviceId, StableId, DeviceId, bounds, per-monitor toggle, and physical Dock location before disconnect, after disconnect, and after reconnect.",
+        "If the capture proves a reassociation, extend MonitorConfigReconciler.Reconcile with only the unique identity correlation exposed by the transition; preserve enabled state, side, bands, and LastSeen.",
+        "Add one-to-one transition and ambiguity regression tests in DockMultiMonitorTests.",
+        "Keep labels separate from identity; optionally replace the misleading GDI fallback with a neutral label after UX approval."
+      ],
+      "verification": [
+        "Repeat the laptop-only to hub reconnect sequence with the Dock enabled only on the laptop panel.",
+        "Pass when the same stable monitor identity and physical laptop panel remain enabled after the settled reconnect.",
+        "If the failure reproduces, use the captured identity change as the fixture for the targeted unit test before writing production code."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The display-label mechanism is directly confirmed in code and the attachment, but the physical movement is not attributable to a remaining defect without transition-time evidence."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Command Palette presents volatile GDI display names as labels that differ from Windows Settings, while the claimed dock movement needs transition-time evidence.",
+    "summary": "Command Palette shows GDI display labels that differ from Windows Identify ordinals, and the report claims the Dock moves after connecting a multi-display hub.",
     "known_information": [
-      "The reporter used PowerToys 0.100.2 from Microsoft Store and supplied a screenshot and diagnostic archive.",
-      "Windows Identify showed displays 1 through 4 while Command Palette showed labels 1, 2, 3, and 21.",
-      "The archive identifies the laptop panel as GDI device `\\\\.\\DISPLAY3`.",
-      "Command Palette formats this GDI name as a display label when no friendly name is available.",
-      "Issue 49295 is an open report of the same numbering mismatch.",
-      "The archive's Command Palette build includes PR 49814's topology-change fix."
+      "The report is for PowerToys 0.100.2 from the Microsoft Store.",
+      "The attachment maps the laptop panel to GDI device \\\\.\\DISPLAY3.",
+      "The active inventory includes four GDI display names.",
+      "Current persisted Dock configuration uses stable Display Configuration paths.",
+      "Current code includes topology retry, debounced refresh, notification forwarding, and conservative reconciliation.",
+      "The upstream issue has no discussion comments or assignee."
     ],
     "inferences": [
-      "GDI-name formatting explains the numbering mismatch but does not establish incorrect monitor selection.",
-      "A remaining physical move could be a configuration-reassociation problem, but the archive cannot identify which reconciliation path ran.",
-      "The existing topology change fix may already cover the movement symptom; a controlled retest is required."
+      "The numbering mismatch is cosmetic and results from two different display identity systems.",
+      "If the physical move still reproduces on current code, it may be a topology-time reassociation rather than a label problem.",
+      "A unique transition identity relationship may permit a safe repair, but ordinal or enumeration matching would be unsafe."
     ],
-    "analysis": "The report already supplies the physical-to-GDI mapping, so asking again for monitor numbering would be redundant. The action targets only the evidence that distinguishes a cosmetic label issue from a reproducible Dock placement regression.",
+    "analysis": "The supplied diagnostic is sufficient to explain the label mismatch but not to prove a placement regression. The design therefore stops short of inventing a secondary-monitor fuzzy match and requires a controlled transition capture.",
     "initial_investigation": [
-      "Read the complete issue, screenshot, diagnostic archive, labels, and timeline.",
-      "Inspected MonitorService.FormatDisplayName, DockMonitorConfigViewModel, DockSettingsPage, DockWindowManager, and MonitorConfigReconciler.",
-      "Reviewed PR 49814, Issue 48516, Issue 49295, and relevant Windows monitor-device documentation."
+      "Read the complete upstream issue and its screenshot and diagnostic archive.",
+      "Inspected MonitorService, DockWindowManager, MainWindow notification flow, MonitorConfigReconciler, SettingsViewModel, and DockMultiMonitorTests.",
+      "Reviewed local history and the existing topology-change implementation and tests."
     ],
     "information_gaps": [
       {
-        "information": "Before-and-after physical monitor placement and per-monitor Dock toggle state across a laptop-only to hub-connected transition.",
-        "why_needed": "Shows whether the Dock only appears mislabeled or its enabled monitor configuration actually changes.",
-        "how_to_collect": "Enable the Dock only on the physical laptop panel, capture Windows Identify and Command Palette's per-monitor toggles, reconnect the hub, then capture both the toggles and the physical screen where the Dock appears."
+        "information": "Before-and-after enabled stable monitor identity, per-monitor Dock toggle state, monitor bounds, and physical Dock location across laptop-only to hub-connected transition.",
+        "why_needed": "This distinguishes a cosmetic GDI label mismatch from an actual persisted configuration or window-target reassociation.",
+        "how_to_collect": "Enable the Dock only on the physical laptop panel; capture Windows Identify and Command Palette toggles; disconnect and reconnect the hub; capture the same data after each topology settles."
       },
       {
-        "information": "A fresh diagnostic captured immediately after a verified enabled-monitor change or physical move.",
-        "why_needed": "The supplied archive does not capture the transition or persisted monitor configuration.",
-        "how_to_collect": "If the enabled monitor changes or the Dock moves after reconnecting the hub, add a comment containing /bugreport immediately afterward."
+        "information": "Fresh diagnostic immediately after a reproduced move or enabled-monitor change.",
+        "why_needed": "The supplied archive does not record the topology transition or the persisted monitor configuration at the time of failure.",
+        "how_to_collect": "Immediately after reproducing the move, add a comment containing /bugreport."
       }
+    ]
+  },
+  "design": {
+    "root_cause": "Confirmed label mismatch: MonitorService.FormatDisplayName converts the laptop's GDI device name \\\\.\\DISPLAY3 into Display 3, while Windows Identify uses a different ordinal system. Physical movement is conditional and unproven; if reproduced, the suspected defect is a topology-time reassociation of persisted DockMonitorConfig.",
+    "evidence": [
+      "Observed in issue: the Dock moves after hub connection and the laptop is shown as Display 3 versus Windows Display 1.",
+      "Observed in attachment: laptop maps to \\\\.\\DISPLAY3; active devices include DISPLAY1, DISPLAY2, DISPLAY3, DISPLAY21.",
+      "Observed in code: fallback labels are derived from GDI names; persisted configs use StableId.",
+      "Observed in code/history: current topology handling retries incomplete identity maps, debounces refresh, forwards notifications from MainWindow, and avoids ambiguous secondary fuzzy matching.",
+      "Inferred: any new production fix must be based on a captured deterministic identity relationship, not display ordinals."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs",
+        "role": "Enumerates monitor metadata and supplies stable identity and fallback labels.",
+        "symbols": [
+          "MonitorService.GetMonitors",
+          "MonitorService.NotifyMonitorsChanged",
+          "MonitorService.BuildDisplayInfoMapWithRetry",
+          "MonitorService.FormatDisplayName"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindowManager.cs",
+        "role": "Debounces topology changes and synchronizes Dock windows to reconciled settings.",
+        "symbols": [
+          "DockWindowManager.OnMonitorsChanged",
+          "DockWindowManager.SyncDocksToSettingsCore",
+          "DockWindowManager.CreateDockForMonitor"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
+        "role": "Matches stable IDs, migrates legacy IDs, recovers the primary, and creates conservative defaults.",
+        "symbols": [
+          "MonitorConfigReconciler.Reconcile"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/SettingsViewModel.cs",
+        "role": "Populates the Settings monitor list and persists reconciled configurations.",
+        "symbols": [
+          "SettingsViewModel.PopulateMonitorConfigs"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockMultiMonitorTests.cs",
+        "role": "Existing unit coverage for monitor reconciliation and topology edge cases.",
+        "symbols": [
+          "DockMultiMonitorTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "step": 1,
+        "file": "Manual evidence capture",
+        "symbol": "Dock transition sequence",
+        "current_flow": "Topology notifications invalidate and later reconcile the monitor cache and persisted configs.",
+        "change": "Capture identity, config, toggle, bounds, and physical target before and after each settled hub transition; make no production change until the failing relationship is known.",
+        "pseudo_diff": "before = enabled configs + monitor identities; transition = disconnect/reconnect settled snapshots; after = same records; assert physical laptop target remains paired with its stable identity.",
+        "handling": "Use /bugreport immediately after a reproduced failure; never infer identity from Display N.",
+        "tests": "Controlled multi-monitor manual repro is required."
+      },
+      {
+        "step": 2,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
+        "symbol": "MonitorConfigReconciler.Reconcile",
+        "current_flow": "Exact stable match, legacy GDI migration, primary-only recovery, disabled defaults for unmatched secondary monitors.",
+        "change": "Only if evidence proves it: add a unique Display Configuration identity correlation before default creation; preserve all user fields and retain ambiguity conservatively.",
+        "pseudo_diff": "exact stable ID -> legacy migration -> proven unique transition correlation; unique => move one config preserving Enabled/Side/Bands; ambiguous => retain stale config + disabled default.",
+        "handling": "No ordinal, enumeration, bounds-only, or friendly-name matching; keep immutable no-op behavior.",
+        "tests": "Add deterministic one-to-one transition and ambiguous-secondary tests to DockMultiMonitorTests."
+      },
+      {
+        "step": 3,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs",
+        "symbol": "MonitorService.FormatDisplayName",
+        "current_flow": "Friendly name is preferred; otherwise GDI DISPLAY number is shown.",
+        "change": "Optional UX-only follow-up: use a neutral unavailable-identity label or explicitly document the label as a GDI identifier; do not change StableId or placement.",
+        "pseudo_diff": "friendly != empty ? friendly : \"Monitor (device identity unavailable)\"; append primary marker.",
+        "handling": "Requires UX approval and must remain display-only.",
+        "tests": "Unit-test fallback label and primary suffix."
+      }
+    ],
+    "verify": [
+      "Build the existing CmdPal ViewModels unit-test project using the repository build script; run with Visual Studio Test Explorer or vstest.console.exe, not dotnet test.",
+      "Reproduce with the Dock enabled only on the laptop panel and a hub providing multiple displays.",
+      "Verify the same stable identity, enabled setting, custom bands, side, and physical laptop Dock target after reconnect.",
+      "If it fails, preserve the transition capture and turn it into the reconciliation regression fixture before implementation."
+    ],
+    "risks": [
+      "Unsafe fuzzy matching can move customized Dock settings to the wrong monitor.",
+      "Display Configuration data can be transient during topology changes.",
+      "Changing labels may reduce familiarity without fixing placement."
+    ],
+    "alternatives": [
+      "Treat GDI numbers as Windows Identify ordinals — rejected because the attachment disproves equivalence.",
+      "Match unmatched secondary monitors by ordinal, enumeration order, bounds, or name — rejected as ambiguous and unsafe.",
+      "Add a persisted display ordinal — rejected because it is not stable identity.",
+      "Revert current retry/debounce/reconciliation behavior — rejected because it addresses the transient topology class already."
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 626,
+    "fork_title": "[Issue 50297] Command Pallet Multiple Displays",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/626"
+  },
+  "adversary": {
+    "rounds": 2,
+    "signoff": "No blocking objections after 2 independent critique rounds.",
+    "non_blocking_notes": [
+      "The production reassociation change is intentionally gated on a fresh transition capture.",
+      "The label-only option requires separate UX approval and cannot be presented as a placement fix."
     ]
   },
   "actions": [
     {
       "id": "request-info-50297",
       "type": "request_info",
-      "label": "Request dock reconnect evidence",
+      "label": "Request focused dock reconnect evidence",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 50297,
-        "body": "Thanks for the screenshot and diagnostic ZIP. The archive identifies the laptop panel as the GDI device `\\\\.\\DISPLAY3`; that identifier is not the same numbering system shown by Windows Settings, and the label mismatch is already tracked in #49295. The archive also shows a Command Palette build containing the docking/topology change from #49814. To determine whether a placement regression remains, please connect all monitors, enable the Dock only on the physical laptop panel, and capture the per-monitor toggles and physical Dock location before and after disconnecting and reconnecting the hub. If the enabled monitor changes or the Dock moves, please add a comment containing `/bugreport` immediately afterward."
+        "body": "Thanks for the screenshot and diagnostic ZIP. The archive maps the laptop panel to the GDI device `\\\\.\\\\DISPLAY3`; that identifier is not the same numbering system shown by Windows Settings. To determine whether a placement regression remains, please enable the Dock only on the physical laptop panel, capture the per-monitor toggles and physical Dock location, disconnect and reconnect the hub, and capture the same information after each transition settles. If the enabled monitor changes or the Dock moves, please add a comment containing `/bugreport` immediately afterward."
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Draft only; this worker does not post upstream."
+    },
+    {
+      "id": "approve-design-50297",
+      "type": "approve_design",
+      "label": "Approve evidence-gated fork design",
+      "primary": false,
+      "confirm": true,
+      "mirror": {
+        "repo": "MuyuanMS/PowerToys",
+        "issue": 626,
+        "body": "I approve the evidence-gated design for Issue 50297. Do not implement a reassociation rule until the focused hub reconnect capture proves a deterministic identity transition."
+      }
+    },
+    {
+      "id": "hold-50297",
+      "type": "hold",
+      "label": "Hold implementation pending transition evidence",
+      "primary": false,
+      "note": "No code, upstream comment, review, or pull request is allowed from this design worker."
     }
   ]
 }

@@ -1,46 +1,147 @@
 {
+  "schemaVersion": 5,
   "number": 38513,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "The latest GitHub state already asks the reporter to confirm the current build or provide clearer reproduction details."
+  "evaluated_at": "2026-09-04T03:00:00Z",
+  "source_updated_at": "2026-09-03T01:14:35Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The latest report gives deterministic sequential disabled and remapped Win-key sequences on 0.101.2362.",
+    "evidence": [
+      "Disabled Win shortcuts can leak through after another chord.",
+      "A disabled chord can block a later valid remap while Win remains held.",
+      "Issue is labeled Keyboard Manager."
+    ],
+    "recommended_action": "Approve a key-event consumption/state-reset design."
   },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for the reporter's follow-up",
-    "reason": "Hold engineering work until the reporter answers the current-version / repro questions already raised in the thread."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the sequential state bug."
   },
-  "actions": [
+  "proposed_fixes": [
     {
-      "id": "request-info-38513",
-      "type": "request_info",
-      "label": "Reply with the missing-info request",
-      "primary": true,
-      "comment": {
-        "target": "issue",
-        "number": 38513,
-        "body": "Could you retest this on the latest PowerToys build and reply with numbered reproduction steps, the exact key remap/shortcut entries involved, whether running PowerToys elevated changes the result, and a fresh bug report ZIP if it still reproduces?"
+      "title": "Consume disabled shortcut sequences safely",
+      "root_cause": "Completed disabled chords do not consistently consume events and reset pending state.",
+      "plan": [
+        "Trace low-level hook matching.",
+        "Consume all events of a completed disabled chord and reset only logical chord state.",
+        "Add ordered key-stream regressions."
+      ],
+      "verification": [
+        "Rapidly press disabled Win+1 then Win+2 and hold Win through disabled Win+3 before a valid remap; no shell launch and valid remap executes."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "Symptoms strongly indicate state handling, but exact engine branch needs confirmation."
       }
     }
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-28T20:24:09Z",
-  "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The latest GitHub state already asks the reporter to confirm the current build or provide clearer reproduction details.",
-    "evidence": [
-      "The latest GitHub state already asks the reporter to confirm the current build or provide clearer reproduction details.",
-      "Could you retest this on the latest PowerToys build and reply with numbered reproduction steps, the exact key remap/shortcut entries involved, whether running PowerToys elevated changes the result, and a fresh bug report ZIP if it still reproduces?"
+  "issue_context": {
+    "summary": "Keyboard Manager disabled Win shortcuts leak to the shell or poison the next chord when entered rapidly or with Win held.",
+    "known_information": [
+      "Bug persists on 0.101.2362.",
+      "Follow-up adds both rapid sequential and held-modifier cases.",
+      "Expected behavior is full consumption without affecting later mappings."
     ],
-    "recommended_action": "Hold engineering work until the reporter answers the current-version / repro questions already raised in the thread.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-28T20:24:09Z"
-  }
+    "inferences": [
+      "Event consumption and logical chord reset are not atomic.",
+      "The fix belongs in the hook/matching path, not editor UI."
+    ],
+    "analysis": "The sequences can be tested deterministically as key streams, avoiding timing-only coverage.",
+    "initial_investigation": [
+      "Relevant areas are src/modules/keyboardmanager Interop/KeyboardMappingService.cs, Helpers/Remapping.cs, and KeyboardManager tests.",
+      "No linked PR or fork fix exists."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "A disabled match leaves forwarded events or stale pending state for the next chord.",
+    "evidence": [
+      "Observed: disabled chord executes.",
+      "Observed: disabled chord blocks later valid remap.",
+      "Inferred: logical state is not reset at chord completion."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardMappingService.cs",
+        "purpose": "Low-level mapping state and event handling.",
+        "symbols": [
+          "KeyboardMappingService"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Helpers/Remapping.cs",
+        "purpose": "Represents disabled/remapped definitions.",
+        "symbols": [
+          "Remapping"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/Tests/KeyboardManager.UITests/KeyboardManagerRemappingTests.cs",
+        "purpose": "End-to-end remap tests.",
+        "symbols": [
+          "KeyboardManagerRemappingTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardMappingService.cs",
+        "symbols": [
+          "KeyboardMappingService"
+        ],
+        "current_behavior": "Hook decides suppression as individual events arrive and retains partial chord state.",
+        "change": "On a complete disabled match consume all constituent events, clear pending logical chord state, and preserve physically held modifiers.",
+        "code_block": "if (match.IsDisabled && chord.IsComplete)\n+{\n+ Consume(chord.Events); ResetPendingChord(); return Handled;\n+}",
+        "edge_cases": [
+          "Do not synthesize modifier-up for a physically held key.",
+          "Handle key-up once and preserve injected-event filtering."
+        ],
+        "tests": [
+          "Feed Win+1,Win+2 disabled and assert no forwarded events; feed disabled Win+3 then valid held-Win remap and assert execution."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/keyboardmanager/Tests/KeyboardManager.UITests/KeyboardManagerRemappingTests.cs",
+        "symbols": [
+          "KeyboardManagerRemappingTests"
+        ],
+        "current_behavior": "Tests mostly isolated mappings.",
+        "change": "Add deterministic ordered chord sequences and shell-leak assertions.",
+        "code_block": "ConfigureDisabled(Win+1,Win+2,Win+3); Press(Win+1); Press(Win+2); AssertNoLaunch();",
+        "edge_cases": [
+          "Isolate global hotkeys from test runner."
+        ],
+        "tests": [
+          "Run existing Keyboard Manager remapping tests."
+        ]
+      }
+    ],
+    "verify": [
+      "Build Keyboard Manager and run unit tests.",
+      "Run focused remapping UI tests.",
+      "Manually reproduce rapid and held-Win cases."
+    ],
+    "risks": [
+      "Hook changes affect all mappings.",
+      "Physical modifier semantics must remain unchanged."
+    ],
+    "alternatives": [
+      "Add a delay; rejected because it adds latency.",
+      "Disable all Win processing after a disabled chord; rejected because valid held-Win mappings break."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Keyboard Manager fix design",
+      "design": {
+        "title": "Consume disabled shortcut sequences safely"
+      }
+    }
+  ]
 }

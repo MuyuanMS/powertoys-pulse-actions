@@ -3,79 +3,174 @@
   "number": 50243,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "pending_author": false,
-  "url": "https://github.com/microsoft/PowerToys/issues/50243",
-  "status": {
-    "glyph": "👤",
-    "label": "Assigned and intentionally deferred",
-    "detail": "The assignee is preparing a broader Peek sizing fix while acknowledging the maintainer's incoming Windows App SDK guidance; independent dashboard work would duplicate active ownership."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Leave with the assignee",
-    "reason": "Waiting is workflow metadata and requires no public dashboard action."
-  },
+  "evaluated_at": "2026-09-04T03:00:00Z",
+  "source_updated_at": "2026-09-02T21:58:30Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The latest discussion confirms active ownership by the collaborator assignee and a forthcoming broader Peek sizing/scaling solution, so independent dashboard design work would duplicate that effort.",
+    "status": "actionable_design",
+    "rationale": "The issue identifies exact conflicting minimum values and units in current Peek code.",
     "evidence": [
-      "The issue identifies exact conflicting minimum sizes: MainWindow.xaml uses 480 by 320 DIPs while WindowConstants.cs uses 500 by 500 physical-pixel values.",
-      "A maintainer recommended waiting for new Windows App SDK MinWidth and MinHeight APIs.",
-      "The assignee replied on 2026-09-02 that a broader scaling and sizing solution is in progress and can retrofit the new APIs later.",
-      "Source inspection confirms MainWindow.xaml fixed MinWidth/MinHeight and MainWindow.xaml.cs minimum-content calculations from WindowConstants."
+      "MainWindow.xaml uses 480x320 DIPs.",
+      "WindowConstants.cs uses 500x500 values treated as physical pixels.",
+      "A 512x512 image at 175% produces an oversized window.",
+      "Discussion distinguishes related cross-display issues."
     ],
-    "recommended_action": "Leave the issue with the active assignee and review the forthcoming implementation rather than starting duplicate design work.",
-    "evaluated_at": "2026-09-03T06:51:45Z",
-    "source_updated_at": "2026-09-02T21:58:30Z"
+    "recommended_action": "Approve a single-source DPI-aware sizing design."
   },
   "fix_assessment": {
-    "status": "existing_fix",
-    "rationale": "The assigned collaborator publicly states that a broader Peek scaling, sizing, and minimum-size solution is already prepared for submission. That active fix effort covers the inconsistent minimum-size path, so this artifact does not invent a parallel design.",
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/issues/50243"
-    ]
+    "status": "proposed",
+    "rationale": "No linked or fork-side implementation covers this discrepancy."
   },
+  "proposed_fixes": [
+    {
+      "title": "Unify Peek minimum sizing",
+      "root_cause": "XAML DIPs and runtime physical-pixel minima are applied by separate paths without explicit conversion.",
+      "plan": [
+        "Locate XAML, constants, and WM_GETMINMAXINFO code.",
+        "Define one canonical minimum and convert at active scale.",
+        "Add scaled-display regression coverage."
+      ],
+      "verification": [
+        "Test square images at 100%, 125%, and 175% without unit-dependent oversizing."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The report gives a direct unit mismatch and concrete code locations."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Peek has inconsistent minimum dimensions, but the assigned implementation is deferred for a forthcoming platform API.",
+    "summary": "Peek has competing minimum-window definitions, causing scale-dependent sizing on high-DPI displays.",
     "known_information": [
-      "The report identifies exact conflicting values and unit behavior.",
-      "The collaborator author is assigned.",
-      "A member comment recommends the forthcoming Windows App SDK MinWidth and MinHeight APIs.",
-      "The assignee says a broader scaling and sizing fix will be submitted soon."
+      "Report is from current main.",
+      "Exact XAML and code values are supplied.",
+      "175% scaling demonstrates incorrect dimensions.",
+      "A future WASDK API is discussed but not yet used."
     ],
     "inferences": [
-      "The new API may eventually simplify the minimum-size implementation, but the assignee may first submit a broader current-API fix."
+      "The active minimum depends on which sizing path wins.",
+      "A single explicit conversion boundary will remove the discrepancy."
     ],
-    "analysis": "The latest response changes this from a design opportunity to an ownership/wait state. The platform API timing is an implementation coordination point, not a reason for a separate dashboard design.",
+    "analysis": "This is a repository-local unit-consistency defect with sufficient evidence for implementation design.",
     "initial_investigation": [
-      "Reviewed the full live issue body, comments, labels, assignee, project items, and timeline.",
-      "Revalidated the 2026-09-02 assignee response describing an upcoming broader Peek sizing fix.",
-      "Inspected MainWindow.xaml, WindowConstants.cs, and MainWindow.xaml.cs sizing/minimum calculations."
+      "Relevant paths are src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml, WindowConstants.cs, MainWindow.xaml.cs, and Peek UI tests.",
+      "No linked fix or fork mirror exists."
     ],
-    "information_gaps": [
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "Peek applies unrelated XAML DIP and HWND physical-pixel minima.",
+    "evidence": [
+      "Observed: 480x320 DIPs in XAML.",
+      "Observed: 500x500 physical-pixel constants.",
+      "Observed: oversized scaled-display result.",
+      "Inferred: competing minima cause path-dependent behavior."
+    ],
+    "affected_files": [
       {
-        "information": "Availability of the Windows App SDK minimum-size APIs.",
-        "why_needed": "Determines when implementation can resume.",
-        "how_to_collect": "Revisit when the API lands or its owner confirms readiness."
+        "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml",
+        "purpose": "Initial XAML minimums.",
+        "symbols": [
+          "MainWindow"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/WindowConstants.cs",
+        "purpose": "Runtime dimensions.",
+        "symbols": [
+          "WindowConstants"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "purpose": "HWND sizing and DPI handling.",
+        "symbols": [
+          "MainWindow",
+          "WM_GETMINMAXINFO handler"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UITests/PeekFilePreviewTests.cs",
+        "purpose": "Preview sizing regressions.",
+        "symbols": [
+          "PeekFilePreviewTests"
+        ]
       }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/peek/Peek.UI/WindowConstants.cs",
+        "symbols": [
+          "WindowConstants"
+        ],
+        "current_behavior": "Runtime constants are physical pixels while XAML uses separate DIP values.",
+        "change": "Expose one canonical physical minimum and explicit conversion requiring active scale.",
+        "code_block": "public static Size GetMinimumSizeInDips(double scale)\n+ => new(CanonicalWidthPx / Math.Max(scale, 1), CanonicalHeightPx / Math.Max(scale, 1));",
+        "edge_cases": [
+          "Clamp invalid scale.",
+          "Preserve safe-zone rules."
+        ],
+        "tests": [
+          "Test 100%,125%,175% conversions."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "symbols": [
+          "MainWindow",
+          "WM_GETMINMAXINFO handler"
+        ],
+        "current_behavior": "HWND sizing applies fixed minima independently.",
+        "change": "Use canonical physical minima and update them on DPI/monitor changes; initialize XAML from the same conversion.",
+        "code_block": "var minPx = WindowConstants.GetMinimumSizePx(scale);\n+minMaxInfo.ptMinTrackSize = minPx;",
+        "edge_cases": [
+          "Avoid resize recursion.",
+          "Do not shrink user sizes above minimum."
+        ],
+        "tests": [
+          "Assert minimum track size across monitor scales."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/peek/Peek.UITests/PeekFilePreviewTests.cs",
+        "symbols": [
+          "PeekFilePreviewTests"
+        ],
+        "current_behavior": "No assertion spans DPI scales.",
+        "change": "Add focused minimum and image-sizing assertions, skipping mixed-DPI automation where unavailable.",
+        "code_block": "Assert.True(window.Width >= expectedDipWidth - tolerance);",
+        "edge_cases": [
+          "Allow compositor rounding.",
+          "Retain manual mixed-DPI verification."
+        ],
+        "tests": [
+          "Run focused Peek UI tests."
+        ]
+      }
+    ],
+    "verify": [
+      "Build Peek with the existing repository build path.",
+      "Run focused Peek tests.",
+      "Manually test square/non-square images at 100%,125%,175%."
+    ],
+    "risks": [
+      "Minimum changes affect every preview type.",
+      "Upcoming WASDK APIs may require an adapter, not another source."
+    ],
+    "alternatives": [
+      "Change only XAML or only constants; rejected because the other path remains inconsistent."
     ]
   },
-  "actions": [],
-  "generated_at": "2026-09-03T06:51:45Z",
-  "evaluated_at": "2026-09-03T06:51:45Z",
-  "source_updated_at": "2026-09-02T21:58:30Z",
-  "title": "[Peek] Minimum window size is defined inconsistently in XAML and code",
-  "author": "daverayment",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-Peek"
-  ],
-  "assignees": [
-    "daverayment"
-  ],
-  "comments": 3,
-  "owes": "assignee",
-  "summary": "Peek minimum-window sizing has a clear inconsistency, but the collaborator assignee says a broader sizing/scaling solution is already in progress and can adopt forthcoming WinAppSDK APIs later."
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Peek sizing fix design",
+      "design": {
+        "title": "Unify Peek minimum sizing across DPI paths"
+      }
+    }
+  ]
 }

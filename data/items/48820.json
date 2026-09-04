@@ -1,64 +1,189 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 48820,
   "kind": "issue",
-  "track": "triage",
-  "stage": "handled",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T19:35:00.0170075Z",
-  "evaluated_at": "2026-09-02T19:35:00.0170075Z",
+  "generated_at": "2026-09-04T02:51:12Z",
+  "evaluated_at": "2026-09-04T02:51:12Z",
   "source_updated_at": "2026-09-02T00:45:40Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/48820",
   "title": "Command Palette doesn't store results ordering.",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-Command Palette"
-  ],
+  "author": "denismattos",
+  "labels": ["Issue-Bug", "Needs-Triage", "Product-Command Palette"],
   "assignees": [],
-  "status": {
-    "glyph": "check",
-    "label": "Reporter says fixed",
-    "detail": "The reporter says result ordering now persists on PowerToys 0.101.2362.0; no maintainer action is proposed unless the problem recurs."
-  },
-  "next_action": {
-    "glyph": "eye",
-    "label": "Confirm resolution",
-    "reason": "A maintainer can close as resolved after confirming the release behavior, or leave the issue open briefly for corroboration."
-  },
-  "actions": [],
+  "comments": 4,
   "confidence": "High",
+  "summary": "Command Palette learned result ordering was lost after restart because recent-command history was not reliably serialized; the fork contains a targeted persistence and frecency fix, while the related new-app indexing symptom remains separately unproven.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The original reporter explicitly reports that the problem appears fixed in PowerToys 0.101.2362.0 and supplied a current diagnostic archive.",
+    "status": "existing_fix",
+    "rationale": "The current fork contains focused commits that persist RecentCommandsManager history through the source-generated serializer, add durable LastUsed-based frecency, and qualify command identity. The latest reporter confirms the symptom no longer reproduces on version 0.101.2362.0. No upstream action is proposed until the fork-side design is approved and validated.",
     "evidence": [
-      "The original report described result-ranking state being lost after restarting PowerToys.",
-      "On 2026-09-02, the reporter stated that the issue seems fixed since update 0.101.2362.0.",
-      "The reporter attached a new PowerToys diagnostic archive with the resolution report.",
-      "No newer comment contradicts the reported resolution."
+      "The report reproduces after PowerToys or Windows restarts, while the selected result is promoted during the same session.",
+      "The reporter later stated that the issue appears fixed after updating to version 0.101.2362.0.",
+      "RecentCommandsManager.History was previously internal without JsonInclude, allowing generated state serialization to omit the history.",
+      "The fork commit 9de64a728e0bbee82cc12fa10ae8cf6619c4ad93 adds explicit history inclusion, persisted LastUsed timestamps, bounded time-decayed scoring, migration handling, and regression tests.",
+      "The fork commit 4d29cf1359d5f6705b3c36bc26f46235808413b7 qualifies history by provider and command identity and covers legacy identity migration.",
+      "The latest diagnostic log shows normal Command Palette startup and app loading without a history-load exception, but does not expose the private state JSON."
     ],
-    "recommended_action": "Treat the report as handled and confirm resolution before closing; re-triage only if another user reproduces it on a current build.",
-    "evaluated_at": "2026-09-02T19:35:00.0170075Z",
-    "source_updated_at": "2026-09-02T00:45:40Z"
+    "recommended_action": "Approve the fork-side design for validation of the existing persistence fix, then confirm ranking persistence across process and machine restarts. Keep the new-application indexing report as a separate follow-up if it still reproduces."
   },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "The fork already contains a concrete implementation covering the restart persistence path. The design documents the implementation and verification boundary rather than proposing competing code.",
+    "existing_fix_urls": [
+      "https://github.com/MuyuanMS/PowerToys/commit/9de64a728e0bbee82cc12fa10ae8cf6619c4ad93",
+      "https://github.com/MuyuanMS/PowerToys/commit/4d29cf1359d5f6705b3c36bc26f46235808413b7"
+    ]
+  },
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Command Palette previously forgot learned result ordering after PowerToys restarted, but the original reporter now says the behavior appears fixed in version 0.101.2362.0.",
+    "summary": "After selecting a non-first Command Palette application result, the result moves upward during the session but returns to its default position after PowerToys or Windows restarts. A related commenter also reports that newly installed applications may not appear until opened once.",
     "known_information": [
-      "The original report reproduced ranking reset after restarting PowerToys or Windows.",
-      "A second user confirmed both ranking persistence and new-application indexing symptoms in June 2026.",
-      "The original reporter tested a current update and reported the issue fixed in 0.101.2362.0.",
-      "A current diagnostic archive accompanied the resolution report."
+      "The original report was made against PowerToys 0.100.0 on Windows 10 IoT Enterprise LTSC x64.",
+      "The ordering promotion is visible in-session and is lost after a process or machine restart.",
+      "A second commenter reported the same ordering reset and a separate new-application discovery symptom.",
+      "The original reporter supplied diagnostic archives with the original and resolution reports.",
+      "The original reporter stated on 2026-09-02 that the issue appears fixed after version 0.101.2362.0.",
+      "Current source stores recent commands inside AppStateModel and saves that model through AppStateService and JsonSerializationContext.",
+      "The fork contains the persistence and ranking commits identified in the judgment."
     ],
     "inferences": [
-      "The update likely changed or refreshed the relevant Command Palette state, but the reporter notes that reinstall-like effects could also explain the recovery.",
-      "The current evidence supports resolution for the reporter but does not identify the exact fixing change."
+      "The restart-only ranking reset was caused by recent-command history being omitted or incomplete in generated JSON state serialization.",
+      "Persisted LastUsed timestamps provide a more stable ranking signal than list position across reloads.",
+      "The missing-new-app symptom may share a state/index refresh boundary, but current evidence does not prove that it is caused by history serialization."
     ],
-    "analysis": "The latest first-party reproduction result supersedes the stale ownership judgment. There is no current evidence requiring a new design or reporter request, so the dashboard should remove actionable controls and present this as handled pending maintainer closure.",
+    "analysis": "The issue's strongest discriminator is the restart boundary: selection updates the in-memory RecentCommandsManager, but a restart reconstructs state from JSON. Before the fork fix, the internal History property was not explicitly included for source generation, so the serializer could emit no usable recent history. The fork fix makes History and LastUsed durable, keeps legacy data usable, and adds deterministic tests. The current diagnostic log confirms normal provider startup but cannot prove the pre-fix state contents.",
     "initial_investigation": [
-      "Read the complete issue discussion, including the original reproduction, corroborating report, and latest resolution update.",
-      "Confirmed that the latest comment is from the original reporter and references a newer PowerToys version."
+      "Read the complete issue body, all four comments, labels, state, and the prior related report.",
+      "Downloaded and inspected all three public diagnostic archives; the current Command Palette log contains normal startup and app-loading entries, with no history deserialization error.",
+      "Reviewed RecentCommandsManager, HistoryItem, AppStateModel, AppStateService, SettingsModel.JsonSerializationContext, MainListPage.ScoreTopLevelItem, and MainListPage.UpdateHistory.",
+      "Reviewed fork history for the time-decayed frecency and provider-qualified recent-command fixes and their unit-test coverage.",
+      "Confirmed that no fork mirror existed before this run; created fork mirror issue 628 with the sanitized report and design."
     ],
-    "information_gaps": []
-  }
+    "information_gaps": [
+      {
+        "information": "A clean-install or pre-fix reproduction followed by a current-build restart verification.",
+        "why_needed": "The public diagnostics do not include the private state JSON, and the reporter's update may have had reinstall-like effects.",
+        "how_to_collect": "Select a lower-ranked application, restart PowerToys and Windows, repeat the search, and record whether the selected application remains promoted. If the new-application symptom remains, capture a fresh /bugreport immediately after reproducing it."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "RecentCommandsManager held the learned ordering in an internal History property that was not explicitly included by source-generated JSON serialization, so AppStateService could save a state that reloaded without recent commands. Ranking also depended on list-position heuristics rather than a persisted last-use time, making the signal fragile across reloads. The fork implementation persists History and LastUsed, computes bounded time-decayed frecency, and qualifies identities by provider where needed.",
+    "evidence": [
+      "[Observed] The selected result is promoted until PowerToys or Windows restarts, then the promotion disappears.",
+      "[Observed] AppStateService loads and saves AppStateModel with JsonSerializationContext.Default.AppStateModel.",
+      "[Observed] RecentCommandsManager.History is an internal persisted member; the fork history documents that it previously lacked JsonInclude.",
+      "[Observed] HistoryItem now carries LastUsed, and RecentCommandsManager uses it with a three-day half-life plus logarithmic frequency.",
+      "[Observed] RecentCommandsTests cover deterministic decay, frequency, history cap, and cached-index invalidation.",
+      "[Observed] The reporter says the issue appears fixed on version 0.101.2362.0.",
+      "[Inferred] The restart symptom is explained by state serialization omission; the related application-indexing symptom may be independent."
+    ],
+    "affected_files": [
+      {"path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/RecentCommandsManager.cs", "purpose": "Stores recent command history, calculates frecency, and updates history after selection.", "symbols": ["RecentCommandsManager.History", "RecentCommandsManager.Index", "RecentCommandsManager.GetCommandHistoryWeight", "RecentCommandsManager.WithHistoryItem", "RecentCommandsManager.CalculateWeight"]},
+      {"path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/HistoryItem.cs", "purpose": "Defines the persisted command usage record.", "symbols": ["HistoryItem.CommandId", "HistoryItem.Uses", "HistoryItem.LastUsed"]},
+      {"path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/AppStateModel.cs", "purpose": "Owns RecentCommands as part of persisted application state.", "symbols": ["AppStateModel.RecentCommands"]},
+      {"path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/AppStateService.cs", "purpose": "Loads state.json and saves updated AppStateModel snapshots.", "symbols": ["AppStateService constructor", "AppStateService.StateJsonPath", "AppStateService.UpdateState"]},
+      {"path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/SettingsModel.cs", "purpose": "Registers state types with the source-generated serializer.", "symbols": ["JsonSerializationContext", "JsonSerializable(typeof(RecentCommandsManager))", "JsonSerializable(typeof(HistoryItem))", "JsonSerializable(typeof(ImmutableList<HistoryItem>))"]},
+      {"path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Commands/MainListPage.cs", "purpose": "Adds history weight to search scores and records selected items.", "symbols": ["MainListPage.ScoreTopLevelItem", "MainListPage.UpdateHistory", "MainListPage.IdForTopLevelOrAppItem"]},
+      {"path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/RecentCommandsTests.cs", "purpose": "Covers recent-command ranking and state transitions.", "symbols": ["RecentCommandsTests.ValidateHistoryWeighting", "RecentCommandsTests.ValidateRecencyDecay", "RecentCommandsTests.ValidateFrequencyWeighting", "RecentCommandsTests.ValidateLookupIndexStaysConsistentAcrossChanges", "RecentCommandsTests.ValidateHistoryCap"]},
+      {"path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/AppStateServiceTests.cs", "purpose": "Existing persistence-test seam for a serializer round-trip assertion.", "symbols": ["AppStateService persistence tests"]}
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/RecentCommandsManager.cs",
+        "symbols": ["History", "GetCommandHistoryWeight", "WithHistoryItem"],
+        "current_behavior": "Selection updates an immutable history list and scoring reads it, but the old internal history member could be omitted by generated serialization and recency was inferred from list position.",
+        "change": "Include History explicitly in generated serialization, persist LastUsed on every selection, use bounded exponential recency plus logarithmic frequency, preserve legacy timestamp-less entries with a controlled backdate, and invalidate the cached lookup on immutable record replacement.",
+        "code_block": "[JsonInclude] internal ImmutableList<HistoryItem> History { get; init; }\\nselection: existing with { Uses = existing.Uses + 1, LastUsed = now }\\nscore: recency = 2^(-ageDays / HalfLifeDays)\\n       weight = clamp(recency * (BaseWeight + FrequencyWeight * log2(Uses + 1)))",
+        "edge_cases": ["Clamp future timestamps to zero age so clock skew cannot amplify ranking.", "Treat a missing LastUsed as a one-day backdate for old state.", "Keep the history cap and immutable record semantics.", "Build the lookup before parallel scoring; do not make the hot path mutate shared state."],
+        "tests": ["Run deterministic explicit-time decay and frequency tests.", "Run lookup invalidation and history-cap tests.", "Add or retain a serializer round-trip test for populated history."]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/HistoryItem.cs",
+        "symbols": ["LastUsed"],
+        "current_behavior": "Usage records contain command identity and count; old records have no persisted timestamp.",
+        "change": "Persist LastUsed and preserve default timestamp compatibility so old state remains readable.",
+        "code_block": "public DateTimeOffset LastUsed { get; init; }\\n// default(DateTimeOffset) is interpreted by RecentCommandsManager as a mild legacy backdate",
+        "edge_cases": ["Do not reject old state that omits LastUsed.", "Keep command identity and Uses unchanged during deserialization."],
+        "tests": ["Deserialize an old-style item without LastUsed and verify it receives usable fallback weight."]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/AppStateModel.cs; src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/AppStateService.cs; src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/SettingsModel.cs",
+        "symbols": ["AppStateModel.RecentCommands", "AppStateService.UpdateState", "JsonSerializationContext"],
+        "current_behavior": "AppStateService loads state.json and saves each immutable state update through the generated AppStateModel serializer.",
+        "change": "Keep RecentCommands in the state contract, ensure all history types remain registered, and prove that IDs, counts, provider identity, and timestamps survive a save/load round trip.",
+        "code_block": "state = persistence.Load(path, JsonSerializationContext.Default.AppStateModel)\\nstate = state with { RecentCommands = state.RecentCommands.WithHistoryItem(id) }\\npersistence.Save(state, path, JsonSerializationContext.Default.AppStateModel)",
+        "edge_cases": ["An empty or legacy state must load without preventing startup.", "Persistence failure must not alter the in-memory state contract.", "Generated serialization must include the internal History member."],
+        "tests": ["Round-trip a populated AppStateModel and compare history and fixed-time ranking weight."]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Commands/MainListPage.cs",
+        "symbols": ["ScoreTopLevelItem", "UpdateHistory"],
+        "current_behavior": "Search scoring reads app-state history and selection writes a selected command back to app state.",
+        "change": "Use the durable manager as the only frecency source, use one scoring timestamp per batch, and use provider-qualified identity where available without changing tier precedence.",
+        "code_block": "score = lexicalTierAndQuality + history.GetCommandHistoryWeight(providerId, commandId, scoringNow)\\nUpdateHistory(item) => appState.UpdateState(s => s with {\\n    RecentCommands = s.RecentCommands.WithHistoryItem(providerId, commandId) })",
+        "edge_cases": ["Commands with no history retain zero history weight.", "Legacy ID-only entries migrate without double-counting.", "Provider identity prevents unrelated commands with equal IDs from sharing history."],
+        "tests": ["Verify same-session promotion, provider collision handling, and tier ordering."]
+      },
+      {
+        "order": 5,
+        "file": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "symbols": ["RecentCommandsTests", "AppStateService persistence tests"],
+        "current_behavior": "Recent-command weighting is covered, but the public issue evidence does not prove the restart path through a complete state round trip.",
+        "change": "Run existing tests and add the narrow persistence assertion if it is not already present; then perform the restart reproduction on a current build.",
+        "code_block": "select lower-ranked item -> save state -> recreate AppStateService\\nsearch same query -> assert selected item retains promoted ordering",
+        "edge_cases": ["Do not treat the separate new-application indexing symptom as fixed by ranking tests.", "Use deterministic test timestamps and avoid relying on wall-clock ordering."],
+        "tests": ["Run the targeted Command Palette ViewModels unit-test project with its existing Visual Studio/vstest workflow."]
+      }
+    ],
+    "verify": ["First reproduce on a pre-fix build when available: select a non-first application result, repeat the search, restart PowerToys, and confirm the promotion resets.", "On the current build, repeat the selection and search, restart PowerToys, and confirm the selected application remains promoted.", "Repeat after a Windows restart or sign-out/sign-in.", "Run the targeted RecentCommandsTests and AppStateService persistence tests using the repository's established Visual Studio/vstest workflow; do not use dotnet test.", "Install a test application and search for it without launching it; if it remains absent, classify that as an independent app-provider refresh issue and collect a fresh /bugreport."],
+    "risks": ["Ranking weights can change existing result order for users with history.", "Malformed or legacy state must not prevent Command Palette startup.", "Provider-qualified identity can change how legacy ID-only entries merge.", "The related new-application discovery symptom may remain unresolved and should not be hidden by a ranking fix."],
+    "alternatives": ["Persist only list position: rejected because position changes on every selection and does not model elapsed time.", "Create a separate history settings file: rejected because AppStateService already provides atomic application-state persistence.", "Force a full application-provider rescan on every launch: rejected because it adds startup cost and does not address ranking serialization.", "Treat the latest update as proof without code evidence: rejected because the reporter explicitly noted reinstall-like effects as an alternative explanation."]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 628,
+    "fork_title": "[Issue 48820] Command Palette result ordering persistence",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/628"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "No blocking objections.",
+    "non_blocking_notes": ["The new-application indexing symptom is not proven to share the history serialization cause and must remain a separate verification branch.", "The public diagnostics do not expose the private state JSON, so confidence relies on the restart boundary, source inspection, fork history, and reporter confirmation."]
+  },
+  "actions": [
+    {
+      "id": "reproduce-48820",
+      "type": "reproduce",
+      "label": "Verify ranking persistence locally",
+      "note": "The report has a deterministic restart boundary and can be checked without changing upstream state.",
+      "reproduce": {
+        "title": "Verify Command Palette retains learned result ordering",
+        "module": "Command Palette",
+        "version_requirement": "Current development build containing the fork persistence fix",
+        "prerequisites": ["Windows 10 or Windows 11", "Command Palette enabled", "Several installed applications with stable search results"],
+        "setup": ["Choose a query that returns at least two applications and note the initial order."],
+        "steps": ["Search for the query and select a result that is not first.", "Close the launched application.", "Open Command Palette and repeat the query; confirm the selected application is promoted.", "Restart PowerToys and repeat the query.", "Restart Windows or sign out and sign in, then repeat the query again."],
+        "expected_result": "The selected application's learned promotion remains after PowerToys and Windows restart.",
+        "setup_prompt": "Prepare a Windows test session with Command Palette enabled and a query returning multiple installed applications."
+      }
+    },
+    {
+      "id": "approve-design-48820",
+      "type": "approve_design",
+      "label": "Approve Issue 48820 fork-side design",
+      "primary": true,
+      "confirm": true,
+      "mirror": {"number": 628, "repository": "MuyuanMS/PowerToys"},
+      "note": "Approval applies only to the fork-side persistence/ranking design and validation; no upstream write or pull request is proposed."
+    }
+  ]
 }

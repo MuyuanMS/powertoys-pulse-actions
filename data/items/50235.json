@@ -3,8 +3,8 @@
   "number": 50235,
   "kind": "issue",
   "track": "fix",
-  "generated_at": "2026-09-03T10:04:54Z",
-  "evaluated_at": "2026-09-03T10:04:54Z",
+  "generated_at": "2026-09-04T02:48:27Z",
+  "evaluated_at": "2026-09-04T02:48:27Z",
   "source_updated_at": "2026-08-29T09:40:15Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50235",
   "title": "CmdPal: Extension SDK 0.12.260812002 can't be used with project using old .NET versions",
@@ -16,11 +16,11 @@
   ],
   "assignees": [],
   "comments": 1,
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "confidence": "High",
-  "summary": "The CmdPal SDK package likely ships a net10-built toolkit assembly under net8 NuGet metadata, forcing .NET 10 on older extension projects.",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": true,
+  "confidence": "Low",
+  "summary": "A source-level package target-framework mismatch is plausible, but no failing project or published package payload is available to establish an implementation-ready cause.",
   "fork": {
     "issue": 584,
     "url": "https://github.com/MuyuanMS/PowerToys/issues/584"
@@ -33,118 +33,132 @@
     "url": "https://github.com/MuyuanMS/PowerToys/issues/584"
   },
   "status": {
-    "glyph": "🎯",
-    "label": "Design ready - needs approval",
-    "detail": "The package TFM mismatch design converged after one adversary pass and is stored in the fork mirror."
+    "glyph": "💬",
+    "label": "Needs package and repro evidence",
+    "detail": "The reported SDK version, its packaged target framework, and the failing consumer restore/build output must be inspected before selecting a code change."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Approve the SDK packaging design",
-    "reason": "Exact project files, packaging script checks, consumer smoke test, and verification steps are captured."
+    "glyph": "💬",
+    "label": "Request a minimal failing project and package metadata",
+    "reason": "The report establishes only that an older-framework consumer is affected; it does not identify whether package payload, restore, installation, or project configuration is responsible."
   },
   "actions": [
     {
-      "id": "design-50235",
-      "type": "approve_design",
-      "label": "Design fix",
+      "id": "request-info-50235",
+      "type": "request_info",
+      "label": "Ask for the failing SDK consumer details",
       "primary": true,
-      "confirm": false,
-      "requiresApproval": true,
-      "fork": {
-        "repository": "MuyuanMS/PowerToys",
-        "issue": 584,
-        "url": "https://github.com/MuyuanMS/PowerToys/issues/584"
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50235,
+        "body": "Thanks for identifying that Microsoft.CommandPalette.Extensions 0.12.260812002 introduces a .NET 10 requirement for an older-targeted extension project. To determine whether this is a package payload or project configuration problem, please share a minimal project file, its target framework, package reference and NuGet sources, plus the complete restore or build error. Please also retest with the current SDK/release and say whether the failure happens during restore, compilation, or runtime. If possible, include the package nuspec and the toolkit DLL/deps metadata from the installed package."
       },
-      "note": "Dashboard-only approval gate. No upstream comment or PR is posted by this artifact update."
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ],
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue is engineering-owned and source evidence shows a credible mismatch: the SDK nuspec advertises net8 assets while the toolkit project inherits the repo-wide net10 target after the .NET 10 upgrade.",
+    "status": "needs_information",
+    "rationale": "The issue has no reproducible consumer project, complete error, package contents, or attachment. The source tree at the issue date exposes a plausible net10 build versus net8 package-metadata mismatch, but it cannot prove that the published 0.12.260812002 payload or the reporter's failure follows that path.",
     "evidence": [
-      "The report identifies SDK 0.12.260812002 forcing .NET 10 onto older extension projects.",
-      "The author is a collaborator and removed the generic Needs-Author-Feedback label after the bot request.",
-      "src/Common.Dotnet.props sets CoreTargetFramework to net10.0.",
-      "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj imports the common target and has no explicit package TFM override.",
-      "src/modules/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.nuspec declares net8.0-windows10.0.19041.0 dependencies and copies the toolkit DLL into lib/net8.0-windows10.0.19041.0."
+      "The report identifies SDK version 0.12.260812002 and says it forces .NET 10 on projects using older .NET versions.",
+      "The issue has no expected or actual behavior, numbered reproduction, project file, restore/build output, reporter follow-up, or attachment.",
+      "No assignee, linked pull request, project item, duplicate, or existing fork implementation covers the report.",
+      "At the issue date, src/Common.Dotnet.props set CoreTargetFramework to net10.0; src/Common.Dotnet.CsWinRT.props imported it; and the toolkit project imported the CsWinRT props without a TargetFramework override.",
+      "At the issue date, Microsoft.CommandPalette.Extensions.SDK.nuspec still declared net8.0-windows10.0.19041.0 and placed the toolkit DLL and deps file in that lib folder, while BuildSDKHelper.ps1 packed the files without target-framework validation."
     ],
-    "recommended_action": "Approve the fork-side implementation design that aligns the built toolkit assembly, nuspec metadata, and packaging verification.",
-    "evaluated_at": "2026-09-03T10:04:54Z",
+    "recommended_action": "Request the minimal failing project, complete restore/build output, retest result, and package metadata before designing or implementing a fix.",
+    "evaluated_at": "2026-09-04T02:48:27Z",
     "source_updated_at": "2026-08-29T09:40:15Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No concrete upstream or fork implementation is present. The existing design targets the apparent package TFM mismatch and adds a packaging guard, but the published package payload still needs direct inspection before implementation.",
+    "status": "not_applicable",
+    "rationale": "No concrete PowerToys code change is responsibly selectable yet: an implementation would have to choose between restoring net8 compatibility, correcting package metadata, or fixing a separate restore/configuration fault without evidence identifying which is present.",
     "existing_fix_urls": []
   },
-  "proposed_fixes": [
-    {
-      "title": "Align the CmdPal SDK toolkit target framework with its NuGet assets",
-      "root_cause": "The toolkit project inherits the repository net10 target while the SDK nuspec places its managed assembly and dependency group under net8, allowing a net10-built payload to be advertised as net8-compatible.",
-      "plan": [
-        "Set an explicit SDK toolkit target framework matching the package lib and dependency-group TFM, preserving CsWinRT and native runtime asset behavior.",
-        "Add a terminating BuildSDKHelper.ps1 pre-pack check that compares the toolkit assembly/deps target framework with the nuspec asset folder.",
-        "Build a minimal net8 extension consumer against the generated package and keep the existing net10 template build covered."
-      ],
-      "verification": [
-        "Inspect the generated nupkg to confirm the toolkit assembly metadata, deps runtime target, nuspec dependency group, and lib folder all agree.",
-        "Restore and build a minimal net8 Windows consumer from the local package source without requiring .NET 10."
-      ],
-      "confidence": {
-        "score": 74,
-        "level": "yellow",
-        "rationale": "The repository target and nuspec mismatch are directly observed and fit the report, but the exact published package payload must be confirmed before choosing the final target framework."
-      }
-    }
-  ],
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "A Command Palette Extension SDK package version associated with PowerToys 0.101 is not usable by older .NET extension projects because the package appears to introduce .NET 10 requirements despite net8 package metadata.",
+    "summary": "The reporter says a Command Palette Extension SDK package associated with PowerToys 0.101 forces .NET 10 on an older-targeted extension project, but provides no consumer project, error output, or package artifact.",
     "known_information": [
-      "The report targets Microsoft.CommandPalette.Extensions SDK version 0.12.260812002 and PowerToys 0.101.",
-      "The report concerns NuGet package consumption by extension projects, not PowerToys runtime behavior.",
-      "The extension template now targets net10.0-windows10.0.26100.0.",
-      "No assignee, linked fix, or duplicate is present."
+      "The reported package version is Microsoft.CommandPalette.Extensions 0.12.260812002.",
+      "The issue is about SDK package consumption, not a PowerToys runtime failure.",
+      "The upstream issue is open with Issue-Bug, Needs-Triage, and Product-Command Palette labels; it has no assignee or linked pull request.",
+      "The only discussion is an automated request for concrete reproduction details and a retest on the latest stable release.",
+      "The source at the issue date built the toolkit through shared net10 properties while the SDK nuspec advertised net8 asset paths."
     ],
     "inferences": [
-      "The package probably contains a net10-built toolkit assembly or deps payload under net8 metadata; implementation must confirm this against the produced nupkg."
+      "The package may contain a net10-built managed toolkit or deps payload under net8 metadata.",
+      "The observed source mismatch is not sufficient to exclude a NuGet restore, SDK installation, package-reference, or consumer-project cause."
     ],
-    "analysis": "The missing detail is not reporter-side repro data; it is package build output verification. The design therefore targets SDK build/pack alignment and adds a package compatibility gate.",
+    "analysis": "The build import chain and nuspec make target-framework drift a credible hypothesis, but the published package and failure surface were not available to inspect. A detailed framework-retargeting design would select behavior before proving the failing artifact or compatibility contract.",
     "initial_investigation": [
-      "Read the complete issue body, bot comment, label timeline, current labels/assignees, and duplicate search results.",
-      "Inspected Common.Dotnet.props, Microsoft.CommandPalette.Extensions.Toolkit.csproj, Microsoft.CommandPalette.Extensions.SDK.nuspec, BuildSDKHelper.ps1, the extension template csproj, and solution membership.",
-      "Checked recent history and found the .NET 10 upgrade commit in the affected file history.",
-      "Created fork mirror issue for the converged design after confirming no existing [Issue 50235] fork issue existed."
+      "Read the complete live issue body, its only comment, labels, assignees, timeline, attachments, linked pull requests, project items, duplicate candidates, and related Command Palette SDK work.",
+      "Checked MuyuanMS/PowerToys for existing Issue 50235 traces; fork issue 584 is the sole mirror and has no implementation pull request.",
+      "Inspected the issue-date source import chain, toolkit project, SDK nuspec, SDK packaging script, pipeline template, and .NET 10 migration history.",
+      "Attempted to retrieve the exact public package for direct inspection, but the package host TLS handshake failed in this environment."
     ],
     "information_gaps": [
       {
-        "information": "The actual lib assembly TargetFrameworkAttribute and deps runtimeTarget from SDK version 0.12.260812002",
-        "why_needed": "This distinguishes the suspected net10 payload mismatch from a different package dependency or restore cause before implementation.",
-        "how_to_collect": "Inspect the published nupkg contents and assembly/deps metadata, then repeat with the locally generated package."
+        "information": "A minimal failing extension project with target framework, package reference, NuGet sources, and complete restore/build output",
+        "why_needed": "It identifies whether .NET 10 is introduced during restore, compilation, or runtime and rules out consumer configuration causes.",
+        "how_to_collect": "Create a minimal project that reproduces the problem, include its project file, then paste the complete restore or build command output."
+      },
+      {
+        "information": "The 0.12.260812002 package nuspec, toolkit assembly TargetFrameworkAttribute, and toolkit deps runtime target",
+        "why_needed": "It confirms or rejects the hypothesized mismatch between package metadata and its managed payload.",
+        "how_to_collect": "Download or inspect the installed package and provide the nuspec, lib-folder listing, Microsoft.CommandPalette.Extensions.Toolkit.deps.json runtime target, and assembly target-framework metadata."
+      },
+      {
+        "information": "A retest result using the current SDK/release",
+        "why_needed": "It establishes whether the package problem remains active and which supported compatibility contract a fix must preserve.",
+        "how_to_collect": "Update the SDK/release, repeat the minimal reproduction, and report the SDK version plus whether restore, compilation, or runtime fails."
       }
     ]
   },
   "design": {
-    "root_cause": "The SDK package advertises its managed toolkit under lib/net8.0-windows10.0.19041.0, but the toolkit project inherits the repo-wide net10.0 target from Common.Dotnet.props. After the .NET 10 upgrade, the DLL and deps.json copied into the net8 package folder can be built for .NET 10, so older extension projects restore a package that looks net8-compatible but receives net10 assets.",
+    "status": "needs_information",
+    "root_cause": "Not established. The package target-framework mismatch is a qualified hypothesis only.",
     "evidence": [
-      "Common.Dotnet.props defines CoreTargetFramework=net10.0 and TargetFramework=$(CoreTargetFramework)-windows10.0.26100.0.",
-      "Microsoft.CommandPalette.Extensions.Toolkit.csproj imports Common.Dotnet.CsWinRT.props and does not override TargetFramework for SDK packaging.",
-      "Microsoft.CommandPalette.Extensions.SDK.nuspec declares a net8 dependency group and lib/net8 file targets.",
-      "BuildSDKHelper.ps1 builds the toolkit and then packs the nuspec without checking assembly/deps target frameworks.",
-      "The template targets net10, so template builds no longer catch older consumer compatibility."
+      {
+        "kind": "observed",
+        "detail": "The issue-date build import chain sets the toolkit target through shared net10 properties, while the nuspec advertises net8 assets."
+      },
+      {
+        "kind": "observed",
+        "detail": "The issue does not provide the failing project, full error, or published package contents."
+      },
+      {
+        "kind": "inferred",
+        "detail": "A net10 toolkit payload under net8 metadata could cause the reported compatibility failure, but this has not been verified against package version 0.12.260812002."
+      }
     ],
     "affected_files": [
       {
-        "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj",
-        "purpose": "Managed toolkit assembly target framework and CsWinRT build inputs.",
+        "path": "src/Common.Dotnet.props",
+        "purpose": "Defines the shared CoreTargetFramework consumed by the SDK toolkit import chain.",
         "symbols": [
-          "TargetFramework",
-          "OutputPath",
-          "CsWinRTInputs"
+          "CoreTargetFramework",
+          "TargetFramework"
+        ]
+      },
+      {
+        "path": "src/Common.Dotnet.CsWinRT.props",
+        "purpose": "Imports the shared framework properties for CsWinRT consumers.",
+        "symbols": [
+          "Import Project=Common.Dotnet.props"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj",
+        "purpose": "Consumes the shared build properties and produces the managed toolkit payload.",
+        "symbols": [
+          "Import Project=Common.Dotnet.CsWinRT.props",
+          "OutputPath"
         ]
       },
       {
         "path": "src/modules/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.nuspec",
-        "purpose": "NuGet dependency group and lib folder contract.",
+        "purpose": "Declares the package dependency group and lib asset folder.",
         "symbols": [
           "metadata/dependencies/group",
           "files/file target=lib"
@@ -152,130 +166,32 @@
       },
       {
         "path": "src/modules/cmdpal/extensionsdk/nuget/BuildSDKHelper.ps1",
-        "purpose": "SDK build and pack pipeline where package asset TFMs can be validated.",
-        "symbols": [
-          "$buildPlatforms",
-          "$msbuildArgs",
-          "nuget pack"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/ExtensionTemplate/TemplateCmdPalExtension/TemplateCmdPalExtension/TemplateCmdPalExtension.csproj",
-        "purpose": "First-party template and consumer smoke reference point.",
-        "symbols": [
-          "TargetFramework",
-          "PackageReference Microsoft.CommandPalette.Extensions"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj",
-        "purpose": "Existing test project to pair with focused packaging compatibility checks.",
-        "symbols": [
-          "ProjectReference Microsoft.CommandPalette.Extensions.Toolkit",
-          "IsTestProject"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj",
-        "symbols": [
-          "TargetFramework",
-          "CmdPalSdkTargetFramework"
-        ],
-        "current_behavior": "The toolkit inherits net10.0-windows10.0.26100.0 from the shared repo props while being packaged under a net8 lib folder.",
-        "change": "Introduce an explicit SDK packaging TFM such as CmdPalSdkTargetFramework defaulting to net8.0-windows10.0.19041.0, or deliberately retarget both package metadata and consumers to net10 if maintainers choose to drop older support. Preferred fix is to build the toolkit for the same TFM the package exposes.",
-        "code_block": "<PropertyGroup>\n  <CmdPalSdkTargetFramework Condition=\"\\'$(CmdPalSdkTargetFramework)\\' == \\'\\'\">net8.0-windows10.0.19041.0</CmdPalSdkTargetFramework>\n  <TargetFramework>$(CmdPalSdkTargetFramework)</TargetFramework>\n  <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>\n  <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>\n</PropertyGroup>",
-        "edge_cases": [
-          "Keep CsWinRT input paths and native winmd/DLL copy behavior intact.",
-          "Verify APIs used by the toolkit are available when compiling for net8.",
-          "Do not change COM server or MSIX hosting patterns for extensions."
-        ],
-        "tests": [
-          "Build Microsoft.CommandPalette.Extensions.Toolkit with CmdPalSdkTargetFramework=net8.0-windows10.0.19041.0.",
-          "Inspect the built DLL TargetFrameworkAttribute and deps.json runtimeTarget."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/cmdpal/extensionsdk/nuget/BuildSDKHelper.ps1",
+        "purpose": "Builds the toolkit and packs it without inspecting emitted framework metadata.",
         "symbols": [
           "$msbuildArgs",
           "nuget pack"
-        ],
-        "current_behavior": "The script packs whatever toolkit DLL/deps files exist into the net8 package folder without verifying their target framework.",
-        "change": "Add a pre-pack verification step that reads the toolkit deps.json and/or assembly metadata and throws if it does not match the nuspec lib folder TFM.",
-        "code_block": "$expectedTfm = 'net8.0-windows10.0.19041.0'\n$deps = Get-Content $toolkitDeps -Raw | ConvertFrom-Json\nif ($deps.runtimeTarget.name -notlike \"$expectedTfm/*\") { throw \"Toolkit package TFM mismatch: $($deps.runtimeTarget.name)\" }",
-        "edge_cases": [
-          "Use terminating errors so CI fails before publishing a bad package.",
-          "Validate the AnyCPU toolkit payload once while still building both native architectures."
-        ],
-        "tests": [
-          "Run BuildSDKHelper.ps1 -Configuration release -BuildStep all -VersionOfSDK 0.0.0-local.",
-          "Temporarily force a mismatch and confirm the script fails before nuget pack."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.nuspec",
-        "symbols": [
-          "dependencies/group",
-          "files/file target=lib"
-        ],
-        "current_behavior": "The nuspec unconditionally declares net8 metadata even if the actual DLL was built for net10.",
-        "change": "Keep the net8 dependency group and lib folder only if the DLL is actually built for net8; otherwise retarget dependency group and lib folder to net10 together and document the breaking change. Do not ship mixed metadata.",
-        "code_block": "<group targetFramework=\"net8.0-windows10.0.19041.0\">\n  <dependency id=\"Microsoft.Windows.CsWinRT\" version=\"2.2.0\" />\n</group>\n<file src=\"...\\\\Microsoft.CommandPalette.Extensions.Toolkit.dll\" target=\"lib\\\\net8.0-windows10.0.19041.0\\\\\" />",
-        "edge_cases": [
-          "Avoid multiple lib groups unless separate builds produce matching DLLs.",
-          "Keep native runtime assets under runtimes/win-x64 and runtimes/win-arm64."
-        ],
-        "tests": [
-          "Open the generated nupkg and assert lib folder, deps runtimeTarget, and assembly TargetFrameworkAttribute agree."
-        ]
-      },
-      {
-        "order": 4,
-        "file": "src/modules/cmdpal/ExtensionTemplate/TemplateCmdPalExtension/TemplateCmdPalExtension/TemplateCmdPalExtension.csproj",
-        "symbols": [
-          "TargetFramework",
-          "PackageReference Microsoft.CommandPalette.Extensions"
-        ],
-        "current_behavior": "The official template targets net10, so it validates recommended modern extension creation but not older package consumption.",
-        "change": "Add a package smoke validation path using a minimal net8 extension consumer that references the freshly built local nupkg; keep the template on net10 unless maintainers choose a broader template support change.",
-        "code_block": "dotnet new console -f net8.0-windows10.0.19041.0\ndotnet add package Microsoft.CommandPalette.Extensions --source <local _build>\ndotnet build /p:EnableMsixTooling=false",
-        "edge_cases": [
-          "The smoke test should not require deploy, COM registration, or MSIX packaging.",
-          "If net8 support is dropped intentionally, update docs and expected smoke target instead."
-        ],
-        "tests": [
-          "Restore/build the minimal net8 consumer against the local nupkg.",
-          "Build the existing net10 template to ensure recommended usage still works."
         ]
       }
     ],
+    "implementation_steps": [],
     "verify": [
-      "pwsh -NoProfile -File .\\src\\modules\\cmdpal\\extensionsdk\\nuget\\BuildSDKHelper.ps1 -Configuration release -VersionOfSDK 0.0.0-local",
-      "Inspect src\\modules\\cmdpal\\extensionsdk\\_build\\Microsoft.CommandPalette.Extensions.*.nupkg and confirm the toolkit DLL TargetFrameworkAttribute and deps runtimeTarget match the nuspec lib folder.",
-      "Create a minimal net8.0-windows10.0.19041.0 consumer against the local package source and confirm restore/build does not require .NET 10.",
-      "Build the existing net10 TemplateCmdPalExtension project to confirm the recommended template still works."
+      "Inspect the reported package's nuspec, lib asset folder, toolkit assembly TargetFrameworkAttribute, and toolkit deps runtime target.",
+      "Restore and build the reporter's minimal older-framework extension project with its recorded package source and version.",
+      "Compare the observed failure with a package built from the issue-date source before choosing a source or packaging change."
     ],
     "risks": [
-      "Building toolkit for net8 may reveal APIs or dependencies introduced only for net10.",
-      "CsWinRT/native winmd packaging is architecture-sensitive; preserve x64 and arm64 native assets.",
-      "Changing package metadata to net10 instead would be a breaking support decision, not just a bug fix."
+      "Retargeting the toolkit to net8 without confirming the supported SDK contract could introduce compilation or runtime incompatibilities.",
+      "Changing only NuGet metadata could make package compatibility declarations accurate while preserving the reported break for older consumers.",
+      "A framework change affects CsWinRT-generated and native runtime asset packaging, so validation must include the actual package."
     ],
     "alternatives": [
-      "Only changing the nuspec folder to net10 was rejected because it would make the package honest but would not restore older-project compatibility.",
-      "Only changing the template was rejected because existing consumers still fail.",
-      "Adding no verification was rejected because a future repo-wide TFM change could silently reintroduce the mismatch."
+      "Do not implement an explicit net8 retarget until package contents and the failing consumer prove that net8 compatibility is intended and broken.",
+      "Do not retarget package metadata to net10 as a workaround until maintainers confirm that dropping older consumers is an intentional support decision."
     ],
     "adversary": {
-      "rounds": 1,
-      "verdict": "No blocking objections",
-      "non_blocking_notes": [
-        "Confirm the exact published 0.12.260812002 nupkg TFM before implementation; if it came from a different branch, the same design applies as a packaging-pipeline verification fix."
-      ]
+      "rounds": 0,
+      "verdict": "Blocking objection: no independent package payload or failing consumer evidence establishes the proposed root cause.",
+      "non_blocking_notes": []
     }
   }
 }

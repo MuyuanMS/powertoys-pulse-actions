@@ -11,56 +11,78 @@
   "status": {
     "glyph": "🔗",
     "label": "Maintainer-owned investigation",
-    "detail": "A Peek collaborator filed, self-assigned, reproduced, and scoped this distinct DPI/native-pixel sizing issue on current main."
+    "detail": "The Peek collaborator who filed the issue self-assigned it, reproduced the behavior on current main, and reports a broader solution for related scaling and sizing defects."
   },
   "next_action": {
     "glyph": "🔗",
     "label": "Leave with current owner",
-    "reason": "Do not start parallel agent work while the self-assigned collaborator is actively investigating the sizing path."
+    "reason": "A competing fix design would overlap the assigned contributor's stated solution; preserve the reproduction evidence and reassess after that work appears or ownership changes."
   },
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The report is actionable but already owned by the collaborator who filed and self-assigned it. The current discussion intentionally distinguishes it from related cross-display and minimum-size issues, so a dashboard design would duplicate active maintainer work.",
+    "rationale": "Issue 50244 is a reproducible Peek DPI-sizing defect, but it is actively owned by the collaborator who filed it. The linked discussion says that contributor has a solution covering the related scaling, size, and safe-zone behavior, so an independent implementation design would duplicate ongoing work.",
     "evidence": [
-      "The issue author daverayment is a repository collaborator and is assigned to the issue.",
-      "The body provides measured expected and actual outer-window dimensions at 175% and 125% scaling.",
-      "The author explicitly distinguishes issue 50193 and issue 50243, and a follow-up notes the title bar is also treated as physical pixels.",
-      "Peek source confirms the relevant paths: image size comes from ImagePreviewer/FileSystem item helpers, while MainWindow.xaml.cs converts monitor scale and applies WindowConstants minimums.",
-      "No fix PR currently closes this issue in the timeline."
+      "The live issue is open, carries Issue-Bug and Product-Peek, and is assigned to collaborator daverayment.",
+      "The report measures incorrect outer-window sizes for the same 512 x 512 image at 175% and 125% display scaling.",
+      "The reporter explicitly separates Issue 50244 from Issue 50193 and Issue 50243, and notes that title-bar measurement is also in the wrong unit space.",
+      "In the live Issue 50243 discussion, the assigned reporter says they have a solution for several Peek scaling and size issues and will submit it soon.",
+      "The current Peek code routes image dimensions through ImagePreviewer.GetPreviewSizeAsync, FilePreview.UpdatePreviewSizeAsync, and MainWindow.FilePreviewer_PreviewSizeChanged, where monitor scale, the 80% cap, minimums, and title-bar height interact.",
+      "The upstream timeline contains only automatic dedupe-digest cross-references; no implementation pull request is linked, and no prior MuyuanMS/PowerToys trace existed before this mirror."
     ],
-    "recommended_action": "Preserve the issue as maintainer-owned and do not expose a duplicate-close or design-approval action.",
-    "evaluated_at": "2026-09-03T06:51:45Z",
+    "recommended_action": "Keep the issue in maintainer-owned state and avoid a parallel fix or design-approval action until the assigned contributor's implementation is available or responsibility is explicitly transferred.",
+    "evaluated_at": "2026-09-04T02:48:27Z",
     "source_updated_at": "2026-08-29T22:58:30Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "The report documents a real PowerToys sizing defect, but the collaborator who filed it is self-assigned and is actively investigating the exact DPI/native-pixel path. This artifact must not create a competing dashboard design; its assessment records that an independent fix proposal is not applicable while that ownership remains current.",
-    "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/issues/50244"
-    ]
+    "rationale": "A PowerToys fix is applicable in principle, but an independent proposal is not appropriate while the assigned collaborator is actively pursuing the same connected Peek sizing work. No competing proposed_fixes entry is emitted."
   },
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Peek displays a known-size image at inconsistent, non-native physical dimensions across differently scaled monitors; the self-assigned collaborator has isolated several DPI/unit boundaries for investigation.",
+    "summary": "Peek does not preserve a 512 x 512 image's native physical-pixel content size on non-100% scaled displays, with different incorrect results after a mixed-DPI monitor transition and image navigation.",
     "known_information": [
-      "A 512×512 image produces documented incorrect outer-window sizes on 175% and 125% displays.",
-      "The issue was reproduced on a current-main development build.",
-      "The title bar measurement is also affected according to the collaborator follow-up.",
-      "The issue is self-assigned to collaborator daverayment."
+      "The report was reproduced on a current-main 0.102 development build.",
+      "At 175% scaling, the reporter expected an approximately 512 x 596 outer-pixel window for a 512 x 512 image but observed 820 x 586.",
+      "After moving to a 125% display, the report records 583 x 417, then 583 x 563 after navigating away and back to the same image.",
+      "The expected behavior preserves image content at native physical-pixel size when it is within Peek's 80% monitor cap; window chrome may vary by display.",
+      "ImagePreviewer.GetPreviewSizeAsync returns the image size as PreviewSize.MonitorSize; FilePreview.UpdatePreviewSizeAsync raises PreviewSizeChanged; MainWindow.FilePreviewer_PreviewSizeChanged derives content and window sizes from monitor scale, monitor bounds, minimums, and TitleBarControl.ActualHeight.",
+      "The issue author is a repository collaborator and is assigned to this issue.",
+      "No diagnostic attachment was supplied, no implementation PR is linked, and no earlier MuyuanMS/PowerToys issue or pull-request trace referenced Issue 50244."
     ],
     "inferences": [
-      "The sizing path likely mixes physical pixels and DIPs or uses stale monitor scale information, as proposed by the reporter, but no merged fix confirms a single root cause."
+      "The reported dimensions are consistent with more than one interacting DPI-unit boundary, including content conversion, title-bar height, minimum sizing, and monitor selection; the report alone does not isolate one independently safe patch.",
+      "The assigned contributor's stated broader solution may intentionally coordinate this defect with the related cross-display and minimum-size work."
     ],
-    "analysis": "The evidence is sufficient for engineering, but ownership is already explicit and the report intentionally covers a distinct native-pixel sizing contract rather than duplicating #50193 or #50243. The safe dashboard result is to avoid parallel work.",
+    "analysis": "The public report and source identify the full sizing pipeline, but the active owner has already scoped a connected solution. Producing an alternative root-cause claim or file-level patch plan now would risk contradicting or duplicating that work. This artifact therefore records the concrete evidence and ownership decision rather than presenting a speculative design as ready for approval.",
     "initial_investigation": [
-      "Reviewed the complete body, both comments, labels, assignee, and timeline; only dedupe digest cross-references are present.",
-      "Inspected Peek sizing source: WindowConstants.MinWindowWidth/Height, MainWindow.xaml MinWidth/MinHeight, MainWindow.xaml.cs FilePreviewer_PreviewSizeChanged/GetMonitorMinContentSize/GetMonitorMaxContentSize, and ImagePreviewer.GetPreviewSizeAsync.",
-      "Checked related issue 50193 and issue 50243 context; 50244 remains distinct and owned."
+      "Retrieved the live issue body, comments, labels, assignee, and complete timeline; the timeline has no linked implementation, only automatic dedupe-digest references.",
+      "Reviewed live Issues 50193 and 50243. They remain open; Issue 50243 contains the assigned contributor's statement that a solution for several Peek scaling and size problems is forthcoming.",
+      "Inspected MainWindow.xaml.cs, FilePreview.xaml.cs, ImagePreviewer.cs, and WindowConstants.cs in local current main, plus the prior Peek image-scaling history change.",
+      "Searched MuyuanMS/PowerToys issues and pull requests for Issue 50244 traces; none existed. Fork mirror issue 612 now preserves the sanitized report and ownership decision."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "The assigned contributor's implementation or an explicit handoff identifying which connected sizing defects remain in scope.",
+        "why_needed": "It determines whether Issue 50244 is covered by the broader work and prevents a duplicate or incompatible design.",
+        "how_to_collect": "Reassess the issue when the contributor opens a pull request, posts the implementation details, or unassigns the issue."
+      },
+      {
+        "information": "A before-and-after mixed-DPI trace from the active implementation covering DPI-change timing, monitor selection, content DIPs, title-bar DIPs, minimums, and the 80% cap.",
+        "why_needed": "The public measurements demonstrate the defect but cannot distinguish the interacting unit and timing boundaries well enough to validate a standalone patch.",
+        "how_to_collect": "Use the reporter's documented 175% and 125% 512 x 512-image sequence while instrumenting the existing sizing path after an implementation is available."
+      }
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 612,
+    "fork_title": "[Issue 50244] [Peek] Image previews are not sized to native pixel dimensions on scaled displays",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/612"
   },
   "actions": [],
-  "generated_at": "2026-09-03T06:51:45Z",
-  "evaluated_at": "2026-09-03T06:51:45Z",
+  "generated_at": "2026-09-04T02:48:27Z",
+  "evaluated_at": "2026-09-04T02:48:27Z",
   "source_updated_at": "2026-08-29T22:58:30Z",
   "title": "[Peek] Image previews are not sized to native pixel dimensions on scaled displays",
   "author": "daverayment",
@@ -74,5 +96,5 @@
   ],
   "comments": 2,
   "owes": "assignee",
-  "summary": "Peek native-pixel image sizing is a valid, implementation-ready DPI/unit bug, but the collaborator author is assigned and has already scoped it as distinct from related Peek sizing issues."
+  "summary": "Peek native-pixel image sizing is a reproducible mixed-DPI defect, but its collaborator reporter is assigned and has stated that a broader related sizing solution is underway."
 }

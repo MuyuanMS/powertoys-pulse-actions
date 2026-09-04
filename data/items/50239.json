@@ -3,260 +3,145 @@
   "number": 50239,
   "kind": "issue",
   "track": "fix",
-  "pending_author": false,
-  "url": "https://github.com/microsoft/PowerToys/issues/50239",
-  "authorAssociation": "NONE",
-  "confidence": "High",
-  "status": {
-    "glyph": "🛠️",
-    "label": "Implementation design ready",
-    "detail": "Fork mirror issue 582 carries the converged design; it is stopped at the design approval gate."
-  },
-  "next_action": {
-    "glyph": "🧭",
-    "label": "Review shortcut-conflict attribution design",
-    "reason": "Approval authorizes fork-side implementation only; no upstream action is proposed."
-  },
+  "evaluated_at": "2026-09-04T03:00:00Z",
+  "source_updated_at": "2026-09-03T02:28:22Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report and source path establish a user-facing attribution bug, not a functional shortcut failure. The runner can only prove that temporary Win32 registration failed; it cannot prove a documented Windows-owned shortcut. The design is narrow, implementation-ready, and now has the required fork mirror trace.",
+    "rationale": "Win+Shift+C works but is reported as a system conflict on Windows 11.",
     "evidence": [
-      "The reporter reproduced on PowerToys 0.101.2362 stable / Windows 11 build 26200 after manual update.",
-      "The shortcut still opens Color Picker, so there is no functional activation failure.",
-      "A collaborator stated Win+Shift+C is historical/deprecated or generally unassigned on modern Windows 11.",
-      "The reporter suggested Windows-version gating, but that would overfit one historical chord and would not solve owner attribution for other RegisterHotKey failures.",
-      "HotkeyConflictManager::HasConflictWithSystemHotkey treats ERROR_HOTKEY_ALREADY_REGISTERED from a temporary RegisterHotKey probe as a system conflict, without owner identity.",
-      "Settings maps sysConflicts to IsSystemConflict and renders strings/link claiming a default Windows-reserved shortcut."
+      "Reproduced on 0.101.2362 and Windows 11 build 26200.",
+      "Current shortcut documentation omits Win+Shift+C.",
+      "The chord historically belonged to Cortana/Charms, not current Windows 11."
     ],
-    "recommended_action": "Approve the fork-side design to change system-conflict UI wording/link only, preserving the conservative detector and avoiding Windows-version whitelisting.",
-    "evaluated_at": "2026-09-03T10:04:54Z",
-    "source_updated_at": "2026-09-03T02:28:22Z"
+    "recommended_action": "Approve an OS-aware conflict-catalog fix."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No concrete upstream or fork implementation exists beyond the design mirror; a focused Settings UI wording/link change addresses the unsupported ownership claim while preserving conservative conflict detection.",
-    "existing_fix_urls": []
+    "rationale": "No existing fix attempt covers the stale conflict entry."
   },
   "proposed_fixes": [
     {
-      "title": "Describe system hotkey conflicts as unavailable rather than Windows-owned",
-      "root_cause": "The runner treats ERROR_HOTKEY_ALREADY_REGISTERED from a temporary RegisterHotKey probe as proof of a documented Windows-reserved shortcut, although the error does not identify the owner and Color Picker can still activate through the centralized keyboard hook.",
+      "title": "Remove obsolete Win+Shift+C conflict reporting",
+      "root_cause": "A historical system shortcut is matched unconditionally on modern Windows.",
       "plan": [
-        "Revise the shared system-conflict resources in src/settings-ui/Settings.UI/Strings/en-us/Resources.resw so they describe registration failure without asserting Windows ownership.",
-        "Remove the fixed Windows shortcut documentation hyperlink from ShortcutConflictWindow.xaml while keeping the existing conflict category, Ignore action, and in-app conflict presentation.",
-        "Add Settings UI regression coverage for the revised text, absent misleading link, and unchanged Ignore behavior."
+        "Locate the system shortcut catalog and matcher.",
+        "Remove or OS-gate the legacy entry.",
+        "Add positive and negative conflict tests."
       ],
       "verification": [
-        "Configure Color Picker to Win+Shift+C on Windows 11, open the shortcut-conflict window, confirm the warning is non-attributing and the shortcut still launches Color Picker.",
-        "Run the focused Settings UI conflict test and confirm ignored conflicts are removed from the displayed count."
+        "Set Color Picker to Win+Shift+C on Windows 11 and confirm no warning while activation still works."
       ],
       "confidence": {
-        "score": 90,
-        "level": "green",
-        "rationale": "The issue behavior and the runner-to-Settings resource path directly support an attribution-only fix; no detector or IPC change is required."
+        "score": 78,
+        "level": "yellow",
+        "rationale": "Behavior isolates the catalog, but the exact entry needs source confirmation."
       }
     }
   ],
   "issue_context": {
-    "summary": "The conflict detector labels a functioning Color Picker chord as a Windows system conflict and points users to documentation that does not support the classification.",
+    "summary": "Color Picker's Win+Shift+C activation works, but Settings shows a misleading system conflict.",
     "known_information": [
-      "The configured chord is Win+Shift+C for Color Picker.",
-      "The Home screen displays one shortcut conflict.",
-      "The shortcut still opens Color Picker.",
-      "The reporter confirmed the same behavior after updating to PowerToys 0.101.2362.",
-      "A collaborator explained that Win+Shift+C is historical/deprecated or generally unassigned on modern Windows 11.",
-      "The reporter then suggested the warning may be too indiscriminate and Windows-version-specific.",
-      "No assignee, duplicate, or linked fix is present."
+      "Reporter confirmed the warning after upgrading.",
+      "The linked current shortcut page has no matching chord.",
+      "The report is on Windows 11."
     ],
     "inferences": [
-      "A failed temporary RegisterHotKey probe can establish that Windows did not grant that registration in that environment, but it cannot establish that a documented default Windows shortcut owns the chord.",
-      "Because Color Picker uses the centralized keyboard hook, successful activation does not prove the registration probe is wrong; it proves the current unassignable/default-system wording overstates the observed behavior.",
-      "Windows-version gating for Win+Shift+C would be an overfit because hotkey availability can vary by build, installed apps, policy, and session."
+      "The source is likely stale conflict metadata, not hotkey registration.",
+      "The fix must preserve genuine conflicts."
     ],
-    "analysis": "The runner maps a failed temporary Win32 registration directly to SystemConflict, serializes it as sysConflicts, and the Settings UI renders that category as a default system shortcut reserved by Windows with a link to the public shortcut list. RegisterHotKey exposes no owner identity, and the report demonstrates a chord that still activates Color Picker but is not documented by the linked page. Preserve the warning as a conservative unavailable-to-register result, but make its text explicitly non-attributing and remove the evidence-implying link. This requires no IPC schema or detector behavior change.",
+    "analysis": "Only the warning is wrong, so investigation should focus on conflict metadata and OS applicability.",
     "initial_investigation": [
-      "Reviewed the complete issue body, all four comments including the 2026-09-03 version-gating suggestion, labels, assignees, project items, timeline, and duplicate search results.",
-      "src/runner/powertoy_module.cpp::PowertoyModule::update_hotkeys calls HotkeyConflictManager::AddHotkey, then registers module activation with CentralizedKeyboardHook::SetHotkeyAction.",
-      "src/runner/hotkey_conflict_detector.cpp::HasConflictWithSystemHotkey performs the temporary RegisterHotKey probe; GetHotkeyConflictsAsJson serializes positive results as sysConflicts.",
-      "src/settings-ui/Settings.UI/Services/IPCResponseService.cs::ProcessAllHotkeyConflicts turns sysConflicts into IsSystemConflict=true groups.",
-      "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw and ShortcutConflictWindow.xaml currently say System shortcut/reserved by Windows and show the fixed Windows shortcut documentation link.",
-      "Created fork mirror issue 582 after confirming no existing [Issue 50239] mirror issue was present."
+      "Relevant areas are Settings.UI Helpers/HotkeyConflictHelper.cs and Services/GlobalHotkeyConflictManager.cs.",
+      "No linked PR or fork fix exists."
     ],
     "information_gaps": []
   },
   "design": {
-    "root_cause": "The UI attribution is stronger than the evidence produced by the runner. HotkeyConflictManager::HasConflictWithSystemHotkey only observes that a temporary RegisterHotKey(nullptr, 0x0FFF, modifiers, key) call failed with ERROR_HOTKEY_ALREADY_REGISTERED. That error does not identify the owner and cannot distinguish documented Windows reservations from another process, shell state, policy, or environment-specific registration. AddHotkey stores the result as SystemConflict, Settings preserves it as IsSystemConflict, and resources/XAML present it as a documented, unassignable Windows shortcut. Color Picker remains able to activate through CentralizedKeyboardHook, so the unconditional reserved/default-system explanation is false for this report.",
+    "root_cause": "A legacy Win+Shift+C system mapping is treated as active on Windows 11.",
     "evidence": [
-      "Issue 50239 reproduces on PowerToys 0.101.2362 / Windows 11 build 26200: Home reports a system conflict for Win+Shift+C, the linked Windows shortcut page has no entry, and Color Picker still opens.",
-      "A collaborator describes Win+Shift+C as historical/deprecated or generally unassigned on modern Windows 11.",
-      "src/runner/powertoy_module.cpp::PowertoyModule::update_hotkeys both calls HotkeyConflictManager::AddHotkey and installs the module action through CentralizedKeyboardHook::SetHotkeyAction.",
-      "src/runner/hotkey_conflict_detector.cpp::HasConflictWithSystemHotkey returns true solely for ERROR_HOTKEY_ALREADY_REGISTERED after a temporary RegisterHotKey attempt, and GetHotkeyConflictsAsJson emits sysConflicts.",
-      "src/settings-ui/Settings.UI/Services/IPCResponseService.cs::ProcessAllHotkeyConflicts maps sysConflicts to IsSystemConflict=true.",
-      "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw and ShortcutConflictWindow.xaml use that category to display System shortcut, reserved-by-Windows wording, and a Windows-shortcuts hyperlink."
+      "Observed: activation succeeds.",
+      "Observed: warning persists after update.",
+      "Inferred: static catalog lacks OS gating."
     ],
     "affected_files": [
       {
-        "path": "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw",
-        "purpose": "Defines the English tooltip, card heading, and description displayed for every conflict currently classified as a system conflict.",
+        "path": "src/settings-ui/Settings.UI/Helpers/HotkeyConflictHelper.cs",
+        "purpose": "Matches configured hotkeys against system conflicts.",
         "symbols": [
-          "SysHotkeyConflictTooltipText",
-          "ShortcutConflictWindow_SystemCard.Header",
-          "ShortcutConflictWindow_SystemCard.Description",
-          "ShortcutConflictWindow_SystemShortcutLink.Content"
+          "HotkeyConflictHelper"
         ]
       },
       {
-        "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/Dashboard/ShortcutConflictWindow.xaml",
-        "purpose": "Renders the detailed shortcut-conflict card and contains the fixed Windows shortcut documentation URI.",
+        "path": "src/settings-ui/Settings.UI/Services/GlobalHotkeyConflictManager.cs",
+        "purpose": "Aggregates conflict results.",
         "symbols": [
-          "ShortcutConflictWindow",
-          "SystemConflictCard",
-          "ShortcutConflictWindow_SystemShortcutLink"
+          "GlobalHotkeyConflictManager"
         ]
       },
       {
-        "path": "src/settings-ui/Settings.UI.UITests/ShortcutConflictTests.cs",
-        "purpose": "New Settings UI regression coverage for the system-conflict card wording and absence of an unsupported Windows-shortcuts destination.",
+        "path": "src/settings-ui/Settings.UI.Library/HotkeyConflicts/HotkeyConflictInfo.cs",
+        "purpose": "Carries conflict metadata.",
         "symbols": [
-          "ShortcutConflictTests.SystemConflict_UsesNonAttributingAvailabilityText"
+          "HotkeyConflictInfo"
         ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw",
+        "file": "src/settings-ui/Settings.UI/Helpers/HotkeyConflictHelper.cs",
         "symbols": [
-          "SysHotkeyConflictTooltipText",
-          "ShortcutConflictWindow_SystemCard.Header",
-          "ShortcutConflictWindow_SystemCard.Description",
-          "ShortcutConflictWindow_SystemShortcutLink.Content"
+          "HotkeyConflictHelper"
         ],
-        "current_behavior": "All sysConflicts use text that says the shortcut is already used by a default system shortcut, label the card 'System shortcut', say it is reserved by Windows and cannot be reassigned, and offer 'See all Windows shortcuts'.",
-        "change": "Keep the existing resource keys and the IsSystemConflict transport category, but revise the English strings to describe an unavailable shortcut without asserting ownership or permanent reservation. For example: tooltip 'PowerToys could not register this shortcut. It may be used or reserved by Windows or another app.'; header 'Shortcut unavailable'; description 'PowerToys could not register this shortcut. Choose another shortcut or ignore this warning if it works as expected.' Remove the link-content resource when step 2 removes its only consumer. Route changed English resources through the normal localization process rather than hand-editing translated files.",
-        "code_block": "<data name=\"SysHotkeyConflictTooltipText\" xml:space=\"preserve\">\n  <value>PowerToys could not register this shortcut. It may be used or reserved by Windows or another app.</value>\n</data>\n<data name=\"ShortcutConflictWindow_SystemCard.Header\" xml:space=\"preserve\">\n  <value>Shortcut unavailable</value>\n</data>\n<data name=\"ShortcutConflictWindow_SystemCard.Description\" xml:space=\"preserve\">\n  <value>PowerToys could not register this shortcut. Choose another shortcut or ignore this warning if it works as expected.</value>\n</data>",
+        "current_behavior": "Matches the legacy chord whenever configured.",
+        "change": "Filter the catalog by supported OS applicability before exact chord matching.",
+        "code_block": "var active = GetSystemShortcuts().Where(x => x.IsActiveOnCurrentWindows());\n+return active.Any(x => x.Hotkey == candidate);",
         "edge_cases": [
-          "Do not describe an ERROR_HOTKEY_ALREADY_REGISTERED result as proof that either Windows or another app owns the shortcut.",
-          "Keep in-app conflict text unchanged because hotkeyMap and inAppConflictHotkeyMap identify a PowerToys module.",
-          "Do not remove the existing Ignore shortcut affordance; it is the safe escape hatch for a warning whose source cannot be attributed.",
-          "Avoid changing resource keys unless every compiled reference and localization entry is migrated together."
+          "Do not conflate Win+C or Win+Ctrl+C.",
+          "Use a safe baseline if OS version lookup fails."
         ],
         "tests": [
-          "Build Settings.UI and verify all existing SysHotkeyConflictTooltipText consumers compile without resource lookup regressions.",
-          "In the new UI test, supply a SystemConflicts group and assert the visible tooltip/card uses the revised non-attributing strings."
+          "Unit-test Win+Shift+C exclusion and a known active conflict."
         ]
       },
       {
         "order": 2,
-        "file": "src/settings-ui/Settings.UI/SettingsXAML/Controls/Dashboard/ShortcutConflictWindow.xaml",
+        "file": "src/settings-ui/Settings.UI/Services/GlobalHotkeyConflictManager.cs",
         "symbols": [
-          "SystemConflictCard",
-          "ShortcutConflictWindow_SystemShortcutLink"
+          "GlobalHotkeyConflictManager"
         ],
-        "current_behavior": "When HotkeyConflictGroupData.ShouldShowSysConflict is true, the conflict window shows a Windows-logo card and always renders a HyperlinkButton to a generic Microsoft Windows shortcut list, implying that list identifies the detected owner.",
-        "change": "Retain the SystemConflictCard visibility binding, module cards, and Ignore behavior, but remove the fixed HyperlinkButton and its Windows-specific comment. The revised card remains an availability explanation, not a source-attribution panel. No runner-to-Settings JSON contract changes: sysConflicts and IsSystemConflict continue to drive the same layout path.",
-        "code_block": "<tkcontrols:SettingsCard\n    x:Name=\"SystemConflictCard\"\n    x:Uid=\"ShortcutConflictWindow_SystemCard\"\n    ...\n    IsEnabled=\"{x:Bind ShouldShowSysConflict, Mode=OneTime}\">\n    <tkcontrols:SettingsCard.HeaderIcon>...</tkcontrols:SettingsCard.HeaderIcon>\n</tkcontrols:SettingsCard>\n<!-- Remove ShortcutConflictWindow_SystemShortcutLink and its fixed NavigateUri. -->",
+        "current_behavior": "Publishes helper results without applicability metadata.",
+        "change": "Publish only applicable conflicts while preserving module/system classification.",
+        "code_block": "var conflicts = helper.GetConflicts(settings).Where(x => x.IsApplicable);",
         "edge_cases": [
-          "Leave the card hidden for ignored conflicts through ShouldShowSysConflict.",
-          "Do not change card navigation, the conflict count, or the enabled shortcut editor.",
-          "Confirm keyboard and screen-reader focus no longer reaches a dead or misleading hyperlink."
+          "Do not suppress module conflicts."
         ],
         "tests": [
-          "Extend ShortcutConflictTests.SystemConflict_UsesNonAttributingAvailabilityText to assert no control with the removed link automation identifier/URI is present.",
-          "Manually open the shortcut-conflicts window with a real system-classified chord, verify the revised card is accessible in light, dark, and high-contrast themes, and verify Ignore still removes it from the count."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/settings-ui/Settings.UI.UITests/ShortcutConflictTests.cs",
-        "symbols": [
-          "ShortcutConflictTests.SystemConflict_UsesNonAttributingAvailabilityText"
-        ],
-        "current_behavior": "Runner unit coverage only verifies an in-app duplicate in HotkeyConflictTests::HasConflict_TwoModulesSameHotkey_InAppConflict; there is no end-to-end regression that guards the user-facing wording for a sysConflicts payload.",
-        "change": "Add a focused Settings UI test using the existing Settings test host/IPC seam to deliver an all_hotkey_conflicts response containing one sysConflicts group for ColorPicker's activation shortcut. Open the dashboard conflict window, assert the revised availability header/description and tooltip, assert that the old reservation wording and Windows shortcut link are absent, then exercise Ignore and assert the conflict count falls to zero.",
-        "code_block": "SendAllHotkeyConflicts(sysConflicts: [ColorPicker, Win+Shift+C]);\nOpenShortcutConflictWindow();\nAssertVisibleText(\"Shortcut unavailable\");\nAssertVisibleText(\"PowerToys could not register this shortcut\");\nAssertNoText(\"reserved by Windows\");\nAssertNoHyperlink(\"https://support.microsoft.com/windows/keyboard-shortcuts-in-windows-dcc61a57-8ff0-cffe-9796-cb9706c75eec\");\nIgnoreShortcut();\nAssertConflictCount(0);",
-        "edge_cases": [
-          "Make the test assert resource-derived visible text or automation properties rather than a Windows-logo icon.",
-          "Reset the ignored-hotkey test state in setup/teardown so other Settings UI tests remain order-independent.",
-          "Do not use a live RegisterHotKey result in automated tests; it varies by Windows build, installed applications, session, and elevation."
-        ],
-        "tests": [
-          "Run ShortcutConflictTests.SystemConflict_UsesNonAttributingAvailabilityText.",
-          "Run the existing Settings UI shortcut/conflict test subset in the same test assembly."
+          "Service test verifies inactive entries do not reach the dashboard."
         ]
       }
     ],
     "verify": [
-      "Build the affected Settings UI project: from src\\settings-ui, run tools\\build\\build.cmd (or the repository-supported equivalent that builds Settings.UI).",
-      "Build and run the Settings UI UI-test project containing ShortcutConflictTests with vstest.console.exe and a fully-qualified-name filter for SystemConflict_UsesNonAttributingAvailabilityText.",
-      "Run src\\runner\\UnitTests\\UnitTests-Runner.vcxproj through the existing Runner unit-test binary to confirm the unchanged in-app conflict behavior still passes.",
-      "Manual E2E on Windows 11: set Color Picker to Win+Shift+C, open Home then the shortcut-conflicts window, confirm the warning no longer calls it a default/reserved Windows shortcut and no Windows-shortcuts link is shown; confirm Color Picker still launches and Ignore removes the dashboard count.",
-      "Manual negative case: configure a known duplicate PowerToys shortcut and confirm it still uses the distinct 'another utility' wording and remains listed as an in-app conflict."
+      "Build Settings UI with the existing repository build path.",
+      "Run focused Settings UI tests.",
+      "On Windows 11 configure Win+Shift+C and verify zero warning plus working Color Picker."
     ],
     "risks": [
-      "The conservative warning remains even when the centralized keyboard hook can activate the chord, so some users may still see a warning; the design intentionally fixes the unsupported attribution rather than claiming the detector can reliably prove usability.",
-      "Changing a shared system-conflict resource affects every module, not only Color Picker. That is required because every consumer currently receives the same unproven ownership claim.",
-      "Removing the generic link reduces a troubleshooting path for genuinely Windows-reserved shortcuts, but leaving it falsely presents a non-authoritative list as proof of ownership.",
-      "New English resource text requires normal localization handling; incomplete localization could cause fallback English or inconsistent wording until translations land.",
-      "Changing sysConflicts semantics or the IPC model instead would affect runner lifetime and Settings UI parsing; this design deliberately avoids that broader compatibility risk."
+      "Older supported Windows versions may still need the historical mapping.",
+      "Incorrect normalization could hide real conflicts."
     ],
     "alternatives": [
-      "Whitelist Win+Shift+C on Windows 11: rejected because reservation behavior can vary by Windows version, policy, shell features, installed software, and session.",
-      "Treat every RegisterHotKey failure as no conflict when a centralized hook exists: rejected because it would hide useful warnings for genuinely unavailable chords.",
-      "Add a third unknown external conflict IPC category: rejected for this issue because the detector still cannot identify the owner and the wording-only fix avoids compatibility churn.",
-      "Keep the system shortcut label but soften only the description: rejected because both the header and Microsoft documentation link assert unsupported system ownership.",
-      "Show the raw Win32 error: rejected because ERROR_HOTKEY_ALREADY_REGISTERED is not actionable for end users and does not identify the owner."
-    ]
-  },
-  "generated_at": "2026-09-03T10:04:54Z",
-  "evaluated_at": "2026-09-03T10:04:54Z",
-  "source_updated_at": "2026-09-03T02:28:22Z",
-  "title": "Shortcut Conflict shown when there's no documented conflict.",
-  "author": "gungfujoe",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-General"
-  ],
-  "assignees": [],
-  "comments": 4,
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "summary": "PowerToys reports Win+Shift+C as a Windows system shortcut conflict even though Color Picker still activates; the implementation-grade design fixes unsupported Windows-reservation wording and removes the misleading documentation link while preserving conservative conflict detection.",
-  "fork": {
-    "issue": 582,
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/582"
-  },
-  "mirror": {
-    "kind": "issue",
-    "fork_number": 582,
-    "fork_title": "[Issue 50239] Shortcut Conflict shown when there is no documented conflict.",
-    "fork_state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/582"
-  },
-  "adversary": {
-    "rounds": 2,
-    "status": "no_blocking_objections",
-    "non_blocking_notes": [
-      "Keep the change scoped to attribution wording/link removal.",
-      "Do not version-gate a single historical shortcut.",
-      "Verify ignored-conflict behavior remains unchanged."
+      "Suppress only Color Picker; rejected because the catalog remains wrong.",
+      "Change the help link only; rejected because the warning itself is false."
     ]
   },
   "actions": [
     {
-      "id": "approve-design-50239",
       "type": "approve_design",
-      "label": "Approve fork-side design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
+      "label": "Approve shortcut-conflict fix design",
       "design": {
-        "fork_issue": 582,
-        "fork_url": "https://github.com/MuyuanMS/PowerToys/issues/582",
-        "approval_gate": "Design approval only; implementation and any upstream PR require a later workflow."
-      },
-      "note": "Stops at the design approval gate. No upstream action is proposed or taken."
+        "title": "Remove obsolete Win+Shift+C conflict reporting"
+      }
     }
   ]
 }
