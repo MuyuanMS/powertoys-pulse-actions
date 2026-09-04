@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-04T13:46:53.6383244+08:00",
+  "generated_at": "2026-09-04T13:57:26.8882009+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 355
   },
   "impact": {
-    "as_of": "2026-09-04T13:46:53.6383244+08:00",
+    "as_of": "2026-09-04T13:57:26.8882009+08:00",
     "issues_helped": 10,
     "prs_iterated": 28,
     "constructive_comments_posted": 3,
@@ -485,7 +485,7 @@ window.BOARD_INDEX = {
         "khmyznikov"
       ],
       "created_at": "2026-09-04T03:41:11Z",
-      "updated_at": "2026-09-04T04:06:02Z",
+      "updated_at": "2026-09-04T05:46:16Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -545,7 +545,7 @@ window.BOARD_INDEX = {
       "title": "[Shortcut Guide] Support symlinked and unlocalized manifests",
       "author": "shatakshi-3",
       "state": "open",
-      "is_draft": false,
+      "is_draft": true,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
@@ -560,12 +560,11 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Shortcut Guide",
-        "Ready for review"
+        "Product-Shortcut Guide"
       ],
       "assignees": [],
       "created_at": "2026-09-03T14:21:28Z",
-      "updated_at": "2026-09-04T05:31:40Z",
+      "updated_at": "2026-09-04T05:46:26Z",
       "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
