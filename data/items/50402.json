@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 5,
+  "number": 50402,
+  "kind": "issue",
+  "track": "fix",
+  "generated_at": "2026-09-05T10:16:25.9948926Z",
+  "evaluated_at": "2026-09-05T10:16:25.9948926Z",
+  "source_updated_at": "2026-09-05T08:23:09Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50402",
+  "title": "A conflict shortcut key of unknown origin in PowerToys shortcut conflict window",
+  "author": "AWDNDWindowsXP",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "stage": "triage",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-09-05T08:23:09Z",
+  "confidence": "Low",
+  "summary": "The report shows an unexplained shortcut conflict associated with Keyboard Manager and Advanced Paste, but it does not identify the key or provide reproduction steps, and the diagnostic ZIP could not be analyzed.",
+  "status": {
+    "glyph": "ℹ️",
+    "label": "Needs author evidence before code triage",
+    "detail": "Request the exact displayed shortcut, numbered reproduction steps, and a fresh diagnostic report captured immediately after reproducing."
+  },
+  "next_action": {
+    "glyph": "📝",
+    "label": "Request targeted reproduction evidence",
+    "reason": "The current evidence cannot distinguish a genuine shortcut registration conflict from stale conflict data or incorrect module/action attribution."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The screenshots and public metadata establish a plausible shortcut-conflict problem, but the issue does not name the displayed key or explain how the conflict window was reached. The only comment requests concrete reproduction steps, and the attached diagnostic archive was rejected because of an oversized entry. Without the exact shortcut and conflict payload, a code fix would be speculative.",
+    "evidence": [
+      "The issue reports PowerToys 0.101.2362 from the Microsoft Store on Windows 11 build 26200, running per-user and non-elevated.",
+      "The report says the conflict window shows an apparently unassigned shortcut tied to Keyboard Manager and redirected to Advanced Paste, and includes three screenshots.",
+      "The report explicitly says the author does not know how the condition occurred and provides no reproduction steps or exact shortcut text.",
+      "The attached PowerToysReport ZIP is public on the issue, but the automated triage comment says it was rejected because of an oversized entry and could not be analyzed.",
+      "The only public comment asks the author for concrete reproduction steps; the issue has Needs-Author-Feedback and Needs-Triage labels, no assignee, and no linked fix or pull request.",
+      "The closest related report, #50239, concerns a false-positive Win+Shift+C system conflict; it is still open and has not been confirmed as the same failure. #49423 requests more specific system-conflict attribution, while #43665 describes a concrete Advanced Paste versus ZoomIt conflict and #37085 concerns AltGr behavior."
+    ],
+    "recommended_action": "Ask the author for the exact displayed shortcut, numbered reproduction steps, and a fresh /bugreport capture immediately after reproducing. Keep the issue waiting on author evidence; do not start a fix design or mark it as a duplicate yet.",
+    "evaluated_at": "2026-09-05T10:16:25.9948926Z",
+    "source_updated_at": "2026-09-05T08:23:09Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys code fix may be applicable, but the current report is insufficiently scoped to identify whether the fault is in conflict detection data, shortcut registration, persisted settings, or module/action display mapping. Marking a concrete fix as applicable now would invent a root cause; this status is limited to the current triage state and should be revisited when the requested evidence arrives.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "A Microsoft Store installation of PowerToys 0.101.2362 shows an unexplained shortcut in the shortcut-conflict window. The screenshots associate it with Keyboard Manager and Advanced Paste, but the report does not identify the key or provide a reproducible sequence.",
+    "known_information": [
+      "The issue is open and labeled Issue-Bug, Needs-Author-Feedback, Needs-Triage, and Product-General.",
+      "The reporter supplied the PowerToys version, Windows build, installation scope, language, three screenshots, and a diagnostic ZIP link.",
+      "The reporter says the conflict is not tied to a visible function in the window, appears tied to Keyboard Manager, and redirects to Advanced Paste.",
+      "The reporter says they do not know how the shortcut appeared and provides no reproduction steps.",
+      "The automated triage comment confirms that the diagnostic archive could not be safely analyzed because of an oversized entry and lists #50239 and #37085 as possible but unconfirmed related issues.",
+      "There is one public comment, from github-actions, requesting concrete reproduction steps; no assignee or linked work is present.",
+      "In current PowerToys code, ShortcutConflictControl.ConflictCount counts non-ignored in-app and system conflict groups, while ShortcutConflictViewModel.ProcessConflicts and SetupModuleData populate module/action display data from the conflict payload and current settings accessors.",
+      "ShortcutConflictViewModel.GetHotkeyLocalizationHeader has a special path for Advanced Paste custom actions with hotkey IDs greater than 9, and AdvancedPasteViewModel contributes additional action shortcuts to the conflict data.",
+      "HotkeyConflictIgnoreHelper persists ignored shortcut tuples and is used by both the dashboard count and conflict window, so an ignored-state or persisted-settings interaction cannot be ruled out from the report alone.",
+      "The shortcut-conflict feature was introduced in PowerToys PR #41029, ignored-conflict handling was added in PR #41729, and conflict-window singleton behavior was addressed in PR #42440; no history reviewed here identifies a fix for this exact report."
+    ],
+    "inferences": [
+      "The visible mismatch may be caused by a real cross-module or system conflict, stale persisted shortcut data, or incorrect mapping of a conflict payload to an Advanced Paste action; the available evidence does not select one.",
+      "The phrase that the shortcut is tied to Keyboard Manager but redirects to Advanced Paste may describe display attribution rather than the registered hotkey owner, but that cannot be confirmed without the exact conflict group and shortcut.",
+      "The report is not yet ready for an implementation-grade design because the affected registration and data path cannot be isolated from the public information."
+    ],
+    "analysis": "The current code confirms that the dashboard and conflict window are data-driven: they count conflict groups and then resolve each module and hotkey ID through settings accessors, with special handling for Advanced Paste custom actions. That makes the report technically plausible, but the missing shortcut value and reproduction path prevent a safe comparison between the conflict detector output, module registrations, persisted ignore state, and UI attribution. The requested evidence is narrowly targeted to that decision and avoids asking the author to repeat information already supplied.",
+    "initial_investigation": [
+      "Read the complete public issue body, all comments, labels, assignees, issue events, attachment links, and timeline; no cross-referenced fix or linked work was present.",
+      "Reviewed the automated triage comment and preserved its specific finding that the supplied ZIP could not be analyzed because of an oversized entry.",
+      "Compared the closest public reports: #50239 is a false-positive Win+Shift+C system conflict, #49423 asks for more specific system-conflict identification, #43665 is an Advanced Paste versus ZoomIt conflict, and #37085 is an AltGr registration conflict. None is confirmed as a duplicate of #50402.",
+      "Inspected current ShortcutConflictControl.ConflictCount, ShortcutConflictViewModel.ProcessConflicts, SetupModuleData, GetHotkeyLocalizationHeader, and HotkeyConflictIgnoreHelper behavior. These paths show where conflict count, module/action attribution, Advanced Paste custom-action headers, and ignored shortcuts are resolved, but do not prove which path produced this report.",
+      "Reviewed the public history of the conflict-detection feature and related fixes: PR #41029 introduced the system, PR #41729 added ignored-conflict handling, and PR #42440 fixed duplicate conflict-window instances. No existing fix attempt covers #50402."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact shortcut shown in the conflict window, the exact Keyboard Manager and Advanced Paste action names displayed for it, and numbered steps from opening PowerToys to observing the conflict.",
+        "why_needed": "This identifies the conflict tuple and lets maintainers determine whether the condition is a real registered conflict, stale persisted data, or incorrect module/action attribution.",
+        "how_to_collect": "Reproduce the issue and add a comment with the exact displayed shortcut and numbered steps; note whether the same entry remains after restarting PowerToys."
+      },
+      {
+        "information": "A fresh PowerToys diagnostic archive captured immediately after reproducing the conflict.",
+        "why_needed": "The supplied archive was rejected before analysis, so current conflict-detector and module-registration logs are unavailable for comparing the reported shortcut with the data shown in the UI.",
+        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport and attach the newly generated ZIP; do not include unrelated private files or full local paths."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-50402-shortcut-repro",
+      "type": "request_info",
+      "label": "Request the exact shortcut and fresh reproduction data",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50402,
+        "body": "Thanks for reporting this on PowerToys 0.101.2362 and for providing the screenshots showing an apparently unassigned shortcut in the conflict window associated with Keyboard Manager and Advanced Paste. The current report does not identify the exact shortcut or provide steps that produce the conflict, and the attached ZIP was rejected because it contains an oversized entry, so we cannot tell whether this is stale settings, a real cross-module conflict, or incorrect display attribution. Please reproduce it once more and add numbered steps with the exact displayed shortcut, the module/action names shown, and whether the entry remains after restarting PowerToys. Immediately after reproducing, add a comment containing `/bugreport` so a fresh ZIP can be captured for this event. That evidence will let maintainers compare the reported shortcut with the conflict-detector and module-registration data."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
+}
