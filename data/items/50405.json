@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 5,
+  "number": 50405,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-09-05T13:14:36Z",
+  "generated_at": "2026-09-05T14:23:40Z",
+  "evaluated_at": "2026-09-05T14:23:40Z",
+  "source_updated_at": "2026-09-05T13:14:37Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50405",
+  "title": "CmdPal: Dock: Autohide is weird",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "author": "ReginaldTang",
+  "comments": 1,
+  "confidence": "Low",
+  "summary": "The reporter sees unexpected Command Palette Dock behavior after enabling auto-hide on PowerToys 0.101.2362, but the report does not describe what the video demonstrates or provide a reproducible sequence.",
+  "status": {
+    "glyph": "ℹ️",
+    "label": "Needs author evidence before code triage",
+    "detail": "Request the exact auto-hide symptom, numbered reproduction steps, display/taskbar configuration, and fresh diagnostics."
+  },
+  "next_action": {
+    "glyph": "📝",
+    "label": "Request targeted auto-hide evidence",
+    "reason": "The available evidence cannot distinguish registration conflict, DPI geometry, or reveal/collapse behavior."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The version, platform, display resolution, affected feature, and public video establish a plausible Dock auto-hide report, but the actual behavior is only described as \"Whatever this is.\" The sole public comment requests concrete reproduction steps. Without the visible symptom and setup details, selecting a code path or implementation change would be speculative.",
+    "evidence": [
+      "The issue reports PowerToys 0.101.2362 Stable installed from the Microsoft Store and identifies Command Palette.",
+      "The only stated reproduction step is enabling Dock Autohide; expected behavior is one opening animation, while actual behavior is described only as \"Whatever this is\" with a public video attachment.",
+      "The reporter identifies ARM64 hardware and a 2880x1920 display at 200% scale, but does not identify the device model, dock edge, monitor topology, or taskbar auto-hide state.",
+      "The issue has one public automated-triage comment asking for concrete reproduction steps, no assignee, and the Needs-Author-Feedback label.",
+      "No linked issue, pull request, cross-reference, or existing fix is present in the issue body, comments, or timeline."
+    ],
+    "recommended_action": "Keep the issue waiting on the author and request the exact visible symptom, numbered reproduction steps, relevant display/taskbar setup, and a fresh /bugreport capture immediately after reproducing.",
+    "evaluated_at": "2026-09-05T14:23:40Z",
+    "source_updated_at": "2026-09-05T13:14:37Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys code fix may apply, but the current report is insufficiently scoped to identify whether the failure is AppBar auto-hide registration, a taskbar conflict, DPI-scaled dock geometry, or reveal/collapse animation behavior. This status describes the current triage state only; it should be revisited when the requested evidence arrives.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "On ARM64 hardware with a 2880x1920 display at 200% scale, enabling Command Palette Dock auto-hide produces an unspecified behavior shown only in a video. The report does not say whether the dock fails to hide, reveals incorrectly, moves or sizes incorrectly, or animates repeatedly.",
+    "known_information": [
+      "The affected PowerToys version is 0.101.2362 Stable.",
+      "Installation is from the Microsoft Store.",
+      "The affected product area is Command Palette Dock.",
+      "The only reproduction step supplied is enabling Dock Autohide.",
+      "The expected behavior is that the dock shows at the screen edge with a single opening animation.",
+      "The actual behavior is summarized by the reporter as \"Whatever this is\" and linked to a public video attachment.",
+      "The reporter supplied ARM64, 2880x1920 resolution, and 200% scale.",
+      "The issue is open, unassigned, and labeled Issue-Bug, Needs-Author-Feedback, Needs-Triage, and Product-Command Palette.",
+      "The only public comment asks the author to provide concrete reproduction steps; no bug-report ZIP is attached.",
+      "No linked work or confirmed duplicate is present."
+    ],
+    "inferences": [
+      "The video may show a reveal/collapse timing problem, incorrect window bounds, or auto-hide registration fallback, but the public text does not distinguish these behaviors.",
+      "The 200% scale makes DPI conversion and monitor work-area calculations a plausible investigation branch, but there is no evidence that scaling is causal.",
+      "A taskbar auto-hide conflict is another plausible branch because the current implementation intentionally falls back to pinned mode when the taskbar owns the same edge; this is not confirmed for the reporter.",
+      "Older reports #46239 and #46589 requested the auto-hide feature, and #46239 was implemented by PR #48565; they are not duplicates of this post-implementation malfunction report.",
+      "Open issue #48466 concerns incorrect dock positioning on another display and includes separate scaling/topology evidence, but it does not establish that #50405 has the same cause."
+    ],
+    "analysis": "The current source narrows the relevant boundary but not the failing branch. DockSettingsPage.xaml binds the auto-hide toggle to SettingsViewModel.Dock_AutoHide. DockWindow.CreateAppBar chooses AppBar auto-hide, checks for a same-edge taskbar auto-hide conflict, and can fall back to pinned mode; UpdateAutoHideWindowPosition, ApplyAutoHideRect, and the reveal/collapse timers then control the visible geometry and animation. The existing DockSettingsAutoHideToggleTest verifies settings persistence only, not visual behavior at high DPI. The author must describe the observed failure and setup before a safe design can select among those paths.",
+    "initial_investigation": [
+      "Read the complete live issue body, the only public comment, labels, assignees, issue events, timeline, and public attachment reference; no linked fix or cross-reference was found.",
+      "Inspected src/modules/cmdpal/Microsoft.CmdPal.UI/Settings/DockSettingsPage.xaml and SettingsViewModel.Dock_AutoHide, which show the settings binding.",
+      "Inspected src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs symbols CreateAppBar, TryRegisterAutoHideAppBar, TrySetAutoHideRegistration, UpdateAutoHideWindowPosition, ApplyAutoHideRect, ScheduleCollapseAutoHideDock, RevealAutoHideDock, CollapseAutoHideDock, and IsCursorAtDockEdge.",
+      "Inspected src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/BasicTests.cs; DockSettingsAutoHideToggleTest checks toggle persistence after navigation but does not exercise reveal timing, geometry, DPI, or taskbar conflicts.",
+      "Reviewed public history: commit 9ee0c725 introduced Dock auto-hide in PR #48565 and closed feature request #46239; later dock history includes monitor-topology work in PR #49814, whose description explicitly treats mixed-DPI scaling as a separate issue #48466.",
+      "Compared related public reports #46239, #46589, #46605, #47507, and #48466. The first four concern requesting or duplicating the original auto-hide feature; #48466 is related dock geometry evidence but is not a confirmed duplicate."
+    ],
+    "information_gaps": [
+      {
+        "information": "A plain-text description of what the video shows: whether the dock stays visible, does not reveal, reveals repeatedly, opens with multiple animations, or has the wrong size or position.",
+        "why_needed": "This separates the reveal/collapse timer and hit-test path from AppBar registration and window-geometry paths.",
+        "how_to_collect": "Reply with the observed result in one or two sentences and include what happens after moving the pointer to and away from the configured screen edge."
+      },
+      {
+        "information": "Numbered reproduction steps after enabling auto-hide, including the configured dock edge, whether the machine has one or multiple displays, and whether Windows taskbar auto-hide or another taskbar customization is enabled on that edge.",
+        "why_needed": "The code changes behavior when the taskbar owns the same auto-hide edge and uses monitor/work-area geometry that can differ across displays.",
+        "how_to_collect": "Reproduce from a fresh PowerToys launch and report the dock side, monitor count, taskbar auto-hide state, and whether the issue remains after restarting PowerToys."
+      },
+      {
+        "information": "A fresh PowerToys diagnostic archive captured immediately after reproducing the failure.",
+        "why_needed": "The current report has no logs to compare AppBar registration, fallback warnings, monitor bounds, DPI, or settings state.",
+        "how_to_collect": "Immediately after reproducing, add a comment containing `/bugreport` and attach the generated ZIP."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-50405-auto-hide-repro",
+      "type": "request_info",
+      "label": "Request the exact auto-hide symptom and fresh reproduction data",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50405,
+        "body": "Thanks for reporting this on PowerToys 0.101.2362 and for providing the ARM64, 2880x1920, 200% scaling details and the video. The current text does not say what the video demonstrates, and the only reproduction step is enabling Dock Autohide, so we cannot tell whether the dock stays visible, fails to reveal, repeats its animation, or has the wrong size or position. Please reply with a short description of the observed result and numbered steps including the dock edge, number of displays, Windows taskbar auto-hide state, any taskbar customization, and whether restarting PowerToys changes it. Immediately after reproducing, add a comment containing `/bugreport` and attach the generated ZIP so maintainers can distinguish AppBar registration, taskbar-edge conflict, DPI geometry, and reveal/collapse behavior."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
+}
