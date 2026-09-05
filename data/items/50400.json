@@ -1,0 +1,283 @@
+{
+  "schemaVersion": 5,
+  "number": 50400,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-05T05:45:31Z",
+  "evaluated_at": "2026-09-05T05:45:31Z",
+  "source_updated_at": "2026-09-05T04:33:11Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50400",
+  "title": "Unexpected behavior in dock",
+  "author": "YashKant564",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "After adding a Command Palette Dock band to the center or end section and saving, the reporter can no longer modify those sections in later edit sessions.",
+  "status": {
+    "glyph": "!",
+    "label": "Design ready",
+    "detail": "The affected save and edit paths are identified, but a focused post-save interaction trace is needed to distinguish persistence from edit-mode UI behavior."
+  },
+  "next_action": "Approve the focused Dock regression design and collect the requested post-save interaction details before selecting the final implementation boundary.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report supplies a short, repeatable sequence focused on a single Dock edit/save lifecycle. Current Command Palette source keeps separate StartItems, CenterItems, and EndItems collections, and its SaveBandOrder path persists all three. A recent merged fix changed that same save path for newly added bands, but it tested only the start-band scenario and the reporter describes a later preview build and a broader center/end post-save interaction failure. That makes a focused regression design appropriate rather than treating the earlier fix as confirmed coverage.",
+    "evidence": [
+      "The open Issue-Bug report specifies Preview v0.101.2453.0 installed from the Microsoft Store, with no comments or assignees.",
+      "The reporter's steps are: enable Dock, enter edit mode, add an item to the middle or right section, save, then attempt to remove items from those sections.",
+      "The issue includes a PowerToys diagnostic ZIP attachment, but no discussion identifies whether the later failure is a missing context menu, disabled edit mode, a failed unpin action, or reverted settings.",
+      "DockControl binds separate CenterListView and EndListView controls to DockViewModel.CenterItems and DockViewModel.EndItems, and toggles edit-mode drag behavior for each control.",
+      "DockViewModel.SaveBandOrder enumerates StartItems, CenterItems, and EndItems, then persists the three active band lists together.",
+      "Merged PR #50363 changed DockViewModel.SaveBandOrder to preserve pending settings for newly added bands and added DockLabelPersistenceTests, but its published regression cases exercise StartBands rather than center/end post-save editing.",
+      "Public issue search found related Dock reports, including #48528 about unpinning, but no public issue or pull request was found that links this center/end post-save symptom to an existing fix."
+    ],
+    "recommended_action": "Approve a focused Command Palette Dock save/re-entry regression investigation, reproduce the reported lifecycle, and use the requested interaction details to confirm whether the defect is in persisted center/end bands or in restoring edit-mode controls.",
+    "evaluated_at": "2026-09-05T05:45:31Z",
+    "source_updated_at": "2026-09-05T04:33:11Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No public fix attempt is linked to this issue. The current code establishes the likely ownership and save boundary, but the supplied report does not yet reveal which operation fails after re-entering edit mode, so the root cause remains a targeted hypothesis."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve center and end Dock editability across save and re-entry",
+      "root_cause": "The likely defect is a regression at the boundary between DockControl exiting edit mode and DockViewModel.SaveBandOrder restoring persisted center/end band state. The recent save-merge fix proves this boundary has changed for newly added bands, but current focused tests cover only the start section. This is an inference, not a confirmed root cause.",
+      "plan": [
+        "Reproduce adding a band to the center and end sections, saving, re-entering edit mode, and attempting each supported modification; record whether the control, context menu, collection, or persisted setting fails.",
+        "Trace DockControl.EnterEditMode, ExitEditMode, and its center/end ListView bindings together with DockViewModel.SnapshotBandOrder, SaveBandOrder, GetActiveBands, and WithActiveBands to identify the first state that differs from the pre-save edit session.",
+        "Correct the smallest confirmed state-transfer or edit-mode restoration defect while preserving the existing global and per-monitor band-list behavior.",
+        "Extend the Dock view-model regression coverage from StartBands to CenterBands and EndBands, including save, re-entry, and removal or reorder behavior for both global and customized-monitor settings."
+      ],
+      "verification": [
+        "Run the Command Palette Dock view-model unit tests, including the added center/end save-and-re-entry cases.",
+        "In Preview v0.101.2453.0 or a build containing the fix, enable Dock; add one item to each center and end section; save; re-enter edit mode; remove and reorder each item; save again; and confirm the resulting layout persists after reopening Dock.",
+        "Repeat the scenario with a customized secondary-monitor Dock to confirm a section-level fix does not overwrite another monitor's band lists."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The report, the current three-section edit/save implementation, and the immediately preceding save-path fix strongly localize the investigation. The report does not state what interaction fails after saving or whether the issue uses a customized monitor, so it cannot yet distinguish a persistence fault from an edit-mode UI restoration fault."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Microsoft Store Preview user reports that center and right-side Command Palette Dock changes become uneditable after the first saved edit session.",
+    "known_information": [
+      "The affected version is Preview v0.101.2453.0 installed from the Microsoft Store.",
+      "The report explicitly involves enabling Dock, entering its edit mode, adding an item to the middle or right section, and saving.",
+      "The expected result is that items in the middle and right sections can later be removed; the reported result is that no changes can be made to those sections after saving.",
+      "The issue is open with Issue-Bug and Needs-Triage labels, has no assignee, and has no comments.",
+      "A PowerToys diagnostic ZIP is attached to the initial report.",
+      "The current implementation has dedicated center and end item collections and controls, while the save operation handles start, center, and end band lists together.",
+      "Merged PR #50363 fixed a related new-band label-persistence issue in the same save path, but it was merged before this report and was not linked to this issue."
+    ],
+    "inferences": [
+      "The problem is likely owned by the Command Palette Dock implementation even though the issue's area selection is General.",
+      "The symptom may be a state mismatch after saving rather than a failure to add the initial band, because the report says the first save succeeds and later edits fail.",
+      "The related PR #50363 is relevant history but is not evidence that it fixes this report; the report uses a later preview build and describes center/end editability rather than label visibility."
+    ],
+    "analysis": "The report is sufficiently specific to justify a narrow regression plan and local reproduction, rather than a generic diagnostic request. The implementation shares a save method across all three sections, and a recent change to that method establishes a plausible regression boundary. However, no public evidence identifies the precise failed post-save action or monitor configuration. The proposed plan is therefore yellow confidence, is gated by design approval, and is paired with a request only for facts that determine the correct repair boundary.",
+    "initial_investigation": [
+      "Read the complete issue body, all available comments, labels, assignees, attachment link, timeline entries, and current updated time; the discussion is empty and the timeline contains only the initial labels.",
+      "Reviewed current Command Palette Dock source: DockControl.xaml, DockControl.xaml.cs, DockViewModel.cs, DockBandViewModel.cs, DockBandSettingsViewModel.cs, and DockSettings.cs.",
+      "Reviewed merged PR #50363, \"CmdPal: Persist dock label visibility for new items,\" and its focused DockLabelPersistenceTests; it modified SaveBandOrder but did not establish coverage for center/end post-save editability.",
+      "Searched public PowerToys issues and pull requests for Dock and center/right edit or unpin reports. #48528 is a related unpin report, but no canonical duplicate, linked pull request, or existing fix covers this report."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact first failed action after saving: whether re-entering edit mode works, whether the center/end add buttons and drag targets appear, whether right-click opens the edit menu, and whether the Unpin command changes the layout or silently does nothing.",
+        "why_needed": "It distinguishes an edit-mode UI restoration failure from a persisted-band or unpin/save failure, which determines the owning symbol and the regression test.",
+        "how_to_collect": "Provide a short screen recording or numbered observations covering the first edit session, Save, the next entry into edit mode, and one attempted removal from both the center and right sections."
+      },
+      {
+        "information": "Whether the affected Dock is on the primary monitor or a customized secondary-monitor Dock, and whether the items remain visible after reopening PowerToys.",
+        "why_needed": "The Dock has distinct global and per-monitor persistence paths; this identifies whether the failure occurs while restoring a monitor-specific band list.",
+        "how_to_collect": "State the monitor on which the Dock is configured, whether per-monitor customization is enabled, and whether the affected items remain visible after closing and reopening PowerToys."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "The confirmed failure mechanism is not yet known. The leading hypothesis is that saving a new center or end band leaves a later edit session with an inconsistent persisted-band snapshot or edit control state. DockControl exits edit mode by calling DockViewModel.SaveBandOrder, which merges and persists start, center, and end bands; a recent change in that method addressed another newly added-band persistence defect. The report's post-save center/end behavior makes this a focused regression boundary rather than proof that the recent change is itself faulty.",
+    "evidence": [
+      "The issue provides a deterministic initial sequence that reaches save successfully and reports failure only in a later edit attempt.",
+      "DockControl uses separate CenterListView and EndListView bindings and enables their editing capabilities only while IsEditMode is true.",
+      "DockViewModel maintains CenterItems and EndItems separately and SaveBandOrder iterates all three section collections before persisting them.",
+      "PR #50363 changed SaveBandOrder's merge logic for newly added bands and added tests that exercise the start section only.",
+      "No upstream pull request, issue cross-reference, or assignee establishes another public owner or fix attempt for #50400."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockControl.xaml.cs",
+        "purpose": "Owns entry and exit from Dock edit mode, section list edit settings, edit context menus, and unpin interaction dispatch.",
+        "symbols": [
+          "DockControl.EnterEditMode",
+          "DockControl.ExitEditMode",
+          "DockControl.UpdateEditMode",
+          "DockControl.BandItem_RightTapped",
+          "DockControl.UnpinBandMenuItem_Click"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs",
+        "purpose": "Owns section-specific collections, edit snapshots, the save merge, and global/per-monitor Dock band persistence.",
+        "symbols": [
+          "DockViewModel.SnapshotBandOrder",
+          "DockViewModel.SaveBandOrder",
+          "DockViewModel.GetActiveBands",
+          "DockViewModel.WithActiveBands",
+          "DockViewModel.UnpinBand",
+          "DockViewModel.MergeBandSettings"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockLabelPersistenceTests.cs",
+        "purpose": "Provides the existing focused fixture for save-time Dock band persistence and is the natural location for section-coverage regression tests.",
+        "symbols": [
+          "DockLabelPersistenceTests.SaveBandOrder_NewBandPersistsLabelVisibility",
+          "DockLabelPersistenceTests.SaveBandOrder_NewBandPersistsLabelVisibilityForCustomizedMonitor"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockControl.xaml.cs",
+        "symbols": [
+          "DockControl.EnterEditMode",
+          "DockControl.ExitEditMode",
+          "DockControl.UpdateEditMode",
+          "DockControl.BandItem_RightTapped",
+          "DockControl.UnpinBandMenuItem_Click"
+        ],
+        "current_behavior": "Entering edit mode snapshots the view model and enables drag/drop on each section; exiting sets IsEditMode false and then calls SaveBandOrder. Center and end band removal is initiated from the edit-mode context menu.",
+        "change": "Use the reporter's focused trace to verify the post-save state of IsEditMode, the center/end ListViews, and the selected edit band. If a control-state defect is confirmed, restore the same edit affordances and band association as the first session without changing normal-mode invocation behavior.",
+        "code_block": "EnterEditMode();\n// Verify CenterListView and EndListView receive the same edit-state transition as StartListView.\nExitEditMode();\n// Persist the complete edit transaction, then ensure the next entry snapshots the persisted center/end bands.",
+        "edge_cases": [
+          "Do not enable drag/drop or edit context menus outside edit mode.",
+          "Do not retain a stale _editModeContextBand after a band is removed or after edit mode exits.",
+          "Keep compact-mode subtitle-menu behavior unchanged."
+        ],
+        "tests": [
+          "Manually re-enter edit mode after saving a center band and an end band; verify right-click opens the edit menu and Unpin removes the selected band.",
+          "Add UI-level coverage if the project has an existing Dock edit-mode test seam that can observe post-save ListView edit state."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs",
+        "symbols": [
+          "DockViewModel.SnapshotBandOrder",
+          "DockViewModel.SaveBandOrder",
+          "DockViewModel.GetActiveBands",
+          "DockViewModel.WithActiveBands",
+          "DockViewModel.UnpinBand",
+          "DockViewModel.MergeBandSettings"
+        ],
+        "current_behavior": "SaveBandOrder collects pending band settings from all three observable collections, merges them into the active settings, and persists global or customized-monitor lists. A future edit session snapshots those persisted lists.",
+        "change": "After identifying the first divergent state, make the narrowest correction so center and end band identities, ordering, and label state survive save and are available to SnapshotBandOrder and UnpinBand in the next edit session. Preserve the existing latest-settings merge that prevents concurrent monitor saves from clobbering each other.",
+        "code_block": "var (start, center, end) = GetActiveBands();\n_settings = WithActiveBands(\n    MergeBandSettings(start, latest, pending),\n    MergeBandSettings(center, latest, pending),\n    MergeBandSettings(end, latest, pending));\n// Keep the three lists coherent with the collections used by the next edit session.",
+        "edge_cases": [
+          "Retain explicit empty center or end lists instead of treating them as inherited or missing.",
+          "Do not overwrite another customized monitor's bands during a save.",
+          "Preserve pending title/subtitle settings from the #50363 fix while testing removal and reorder behavior."
+        ],
+        "tests": [
+          "Add data-driven unit coverage for a new center band and a new end band that saves, re-snapshots, removes or reorders the band, and saves again.",
+          "Repeat the same cases for a customized monitor and assert that global and other-monitor lists are unchanged."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockLabelPersistenceTests.cs",
+        "symbols": [
+          "DockLabelPersistenceTests.SaveBandOrder_NewBandPersistsLabelVisibility",
+          "DockLabelPersistenceTests.SaveBandOrder_NewBandPersistsLabelVisibilityForCustomizedMonitor"
+        ],
+        "current_behavior": "The existing test fixture asserts that newly added start bands retain label settings after SaveBandOrder and includes a customized-monitor start-band case.",
+        "change": "Generalize the fixture helpers or add explicit cases so StartBands, CenterBands, and EndBands are each verified across the save/re-entry lifecycle. Add assertions for band presence, order, and successful removal or repositioning, not only label values.",
+        "code_block": "foreach (var section in new[] { Start, Center, End })\n{\n    AddNewBand(section);\n    SaveBandOrder();\n    SnapshotBandOrder();\n    RemoveBand(section);\n    SaveBandOrder();\n    AssertSectionIsEmpty(section);\n}",
+        "edge_cases": [
+          "Keep global and customized-monitor fixture setup distinct.",
+          "Use unique command IDs where a test contains more than one band so lookup and removal assertions do not mask section errors."
+        ],
+        "tests": [
+          "Run the expanded DockLabelPersistenceTests suite.",
+          "Run the adjacent Dock settings equality and multi-monitor tests to catch a structural persistence regression."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the Command Palette UI and view-model test projects using the repository-supported Visual Studio build workflow.",
+      "Run the focused DockLabelPersistenceTests, DockSettingsEqualityTests, and DockMultiMonitorTests after adding the center/end regression cases.",
+      "Enable Dock, add a band to center and end, save, re-enter edit mode, remove and reorder the bands, save, reopen PowerToys, and confirm the persisted layout matches the final edit.",
+      "Repeat on a customized secondary-monitor Dock and confirm edits do not alter global or another monitor's band configuration."
+    ],
+    "risks": [
+      "A broad rewrite of SaveBandOrder can reintroduce the concurrent-monitor last-save-wins behavior that the current merge path protects.",
+      "Changing the edit-mode transition can accidentally allow normal Dock item invocation or drag/drop while not editing.",
+      "A test that only checks persisted labels can miss the reported interaction failure, so the regression must assert a second edit session and a concrete removal or reorder."
+    ],
+    "alternatives": [
+      "Treat merged PR #50363 as the fix: rejected because #50400 was reported later and describes a different, broader center/end post-save interaction failure.",
+      "Request a generic new diagnostic archive before investigation: rejected because an archive is already attached and the remaining ambiguity is the precise UI operation, best resolved by a short targeted recording or observations.",
+      "Change all three section controls symmetrically without reproduction: rejected because the source already configures their edit flags symmetrically and the failure boundary must be observed before expanding the patch."
+    ]
+  },
+  "actions": [
+    {
+      "id": "reproduce-50400",
+      "type": "reproduce",
+      "label": "Reproduce center/end post-save editing failure",
+      "primary": true,
+      "confirm": false,
+      "reproduce": {
+        "module": "Command Palette Dock",
+        "version_requirement": "PowerToys Preview v0.101.2453.0 or the first build containing the approved regression test",
+        "prerequisites": [
+          "Use a Windows account with Command Palette available.",
+          "Enable Command Palette Dock.",
+          "Ensure at least one available Dock band can be added."
+        ],
+        "steps": [
+          "Open the Dock's context menu and enter edit mode.",
+          "Add one available band to the center section and one available band to the right/end section.",
+          "Select Save to exit edit mode.",
+          "Open the Dock's context menu again and re-enter edit mode.",
+          "For each added band, right-click it and choose Unpin; also attempt a reorder or move within its section.",
+          "Save again, reopen Dock edit mode, and inspect the center and end sections."
+        ],
+        "expected_result": "Both sections remain editable after the first save: their edit context menus open, Unpin and reorder take effect, and the second save persists the resulting layout.",
+        "setup_prompt": "Prepare a Command Palette Dock test profile with two available bands that can be placed into the center and end sections, then perform the documented save and re-entry sequence."
+      },
+      "note": "Local reproduction guidance only; no upstream action is performed."
+    },
+    {
+      "id": "request-info-50400",
+      "type": "request_info",
+      "label": "Request post-save center/end interaction details",
+      "primary": false,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50400,
+        "body": "Thanks for the clear save-and-retry sequence and for attaching the diagnostic archive. The Dock uses separate center and right/end edit collections, so the key remaining detail is what fails after the first save. Could you share a short recording or numbered observations showing the next edit session: whether edit mode opens, whether the center/end add buttons and drag targets appear, whether right-click opens the edit menu, and whether Unpin changes the layout or does nothing? Please also say whether this is the primary monitor or a customized secondary-monitor Dock, and whether the added items remain visible after reopening PowerToys. That will distinguish an edit-mode UI problem from a persisted-band problem."
+      },
+      "note": "Draft only; no upstream comment is posted by this artifact."
+    },
+    {
+      "id": "approve-design-50400",
+      "type": "approve_design",
+      "label": "Approve center/end Dock regression design",
+      "primary": false,
+      "confirm": true,
+      "note": "Approve the focused Command Palette Dock save/re-entry investigation and regression coverage before starting fork-side implementation."
+    }
+  ]
+}

@@ -3,12 +3,14 @@
   "number": 50335,
   "kind": "issue",
   "track": "triage",
-  "stage": "awaiting_author_information",
-  "generated_at": "2026-09-04T07:30:00Z",
-  "evaluated_at": "2026-09-04T07:30:00Z",
-  "source_updated_at": "2026-09-03T17:26:05Z",
+  "stage": "duplicate_or_handled",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-05T13:45:31+08:00",
+  "evaluated_at": "2026-09-05T05:45:31Z",
+  "source_updated_at": "2026-09-05T05:10:04Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50335",
-  "title": "PowerToys Settings crashes on Windows 10 launch",
+  "title": "I can't open powertoys settings by double clicking",
   "labels": [
     "Issue-Bug",
     "Product-Settings",
@@ -16,61 +18,81 @@
   ],
   "assignees": [],
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "The reporter's Event Viewer/host tracing identifies a COR_E_EXECUTIONENGINE failure before PowerToys logs are created and reports recovery after Windows servicing or a per-program CET mitigation override. Current evidence indicates a Windows/.NET CET compatibility condition rather than a confirmed PowerToys source path.",
+    "status": "duplicate_or_handled",
+    "rationale": "The report belongs with the existing Windows 10 PowerToys UI-launch investigation in #40234 rather than a separate fix queue. The symptom is the same Settings process failure, the reporter's CET/runtime findings add useful diagnostic evidence, and a PowerToys collaborator already closed the closely matching #41292 as a duplicate of #40234. No public PowerToys change was found that fixes Settings specifically.",
     "evidence": [
-      "The issue reproduces on the reporter's Windows 10 system but not their Windows 11 laptop.",
-      "The reporter records exception code 0x80131506 in KERNELBASE.dll and says the process dies before PowerToys logging.",
-      "The reporter reports that updating Windows or disabling Hardware-enforced Stack Protection for PowerToys.Settings.exe resolves the crash.",
-      "The repository's local UI-test guidance records that .NET 10 CET support requires Windows 10 1904x.5007 or newer and cites the same 0x80131506 failure class."
+      "The issue body reports PowerToysUserSetup-0.101.2432.0-x64 on Windows 10 where double-clicking the icon does not open Settings, while the same action works on Windows 11.",
+      "The reporter later supplied Event Viewer and runtime tracing details: PowerToys.Settings.exe exits with 0x80131506 (COR_E_EXECUTIONENGINE) in KERNELBASE.dll before PowerToys logs are created, and disabling Hardware-enforced Stack Protection or updating Windows restores launch.",
+      "A second commenter reports the same CET-related failure pattern for PowerToys.FancyZonesEditor.exe, showing that the evidence concerns the Windows 10 WinUI/.NET executable family rather than only one Settings click path.",
+      "Open issue #40234 tracks the matching Windows 10 behavior where PowerToys remains running but Settings, Quick Access, and other UI windows fail to appear.",
+      "Collaborator Niels9001 closed #41292 as a duplicate of #40234, explicitly identifying the same PowerToys Settings UI launch failure.",
+      "Open issue #47814 separately records a Windows 10 CET/coreclr startup failure when User Shadow Stack is enabled, corroborating the relevance of CET compatibility but not establishing a separate PowerToys fix.",
+      "Merged PR #37550 disables CETCompat only for the PowerToys Run launcher and does not cover PowerToys.Settings.exe or FancyZonesEditor.exe.",
+      "Repository UI-test guidance states that Windows 10 below the documented CET servicing floor can fail with 0x80131506; this supports the runtime hypothesis but is not a maintainer-confirmed resolution for this issue."
     ],
-    "recommended_action": "Request the exact serviced Windows build and the result after current updates with the per-program override removed; do not propose a PowerToys source fix unless the runtime crash persists."
+    "recommended_action": "Consolidate this report with the active canonical investigation #40234 and carry over the reporter's CET evidence there; do not start a competing Settings-specific implementation until maintainers determine whether the shared UI-launch failure needs a product change.",
+    "confidence": {
+      "score": 92,
+      "level": "green",
+      "rationale": "The duplicate relationship is supported by the matching public symptom, explicit collaborator duplicate handling for #41292, and the active #40234 investigation. The CET explanation is retained as evidence and an inference, not treated as a confirmed root cause."
+    }
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "The evidence supports an OS/runtime servicing dependency, and no PowerToys code change can be selected responsibly without a current fully patched Windows 10 reproduction.",
+    "rationale": "A separate PowerToys code fix is not applicable to this report while the matching public investigation remains active and the available evidence points to a shared Windows 10 UI/runtime launch condition. The existing CETCompat change is limited to PowerToys Run and is not an existing fix for Settings or FancyZones.",
+    "evidence": [
+      "Canonical public work: https://github.com/microsoft/PowerToys/issues/40234",
+      "Prior duplicate disposition: https://github.com/microsoft/PowerToys/issues/41292",
+      "Related CET investigation: https://github.com/microsoft/PowerToys/issues/47814",
+      "CETCompat change with narrower scope: https://github.com/microsoft/PowerToys/pull/37550"
+    ],
     "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "Settings exits immediately on one Windows 10 environment before PowerToys logging, while the reporter says Windows updates or disabling a CET mitigation restores launch.",
+    "summary": "On Windows 10, PowerToys UI executables can start and exit without displaying a window. The reporter's crash evidence points to a CET/.NET runtime interaction, and a second user reproduced the mitigation behavior on FancyZones, so this report should enrich the active shared investigation rather than create a competing fix.",
     "known_information": [
-      "The reporter uses PowerToysUserSetup-0.101.2432.0-x64 and can launch Settings on a Windows 11 laptop.",
-      "Event Viewer reports COR_E_EXECUTIONENGINE exception code 0x80131506 in KERNELBASE.dll.",
-      "The crash occurs before PowerToys logs are generated.",
-      "The reporter describes both an exploit-protection workaround and success after current Windows updates."
+      "The reported package is PowerToysUserSetup-0.101.2432.0-x64 installed from GitHub.",
+      "Settings opens on the reporter's Windows 11 laptop but not on the Windows 10 machine.",
+      "Event Viewer reports PowerToys.Settings.exe failing with exception code 0x80131506 (COR_E_EXECUTIONENGINE) in KERNELBASE.dll.",
+      "The reporter says the process exits before PowerToys logs are generated.",
+      "The reporter says Windows updates or disabling Hardware-enforced Stack Protection for PowerToys.Settings.exe restores launch.",
+      "A second commenter reports the same workaround pattern for PowerToys.FancyZonesEditor.exe.",
+      "Issue #40234 is open with the same Windows 10 UI-launch symptom, and #41292 was closed by a collaborator as its duplicate.",
+      "Issue #47814 is an open related report describing a Windows 10 CET/coreclr startup failure.",
+      "PR #37550 is merged but changes CETCompat only for the PowerToys Run launcher."
     ],
     "inferences": [
-      "The failure is likely below the Settings application code, in the Windows/.NET CET compatibility layer.",
-      "A fully serviced Windows 10 build may resolve the problem without a PowerToys implementation change."
+      "The Settings and FancyZones results are likely part of the same Windows 10 WinUI/.NET executable startup failure family, but the exact failing runtime branch is not confirmed by a PowerToys maintainer.",
+      "The reported workaround and the repository's CET servicing guidance make an OS/runtime compatibility condition plausible, but they do not prove that every affected Windows 10 build has the same cause.",
+      "Because #40234 already covers the shared UI-launch symptom, maintaining a separate implementation plan for #50335 would risk duplicating triage and splitting evidence."
     ],
-    "analysis": "The supplied stack/crash description and the absence of product logs point to runtime initialization, not Settings application control flow. Repository test-environment guidance independently documents a Windows 10 CET servicing floor for the same exception class. The remaining decision is whether the reporter's system is still below that floor after a reboot and without the local workaround.",
+    "analysis": "The newest comment materially strengthens the report: it confirms that the failure is not limited to one Settings invocation and that the same exploit-protection mitigation affects another PowerToys WinUI executable. Public repository evidence also shows that PowerToys routes UI launch through executable startup and that the merged CETCompat precedent is scoped only to PowerToys Run. The most reliable maintainer action is therefore to link the detailed CET evidence to #40234, which is the active canonical investigation for the same Windows 10 UI-launch family, while keeping the CET mechanism explicitly qualified as an inference.",
     "initial_investigation": [
-      "Read the entire issue and discussion, including the reporter's Event Viewer, ProcMon, and .NET CoreHost tracing summary.",
-      "Reviewed .github/skills/ui-tests-local-vm/references/setup.md, which documents 0x80131506 for Windows 10 systems below the .NET CET servicing floor.",
-      "Checked current upstream references and fork traces; no linked PowerToys fix, duplicate resolution, or fork implementation was found."
+      "Read the complete issue body and all four public comments, including the latest commenter confirmation, current labels, empty assignee list, and updatedAt of 2026-09-05T05:10:04Z.",
+      "Reviewed the issue timeline: it has public cross-references to #49011, #37165, and #24035, but no linked fix, assigned owner, close event, or merged change for #50335.",
+      "Reviewed #40234 in full; it remains open and records the matching Windows 10 failure where PowerToys stays running while Settings and other UI windows do not appear.",
+      "Reviewed #41292 in full; collaborator Niels9001 closed it as a duplicate of #40234.",
+      "Reviewed #47814; it is an open related CET/coreclr failure report without a PowerToys fix.",
+      "Reviewed merged PR #37550 and its changed file; it disables CETCompat only in src/modules/launcher/PowerLauncher/PowerLauncher.csproj for PowerToys Run.",
+      "Reviewed the repository's .github/skills/ui-tests-local-vm/references/setup.md guidance, which documents the Windows 10 CET servicing floor and the same 0x80131506 failure class.",
+      "Reviewed public runner ownership evidence in src/runner/tray_icon.cpp and src/runner/settings_window.cpp: Settings and Quick Access are launched through the runner's Settings window path, supporting consolidation with the broader UI-launch investigation."
     ],
-    "information_gaps": [
-      {
-        "information": "The exact Windows 10 version, full OS build, and installed cumulative update after reboot, plus the launch result with the per-program Hardware-enforced Stack Protection override removed.",
-        "why_needed": "It establishes whether the system still falls below the documented OS servicing requirement or whether a current supported system reproduces a PowerToys-specific crash.",
-        "how_to_collect": "Run winver, install all offered Windows Updates, reboot, remove the PowerToys.Settings.exe Program settings override, then launch Settings from the tray icon once."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-50335",
-      "type": "request_info",
-      "label": "Request Windows servicing result",
+      "id": "post-comment-50335-canonical",
+      "type": "post_comment",
+      "label": "Link the canonical Windows 10 UI-launch investigation",
       "primary": true,
       "confirm": true,
+      "note": "Draft only; no upstream comment has been posted.",
       "comment": {
         "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50335,
-        "body": "Thanks for documenting the 0x80131506 crash and the CET workaround. Because the crash occurs before PowerToys logging and you reported that Windows updates resolve it, please provide the exact Windows 10 version and full build from `winver`, plus the installed cumulative update after rebooting. Then remove the per-program Hardware-enforced Stack Protection override for PowerToys.Settings.exe and report whether launching Settings from the tray icon still crashes. This will tell us whether a current serviced system still has a PowerToys-specific problem."
-      },
-      "note": "Draft only; no upstream comment posted."
+        "body": "Thanks for documenting the 0x80131506 crash and the Hardware-enforced Stack Protection workaround, and for confirming that the same behavior affects another PowerToys UI executable. This report matches the active Windows 10 UI-launch investigation in #40234, where Settings and other PowerToys UI windows fail to appear while PowerToys remains running. A collaborator closed the closely matching #41292 as a duplicate of #40234. Please add the detailed CET/runtime findings from this report to #40234 so the investigation has the Event Viewer result, workaround, and second-executable confirmation in one place. The merged CETCompat change in #37550 is scoped to PowerToys Run and does not establish a fix for Settings."
+      }
     }
   ]
 }
