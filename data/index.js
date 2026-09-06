@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-07T06:23:11.1646652+08:00",
+  "generated_at": "2026-09-07T06:36:42.5397487+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 151,
     "open_issues": 12596,
     "community": 12003,
-    "artifacts": 368
+    "artifacts": 370
   },
   "impact": {
-    "as_of": "2026-09-07T06:23:11.1646652+08:00",
+    "as_of": "2026-09-07T06:36:42.5397487+08:00",
     "issues_helped": 10,
     "prs_iterated": 29,
     "constructive_comments_posted": 3,
@@ -220,6 +220,7 @@ window.BOARD_INDEX = {
     33109,
     3442,
     50214,
+    50426,
     50424,
     50422,
     50420,
@@ -343,6 +344,7 @@ window.BOARD_INDEX = {
     49768,
     11792,
     46362,
+    49227,
     10942,
     279,
     45816,
@@ -1216,7 +1218,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": null,
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-50334",
@@ -44793,12 +44795,12 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "fix_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -156614,8 +156616,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-03T23:54:08Z",
-      "updated_at": "2026-09-06T19:10:21Z",
-      "comments": 3,
+      "updated_at": "2026-09-06T22:22:03Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -171723,11 +171725,14 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
