@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-07T00:49:00.4421084+08:00",
+  "generated_at": "2026-09-07T02:14:56.6921628+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 150,
-    "open_issues": 12597,
-    "community": 12002,
-    "artifacts": 368
+    "open_issues": 12598,
+    "community": 12004,
+    "artifacts": 367
   },
   "impact": {
-    "as_of": "2026-09-07T00:49:00.4421084+08:00",
+    "as_of": "2026-09-07T02:14:56.6921628+08:00",
     "issues_helped": 10,
     "prs_iterated": 29,
     "constructive_comments_posted": 3,
@@ -220,7 +220,6 @@ window.BOARD_INDEX = {
     33109,
     3442,
     50214,
-    50422,
     50420,
     50416,
     50413,
@@ -957,12 +956,12 @@ window.BOARD_INDEX = {
         "khmyznikov"
       ],
       "created_at": "2026-09-04T03:41:11Z",
-      "updated_at": "2026-09-06T09:09:12Z",
+      "updated_at": "2026-09-06T17:59:42Z",
       "comments": 0,
       "priority": null,
       "review_decision": "APPROVED",
-      "ci_state": "passed",
-      "merge_state": "DIRTY"
+      "ci_state": "pending",
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50364",
@@ -2800,8 +2799,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-21T15:13:26Z",
-      "updated_at": "2026-09-06T13:45:36Z",
-      "comments": 6,
+      "updated_at": "2026-09-06T17:46:51Z",
+      "comments": 8,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
@@ -44806,13 +44805,46 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-35247",
+      "id": "issue-50424",
       "kind": "issue",
-      "number": 35247,
-      "url": "https://github.com/microsoft/PowerToys/issues/35247",
-      "title": "Workspaces - close existing apps",
-      "author": "balrOg-16",
-      "state": "closed",
+      "number": 50424,
+      "url": "https://github.com/microsoft/PowerToys/issues/50424",
+      "title": "Mouse Jump crashes when pressing Windows key+Shift+D",
+      "author": "CompactProducer",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Mouse Utilities"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-06T17:29:27Z",
+      "updated_at": "2026-09-06T17:34:50Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-50423",
+      "kind": "issue",
+      "number": 50423,
+      "url": "https://github.com/microsoft/PowerToys/issues/50423",
+      "title": "Switch Apps on Fancy Zones Easily",
+      "author": "JSFA1251",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -44828,13 +44860,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage",
-        "Product-Workspaces"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-10-04T00:43:48Z",
-      "updated_at": "2026-04-19T19:19:55Z",
-      "comments": 1,
+      "created_at": "2026-09-06T17:03:02Z",
+      "updated_at": "2026-09-06T17:03:02Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -44848,28 +44879,26 @@ window.BOARD_INDEX = {
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": "fix",
       "stage": "triage",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_comment",
-        "label": "Explain the Compact Mode setting location"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Author-Feedback",
+        "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-09-06T15:10:32Z",
-      "updated_at": "2026-09-06T15:45:15Z",
-      "comments": 1,
+      "updated_at": "2026-09-06T17:59:18Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -47369,8 +47398,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-06T15:17:34Z",
-      "comments": 30,
+      "updated_at": "2026-09-06T17:09:02Z",
+      "comments": 31,
       "priority": null
     },
     {
@@ -56234,9 +56263,11 @@ window.BOARD_INDEX = {
         "Area-Tests",
         "Product-CropAndLock"
       ],
-      "assignees": [],
+      "assignees": [
+        "khmyznikov"
+      ],
       "created_at": "2025-07-17T19:56:25Z",
-      "updated_at": "2026-04-18T13:52:29Z",
+      "updated_at": "2026-09-06T18:05:24Z",
       "comments": 0,
       "priority": null
     },
@@ -119592,8 +119623,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-12-08T20:03:31Z",
-      "updated_at": "2025-07-08T19:09:12Z",
-      "comments": 4,
+      "updated_at": "2026-09-06T17:46:41Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -226596,40 +226627,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-43909",
-      "kind": "issue",
-      "number": 43909,
-      "url": "https://github.com/microsoft/PowerToys/issues/43909",
-      "title": "CmdPal: Compact list view",
-      "author": "jiripolasek",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Triage",
-        "Product-Command Palette"
-      ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2025-11-26T19:21:28Z",
-      "updated_at": "2026-03-10T17:17:56Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
       "id": "issue-43908",
       "kind": "issue",
       "number": 43908,
@@ -315728,36 +315725,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-22709",
+      "id": "issue-40228",
       "kind": "issue",
-      "number": 22709,
-      "url": "https://github.com/microsoft/PowerToys/issues/22709",
-      "title": "[PT Run] [Registry] Allow to open key via Registry Editor (regedit) without elevation",
-      "author": "Jones-Bones",
+      "number": 40228,
+      "url": "https://github.com/microsoft/PowerToys/issues/40228",
+      "title": "The file indexer on Copilot+ PCs may introduce a 500ms delay each time a character is typed.",
+      "author": "lei9444",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "is_cmdpal": true,
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-PowerToys Run",
+        "Issue-Bug",
         "Needs-Triage",
-        "Run-Plugin"
+        "Product-Command Palette"
       ],
       "assignees": [],
-      "created_at": "2022-12-10T21:01:20Z",
-      "updated_at": "2024-10-13T12:13:49Z",
+      "created_at": "2025-06-25T11:59:04Z",
+      "updated_at": "2026-04-18T14:58:08Z",
       "comments": 0,
       "priority": null
     },
@@ -339308,39 +339304,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-40228",
-      "kind": "issue",
-      "number": 40228,
-      "url": "https://github.com/microsoft/PowerToys/issues/40228",
-      "title": "The file indexer on Copilot+ PCs may introduce a 500ms delay each time a character is typed.",
-      "author": "lei9444",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-Command Palette"
-      ],
-      "assignees": [],
-      "created_at": "2025-06-25T11:59:04Z",
-      "updated_at": "2026-04-18T14:58:08Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-30782",
       "kind": "issue",
       "number": 30782,
@@ -341326,6 +341289,40 @@ window.BOARD_INDEX = {
       "created_at": "2025-07-31T21:29:38Z",
       "updated_at": "2026-04-16T17:03:31Z",
       "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-22709",
+      "kind": "issue",
+      "number": 22709,
+      "url": "https://github.com/microsoft/PowerToys/issues/22709",
+      "title": "[PT Run] [Registry] Allow to open key via Registry Editor (regedit) without elevation",
+      "author": "Jones-Bones",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Product-PowerToys Run",
+        "Needs-Triage",
+        "Run-Plugin"
+      ],
+      "assignees": [],
+      "created_at": "2022-12-10T21:01:20Z",
+      "updated_at": "2024-10-13T12:13:49Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -389909,6 +389906,38 @@ window.BOARD_INDEX = {
       "created_at": "2025-01-04T22:07:11Z",
       "updated_at": "2026-04-18T15:25:02Z",
       "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-35247",
+      "kind": "issue",
+      "number": 35247,
+      "url": "https://github.com/microsoft/PowerToys/issues/35247",
+      "title": "Workspaces - close existing apps",
+      "author": "balrOg-16",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-Workspaces"
+      ],
+      "assignees": [],
+      "created_at": "2024-10-04T00:43:48Z",
+      "updated_at": "2026-04-19T19:19:55Z",
+      "comments": 1,
       "priority": null
     },
     {
