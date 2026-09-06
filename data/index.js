@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-07T04:18:19.0063940+08:00",
+  "generated_at": "2026-09-07T04:27:10.5640075+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 149,
     "open_issues": 12596,
     "community": 12003,
-    "artifacts": 369
+    "artifacts": 370
   },
   "impact": {
-    "as_of": "2026-09-07T04:18:19.0063940+08:00",
+    "as_of": "2026-09-07T04:27:10.5640075+08:00",
     "issues_helped": 10,
     "prs_iterated": 29,
     "constructive_comments_posted": 3,
@@ -220,6 +220,7 @@ window.BOARD_INDEX = {
     33109,
     3442,
     50214,
+    50426,
     50424,
     50422,
     50420,
@@ -1329,7 +1330,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-09-01T07:53:47.0000000Z",
+      "waiting_since": "09/02/2026 13:41:53",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -44715,16 +44716,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "awaiting_design_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",

@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 5,
+  "number": 50426,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-06T20:23:37.2846556Z",
+  "evaluated_at": "2026-09-06T20:23:37.2846556Z",
+  "source_updated_at": "2026-09-06T19:48:05Z",
+  "title": "CmdPal: CmdPal shortcuts can fire twice",
+  "url": "https://github.com/microsoft/PowerToys/issues/50426",
+  "confidence": "high",
+  "status": {
+    "glyph": "!",
+    "label": "Fix design ready",
+    "detail": "The thread-local WH_KEYBOARD callback treats HC_NOREMOVE notifications as actionable key events, so one queued key can be observed during both a peek and its later removal."
+  },
+  "summary": "Command Palette's local keyboard listener can raise one shortcut twice because it processes every nonnegative hook code instead of restricting event dispatch to HC_ACTION.",
+  "next_action": "Approve the focused HC_ACTION guard and callback-contract test design.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report identifies the exact Windows hook contract violation, and source inspection confirms that LocalKeyboardListener invokes KeyPressed for HC_ACTION and HC_NOREMOVE alike.",
+    "evidence": [
+      "LocalKeyboardListener installs a thread-local WH_KEYBOARD hook with SetWindowsHookEx.",
+      "KeyEventHook currently invokes a key event whenever nCode is nonnegative and the lParam transition bit indicates key-down.",
+      "The WH_KEYBOARD callback contract uses HC_ACTION for a message removed from the queue and HC_NOREMOVE for a peek that remains queued.",
+      "Processing HC_NOREMOVE permits the same queued key to be reported again when it is later removed as HC_ACTION.",
+      "MainWindow and SettingsWindow both consume LocalKeyboardListener.KeyPressed for navigation shortcuts, so duplicate dispatch can execute a command twice."
+    ],
+    "recommended_action": "Require nCode == HC_ACTION before interpreting wParam or lParam, and add a focused callback-decision regression test.",
+    "evaluated_at": "2026-09-06T20:23:37.2846556Z",
+    "source_updated_at": "2026-09-06T19:48:05Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked implementation is present, and the current listener has the exact overly broad nCode condition described by the report.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Dispatch local keyboard events only for HC_ACTION",
+      "root_cause": "LocalKeyboardListener.KeyEventHook uses nCode >= 0, which includes HC_NOREMOVE. A key observed while peeking can therefore raise KeyPressed before the same queue entry is processed again as HC_ACTION.",
+      "plan": [
+        "Extract or expose a side-effect-free callback eligibility predicate that requires HC_ACTION and a key-down transition.",
+        "Use the predicate in KeyEventHook before converting wParam to VirtualKey and invoking subscribers.",
+        "Always call CallNextHookEx for HC_NOREMOVE, negative codes, key-up transitions, and handled HC_ACTION notifications.",
+        "Add unit cases covering HC_ACTION, HC_NOREMOVE, negative hook codes, key-down, and key-up transitions."
+      ],
+      "verification": [
+        "Run the focused Microsoft.CmdPal.UI unit tests for the hook decision.",
+        "Open Command Palette and trigger GoBack, XButton1, and Alt+Left repeatedly; confirm each physical input produces one navigation action.",
+        "Exercise a message-peeking control path and confirm HC_NOREMOVE does not raise KeyPressed."
+      ],
+      "confidence": {
+        "score": 98,
+        "level": "green",
+        "rationale": "The source condition directly contradicts the documented WH_KEYBOARD callback contract and precisely explains duplicate processing of a peeked queue entry."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The report describes a Windows hook semantics bug rather than an environment-specific shortcut conflict: Command Palette consumes keyboard notifications that are not ready for processing.",
+    "known_information": [
+      "The report names LocalKeyboardListener and specifically identifies HC_NOREMOVE processing.",
+      "The current implementation installs a WH_KEYBOARD hook for the current UI thread.",
+      "The callback condition is nCode >= 0 combined with a key-down transition check.",
+      "MainWindow uses the listener for GoBack, XButton1, and Alt+Left navigation.",
+      "SettingsWindow uses the same listener for GoBack."
+    ],
+    "inferences": [
+      "A message loop or control that peeks before removing a keyboard message can cause the same physical key to produce two KeyPressed notifications.",
+      "Restricting dispatch to HC_ACTION should remove the duplicate without changing valid shortcut behavior."
+    ],
+    "analysis": "The hook code is the decisive signal. HC_NOREMOVE is informational and the message remains queued, so invoking application behavior from it violates the callback contract. The correction is a narrow predicate change with low compatibility risk.",
+    "initial_investigation": [
+      "Read the complete issue body, labels, assignee, and automated triage comment.",
+      "Reviewed Microsoft.CmdPal.UI/Helpers/LocalKeyboardListener.cs and confirmed the broad nCode condition.",
+      "Reviewed MainWindow and SettingsWindow subscribers to identify the user-visible duplicate navigation paths.",
+      "Reviewed file history: the condition originates from the initial local keyboard listener implementation and has not received a hook-code correctness fix.",
+      "Confirmed Microsoft.CmdPal.UI.UnitTests exists as the nearest focused test project."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "The WH_KEYBOARD hook callback dispatches application events for HC_NOREMOVE because it treats all nonnegative nCode values as actionable. HC_NOREMOVE reports a peeked message that remains in the queue, so the later HC_ACTION notification can dispatch the same shortcut a second time.",
+    "evidence": [
+      "LocalKeyboardListener.KeyEventHook checks nCode >= 0.",
+      "The callback invokes InvokeKeyDown directly from that condition.",
+      "Both Command Palette windows attach behavior-changing subscribers to KeyPressed."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/LocalKeyboardListener.cs",
+        "purpose": "Defines the WH_KEYBOARD callback and decides whether to raise KeyPressed.",
+        "symbols": [
+          "LocalKeyboardListener.KeyEventHook",
+          "LocalKeyboardListener.IsKeyDownHook"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/LocalKeyboardListenerTests.cs",
+        "purpose": "New focused regression coverage for hook-code and transition filtering.",
+        "symbols": [
+          "LocalKeyboardListenerTests.ShouldInvokeKeyDown"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/LocalKeyboardListener.cs",
+        "symbols": [
+          "LocalKeyboardListener.KeyEventHook",
+          "LocalKeyboardListener.IsKeyDownHook"
+        ],
+        "current_behavior": "KeyEventHook raises KeyPressed for any nonnegative hook code when the transition-state bit indicates key-down, including HC_NOREMOVE.",
+        "change": "Require the hook code to equal HC_ACTION before reading the key payload and raising KeyPressed. Keep CallNextHookEx unconditional so ignored notifications continue through the hook chain.",
+        "code_block": "private static bool ShouldInvokeKeyDown(int nCode, LPARAM lParam)\n{\n    return nCode == PInvoke.HC_ACTION && IsKeyDownHook(lParam);\n}\n\nif (ShouldInvokeKeyDown(nCode, lParam))\n{\n    InvokeKeyDown((VirtualKey)wParam.Value);\n}",
+        "edge_cases": [
+          "Negative nCode values must be forwarded without inspecting the payload.",
+          "HC_NOREMOVE must be forwarded without raising KeyPressed.",
+          "Key-up and autorepeat transition semantics should remain governed by the existing lParam bit check.",
+          "Exceptions from subscribers must remain logged without breaking the hook chain."
+        ],
+        "tests": [
+          "HC_ACTION plus a key-down lParam returns true.",
+          "HC_NOREMOVE plus the same key-down lParam returns false.",
+          "A negative nCode returns false.",
+          "HC_ACTION plus a previous-key-down transition returns false."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/LocalKeyboardListenerTests.cs",
+        "symbols": [
+          "LocalKeyboardListenerTests.ShouldInvokeKeyDown"
+        ],
+        "current_behavior": "The UI unit-test project has no regression test for the Windows hook callback contract.",
+        "change": "Add data-driven tests around the extracted internal predicate. If internals are not currently visible to the test assembly, add the project-standard InternalsVisibleTo declaration rather than exercising a real global hook.",
+        "code_block": "[DataTestMethod]\n[DataRow(0, 0, true)]\n[DataRow(3, 0, false)]\n[DataRow(-1, 0, false)]\n[DataRow(0, 1L << 30, false)]\npublic void ShouldInvokeKeyDown_FiltersHookNotifications(int nCode, long lParam, bool expected)\n{\n    Assert.AreEqual(expected, LocalKeyboardListener.ShouldInvokeKeyDown(nCode, new LPARAM(lParam)));\n}",
+        "edge_cases": [
+          "Do not install a real keyboard hook in unit tests.",
+          "Use the generated Windows constants or a named local constant instead of unexplained numeric values in production code.",
+          "Keep the test independent of keyboard layout and current modifier state."
+        ],
+        "tests": [
+          "Run the new data-driven cases on x64.",
+          "Confirm the existing Command Palette UI unit tests remain green."
+        ]
+      }
+    ],
+    "verify": [
+      "dotnet test src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\Microsoft.CmdPal.UI.UnitTests.csproj --filter FullyQualifiedName~LocalKeyboardListenerTests",
+      "Build Microsoft.CmdPal.UI with the repository's existing architecture configuration.",
+      "Launch Command Palette and verify GoBack, XButton1, and Alt+Left execute once per physical input.",
+      "Confirm ignored hook notifications still reach CallNextHookEx."
+    ],
+    "risks": [
+      "A generated PInvoke constant may use a different symbol shape than PInvoke.HC_ACTION; use the repository's available Windows constant or a documented named constant.",
+      "Changing callback filtering affects every LocalKeyboardListener subscriber, but only removes non-actionable notifications.",
+      "A test-only visibility change may be required if the predicate remains internal."
+    ],
+    "alternatives": [
+      "Debounce duplicate KeyPressed events in each subscriber. Rejected because it hides the hook-contract violation, adds timing behavior, and duplicates logic.",
+      "Track the last virtual key and suppress repeats. Rejected because legitimate autorepeat and distinct repeated presses would become ambiguous."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve HC_ACTION keyboard-hook guard design",
+      "note": "Start the fork-side implementation only after this focused design is approved."
+    }
+  ],
+  "verify": [
+    "Confirm one KeyPressed event is raised for one actionable keyboard message.",
+    "Confirm HC_NOREMOVE and negative hook codes are forwarded without invoking Command Palette behavior."
+  ]
+}
