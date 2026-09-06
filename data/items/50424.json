@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 5,
+  "number": 50424,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-06T18:36:39.4194335Z",
+  "evaluated_at": "2026-09-06T18:36:39.4194335Z",
+  "source_updated_at": "2026-09-06T17:34:50Z",
+  "title": "Mouse Jump crashes when pressing Windows key+Shift+D",
+  "url": "https://github.com/microsoft/PowerToys/issues/50424",
+  "confidence": "low",
+  "status": {
+    "glyph": "!",
+    "label": "Reproducible crash with diagnostic design",
+    "detail": "The activation sequence is sufficient to reproduce, but the submitted diagnostic subset contains no crash signature. The most useful first fix is to harden and instrument the WinUI preview initialization path."
+  },
+  "summary": "On PowerToys 0.101.2362 and Windows 11 Pro 26H2, invoking Mouse Jump with Win+Shift+D closes the preview process. The report includes a bug archive, but automated analysis found no crash signature.",
+  "next_action": "Reproduce the crash and approve a guarded initialization/diagnostic design while requesting the missing exception details.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report provides a direct activation sequence and environment, and the Mouse Jump process has a narrow initialization path. Although the exact exception is unknown, adding stage-specific validation and logging around display discovery, layout, rendering, and window activation will prevent known empty-display failures and identify the remaining failing stage.",
+    "evidence": [
+      "The reporter states that Win+Shift+D immediately opens and then closes Mouse Jump on PowerToys 0.101.2362 and Windows 11 Pro 26H2.",
+      "The attached diagnostic archive was analyzed by upstream automation, which found no crash signature in the bounded subset.",
+      "MouseJump.WinUI3 PreviewWindow.ShowPreviewAsync performs cursor lookup, display discovery, direct Devices[0] access, activated-screen selection, layout, desktop capture, image conversion, and window activation in one callback.",
+      "MouseJumpEventLoop logs and rethrows callback exceptions from its background thread, allowing an initialization failure to terminate the process.",
+      "The WinUI3 Mouse Jump implementation was introduced as one large recent port, so current regression coverage does not isolate each preview-initialization stage."
+    ],
+    "recommended_action": "Approve a focused hardening design that validates display discovery, records the exact failing preview stage, and adds a regression test for unavailable display topology.",
+    "evaluated_at": "2026-09-06T18:36:39.4194335Z",
+    "source_updated_at": "2026-09-06T17:34:50Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix exists. The current code has an unguarded first-device access and an exception path that terminates Mouse Jump, but the absent crash signature prevents claiming that this is the reporter's exact failing operation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Guard and instrument Mouse Jump preview initialization",
+      "root_cause": "A failure during WinUI preview initialization escapes the event callback and terminates the Mouse Jump process. Device discovery is a concrete unguarded candidate because ShowPreviewAsync indexes displayInfo.Devices[0], while capture, image conversion, and activation remain competing causes until an exception signature is captured.",
+      "plan": [
+        "Extract the display-selection precondition from PreviewWindow.ShowPreviewAsync and handle an empty device or screen topology without indexing Devices[0].",
+        "Track and log the current initialization stage before display discovery, layout, capture, image conversion, and activation so a future failure identifies the exact operation.",
+        "Convert an expected unavailable-display result into a logged dismissal rather than a process-terminating exception, while retaining unexpected exception propagation after recording full details.",
+        "Add focused tests for empty display topology and extend the Mouse Jump UI activation test to assert that the process remains alive after the shortcut."
+      ],
+      "verification": [
+        "Run MouseJump.Common and MouseJump.Models unit tests plus the focused Mouse Jump UI activation test.",
+        "On Windows 11 26H2 with PowerToys 0.101.2362 or a matching development build, invoke Win+Shift+D with the pointer stationary and confirm the preview remains available.",
+        "Verify forced empty-display discovery logs a precise nonfatal reason and does not terminate the Mouse Jump process.",
+        "Confirm any unexpected capture or activation exception records its initialization stage and exception details before process recovery."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The source contains a plausible unguarded display-topology failure and a confirmed terminating exception path, but the submitted diagnostics contain no crash signature to distinguish that path from capture, bitmap conversion, or WinUI activation failures."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Jump terminates immediately after its activation shortcut on a current stable build and Windows 11 26H2. Reproduction is straightforward, but the available diagnostic summary does not identify the exception.",
+    "known_information": [
+      "The reporter uses PowerToys 0.101.2362 Stable installed through WinGet.",
+      "The operating system is Windows 11 Pro 26H2, UK English, using a per-user non-admin installation.",
+      "The crash occurs after invoking Mouse Jump with Win+Shift+D while leaving the pointer stationary.",
+      "A PowerToys bug report archive is attached.",
+      "Upstream automated triage found no crash signature in the bounded diagnostic subset.",
+      "Mouse Jump preview initialization runs through PreviewWindow.ShowPreviewAsync and exceptions are rethrown by MouseJumpEventLoop."
+    ],
+    "inferences": [
+      "The failure likely occurs during the first preview initialization rather than hotkey registration because the Mouse Jump window appears before closing.",
+      "The direct displayInfo.Devices[0] access is a plausible failure when display enumeration is temporarily empty or incompatible, but it is not confirmed.",
+      "Desktop capture, image conversion, or window activation on the reported Windows build remain viable competing causes."
+    ],
+    "analysis": "The report is sufficient for local reproduction, so asking for generic logs alone would be wasteful. The code investigation narrows the failure to a small sequence and identifies one unsafe precondition. A guarded, stage-instrumented implementation is useful even before the exact exception is known, but the low confidence requires a targeted request for the Mouse Jump process log and Windows crash event.",
+    "initial_investigation": [
+      "Read the full issue body, attached-diagnostic summary, labels, and comments.",
+      "Reviewed src/modules/MouseUtils/MouseJump.WinUI3/Program.cs and App.xaml.cs for process startup and preview event registration.",
+      "Reviewed PreviewWindow.ShowPreviewAsync, which directly indexes displayInfo.Devices[0] before layout and capture.",
+      "Reviewed MouseJumpEventLoop.RunAsyncEventHandler, which logs and rethrows callback exceptions.",
+      "Reviewed the focused Mouse Jump UI test, which already checks process startup and shortcut activation but does not exercise an unavailable display topology.",
+      "Reviewed recent history and found the WinUI3 Mouse Jump port as the principal recent implementation change."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exception type, faulting module, and stack or failure stage from the Mouse Jump process at the time of the crash.",
+        "why_needed": "This will distinguish display enumeration, desktop capture, bitmap conversion, and WinUI activation, and determine whether the proposed empty-topology guard addresses the reported crash.",
+        "how_to_collect": "Immediately after reproducing, attach the latest MouseJump log from the PowerToys diagnostic archive and copy the matching Windows Event Viewer Application Error entry for PowerToys.MouseJump.WinUI3.exe."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "Mouse Jump performs a multi-stage preview initialization in one asynchronous event callback. A failure escapes through MouseJumpEventLoop and terminates the process. The direct displayInfo.Devices[0] access is an identified unsafe precondition; stage-specific evidence is needed to confirm whether it or a later capture/activation operation causes this report.",
+    "evidence": [
+      "PreviewWindow.ShowPreviewAsync directly indexes displayInfo.Devices[0].",
+      "The same method then performs layout, capture, image conversion, and window activation without recording a stage identifier.",
+      "MouseJumpEventLoop logs and rethrows callback exceptions, matching a preview process that closes after activation.",
+      "The supplied diagnostic summary has no crash signature."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
+        "purpose": "Owns the preview initialization sequence and the unsafe first-device selection.",
+        "symbols": [
+          "PreviewWindow.ShowPreviewAsync"
+        ]
+      },
+      {
+        "path": "src/modules/MouseUtils/MouseJump.WinUI3/Helpers/MouseJumpEventLoop.cs",
+        "purpose": "Dispatches preview activation and currently rethrows callback failures from the background event thread.",
+        "symbols": [
+          "MouseJumpEventLoop.RunAsyncEventHandler"
+        ]
+      },
+      {
+        "path": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
+        "purpose": "Contains process-lifetime and shortcut activation coverage for Mouse Jump.",
+        "symbols": [
+          "DefaultShortcutActivatesPreview",
+          "WaitForProcess"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
+        "symbols": [
+          "PreviewWindow.ShowPreviewAsync"
+        ],
+        "current_behavior": "The method assumes display discovery returns at least one device and immediately reads displayInfo.Devices[0].",
+        "change": "Validate that display discovery returned a device and usable screen before selecting the activated screen. If topology is unavailable, log the condition, keep the preview hidden, and return without terminating the process.",
+        "code_block": "var displayInfo = DeviceHelper.GetDisplayInfo();\nif (displayInfo.Devices.Count == 0)\n{\n    Logger.LogWarning(\"Mouse Jump preview skipped: no display devices were discovered.\");\n    return;\n}\n\nvar activatedScreen = DeviceHelper.GetActivatedScreen(displayInfo.Devices[0], activatedLocation);",
+        "edge_cases": [
+          "A display can disconnect between discovery and capture.",
+          "The cursor can be outside the bounds returned by a transient topology.",
+          "A skipped preview must leave no stale image or form layout."
+        ],
+        "tests": [
+          "Add a focused display-selection test proving an empty topology returns a nonfatal result.",
+          "Verify reconnecting the display permits the next shortcut invocation to render normally."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
+        "symbols": [
+          "PreviewWindow.ShowPreviewAsync"
+        ],
+        "current_behavior": "A single outer callback failure does not reveal whether display discovery, layout, capture, bitmap conversion, or activation failed.",
+        "change": "Record a compact stage value before each major operation and include it in the exception log. Keep unexpected exceptions visible to the existing process-recovery behavior rather than silently converting every failure into success.",
+        "code_block": "var stage = \"display discovery\";\ntry\n{\n    // update stage before layout, capture, image update, and activation\n}\ncatch (Exception ex)\n{\n    Logger.LogError($\"Mouse Jump preview failed during {stage}: {ex}\");\n    throw;\n}",
+        "edge_cases": [
+          "Do not log screen contents or other sensitive captured data.",
+          "Do not swallow unexpected exceptions that could leave the WinUI object graph corrupted.",
+          "Preserve cancellation behavior during PowerToys shutdown."
+        ],
+        "tests": [
+          "Inject a controlled failure for each factored stage and verify the stage name is reported.",
+          "Confirm normal activation emits no error and the preview remains interactive."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
+        "symbols": [
+          "DefaultShortcutActivatesPreview",
+          "WaitForProcess"
+        ],
+        "current_behavior": "The UI test confirms the shortcut shows a preview but does not explicitly assert process survival after the first completed activation.",
+        "change": "After the preview becomes visible, assert that PowerToys.MouseJump.WinUI3 remains running, dismiss the preview, and invoke it a second time to catch first-activation termination.",
+        "code_block": "Assert.IsTrue(shortcutWatcher.Wait(10_000));\nAssert.IsTrue(WaitForProcess(expected: true));\nDismissPreview();\nInvokeDefaultShortcut();\nAssert.IsTrue(shortcutWatcher.Wait(10_000));",
+        "edge_cases": [
+          "Reset the visibility watcher between activations.",
+          "Avoid relying on a fixed monitor count or coordinate layout.",
+          "Cleanly disable the module after the test."
+        ],
+        "tests": [
+          "Run the focused MouseJumpTests activation case twice in one process lifetime.",
+          "Run on the Windows 11 26H2 configuration when available."
+        ]
+      }
+    ],
+    "verify": [
+      "dotnet test src\\modules\\MouseUtils\\MouseJump.Common.UnitTests\\MouseJump.Common.UnitTests.csproj",
+      "dotnet test src\\modules\\MouseUtils\\MouseJump.Models.UnitTests\\MouseJump.Models.UnitTests.csproj",
+      "Run the focused MouseUtils.UITests.Next Mouse Jump shortcut activation case.",
+      "Reproduce on Windows 11 26H2 and confirm the process remains alive across two Win+Shift+D activations."
+    ],
+    "risks": [
+      "Returning on empty topology may hide a transient display-enumeration defect unless the warning is sufficiently specific.",
+      "Additional logging must avoid recording captured desktop contents or private display metadata.",
+      "The proposed guard may not fix the report if the fault occurs during capture, image conversion, or WinUI activation."
+    ],
+    "alternatives": [
+      "Catch and suppress every ShowPreviewAsync exception. Rejected because it can conceal corruption and make diagnosis harder.",
+      "Request another complete bug archive without code changes. Rejected because the existing report is reproducible and the source already exposes a safe, testable precondition improvement."
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Mouse Jump activation crash",
+      "primary": true,
+      "note": "The report supplies a direct activation sequence and environment.",
+      "reproduce": {
+        "title": "Verify Mouse Jump remains alive after shortcut activation",
+        "module": "Mouse Jump",
+        "version_requirement": "PowerToys 0.101.2362 on Windows 11 26H2, then a current development build",
+        "prerequisites": [
+          "Mouse Jump enabled",
+          "Default Win+Shift+D activation shortcut",
+          "PowerToys running non-elevated as a per-user installation"
+        ],
+        "setup": [
+          "Leave the mouse pointer stationary on the active display.",
+          "Open Task Manager or another process monitor where PowerToys.MouseJump.WinUI3 can be observed."
+        ],
+        "steps": [
+          "Press Win+Shift+D once.",
+          "Observe whether the Mouse Jump preview remains visible and whether the Mouse Jump process remains running.",
+          "If the preview remains available, dismiss it and repeat the shortcut.",
+          "Record the display count, scaling, connection type, and whether a display transition occurred near activation."
+        ],
+        "expected_result": "The preview remains open until the user selects a destination or dismisses it, and the Mouse Jump process remains running for later activations."
+      }
+    },
+    {
+      "type": "request_info",
+      "label": "Request the Mouse Jump crash signature",
+      "comment": {
+        "body": "Thanks for the clear Win+Shift+D reproduction steps and the attached PowerToys report. The available diagnostic summary confirms the environment but does not contain the Mouse Jump exception or faulting module, which is needed to distinguish display discovery, desktop capture, image conversion, and window activation. Immediately after reproducing once more, could you attach the latest **MouseJump** log from the generated PowerToys report and copy the matching **Windows Event Viewer > Windows Logs > Application** error entry for `PowerToys.MouseJump.WinUI3.exe`? Please include the exception code and faulting module shown in that entry."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve Mouse Jump initialization hardening design",
+      "note": "Start the fork-side implementation only after reviewing the low-confidence hypothesis and diagnostic plan."
+    }
+  ],
+  "verify": [
+    "Confirm the preview remains open and the Mouse Jump process survives repeated activation.",
+    "Confirm failure logs identify the exact preview initialization stage without exposing captured desktop data."
+  ]
+}
