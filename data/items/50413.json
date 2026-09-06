@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 5,
+  "number": 50413,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-06T16:33:25.4239172Z",
+  "evaluated_at": "2026-09-06T16:33:25.4239172Z",
+  "source_updated_at": "2026-09-06T07:20:56Z",
+  "title": "[PowerToys Run][Unit Converter] Degree unit parsing fails under Turkish culture",
+  "url": "https://github.com/microsoft/PowerToys/issues/50413",
+  "confidence": "high",
+  "status": {
+    "glyph": "i",
+    "label": "Existing fix in review",
+    "detail": "Open PR #50414 implements the exact invariant-casing change and Turkish-culture regression test described in the issue."
+  },
+  "summary": "Uppercase CELSIUS and FAHRENHEIT fail under tr-TR because DegreePrefixer uses current-culture lowercasing for fixed English parser tokens.",
+  "next_action": "Review the linked fix PR #50414; do not start a competing issue design.",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The issue is already covered by the reporter's open pull request #50414, whose two-file patch makes the proposed invariant-casing change and adds the specified Turkish-culture regression test.",
+    "evidence": [
+      "The issue identifies both affected files, the CultureInfo.CurrentCulture call in DegreePrefixer, the tr-TR casing failure, and the intended ToLowerInvariant fix.",
+      "The issue timeline links open PR #50414, \"[PTRun][UnitConverter] Use invariant casing for degree unit tokens.\"",
+      "PR #50414 changes both DegreePrefixer calls from ToLower(CultureInfo.CurrentCulture) to ToLowerInvariant().",
+      "PR #50414 adds PrefixesDegreesWithTurkishCulture, which sets tr-TR, verifies CELSIUS and FAHRENHEIT normalize to the UnitsNet names, and restores the original culture."
+    ],
+    "recommended_action": "Route maintainer effort to review and validate PR #50414."
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Open PR #50414 implements the exact source and regression-test changes supported by this issue.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50414"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter provided a precise culture-dependent parser regression, exact source and test locations, and an implementation that is now available for review in a linked pull request.",
+    "known_information": [
+      "The issue reproduces on a PowerToys main-branch build under the tr-TR culture with uppercase temperature names.",
+      "DegreePrefixer currently normalizes fixed English tokens with CultureInfo.CurrentCulture.",
+      "Under tr-TR, uppercase I lowercases to dotless i, so CELSIUS and FAHRENHEIT do not match the expected fixed tokens.",
+      "PR #50414 is open, changes the two casing calls to ToLowerInvariant, and adds a culture-scoped MSTest regression."
+    ],
+    "inferences": [
+      "The linked patch should resolve the reported degree-name parsing failure without changing culture-aware numeric parsing or other Unit Converter behavior."
+    ],
+    "analysis": "The issue's root cause, minimal code change, and test are independently corroborated by the linked PR diff. Creating another design would duplicate implementation already awaiting review.",
+    "initial_investigation": [
+      "Reviewed src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.UnitConverter/InputInterpreter.cs and confirmed both DegreePrefixer switches use current-culture lowercasing.",
+      "Reviewed InputInterpreterTests.cs and confirmed the pre-existing degree tests were not scoped to Turkish culture.",
+      "Reviewed PR #50414 and its complete two-file diff; it makes the exact invariant-casing replacement and adds the reported regression test.",
+      "Checked the issue timeline, which links #50414 as the active public fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [],
+  "verify": [
+    "Review and run the Unit Converter test coverage in PR #50414 on a Windows build environment.",
+    "Confirm a tr-TR query using uppercase CELSIUS and FAHRENHEIT resolves to DegreeCelsius and DegreeFahrenheit."
+  ]
+}

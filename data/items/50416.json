@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 5,
+  "number": 50416,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-06T16:33:25.4239172Z",
+  "evaluated_at": "2026-09-06T16:33:25.4239172Z",
+  "source_updated_at": "2026-09-06T08:46:32Z",
+  "title": "发现重启之后出现命令面板功能，出现资源管理器进程参数错误",
+  "url": "https://github.com/microsoft/PowerToys/issues/50416",
+  "confidence": "high",
+  "status": {
+    "glyph": "i",
+    "label": "Related issue identified",
+    "detail": "The report matches the existing open Command Palette explorer.exe launch investigation in #48436, so parallel fix designs would duplicate work."
+  },
+  "summary": "After restart and enabling Command Palette in PowerToys 0.100.2, the reporter sees an explorer.exe parameter error, cannot keep Command Palette enabled, and cannot change its hotkey.",
+  "next_action": "Link this report to the existing Command Palette explorer-launch investigation.",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "A focused public-work search found #48436, an open report for Command Palette triggering an explorer.exe error on Windows 11 25H2. Both reports concern CmdPal startup through explorer.exe, so a separate design would duplicate active investigation.",
+    "evidence": [
+      "The reporter confirmed that disabling Command Palette stops the explorer.exe parameter error and re-enabling it makes the problem recur.",
+      "src/modules/cmdpal/CmdPalModuleInterface/dllmain.cpp launches Command Palette through explorer.exe with the x-cmdpal://background URI during enable.",
+      "Issue #48436 is open and specifically tracks a Command Palette explorer.exe launch error on Windows 11 25H2.",
+      "No linked pull request appears on this issue, and its labels remain Needs-Triage and Needs-Team-Response."
+    ],
+    "recommended_action": "Consolidate investigation with #48436 rather than starting an independent fix plan."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The observed startup path is already under active public investigation in #48436; a separate PowerToys fix proposal would create competing work.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/issues/48436"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The report narrows the failure to Command Palette enablement after restart and includes a follow-up stating that disabling CmdPal prevents the explorer.exe error.",
+    "known_information": [
+      "The reporter uses PowerToys 0.100.2 on Windows 11 and installed from GitHub.",
+      "The issue recurs when Command Palette is enabled and stops when it is disabled.",
+      "The reporter also cannot modify the Command Palette hotkey while the condition is present.",
+      "CmdPal's module interface launches explorer.exe with x-cmdpal://background as part of its enable sequence."
+    ],
+    "inferences": [
+      "The problem may be in package registration or shell URI activation during CmdPal startup, but the supplied report does not isolate which stage fails.",
+      "Because #48436 tracks the same explorer-launch component, the two reports are likely duplicate manifestations of one underlying startup problem."
+    ],
+    "analysis": "The reporter's isolation result points to the exact CmdPal enable path that launches through explorer.exe. The existing public investigation covers that component, making consolidation more useful than an unsupported parallel root-cause hypothesis.",
+    "initial_investigation": [
+      "Reviewed src/modules/cmdpal/CmdPalModuleInterface/dllmain.cpp: CmdPal.enable registers the package if needed, then launches explorer.exe with x-cmdpal://background and retries startup.",
+      "Reviewed CmdPal protocol activation tests, which verify x-cmdpal://background is the intended background activation URI.",
+      "Searched related public issues and found open issue #48436 for the same Command Palette explorer.exe launch-error area."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Link the existing CmdPal explorer-launch investigation",
+      "comment": {
+        "body": "Thanks for confirming that disabling Command Palette stops the explorer.exe error and that it returns when CmdPal is enabled. This appears to match the existing Command Palette startup investigation in #48436, which also tracks an explorer.exe launch failure on Windows 11 25H2. To avoid splitting the investigation, please follow #48436 for updates; maintainers can consolidate the reports there."
+      }
+    }
+  ],
+  "verify": [
+    "Compare the reporter's explorer.exe error text and CmdPal startup logs with the investigation in #48436 before closing or formally marking this as a duplicate."
+  ]
+}

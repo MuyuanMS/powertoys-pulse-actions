@@ -1,14 +1,14 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 49227,
   "kind": "issue",
   "track": "fix",
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:51:00.1178362Z",
-  "evaluated_at": "2026-09-03T06:51:00.1178362Z",
-  "source_updated_at": "2026-08-27T08:06:52Z",
+  "generated_at": "2026-09-06T16:26:59.71Z",
+  "evaluated_at": "2026-09-06T16:26:59.71Z",
+  "source_updated_at": "2026-09-05T17:57:54Z",
   "url": "https://github.com/microsoft/PowerToys/issues/49227",
   "title": "Keyboard Manager does not remap the Copilot key correctly in some applications",
   "author": "akash3911",
@@ -19,59 +19,73 @@
     "Product-Keyboard Manager"
   ],
   "assignees": [],
-  "comments": 1,
-  "confidence": "High",
+  "comments": 2,
+  "confidence": "Medium",
+  "summary": "Win+Shift+F23 remaps in Notepad but not in elevated PowerShell, Git Bash, or Task Manager; the suggested Copilot Key+ workaround also failed, leaving elevation parity as the decisive missing evidence.",
   "status": {
     "glyph": "💬",
     "label": "Needs elevation comparison",
-    "detail": "Every named failing target is elevated, but the issue does not say whether PowerToys was also running elevated."
+    "detail": "The failed workaround retest narrows the issue to Keyboard Manager versus target integrity behavior, but PowerToys elevation and a matched-elevation result are still unknown."
   },
   "next_action": {
     "glyph": "💬",
-    "label": "Request elevation comparison",
-    "reason": "One matched-elevation comparison separates documented UIPI behavior from a Copilot-key-specific bug."
+    "label": "Request matched-elevation retest",
+    "reason": "One controlled comparison distinguishes documented UIPI isolation from a Copilot-key-specific remapping defect."
   },
   "judgment": {
     "status": "needs_information",
-    "rationale": "The remap works in a normal application and fails in targets reported as Administrator PowerShell, Administrator Git Bash, and Task Manager. That pattern may involve integrity boundaries, but the live report does not state PowerToys' elevation or prove that every target is elevated.",
+    "rationale": "The author confirmed that the third-party Copilot Key+ workaround does not solve the behavior, but that test does not establish whether PowerToys itself is elevated or whether the named targets are consistently at a higher integrity level. The remap working in Notepad and failing in Administrator PowerShell, Administrator Git Bash, and Task Manager remains compatible with UIPI isolation or with a Keyboard Manager hook/injection defect.",
     "evidence": [
-      "Win+Shift+F23 to Ctrl works in Notepad and fails in Administrator PowerShell, Administrator Git Bash, and Task Manager.",
-      "The issue does not state whether PowerToys is running as administrator.",
-      "Open Issue 15241 tracks UIAccess/elevation-related behavior, while Issue 35808 and Issue 45453 are related Copilot-key remap reports.",
-      "A third-party workaround comment does not establish a PowerToys root cause or fix."
+      "Win+Shift+F23 to Ctrl works in Notepad.",
+      "The issue reports failure in Administrator PowerShell, Administrator Git Bash, and Task Manager, where the original Windows-key behavior is observed.",
+      "The author later tested Copilot Key+ and reported that it did not solve the problem; it behaved differently in Windows Terminal but did not provide the requested Ctrl remap.",
+      "The issue does not state whether PowerToys was running as administrator or identify Task Manager's integrity level.",
+      "The current Keyboard Manager path uses a low-level keyboard hook and SendInput-based remapping, so target integrity can affect injected input.",
+      "Related public issues #35808, #45453, #44650, and #15241 cover Copilot-key or elevation-adjacent behavior, but none is a confirmed duplicate or fix for this report."
     ],
-    "recommended_action": "Ask whether PowerToys is elevated and request one matched-elevation retest; request a diagnostic archive only if that comparison still fails.",
-    "evaluated_at": "2026-09-03T06:51:00.1178362Z",
-    "source_updated_at": "2026-08-27T08:06:52Z"
+    "recommended_action": "Ask for PowerToys elevation status and one matched-elevation retest; only request a fresh diagnostic archive if the remap still fails when PowerToys and the target run at the same integrity level.",
+    "evaluated_at": "2026-09-06T16:26:59.71Z",
+    "source_updated_at": "2026-09-05T17:57:54Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys code change is not yet defensible because the current public evidence cannot distinguish expected Windows integrity isolation from a Keyboard Manager defect. This is an evidence gate, not a claim that the reported behavior is invalid.",
+    "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "A Copilot-key shortcut remap works in normal applications but leaks original Windows-key behavior in elevated applications.",
+    "summary": "A Copilot-key shortcut remap works in a normal application but fails in several elevated or system targets, and the proposed third-party workaround did not resolve it.",
     "known_information": [
-      "The source is Win+Shift+F23 and the target is Ctrl.",
-      "The reporter explicitly names Administrator PowerShell and Administrator Git Bash, and also names Task Manager.",
+      "The configured trigger is Win+Shift+F23 and the target is Ctrl.",
       "The remap works in Notepad on the same machine.",
-      "The report does not say whether PowerToys is elevated or state Task Manager's elevation state."
+      "The report names Administrator PowerShell, Administrator Git Bash, and Task Manager as failing targets.",
+      "The author tested Copilot Key+ after the first triage response and said it did not solve the problem.",
+      "The issue does not state whether PowerToys was elevated.",
+      "The issue does not state whether Task Manager was elevated or whether the target and PowerToys were launched in the same integrity context.",
+      "There is no assignee, linked fix, or maintainer-confirmed duplicate."
     ],
     "inferences": [
-      "An integrity-level boundary is a plausible explanation to test, not a confirmed root cause.",
-      "The third-party Copilot Key+ comment does not establish a PowerToys fix."
+      "A UIPI/integrity boundary is a plausible explanation, but it is not confirmed.",
+      "The failed Copilot Key+ test rules out that workaround for this reporter but does not localize the PowerToys failure.",
+      "If matched elevation still fails, the next investigation should focus on F23 recognition, suppression, and SendInput injection rather than generic application compatibility."
     ],
-    "analysis": "More screenshots or generic key details would not change triage. A matched-elevation comparison is decisive: success supports an environment/integrity explanation, while continued failure creates a focused Copilot-key remapping investigation. The proposed action does not claim which outcome will occur.",
+    "analysis": "The new author response is useful because it removes a proposed workaround, but it does not supply the one comparison needed for a code decision. Asking for more generic logs or key details would add noise. A matched-elevation retest is high-value and low-cost; a fresh /bugreport is conditional because it is only useful if the behavior persists after integrity levels are controlled.",
     "initial_investigation": [
-      "Read the complete issue body, the later third-party workaround comment, labels, and timeline.",
-      "Searched related Keyboard Manager Copilot-key issues, including Issue 35808, Issue 45453, and elevation/UIAccess issue Issue 15241.",
-      "No assignee, maintainer response, linked duplicate, or linked fix is present in the live issue."
+      "Read the complete issue body, both comments, labels, assignees, attachment references, and activity.",
+      "Inspected KeyboardManager HookProc, HandleKeyboardHookEvent, KeyboardEventHandlers remapping/injection paths, and existing Keyboard Manager remapping tests.",
+      "Reviewed related public issues #35808, #45453, #44650, and #15241 for Copilot-key and elevation signals.",
+      "Confirmed the latest Copilot Key+ retest did not resolve the reported behavior.",
+      "No public evidence currently proves a PowerToys code defect independent of target integrity."
     ],
     "information_gaps": [
       {
-        "information": "Whether PowerToys was running as administrator and the result when both it and the target are elevated.",
-        "why_needed": "This distinguishes expected integrity isolation from a remapping defect.",
-        "how_to_collect": "Restart PowerToys as administrator, verify Settings status, and repeat in one named elevated target."
+        "information": "Whether PowerToys was running as administrator and the result when PowerToys and one failing target are both confirmed elevated",
+        "why_needed": "This comparison distinguishes expected UIPI isolation from a remapping or injection defect.",
+        "how_to_collect": "Restart PowerToys with Run as administrator, confirm its status, launch Administrator PowerShell or another named target, and repeat the same mapping."
       },
       {
-        "information": "A fresh diagnostic archive only if matched elevation still fails.",
-        "why_needed": "Logs from that case are needed for a Copilot-key-specific investigation.",
-        "how_to_collect": "Immediately after failure, add a comment containing /bugreport and upload the ZIP."
+        "information": "A fresh diagnostic archive only if the matched-elevation retest still fails",
+        "why_needed": "Logs from the controlled failure can identify whether F23 is seen, suppressed, and replaced with Ctrl or whether SendInput is blocked.",
+        "how_to_collect": "Immediately after reproducing the matched-elevation failure, add a comment containing /bugreport and name the exact target."
       }
     ]
   },
@@ -79,13 +93,13 @@
     {
       "id": "request-info-49227",
       "type": "request_info",
-      "label": "Request elevation comparison",
+      "label": "Request matched-elevation retest",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 49227,
-        "body": "Thanks for showing that Win+Shift+F23 to Ctrl works in Notepad but fails in Administrator PowerShell, Administrator Git Bash, and Task Manager. Please confirm whether PowerToys itself shows “Running as administrator”, then repeat the test after restarting PowerToys as administrator against one named target that you have confirmed is elevated. If it still fails with matched elevation, add a comment containing `/bugreport` immediately after the test and name that exact target. This comparison will determine whether to investigate the remap path further; it does not assume the current cause."
+        "body": "Thanks for testing Copilot Key+ and confirming that it did not solve the Win+Shift+F23 to Ctrl remap. The remaining distinction is whether this is Windows integrity isolation or a Keyboard Manager defect. Please confirm whether PowerToys was running as administrator, then restart it with Run as administrator and repeat the mapping in Administrator PowerShell or another named target that you have confirmed is elevated. If it still fails with matched elevation, add a comment containing `/bugreport` immediately after the test and name the exact target. We do not need a generic log bundle before that comparison."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }

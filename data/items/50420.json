@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 5,
+  "number": 50420,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-06T16:33:25.4239172Z",
+  "evaluated_at": "2026-09-06T16:33:25.4239172Z",
+  "source_updated_at": "2026-09-06T10:18:14Z",
+  "title": "Phi Silica cannot be downloaded",
+  "url": "https://github.com/microsoft/PowerToys/issues/50420",
+  "confidence": "high",
+  "status": {
+    "glyph": "!",
+    "label": "Fix design ready",
+    "detail": "The Phi Silica download path calls EnsureReadyAsync for readiness states that the availability path already identifies as unsupported, including CapabilityMissing, which produces 0x80070005."
+  },
+  "summary": "On a Copilot+ capable Windows 11 25H2 system, Advanced Paste reports 0x80070005 when it tries to download Phi Silica even though another application reports the model as available.",
+  "next_action": "Approve the readiness-state guard design for a fork-side implementation.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report's access-denied symptom is directly explained by the current Phi Silica preparation control flow: it invokes EnsureReadyAsync for states that are not eligible for preparation.",
+    "evidence": [
+      "The report supplies numbered reproduction steps, Windows 11 25H2, supported Ryzen AI hardware, an access-denied screenshot, and fresh PowerToys diagnostic attachments.",
+      "AdvancedPaste Program.CheckPhiSilicaAvailability maps every state other than Ready and NotReady to NotSupported and documents that CapabilityMissing causes EnsureReadyAsync to throw E_ACCESSDENIED (0x80070005).",
+      "Program.PreparePhiSilica only rejects NotSupportedOnCurrentSystem and DisabledByUser before calling LanguageModel.EnsureReadyAsync, leaving CapabilityMissing and other non-preparable states able to reach the failing call.",
+      "No linked pull request or matching public Phi Silica fix was found; #49818 concerns Phi Silica availability in China rather than this download path."
+    ],
+    "recommended_action": "Approve a small readiness-decision refactor so only NotReady reaches the model-download API, with unit coverage for CapabilityMissing."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked or public competing fix covers the readiness-state mismatch in Advanced Paste's Phi Silica preparation path.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Only prepare Phi Silica from the NotReady state",
+      "root_cause": "Program.PreparePhiSilica treats only two states as terminal, then calls LanguageModel.EnsureReadyAsync for CapabilityMissing and other unsupported states. The availability path already documents CapabilityMissing as an E_ACCESSDENIED condition rather than a downloadable-model state.",
+      "plan": [
+        "Introduce one internal readiness predicate that permits preparation only for AIFeatureReadyState.NotReady.",
+        "Use that predicate after the existing Ready branch in Program.PreparePhiSilica and return NotSupported for every other state without calling EnsureReadyAsync.",
+        "Add focused unit coverage for the readiness predicate, including CapabilityMissing, before validating on a supported device."
+      ],
+      "verification": [
+        "Run the focused Advanced Paste unit tests covering readiness decisions.",
+        "On a supported Copilot+ PC, verify that NotReady still reaches the download flow and that CapabilityMissing reports NotSupported without displaying 0x80070005.",
+        "Confirm a Ready model continues to return Ready without invoking preparation."
+      ],
+      "confidence": {
+        "score": 93,
+        "level": "green",
+        "rationale": "The report's HRESULT exactly matches the source comment for CapabilityMissing, and the two adjacent readiness paths demonstrably apply inconsistent guards."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The reporter can select Phi Silica but receives Access Denied when requesting the model download on a system that appears to meet the hardware and OS prerequisites.",
+    "known_information": [
+      "The report supplies PowerToys 0.101.2362 installed from Microsoft Store and Windows 11 Pro 25H2.",
+      "The reported hardware is an AMD Ryzen AI 9 HX 370 system with an NPU.",
+      "The download operation reports 0x80070005, and the reporter supplied refreshed PowerToys diagnostic archives after automated triage requested them.",
+      "Advanced Paste probes Phi Silica readiness through PowerToys.AdvancedPaste.exe because the Settings process lacks the necessary package identity."
+    ],
+    "inferences": [
+      "The model state may be CapabilityMissing or another state that is not downloadable by Advanced Paste, rather than ordinary NotReady.",
+      "The access-denied error is likely avoidable by refusing preparation for a non-NotReady state; the public report alone cannot determine the exact readiness enum returned on this device."
+    ],
+    "analysis": "The current availability path explicitly distinguishes NotReady from unsupported states, but the preparation path uses a narrower terminal-state check. Restricting preparation to NotReady makes both paths consistent and prevents the documented E_ACCESSDENIED call path.",
+    "initial_investigation": [
+      "Reviewed src/modules/AdvancedPaste/AdvancedPaste/Program.cs: CheckPhiSilicaAvailability returns NotSupported for all non-Ready and non-NotReady states, while PreparePhiSilica calls EnsureReadyAsync after rejecting only two states.",
+      "Reviewed src/modules/AdvancedPaste/AdvancedPaste/PhiSilicaLafHelper.cs and the Phi Silica local-testing documentation, which establish package identity, LAF unlocking, readiness, and model download as distinct stages.",
+      "Searched related public issues and pull requests; no existing fix covers this readiness-state guard."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "The preparation entry point admits readiness states that cannot be prepared. In particular, CapabilityMissing is treated as unsupported by CheckPhiSilicaAvailability but can reach EnsureReadyAsync in PreparePhiSilica, producing the reported Access Denied result.",
+    "evidence": [
+      "The issue reports 0x80070005 from the Download model action on a supported device.",
+      "Program.CheckPhiSilicaAvailability documents CapabilityMissing as a state for which EnsureReadyAsync throws E_ACCESSDENIED.",
+      "Program.PreparePhiSilica has no CapabilityMissing guard and invokes EnsureReadyAsync unless the state is Ready, NotSupportedOnCurrentSystem, or DisabledByUser."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/PhiSilicaReadiness.cs",
+        "purpose": "New internal, side-effect-free decision point for whether a Phi Silica readiness state can enter the download flow.",
+        "symbols": [
+          "PhiSilicaReadiness.CanPrepare"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/Program.cs",
+        "purpose": "Hosts the --prepare-phi-silica command and currently calls LanguageModel.EnsureReadyAsync.",
+        "symbols": [
+          "Program.PreparePhiSilica"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests/HelpersTests/PhiSilicaReadinessTests.cs",
+        "purpose": "New regression tests for the readiness decision without downloading a model or requiring device-specific AI state.",
+        "symbols": [
+          "PhiSilicaReadinessTests.CanPrepare_ReturnsTrueOnlyForNotReady"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/AdvancedPaste/AdvancedPaste/PhiSilicaReadiness.cs",
+        "symbols": [
+          "PhiSilicaReadiness.CanPrepare"
+        ],
+        "current_behavior": "Preparation eligibility is encoded as a partial terminal-state check inside Program.PreparePhiSilica, so newly introduced or capability-missing states can fall through to the download API.",
+        "change": "Add an internal helper that returns true only for AIFeatureReadyState.NotReady. Treat every other state as ineligible; this is intentionally an allow-list so future states do not accidentally invoke EnsureReadyAsync.",
+        "code_block": "internal static class PhiSilicaReadiness\n{\n    internal static bool CanPrepare(AIFeatureReadyState state)\n        => state == AIFeatureReadyState.NotReady;\n}",
+        "edge_cases": [
+          "Ready must remain a successful no-download path.",
+          "CapabilityMissing, OSUpdateNeeded, NotCompatibleWithSystemHardware, DisabledByUser, and unknown future states must not attempt preparation."
+        ],
+        "tests": [
+          "Add unit cases asserting that only NotReady returns true and that Ready, CapabilityMissing, NotSupportedOnCurrentSystem, and DisabledByUser return false."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/AdvancedPaste/AdvancedPaste/Program.cs",
+        "symbols": [
+          "Program.PreparePhiSilica"
+        ],
+        "current_behavior": "After the Ready shortcut, the method rejects only NotSupportedOnCurrentSystem and DisabledByUser, then blocks on EnsureReadyAsync from an MTA thread.",
+        "change": "Replace the partial terminal-state condition with PhiSilicaReadiness.CanPrepare. If it returns false, write NotSupported and return exit code 2 before creating the async operation; preserve the current Ready shortcut and MTA execution for NotReady.",
+        "code_block": "if (readyState == AIFeatureReadyState.Ready)\n{\n    Console.Out.WriteLine(\"Ready\");\n    return 0;\n}\n\nif (!PhiSilicaReadiness.CanPrepare(readyState))\n{\n    Console.Out.WriteLine(\"NotSupported\");\n    return 2;\n}\n\nvar result = Task.Run(() => LanguageModel.EnsureReadyAsync().AsTask()).GetAwaiter().GetResult();",
+        "edge_cases": [
+          "Do not change LAF unlock handling or the status/error reporting for a genuine NotReady download failure.",
+          "Keep the existing MTA thread-pool call because changing its apartment behavior could alter WinRT async completion."
+        ],
+        "tests": [
+          "Use the new readiness helper tests to prove non-NotReady states never qualify for the EnsureReadyAsync branch.",
+          "Manually exercise --check-phi-silica and --prepare-phi-silica on a supported device in Ready and NotReady states."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests/HelpersTests/PhiSilicaReadinessTests.cs",
+        "symbols": [
+          "PhiSilicaReadinessTests.CanPrepare_ReturnsTrueOnlyForNotReady"
+        ],
+        "current_behavior": "There is no isolated regression test guarding the decision that controls whether a Windows AI readiness state reaches model preparation.",
+        "change": "Create an MSTest data-driven test for the internal helper. AdvancedPaste.UnitTests already references AdvancedPaste and the production project exposes internals to that assembly.",
+        "code_block": "[DataTestMethod]\n[DataRow(AIFeatureReadyState.NotReady, true)]\n[DataRow(AIFeatureReadyState.Ready, false)]\n[DataRow(AIFeatureReadyState.CapabilityMissing, false)]\npublic void CanPrepare_ReturnsTrueOnlyForNotReady(AIFeatureReadyState state, bool expected)\n{\n    Assert.AreEqual(expected, PhiSilicaReadiness.CanPrepare(state));\n}",
+        "edge_cases": [
+          "The test must not call LanguageModel.GetReadyState or EnsureReadyAsync, because those depend on the test machine's package identity and hardware."
+        ],
+        "tests": [
+          "Run the new test in AdvancedPaste.UnitTests.",
+          "Keep the test data limited to enum values available to the target Windows AI SDK."
+        ]
+      }
+    ],
+    "verify": [
+      "dotnet test src\\modules\\AdvancedPaste\\AdvancedPaste.UnitTests\\AdvancedPaste.UnitTests.csproj --filter FullyQualifiedName~PhiSilicaReadinessTests",
+      "Build the AdvancedPaste project for the supported architecture using the repository's existing build workflow.",
+      "On a supported Copilot+ PC, use the Settings Download model action with a NotReady model and confirm it completes or reports the existing detailed failure state.",
+      "On a state that reports CapabilityMissing, confirm preparation returns NotSupported rather than calling EnsureReadyAsync and surfacing 0x80070005."
+    ],
+    "risks": [
+      "A Windows AI readiness value that should legitimately be preparable but is not NotReady would now be rejected; the allow-list follows the current availability contract and should be verified against supported SDK states.",
+      "Hardware-dependent end-to-end testing is required because unit tests cannot validate LAF entitlement, sparse package identity, or OS model delivery."
+    ],
+    "alternatives": [
+      "Add CapabilityMissing only to the current two-value terminal-state check. Rejected because other current or future unsupported values could still invoke EnsureReadyAsync.",
+      "Catch and remap E_ACCESSDENIED after calling EnsureReadyAsync. Rejected because the API call is known to be invalid for CapabilityMissing and should not be attempted."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Phi Silica readiness guard design",
+      "note": "Start the fork-side implementation only after this design is approved."
+    }
+  ],
+  "verify": [
+    "Validate only NotReady reaches the Phi Silica model preparation call.",
+    "Confirm CapabilityMissing no longer produces an Access Denied download attempt."
+  ]
+}

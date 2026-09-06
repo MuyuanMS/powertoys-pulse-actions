@@ -1,34 +1,102 @@
 {
+  "schemaVersion": 5,
   "number": 47760,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-06T16:26:59.702Z",
+  "evaluated_at": "2026-09-06T16:26:59.702Z",
+  "source_updated_at": "2026-09-06T05:38:09Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47760",
+  "title": "Keyboard Manager - Inconsistent Behavior",
+  "author": "Rocker2234",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 8,
+  "stage": "duplicate_review",
+  "owes": "maintainer",
+  "pending_author": false,
+  "confidence": "High",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author follow-up",
-    "detail": "The issue is blocked on reporter follow-up to an explicit maintainer request."
+    "glyph": "🔗",
+    "label": "Duplicate of the Grab and Move Win-modifier conflict",
+    "detail": "The requested follow-up confirms the same Grab and Move/Win-key interaction already tracked by #47585."
   },
   "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for reporter follow-up",
-    "reason": "A maintainer has already asked the next blocking question."
+    "glyph": "📝",
+    "label": "Post a duplicate-triage note",
+    "reason": "The author supplied the modifier and workaround details that the maintainer requested, so parallel fix work would duplicate #47585."
   },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-18T18:25:09Z",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The issue is blocked on reporter follow-up to an explicit maintainer request.",
+    "status": "duplicate_or_handled",
+    "rationale": "The author confirmed the exact distinguishing evidence requested by the maintainer: the problem remains reproducible with Grab and Move enabled using the Windows modifier, and disabling then re-enabling Grab and Move restores the shortcut. That matches the already-linked Grab and Move/Win-key conflict tracked in #47585, with #49127 also cross-referenced as the same family.",
     "evidence": [
-      "The issue is blocked on reporter follow-up to an explicit maintainer request.",
-      "A maintainer has already asked the blocking question; avoid duplicating that request upstream."
+      "The original report maps Win+A to Win+N and describes the remap working only in Explorer/Desktop or not opening the Calendar pane.",
+      "The author later confirmed the issue is reproducible in PowerToys 0.100.2, Grab and Move is enabled with the Windows modifier, and disabling then re-enabling Grab and Move restores the shortcut.",
+      "A separate reporter confirmed in PowerToys 0.101.2373 that Win-based shortcuts fail while Grab and Move is enabled.",
+      "Maintainer guidance explicitly stated that this evidence would identify #47585, and #47585 now cross-references #47760.",
+      "Issue #47585 remains open and describes the same Win-modifier interaction affecting Keyboard Manager and other Win-key hotkeys; #49127 is also linked as the same conflict family.",
+      "No merged or open fix PR specifically covers the remapping defect. Open draft PR #49746 addresses Start opening after a Win-modified drag, which is related input handling but not a demonstrated fix for this report."
     ],
-    "recommended_action": "A maintainer has already asked the next blocking question.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-18T18:25:09Z"
-  }
+    "recommended_action": "Post a specific duplicate-triage note linking #47760 to #47585, retain the reproduction details there, and do not start a competing design.",
+    "evaluated_at": "2026-09-06T16:26:59.702Z",
+    "source_updated_at": "2026-09-06T05:38:09Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "This report is a confirmed duplicate of the open Grab and Move/Win-key tracking issue #47585. The related issue is the appropriate place for any code fix; no separate fix plan should be created here.",
+    "related_issue_urls": [
+      "https://github.com/microsoft/PowerToys/issues/47585",
+      "https://github.com/microsoft/PowerToys/issues/49127",
+      "https://github.com/microsoft/PowerToys/issues/47271"
+    ]
+  },
+  "issue_context": {
+    "summary": "Keyboard Manager Win-key remaps intermittently fail when Grab and Move is configured to use the Windows key. The author confirmed the modifier and a toggle workaround, matching the existing Grab and Move conflict tracked in #47585.",
+    "known_information": [
+      "The report is open and labeled Issue-Bug, Product-Keyboard Shortcut Manager, and Needs-Triage.",
+      "The original reproduction uses a Keyboard Manager Win+A to Win+N remap and reports partial or absent behavior outside Explorer/Desktop.",
+      "The author confirmed the problem in PowerToys 0.100.2 with Grab and Move enabled and its modifier set to Windows.",
+      "Disabling and re-enabling Grab and Move temporarily restores the shortcut.",
+      "Other commenters reproduced Win-based shortcut failures, including Win+O, while Grab and Move is enabled.",
+      "The maintainer asked for the modifier and whether disabling Grab and Move helps, then stated that a positive result identifies #47585.",
+      "Issue #47585 is open, explicitly covers Grab and Move with the Win key affecting other Win-key hotkeys, and cross-references #47760.",
+      "Current Grab and Move code in src/modules/GrabAndMove/GrabAndMove/main.cpp absorbs a Win keydown, tracks held non-modifier keys, and replays the modifier when no drag occurs.",
+      "The current source history includes open draft PR #49746 for a related Win-modified drag/Start-menu input issue, but it does not cover the Keyboard Manager remap behavior."
+    ],
+    "inferences": [
+      "The temporary toggle recovery is consistent with Grab and Move hook state or input-order state being reset, but it does not prove which state transition is defective.",
+      "The shared failure across Keyboard Manager, Command Palette, and other Win-key hotkeys suggests the issue belongs to the common Grab and Move Win-key interception path rather than to one Keyboard Manager mapping.",
+      "The existence of related work does not establish that #47585 is fixed; it establishes that a duplicate report should not receive an independent implementation plan."
+    ],
+    "analysis": "The latest author response supplies the exact follow-up requested by the maintainer and makes the duplicate relationship actionable. The source path is technically consistent with the symptom: Grab and Move's KeyboardProc swallows and later replays Win input while maintaining per-hold state, so a shared input-hook defect can affect multiple consumers. Because #47585 is open and already tracks that behavior, the safe dashboard action is a duplicate-triage note rather than a competing fix design.",
+    "initial_investigation": [
+      "Read the complete issue body and all eight public comments, including the maintainer request and the author's latest confirmation.",
+      "Checked the issue timeline: #47585 cross-references #47760, and #49127 cross-references #47585 as the same Grab and Move/Win-key conflict family.",
+      "Reviewed src/modules/GrabAndMove/GrabAndMove/main.cpp, especially KeyboardProc, the Win-key handling branch, g_heldNonAltKeyCount, g_winAbsorbed, g_pendingModifierReplayed, and ReplayAbsorbedModifier. The hook suppresses Win keydown in Win-modifier mode and replays it when no drag is completed.",
+      "Compared related reports #47585, #49127, and completed issue #47271. The reports share the same modifier-interception symptom; none supplies a separate fix for #47760.",
+      "Reviewed open draft PR #49746. Its stated scope is preventing Start activation after a Win-modified drag, not preserving Keyboard Manager Win-key remaps."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "post-duplicate-note-47760",
+      "type": "post_comment",
+      "label": "Post duplicate-triage note linking #47585",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 47760,
+        "body": "Thanks for confirming that this is still reproducible in PowerToys 0.100.2 with Grab and Move enabled and its modifier set to the Windows key, and that disabling then re-enabling Grab and Move restores the shortcut. Those details match the Win-key interception problem already tracked in #47585 (also related to #49127), including the effect on other Win-based hotkeys. Please consolidate any further reproduction details and fix discussion there so the same Grab and Move input-hook defect is not investigated twice."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

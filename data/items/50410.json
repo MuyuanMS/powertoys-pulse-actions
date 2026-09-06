@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 5,
+  "number": 50410,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-06T16:26:59.71Z",
+  "evaluated_at": "2026-09-06T16:26:59.71Z",
+  "source_updated_at": "2026-09-06T00:12:27Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50410",
+  "title": "Advanced Paste: AI custom actions fail after exactly 100 seconds because HttpClient.Timeout is never configured, making local model providers unusable for anything but short inputs",
+  "author": "NWinocur",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Advanced Paste"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "confidence": "High",
+  "summary": "Ollama-backed custom actions consistently hit the .NET HttpClient 100-second default, but the UI labels the timeout as user cancellation and exposes no provider timeout control.",
+  "status": {
+    "glyph": "🛠️",
+    "label": "Design ready for approval",
+    "detail": "The report includes repeated stack traces and a precise source path; the fix should configure local-provider transport timeouts and distinguish timeout from deliberate cancellation."
+  },
+  "next_action": {
+    "glyph": "✅",
+    "label": "Approve local-provider timeout and error-state design",
+    "reason": "The report already contains sufficient reproduction and stack evidence; the author explained why a bug-report ZIP is unavailable and redundant."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reporter reproduced the same TaskCanceledException five times at approximately 100 seconds and supplied the OllamaSharp stack through the custom-action pipeline. The current code constructs the Ollama connector without a custom HttpClient or timeout and maps any OperationCanceledException to the cancellation message, so the report identifies both the transport cause and the misleading UI boundary.",
+    "evidence": [
+      "The issue records five reproductions on 2026-09-03 with identical timeout text after approximately 100 seconds.",
+      "The logged exception explicitly says the request was canceled because HttpClient.Timeout of 100 seconds elapsed.",
+      "The stack reaches OllamaSharp.OllamaApiClient through SemanticKernelPasteProvider and CustomActionTransformService.",
+      "The reporter confirmed the same Ollama endpoint accepts longer direct requests and that the failure is limited to the PowerToys path.",
+      "SemanticKernelPasteProvider.CreateKernel calls AddOllamaChatCompletion with only model and endpoint; no custom HttpClient or timeout is configured there.",
+      "CustomActionTransformService rethrows OperationCanceledException, and PasteActionError.FromException maps it to PasteActionCanceled.",
+      "The author later explained that the requested bug-report ZIP could not be generated and that the original stack trace already contains the relevant evidence."
+    ],
+    "recommended_action": "Approve the implementation-grade local-provider timeout and timeout-specific error presentation design; validate the selected default and optional provider setting with targeted tests.",
+    "evaluated_at": "2026-09-06T16:26:59.71Z",
+    "source_updated_at": "2026-09-06T00:12:27Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked PowerToys fix or concrete implementation covers this timeout path. The repository code confirms a local Ollama transport with the default HttpClient timeout and a separate error boundary that collapses timeout into cancellation.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Configure a realistic local-provider timeout and distinguish timeout from cancellation",
+      "root_cause": "SemanticKernelPasteProvider creates the Ollama connector without supplying an HttpClient, so the .NET default 100-second timeout applies. When it elapses, the exception is an OperationCanceledException that the UI intentionally renders as the same message used for the user's cancel button.",
+      "plan": [
+        "Add a validated local-provider timeout value to the provider configuration or establish a longer local default while preserving shorter cloud-provider behavior.",
+        "Construct the Ollama connector with an HttpClient or supported transport option whose Timeout uses that value, and keep the configured CancellationToken as a separate user-cancel path.",
+        "Classify timeout-originated cancellation in the custom-action error boundary and show localized text that names the timeout and the configured limit without exposing raw exception details.",
+        "Add deterministic transport/error tests plus a long-running local-provider validation for completion, timeout, and deliberate cancellation."
+      ],
+      "verification": [
+        "Run an Ollama custom action whose generation exceeds 100 seconds and verify it completes when the configured local timeout is longer.",
+        "Set a short test timeout and verify the UI reports a timeout-specific message including the limit rather than paste cancellation.",
+        "Press the cancel button during an active request and verify the existing cancellation message remains unchanged.",
+        "Verify cloud providers retain their existing transport behavior and error mapping.",
+        "Verify the configured timeout is bounded, persisted, and validated across provider reloads."
+      ],
+      "confidence": {
+        "score": 96,
+        "level": "green",
+        "rationale": "The exact exception, duration, provider stack, and current connector construction are directly aligned. The remaining implementation choice is whether to expose a per-provider setting or use a local default, not whether the missing transport timeout is the failing mechanism."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Advanced Paste custom actions using Ollama fail at the .NET 100-second HttpClient default and present that transport timeout as if the user canceled the operation.",
+    "known_information": [
+      "The reporter uses PowerToys 0.101.2362 from the Microsoft Store with Ollama hosted on a Linux machine over the LAN.",
+      "The issue provides numbered reproduction steps using a long transformation and a model whose generation exceeds 100 seconds.",
+      "The same failure was reproduced five times with identical TaskCanceledException text.",
+      "The exception explicitly names HttpClient.Timeout of 100 seconds and the stack identifies OllamaSharp and SemanticKernel.",
+      "Direct requests to the same Ollama endpoint succeed beyond 100 seconds.",
+      "The UI text is the same as the deliberate cancel result.",
+      "The author could not create the automated bug-report ZIP and states that the original stack trace already supplies the relevant information.",
+      "The issue has no assignee or linked PowerToys fix."
+    ],
+    "inferences": [
+      "The local Ollama transport is inheriting the .NET HttpClient default because the connector receives no custom timeout.",
+      "OperationCanceledException is being used for both deliberate cancellation and transport timeout, and the current error mapping does not distinguish them.",
+      "A local-provider-specific timeout is safer than increasing the timeout for all cloud providers."
+    ],
+    "analysis": "The issue is sufficiently reproducible and contains the decisive stack evidence, so another /bugreport request would not change the design decision. The source confirms the missing HttpClient configuration and the cancellation-message collapse. The fix should address both usability failures: allow realistic local inference time and tell users when a configured timeout, rather than their cancel action, ended the request.",
+    "initial_investigation": [
+      "Read the complete issue body, both comments, labels, assignees, attachment state, and activity.",
+      "Inspected CustomActionTransformService.TransformAsync, SemanticKernelPasteProvider.CreateKernel, PasteActionError.FromException, PasteActionException, and the Advanced Paste resource strings.",
+      "Confirmed AddOllamaChatCompletion is called without a custom HttpClient or timeout option.",
+      "Confirmed OperationCanceledException is rethrown and mapped to PasteActionCanceled.",
+      "Searched the Advanced Paste tests and found existing provider/custom-action test surfaces suitable for transport and error regressions.",
+      "Searched public related issues and found no duplicate or linked fix for the exact 100-second timeout report."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "The Ollama path in SemanticKernelPasteProvider.CreateKernel invokes AddOllamaChatCompletion with only the model and endpoint. Because no HttpClient or timeout is supplied, the underlying OllamaSharp request uses the .NET HttpClient.Timeout default of 100 seconds. When the timeout fires, CustomActionTransformService preserves the OperationCanceledException, and PasteActionError.FromException chooses the generic PasteActionCanceled resource, hiding the actual cause.",
+    "evidence": [
+      "[Observed] The issue's repeated log says the request was canceled because HttpClient.Timeout of 100 seconds elapsed.",
+      "[Observed] The stack reaches OllamaSharp.OllamaApiClient.ChatAsync through Microsoft.SemanticKernel and CustomActionTransformService.TransformAsync.",
+      "[Observed] The same endpoint succeeds for longer direct requests.",
+      "[Observed] SemanticKernelPasteProvider.CreateKernel supplies no custom HttpClient to AddOllamaChatCompletion.",
+      "[Observed] CustomActionTransformService rethrows OperationCanceledException.",
+      "[Observed] PasteActionError.FromException maps OperationCanceledException to the PasteActionCanceled resource.",
+      "[Inferred] A local-provider transport timeout and a timeout-specific error classification address the reported failure."
+    ],
+    "affected_files": [
+      {
+        "path": "src/settings-ui/Settings.UI.Library/PasteAIProviderDefinition.cs",
+        "purpose": "Stores per-provider Advanced Paste configuration if the timeout is exposed in Settings.",
+        "symbols": [
+          "PasteAIProviderDefinition",
+          "PasteAIProviderDefinition.Clone"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/Services/CustomActions/PasteAIConfig.cs",
+        "purpose": "Carries provider settings from Settings into the custom-action provider factory.",
+        "symbols": [
+          "PasteAIConfig"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/Services/CustomActions/SemanticKernelPasteProvider.cs",
+        "purpose": "Builds the Semantic Kernel and Ollama transport used by custom actions.",
+        "symbols": [
+          "SemanticKernelPasteProvider.CreateKernel",
+          "SemanticKernelPasteProvider.ProcessPasteAsync"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/Services/CustomActions/CustomActionTransformService.cs",
+        "purpose": "Owns the custom-action exception boundary and telemetry.",
+        "symbols": [
+          "CustomActionTransformService.TransformAsync",
+          "CustomActionTransformService.ExtractStatusCode"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteActionException.cs; src/modules/AdvancedPaste/AdvancedPaste/Models/PasteActionError.cs",
+        "purpose": "Carries provider-facing error details and maps exceptions to visible UI text.",
+        "symbols": [
+          "PasteActionException",
+          "PasteActionError.FromException"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/Strings/en-us/Resources.resw",
+        "purpose": "Contains localized cancellation and error strings.",
+        "symbols": [
+          "PasteActionCanceled",
+          "PasteError",
+          "new timeout resource"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests",
+        "purpose": "Provides provider and custom-action regression test coverage.",
+        "symbols": [
+          "SemanticKernelPasteProvider tests",
+          "CustomActionTransformService tests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/settings-ui/Settings.UI.Library/PasteAIProviderDefinition.cs; src/modules/AdvancedPaste/AdvancedPaste/Services/CustomActions/PasteAIConfig.cs; src/settings-ui/Settings.UI/SettingsXAML/Views/AdvancedPastePage.xaml.cs",
+        "symbols": [
+          "PasteAIProviderDefinition",
+          "PasteAIProviderDefinition.Clone",
+          "PasteAIConfig",
+          "AdvancedPastePage provider configuration bindings"
+        ],
+        "current_behavior": "Provider settings contain endpoint and model values but no transport timeout that can be passed to a local connector.",
+        "change": "Add a bounded optional timeout in seconds for local providers, defaulting to a documented value longer than 100 seconds. Preserve backward compatibility by treating missing settings as the local default and do not apply the setting to cloud providers.",
+        "code_block": "[JsonPropertyName(\"request-timeout-seconds\")]\n+public int RequestTimeoutSeconds { get; set; } = DefaultLocalTimeoutSeconds;\n\nvar timeout = provider.IsLocalModel\n    ? ValidateTimeout(provider.RequestTimeoutSeconds)\n    : DefaultCloudTimeout;",
+        "edge_cases": [
+          "Reject zero, negative, or unreasonably large values with existing Settings validation conventions.",
+          "Clone and serialize the value so existing provider editing does not drop it.",
+          "Do not silently reinterpret an invalid persisted value as an unlimited timeout.",
+          "Keep the setting hidden or disabled for providers where it has no effect."
+        ],
+        "tests": [
+          "Round-trip provider serialization preserves the timeout.",
+          "Missing, invalid, minimum, and maximum values use the documented validation behavior.",
+          "Editing and cloning a provider preserves the timeout."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/AdvancedPaste/AdvancedPaste/Services/CustomActions/SemanticKernelPasteProvider.cs",
+        "symbols": [
+          "SemanticKernelPasteProvider.CreateKernel",
+          "SemanticKernelPasteProvider.ProcessPasteAsync"
+        ],
+        "current_behavior": "The Ollama connector is created from model and endpoint only, leaving the underlying HttpClient at the .NET 100-second default.",
+        "change": "Create a provider-scoped HttpClient or use the supported Semantic Kernel Ollama overload that accepts one, set its bounded Timeout from PasteAIConfig, and dispose it with the provider/kernel lifetime. Keep the user cancellation token on the request.",
+        "code_block": "if (serviceType == AIServiceType.Ollama)\n{\n    using var handler = new HttpClientHandler();\n    using var client = new HttpClient(handler) { Timeout = _config.RequestTimeout };\n    kernelBuilder.AddOllamaChatCompletion(_config.Model, new Uri(endpoint), httpClient: client);\n}",
+        "edge_cases": [
+          "Confirm the exact package overload and lifetime semantics before implementation; do not use an overload that disposes a client still needed by the kernel.",
+          "A timeout must not be Infinite or exceed the validated upper bound.",
+          "Preserve endpoint validation and existing model selection behavior.",
+          "Do not change cloud provider transport defaults."
+        ],
+        "tests": [
+          "Use a fake HttpMessageHandler to prove the Ollama connector receives the configured timeout.",
+          "Verify the client/kernel lifetime does not dispose the transport before ProcessPasteAsync completes.",
+          "Verify cloud provider branches do not receive the local timeout."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/AdvancedPaste/AdvancedPaste/Services/CustomActions/CustomActionTransformService.cs; src/modules/AdvancedPaste/AdvancedPaste/Models/PasteActionException.cs; src/modules/AdvancedPaste/AdvancedPaste/Models/PasteActionError.cs",
+        "symbols": [
+          "CustomActionTransformService.TransformAsync",
+          "PasteActionException",
+          "PasteActionError.FromException"
+        ],
+        "current_behavior": "All OperationCanceledException instances are treated as user cancellation, while non-cancellation provider errors become generic PasteError or provider-specific exceptions.",
+        "change": "Detect a timeout-originated cancellation using the exception chain and/or a typed transport exception, wrap it as a timeout-specific PasteActionException with a localized message and safe limit detail, and preserve deliberate cancellation as PasteActionCanceled.",
+        "code_block": "catch (OperationCanceledException ex) when (TimeoutClassifier.IsHttpTimeout(ex))\n{\n    throw new PasteActionException(\n        ResourceLoaderInstance.ResourceLoader.GetString(\"PasteActionTimedOut\"),\n        ex,\n        aiServiceMessage: FormatTimeoutLimit(providerConfig));\n}\ncatch (OperationCanceledException)\n{\n    throw;\n}",
+        "edge_cases": [
+          "Do not classify a caller cancellation as a timeout merely because it occurred near the configured limit.",
+          "Keep raw endpoint, prompt, and model details out of the visible localized message unless already covered by safe provider UI.",
+          "Preserve telemetry distinction between user cancellation and transport timeout.",
+          "Handle timeout wrappers from both HttpClient and the Semantic Kernel/Ollama connector."
+        ],
+        "tests": [
+          "A timeout exception produces timeout text and limit details.",
+          "A caller cancellation produces the existing cancellation text.",
+          "A connection refusal remains a connection/provider error rather than timeout.",
+          "Telemetry receives distinct timeout and cancellation classifications."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/AdvancedPaste/AdvancedPaste/Strings/en-us/Resources.resw; src/modules/AdvancedPaste/AdvancedPaste.UnitTests",
+        "symbols": [
+          "PasteActionTimedOut resource",
+          "SemanticKernelPasteProvider tests",
+          "CustomActionTransformService tests"
+        ],
+        "current_behavior": "The resource set has a generic cancellation message but no timeout-specific message, and the focused tests do not prove the 100-second boundary behavior.",
+        "change": "Add localized timeout wording that names the configured limit and explains how to adjust it, then add deterministic transport/error tests and a bounded manual long-running validation.",
+        "code_block": "<data name=\"PasteActionTimedOut\" xml:space=\"preserve\">\n  <value>The AI request timed out after {0} seconds. Increase the provider timeout or try a shorter input.</value>\n</data>",
+        "edge_cases": [
+          "Keep wording applicable to local providers without claiming every provider exposes the setting.",
+          "Use the existing localization resource conventions and format placeholders safely.",
+          "Avoid tests that actually wait 100 seconds."
+        ],
+        "tests": [
+          "Run the focused AdvancedPaste unit tests with fake delayed handlers.",
+          "Manually run a local Ollama request longer than 100 seconds with a longer configured timeout and verify completion.",
+          "Manually set a short timeout and verify the timeout message and deliberate cancel behavior."
+        ]
+      }
+    ],
+    "verify": [
+      "Configure an Ollama provider against the reporter's class of self-hosted endpoint and reproduce the baseline failure with a request that exceeds 100 seconds.",
+      "Install the fixed build, set a local timeout longer than the measured generation, and verify the same transformation completes.",
+      "Set a deliberately short timeout and verify the UI names the timeout and limit.",
+      "Cancel a separate active request with the X button and verify it still reports cancellation.",
+      "Verify cloud providers and existing custom-action error mappings are unchanged.",
+      "Run the focused AdvancedPaste tests and the affected build."
+    ],
+    "risks": [
+      "A per-provider setting expands Settings serialization and localization surface; default missing values must preserve existing behavior for non-local providers.",
+      "Long timeouts can keep the UI busy and consume local resources; retain explicit cancellation and a sensible upper bound.",
+      "Semantic Kernel connector overloads and HttpClient ownership vary by package version; compile-time API inspection and a fake-handler test are required.",
+      "Timeout classification must not mislabel deliberate cancellation or transient network failures."
+    ],
+    "alternatives": [
+      "A fixed global timeout increase was rejected because cloud providers and local hardware have different latency profiles.",
+      "A local-only longer default without a setting is a smaller fallback, but it does not satisfy users whose hardware needs a different ceiling.",
+      "A UI-only wording change would explain the failure but leave realistic local inference unusable.",
+      "Requesting a bug-report ZIP was not selected because the reporter supplied repeated stack traces and explained that the ZIP generator failed."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-50410",
+      "type": "approve_design",
+      "label": "Approve local-provider timeout and error-state design",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "design",
+        "body": "Approve the implementation-grade local-provider timeout and timeout-specific error-state design for Issue 50410. The issue already contains sufficient reproduction and stack evidence; approval does not post an upstream comment."
+      },
+      "note": "Design approval is a maintainer workflow control; it does not post to the upstream issue."
+    }
+  ]
+}
