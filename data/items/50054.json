@@ -1,76 +1,77 @@
 {
+  "schemaVersion": 3,
   "number": 50054,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_ready",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T02:16:03.2594526Z",
-  "evaluated_at": "2026-09-07T02:16:03.2594526Z",
+  "generated_at": "2026-09-07T13:09:08+08:00",
+  "evaluated_at": "2026-09-07T13:09:08+08:00",
   "source_updated_at": "2026-09-06T17:46:51Z",
   "head_sha": "7718d73b11923f80ac967a98f9dd46d89a59d90d",
   "title": "[CmdPal] Window Walker: match app name and window title together",
   "url": "https://github.com/microsoft/PowerToys/pull/50054",
+  "confidence": "high",
+  "summary": "Window Walker now scores compound queries across process names and window titles while preserving legacy single-word behavior. The current review is clean, and the affected module build plus all 23 Window Walker unit tests pass.",
   "status": {
-    "glyph": "...",
-    "label": "Current-head review found a performance concern",
-    "detail": "The author addressed the posted Unicode-whitespace request and current Azure builds pass. Full re-review found that per-window scoring repeatedly splits and normalizes the same query and defeats the fuzzy matcher's single-entry prepared-query cache. The one permitted external Copilot inspection covered an earlier head, so current-head convergence remains unverified."
+    "glyph": "ok",
+    "label": "Review complete",
+    "detail": "The current upstream head has no remaining author-facing findings. Compound-query scoring, whitespace handling, ordering, and batch-score equivalence are covered by the implementation and focused tests."
   },
-  "next_action": "Resume the current-head review loop and targeted performance validation before deciding whether to publish the drafted general review note.",
-  "proposed_comments": [
+  "next_action": {
+    "glyph": "▶",
+    "label": "Approve after final upstream freshness check",
+    "reason": "No current-head findings remain. An authorized maintainer may approve after confirming the upstream head is still current; no upstream action was submitted automatically."
+  },
+  "proposed_comments": [],
+  "actions": [
     {
-      "id": "batch-window-query-scoring",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Prepare each query component once for the window set",
-      "body": "### Prepare each query component once for the window set\n\n**Severity:** `medium`\n\n`ScoreFunction` calls `WindowSearchScorer.Score` independently for every open window. Each call splits and joins the same query, then alternates the whole query and each word through `FuzzyStringMatcher`, whose thread-local cache retains only one prepared needle; with N windows and W words this repeatedly rebuilds the same W+1 prepared queries and allocates per candidate on every keystroke. Batch scoring across the window collection so each whole query or word is prepared once, while preserving the current scores and ordering, and add coverage that the batch results equal individual scoring.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 92,
-        "rationale": "The live call path scores once per candidate, while FuzzyStringMatcher's inspected thread cache stores exactly one needle, so alternating whole-query and per-word calls deterministically evict and rebuild preparations for every window."
-      }
+      "id": "approve-review-50054",
+      "type": "approve",
+      "label": "Approve clean review",
+      "confirm": true,
+      "note": "The review is pinned to the current upstream head and has no author-facing findings. Require explicit authorization and a final upstream freshness check before publishing."
     }
   ],
+  "judgment": {
+    "status": "review_clean",
+    "rationale": "The change consistently supports compound queries spanning process names and window titles, retains legacy single-word scoring, ignores surrounding and repeated whitespace, preserves result ordering, and provides batch scoring equivalent to individual scoring. Focused tests cover positive, negative, browser-title, empty-query, and regression cases.",
+    "evidence": [
+      "Live upstream head is 7718d73b11923f80ac967a98f9dd46d89a59d90d and remains open.",
+      "The contributor's description includes before/after screenshots, linked issue context, focused tests, and detailed validation; CLA and automated intake checks pass.",
+      "Window Walker Debug x64 build completed successfully.",
+      "The full Window Walker unit-test assembly passed 23/23 tests, including batch-vs-individual score equivalence and whitespace edge cases.",
+      "A fresh Copilot review returned zero published comments, and no unresolved Copilot review threads remain."
+    ],
+    "recommended_action": "Approve only after explicit authorization and a live upstream freshness check.",
+    "evaluated_at": "2026-09-07T13:09:08+08:00",
+    "source_updated_at": "2026-09-06T17:46:51Z"
+  },
   "phase0": {
-    "author": "Subhro-ai",
     "author_association": "CONTRIBUTOR",
-    "bar": "full community-contributor process review",
     "disposition": "Proceed",
     "gates_tripped": [],
-    "next_actor": "maintainer",
-    "note": "CLA, automated intake, dependency review, and current Azure x64/arm64 builds pass. The linked issue contains prior design alignment, and the PR includes before/after screenshots, detailed validation, and focused tests. The maintainer's Unicode-whitespace request is addressed in the live head."
-  },
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "head_sha": "7718d73b11923f80ac967a98f9dd46d89a59d90d",
-    "updated_at": "2026-09-06T17:46:51Z",
-    "changed_file_count": 4,
-    "additions": 247,
-    "deletions": 7,
-    "reported_checks": {
-      "total": 10,
-      "successful": 10,
-      "failing": 0,
-      "cla": "success",
-      "azure_builds": "passed_current_head"
-    }
+    "note": "CLA, automated intake, dependency review, linked issue context, screenshots, focused tests, and current Azure x64/arm64 builds satisfy the community-contributor process bar."
   },
   "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-07T02:16:03.2594526Z",
-    "blocker": "The retained external review evidence is pinned to an earlier head. The explicit file-only scope prevents updating the review branch, requesting a fresh current-head pass, resolving threads, or running targeted local performance validation."
-  },
-  "validation": {
-    "static_review": "Completed against the full live four-file diff, Window Walker filtering and ordering, FuzzyStringMatcher cache behavior, tests, linked issue, and conversation.",
-    "ci": "All ten reported current-head checks pass, including Azure x64 and arm64 release builds.",
-    "author_validation": "The PR reports 30 passing unit tests and end-to-end Command Palette validation after the Unicode-whitespace correction.",
-    "local": "No current-head local build or benchmark was run within the file-only scope."
+    "phase": "review_ready",
+    "checkpoint_at": "2026-09-07T13:09:08+08:00",
+    "copilot_result": "clean_zero_published_comments",
+    "unresolved_copilot_threads": 0,
+    "local_validation": "completed"
   },
   "freshness": {
-    "queued_at": "2026-09-07T02:16:03.2594526Z",
-    "checkpoint_at": "2026-09-07T02:16:03.2594526Z"
+    "queued_at": "2026-09-07T02:16:03Z",
+    "checkpoint_at": "2026-09-07T13:09:08+08:00"
   },
-  "actions": []
+  "revalidation": {
+    "completed_at": "2026-09-07T13:09:08+08:00",
+    "result": "passed",
+    "builds": [
+      "PowerToys Debug x64 essentials",
+      "Window Walker unit-test project Debug x64"
+    ],
+    "tests": "Window Walker unit-test assembly: 23 passed, 0 failed, 0 skipped."
+  }
 }
