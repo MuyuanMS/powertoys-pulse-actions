@@ -5,6 +5,15 @@ on:
     # Finish before Pulse's 06:00 and 18:00 UTC refreshes.
     - cron: "30 5,17 * * *"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Inventory is read-only; refresh requires DASHBOARD_READ_TOKEN"
+        required: true
+        default: "inventory"
+        type: choice
+        options:
+          - inventory
+          - refresh
 
 permissions:
   contents: write
@@ -25,13 +34,43 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Refresh and validate public artifacts
+      - name: Collect read-only automation inventory
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+        run: .\Get-DashboardAutomationInventory.ps1
+
+      - name: Upload inventory report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-automation-inventory
+          path: automation-output/dashboard-inventory.json
+          retention-days: 14
+
+      - name: Require full-refresh credential
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'refresh'
+        shell: pwsh
+        env:
+          DASHBOARD_READ_TOKEN: ${{ secrets.DASHBOARD_READ_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:DASHBOARD_READ_TOKEN)) {
+            throw @'
+          DASHBOARD_READ_TOKEN is required for a full refresh because the
+          repository GITHUB_TOKEN cannot reliably enumerate the complete
+          cross-organization PowerToys issue history. Configure a fine-grained
+          read token, then dispatch the workflow in refresh mode.
+          '@
+          }
+
+      - name: Refresh and validate public artifacts
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'refresh'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.DASHBOARD_READ_TOKEN }}
         run: .\Invoke-DashboardRefresh.ps1
 
       - name: Publish refresh branch
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'refresh'
         id: publish
         shell: pwsh
         env:
@@ -79,6 +118,6 @@ jobs:
           }
 
       - name: Summarize unchanged refresh
-        if: steps.publish.outputs.changed == 'false'
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'refresh' && steps.publish.outputs.changed == 'false'
         shell: pwsh
         run: '"No dashboard data changes were detected." >> $env:GITHUB_STEP_SUMMARY'
