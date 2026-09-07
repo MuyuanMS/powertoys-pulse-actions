@@ -71,7 +71,6 @@ if ($sameHead -and -not $Force) {
     }
 }
 $now = (Get-Date).ToUniversalTime().ToString('o')
-$now = (Get-Date).ToUniversalTime().ToString('o')
 $artifact = [ordered]@{
     number = $Number
     kind = 'pr'
@@ -104,15 +103,7 @@ $artifact = [ordered]@{
     }
     next_action = 'Resume the saved review stage in the next dashboard update.'
     proposed_comments = @()
-    actions = @(
-        [ordered]@{
-            id = "continue-review-$Number"
-            type = 'continue_review'
-            label = 'Continue review loop'
-            primary = $true
-            note = 'Review progress is checkpointed; no upstream action has been posted.'
-        }
-    )
+    actions = @()
     workflow = [ordered]@{
         phase = $Phase
         checkpoint_at = $now
