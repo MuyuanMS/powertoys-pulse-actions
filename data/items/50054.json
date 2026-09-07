@@ -2,37 +2,75 @@
   "number": 50054,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
-  "owes": "maintainer",
+  "stage": "review_in_progress",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-08-27T03:16:18.5444493Z",
-  "evaluated_at": "2026-08-27T03:16:18.5444493Z",
-  "source_updated_at": "2026-08-21T17:57:05Z",
-  "head_sha": "bd1c09f8af79d496b3d1aadc4f7a464d936038c8",
+  "generated_at": "2026-09-07T02:16:03.2594526Z",
+  "evaluated_at": "2026-09-07T02:16:03.2594526Z",
+  "source_updated_at": "2026-09-06T17:46:51Z",
+  "head_sha": "7718d73b11923f80ac967a98f9dd46d89a59d90d",
   "title": "[CmdPal] Window Walker: match app name and window title together",
   "url": "https://github.com/microsoft/PowerToys/pull/50054",
   "status": {
-    "glyph": "OK",
-    "label": "Review complete",
-    "detail": "Current-head review converged with no proposed changes or comments. The targeted build completed."
+    "glyph": "...",
+    "label": "Current-head review found a performance concern",
+    "detail": "The author addressed the posted Unicode-whitespace request and current Azure builds pass. Full re-review found that per-window scoring repeatedly splits and normalizes the same query and defeats the fuzzy matcher's single-entry prepared-query cache. The one permitted external Copilot inspection covered an earlier head, so current-head convergence remains unverified."
   },
-  "next_action": "Approve the current review after rechecking that the upstream head is unchanged.",
-  "proposed_comments": [],
-  "actions": [
+  "next_action": "Resume the current-head review loop and targeted performance validation before deciding whether to publish the drafted general review note.",
+  "proposed_comments": [
     {
-      "id": "approve-review-50054",
-      "type": "approve",
-      "label": "Approve",
-      "primary": true,
-      "note": "The current-head review found no comments. This is a maintainer decision only; no upstream approval is submitted automatically."
+      "id": "batch-window-query-scoring",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Prepare each query component once for the window set",
+      "body": "### Prepare each query component once for the window set\n\n**Severity:** `medium`\n\n`ScoreFunction` calls `WindowSearchScorer.Score` independently for every open window. Each call splits and joins the same query, then alternates the whole query and each word through `FuzzyStringMatcher`, whose thread-local cache retains only one prepared needle; with N windows and W words this repeatedly rebuilds the same W+1 prepared queries and allocates per candidate on every keystroke. Batch scoring across the window collection so each whole query or word is prepared once, while preserving the current scores and ordering, and add coverage that the batch results equal individual scoring.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 92,
+        "rationale": "The live call path scores once per candidate, while FuzzyStringMatcher's inspected thread cache stores exactly one needle, so alternating whole-query and per-word calls deterministically evict and rebuild preparations for every window."
+      }
     }
   ],
+  "phase0": {
+    "author": "Subhro-ai",
+    "author_association": "CONTRIBUTOR",
+    "bar": "full community-contributor process review",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "next_actor": "maintainer",
+    "note": "CLA, automated intake, dependency review, and current Azure x64/arm64 builds pass. The linked issue contains prior design alignment, and the PR includes before/after screenshots, detailed validation, and focused tests. The maintainer's Unicode-whitespace request is addressed in the live head."
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "7718d73b11923f80ac967a98f9dd46d89a59d90d",
+    "updated_at": "2026-09-06T17:46:51Z",
+    "changed_file_count": 4,
+    "additions": 247,
+    "deletions": 7,
+    "reported_checks": {
+      "total": 10,
+      "successful": 10,
+      "failing": 0,
+      "cla": "success",
+      "azure_builds": "passed_current_head"
+    }
+  },
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-08-27T03:16:18.5444493Z"
+    "phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-07T02:16:03.2594526Z",
+    "blocker": "The retained external review evidence is pinned to an earlier head. The explicit file-only scope prevents updating the review branch, requesting a fresh current-head pass, resolving threads, or running targeted local performance validation."
+  },
+  "validation": {
+    "static_review": "Completed against the full live four-file diff, Window Walker filtering and ordering, FuzzyStringMatcher cache behavior, tests, linked issue, and conversation.",
+    "ci": "All ten reported current-head checks pass, including Azure x64 and arm64 release builds.",
+    "author_validation": "The PR reports 30 passing unit tests and end-to-end Command Palette validation after the Unicode-whitespace correction.",
+    "local": "No current-head local build or benchmark was run within the file-only scope."
   },
   "freshness": {
-    "queued_at": "2026-08-27T03:16:18.5444493Z",
-    "checkpoint_at": "2026-08-27T03:16:18.5444493Z"
-  }
+    "queued_at": "2026-09-07T02:16:03.2594526Z",
+    "checkpoint_at": "2026-09-07T02:16:03.2594526Z"
+  },
+  "actions": []
 }

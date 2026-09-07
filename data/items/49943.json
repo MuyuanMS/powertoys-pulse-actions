@@ -1,29 +1,30 @@
 {
+  "schemaVersion": 3,
   "number": 49943,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "review_looping",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-01T21:05:48.6601497Z",
-  "evaluated_at": "2026-09-01T23:19:00Z",
-  "source_updated_at": "2026-09-01T14:36:43Z",
-  "head_sha": "b3f7ee2be5114492ad49c6f5082c3540dd435e96",
+  "generated_at": "2026-09-07T02:12:20.8851058Z",
+  "evaluated_at": "2026-09-07T02:12:20.8851058Z",
+  "source_updated_at": "2026-09-06T22:01:22Z",
+  "head_sha": "0687b1041b7506352b4c70168a2cf576bf89b0eb",
   "title": "CmdPal: Shelf (5/n) - Add Alt+Shift+# shortcuts that select the shelf item",
   "url": "https://github.com/microsoft/PowerToys/pull/49943",
   "author": "jiripolasek",
   "author_association": "COLLABORATOR",
   "confidence": "High",
-  "summary": "Phase 0 is clear and the fork review converged. The current head can consume a released-Alt Shift+digit access-key sequence as a context shortcut before the intended shelf item receives focus. Three current-head suggestions preserve key-tip mode through the resolver and add regression coverage.",
+  "summary": "The live Shelf-series head changed to 0687b1041b7506352b4c70168a2cf576bf89b0eb after the prior drafted artifact. Collaborator context, green CI, and the current maintainer approval were reused, but the old line-pinned suggestions and fork convergence evidence are invalid for approval until a full current-head review, build, and fresh Copilot pass complete.",
   "status": {
     "glyph": "📝",
-    "label": "Review ready — three suggestions drafted",
-    "detail": "Round 2 returned zero new comments, the prior thread is resolved, the targeted build passes, and all 35 QuickAccessShelfResolverTests pass."
+    "label": "Full re-review required",
+    "detail": "The upstream head was rewritten after the drafted review. The single permitted Copilot status inspection found only old-head fork reviews, so no current public action is safe."
   },
   "next_action": {
     "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted review",
-    "reason": "The three localized suggestions prevent the released-Alt access-key regression and cover it with a focused unit test."
+    "label": "Resume the full current-head review",
+    "reason": "Refresh the existing review work against live head 0687b1041b7506352b4c70168a2cf576bf89b0eb, rebuild, and obtain a fresh zero-comment Copilot pass before drafting."
   },
   "phase0": {
     "disposition": "Proceed",
@@ -57,7 +58,8 @@
       "line": 52,
       "body": "### Recognize released-Alt key-tip mode\n\n**Severity:** `medium`\n\nWindows access keys can enter key-tip mode when Alt is pressed and released before the number key. At that point the preview handler sees `Alt` as false, so Shift+number is treated as a context shortcut instead of selecting the shelf item. Preserve the normal modifier check while allowing the active key-tip display mode to identify this selection sequence.\n\n```suggestion\n    public static bool IsSelectionShortcut(VirtualKey key, bool ctrl, bool alt, bool shift, bool win, bool isKeyTipDisplayMode = false) =>\n        (alt || isKeyTipDisplayMode) &&\n        IsSelectionAccessKey(ctrl, shift, win) &&\n        GetTopRowShortcutIndex(key) >= 0;\n\n    public static SelectionShortcutTarget ResolveSelectionShortcut(\n        VirtualKey key,\n        bool ctrl,\n        bool alt,\n        bool shift,\n        bool win,\n        int visibleItemCount,\n        bool isKeyTipDisplayMode = false)\n    {\n        if (!IsSelectionShortcut(key, ctrl, alt, shift, win, isKeyTipDisplayMode))\n        {\n            return SelectionShortcutTarget.None;\n        }\n\n        return GetTopRowShortcutIndex(key) < visibleItemCount\n            ? SelectionShortcutTarget.Visible\n            : SelectionShortcutTarget.Unavailable;\n    }\n```",
       "in_diff": true,
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
     },
     {
       "id": "pass-key-tip-display-mode",
@@ -74,7 +76,8 @@
       "line": 1679,
       "body": "### Pass key-tip display state to the shortcut resolver\n\n**Severity:** `medium`\n\nThe resolver cannot infer a released-Alt access-key sequence from keyboard modifiers alone. Passing the current access-key display state keeps normal Shift+number context shortcuts unchanged while allowing the active key-tip sequence to reach the matching shelf item.\n\n```suggestion\n        switch (QuickAccessShelfShortcuts.ResolveSelectionShortcut(\n            e.Key,\n            modifiers.Ctrl,\n            modifiers.Alt,\n            modifiers.Shift,\n            modifiers.Win,\n            QuickAccessShelf.VisibleItemCount,\n            isKeyTipDisplayMode: AccessKeyManager.IsDisplayModeEnabled))\n        {\n            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible:\n                // Let the matching native access key move focus to the requested shelf item.\n                return false;\n            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable:\n                // Reserve shelf selection chords even when their targets are in overflow so\n                // they cannot invoke a context shortcut on the currently focused shelf item.\n                e.Handled = true;\n                return true;\n        }\n```",
       "in_diff": true,
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
     },
     {
       "id": "released-alt-regression-test",
@@ -91,27 +94,12 @@
       "line": 50,
       "body": "### Cover the released-Alt access-key sequence\n\n**Severity:** `medium`\n\nThe existing test only verifies selection while Alt remains held. Add the released-Alt case so a future modifier-handling change cannot reintroduce the path that consumes Shift+number before native access-key selection runs.\n\n```suggestion\n    [TestMethod]\n    public void IsSelectionShortcut_RequiresOnlyAltShiftAndNumberedKey()\n    {\n        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: true, alt: true, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: false, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: false, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: true, win: true));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number0, ctrl: false, alt: true, shift: true, win: false));\n        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: false, shift: true, win: false, isKeyTipDisplayMode: true));\n    }\n```",
       "in_diff": true,
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
     }
   ],
-  "actions": [
-    {
-      "id": "post-review-49943",
-      "type": "post_review",
-      "label": "Post three inline suggestions",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 49943,
-        "event": "COMMENT",
-        "head_sha": "b3f7ee2be5114492ad49c6f5082c3540dd435e96"
-      },
-      "note": "Recheck freshness and obtain explicit approval before publishing."
-    }
-  ],
-  "needs_revalidation": false,
+  "actions": [],
+  "needs_revalidation": true,
   "fork_pr": {
     "number": 569,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/569"
@@ -119,25 +107,74 @@
   "fork_branch": "pr-iterate/49943",
   "fork_head_sha": "34f052678acf8ad5213cc466c35018f0fd3ca859",
   "workflow": {
-    "phase": "review_drafted",
+    "phase": "review_looping",
     "review_round": 2,
     "requested_at": "2026-09-01T21:05:25.7412725Z",
     "latest_copilot_review_at": "2026-09-01T21:07:14Z",
-    "checkpoint_at": "2026-09-01T23:19:00Z",
+    "checkpoint_at": "2026-09-07T02:12:20.8851058Z",
     "unresolved_copilot_threads": 0,
     "round_1_comment_count": 1,
     "round_1_resolved": true,
     "round_2_comment_count": 0,
-    "copilot_final": "zero_new_comments"
+    "copilot_final": "stale_old_head_only"
   },
   "validation": {
-    "upstream_head_matches": true,
-    "fork_diff_matches_upstream_scope": true,
-    "targeted_build": "passed",
-    "targeted_tests": "35 passed",
+    "upstream_head_matches": false,
+    "fork_diff_matches_upstream_scope": false,
+    "targeted_build": "invalidated_by_head_change",
+    "targeted_tests": "invalidated_by_head_change",
     "full_essentials": "restore passed; runner build blocked by inherited empty Git fsmonitor config before retry",
     "local_build_environment_workaround": "Set non-empty GIT_CONFIG_VALUE_3 for child vcpkg Git processes",
     "upstream_ci": "passed",
-    "cla": "passed"
+    "cla": "passed",
+    "current_upstream_ci": "passed"
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "0687b1041b7506352b4c70168a2cf576bf89b0eb",
+    "base_sha": "6dab1ad05847fc54f24be7cd3c33be0f2001d38c",
+    "updated_at": "2026-09-06T22:01:22Z",
+    "head_committed_at": "2026-09-06T17:36:18Z",
+    "newest_commit_at": "2026-08-16T02:03:17Z",
+    "commit_count": 1,
+    "changed_file_count": 6,
+    "additions": 155,
+    "deletions": 4,
+    "issue_comment_count": 1,
+    "review_comment_count": 0,
+    "review_count": 3,
+    "latest_review_at": "2026-09-06T22:01:22Z",
+    "review_decision": "APPROVED",
+    "reported_checks": {
+      "total": 13,
+      "successful": 13,
+      "failing": 0,
+      "pending": 0,
+      "cla": "success",
+      "azure_builds": "success"
+    }
+  },
+  "review_reset": {
+    "assigned_artifacts": [
+      49988,
+      49947,
+      49943
+    ],
+    "scope": "scoped-drain",
+    "changed_since": "2026-09-04T01:49:22Z",
+    "prior_review_head": "b3f7ee2be5114492ad49c6f5082c3540dd435e96",
+    "live_head": "0687b1041b7506352b4c70168a2cf576bf89b0eb",
+    "live_source_updated_at": "2026-09-06T22:01:22Z",
+    "copilot_status_inspected_at": "2026-09-07T02:12:20.8851058Z",
+    "copilot_status": "The single inspection found only old-head fork reviews; no current-head Copilot review exists.",
+    "requires_full_re_review": true,
+    "prior_suggestions_invalidated": true,
+    "polling_performed": false,
+    "blockers": [
+      "The existing fork review head is not based on the live upstream head.",
+      "No fresh current-head Copilot review has completed.",
+      "Current-head local build and focused validation have not run."
+    ]
   }
 }

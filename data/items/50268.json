@@ -5,114 +5,64 @@
   "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-07T06:23:11.1646652+08:00",
-  "evaluated_at": "2026-09-02T02:25:56.323Z",
-  "source_updated_at": "2026-09-01T16:05:57Z",
+  "generated_at": "2026-09-07T02:09:53.3625831Z",
+  "evaluated_at": "2026-09-07T02:09:53.3625831Z",
+  "source_updated_at": "2026-09-06T20:41:50Z",
+  "head_sha": "7dd2bbe2b457709b925796558e30abad85c722f8",
+  "title": "Add Anthropic support to Advanced Paste",
+  "url": "https://github.com/microsoft/PowerToys/pull/50268",
+  "summary": "The author supplied the requested local-build visual evidence and automated intake now passes, so the prior author-wait state is cleared. The saved fork review remains unconverged with two unresolved localization findings and required validation is not established.",
   "status": {
-    "glyph": "🔄",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action.",
-    "label": "Author responded — review needed"
+    "glyph": "warn",
+    "label": "Review findings unresolved",
+    "detail": "The latest saved fork Copilot pass produced two published comments and both threads remain unresolved. The prior local restore/build blocker also means required validation is not complete."
   },
   "next_action": {
-    "glyph": "🔄",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision.",
-    "label": "Run PR review"
+    "glyph": "▶",
+    "label": "Continue Anthropic finding review",
+    "reason": "Address or disposition the two user-facing localization findings, complete the required build/test validation, resolve all fork threads, and obtain a newly requested zero-comment Copilot pass."
   },
+  "fork": {
+    "repository": "MuyuanMS/PowerToys",
+    "number": 557,
+    "branch": "pr-iterate/50268",
+    "base": "pr-base/50268",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/557",
+    "head_sha": "5d64a129f45ae91be86f571b43b68cdc2ad12a9b"
+  },
+  "proposed_comments": [],
   "actions": [],
-  "needs_revalidation": true,
-  "head_sha": "7dd2bbe2b457709b925796558e30abad85c722f8",
-  "proposed_comments": [
-    {
-      "id": "fix-anthropic-ichatclient-usage",
-      "kind": "inline",
-      "severity": "high",
-      "confidence": {
-        "score": 95,
-        "rationale": "Anthropic 12.43.0 exposes init-only BaseUrl, AsIChatClient, GetResponseAsync, ChatResponse, and ChatFinishReason.Length; the upstream code uses nonexistent APIs."
-      },
-      "path": "src/modules/AdvancedPaste/AdvancedPaste/Services/CustomActions/AnthropicPasteProvider.cs",
-      "startLine": 70,
-      "line": 121,
-      "side": "RIGHT",
-      "in_diff": true,
-      "title": "Use the supported Anthropic IChatClient API",
-      "body": "### Use the supported Anthropic IChatClient API\n\n**Severity:** `high`\n\nThe current provider uses SDK APIs that do not exist in Anthropic 12.43.0 (`AnthropicClientOptions`, `AsChatClient`, `CompleteAsync`, `ChatCompletion`, and `response.Message`). That blocks compilation, and the default IChatClient output limit can silently paste partial Claude responses when the API stops for length. Construct the SDK client with its init-only properties, use `AsIChatClient`/`GetResponseAsync`, dispose the client, set an explicit output budget, and report length truncation instead of returning incomplete clipboard content.\n\n```suggestion\n            using AnthropicClient client = !string.IsNullOrWhiteSpace(endpoint)\n                ? new AnthropicClient { ApiKey = apiKey, BaseUrl = endpoint }\n                : new AnthropicClient { ApiKey = apiKey };\n\n            using var chatClient = client.AsIChatClient(modelId, 4096);\n            var messages = new List<ChatMessage>();\n\n            messages.Add(new ChatMessage(ChatRole.System, systemPrompt));\n\n            if (imageBytes != null)\n            {\n                var contentItems = new List<AIContent>();\n                if (!string.IsNullOrWhiteSpace(inputText))\n                {\n                    contentItems.Add(new TextContent($\"Clipboard Content:\\n{inputText}\"));\n                }\n\n                contentItems.Add(new DataContent(imageBytes, request.ImageMimeType ?? \"image/png\"));\n                contentItems.Add(new TextContent($\"User instructions:\\n{prompt}\\n\\nOutput:\"));\n\n                messages.Add(new ChatMessage(ChatRole.User, contentItems));\n            }\n            else\n            {\n                var userMessageContent = $\"\"\"\n                    User instructions:\n                    {prompt}\n\n                    Clipboard Content:\n                    {inputText}\n\n                    Output:\n                    \"\"\";\n                messages.Add(new ChatMessage(ChatRole.User, userMessageContent));\n            }\n\n            var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);\n\n            request.Usage = new AIServiceUsage((int)(response.Usage?.InputTokenCount ?? 0), (int)(response.Usage?.OutputTokenCount ?? 0));\n\n            if (string.Equals(response.FinishReason?.Value, ChatFinishReason.Length.Value, StringComparison.Ordinal))\n            {\n                throw new PasteActionException(\n                    \"Anthropic response was truncated\",\n                    new InvalidOperationException(\"Anthropic response exceeded the configured output token limit.\"),\n                    aiServiceMessage: \"The Anthropic response was truncated. Try a shorter clipboard selection or prompt.\");\n            }\n\n            return response.Text ?? string.Empty;\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "remove-duplicate-anthropic-admx-policy",
-      "kind": "inline",
-      "severity": "high",
-      "confidence": {
-        "score": 97,
-        "rationale": "The ADMX contains two policy nodes named AllowAdvancedPasteAnthropic; duplicate policy names can make Group Policy reject the template."
-      },
-      "path": "src/gpo/assets/PowerToys.admx",
-      "startLine": 78,
-      "line": 89,
-      "side": "RIGHT",
-      "in_diff": true,
-      "title": "Remove the duplicate Anthropic ADMX policy",
-      "body": "### Remove the duplicate Anthropic ADMX policy\n\n**Severity:** `high`\n\nThis adds `AllowAdvancedPasteAnthropic` near the top of the policies list while the PR also adds the same policy in the Advanced Paste provider-policy group later in the file. Keep the later PowerToys 0.96 entry and remove this misplaced copy.\n\n```suggestion\n    <policy name=\"ConfigureEnabledUtilityAdvancedPaste\" class=\"Both\" displayName=\"$(string.ConfigureEnabledUtilityAdvancedPaste)\" explainText=\"$(string.ConfigureEnabledUtilityDescription)\" key=\"Software\\Policies\\PowerToys\" valueName=\"ConfigureEnabledUtilityAdvancedPaste\">\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "update-retired-anthropic-default-model",
-      "kind": "inline",
-      "severity": "high",
-      "confidence": {
-        "score": 90,
-        "rationale": "Blank Anthropic model settings use this fallback directly, and Copilot/current Anthropic model guidance identify the Claude 3.5 Sonnet alias as retired."
-      },
-      "path": "src/settings-ui/Settings.UI.Library/PasteAIProviderDefaults.cs",
-      "startLine": 25,
-      "line": 25,
-      "side": "RIGHT",
-      "in_diff": true,
-      "title": "Use a current Anthropic default model",
-      "body": "### Use a current Anthropic default model\n\n**Severity:** `high`\n\nWhen the user leaves the Anthropic model blank, this value is sent directly to the provider. The Claude 3.5 Sonnet alias is retired, so the default path fails for every blank-model configuration.\n\n```suggestion\n                AIServiceType.Anthropic => \"claude-sonnet-4-6\",\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "link-anthropic-commercial-terms",
-      "kind": "inline",
-      "severity": "medium",
-      "confidence": {
-        "score": 88,
-        "rationale": "Advanced Paste configures API-key access to Anthropic services, which is governed by Anthropic API/Console commercial terms rather than Claude consumer terms."
-      },
-      "path": "src/settings-ui/Settings.UI.Library/AIServiceTypeRegistry.cs",
-      "startLine": 26,
-      "line": 26,
-      "side": "RIGHT",
-      "in_diff": true,
-      "title": "Link API users to Anthropic commercial terms",
-      "body": "### Link API users to Anthropic commercial terms\n\n**Severity:** `medium`\n\nAdvanced Paste asks for an Anthropic API key and connects to Anthropic services programmatically. The consumer terms are for Claude consumer plans, so provider setup should point API users at the commercial agreement instead.\n\n```suggestion\n            TermsUri = new Uri(\"https://www.anthropic.com/legal/commercial-terms\"),\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "complete-credential-policy-release-metadata",
-      "kind": "companion",
-      "severity": "high",
-      "confidence": {
-        "score": 92,
-        "rationale": "Runtime credential lookup and Settings credential storage use service-specific resource/user names; Anthropic is absent from both maps, and the new package adds shipped DLL/signing and NOTICE obligations."
-      },
-      "title": "Complete credential, policy, signing, and notice coverage",
-      "body": "### Complete credential, policy, signing, and notice coverage\n\n**Severity:** `high`\n\nPlease add Anthropic to the credential-vault resource maps used by both Settings and the Advanced Paste runtime; otherwise saved Anthropic API keys are stored under one identity and runtime lookup falls back to the OpenAI mapping, so requests fail as missing-key. Also enforce provider-specific GPO policy in the execution path, add `WinUI3Apps\\Anthropic.dll` to the signing manifest, and add the Anthropic SDK source/copyright/MIT notice to `NOTICE.md` before release. These edits touch files outside the current upstream diff, so this is a general review note rather than an inline suggestion.",
-      "disposition": "proposed"
-    },
-    {
-      "id": "add-provider-tests-and-feed-alignment",
-      "kind": "companion",
-      "severity": "medium",
-      "confidence": {
-        "score": 86,
-        "rationale": "The upstream diff does not include Anthropic provider tests despite the PR body claiming them, and local restore fails before compilation because the configured feed cannot serve the new package."
-      },
-      "title": "Add provider tests and align the package feed",
-      "body": "### Add provider tests and align the package feed\n\n**Severity:** `medium`\n\nPlease add automated coverage for factory registration, default-model fallback, endpoint handling, text/image message mapping, usage extraction, and length-truncation handling using a fake `IChatClient` so this provider is testable without a live API key. The new `Anthropic` package also needs to be available through the repository's configured package feed; local restore currently fails with NU1301/401 for `PowerToysPublicDependencies` before the project can compile.",
-      "disposition": "proposed"
-    }
-  ]
+  "confidence": "high",
+  "judgment": {
+    "status": "review_not_converged",
+    "rationale": "The community author responded after the prior maintainer request with screenshots and an explicit local Debug-build statement, and the current PR intake and CLA checks pass. The one permitted live Copilot status inspection nevertheless found two published localization findings and two unresolved Copilot-authored threads on the saved fork's latest head. No clean fresh pass or successful required local validation is established.",
+    "evidence": [
+      "Upstream head 7dd2bbe2b457709b925796558e30abad85c722f8 was current at source activity 2026-09-06T20:41:50Z.",
+      "The author's 2026-09-06 response supplies Advanced Paste Anthropic UI screenshots and states that the local Debug build was used; automated intake and CLA checks pass.",
+      "Fork PR 557 is at 5d64a129f45ae91be86f571b43b68cdc2ad12a9b; its latest Copilot review was submitted at 2026-08-31T18:21:44Z on that head with two published inline comments.",
+      "Two Copilot-authored fork threads remain unresolved, both covering hard-coded user-facing Advanced Paste error strings that require localization.",
+      "The saved review did not establish a successful required build because package restore could not complete against the configured feed."
+    ],
+    "recommended_action": "Keep the review in progress. Do not expose the stale prior suggestions or post upstream until the fork loop is clean and build/test validation succeeds.",
+    "evaluated_at": "2026-09-07T02:09:53.3625831Z",
+    "source_updated_at": "2026-09-06T20:41:50Z"
+  },
+  "workflow": {
+    "phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-07T02:09:53.3625831Z",
+    "selection_mode": "scoped_drain",
+    "selection_cutoff": "2026-09-04T01:49:22Z",
+    "copilot_status_inspected_at": "2026-09-07T02:09:53.3625831Z",
+    "copilot_review_count": 5,
+    "latest_copilot_review_at": "2026-08-31T18:21:44Z",
+    "latest_copilot_published_comments": 2,
+    "unresolved_copilot_threads": 2,
+    "build_result": "Required validation not established; saved package restore/build blocker retained",
+    "upstream_check_result": "available checks pass; external-fork full build is not present",
+    "blocker": "Fresh clean Copilot evidence is absent, two localization threads remain unresolved, and required build/test validation is incomplete."
+  },
+  "freshness": {
+    "queued_at": "2026-09-07T02:09:53.3625831Z",
+    "checkpoint_at": "2026-09-07T02:09:53.3625831Z"
+  }
 }

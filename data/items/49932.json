@@ -1,243 +1,153 @@
 {
-  "schemaVersion": 3,
-  "id": "pr-49932",
+  "schemaVersion": 4,
   "number": 49932,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
-  "owes": "maintainer",
+  "stage": "review_in_progress",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-01T20:54:00Z",
-  "evaluated_at": "2026-09-01T20:54:00Z",
-  "source_updated_at": "2026-09-01T14:43:15Z",
-  "url": "https://github.com/microsoft/PowerToys/pull/49932",
+  "generated_at": "2026-09-07T02:13:03.1454631Z",
+  "evaluated_at": "2026-09-07T02:13:03.1454631Z",
+  "source_updated_at": "2026-09-06T21:49:52Z",
+  "head_sha": "f3e4e24ba6da9e116cfc12312e4c95917cfbf9b9",
   "title": "CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
+  "url": "https://github.com/microsoft/PowerToys/pull/49932",
   "author": "jiripolasek",
   "authorAssociation": "COLLABORATOR",
-  "isCommunity": false,
   "state": "OPEN",
   "draft": false,
-  "labels": [
-    "Product-Command Palette",
-    "Ready for review"
-  ],
   "confidence": "High",
-  "processVerdict": "proceed",
-  "head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
-  "summary": "The unchanged upstream head and reported checks remain current. The empty-assignment audit established that the refreshed request completed on fork head ebf1e4fd2: Copilot submitted an exact-head review at 19:54:50Z with zero new published comments, no review comments were posted after the request, and unresolved threads remain zero. The validated net diff supports three non-duplicate review notes: preserve HTML resource maps through async drag preparation, include directory bookmarks in filesystem drag packages, and avoid expanding the Indexer helper's public API.",
+  "summary": "The Shelf 3/n head was fully rechecked after the stack rebase. Range-diff confirms the PR patch is otherwise equivalent to the prior reviewed head, so the resource-map, directory-bookmark, and helper-visibility concerns remain supported. The old-head proposals have been invalidated and no review action is exposed until a fresh current-head Copilot pass is confirmed.",
   "status": {
-    "glyph": "📝",
-    "label": "Review notes drafted",
-    "detail": "The review loop converged on ebf1e4fd2 with a fresh exact-head zero-comment review, an empty reviewer assignment, zero unresolved threads, successful targeted builds, and 35 passing tests."
+    "glyph": "⏳",
+    "label": "Current-head review awaiting external validation",
+    "detail": "Manual current-head code and context review is complete. Current CI is green and the exact head is approved, but the single permitted external Copilot inspection could not resolve the configured review repository, so convergence is not established."
   },
   "next_action": {
     "glyph": "▶",
-    "label": "Review drafted notes",
-    "reason": "Recheck upstream freshness and obtain explicit maintainer approval before posting the selected comments."
-  },
-  "proposed_comments": [
-    {
-      "id": "preserve-drag-resource-map",
-      "kind": "companion",
-      "severity": "high",
-      "confidence": {
-        "score": 98,
-        "rationale": "DataPackage.ResourceMap is a separate URI-to-stream map used by HTML payloads; copying only AvailableFormats, properties, and deferred data providers demonstrably omits referenced resources."
-      },
-      "title": "Preserve resource-map entries during package transfer",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
-      "line": 32,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Preserve resource-map entries during package transfer\n\n**Severity:** `high`\n\nThe transfer copies advertised formats but omits `DataPackageView.GetResourceMapAsync()`. HTML payloads that reference packaged images or other URI resources therefore retain their markup while silently losing the referenced content.\n\nPlease copy the source resource map into `destination.ResourceMap` before the payload becomes available. The shelf drag can await this work under `DragStartingEventArgs.GetDeferral()`; the non-deferrable list drag path should prepare or coordinate the map without converting `DragItemsStarting` into an untracked `async void` handler or silently rejecting an otherwise valid immediate drag. Add focused coverage for an HTML/resource-map package.",
-      "disposition": "proposed"
-    },
-    {
-      "id": "include-directory-bookmark-drag-package",
-      "kind": "inline",
-      "severity": "medium",
-      "confidence": {
-        "score": 99,
-        "rationale": "The changed classifier already handles CommandKind.Directory and DataPackageHelper accepts StorageFolder, but the new filter permits only file-oriented kinds and File.Exists."
-      },
-      "title": "Include directory bookmarks in filesystem drags",
-      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkListItem.cs",
-      "startLine": 124,
-      "line": 129,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Include directory bookmarks in filesystem drags\n\n**Severity:** `medium`\n\nThe new package filter excludes `CommandKind.Directory` and only calls `File.Exists`, even though the helper already supports folders. As a result, file bookmarks can be dragged to Explorer or other filesystem targets while directory bookmarks expose no equivalent package.\n\n```suggestion\n        var localFilePath =\n            classification.Kind is CommandKind.FileExecutable or CommandKind.FileDocument or CommandKind.Shortcut or CommandKind.InternetShortcut or CommandKind.Directory &&\n            (File.Exists(classification.Target) || Directory.Exists(classification.Target))\n                ? classification.Target\n                : null;\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "keep-data-package-helper-internal",
-      "kind": "companion",
-      "severity": "medium",
-      "confidence": {
-        "score": 96,
-        "rationale": "The only new consumer is the Bookmarks assembly, and the Indexer project already uses InternalsVisibleTo for narrow cross-assembly access."
-      },
-      "title": "Keep the Indexer drag helper internal",
-      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Helpers/DataPackageHelper.cs",
-      "line": 17,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Keep the Indexer drag helper internal\n\n**Severity:** `medium`\n\nChanging `DataPackageHelper` from `internal` to `public` expands the Indexer extension's externally visible API solely to share implementation code with the Bookmarks assembly. That creates compatibility expectations for a helper that is not designed as a supported extension API.\n\nPlease keep the helper internal and grant `Microsoft.CmdPal.Ext.Bookmarks` friend access through `InternalsVisibleTo`, or move the helper into an intentionally shared internal assembly.",
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-49932",
-      "type": "post_review",
-      "label": "Post selected review comments",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 49932,
-        "event": "COMMENT",
-        "head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
-        "body_prefix": "Thanks for extending drag-and-drop support across the shelf and bookmark surfaces. The existing upstream threads already cover preserving the original package formats and reserving shelf drop-target space; the notes below are limited to additional current-head issues found during validation."
-      },
-      "note": "Mandatory: recheck the upstream head, conversation, and checks before publishing. Never post without explicit maintainer approval."
-    }
-  ],
-  "safe_actions": [
-    {
-      "id": "post-review-49932",
-      "upstream_write": true,
-      "approval_required": true
-    },
-    {
-      "id": "recheck-49932",
-      "upstream_write": false,
-      "approval_required": false
-    }
-  ],
-  "workflow": {
-    "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-01T20:54:00Z",
-    "deadline": "2026-09-01T21:30:01Z",
-    "copilot_rounds": 7,
-    "latest_copilot_review_at": "2026-09-01T19:54:50Z",
-    "latest_copilot_review_head": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37",
-    "latest_published_comments": 0,
-    "unresolved_copilot_threads": 0,
-    "converged": true,
-    "resume_reason": "The empty-assignment fallback found an exact-head Copilot review submitted at 19:54:50Z after the 19:51:23Z request. Its body reports zero new comments, the review-comment audit found no comments after the request, the reviewer assignment is empty, and the unresolved-thread audit returned zero."
-  },
-  "freshness": {
-    "queued_at": "2026-09-01T14:37:24.5378648Z",
-    "checkpoint_at": "2026-09-01T20:54:00Z",
-    "source_updated_at": "2026-09-01T14:43:15Z",
-    "source_head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
-    "latest_upstream_check_at": "2026-09-01T20:54:00Z"
+    "label": "Resume the current-head fork review",
+    "reason": "Refresh fork PR 565 to f3e4e24ba, preserve the three current findings, and obtain a fresh zero-comment Copilot pass with zero unresolved threads before drafting a public review action."
   },
   "phase0": {
-    "verdict": "proceed",
-    "disposition": "Proceed",
     "author": "jiripolasek",
     "author_association": "COLLABORATOR",
     "bar": "collaborator-authored; routine process nags skipped",
-    "summary": "The PR is a focused stacked CmdPal change with a linked issue and recording. CLA, intake, dependency review, telemetry, x64, arm64, and Command Palette SDK checks all pass.",
-    "gateEvidence": {
-      "P1_cla": "pass",
-      "P2_demo": "pass; recording is present",
-      "P3_author_validation": "skipped for collaborator",
-      "P4_ci": "pass; all reported checks completed successfully",
-      "P5_provenance": "pass",
-      "P6_duplicate": "pass; intentional stacked Shelf series",
-      "P7_scope": "pass; fork and upstream contain the same 14 changed files",
-      "P8_draft": "pass",
-      "P9_template": "empty validation section noted but not re-requested from a collaborator"
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "The PR is a focused stacked Shelf change with linked issue 49928 and a recording. CLA, dependency review, intake, telemetry, x64, arm64, SDK, and test checks all pass, and the exact current head has a maintainer approval."
+  },
+  "judgment": {
+    "status": "review_in_progress",
+    "rationale": "Full current-head range-diff, source, discussion, and checks review reconfirmed the three prior non-duplicate findings. The existing Move-operation discussion remains omitted because it was already raised upstream and the maintainer subsequently approved the current head. The previous public payload targeted 378028c0 and is removed pending the external current-head gate.",
+    "evidence": [
+      "Live upstream head is f3e4e24ba6da9e116cfc12312e4c95917cfbf9b9 and source activity is covered through 2026-09-06T21:49:52Z.",
+      "Range-diff shows the two PR commits are patch-equivalent to the prior reviewed series apart from the inherited OneTime access-key binding adjustment.",
+      "DataPackageTransfer still copies properties and formats but not DataPackageView.GetResourceMapAsync(), BookmarkListItem still excludes CommandKind.Directory and Directory.Exists, and DataPackageHelper is still changed from internal to public.",
+      "The existing RequestedOperation/Move concern is not duplicated because michaeljolley already raised it in the upstream thread before approving the exact current head.",
+      "All current upstream checks pass and michaeljolley approved the exact current head on 2026-09-06T21:49:52Z.",
+      "No review, comment, approval, label, close, or other mutation was made on microsoft/PowerToys."
+    ],
+    "recommended_action": "Resume the fork-side current-head loop and regenerate a newly pinned review payload only after fresh Copilot convergence.",
+    "evaluated_at": "2026-09-07T02:13:03.1454631Z",
+    "source_updated_at": "2026-09-06T21:49:52Z"
+  },
+  "proposed_comments": [],
+  "invalidated_prior_proposals": [
+    {
+      "id": "preserve-drag-resource-map",
+      "prior_head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
+      "reason": "Old-head companion proposal invalidated; concern reconfirmed at current head."
+    },
+    {
+      "id": "include-directory-bookmark-drag-package",
+      "prior_head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
+      "reason": "Old-head inline proposal invalidated; concern reconfirmed at current head."
+    },
+    {
+      "id": "keep-data-package-helper-internal",
+      "prior_head_sha": "378028c0a7cfcc616f64dcff4f855fb777b33798",
+      "reason": "Old-head companion proposal invalidated; concern reconfirmed at current head."
     }
-  },
-  "existing_upstream_feedback": {
-    "review_decision": "CHANGES_REQUESTED",
-    "root_findings": 2,
-    "threads_resolved_by_author": 2,
-    "maintainer_reassessment_needed": true,
-    "note": "The upstream author replied to and resolved both existing maintainer threads; no duplicate upstream comment was drafted."
-  },
+  ],
+  "candidate_findings": [
+    {
+      "id": "preserve-drag-resource-map",
+      "title": "Preserve resource-map entries during package transfer",
+      "severity": "high",
+      "confidence": {
+        "score": 98,
+        "rationale": "DataPackage.ResourceMap is independent from advertised formats, and the current transfer never reads or copies it."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
+      "line": 12,
+      "side": "RIGHT",
+      "status": "reconfirmed_manual_current_head"
+    },
+    {
+      "id": "include-directory-bookmark-drag-package",
+      "title": "Include directory bookmarks in filesystem drags",
+      "severity": "medium",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current classifier supports CommandKind.Directory and the helper supports StorageFolder, but the new filter checks only file kinds and File.Exists."
+      },
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkListItem.cs",
+      "start_line": 124,
+      "line": 129,
+      "side": "RIGHT",
+      "status": "reconfirmed_manual_current_head"
+    },
+    {
+      "id": "keep-data-package-helper-internal",
+      "title": "Keep the Indexer drag helper internal",
+      "severity": "medium",
+      "confidence": {
+        "score": 96,
+        "rationale": "The PR broadens an implementation helper to public solely for one sibling extension consumer."
+      },
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Helpers/DataPackageHelper.cs",
+      "line": 17,
+      "side": "RIGHT",
+      "status": "reconfirmed_manual_current_head"
+    }
+  ],
+  "actions": [],
   "fork_pr": {
     "number": 565,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/565",
-    "state": "OPEN",
-    "head_sha": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37",
-    "base_sha": "0f584eec26d12fab32ed3aa70b8d7c4c8e4f5ae2"
+    "base": "pr-base/49932",
+    "base_sha": "0f584eec26d12fab32ed3aa70b8d7c4c8e4f5ae2",
+    "head": "pr-iterate/49932",
+    "head_sha": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37"
   },
   "fork_branch": "pr-iterate/49932",
-  "review_fixes": [
-    {
-      "commit": "f53dd43c281d918f205879fbabc70a08dcefa53a",
-      "summary": "Preserve extension-requested drag operations so external targets cannot unexpectedly move files."
+  "workflow": {
+    "phase": "review_in_progress",
+    "checkpoint_at": "2026-09-07T02:13:03.1454631Z",
+    "resume_action": "refresh-current-head-and-request-copilot",
+    "full_rereview_required": true,
+    "manual_current_head_review_completed": true,
+    "external_copilot_inspections": 1,
+    "external_copilot_result": "repository_resolution_failed",
+    "external_copilot_polling": false,
+    "current_head_converged": false,
+    "blocker": "The single permitted external Copilot inspection could not resolve the configured review repository; no second inspection or polling was performed."
+  },
+  "revalidation": {
+    "result": "manual_current_head_review_complete_external_gate_blocked",
+    "range_diff": "Current PR patch is equivalent to the prior reviewed patch apart from the inherited OneTime access-key binding adjustment.",
+    "upstream_checks": "passed",
+    "upstream_approval": {
+      "reviewer": "michaeljolley",
+      "state": "APPROVED",
+      "submitted_at": "2026-09-06T21:49:52Z",
+      "commit_id": "f3e4e24ba6da9e116cfc12312e4c95917cfbf9b9"
     },
-    {
-      "commit": "28bb0a9a352a1dddb32082f5cde6095d343ea61c",
-      "summary": "Reserve dedicated capacity and columns for pin/remove targets so the final shelf item remains droppable."
-    },
-    {
-      "commit": "e1b8a1adada45bd083aefed1461e08f672fcb13c",
-      "summary": "Recalculate pin-target availability after capacity changes and preserve directory bookmark drag packages."
-    },
-    {
-      "commit": "8200cd5e1d3c0bfe2c4d60d4bd3056b6d31499ad",
-      "summary": "Transfer data-package resource maps asynchronously and hold the quick-access shelf drag deferral until preparation completes."
-    },
-    {
-      "commit": "55a6a9056822223f8c7ca7af15046cb50b3201cd",
-      "summary": "Prefetch list-item resource maps and keep the non-deferrable list drag path synchronous and lifecycle-safe."
-    },
-    {
-      "commit": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37",
-      "summary": "Keep DataPackageHelper internal and expose it only to the Bookmarks assembly through InternalsVisibleTo."
-    }
-  ],
-  "verification": {
-    "result": "passed_and_review_converged",
-    "configuration": "x64 Debug",
-    "builds": [
-      "PowerToys solution package restore",
-      "Microsoft.CmdPal.UI",
-      "Microsoft.CmdPal.UI.ViewModels.UnitTests",
-      "Microsoft.CmdPal.Ext.Bookmarks",
-      "Microsoft.CmdPal.Ext.Bookmarks.UnitTests"
-    ],
-    "tests": [
-      {
-        "suite": "QuickAccessShelfResolverTests and SettingsModelPinnedCommandTests",
-        "result": "passed",
-        "total": 24,
-        "passed": 24,
-        "failed": 0
-      },
-      {
-        "suite": "BookmarksCommandProviderTests",
-        "result": "passed",
-        "total": 11,
-        "passed": 11,
-        "failed": 0
-      },
-      {
-        "suite": "Fork Copilot thread audit",
-        "result": "passed",
-        "unresolved": 0
-      },
-      {
-        "suite": "Latest fresh Copilot review",
-        "result": "publication_clean_and_converged",
-        "new_comments": 0,
-        "submitted_at": "2026-09-01T19:54:50Z",
-        "reviewed_head": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37",
-        "remaining_accepted_suppressed_findings": 0,
-        "original_final_review_requested_at": "2026-09-01T18:47:45Z",
-        "final_review_requested_at": "2026-09-01T19:51:23Z",
-        "final_review_head": "ebf1e4fd29a479e6eef610a5a0743dab6a0a2d37",
-        "final_review_status": "completed_zero_published_comments"
-      }
-    ],
-    "build_environment_note": "The full essentials runner build was blocked by an inherited empty GIT_CONFIG_VALUE_3 during vcpkg initialization. Clearing inherited GIT_CONFIG_* entries allowed all targeted builds to pass."
+    "reused_validation": "Prior targeted CmdPal UI, Bookmarks, and 35-test validation remains applicable to the patch-equivalent reviewed paths; current x64, arm64, SDK, and test CI also pass."
+  },
+  "freshness": {
+    "validated_at": "2026-09-07T02:13:03.1454631Z",
+    "upstream_head": "f3e4e24ba6da9e116cfc12312e4c95917cfbf9b9",
+    "source_updated_at": "2026-09-06T21:49:52Z"
   }
 }

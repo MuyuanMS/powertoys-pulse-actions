@@ -4,13 +4,13 @@
   "number": 49947,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "review_looping",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T03:02:01Z",
-  "evaluated_at": "2026-09-03T03:02:01Z",
-  "source_updated_at": "2026-09-01T15:09:05Z",
-  "head_sha": "4c44273d76903411b946f1ea0357022f22997514",
+  "generated_at": "2026-09-07T02:12:20.8851058Z",
+  "evaluated_at": "2026-09-07T02:12:20.8851058Z",
+  "source_updated_at": "2026-09-06T22:02:41Z",
+  "head_sha": "738d6660c1c89afc3946c2d7e6fff6a3131adb75",
   "title": "CmdPal: Shelf (6/n) - Add numbered shortcuts (Alt+#) to list pages",
   "url": "https://github.com/microsoft/PowerToys/pull/49947",
   "author": "jiripolasek",
@@ -24,13 +24,13 @@
   ],
   "confidence": "High",
   "processVerdict": "proceed",
-  "summary": "Fork review loop converged on commit dea25b392409218c3b2431aefa6217f4d9f36df5 with zero unresolved Copilot threads and a fresh zero-comment Copilot pass. Four current review findings are drafted from the validated fork patch; no upstream review has been posted.",
+  "summary": "The live Shelf-series head changed to 738d6660c1c89afc3946c2d7e6fff6a3131adb75, adding two commits and expanding the diff after the prior review artifact. Existing collaborator context and green CI remain applicable, but every old line-pinned finding is withdrawn pending a full current-head review, rebuild, and fresh Copilot convergence.",
   "status": {
     "glyph": "DRAFT",
-    "label": "Review drafted",
-    "detail": "The fork loop fixed stale numbered shortcut cue tracking, stale IsInteractive accelerator metadata, missing UI coverage, and non-HC_ACTION keyboard hook processing. Final Copilot pass on the fork produced zero new comments."
+    "label": "Full re-review required",
+    "detail": "The prior fork pass covered an older upstream head. The single permitted Copilot status inspection found no current-head review, so the previous approval surface is no longer publishable."
   },
-  "next_action": "Recheck that upstream head 4c44273d76903411b946f1ea0357022f22997514 is unchanged, then post the drafted review only if the maintainer explicitly approves.",
+  "next_action": "Resume the existing review branch against live head 738d6660c1c89afc3946c2d7e6fff6a3131adb75, preserve applicable prior fixes, rebuild CmdPal, and obtain a fresh zero-comment Copilot pass before drafting.",
   "proposed_comments": [
     {
       "id": "process-only-hc-action-keyboard-hook-callbacks",
@@ -47,7 +47,8 @@
       "in_diff": true,
       "title": "Process only actionable keyboard hook callbacks",
       "body": "### Process only actionable keyboard hook callbacks\n\n**Severity:** `high`\n\n`WH_KEYBOARD` can call the hook with non-`HC_ACTION` codes, including peek/no-remove callbacks. Treating every non-negative code as a real key action can run the Alt+number suppression path more than once for the same key state, so the shortcut may invoke twice. Only process `HC_ACTION`; all other codes should be forwarded unchanged.\n\n```suggestion\n            if (nCode == 0)\n```",
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
     },
     {
       "id": "refresh-shortcut-cue-tracking-after-layout-change",
@@ -64,7 +65,8 @@
       "in_diff": true,
       "title": "Refresh numbered shortcut cue tracking when the hosted list changes",
       "body": "### Refresh numbered shortcut cue tracking when the hosted list changes\n\n**Severity:** `medium`\n\nThe cue host is selected from the current list layout, but this only refreshes while cues are already visible. If the page switches between list/grid layout or swaps in a populated nested list before access-key mode is active, the cue canvas and UIA accelerator metadata can remain wired to the old host. Track the view model lifecycle while loaded and queue an update whenever the layout changes.\n\n```suggestion\n            if (@this._isLoaded)\n            {\n                @this.EnsureNumberedShortcutCueTracking();\n                @this.QueueNumberedShortcutCueUpdate();\n            }\n```",
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
     },
     {
       "id": "refresh-shortcut-metadata-when-item-interactivity-changes",
@@ -81,7 +83,8 @@
       "in_diff": true,
       "title": "Recompute accelerator assignments when item interactivity changes",
       "body": "### Recompute accelerator assignments when item interactivity changes\n\n**Severity:** `medium`\n\nThe shortcut numbers skip non-interactive items, but the current cue metadata is only recomputed on full item updates. If an item toggles `IsInteractive` while the filtered collection stays the same, the visible cue numbers and automation accelerators can point at stale items. Subscribe to filtered collection changes and each visible item's `PropertyChanged`, then queue a cue update when `IsInteractive` changes; gate those subscriptions to views with `ShowNumberedShortcutCues` enabled so parameter lists do not pay the tracking cost.\n\n```suggestion\n                page.ItemsUpdated += @this.Page_ItemsUpdated;\n                page.PropertyChanged += @this.ViewModel_PropertyChanged;\n                if (@this.ShowNumberedShortcutCues)\n                {\n                    page.FilteredItems.CollectionChanged += @this.FilteredItems_CollectionChanged;\n                    @this.RefreshNumberedShortcutItemTracking();\n                }\n```",
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
     },
     {
       "id": "add-numbered-shortcut-ui-automation-coverage",
@@ -93,55 +96,55 @@
       },
       "title": "Add end-to-end coverage for numbered shortcut invocation and selection",
       "body": "### Add end-to-end coverage for numbered shortcut invocation and selection\n\n**Severity:** `medium`\n\nThis feature depends on the local keyboard hook, Alt latching, WinUI focus, and the distinction between invoking and selecting. Add UI automation coverage for Alt+1 invocation, latched Alt then 1 invocation, and Alt+Shift+1 selecting without invoking so regressions in the hook and focus path fail deterministically.",
-      "disposition": "proposed"
+      "disposition": "withdrawn",
+      "reason": "Invalidated because the upstream head changed after this review note was drafted."
     }
   ],
-  "actions": [
-    {
-      "id": "post-review-49947",
-      "type": "post_review",
-      "label": "Post four CmdPal numbered-shortcut findings",
-      "primary": true,
-      "confirm": true,
-      "review": {
-        "event": "COMMENT",
-        "pr": 49947,
-        "head_sha": "4c44273d76903411b946f1ea0357022f22997514"
-      }
-    }
-  ],
+  "actions": [],
   "workflow": {
-    "phase": "review_drafted",
+    "phase": "review_looping",
     "review_iterations": 5,
-    "checkpoint_at": "2026-09-03T03:02:01Z"
+    "checkpoint_at": "2026-09-07T02:12:20.8851058Z"
   },
   "freshness": {
     "queued_at": "2026-09-02T02:45:50Z",
-    "checkpoint_at": "2026-09-03T03:02:01Z"
+    "checkpoint_at": "2026-09-07T02:12:20.8851058Z",
+    "head_sha": "738d6660c1c89afc3946c2d7e6fff6a3131adb75",
+    "head_updated_at": "2026-09-06T22:02:41Z",
+    "status": "requeued_for_full_review"
   },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "head_sha": "4c44273d76903411b946f1ea0357022f22997514",
-    "updated_at": "2026-09-01T15:09:05Z",
+    "head_sha": "738d6660c1c89afc3946c2d7e6fff6a3131adb75",
+    "base_sha": "0687b1041b7506352b4c70168a2cf576bf89b0eb",
+    "updated_at": "2026-09-06T22:02:41Z",
+    "head_committed_at": "2026-09-06T17:41:03Z",
+    "newest_commit_at": "2026-09-05T15:27:55Z",
+    "commit_count": 5,
+    "changed_file_count": 28,
+    "additions": 1538,
+    "deletions": 90,
     "issue_comment_count": 1,
-    "review_comment_count": 5,
-    "review_count": 2,
-    "review_decision": "CHANGES_REQUESTED",
+    "review_comment_count": 6,
+    "latest_review_comment_at": "2026-09-04T22:09:08Z",
+    "review_count": 4,
+    "latest_review_at": "2026-09-06T22:02:41Z",
+    "review_decision": "APPROVED",
     "assignees": [
       "jiripolasek"
     ],
     "reported_checks": {
       "total": 13,
-      "successful": 12,
+      "successful": 13,
       "failing": 0,
       "pending": 0,
-      "cancelled": 1,
-      "note": "The only cancelled check is an older pr-intake run; latest pr-intake, CI, dependency review, telemetry detection, and CLA are successful."
+      "cancelled": 0,
+      "note": "All current intake, CI, dependency review, telemetry detection, and CLA checks are successful."
     }
   },
   "verification": {
-    "result": "passed",
+    "result": "invalidated",
     "configuration": "x64 Debug",
     "builds": [
       "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
@@ -152,6 +155,11 @@
         "suite": "CmdPal UI automation tests",
         "result": "built-not-run",
         "reason": "Targeted UI test project builds successfully; interactive UI execution was not run in this drain."
+      },
+      {
+        "suite": "Current-head validation",
+        "result": "not-run",
+        "reason": "The prior validation applies to a superseded head; current upstream CI is green but local review validation must be repeated."
       }
     ],
     "copilot": {
@@ -181,5 +189,28 @@
     "branch": "pr-iterate/49947",
     "head_sha": "dea25b392409218c3b2431aefa6217f4d9f36df5",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/571"
+  },
+  "needs_revalidation": true,
+  "review_reset": {
+    "assigned_artifacts": [
+      49988,
+      49947,
+      49943
+    ],
+    "scope": "scoped-drain",
+    "changed_since": "2026-09-04T01:49:22Z",
+    "prior_review_head": "4c44273d76903411b946f1ea0357022f22997514",
+    "live_head": "738d6660c1c89afc3946c2d7e6fff6a3131adb75",
+    "live_source_updated_at": "2026-09-06T22:02:41Z",
+    "copilot_status_inspected_at": "2026-09-07T02:12:20.8851058Z",
+    "copilot_status": "The single inspection found only old-head fork reviews; no current-head Copilot review exists.",
+    "requires_full_re_review": true,
+    "prior_suggestions_invalidated": true,
+    "polling_performed": false,
+    "blockers": [
+      "The existing fork review head is not based on the live upstream head.",
+      "No fresh current-head Copilot review has completed.",
+      "Current-head local build and focused validation have not run."
+    ]
   }
 }
