@@ -82,6 +82,24 @@ function Test-FixConfidence {
   Require-Text $Confidence.rationale 'proposed_fixes[].confidence.rationale' $Prefix
 }
 
+function Test-ClearRequestInfo {
+  param($Action, $InformationGaps, [string]$Prefix)
+
+  $label = [string]$Action.label
+  $commentBody = [string]$Action.comment.body
+  if ([string]::IsNullOrWhiteSpace($label) -or
+      $label.Trim() -match '^(?i:request|ask for) (more )?information$') {
+    $script:errors.Add("$Prefix request_info label must name the specific evidence being requested")
+  }
+  if ($commentBody -notmatch '(?i)\b(please|could you|can you|would you|share|provide|confirm|capture|attach|run|reproduce)\b') {
+    $script:errors.Add("$Prefix request_info comment must contain a direct, plain-language request")
+  }
+  if (@($InformationGaps).Count -gt 1 -and
+      $commentBody -notmatch '(?m)^\s*(?:[-*]|\d+[.)])\s+\S') {
+    $script:errors.Add("$Prefix request_info comment must list multiple requested items as bullets or numbered questions")
+  }
+}
+
 foreach ($path in @($paths)) {
   try {
     $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json
@@ -309,6 +327,7 @@ foreach ($path in @($paths)) {
     if ($informationGaps.Count -eq 0) {
       $errors.Add("$prefix request_info action requires issue_context.information_gaps")
     }
+    Test-ClearRequestInfo $requestInfoAction $informationGaps $prefix
     foreach ($gap in $informationGaps) {
       Require-Text $gap.information 'issue_context.information_gaps[].information' $prefix
       Require-Text $gap.why_needed 'issue_context.information_gaps[].why_needed' $prefix
