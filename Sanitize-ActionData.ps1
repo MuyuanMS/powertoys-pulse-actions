@@ -99,7 +99,7 @@ function Get-PublicActions {
     })
     $inlineComments = @($proposedComments | Where-Object {
       $_.kind -eq 'inline' -or
-      ($null -eq $_.kind -and $_.in_diff -eq $true)
+      $_.in_diff -eq $true
     })
     foreach ($action in $actions | Where-Object { $_.type -eq 'post_review' }) {
       if ($action.review) {

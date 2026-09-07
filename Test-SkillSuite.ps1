@@ -419,12 +419,20 @@ if (-not (Test-Path $artifactValidator)) {
     }
 
     $invalidArtifact.actions[0].review.PSObject.Properties.Remove('body_prefix')
+    $invalidArtifact.proposed_comments[0].kind = 'companion'
+    $invalidArtifact.proposed_comments[0] |
+      Add-Member -NotePropertyName in_diff -NotePropertyValue $true
     $invalidArtifact.proposed_comments[0].body = 'Prose without a suggestion block.'
+    $invalidArtifact | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
+
+    $invalidArtifact.proposed_comments[0].body = "Malformed block.`n`n``````suggestion`nvalue = 2;"
     $invalidArtifact | ConvertTo-Json -Depth 10 |
       Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
     try {
       & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
-      $errors.Add('Dashboard artifact validator accepted inline prose without a suggestion block.')
+      $errors.Add('Dashboard artifact validator accepted a malformed inline suggestion block.')
     } catch {
       if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
         throw

@@ -682,11 +682,13 @@ If a workflow is waiting on an author or user approval, do not rerun it just to
 make activity; preserve that status. A queued item must retain an explicit
 fork trace or dashboard action even when its execution is deferred.
 Draft every supported, current-head review finding as a proposed upstream
-review comment. Prefer an inline suggestion when the finding is localized to a
-current RIGHT-side diff range and can contain one apply-ready `suggestion`
-block. Do not require an inline anchor to draft the review: architectural,
-cross-file, out-of-diff, validation, or coordination findings belong in normal
-body comments and must still produce a pinned `post_review` action.
+review comment. When the finding targets a current RIGHT-side diff range, emit
+an `inline`/`in_diff: true` comment even when the author-facing text is
+explanatory and has no apply-ready replacement. Add one `suggestion` block only
+when the proposed edit is localized and safe to apply directly. Architectural,
+cross-file, out-of-diff, validation, or coordination findings belong in
+separate normal PR conversation comments and must still produce a pinned
+`post_review` action.
 
 Emit `post_review` with review event `COMMENT`. When every proposed comment is
 inline, omit `review.body_prefix` so GitHub receives only the selected inline
@@ -697,14 +699,16 @@ submission from Comment to Request changes, but the generated artifact remains
 non-blocking by default.
 
 Do not collapse every concrete code fix into broad companion notes. When the
-converged fork contains a localized fix on a current upstream diff line, emit
-an `inline`/`in_diff: true` item with the exact range and apply-ready
-`suggestion` block. For every other supported finding, emit a non-inline
-proposed comment that explains the concern, its impact, and the required
-follow-up; never replace it with a generic local `review_summary` action
-merely because an inline suggestion is unavailable. Label companion-only
-reviews `Post general review notes` and disclose `general review notes — no
-inline suggestions`.
+finding maps to a current upstream diff line, emit an `inline`/`in_diff: true`
+item with the exact range. Include an apply-ready `suggestion` block when one
+is justified, but do not downgrade a valid line comment to `companion` merely
+because prose is clearer than a patch. For every truly out-of-diff supported
+finding, emit a non-inline proposed comment that explains the concern, its
+impact, and the required follow-up; Pulse posts those findings as separate PR
+conversation comments rather than combining them into one review body. Never
+replace them with a generic local `review_summary` action. Label
+companion-only reviews `Post general review notes` and disclose `general
+review notes — separate PR conversation comments`.
 
 Use a local manual-review or validation action only when no defensible
 author-facing comment can be drafted from the current head—for example, the
