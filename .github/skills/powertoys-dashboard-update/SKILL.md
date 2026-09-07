@@ -472,6 +472,17 @@ then request only evidence that would change triage or implementation. Reuse
 established PowerToys collection conventions instead of inventing generic
 instructions:
 
+- label the action with the evidence being requested, such as
+  `Request activation trace` or `Confirm affected shortcut`; never use a
+  generic label such as `Request information`;
+- make the request itself immediately scannable: state the exact evidence,
+  explain which decision it resolves, and give the collection method;
+- when requesting multiple items, use a short numbered or bulleted list rather
+  than hiding the asks inside a long paragraph;
+- use a direct request such as `Please provide`, `Could you confirm`, or
+  `Please reproduce and run /bugreport`; do not leave the reporter to infer
+  what response is needed from background analysis alone;
+
 - when a fresh PowerToys diagnostic archive is needed, ask the reporter to
   submit a comment containing `/bugreport`; explain that the generated ZIP
   should be captured immediately after reproducing the problem;

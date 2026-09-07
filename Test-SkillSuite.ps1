@@ -689,6 +689,26 @@ if (-not (Test-Path $artifactValidator)) {
       }
     }
 
+    $genericRequestInfo = $validFixArtifactText | ConvertFrom-Json
+    $genericRequestInfo.actions = @($genericRequestInfo.actions | ForEach-Object {
+      if ($_.type -eq 'request_info') {
+        $_.label = 'Request information'
+        $_.comment.body = 'The existing report contains several useful details, but additional context would improve the current hypothesis and help the team decide how to proceed with implementation. More information about the scenario would therefore be useful before making a final decision.'
+      }
+      $_
+    })
+    $genericRequestInfo | ConvertTo-Json -Depth 12 |
+      Set-Content (Join-Path $artifactRoot 'data\items\45680.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 45680 -RequireIssueContext 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a request_info action that did not name or directly ask for evidence.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\45680.json') $validFixArtifactText
+
     $greenFix = $validFixArtifactText | ConvertFrom-Json
     $greenFix.proposed_fixes[0].confidence.score = 90
     $greenFix.proposed_fixes[0].confidence.level = 'green'
