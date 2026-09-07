@@ -122,11 +122,12 @@ credentials, approval decisions, or machine-specific run state.
 
 The repository includes two deliberately bounded workflows:
 
-- **Refresh dashboard action data** runs at 05:30 and 17:30 UTC and can also be
-  dispatched manually. It inventories public upstream state, regenerates and
-  sanitizes the feed, validates it, and opens or updates
-  `automation/dashboard-data-refresh`. It does not push directly to `main` and
-  never writes to `microsoft/PowerToys`.
+- **Refresh dashboard action data** runs a read-only inventory at 05:30 and
+  17:30 UTC and can also be dispatched manually. The inventory reports live PR
+  and issue counts, recent activity, and current published coverage without
+  modifying repository data. Manual **refresh** mode regenerates and sanitizes
+  the feed, validates it, and opens or updates
+  `automation/dashboard-data-refresh`.
 - **Sync an upstream issue mirror** is manual-only. Its default dry-run mode
   demonstrates which mirror would be created or updated without needing a
   cross-repository credential. Selecting **Apply changes** idempotently creates
@@ -138,6 +139,13 @@ Prefer a narrowly installed GitHub App. A fine-grained token is also supported
 when it is limited to **Metadata: read** and **Issues: write** on the selected
 target repository. Do not use a classic token. The standard workflow
 `GITHUB_TOKEN` cannot write to another repository.
+
+Full dashboard publication requires `DASHBOARD_READ_TOKEN`, because the
+repository-scoped `GITHUB_TOKEN` cannot reliably enumerate the complete
+cross-organization issue history. Configure it as a read-only fine-grained
+token for public `microsoft/PowerToys` metadata. Full refresh mode also checks
+that generated item and PR counts remain within 80% of the previous published
+inventory before it can create a data PR.
 
 AI-assisted judgments can be added as a separate bounded worker after the
 deterministic refresh is proven stable. Keep AI output behind
