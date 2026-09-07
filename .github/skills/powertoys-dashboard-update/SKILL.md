@@ -314,6 +314,11 @@ generic maintainer comment alone. Preserve `pending_author` only when current
 live evidence supports it: a needs-author-feedback label, a current
 changes-requested review after the author's latest activity, or posted Pulse
 review comments that have not been followed by an author commit/comment/review.
+For a specific upstream maintainer request that is not represented by one of
+those signals, record `author_wait_evidence` with the comment author, URL,
+`created_at`, and the exact requested evidence. A draft `post_review` or
+`request_changes` action is still owed by the maintainer and must never be
+treated as though it were already posted.
 If the author has pushed or replied after the author-wait signal, clear
 `pending_author`, mark the artifact `needs_revalidation`, and put the PR back
 in the review queue so the update agent makes a fresh decision.
@@ -333,13 +338,19 @@ pwsh -NoProfile -File `
 ```
 
 The queue contains every open, non-draft PR that is not explicitly waiting on
-the author and that either:
+the author, does not have a current terminal blocker, and that either:
 
 - has no dashboard artifact with a current review action for the live upstream
   head (`post_review` for drafted findings, or `review_ready`/no-comment action
   for a clean looped review); or
 - has a prior proposed review, but the live head SHA differs from the artifact
   or review action head SHA.
+
+A terminal blocker must be pinned to the live upstream head, use
+`stage: review_blocked`, and include one or more `blockers[]` entries whose
+`detail` explains the exact failure and whose `remediation` names the concrete
+manual step needed to resume. Generic checkpoints, missing validation, or a
+bare "blocked" label do not clear the queue.
 
 The queue is exhaustive. Build the run plan:
 

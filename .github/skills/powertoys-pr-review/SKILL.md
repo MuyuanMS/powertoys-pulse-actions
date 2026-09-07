@@ -65,6 +65,10 @@ If a prerequisite is missing, guide the user through setup ([references/prerequi
     review with zero proposed comments as `stage: review_ready`, never
     `concluded`, `complete`, or another synonym. A review with findings must
     instead include a current-head `post_review` or `request_changes` action.
+    When automation cannot proceed, emit `stage: review_blocked` only for a
+    current-head terminal blocker and include `blockers[]` entries with
+    non-empty `detail` and exact `remediation`; do not leave it as
+    `review_in_progress`.
 
 ## Phase 0: Context & Process Review
 
