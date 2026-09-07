@@ -1,48 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 49787,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
+  "track": "triage",
+  "stage": "not_actionable",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-07T01:05:56.9111698Z",
+  "evaluated_at": "2026-09-07T01:05:56.9111698Z",
+  "source_updated_at": "2026-09-06T23:41:03Z",
+  "title": "PowerToys Peek takes longer to open than Photos",
+  "url": "https://github.com/microsoft/PowerToys/issues/49787",
+  "author": "CoennW",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Peek"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "confidence": "high",
   "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
+    "glyph": "i",
+    "label": "Elevation-related cold start explained",
+    "detail": "The supplied logs show that elevated PowerToys deliberately starts Peek without elevation while the suite is still starting. That supported compatibility path and concurrent startup load explain the one-time delay; warm Peek activation is fast."
   },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
+  "summary": "Peek's first activation was slower than Photos while PowerToys 0.100.2 was starting elevated. The diagnostic timestamps show Peek being launched through its deliberate non-elevated path amid suite startup, while a collaborator reports sub-second cold launch after startup and sub-100 ms warm reopen when PowerToys is not elevated.",
+  "next_action": "Explain the documented elevation/startup tradeoff and close this report unless maintainers choose to define a separate cold-start performance goal.",
+  "judgment": {
+    "status": "not_actionable",
+    "rationale": "The new diagnostic analysis identifies an intentional configuration path rather than an isolated Peek defect: PowerToys was elevated, Peek's default setting deliberately launches its UI without elevation for file and network-share compatibility, and the launch overlapped the runner starting many modules. The report does not establish abnormal latency after startup in the supported non-elevated configuration.",
+    "evidence": [
+      "The issue reports PowerToys 0.100.2 and a several-second delay on the first Peek activation, with a public PowerToys report attached.",
+      "The collaborator's log analysis shows PowerToys running elevated and Peek taking the explicit 'Starting Peek non elevated from elevated process' branch.",
+      "The log records Peek::enable at 14:57:38.206, the non-elevated launch immediately afterward, and Peek space-mode eligibility at 14:57:40.807 while the runner was still enabling other modules.",
+      "src/modules/peek/peek/dllmain.cpp calls launch_process from Peek::enable and uses RunNonElevatedFailsafe when PowerToys is elevated and AlwaysRunNotElevated is enabled.",
+      "The Peek setting is enabled by default and is described in the Settings UI as improving access to network shares.",
+      "Merged PR #26308 introduced the default non-elevated launch specifically so Peek can access network shares when the PowerToys runner is elevated.",
+      "The collaborator reports that Peek starts in under a second from cold when PowerToys is already running non-elevated and reopens in under 100 milliseconds.",
+      "No assignee, linked pull request, covering fix, or direct duplicate is present on the live issue timeline."
+    ],
+    "recommended_action": "Post a concise explanation of the elevation and startup timing shown by the supplied logs, point to the supported non-elevated configuration, and close as an expected startup/configuration tradeoff rather than start a speculative code fix.",
+    "evaluated_at": "2026-09-07T01:05:56.9111698Z",
+    "source_updated_at": "2026-09-06T23:41:03Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current evidence does not establish a PowerToys code defect. Peek is already pre-launched when enabled; the observed delay is the documented de-elevation path running while the rest of PowerToys is starting. Changing that default would trade startup speed against access to network shares and elevated-process isolation, so it requires a separately scoped product/performance decision with measured acceptance criteria."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The report compares the first Peek preview with Photos. The supplied diagnostics show that this activation occurred while an elevated PowerToys runner was still enabling the suite and deliberately launching Peek as a non-elevated process. The available evidence supports configuration guidance, not a standalone Peek bug design.",
+    "known_information": [
+      "The reporter uses PowerToys 0.100.2 installed through PowerToys auto-update.",
+      "The reported scenario opens a photo from File Explorer and then invokes Peek with Space; Photos appears almost immediately while Peek takes several seconds on first use.",
+      "A public PowerToys report was attached to the issue.",
+      "The diagnostic logs show PowerToys was elevated and configured to start Peek without elevation.",
+      "Peek enablement and its non-elevated process launch began at 14:57:38, while the runner had been starting modules since 14:57:17.",
+      "The current Peek module launches Peek.UI during Peek::enable rather than waiting for the first hotkey.",
+      "The current Settings UI exposes 'Always run without elevation (even if PowerToys is elevated)', enabled by default to improve access to network shares.",
+      "The only issue comment is a collaborator analysis recommending non-elevated PowerToys or allowing startup to complete before using Peek.",
+      "The issue remains open with Issue-Bug, Needs-Triage, and Product-Peek labels and has no assignee."
+    ],
+    "inferences": [
+      "The observed several-second first-use delay is most likely the cost of creating the non-elevated Peek process through Explorer while the runner and Explorer are busy with startup work.",
+      "The comparison with Photos does not isolate Peek rendering performance because the delay begins before the Peek UI process is ready.",
+      "A repeatable delay after PowerToys has fully started in a non-elevated session would be a different performance condition from the one demonstrated by these logs."
+    ],
+    "analysis": "The new comment supplies the evidence that the legacy artifact had requested and resolves the main ambiguity. Source review confirms that Peek intentionally pre-launches its UI, but elevated PowerToys takes a de-elevation helper path whose purpose is preserving access to resources such as network shares. History review ties that default to merged PR #26308. A historical report, #26636, also mentions slower first preview after restart, but it does not establish the same elevation path and has no active fix. Because the current report shows the intended compatibility path plus suite startup contention, a code proposal would be speculative and would ignore the explicit product tradeoff.",
+    "initial_investigation": [
+      "Read the complete live issue body, public diagnostic analysis comment, labels, assignees, and timeline; no linked issue or pull request is present.",
+      "Inspected src/modules/peek/peek/dllmain.cpp: Peek::enable pre-launches Peek.UI, and launch_process selects RunNonElevatedFailsafe when PowerToys is elevated and the default AlwaysRunNotElevated setting is enabled.",
+      "Inspected src/common/utils/elevation.h: RunNonElevatedFailsafe first launches through Explorer and falls back to PowerToys.ActionRunner when necessary.",
+      "Inspected the current Peek Settings UI text and model, which state that running without elevation improves access to network shares and is enabled by default.",
+      "Reviewed merged PR #26308 and commit 42e707966d1ffe193def1e236a0d71ccde4f4380, which introduced the non-elevated launch behavior for network-share compatibility.",
+      "Reviewed historical issue #26636, which mentions first-preview latency after restart but does not provide the same elevation evidence or an active fix.",
+      "Searched public Peek startup/performance reports and pull requests; no covering fix or direct duplicate for this elevation-specific timing was found."
+    ],
+    "information_gaps": []
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [
+      {
+        "number": 26636,
+        "url": "https://github.com/microsoft/PowerToys/issues/26636",
+        "state": "CLOSED",
+        "title": "Peek for images could have been faster",
+        "relationship": "historical first-preview performance report, but not a confirmed duplicate of the elevated launch path"
+      }
+    ],
+    "related_prs": [
+      {
+        "number": 26308,
+        "url": "https://github.com/microsoft/PowerToys/pull/26308",
+        "state": "MERGED",
+        "title": "[Peek]Create Setting to run not elevated",
+        "relationship": "introduced the default compatibility behavior responsible for the de-elevated launch path"
+      }
+    ],
+    "covering_prs": []
   },
   "actions": [
     {
-      "id": "request-info-49787",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
+      "id": "explain-peek-elevation-startup-49787",
+      "type": "post_comment",
+      "label": "Explain Peek's elevation-related cold start",
       "primary": true,
       "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
       "comment": {
         "target": "issue",
         "number": 49787,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
-      }
+        "body": "Thanks for the report and diagnostic archive. The supplied logs show that PowerToys was running elevated and was still starting its modules when Peek was enabled. Peek is configured by default to launch its UI without elevation, even when the PowerToys runner is elevated, because that preserves access to locations such as network shares. In this trace that de-elevated process launch overlaps the rest of PowerToys startup and accounts for the several-second first-use delay; once PowerToys and Peek are already running, warm activation is expected to be much faster. The supported options are to run PowerToys without elevation, or allow PowerToys startup to finish and keep it running in the background before invoking Peek. Based on the current evidence, this is an elevation/startup tradeoff rather than a separate Peek defect, so this report can be closed. A consistently slow Peek launch after startup in a non-elevated session would merit a separately measured performance report."
+      },
+      "note": "Draft only; no upstream comment is posted."
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T07:18:31Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-    "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T07:18:31Z"
-  }
+  "verify": [
+    "Start PowerToys non-elevated, wait for suite startup to finish, then compare Peek's first activation with subsequent activations.",
+    "If elevated operation is required, compare the default non-elevated Peek setting with the explicitly elevated Peek setting while accounting for the network-share compatibility tradeoff."
+  ]
 }
