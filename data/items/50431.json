@@ -4,13 +4,13 @@
   "number": 50431,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
-  "owes": "none",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T05:12:00Z",
-  "evaluated_at": "2026-09-07T05:12:00Z",
-  "source_updated_at": "2026-09-07T03:44:36Z",
-  "head_sha": "88bb6727aabfdeb0dc45b435debabefd41b1dba0",
+  "generated_at": "2026-09-07T10:42:11Z",
+  "evaluated_at": "2026-09-07T10:42:11Z",
+  "source_updated_at": "2026-09-07T07:30:09Z",
+  "head_sha": "06d671c7d786ade6e41e43b221885a00e9bf8c84",
   "title": "[UITests][CropAndLock] Add UI tests",
   "url": "https://github.com/microsoft/PowerToys/pull/50431",
   "author": "khmyznikov",
@@ -21,92 +21,263 @@
   "draft": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "summary": "The current upstream head was reviewed through a clean fork-side convergence loop. The Crop and Lock UI-test changes passed the full reported upstream CI, targeted local builds, and dispatcher Pester validation. No upstream review comment is proposed.",
+  "summary": "The upstream head advanced from 88bb6727 to 06d671c7, so the durable fork review was refreshed rather than restarted. The current head completed fresh Copilot convergence, targeted builds and tests, and all reported upstream CI checks pass. Eight current-head review items are drafted: seven apply-ready inline suggestions and one multi-file clipboard-preservation note.",
   "status": {
-    "glyph": "OK",
-    "label": "Review ready - clean current head",
-    "detail": "The upstream head 88bb6727aabfdeb0dc45b435debabefd41b1dba0 remains unchanged. All reported upstream checks pass, the fork review is clean with no unresolved Copilot threads, and no upstream action is proposed."
+    "glyph": "review",
+    "label": "Current-head review drafted",
+    "detail": "Upstream head 06d671c7d786ade6e41e43b221885a00e9bf8c84 is fully revalidated. The latest fresh fork review at e3addeee3f4cc58f617f367d710a3558ad8d4222 generated zero published comments, all Copilot threads are resolved, targeted validation passed, and eight supported upstream review items await maintainer approval."
   },
   "next_action": {
-    "glyph": "OK",
-    "label": "No upstream action proposed",
-    "reason": "The current-head review found no actionable defects. Keep this artifact pinned to the current upstream head and revalidate only if the upstream head, conversation, checks, or review state changes."
+    "glyph": "post",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "The suggestions are pinned to the current upstream head. Recheck freshness and obtain explicit approval before posting anything to microsoft/PowerToys."
   },
-  "proposed_comments": [],
-  "actions": [],
+  "actions": [
+    {
+      "id": "post-review-50431",
+      "type": "post_review",
+      "label": "Post selected review suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50431,
+        "pullRequest": 50431,
+        "event": "COMMENT",
+        "head_sha": "06d671c7d786ade6e41e43b221885a00e9bf8c84",
+        "body_prefix": "Thanks for the comprehensive Crop and Lock UI-test coverage. I found a few reliability and test-environment issues that should be addressed so local runs preserve developer state and persistent CI agents remain deterministic."
+      },
+      "note": "Mandatory: revalidate the upstream head and activity snapshot, validate the pinned review payload, and require explicit maintainer approval before publishing."
+    }
+  ],
+  "proposed_comments": [
+    {
+      "id": "preserve-complete-clipboard",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Preserve all clipboard formats during UI tests",
+      "body": "### Preserve all clipboard formats during UI tests\n\n**Severity:** `medium`\n\n`PrepareSource` snapshots only clipboard text, so a developer who starts a local Test Explorer run with an image, file list, or another non-text format will have that data cleared during cleanup. Please capture and restore a detached clipboard data object through the existing STA helper instead of treating ‘no text’ as an empty clipboard; this requires a small helper addition outside the PR diff and matching field/cleanup updates in `CropAndLockTests`.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current code calls GetText and then Clear when the result is empty, which deterministically discards any non-text clipboard formats."
+      }
+    },
+    {
+      "id": "wait-for-live-and-parse-named-shortcuts",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Wait through placeholder shortcut values and accept named keys",
+      "path": "src/modules/CropAndLock/Tests/CropAndLock.UITests/CropAndLockTests.cs",
+      "start_line": 261,
+      "line": 294,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Wait through placeholder shortcut values and accept named keys\n\n**Severity:** `medium`\n\nSettings can transiently expose `Configure shortcut` during binding, and valid customized chords can use named keys such as `F1`, `Space`, arrows, or `Page Up`. The current predicate throws on the placeholder and the parser rejects every named key except a single letter, making otherwise valid profiles time out. Treat unparseable observations as mismatches and parse all named `Key` values after normalizing spaces.\n\n```suggestion\n                {\n                    var keys = ParseShortcut(text);\n                    return !string.IsNullOrWhiteSpace(text) &&\n                        keys.Length > 0 &&\n                        keys.Any(key => key is not (Key.LWin or Key.Ctrl or Key.Shift or Key.Alt));\n                },\n                timeoutMS: 5_000,\n                requiredConsecutiveMatches: 2);\n            Assert.IsTrue(shortcut.Succeeded, $\"{cardId} exposed no usable activation shortcut: '{shortcut.LastObservation}'.\");\n            Step($\"Live {cardId} shortcut: {shortcut.LastObservation}\");\n            return ParseShortcut(shortcut.LastObservation);\n        }\n\n        private static Key[] ParseShortcut(string? text)\n        {\n            var tokens = (text ?? string.Empty).Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);\n            var keys = tokens.Select(ParseKey).ToArray();\n            return keys.All(key => key.HasValue) ? keys.Select(key => key!.Value).ToArray() : [];\n        }\n\n        private static Key? ParseKey(string text)\n        {\n            var normalized = text.Replace(\" \", string.Empty, StringComparison.Ordinal);\n            return normalized.ToLowerInvariant() switch\n            {\n                \"win\" or \"windows\" => Key.LWin,\n                \"ctrl\" or \"control\" => Key.Ctrl,\n                \"shift\" => Key.Shift,\n                \"alt\" => Key.Alt,\n                _ when normalized.Length == 1 && char.IsAsciiDigit(normalized[0]) => Enum.Parse<Key>($\"Num{normalized}\"),\n                _ when !char.IsDigit(normalized[0]) && Enum.TryParse<Key>(normalized, true, out var key) => key,\n                _ => null,\n            };\n        }\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 95,
+        "rationale": "The Settings control placeholder and the harness Key enum are directly visible; the existing single-letter guard excludes supported named keys."
+      }
+    },
+    {
+      "id": "always-remove-fixture-registration",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Remove fixture registrations even when cancellation fails",
+      "path": "src/modules/CropAndLock/Tests/CropAndLock.UITests/PackagedCropSource.cs",
+      "start_line": 97,
+      "line": 102,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Remove fixture registrations even when cancellation fails\n\n**Severity:** `medium`\n\nIf the pending installation faults or the cancellation wait times out, control currently skips `RemoveRegistrations`, leaving persistent package state that can poison later runs on the same agent. Keep the original cancellation failure, but put registration removal in a `finally` so teardown is always attempted.\n\n```suggestion\n                if (ownsRegistration)\n                {\n                    try\n                    {\n                        CancelPendingInstallation();\n                    }\n                    finally\n                    {\n                        RemoveRegistrations(RegisteredPackages()\n                            .Where(package => package.Id.Publisher == Publisher)\n                            .Select(package => package.Id.FullName));\n                    }\n                }\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "CancelPendingInstallation can throw on timeout or task failure, and the following cleanup call is therefore bypassed in the current control flow."
+      }
+    },
+    {
+      "id": "exclude-fixture-intermediates-from-test-artifact",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Keep fixture build intermediates outside tests artifacts",
+      "path": "src/modules/CropAndLock/Tests/CropAndLock.TestApp/CropAndLock.TestApp.csproj",
+      "line": 26,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep fixture build intermediates outside tests artifacts\n\n**Severity:** `low`\n\nThe fixture's full self-contained runtime is emitted under `tests/**`, while the packaged MSIX is also staged beside the UI-test executable. The build artifact glob therefore uploads the same large runtime twice even though only the staged MSIX is consumed; move the intermediate output outside the test artifact tree.\n\n```suggestion\n    <OutputPath>$(RepoRoot)$(Platform)\\$(Configuration)\\test-fixtures\\CropAndLock.TestApp\\</OutputPath>\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 91,
+        "rationale": "The UI-test artifact explicitly copies tests/**, and the project also stages its generated MSIX into the UITests output."
+      }
+    },
+    {
+      "id": "require-fixture-in-signing-command",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Fail signing preparation when the fixture is absent",
+      "path": "src/modules/CropAndLock/Tests/CropAndLock.UITests/README.md",
+      "line": 158,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Fail signing preparation when the fixture is absent\n\n**Severity:** `medium`\n\n`-Include` only filters packages that happen to exist. Because the required Runner and Settings files can still be found, this command can succeed and export a certificate without signing `CropAndLock.TestApp.msix`, leaving the documented VM preparation incomplete. Mark the fixture as required so setup fails immediately.\n\n```suggestion\n    -Include CropAndLock.TestApp.msix `\n    -RequiredPackage CropAndLock.TestApp.msix `\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "signSparsePackages.ps1 distinguishes Include from RequiredPackage and only the latter fails when no matching package exists."
+      }
+    },
+    {
+      "id": "classify-missing-local-signing-as-inconclusive",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Apply the documented local-skip policy to missing files",
+      "path": "src/modules/CropAndLock/Tests/CropAndLock.UITests/SigningPrerequisites.cs",
+      "start_line": 50,
+      "line": 62,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Apply the documented local-skip policy to missing files\n\n**Severity:** `medium`\n\nThe README says absent local signing prerequisites produce Inconclusive/Skipped, but `ReadSignature` currently asserts before `RequireSignature` can apply that policy. Represent an unstaged file as a missing prerequisite so local runs skip with guidance while pipeline runs remain strict.\n\n```suggestion\n            var missingSetup = signature.Status is \"Missing\" or \"NotSigned\" or \"NotTrusted\" or \"UnknownError\" or \"Valid\";\n            if (isInPipeline || !missingSetup)\n            {\n                Assert.Fail(message);\n            }\n\n            // Missing local setup is not a product failure. CI and corrupt signatures still fail.\n            Assert.Inconclusive(message);\n        }\n\n        private static Signature ReadSignature(string path)\n        {\n            if (!File.Exists(path))\n            {\n                return new Signature(\"Missing\", $\"Required test/runtime file was not staged: '{path}'.\", string.Empty, false);\n            }\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current File.Exists assertion deterministically bypasses the local-versus-pipeline policy implemented immediately above it."
+      }
+    },
+    {
+      "id": "route-package-existence-through-prerequisite-policy",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Do not assert package existence before the prerequisite policy",
+      "path": "src/modules/CropAndLock/Tests/CropAndLock.UITests/PackagedCropSource.cs",
+      "start_line": 31,
+      "line": 33,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Do not assert package existence before the prerequisite policy\n\n**Severity:** `medium`\n\nEven after `ReadSignature` understands a missing file, this earlier assertion would still hard-fail local Test Explorer runs. Let `RequirePackage` own both existence and signing classification so the documented local inconclusive behavior is reachable.\n\n```suggestion\n            var packagePath = Path.Combine(AppContext.BaseDirectory, \"CropAndLock.TestApp.msix\");\n            SigningPrerequisites.RequirePackage(packagePath);\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The assertion precedes RequirePackage and therefore necessarily prevents the missing-prerequisite classification from running."
+      }
+    },
+    {
+      "id": "cover-missing-signature-state",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Cover the missing-file prerequisite state",
+      "path": "src/modules/CropAndLock/Tests/CropAndLock.UITests/SigningPrerequisitesTests.cs",
+      "start_line": 51,
+      "line": 52,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Cover the missing-file prerequisite state\n\n**Severity:** `low`\n\nAdd the new `Missing` state to the shared local-skip/CI-fail matrix so the policy cannot regress independently of the other signing setup failures.\n\n```suggestion\n            new(\"NotSigned\", \"Unsigned fixture.\", string.Empty, false),\n            new(\"Missing\", \"Fixture was not staged.\", string.Empty, false),\n            new(\"NotTrusted\", \"Untrusted signer.\", \"Microsoft Corporation\", false),\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 93,
+        "rationale": "The existing parameterized tests already define the expected local and CI behavior for every missing-setup status."
+      }
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted current-head review for explicit maintainer approval",
+    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
+    "Hold or edit any suggestion without changing upstream labels, review state, or PR state",
+    "Rerun the fork review loop if the upstream head changes"
+  ],
   "needs_revalidation": false,
   "phase0": {
     "author": "khmyznikov",
     "author_association": "MEMBER",
     "bar": "repository member; process nags skipped",
     "disposition": "Proceed",
-    "owes": "maintainer",
+    "owes_after_posting": "author",
     "gates_tripped": [],
-    "note": "The member-authored PR adds Crop and Lock UI tests and supporting test infrastructure. Intake, CLA, telemetry, dependency, spelling, and full reported CI checks pass; no process gate requires an author action.",
+    "note": "The member-authored PR is atomic and fully described. CLA, intake, telemetry, dependency, spelling, and all reported Azure CI legs pass. No process gate requires a separate author-facing ask; the drafted action contains only code and validation findings.",
     "evidence": [
-      "The PR is scoped to Crop and Lock UI-test coverage and supporting test infrastructure.",
-      "The upstream PR intake, dependency review, telemetry, and license/CLA checks succeeded.",
-      "The complete reported PowerToys CI pipeline succeeded, including x64 Windows 10, x64 Windows 11, ARM64, x64, ARM64, and SDK legs."
+      "The PR is open, non-draft, and authored by a repository member.",
+      "All 13 reported upstream checks pass, including x64 Windows 10, x64 Windows 11, ARM64, x64, SDK, CLA, intake, dependency, telemetry, and spelling checks.",
+      "The PR description documents scope, validation, signed fixture preparation, and Windows test environments.",
+      "No upstream activity after 2026-09-07T07:30:09Z changed the reviewed head or discussion."
     ]
   },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "head_sha": "88bb6727aabfdeb0dc45b435debabefd41b1dba0",
-    "updated_at": "2026-09-07T03:44:36Z",
+    "head_sha": "06d671c7d786ade6e41e43b221885a00e9bf8c84",
+    "updated_at": "2026-09-07T07:30:09Z",
+    "commit_count": 8,
+    "changed_file_count": 24,
     "issue_comment_count": 1,
     "review_count": 28,
     "review_decision": "REVIEW_REQUIRED",
+    "mergeable_state": "blocked",
     "reported_checks": {
       "total": 13,
+      "successful": 13,
       "failing": 0,
       "pending": 0,
-      "note": "All reported upstream checks pass, including PowerToys CI and its x64 Windows 11 test leg."
+      "note": "Every reported upstream check completed successfully, including all PowerToys CI matrix legs."
     }
   },
   "fork_pr": {
     "number": 679,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/679",
     "state": "OPEN",
-    "head_sha": "10080ebd6d5be71459a3bcbb2860fa032377c95e",
+    "head_sha": "e3addeee3f4cc58f617f367d710a3558ad8d4222",
+    "base_sha": "b747efa10ca3b03f1b2a5aeebd4fc6dc8a4b7aea",
+    "changed_files": 25,
     "checks": "passed"
   },
   "fork_branch": "pr-iterate/50431-v2",
   "copilot_review": {
-    "latest_submitted_at": "2026-09-07T05:01:48Z",
-    "latest_commit_id": "10080ebd6d5be71459a3bcbb2860fa032377c95e",
+    "latest_submitted_at": "2026-09-07T10:37:42Z",
+    "latest_commit_id": "e3addeee3f4cc58f617f367d710a3558ad8d4222",
     "latest_new_comments": 0,
-    "published_inline_comments": 2,
+    "published_inline_comments": 4,
     "unresolved_threads": 0,
-    "review_count": 2,
-    "suppressed_comments": 0,
-    "policy_note": "The two valid Copilot findings were fixed on the fork, replied to, and resolved. The latest fresh current-head review reported zero new comments."
+    "review_count": 10,
+    "policy_note": "All published findings were fixed, replied to, and resolved on the fork. The latest fresh current-head review generated zero published comments. Its late suppressed Pester-wiring advisory was ignored under the post-round-5 suppression policy and does not block convergence."
   },
   "verification": {
     "result": "passed",
-    "scope": "Crop and Lock UI tests and supporting CI/test infrastructure",
+    "scope": "Crop and Lock UI tests, packaged fixture, shared UI-test helper, and non-elevated dispatcher",
     "checks": [
-      "The isolated review local checkout is clean at fork review head 10080ebd6d5be71459a3bcbb2860fa032377c95e.",
-      "The rebase onto current upstream main was resolved without changing the intended Crop and Lock test scope.",
-      "PowerToys essentials, the Crop and Lock fixture project, and the Crop and Lock UI-test project built successfully.",
+      "PowerToys essentials completed successfully in x64 Debug, including Runner and Settings.",
+      "CropAndLock.TestApp and CropAndLock.UITests built successfully after the final fixes.",
+      "The relocated fixture output is outside tests/** and CropAndLock.TestApp.msix is still staged beside the UI-test executable.",
       "Targeted dispatcher Pester validation passed 58 of 58 tests.",
-      "Fork spell-check and intake checks passed.",
-      "All reported upstream CI checks passed, including x64 Windows 10 and x64 Windows 11 UI-test legs."
+      "Targeted CropImage and SigningPrerequisites MSTest validation passed 8 of 8 tests.",
+      "Fork intake and spelling checks pass at e3addeee3f4cc58f617f367d710a3558ad8d4222.",
+      "All 13 reported upstream checks pass at 06d671c7d786ade6e41e43b221885a00e9bf8c84.",
+      "The isolated review local checkout is clean and git diff --check passes."
     ]
   },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe non-elevated on an English interactive desktop.",
+    "Run the non-signing Crop and Lock scenarios and verify Win32 thumbnail, reparent, cancellation, live pixels, input, and restoration behavior.",
+    "Prepare the documented trusted fixture and matching Runner/Settings signatures in an isolated VM, then run all 14 CropAndLock.UITests cases on Windows 10 and Windows 11 with zero skipped tests.",
+    "Before and after a local feature scenario, place image or file-list data on the clipboard and verify the complete original clipboard contents are restored.",
+    "Customize the activation shortcut to a named key such as F1, Space, an arrow, or Page Up and verify the live shortcut is discovered without a timeout."
+  ],
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-09-07T05:12:00Z",
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-07T10:42:11Z",
     "resume_action": "none",
     "fork_pr": 679,
     "fork_branch": "pr-iterate/50431-v2",
-    "fork_head_sha": "10080ebd6d5be71459a3bcbb2860fa032377c95e",
+    "fork_head_sha": "e3addeee3f4cc58f617f367d710a3558ad8d4222",
     "unresolved_copilot_threads": 0,
     "build_result": "passed"
   },
   "freshness": {
     "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-07T05:12:00Z",
-    "head_sha": "88bb6727aabfdeb0dc45b435debabefd41b1dba0"
+    "evaluated_at": "2026-09-07T10:42:11Z",
+    "source_updated_at": "2026-09-07T07:30:09Z",
+    "head_sha": "06d671c7d786ade6e41e43b221885a00e9bf8c84"
   }
 }
