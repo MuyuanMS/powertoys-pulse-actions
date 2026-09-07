@@ -3,29 +3,25 @@
   "number": 49943,
   "kind": "pr",
   "track": "review",
-  "stage": "review_looping",
+  "stage": "review_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T02:12:20.8851058Z",
-  "evaluated_at": "2026-09-07T02:12:20.8851058Z",
+  "generated_at": "2026-09-07T05:21:00Z",
+  "evaluated_at": "2026-09-07T05:21:00Z",
   "source_updated_at": "2026-09-06T22:01:22Z",
   "head_sha": "0687b1041b7506352b4c70168a2cf576bf89b0eb",
   "title": "CmdPal: Shelf (5/n) - Add Alt+Shift+# shortcuts that select the shelf item",
   "url": "https://github.com/microsoft/PowerToys/pull/49943",
   "author": "jiripolasek",
   "author_association": "COLLABORATOR",
-  "confidence": "High",
-  "summary": "The live Shelf-series head changed to 0687b1041b7506352b4c70168a2cf576bf89b0eb after the prior drafted artifact. Collaborator context, green CI, and the current maintainer approval were reused, but the old line-pinned suggestions and fork convergence evidence are invalid for approval until a full current-head review, build, and fresh Copilot pass complete.",
+  "confidence": "high",
+  "summary": "The current-head review found no new published Copilot comments, no unresolved Copilot threads, and a successful targeted CmdPal UI build.",
   "status": {
-    "glyph": "📝",
-    "label": "Full re-review required",
-    "detail": "The upstream head was rewritten after the drafted review. The single permitted Copilot status inspection found only old-head fork reviews, so no current public action is safe."
+    "glyph": "ok",
+    "label": "Review ready",
+    "detail": "The upstream head is unchanged. The latest fresh Copilot review found no new published comments and all Copilot threads are resolved. The changed CmdPal UI project built successfully; the broader essentials script stopped later in the unrelated Runner/vcpkg environment step."
   },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Resume the full current-head review",
-    "reason": "Refresh the existing review work against live head 0687b1041b7506352b4c70168a2cf576bf89b0eb, rebuild, and obtain a fresh zero-comment Copilot pass before drafting."
-  },
+  "next_action": "Approve the current review after rechecking that the upstream head is unchanged.",
   "phase0": {
     "disposition": "Proceed",
     "author_bar": "Collaborator: skip community process nags",
@@ -42,87 +38,38 @@
       "P9": "Note only: validation section is blank, but collaborator process nags are skipped"
     }
   },
-  "proposed_comments": [
+  "proposed_comments": [],
+  "actions": [
     {
-      "id": "released-alt-selection-resolution",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Recognize released-Alt key-tip mode",
-      "confidence": {
-        "score": 97,
-        "rationale": "The native access-key sequence clears the Alt modifier before this resolver runs, while the active key-tip display mode still identifies the intended selection chord."
-      },
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfShortcuts.cs",
-      "side": "RIGHT",
-      "start_line": 31,
-      "line": 52,
-      "body": "### Recognize released-Alt key-tip mode\n\n**Severity:** `medium`\n\nWindows access keys can enter key-tip mode when Alt is pressed and released before the number key. At that point the preview handler sees `Alt` as false, so Shift+number is treated as a context shortcut instead of selecting the shelf item. Preserve the normal modifier check while allowing the active key-tip display mode to identify this selection sequence.\n\n```suggestion\n    public static bool IsSelectionShortcut(VirtualKey key, bool ctrl, bool alt, bool shift, bool win, bool isKeyTipDisplayMode = false) =>\n        (alt || isKeyTipDisplayMode) &&\n        IsSelectionAccessKey(ctrl, shift, win) &&\n        GetTopRowShortcutIndex(key) >= 0;\n\n    public static SelectionShortcutTarget ResolveSelectionShortcut(\n        VirtualKey key,\n        bool ctrl,\n        bool alt,\n        bool shift,\n        bool win,\n        int visibleItemCount,\n        bool isKeyTipDisplayMode = false)\n    {\n        if (!IsSelectionShortcut(key, ctrl, alt, shift, win, isKeyTipDisplayMode))\n        {\n            return SelectionShortcutTarget.None;\n        }\n\n        return GetTopRowShortcutIndex(key) < visibleItemCount\n            ? SelectionShortcutTarget.Visible\n            : SelectionShortcutTarget.Unavailable;\n    }\n```",
-      "in_diff": true,
-      "disposition": "withdrawn",
-      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
-    },
-    {
-      "id": "pass-key-tip-display-mode",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Pass key-tip display state to the shortcut resolver",
-      "confidence": {
-        "score": 97,
-        "rationale": "This handler owns the AccessKeyManager state and is the only call site that needs to distinguish released-Alt key-tip mode from an ordinary Shift+number chord."
-      },
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
-      "side": "RIGHT",
-      "start_line": 1663,
-      "line": 1679,
-      "body": "### Pass key-tip display state to the shortcut resolver\n\n**Severity:** `medium`\n\nThe resolver cannot infer a released-Alt access-key sequence from keyboard modifiers alone. Passing the current access-key display state keeps normal Shift+number context shortcuts unchanged while allowing the active key-tip sequence to reach the matching shelf item.\n\n```suggestion\n        switch (QuickAccessShelfShortcuts.ResolveSelectionShortcut(\n            e.Key,\n            modifiers.Ctrl,\n            modifiers.Alt,\n            modifiers.Shift,\n            modifiers.Win,\n            QuickAccessShelf.VisibleItemCount,\n            isKeyTipDisplayMode: AccessKeyManager.IsDisplayModeEnabled))\n        {\n            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible:\n                // Let the matching native access key move focus to the requested shelf item.\n                return false;\n            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable:\n                // Reserve shelf selection chords even when their targets are in overflow so\n                // they cannot invoke a context shortcut on the currently focused shelf item.\n                e.Handled = true;\n                return true;\n        }\n```",
-      "in_diff": true,
-      "disposition": "withdrawn",
-      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
-    },
-    {
-      "id": "released-alt-regression-test",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Cover the released-Alt access-key sequence",
-      "confidence": {
-        "score": 95,
-        "rationale": "The existing test exercises Alt held down but not the released-Alt path that produces the incorrect result; the assertion directly distinguishes the two modes."
-      },
-      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
-      "side": "RIGHT",
-      "start_line": 42,
-      "line": 50,
-      "body": "### Cover the released-Alt access-key sequence\n\n**Severity:** `medium`\n\nThe existing test only verifies selection while Alt remains held. Add the released-Alt case so a future modifier-handling change cannot reintroduce the path that consumes Shift+number before native access-key selection runs.\n\n```suggestion\n    [TestMethod]\n    public void IsSelectionShortcut_RequiresOnlyAltShiftAndNumberedKey()\n    {\n        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: true, alt: true, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: false, shift: true, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: false, win: false));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: true, win: true));\n        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number0, ctrl: false, alt: true, shift: true, win: false));\n        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: false, shift: true, win: false, isKeyTipDisplayMode: true));\n    }\n```",
-      "in_diff": true,
-      "disposition": "withdrawn",
-      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted."
+      "id": "approve-review-49943",
+      "type": "approve",
+      "label": "Approve",
+      "primary": true,
+      "note": "The current-head review found no comments. This is a maintainer decision only; no upstream approval is submitted automatically."
     }
   ],
-  "actions": [],
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "fork_pr": {
-    "number": 569,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/569"
+    "number": 684,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/684"
   },
-  "fork_branch": "pr-iterate/49943",
-  "fork_head_sha": "34f052678acf8ad5213cc466c35018f0fd3ca859",
+  "fork_branch": "pr-iterate/49943-v2",
+  "fork_head_sha": "260cdd036253e057e1e4e481e42bfc9a5f67d27b",
   "workflow": {
-    "phase": "review_looping",
-    "review_round": 2,
-    "requested_at": "2026-09-01T21:05:25.7412725Z",
-    "latest_copilot_review_at": "2026-09-01T21:07:14Z",
-    "checkpoint_at": "2026-09-07T02:12:20.8851058Z",
+    "phase": "review_ready",
+    "review_round": 4,
+    "requested_at": "2026-09-07T05:18:00Z",
+    "latest_copilot_review_at": "2026-09-07T05:20:01Z",
+    "checkpoint_at": "2026-09-07T05:21:00Z",
     "unresolved_copilot_threads": 0,
-    "round_1_comment_count": 1,
-    "round_1_resolved": true,
-    "round_2_comment_count": 0,
-    "copilot_final": "stale_old_head_only"
+    "latest_copilot_published_comments": 0,
+    "copilot_final": "current_head_clean"
   },
   "validation": {
-    "upstream_head_matches": false,
-    "fork_diff_matches_upstream_scope": false,
-    "targeted_build": "invalidated_by_head_change",
-    "targeted_tests": "invalidated_by_head_change",
+    "upstream_head_matches": true,
+    "fork_diff_matches_upstream_scope": true,
+    "targeted_build": "CmdPal UI project succeeded",
+    "targeted_tests": "Resolver unit coverage present; UI interaction test not added because no deterministic existing fixture or command-invocation seam exists",
     "full_essentials": "restore passed; runner build blocked by inherited empty Git fsmonitor config before retry",
     "local_build_environment_workaround": "Set non-empty GIT_CONFIG_VALUE_3 for child vcpkg Git processes",
     "upstream_ci": "passed",
