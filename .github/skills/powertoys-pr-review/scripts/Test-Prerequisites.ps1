@@ -14,15 +14,18 @@ param()
 
 $results = [ordered]@{}
 
-# 1. Fork exists
-$fork = gh repo list --fork --json nameWithOwner 2>$null | ConvertFrom-Json |
-    Where-Object { $_.nameWithOwner -like '*/PowerToys' } | Select-Object -First 1
-$results['Fork'] = if ($fork) { "OK ($($fork.nameWithOwner))" } else { "MISSING - run: gh repo fork microsoft/PowerToys --clone=false" }
-
 # 2. Local clone
 $clone = @('C:\PowerToys', "$env:USERPROFILE\source\repos\PowerToys", "$env:USERPROFILE\git\PowerToys") |
     Where-Object { Test-Path "$_\.git" } | Select-Object -First 1
 $results['Clone'] = if ($clone) { "OK ($clone)" } else { "MISSING - clone microsoft/PowerToys locally" }
+
+# 1. Writable fork exists
+try {
+    $forkConfig = & (Join-Path $PSScriptRoot 'Get-ForkConfig.ps1') -ClonePath $clone 6>$null
+    $results['Fork'] = "OK ($($forkConfig.ForkRepo), auth $($forkConfig.AuthUser))"
+} catch {
+    $results['Fork'] = "MISSING - $($_.Exception.Message)"
+}
 
 # 3. Copilot code review - manual confirmation only
 $results['CopilotReview'] = "MANUAL - confirm 'Copilot code review' is enabled on the fork settings; the first review request must return a non-empty requested_reviewers"

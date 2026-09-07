@@ -11,22 +11,11 @@
 #>
 [CmdletBinding()]
 param(
-    [string] $ClonePath
+    [string] $ClonePath,
+    [string] $ForkRepo = $env:POWERTOYS_FORK_REPO
 )
 
 $ErrorActionPreference = 'Stop'
-
-$forkOwner = (gh api user --jq '.login').Trim()
-if (-not $forkOwner) { throw "Could not resolve the GitHub login. Run 'gh auth login' first." }
-$forkRepo = "$forkOwner/PowerToys"
-
-# Fork remote name: a remote whose URL points at the fork owner's PowerToys (not microsoft).
-$forkRemote = git remote -v 2>$null |
-    Select-String "github.com[:/](.+)/PowerToys" |
-    Where-Object { $_ -notmatch 'microsoft' } |
-    ForEach-Object { ($_ -split '\s+')[0] } |
-    Select-Object -First 1
-if (-not $forkRemote) { $forkRemote = 'fork' }
 
 if (-not $ClonePath) {
     $ClonePath = @(
@@ -36,11 +25,60 @@ if (-not $ClonePath) {
     ) | Where-Object { Test-Path "$_\.git" } | Select-Object -First 1
 }
 
+$remoteRows = if ($ClonePath) {
+    @(git -C $ClonePath remote -v 2>$null)
+} else {
+    @()
+}
+$forkRemoteRow = $remoteRows |
+    Select-String 'github.com[:/](?<owner>[^/\s]+)/PowerToys(?:\.git)?' |
+    Where-Object { $_.Matches[0].Groups['owner'].Value -ne 'microsoft' } |
+    Select-Object -First 1
+
+if (-not $ForkRepo -and $forkRemoteRow) {
+    $remoteOwner = $forkRemoteRow.Matches[0].Groups['owner'].Value
+    $ForkRepo = "$remoteOwner/PowerToys"
+}
+if (-not $ForkRepo) {
+    $currentLogin = (gh api user --jq '.login').Trim()
+    if (-not $currentLogin) {
+        throw "Could not resolve the GitHub login. Run 'gh auth login' first."
+    }
+    $ForkRepo = "$currentLogin/PowerToys"
+}
+
+$repoInfo = gh repo view $ForkRepo --json nameWithOwner,isFork,viewerPermission 2>$null |
+    ConvertFrom-Json
+if (-not $repoInfo -or -not $repoInfo.isFork) {
+    throw "Configured review repository '$ForkRepo' is not an accessible PowerToys fork."
+}
+
+$forkOwner = ([string]$repoInfo.nameWithOwner -split '/', 2)[0]
+$writePermissions = @('ADMIN', 'MAINTAIN', 'WRITE')
+if ([string]$repoInfo.viewerPermission -notin $writePermissions) {
+    $activeLogin = (gh api user --jq '.login').Trim()
+    if ($activeLogin -ne $forkOwner) {
+        gh auth switch --user $forkOwner | Out-Null
+        $repoInfo = gh repo view $ForkRepo --json nameWithOwner,isFork,viewerPermission 2>$null |
+            ConvertFrom-Json
+    }
+}
+if ([string]$repoInfo.viewerPermission -notin $writePermissions) {
+    throw "The active GitHub account cannot write '$ForkRepo'. Set POWERTOYS_FORK_REPO to a writable fork or authenticate its owner."
+}
+
+$forkRemote = if ($forkRemoteRow) {
+    ($forkRemoteRow.Line -split '\s+')[0]
+} else {
+    'fork'
+}
+
 $config = [pscustomobject]@{
     ForkOwner  = $forkOwner
-    ForkRepo   = $forkRepo
+    ForkRepo   = [string]$repoInfo.nameWithOwner
     ForkRemote = $forkRemote
     ClonePath  = $ClonePath
+    AuthUser   = (gh api user --jq '.login').Trim()
 }
-Write-Host "Fork owner: $forkOwner | repo: $forkRepo | remote: $forkRemote | clone: $ClonePath"
+Write-Host "Fork owner: $forkOwner | repo: $($config.ForkRepo) | remote: $forkRemote | clone: $ClonePath | auth: $($config.AuthUser)"
 return $config
