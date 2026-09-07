@@ -144,3 +144,9 @@ deterministic refresh is proven stable. Keep AI output behind
 `Test-DashboardArtifacts.ps1`, set explicit batch/time/credit limits, and never
 grant that worker permission to post reviews, comments, merges, or CI commands
 to `microsoft/PowerToys`.
+
+The inventory workflow runs `Test-SkillSuite.ps1`, which validates the
+published manifest, public-action taxonomy, sanitization, and script syntax. A
+future AI/review worker must additionally call `Test-DashboardArtifacts.ps1`
+with the exact issue or PR numbers it processed. Historical artifacts are not
+reclassified as newly processed merely because the sanitizer touched them.
