@@ -1,33 +1,102 @@
 {
+  "schemaVersion": 5,
   "number": 36878,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-18T15:22:39Z",
+  "generated_at": "2026-09-07T15:31:35Z",
+  "evaluated_at": "2026-09-07T15:31:35Z",
+  "source_updated_at": "2026-09-07T08:48:41Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/36878",
+  "title": "Mouse Without Borders mouse rubberbanding with 1000hz/polling rate for mouse and keyboards",
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🛠",
+    "label": "High-rate mouse coalescing design ready",
+    "detail": "Packet rate scales sharply with polling rate and every move is forwarded individually."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🛠",
+    "label": "Review coalescing investigation",
+    "reason": "Bound redundant movement while preserving discrete input ordering."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "Reproduction and packet measurements align with the per-event send/receive path. A bounded move-only coalescing design is plausible, gated by current diagnostics.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Rubber-banding worsens at 1000 Hz.",
+      "Packet rate rises from about 400/s at 125 Hz to about 3000/s at 1000 Hz.",
+      "Repeated clicking also reproduces on wired LAN.",
+      "Each event is sent and applied individually."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-18T15:22:39Z"
-  }
+    "recommended_action": "Approve a move-event coalescing investigation and collect a current high-rate trace.",
+    "evaluated_at": "2026-09-07T15:31:35Z",
+    "source_updated_at": "2026-09-07T08:48:41Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The hot path is identifiable, but the safe boundary must preserve button, wheel, drag, and machine-switch ordering."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Bound high-frequency remote mouse movement",
+      "root_cause": "Forwarding every high-rate move independently creates queueing and stale movement around discrete transitions.",
+      "plan": [
+        "Measure movement send, receive, and application rates.",
+        "Retain only the newest pending move per peer while a send is in flight.",
+        "Flush before button, wheel, drag, destination, or machine-switch transitions.",
+        "Add sampled diagnostics and ordering tests."
+      ],
+      "verification": [
+        "Test 125, 500, and 1000 Hz on wired and wireless networks.",
+        "Confirm smooth movement, no repeated clicks, and preserved discrete input."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "Measurements align with the per-event path, but current traces must distinguish transport from receiver scheduling."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders rubber-bands at 1000 Hz, with packet rate scaling steeply and repeated clicks also reported on wired LAN.",
+    "known_information": [
+      "Lower polling rates improve behavior.",
+      "About 3000 packets/s were measured at 1000 Hz.",
+      "The implementation forwards and applies every event."
+    ],
+    "inferences": [
+      "Application-side overhead is plausible and not limited to Wi-Fi.",
+      "Movement-only coalescing could help, but discrete ordering is safety-critical."
+    ],
+    "analysis": "The useful correction is a bounded movement path, not generic throttling.",
+    "initial_investigation": [
+      "Event.MouseEvent calls Common.SkSend for each event.",
+      "Receiver.ProcessPackage injects every packet.",
+      "No movement-specific coalescing boundary is visible."
+    ],
+    "information_gaps": [
+      {
+        "information": "Current version, mouse/polling rate, topology, exact symptom, and failure-time archive.",
+        "why_needed": "This distinguishes transport overload, receiver scheduling, and input injection.",
+        "how_to_collect": "Reproduce on current stable, report the environment, then comment /bugreport immediately."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve bounded mouse-move coalescing investigation",
+      "design_summary": "Coalesce only redundant movement and flush before every discrete transition."
+    },
+    {
+      "type": "request_info",
+      "label": "Request current high-polling diagnostics",
+      "comment": {
+        "body": "The packet measurements and wired-LAN reproduction are useful. Please provide:\n\n1. The current PowerToys version, mouse model, polling rate, and network topology.\n2. Whether the failure is rubber-banding, repeated clicks, or both.\n3. A fresh diagnostic archive by commenting `/bugreport` immediately after reproducing.\n\nThis will distinguish transport queueing from receiver or input-injection behavior."
+      }
+    }
+  ]
 }

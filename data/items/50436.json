@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 5,
+  "number": 50436,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-07T15:31:35Z",
+  "evaluated_at": "2026-09-07T15:31:35Z",
+  "source_updated_at": "2026-09-07T08:22:18Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50436",
+  "title": "[Mouse Jump] - Settings preview thumbnail too small",
+  "confidence": "High",
+  "status": {
+    "glyph": "🛠",
+    "label": "Mouse Jump preview sizing design ready",
+    "detail": "The WinUI Image is centered at natural bitmap size instead of filling the available preview bounds."
+  },
+  "next_action": {
+    "glyph": "🛠",
+    "label": "Approve preview sizing fix",
+    "reason": "Correct layout and verify pointer mapping across styles and DPI."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The screenshot and WinUI migration map to an Image with no Stretch and explicit natural-size assignments.",
+    "evidence": [
+      "The preview became too small after the WinUI migration.",
+      "PreviewWindow.xaml centers the Image without Stretch.",
+      "PreviewWindow.xaml.cs assigns bitmap Width and Height."
+    ],
+    "recommended_action": "Approve the localized layout fix and verify styles, DPI, and click mapping.",
+    "evaluated_at": "2026-09-07T15:31:35Z",
+    "source_updated_at": "2026-09-07T08:22:18Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix covers the regression, and the presentation boundary is specific."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make the Mouse Jump preview image fill its window",
+      "root_cause": "The Image has no explicit stretch behavior and is sized to natural bitmap dimensions.",
+      "plan": [
+        "Use a stretching host and aspect-preserving Image stretch.",
+        "Remove or revise natural-size assignments.",
+        "Map pointer coordinates using arranged bounds.",
+        "Test all styles, sizes, and DPI scales."
+      ],
+      "verification": [
+        "Build and run Mouse Jump tests.",
+        "Verify preview bounds and click mapping at 100%, 125%, and 150%."
+      ],
+      "confidence": {
+        "score": 92,
+        "level": "green",
+        "rationale": "The symptom, migration boundary, and XAML/code mismatch directly align."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After the WinUI migration, the Mouse Jump settings preview renders smaller than its available rectangle.",
+    "known_information": [
+      "The reporter supplied a screenshot.",
+      "The prior implementation filled the rectangle.",
+      "The current Image lacks Stretch and receives natural dimensions."
+    ],
+    "inferences": [
+      "Presentation layout rather than bitmap generation is the likely cause."
+    ],
+    "analysis": "The fix can stay at the Image layout boundary if pointer mapping is revalidated.",
+    "initial_investigation": [
+      "PreviewWindow.xaml defines PreviewImage.",
+      "OnPreviewImageCreatedAsync sets Width and Height.",
+      "Existing UI tests cover interaction and DPI."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "Natural Image sizing overrides the intended available-bounds layout.",
+    "evidence": [
+      "PreviewWindow.xaml has no Stretch.",
+      "PreviewWindow.xaml.cs sets natural dimensions.",
+      "The screenshot matches this behavior."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml",
+        "purpose": "Defines preview layout.",
+        "symbols": [
+          "PreviewWindow",
+          "PreviewImage"
+        ]
+      },
+      {
+        "path": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
+        "purpose": "Creates, sizes, and hit-tests the preview.",
+        "symbols": [
+          "OnPreviewImageCreatedAsync",
+          "PreviewImage_PointerPressed"
+        ]
+      },
+      {
+        "path": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
+        "purpose": "Validates preview and DPI.",
+        "symbols": [
+          "MouseJumpTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml",
+        "symbols": [
+          "PreviewImage"
+        ],
+        "current_behavior": "The centered Image retains natural size.",
+        "change": "Stretch the host and Image with aspect preservation.",
+        "code_block": "<Grid HorizontalAlignment=\"Stretch\" VerticalAlignment=\"Stretch\"><Image x:Name=\"PreviewImage\" Stretch=\"Uniform\" /></Grid>",
+        "edge_cases": [
+          "Aspect ratio",
+          "DPI rounding",
+          "Clipping"
+        ],
+        "tests": [
+          "All preview styles and sizes"
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
+        "symbols": [
+          "OnPreviewImageCreatedAsync",
+          "PreviewImage_PointerPressed"
+        ],
+        "current_behavior": "Code assigns bitmap dimensions.",
+        "change": "Let layout determine bounds and scale pointer coordinates using arranged bounds.",
+        "code_block": "PreviewImage.Width = double.NaN;\nPreviewImage.Height = double.NaN;",
+        "edge_cases": [
+          "High DPI",
+          "Window sizing",
+          "Incremental updates"
+        ],
+        "tests": [
+          "Center and edge click mapping"
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
+        "symbols": [
+          "MouseJumpTests"
+        ],
+        "current_behavior": "No explicit fill assertion.",
+        "change": "Add bounds assertions with DPI tolerance.",
+        "code_block": "AssertPreviewFillsHostWithinTolerance();",
+        "edge_cases": [
+          "Automation identifiers",
+          "DPI tolerance"
+        ],
+        "tests": [
+          "Targeted UI suite"
+        ]
+      }
+    ],
+    "verify": [
+      "Build Mouse Jump projects.",
+      "Run targeted UI tests.",
+      "Verify all styles and sizes at multiple DPI scales.",
+      "Verify click mapping."
+    ],
+    "risks": [
+      "Displayed bounds can affect pointer mapping.",
+      "Uniform stretch may letterbox."
+    ],
+    "alternatives": [
+      "Keep explicit dimensions and set Stretch only if window sizing depends on them.",
+      "Scale the bitmap; rejected because it mixes rendering and layout."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Mouse Jump preview sizing fix",
+      "design_summary": "Stretch the WinUI preview to available bounds while preserving aspect ratio and pointer mapping."
+    }
+  ]
+}

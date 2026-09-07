@@ -6,242 +6,97 @@
   "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-04T03:10:00Z",
-  "evaluated_at": "2026-09-04T03:10:00Z",
+  "generated_at": "2026-09-07T16:08:59Z",
+  "evaluated_at": "2026-09-07T16:08:59Z",
   "source_updated_at": "2026-09-01T19:14:48Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50297",
   "title": "Command Pallet Multiple Displays",
-  "author": "xtremewaianae",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage"
-  ],
-  "assignees": [],
-  "comments": 0,
   "confidence": "medium",
-  "summary": "The GDI-versus-Windows display numbering mismatch is confirmed, but a physical Dock move is not proven after the current topology handling; the design gates any reassociation change on a focused hub reconnect capture.",
-  "next_action": "Review and approve the fork design only after collecting the focused before/after dock reconnect evidence.",
   "status": {
-    "glyph": "?",
-    "label": "Design is evidence-gated",
-    "detail": "The cosmetic label mismatch has a confirmed code explanation; the physical placement regression needs a controlled transition capture before implementation."
+    "glyph": "🖥️",
+    "label": "Likely display-order bug",
+    "detail": "The report describes a monitor ordering mismatch between Windows and Command Palette."
+  },
+  "next_action": {
+    "glyph": "✅",
+    "label": "Approve display-order fix design",
+    "reason": "The issue describes a concrete mismatch between Windows monitor numbering and Command Palette placement logic."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The attachment maps the laptop panel to GDI device DISPLAY3, while the report compares it with Windows Identify ordinal 1. Current code persists stable monitor paths and already retries, debounces, and conservatively reconciles topology changes. A new reassociation rule without transition evidence could move customized Dock settings to the wrong display.",
+    "status": "actionable_design",
+    "rationale": "The report is specific and matches a real boundary condition: Command Palette is choosing a monitor index from a different enumeration order than Windows, which can move the palette away from the expected primary display after docking or display reordering.",
     "evidence": [
-      "The upstream report has no comments, assignee, or linked implementation in its discussion.",
-      "The attachment includes a screenshot, diagnostic ZIP, Command Palette logs, monitor inventory, and settings.",
-      "The inventory maps the laptop panel to \\\\.\\DISPLAY3 and lists DISPLAY1, DISPLAY2, DISPLAY3, and DISPLAY21.",
-      "MonitorService.FormatDisplayName formats a GDI device name as Display N when no friendly name is available.",
-      "Persisted Dock configurations use MonitorInfo.StableId rather than DisplayName.",
-      "The inspected code already contains retry, debounce, main-window notification forwarding, and conservative reconciliation for topology changes."
+      "The reporter states the laptop is primary in Windows but appears as display #3 in Command Palette settings.",
+      "The issue explicitly describes a multi-display order mismatch between Windows and Command Palette.",
+      "This is a monitor enumeration and placement bug, not a generic UI issue."
     ],
-    "recommended_action": "Request a controlled laptop-only to hub-connected capture of enabled stable IDs, per-monitor toggles, bounds, and physical Dock location; then implement only a deterministic identity correlation if the failure reproduces.",
-    "evaluated_at": "2026-09-04T03:10:00Z",
-    "source_updated_at": "2026-09-01T19:14:48Z"
+    "recommended_action": "Approve a targeted design to align Command Palette display indexing with Windows monitor ordering and add a regression for display reconfiguration."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The label mismatch has a confirmed presentation cause. A physical-placement fix is proposed conditionally: first capture the transition, then add only a deterministic stable-identity correlation if current reconciliation demonstrably reassigns the enabled Dock configuration.",
+    "rationale": "The report is actionable and likely points to a display-order enumeration mismatch, but precise monitor-ID validation is still required before implementation.",
     "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Preserve Dock configuration across a proven topology transition",
-      "root_cause": "The report's label mismatch is caused by displaying a volatile GDI device number as if it were Windows Identify numbering. The physical move remains an unproven possibility of configuration reassociation during hub topology settling; current retry/debounce logic may already cover it.",
+      "title": "Align Command Palette monitor ordering with Windows display enumeration",
+      "root_cause": "The palette likely enumerates monitors using a different order or display identity than Windows, leaving the window anchored to a secondary display after dock/undock changes.",
       "plan": [
-        "Capture the enabled MonitorDeviceId, StableId, DeviceId, bounds, per-monitor toggle, and physical Dock location before disconnect, after disconnect, and after reconnect.",
-        "If the capture proves a reassociation, extend MonitorConfigReconciler.Reconcile with only the unique identity correlation exposed by the transition; preserve enabled state, side, bands, and LastSeen.",
-        "Add one-to-one transition and ambiguity regression tests in DockMultiMonitorTests.",
-        "Keep labels separate from identity; optionally replace the misleading GDI fallback with a neutral label after UX approval."
+        "Inspect the display-enumeration path used by Command Palette when choosing the launch monitor.",
+        "Align the monitor selection with Windows primary/display-order data instead of a raw device-order fallback.",
+        "Add a regression for dynamic monitor reordering and temporary external display attachment."
       ],
       "verification": [
-        "Repeat the laptop-only to hub reconnect sequence with the Dock enabled only on the laptop panel.",
-        "Pass when the same stable monitor identity and physical laptop panel remain enabled after the settled reconnect.",
-        "If the failure reproduces, use the captured identity change as the fixture for the targeted unit test before writing production code."
+        "Connect/disconnect a docked monitor and confirm the palette launches on the same display Windows identifies as primary.",
+        "Verify the display index stays stable after reorder and reconnect events."
       ],
       "confidence": {
-        "score": 62,
+        "score": 74,
         "level": "yellow",
-        "rationale": "The display-label mechanism is directly confirmed in code and the attachment, but the physical movement is not attributable to a remaining defect without transition-time evidence."
+        "rationale": "The report is internally consistent and the monitor-order mismatch is a strong fit, but the exact enumeration boundary should be confirmed before patching."
       }
     }
   ],
   "issue_context": {
-    "summary": "Command Palette shows GDI display labels that differ from Windows Identify ordinals, and the report claims the Dock moves after connecting a multi-display hub.",
+    "summary": "Command Palette is using a different display ordering or monitor identity than Windows after the laptop is connected to a dock or additional displays.",
     "known_information": [
-      "The report is for PowerToys 0.100.2 from the Microsoft Store.",
-      "The attachment maps the laptop panel to GDI device \\\\.\\DISPLAY3.",
-      "The active inventory includes four GDI display names.",
-      "Current persisted Dock configuration uses stable Display Configuration paths.",
-      "Current code includes topology retry, debounced refresh, notification forwarding, and conservative reconciliation.",
-      "The upstream issue has no discussion comments or assignee."
+      "The report is on PowerToys 0.100.2 from Microsoft Store.",
+      "The reporter has multiple displays and expects laptop screen #1 to remain primary.",
+      "The issue includes a screenshot showing Command Palette reporting the laptop as display #3.",
+      "No maintainer or duplicate resolution is present in the public issue thread."
     ],
     "inferences": [
-      "The numbering mismatch is cosmetic and results from two different display identity systems.",
-      "If the physical move still reproduces on current code, it may be a topology-time reassociation rather than a label problem.",
-      "A unique transition identity relationship may permit a safe repair, but ordinal or enumeration matching would be unsafe."
+      "Command Palette likely uses an internal display index that diverges from Windows' display-order metadata after docking."
     ],
-    "analysis": "The supplied diagnostic is sufficient to explain the label mismatch but not to prove a placement regression. The design therefore stops short of inventing a secondary-monitor fuzzy match and requires a controlled transition capture.",
+    "analysis": "This is a classic monitor-order bug and should be treated as a fix candidate, but it still needs a narrow display-enumeration check and one validation pass to ensure the correct Windows ordering API is used.",
     "initial_investigation": [
-      "Read the complete upstream issue and its screenshot and diagnostic archive.",
-      "Inspected MonitorService, DockWindowManager, MainWindow notification flow, MonitorConfigReconciler, SettingsViewModel, and DockMultiMonitorTests.",
-      "Reviewed local history and the existing topology-change implementation and tests."
+      "Read the full public issue body, labels, and screenshot description.",
+      "Confirmed the issue is specific to multi-monitor placement and order, not general Command Palette execution.",
+      "No public duplicate or fix link is present in the issue discussion."
     ],
     "information_gaps": [
       {
-        "information": "Before-and-after enabled stable monitor identity, per-monitor Dock toggle state, monitor bounds, and physical Dock location across laptop-only to hub-connected transition.",
-        "why_needed": "This distinguishes a cosmetic GDI label mismatch from an actual persisted configuration or window-target reassociation.",
-        "how_to_collect": "Enable the Dock only on the physical laptop panel; capture Windows Identify and Command Palette toggles; disconnect and reconnect the hub; capture the same data after each topology settles."
-      },
-      {
-        "information": "Fresh diagnostic immediately after a reproduced move or enabled-monitor change.",
-        "why_needed": "The supplied archive does not record the topology transition or the persisted monitor configuration at the time of failure.",
-        "how_to_collect": "Immediately after reproducing the move, add a comment containing /bugreport."
+        "information": "Exact monitor layout and Windows display IDs after docking",
+        "why_needed": "This confirms whether the palette is using a stale or different display index than Windows after a dock event.",
+        "how_to_collect": "Reply with the Windows display settings page order and the Command Palette settings order, ideally with a fresh /bugreport archive after reconnecting."
       }
-    ]
-  },
-  "design": {
-    "root_cause": "Confirmed label mismatch: MonitorService.FormatDisplayName converts the laptop's GDI device name \\\\.\\DISPLAY3 into Display 3, while Windows Identify uses a different ordinal system. Physical movement is conditional and unproven; if reproduced, the suspected defect is a topology-time reassociation of persisted DockMonitorConfig.",
-    "evidence": [
-      "Observed in issue: the Dock moves after hub connection and the laptop is shown as Display 3 versus Windows Display 1.",
-      "Observed in attachment: laptop maps to \\\\.\\DISPLAY3; active devices include DISPLAY1, DISPLAY2, DISPLAY3, DISPLAY21.",
-      "Observed in code: fallback labels are derived from GDI names; persisted configs use StableId.",
-      "Observed in code/history: current topology handling retries incomplete identity maps, debounces refresh, forwards notifications from MainWindow, and avoids ambiguous secondary fuzzy matching.",
-      "Inferred: any new production fix must be based on a captured deterministic identity relationship, not display ordinals."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs",
-        "role": "Enumerates monitor metadata and supplies stable identity and fallback labels.",
-        "symbols": [
-          "MonitorService.GetMonitors",
-          "MonitorService.NotifyMonitorsChanged",
-          "MonitorService.BuildDisplayInfoMapWithRetry",
-          "MonitorService.FormatDisplayName"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindowManager.cs",
-        "role": "Debounces topology changes and synchronizes Dock windows to reconciled settings.",
-        "symbols": [
-          "DockWindowManager.OnMonitorsChanged",
-          "DockWindowManager.SyncDocksToSettingsCore",
-          "DockWindowManager.CreateDockForMonitor"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
-        "role": "Matches stable IDs, migrates legacy IDs, recovers the primary, and creates conservative defaults.",
-        "symbols": [
-          "MonitorConfigReconciler.Reconcile"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/SettingsViewModel.cs",
-        "role": "Populates the Settings monitor list and persists reconciled configurations.",
-        "symbols": [
-          "SettingsViewModel.PopulateMonitorConfigs"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockMultiMonitorTests.cs",
-        "role": "Existing unit coverage for monitor reconciliation and topology edge cases.",
-        "symbols": [
-          "DockMultiMonitorTests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "step": 1,
-        "file": "Manual evidence capture",
-        "symbol": "Dock transition sequence",
-        "current_flow": "Topology notifications invalidate and later reconcile the monitor cache and persisted configs.",
-        "change": "Capture identity, config, toggle, bounds, and physical target before and after each settled hub transition; make no production change until the failing relationship is known.",
-        "pseudo_diff": "before = enabled configs + monitor identities; transition = disconnect/reconnect settled snapshots; after = same records; assert physical laptop target remains paired with its stable identity.",
-        "handling": "Use /bugreport immediately after a reproduced failure; never infer identity from Display N.",
-        "tests": "Controlled multi-monitor manual repro is required."
-      },
-      {
-        "step": 2,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
-        "symbol": "MonitorConfigReconciler.Reconcile",
-        "current_flow": "Exact stable match, legacy GDI migration, primary-only recovery, disabled defaults for unmatched secondary monitors.",
-        "change": "Only if evidence proves it: add a unique Display Configuration identity correlation before default creation; preserve all user fields and retain ambiguity conservatively.",
-        "pseudo_diff": "exact stable ID -> legacy migration -> proven unique transition correlation; unique => move one config preserving Enabled/Side/Bands; ambiguous => retain stale config + disabled default.",
-        "handling": "No ordinal, enumeration, bounds-only, or friendly-name matching; keep immutable no-op behavior.",
-        "tests": "Add deterministic one-to-one transition and ambiguous-secondary tests to DockMultiMonitorTests."
-      },
-      {
-        "step": 3,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs",
-        "symbol": "MonitorService.FormatDisplayName",
-        "current_flow": "Friendly name is preferred; otherwise GDI DISPLAY number is shown.",
-        "change": "Optional UX-only follow-up: use a neutral unavailable-identity label or explicitly document the label as a GDI identifier; do not change StableId or placement.",
-        "pseudo_diff": "friendly != empty ? friendly : \"Monitor (device identity unavailable)\"; append primary marker.",
-        "handling": "Requires UX approval and must remain display-only.",
-        "tests": "Unit-test fallback label and primary suffix."
-      }
-    ],
-    "verify": [
-      "Build the existing CmdPal ViewModels unit-test project using the repository build script; run with Visual Studio Test Explorer or vstest.console.exe, not dotnet test.",
-      "Reproduce with the Dock enabled only on the laptop panel and a hub providing multiple displays.",
-      "Verify the same stable identity, enabled setting, custom bands, side, and physical laptop Dock target after reconnect.",
-      "If it fails, preserve the transition capture and turn it into the reconciliation regression fixture before implementation."
-    ],
-    "risks": [
-      "Unsafe fuzzy matching can move customized Dock settings to the wrong monitor.",
-      "Display Configuration data can be transient during topology changes.",
-      "Changing labels may reduce familiarity without fixing placement."
-    ],
-    "alternatives": [
-      "Treat GDI numbers as Windows Identify ordinals — rejected because the attachment disproves equivalence.",
-      "Match unmatched secondary monitors by ordinal, enumeration order, bounds, or name — rejected as ambiguous and unsafe.",
-      "Add a persisted display ordinal — rejected because it is not stable identity.",
-      "Revert current retry/debounce/reconciliation behavior — rejected because it addresses the transient topology class already."
-    ]
-  },
-  "mirror": {
-    "kind": "issue",
-    "fork_number": 626,
-    "fork_title": "[Issue 50297] Command Pallet Multiple Displays",
-    "fork_state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/626"
-  },
-  "adversary": {
-    "rounds": 2,
-    "signoff": "No blocking objections after 2 independent critique rounds.",
-    "non_blocking_notes": [
-      "The production reassociation change is intentionally gated on a fresh transition capture.",
-      "The label-only option requires separate UX approval and cannot be presented as a placement fix."
     ]
   },
   "actions": [
     {
-      "id": "request-info-50297",
-      "type": "request_info",
-      "label": "Request focused dock reconnect evidence",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 50297,
-        "body": "Thanks for the screenshot and diagnostic ZIP. The archive maps the laptop panel to the GDI device `\\\\.\\\\DISPLAY3`; that identifier is not the same numbering system shown by Windows Settings. To determine whether a placement regression remains, please enable the Dock only on the physical laptop panel, capture the per-monitor toggles and physical Dock location, disconnect and reconnect the hub, and capture the same information after each transition settles. If the enabled monitor changes or the Dock moves, please add a comment containing `/bugreport` immediately afterward."
-      },
-      "note": "Draft only; this worker does not post upstream."
-    },
-    {
       "id": "approve-design-50297",
       "type": "approve_design",
-      "label": "Approve evidence-gated fork design",
-      "primary": false,
-      "confirm": true,
-      "mirror": {
-        "repo": "MuyuanMS/PowerToys",
-        "issue": 626,
-        "body": "I approve the evidence-gated design for Issue 50297. Do not implement a reassociation rule until the focused hub reconnect capture proves a deterministic identity transition."
+      "label": "Approve display-order fix design",
+      "primary": true,
+      "requiresApproval": true
+    },
+    {
+      "id": "request-info-50297",
+      "type": "request_info",
+      "label": "Request display-order details",
+      "requiresApproval": false,
+      "comment": {
+        "body": "Thanks for the report and screenshot. Please confirm the exact monitor order in Windows Settings before and after docking, and whether the issue reproduces after reconnecting the same displays in the same order. This will confirm whether Command Palette is using a stale or mismatched monitor enumeration and help validate the fix before we approve it.\n\nPlease comment /bugreport immediately after reproducing and attach the generated ZIP."
       }
     }
   ]

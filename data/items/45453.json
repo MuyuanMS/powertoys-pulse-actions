@@ -1,60 +1,210 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 45453,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2026-08-27T08:07:20Z",
+  "generated_at": "2026-09-07T15:31:34Z",
+  "evaluated_at": "2026-09-07T15:31:34Z",
+  "source_updated_at": "2026-09-07T07:37:38Z",
   "url": "https://github.com/microsoft/PowerToys/issues/45453",
   "title": "Cannot map Co-pilot key to Ctrl (Right) properly",
-  "author": "gluttony38",
-  "authorAssociation": "NONE",
-  "labels": [
-    "Issue-Bug",
-    "Product-Keyboard Shortcut Manager",
-    "Needs-Triage"
-  ],
-  "comments": 2,
   "confidence": "Medium",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🛠",
+    "label": "Copilot modifier-state design ready",
+    "detail": "The local reproduction shows Right Ctrl mixed with residual Win/Shift state; a current-build event trace should gate implementation."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "🛠",
+    "label": "Review design and request current trace",
+    "reason": "The likely handler and tests are identified, but current event evidence is needed before changing modifier-state behavior."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The report provides a concrete local reproduction and residual-modifier evidence that maps to Keyboard Manager shortcut state and event injection.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage",
-      "Candidate sources: updated_week",
-      "Missing: numbered reliable reproduction steps, fresh PowerToys bug-report ZIP."
+      "The physical Copilot input is Win+Shift+F23 and the target is Right Ctrl.",
+      "Shortcut remapping works for ordinary Ctrl operations but fails as the VirtualBox host key.",
+      "Keyboard testers show Right Ctrl combined with Win and sometimes Shift."
     ],
-    "recommended_action": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2026-08-27T08:07:20Z"
+    "recommended_action": "Approve a focused modifier-state investigation, gated by a current-build event capture.",
+    "evaluated_at": "2026-09-07T15:31:34Z",
+    "source_updated_at": "2026-09-07T07:37:38Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix covers the residual-modifier behavior; the likely defect is in composite source release and target modifier injection."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prevent residual Copilot modifiers when synthesizing Right Ctrl",
+      "root_cause": "The composite Win+Shift+F23 source may not release or suppress every constituent before Right Ctrl is emitted.",
+      "plan": [
+        "Capture the exact current-build event sequence.",
+        "Trace HandleShortcutRemapEvent and HandleOSLevelShortcutRemapEvent.",
+        "Balance consumed source releases with target Right Ctrl lifetime while preserving independently held modifiers.",
+        "Add exact event-sequence regression coverage."
+      ],
+      "verification": [
+        "Confirm only Right Ctrl down/up is emitted.",
+        "Verify VirtualBox host-key behavior and no residual modifiers."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The symptom matches the modifier-state code, but a current trace is required to identify the exact transition."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Copilot key represented as Win+Shift+F23 can produce Right Ctrl together with residual Win or Shift, breaking VirtualBox host-key use.",
+    "known_information": [
+      "The report used PowerToys 0.97.1 and Windows 11 build 26100.",
+      "The shortcut path works for ordinary Ctrl operations but not VirtualBox host-key handling.",
+      "Event testers show unexpected modifier combinations."
+    ],
+    "inferences": [
+      "The composite source may be only partially consumed or restored incorrectly.",
+      "VirtualBox exposes the state defect but may not be its cause."
+    ],
+    "analysis": "The implementation must preserve independently held modifiers, so it should be driven by an exact event trace and deterministic engine tests.",
+    "initial_investigation": [
+      "KeyboardEventHandlers.cpp owns shortcut state transitions.",
+      "Helpers.cpp owns modifier ordering and Right Ctrl extended-key flags.",
+      "Existing tests do not establish the reported Win+Shift+F23-to-Right-Ctrl contract."
+    ],
+    "information_gaps": [
+      {
+        "information": "A current-build event capture for Copilot alone, Copilot plus an ordinary key, and VirtualBox host-key use.",
+        "why_needed": "It identifies whether the defect occurs during source release, target emission, or final state reset.",
+        "how_to_collect": "Remove competing mappings, reproduce on the current build, comment /bugreport, and attach the three event traces."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "The composite Copilot input is likely not converted atomically into a lone Right Ctrl state, allowing an original modifier to remain active.",
+    "evidence": [
+      "The reported output contains Right Ctrl with Win and sometimes Shift.",
+      "The current shortcut handler explicitly releases source modifiers and injects target modifiers."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+        "purpose": "Owns shortcut remap state transitions.",
+        "symbols": [
+          "HandleShortcutRemapEvent",
+          "HandleOSLevelShortcutRemapEvent"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/common/Helpers.cpp",
+        "purpose": "Builds injected key and modifier events.",
+        "symbols": [
+          "SetKeyEvent",
+          "SetModifierKeyEvents",
+          "IsExtendedKey"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineTest/OSLevelShortcutRemappingTests.cpp",
+        "purpose": "Provides deterministic shortcut-remap regression coverage.",
+        "symbols": [
+          "OS-level shortcut remap tests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+        "symbols": [
+          "HandleShortcutRemapEvent"
+        ],
+        "current_behavior": "The handler releases the source shortcut and emits target modifiers across separate down/up branches.",
+        "change": "Record exactly which Win/Shift/F23 components were consumed, release each once, and own one balanced Right Ctrl lifetime without releasing independently held modifiers.",
+        "code_block": "auto consumed = CaptureConsumedSource(data, state);\nReleaseConsumedSource(consumed, events);\nEmitTargetModifier(VK_RCONTROL, events);\nstate.MarkTargetActive(VK_RCONTROL);",
+        "edge_cases": [
+          "Rapid release",
+          "Independently held Win/Shift",
+          "AltGr",
+          "Injection failure"
+        ],
+        "tests": [
+          "Exact Copilot down/up sequence",
+          "Held modifier preservation",
+          "VirtualBox host-key sequence"
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/keyboardmanager/common/Helpers.cpp",
+        "symbols": [
+          "SetKeyEvent",
+          "SetModifierKeyEvents"
+        ],
+        "current_behavior": "Helpers emit modifiers in fixed order and mark Right Ctrl extended.",
+        "change": "Enforce a balanced source-to-target transition contract while retaining scan codes, injection markers, and Right Ctrl extended-key handling.",
+        "code_block": "ReleaseSourceModifiers(source, target, invoked, events);\nEmitTargetModifiers(target, invoked, events);",
+        "edge_cases": [
+          "Reverse-order release",
+          "No duplicate modifiers",
+          "Physical modifier ownership"
+        ],
+        "tests": [
+          "Balanced down/up counts",
+          "KEYEVENTF_EXTENDEDKEY",
+          "No Win/Shift leakage"
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEngineTest/OSLevelShortcutRemappingTests.cpp",
+        "symbols": [
+          "new Copilot composite regression tests"
+        ],
+        "current_behavior": "The suite lacks the exact Copilot-to-Right-Ctrl contract.",
+        "change": "Feed Win+Shift+F23 sequences through the mocked input interface and assert exact events and final state.",
+        "code_block": "SendSource(WIN_LEFT, SHIFT_LEFT, F23);\nAssertEvents({ RCONTROL_Down, RCONTROL_Up });\nAssertNoEvents({ WIN_LEFT, SHIFT_LEFT, F23 });",
+        "edge_cases": [
+          "Quick release",
+          "Held second key",
+          "Injection failure"
+        ],
+        "tests": [
+          "Focused OS-level tests",
+          "Full Keyboard Manager engine suite"
+        ]
+      }
+    ],
+    "verify": [
+      "Build and run the Keyboard Manager engine tests.",
+      "Confirm exact output in a keyboard event tester.",
+      "Verify Notepad, an elevated application, and VirtualBox host-key behavior."
+    ],
+    "risks": [
+      "Modifier-state changes can regress composite shortcuts or AltGr.",
+      "Copilot hardware may emit different physical sequences."
+    ],
+    "alternatives": [
+      "Document shortcut remapping only; rejected because that path also leaks modifiers.",
+      "Hard-code Copilot suppression; rejected until traces prove a universal source sequence."
+    ]
   },
   "actions": [
     {
-      "id": "request-info-45453",
+      "type": "approve_design",
+      "label": "Approve Copilot modifier-state design",
+      "design_summary": "Correct the composite source-to-Right-Ctrl transition with exact event-sequence tests."
+    },
+    {
       "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
+      "label": "Request current Copilot event trace",
       "comment": {
-        "target": "issue",
-        "number": 45453,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the exact shortcut/key sequence, keyboard layout/input language, whether PowerToys is elevated, and a short recording if possible."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+        "body": "Thanks for the detailed VirtualBox reproduction and the report that Right Ctrl can appear together with Win or Shift. Please provide:\n\n1. The exact mapping on the current PowerToys build, with other Copilot mappings removed.\n2. A fresh diagnostic archive by commenting `/bugreport` immediately after reproducing.\n3. Event captures for Copilot alone, Copilot plus one ordinary key, and Copilot as the VirtualBox host key.\n4. Whether Win, Shift, or F23 remains visible after release.\n\nThis evidence will identify the exact modifier-state transition to correct."
+      }
     }
   ]
 }

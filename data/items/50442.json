@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "number": 50442,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-07T16:05:18Z",
+  "evaluated_at": "2026-09-07T16:05:18Z",
+  "source_updated_at": "2026-09-07T14:51:11Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50442",
+  "title": "PowerToys Run reports a missing Microsoft.Diagnostics.Tracing.TraceEvent dependency",
+  "confidence": "yellow",
+  "status": {
+    "label": "Likely packaging or deployment dependency failure",
+    "detail": "The public stack trace reaches ETWTrace.Stop and cannot load TraceEvent 3.1.16.0 after an update."
+  },
+  "next_action": {
+    "label": "Approve dependency-packaging fix design",
+    "reason": "Confirm whether the installed package contains the required TraceEvent assembly before implementing a packaging or defensive telemetry cleanup fix."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue includes a concrete FileNotFoundException naming the missing assembly and version, making a deployment or assembly-resolution defect more likely than an unexplained Run failure.",
+    "evidence": [
+      "PowerToys Run reports System.IO.FileNotFoundException for Microsoft.Diagnostics.Tracing.TraceEvent, Version=3.1.16.0.",
+      "The stack trace fails during Microsoft.PowerToys.Telemetry.ETWTrace.Stop and Dispose.",
+      "The report identifies WinGet installation and a post-update launch failure.",
+      "Current ETWTrace.cs directly references Microsoft.Diagnostics.Tracing.TraceEvent.Session and disposes the trace session during shutdown."
+    ],
+    "recommended_action": "Inspect the WinGet-installed package contents and project publish dependency metadata, then ensure the exact TraceEvent dependency is deployed or telemetry shutdown degrades safely when the optional dependency is unavailable."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No public fix or linked implementation was identified; the failure maps directly to the telemetry assembly load path.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Ensure TraceEvent is deployed and telemetry cleanup is resilient",
+      "root_cause": "The updated PowerToys Run installation cannot resolve the Microsoft.Diagnostics.Tracing.TraceEvent assembly required by ETWTrace.Stop.",
+      "plan": [
+        "Verify the TraceEvent package version and private dependency copy settings for PowerToys Run and the installer.",
+        "Ensure the required assembly is included in WinGet and self-contained deployment outputs.",
+        "Guard optional telemetry cleanup so a missing dependency cannot surface as a launch or shutdown failure.",
+        "Add package-content and telemetry disposal regression coverage."
+      ],
+      "verification": [
+        "Install the produced WinGet package and confirm PowerToys Run launches without the FileNotFoundException.",
+        "Start and stop telemetry recording with the dependency present and absent, confirming cleanup does not crash the process.",
+        "Verify the packaged assembly version matches the runtime binding requirement."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The missing assembly and exact failing symbol are confirmed, but the public report does not prove whether the root cause is packaging, binding policy, or an incomplete update."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A WinGet-updated PowerToys Run installation fails around startup or shutdown because ETW telemetry cannot load Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16.0.",
+    "known_information": [
+      "The issue is open and labeled Issue-Bug and Needs-Triage.",
+      "The report supplies PowerToys 0.101.2362.0, WinGet installation, Windows build 26200, and a diagnostic text attachment.",
+      "The exception names Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16.0 as missing.",
+      "The stack reaches ETWTrace.Stop, Dispose(Boolean), and PowerLauncher.App.Main.",
+      "Current source references TraceEventSession in src/common/ManagedTelemetry/Telemetry/EtwTrace.cs."
+    ],
+    "inferences": [
+      "The update may have left the application with an incomplete or mismatched dependency set.",
+      "Telemetry cleanup is likely too tightly coupled to optional TraceEvent availability.",
+      "The failure may be specific to the WinGet update/package path rather than all installation methods."
+    ],
+    "analysis": "The report contains enough evidence for a focused packaging and cleanup design, but the installed file set is needed to distinguish missing deployment from assembly-binding mismatch.",
+    "initial_investigation": [
+      "Read the complete issue body, labels, attachment link, and current activity.",
+      "Reviewed ETWTrace.Start, Stop, Dispose, and the direct TraceEventSession dependency.",
+      "No linked public fix or duplicate was identified."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether Microsoft.Diagnostics.Tracing.TraceEvent.dll is present in the failing WinGet installation and which file version it contains.",
+        "why_needed": "This distinguishes incomplete packaging from runtime binding mismatch.",
+        "how_to_collect": "Inspect the installed PowerToys directory immediately after reproducing and attach a fresh /bugreport."
+      },
+      {
+        "information": "Whether the same build fails after a clean reinstall or only after the update path.",
+        "why_needed": "This identifies whether stale update contents are required to reproduce the failure.",
+        "how_to_collect": "Compare clean-install and update-in-place results on the same build."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-50442",
+      "type": "approve_design",
+      "label": "Approve TraceEvent deployment and cleanup design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Draft only; no upstream action is posted."
+    },
+    {
+      "id": "request-info-50442",
+      "type": "request_info",
+      "label": "Request installed TraceEvent dependency evidence",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50442,
+        "body": "Thanks for the report. Please provide:\n\n1. Whether Microsoft.Diagnostics.Tracing.TraceEvent.dll is present in the failing WinGet installation and which file version it contains. Collection: Inspect the installed PowerToys directory immediately after reproducing and attach a fresh /bugreport.\n2. Whether the same build fails after a clean reinstall or only after the update path. Collection: Compare clean-install and update-in-place results on the same build."
+      }
+    }
+  ]
+}

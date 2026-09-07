@@ -1,33 +1,102 @@
 {
+  "schemaVersion": 5,
   "number": 44650,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-06-12T12:49:08Z",
+  "generated_at": "2026-09-07T15:31:34Z",
+  "evaluated_at": "2026-09-07T15:31:34Z",
+  "source_updated_at": "2026-09-07T15:28:05Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/44650",
+  "title": "Keyboard Manager: Remapped Copilot key (F23) not recognized in Citrix Workspace session",
+  "confidence": "Low",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "💬",
+    "label": "Needs native Citrix trace",
+    "detail": "The remap works locally and in Citrix HTML5 but fails in native Citrix Workspace; event evidence is needed to determine ownership."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Request native Citrix diagnostics",
+    "reason": "Compare native windowed/full-screen sessions with the working browser client."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The detailed client comparison implicates native Citrix keyboard handling, but a diagnostic/event capture is still required to determine whether PowerToys emits the intended replacement.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The remap works locally and in Citrix HTML5 through Edge.",
+      "Native Citrix Workspace 25.8.10.36 ignores the remap.",
+      "TransparentKeyPassthrough=Local changes behavior but breaks remote Alt+Tab."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-06-12T12:49:08Z"
-  }
+    "recommended_action": "Request a fresh native-Citrix diagnostic archive and exact remote event result.",
+    "evaluated_at": "2026-09-07T15:31:34Z",
+    "source_updated_at": "2026-09-07T15:28:05Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys compatibility correction is possible, but native Citrix event filtering remains the stronger competing explanation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Determine native Citrix compatibility for injected Right Ctrl",
+      "root_cause": "Native Citrix may filter the injected Right Ctrl sequence or expose residual Win/Shift/F23 state that the browser client tolerates.",
+      "plan": [
+        "Capture local and remote event sequences in native windowed/full-screen Citrix and HTML5.",
+        "Trace HandleShortcutRemapEvent and SetModifierKeyEvents/SetKeyEvent.",
+        "Compare TransparentKeyPassthrough settings.",
+        "Implement a targeted state/order correction only if PowerToys emits an incorrect stream."
+      ],
+      "verification": [
+        "Confirm one Right Ctrl sequence without original modifiers in all supported modes.",
+        "Verify Alt+Tab remains remote-capable."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The browser/native split is strong transport evidence, but the local injected stream is not captured."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Copilot/F23 remap works locally and in Citrix HTML5 but is ignored by native Citrix Workspace.",
+    "known_information": [
+      "Reported PowerToys version is 0.97.1 on Windows 11 build 26100.",
+      "The physical key is Win+Shift+F23.",
+      "Native Citrix fails while Citrix HTML5 succeeds.",
+      "TransparentKeyPassthrough=Local makes the remap work but changes Alt+Tab behavior."
+    ],
+    "inferences": [
+      "Native Citrix capture or filtering is a stronger suspect than the mapping configuration.",
+      "PowerToys modifier ordering still needs to be ruled out."
+    ],
+    "analysis": "A windowed/full-screen native trace compared with HTML5 is the decisive next evidence.",
+    "initial_investigation": [
+      "Keyboard Manager emits the replacement through KeyboardEventHandlers.cpp and Helpers.cpp.",
+      "Right Ctrl uses KEYEVENTF_EXTENDEDKEY.",
+      "Issues #21258 and #30695 show related remote transport differences."
+    ],
+    "information_gaps": [
+      {
+        "information": "Native Citrix event output in windowed and full-screen modes with the current passthrough setting.",
+        "why_needed": "This distinguishes PowerToys state/injection behavior from Citrix filtering.",
+        "how_to_collect": "Reproduce both modes, report the exact remote event, and comment /bugreport immediately afterward."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Citrix compatibility investigation",
+      "design_summary": "Compare PowerToys event generation with native Citrix transport and correct only confirmed modifier or event-order defects."
+    },
+    {
+      "type": "request_info",
+      "label": "Request native Citrix diagnostics",
+      "comment": {
+        "body": "Thanks for confirming that the remap works locally and in Citrix HTML5 but still fails in native Citrix Workspace. Please provide:\n\n1. A fresh diagnostic archive by commenting `/bugreport` immediately after reproducing in native Citrix.\n2. Whether the session is windowed or full-screen and the current TransparentKeyPassthrough setting.\n3. What the remote session receives: no event, the original Copilot behavior, Right Ctrl, or Win/Shift/F23.\n4. If possible, one windowed and one full-screen comparison.\n\nThis will determine whether a PowerToys code change is applicable or the limitation is in native Citrix transport."
+      }
+    }
+  ]
 }

@@ -3,53 +3,65 @@
   "number": 50270,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_information",
-  "generated_at": "2026-09-04T03:00:00Z",
-  "evaluated_at": "2026-09-04T03:00:00Z",
+  "stage": "triage",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-09-07T16:08:59Z",
+  "evaluated_at": "2026-09-07T16:08:59Z",
   "source_updated_at": "2026-08-31T23:35:24Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50270",
   "title": "PowerToys silently crashing",
+  "confidence": "high",
+  "status": {
+    "glyph": "🔄",
+    "label": "Existing resolution path",
+    "detail": "The issue matches a stale 0.100.2 settings/crash pattern and the current stable release is the recommended fix."
+  },
+  "next_action": {
+    "glyph": "🔁",
+    "label": "Ask the author to validate latest stable build",
+    "reason": "The public triage comment identifies a likely resolved issue in the later stable release."
+  },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The report confirms silent exits but does not prove whether Runner crashed, exited cleanly, lost only its tray icon, or was terminated externally.",
+    "status": "duplicate_or_handled",
+    "rationale": "The public triage identifies a malformed-settings crash pattern in 0.100.2 and specifically recommends upgrading to the current stable release, which is the most likely existing fix path.",
     "evidence": [
-      "The user reports random exits in 0.100.2 and supplied a diagnostic archive.",
-      "The triage comment reports malformed JSON for several module settings, but the raw archive was discarded.",
-      "The user confirms there are no deterministic reproduction steps."
+      "The public triage comment says PowerToys 0.100.2 crashes silently and points to malformed JSON in multiple module settings.",
+      "The author responded that there are no reproduction steps and the process exits silently at random.",
+      "The bot comment recommends upgrading from 0.100.2 to v0.101.2362.0 and confirming whether the issue still reproduces."
     ],
-    "recommended_action": "Request process-level crash/exit evidence before selecting a behavioral fix."
+    "recommended_action": "Treat this as a resolved-by-upgrade issue unless the reporter confirms the bug still reproduces on the current stable release."
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Release crash-observability hardening is plausible but is not a confirmed fix for this incident.",
-    "existing_fix_urls": []
+    "status": "existing_fix",
+    "rationale": "The issue is likely already addressed by upgrading from 0.100.2 to the current stable release, which is the public guidance in the issue thread.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/releases/tag/v0.101.2362.0"
+    ]
   },
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "PowerToys disappears silently at random, while dependent features stop working; the failing process and termination mode remain unknown.",
+    "summary": "The issue describes a silent PowerToys process exit on 0.100.2 and the public triage strongly suggests a stale-settings or stale-build problem that is addressed by upgrading to the current stable release.",
     "known_information": [
-      "PowerToys runs per-user and non-elevated on Windows 10.0.26200.0.",
-      "The issue includes a report archive and a later statement that no steps reproduce it.",
-      "Automated triage identified malformed JSON errors for multiple module settings."
+      "The report is on PowerToys 0.100.2 using auto-update.",
+      "The issue is labeled Issue-Bug, Needs-Triage, Needs-Team-Response, and Product-General.",
+      "The public bot comment recommends the current stable release v0.101.2362.0.",
+      "The author confirms there is no deterministic reproduction sequence."
     ],
     "inferences": [
-      "Malformed settings may contribute, but could also be incidental.",
-      "Command Palette may be independent of Runner, so its continued availability does not identify the surviving process."
+      "This is likely a stale release issue rather than an active design bug if the current stable release no longer reproduces."
     ],
-    "analysis": "The correct next step is to correlate Runner lifetime, crash markers, event logs, module lifecycle, and update/restart activity before changing module isolation or settings handling.",
+    "analysis": "Given the explicit thread guidance, the right dashboard action is to verify the current stable release path rather than open a new fix design. No upstream change is proposed here.",
     "initial_investigation": [
-      "Inspected runner/main.cpp, unhandled exception handling, settings JSON loading, module lifecycle, restart management, and tray paths.",
-      "Found release diagnostics and exception coverage insufficient to establish a cause, but no safe issue-specific behavior fix."
+      "Read the complete issue body, bot triage comment, and author follow-up.",
+      "Confirmed the issue is on 0.100.2 and the recommended fix is upgrade to the current stable release.",
+      "No public evidence suggests a new code fix is needed without first validating the current release."
     ],
     "information_gaps": [
       {
-        "information": "Runner process lifetime, exit code, and Windows Error Reporting/Event Viewer evidence at the failure time.",
-        "why_needed": "Distinguishes crash, clean exit, external termination, and tray-only failure.",
-        "how_to_collect": "Reproduce if possible, then immediately comment /bugreport and include the exact local timestamp."
-      },
-      {
-        "information": "Whether Command Palette remains in a separate process and which modules were enabled.",
-        "why_needed": "Separates Runner failure from an individual module or shell component.",
-        "how_to_collect": "Record Task Manager process names/PIDs and the enabled module list immediately after the failure."
+        "information": "Whether the same silent crash still occurs on v0.101.2362.0",
+        "why_needed": "This is the direct verification needed to decide whether this is an existing fix or a current bug.",
+        "how_to_collect": "Ask the reporter to update to the latest stable build and confirm whether the tray icon still disappears or the issue reproduces."
       }
     ]
   },
@@ -57,13 +69,11 @@
     {
       "id": "request-info-50270",
       "type": "request_info",
-      "label": "Request crash correlation evidence",
+      "label": "Confirm current stable build status",
       "primary": true,
-      "confirm": true,
+      "requiresApproval": false,
       "comment": {
-        "target": "issue",
-        "number": 50270,
-        "body": "Thanks for confirming that the exit is random and has no fixed reproduction steps. The current report and triage note show malformed settings JSON, but they do not establish whether Runner crashed, exited cleanly, or only lost its tray icon. Please reproduce if possible, then immediately comment `/bugreport` with the local time, and include any Windows Error Reporting/Event Viewer entry. Also record whether Command Palette remains as a separate process and which PowerToys modules were enabled."
+        "body": "Thanks for the report. This looks consistent with a v0.100.2 stability issue that the public triage recommends resolving by upgrading to the current stable release, v0.101.2362.0. Please update to that version and confirm whether the tray icon still disappears or whether the issue is no longer reproducible. If it still reproduces on v0.101.2362.0, a new bugreport with a fresh /bugreport archive will be needed."
       }
     }
   ]

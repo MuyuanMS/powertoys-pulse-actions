@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 49992,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproducible",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-08-18T06:19:31Z",
+  "generated_at": "2026-09-07T15:31:34Z",
+  "evaluated_at": "2026-09-07T15:31:34Z",
+  "source_updated_at": "2026-09-07T03:52:58Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49992",
+  "title": "[Installer] Partial WinUI3Apps copy failures can leave a mixed-version installation after upgrade",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "Linked open pull request(s) 49996 already carry the fix, so parallel agent work would duplicate active upstream work."
+    "glyph": "🧪",
+    "label": "Verify locked-file upgrade recovery",
+    "detail": "The mixed-version state is confirmed. Draft PR #49996 covers normal duplicate-file ownership, but locked-file, rollback, reboot, and installed-content verification remain unresolved."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the linked canonical issue or pull request and do not start duplicate work."
+    "glyph": "🧪",
+    "label": "Run installer acceptance matrix",
+    "reason": "Prove safe success, rollback, and reboot replacement using full per-machine and per-user PowerToys MSIs."
   },
-  "actions": [],
   "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Linked open pull request(s) 49996 already carry the fix, so parallel agent work would duplicate active upstream work.",
+    "status": "reproducible",
+    "rationale": "Diagnostics confirm a mixed-version installation, and controlled MSI tests reproduce the relevant locked-file failure modes. Draft PR #49996 is the existing implementation path, but it does not yet prove files-in-use and recovery correctness.",
     "evidence": [
-      "Linked open pull request(s) 49996 already carry the fix, so parallel agent work would duplicate active upstream work."
+      "The affected installation contained current root payload files and stale WinUI3Apps copies.",
+      "The prior custom action allowed partial copy failure to report success unless every copy failed.",
+      "Controlled MSI tests reproduced error 1310 for a locked versioned destination and 3010 with an unreplaced unversioned destination.",
+      "Draft PR #49996 replaces the custom-action copy/delete path with MSI DuplicateFile authoring.",
+      "PR #49996 explicitly leaves files-in-use, rollback, reboot replacement, and installed-content verification unresolved."
     ],
-    "recommended_action": "Monitor the linked canonical issue or pull request and do not start duplicate work.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-08-18T06:19:31Z"
-  }
+    "recommended_action": "Use PR #49996 as the implementation path and run the complete locked-file and recovery acceptance matrix before treating the issue as fixed.",
+    "evaluated_at": "2026-09-07T15:31:34Z",
+    "source_updated_at": "2026-09-07T03:52:58Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Draft PR #49996 directly replaces the unreliable custom-action synchronization with MSI DuplicateFile authoring, but requires runtime acceptance for the remaining recovery cases.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49996"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "An upgrade can report success while stale WinUI3Apps dependencies remain beside current root payloads. The linked draft PR improves file ownership but does not yet prove safe behavior when files are locked or replacement is deferred.",
+    "known_information": [
+      "The reported machine-wide upgrade was from 0.101.2211.0 to 0.101.2241.0.",
+      "Current application binaries coexisted with stale shared dependencies.",
+      "The old custom action used overwrite_existing and failed only when every copy failed.",
+      "Controlled minimal-MSI tests cover locked versioned and unversioned destinations.",
+      "PR #49996 generates MSI DuplicateFile mappings and removes the copy/delete custom actions."
+    ],
+    "inferences": [
+      "Partial synchronization after the new root payload was installed explains the mixed-version state.",
+      "DuplicateFile authoring should improve ordinary ownership and repair behavior, but controlled tests show it is insufficient evidence for locked-file correctness."
+    ],
+    "analysis": "A competing design would duplicate active work. The useful maintainer action is to verify the existing PR against the issue's explicit runtime acceptance cases.",
+    "initial_investigation": [
+      "PR #49996 updates generateAllFileComponents.ps1, Product.wxs, WinUI3Applications.wxs, and removes the related custom actions.",
+      "Its pipeline verification checks mapping equivalence, not installed-file lifecycle integrity."
+    ],
+    "information_gaps": [
+      {
+        "information": "Full PowerToys MSI results for locked files, rollback, reboot replacement, repair, uninstall, and both installation scopes.",
+        "why_needed": "Artifact checks do not prove that an installed system becomes fully consistent or fails safely.",
+        "how_to_collect": "Run the documented acceptance matrix against actual per-machine and per-user MSIs and compare all duplicate file hashes after install and reboot."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Verify locked-file upgrade recovery",
+      "reproduce": {
+        "module": "PowerToys Setup / WinUI3Apps installer",
+        "version_requirement": "A current build containing PR #49996 plus the baseline custom-action installer.",
+        "prerequisites": [
+          "Test both per-machine and per-user installation scopes.",
+          "Prepare two versions of the root and WinUI3Apps duplicate payloads.",
+          "Use a separate process to lock a versioned destination and then an unversioned destination."
+        ],
+        "steps": [
+          "Install the baseline version and verify the root and WinUI3Apps duplicate set.",
+          "Lock one versioned destination file and run the upgrade.",
+          "Record the MSI result, rollback state, product registration, payload hashes, and pending replacement state.",
+          "Repeat with an unversioned destination and reboot when replacement is deferred.",
+          "After reboot, compare every root/destination pair and verify PowerToys launches only with a complete consistent set.",
+          "Repeat without locks, with multiple locks, and through repair and uninstall."
+        ],
+        "expected_result": "The installer completes with a verified new duplicate set, completes after verified reboot replacement, or fails safely while preserving a usable prior installation."
+      }
+    }
+  ]
 }

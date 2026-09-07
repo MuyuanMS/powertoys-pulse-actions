@@ -1,33 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 44866,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-04-16T15:16:26Z",
+  "generated_at": "2026-09-07T15:31:34Z",
+  "evaluated_at": "2026-09-07T15:31:34Z",
+  "source_updated_at": "2026-09-07T07:38:48Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/44866",
+  "title": "Right Ctrl Key - Remote Desktop Connection",
+  "confidence": "Low",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "💬",
+    "label": "Needs RDP event evidence",
+    "detail": "The remap works locally but the report does not identify whether PowerToys emits the wrong event or the RDP client rejects a correct injected event."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Request RDP remap diagnostics",
+    "reason": "Collect the client, mapping, session mode, and remote event result needed to distinguish injection from transport behavior."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The report establishes a local-versus-RDP difference but lacks the RDP client, versions, mapping form, session mode, and observed remote event.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The Copilot-key remap to Right Ctrl works locally.",
+      "The remap fails through a VPN and Remote Desktop session.",
+      "Related issue #21258 documents broader Keyboard Manager remote-session failures."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-04-16T15:16:26Z"
-  }
+    "recommended_action": "Request a fresh diagnostic archive and exact local-versus-RDP event comparison.",
+    "evaluated_at": "2026-09-07T15:31:34Z",
+    "source_updated_at": "2026-09-07T07:38:48Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys event-shape or modifier-state defect is plausible, but RDP transport remains an equally plausible cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Validate Copilot shortcut injection across RDP",
+      "root_cause": "The Win+Shift+F23 source may leave residual modifiers or RDP may reject the injected Right Ctrl event.",
+      "plan": [
+        "Capture the local event stream before and during RDP.",
+        "Trace HandleShortcutRemapEvent and Helpers::SetKeyEvent/SetModifierKeyEvents.",
+        "Correct event ordering or modifier cleanup only if the local stream is wrong.",
+        "Add a focused remote-session regression test when a PowerToys defect is confirmed."
+      ],
+      "verification": [
+        "Compare local, windowed RDP, and full-screen RDP results.",
+        "Confirm exactly one Right Ctrl down/up and no Win, Shift, or F23 leakage."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The report does not yet distinguish PowerToys injection from RDP transport."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Copilot key remapped to Right Ctrl works locally but not inside a work computer accessed through VPN and Remote Desktop.",
+    "known_information": [
+      "The behavior differs between local applications and the remote session.",
+      "The report does not name the RDP client, versions, session mode, or exact mapping form."
+    ],
+    "inferences": [
+      "Synthetic-event handling or residual modifier state may be involved, but RDP filtering is also plausible."
+    ],
+    "analysis": "Event-level evidence is required before selecting a safe implementation.",
+    "initial_investigation": [
+      "Keyboard Manager emits target events through KeyboardEventHandlers.cpp and Helpers.cpp.",
+      "Right Ctrl is emitted as an extended key.",
+      "Issues #21258 and #30695 show related remote-session behavior."
+    ],
+    "information_gaps": [
+      {
+        "information": "PowerToys/RDP versions, mapping form, session mode, and exact event received remotely.",
+        "why_needed": "These details distinguish incomplete suppression, failed injection, and RDP reinterpretation.",
+        "how_to_collect": "Provide a numbered local-versus-RDP comparison and comment /bugreport immediately after reproducing."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve RDP remap investigation",
+      "design_summary": "Trace and test the Copilot-to-Right-Ctrl event sequence across local and RDP sessions before making a targeted injection-state correction."
+    },
+    {
+      "type": "request_info",
+      "label": "Request RDP remap diagnostics",
+      "comment": {
+        "body": "Thanks for confirming that the remap works locally but fails through Remote Desktop. Please provide:\n\n1. Your PowerToys version, RDP client/version, local and remote Windows versions, and whether the session is full-screen or windowed.\n2. The exact mapping configuration and a local-versus-RDP comparison.\n3. What the remote session receives: the original Copilot behavior, no input, Right Ctrl, or Win/Shift/F23.\n4. A fresh diagnostic archive by commenting `/bugreport` immediately after reproducing.\n\nThese results will distinguish a Keyboard Manager event issue from an RDP transport limitation."
+      }
+    }
+  ]
 }

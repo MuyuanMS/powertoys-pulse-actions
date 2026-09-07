@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 5,
+  "number": 50438,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-07T15:31:35Z",
+  "evaluated_at": "2026-09-07T15:31:35Z",
+  "source_updated_at": "2026-09-07T10:00:32Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50438",
+  "title": "Mouse Withotu Borders desync",
+  "confidence": "Medium",
+  "status": {
+    "glyph": "🛠",
+    "label": "Synchronization recovery investigation ready",
+    "detail": "Two peers desynchronize after several minutes and restart recovery points to stale connection or peer state; the submitted archive was invalid."
+  },
+  "next_action": {
+    "glyph": "💬",
+    "label": "Request valid failure-time diagnostics",
+    "reason": "Distinguish socket loss, heartbeat timeout, reconnect failure, and stale receiver state before implementation."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue provides a repeatable failure and restart recovery, while source review identifies the send, receive, heartbeat, and socket-reopen boundaries. A fresh valid trace is needed to select the exact recovery change.",
+    "evidence": [
+      "Two peers desynchronize after several minutes.",
+      "Administrator and service modes show the same behavior.",
+      "Restarting PowerToys restores synchronization temporarily.",
+      "The submitted diagnostic archive was rejected as invalid.",
+      "Common.SkSend, MachineStuff.UpdateClientSockets, ReopenSockets, and Receiver.ProcessPackage own the likely path."
+    ],
+    "recommended_action": "Request valid failure-time diagnostics and approve a focused peer-session recovery investigation.",
+    "evaluated_at": "2026-09-07T15:31:35Z",
+    "source_updated_at": "2026-09-07T10:00:32Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository fix is likely, but the evidence cannot distinguish transport failure from stale connection or machine state."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover Mouse Without Borders from a lost or stale peer session",
+      "root_cause": "A failed TCP/session or stale peer state may remain logically usable while the receiver no longer processes synchronized input.",
+      "plan": [
+        "Correlate a fresh trace with send failures, heartbeat state, client socket updates, socket reopen, and receiver processing.",
+        "Invalidate the failed peer session and rebuild socket plus machine state before accepting input.",
+        "Bound reconnect attempts while the peer is unavailable.",
+        "Add tests for failed send/receive, reconnect, and resumed synchronization."
+      ],
+      "verification": [
+        "Run Mouse Without Borders tests.",
+        "Reproduce on two PCs and confirm bounded automatic recovery without restarting PowerToys."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "Restart recovery implicates session reconstruction, but the invalid archive prevents identifying the failing branch."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders repeatedly loses synchronization between two PCs after a few minutes on 0.101.2362, and restarting PowerToys temporarily restores it.",
+    "known_information": [
+      "The issue reproduces with administrator and service modes.",
+      "Restarting PowerToys restores operation.",
+      "The diagnostic ZIP was rejected because its archive structure was invalid."
+    ],
+    "inferences": [
+      "A connection, heartbeat, or peer-state failure is more likely than initial setup.",
+      "The application may retain a logically connected peer that no longer carries input."
+    ],
+    "analysis": "A failure-time trace can select among the existing send, receive, heartbeat, and reopen paths without speculative reconnect logic.",
+    "initial_investigation": [
+      "Event.MouseEvent sends through Common.SkSend.",
+      "Send failures clear sockets and schedule MachineStuff.UpdateClientSockets.",
+      "Common.ReopenSockets replaces socket state.",
+      "Receiver.ProcessPackage applies incoming input."
+    ],
+    "information_gaps": [
+      {
+        "information": "A valid diagnostic archive from the failure moment and peer connection/reachability state.",
+        "why_needed": "This distinguishes dead transport, missed heartbeat, reconnect failure, and stale receiver state.",
+        "how_to_collect": "Reproduce, comment /bugreport immediately, attach the generated ZIP unchanged, and record whether the peer appears connected and responds to ping."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve synchronization recovery investigation",
+      "design_summary": "Trace and repair stale peer-session recovery across send, heartbeat, reconnect, and machine-state publication."
+    },
+    {
+      "type": "request_info",
+      "label": "Request valid failure-time diagnostics",
+      "comment": {
+        "body": "The report gives a useful repeatable symptom. Please provide:\n\n1. A fresh diagnostic archive by commenting `/bugreport` immediately after the next desynchronization and attaching the ZIP unchanged.\n2. Whether the peer still appears connected in Mouse Without Borders.\n3. Whether the two PCs can still ping each other.\n\nThis will distinguish a lost TCP session, missed heartbeat, reconnect failure, and stale peer state."
+      }
+    }
+  ]
+}
