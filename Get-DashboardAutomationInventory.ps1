@@ -11,45 +11,26 @@ $skillRoot = Join-Path $dashboard '.github\skills\powertoys-dashboard-update'
 & (Join-Path $skillRoot 'scripts\Assert-CanonicalDashboardTarget.ps1') `
   -Dashboard $dashboard | Out-Null
 
-function Invoke-GhJson {
-  param([string[]]$Arguments)
+function Get-PublicSearchCount {
+  param([string]$Query)
 
-  $raw = & gh @Arguments
-  if ($LASTEXITCODE -ne 0) {
-    throw "GitHub API command failed: gh $($Arguments -join ' ')"
+  $uri = "https://api.github.com/search/issues?q=$([uri]::EscapeDataString($Query))&per_page=1"
+  $response = Invoke-RestMethod -Uri $uri -Headers @{
+    Accept = 'application/vnd.github+json'
+    'User-Agent' = 'powertoys-pulse-actions'
   }
-  return ($raw -join "`n") | ConvertFrom-Json
+  if ($response.incomplete_results) {
+    throw "GitHub returned an incomplete search result for: $Query"
+  }
+  return [int]$response.total_count
 }
 
-$openPrPages = Invoke-GhJson -Arguments @(
-  'api',
-  '--paginate',
-  '--slurp',
-  "repos/$UpstreamRepository/pulls?state=open&per_page=100"
-)
-$openPrs = @($openPrPages | ForEach-Object { @($_) })
-$openIssues = Invoke-GhJson -Arguments @(
-  'api',
-  '--method', 'GET',
-  'search/issues',
-  '-f', "q=repo:$UpstreamRepository is:issue is:open",
-  '-F', 'per_page=1'
-)
 $since = (Get-Date).ToUniversalTime().AddDays(-1).ToString('yyyy-MM-dd')
-$recentIssues = Invoke-GhJson -Arguments @(
-  'api',
-  '--method', 'GET',
-  'search/issues',
-  '-f', "q=repo:$UpstreamRepository is:issue updated:>=$since",
-  '-F', 'per_page=1'
-)
-$recentPrs = Invoke-GhJson -Arguments @(
-  'api',
-  '--method', 'GET',
-  'search/issues',
-  '-f', "q=repo:$UpstreamRepository is:pr updated:>=$since",
-  '-F', 'per_page=1'
-)
+$openPrCount = Get-PublicSearchCount "repo:$UpstreamRepository is:pr is:open"
+$draftPrCount = Get-PublicSearchCount "repo:$UpstreamRepository is:pr is:open draft:true"
+$openIssueCount = Get-PublicSearchCount "repo:$UpstreamRepository is:issue is:open"
+$recentIssueCount = Get-PublicSearchCount "repo:$UpstreamRepository is:issue updated:>=$since"
+$recentPrCount = Get-PublicSearchCount "repo:$UpstreamRepository is:pr updated:>=$since"
 
 $index = Get-Content (Join-Path $dashboard 'data\index.json') -Raw |
   ConvertFrom-Json
@@ -57,11 +38,11 @@ $inventory = [ordered]@{
   generated_at = (Get-Date).ToUniversalTime().ToString('o')
   upstream = $UpstreamRepository
   live = [ordered]@{
-    open_prs = $openPrs.Count
-    draft_prs = @($openPrs | Where-Object { $_.draft }).Count
-    open_issues = [int]$openIssues.total_count
-    issues_updated_last_day = [int]$recentIssues.total_count
-    prs_updated_last_day = [int]$recentPrs.total_count
+    open_prs = $openPrCount
+    draft_prs = $draftPrCount
+    open_issues = $openIssueCount
+    issues_updated_last_day = $recentIssueCount
+    prs_updated_last_day = $recentPrCount
   }
   published = [ordered]@{
     generated_at = $index.generated_at
