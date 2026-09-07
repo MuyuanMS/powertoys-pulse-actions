@@ -127,10 +127,11 @@ The repository includes two deliberately bounded workflows:
   sanitizes the feed, validates it, and opens or updates
   `automation/dashboard-data-refresh`. It does not push directly to `main` and
   never writes to `microsoft/PowerToys`.
-- **Sync an upstream issue mirror** is manual-only and idempotently creates or
-  refreshes a fork-side issue such as `MuyuanMS/PowerToys#[mirror]`. It copies
-  only public source metadata and a source link, not the full upstream
-  discussion.
+- **Sync an upstream issue mirror** is manual-only. Its default dry-run mode
+  demonstrates which mirror would be created or updated without needing a
+  cross-repository credential. Selecting **Apply changes** idempotently creates
+  or refreshes a fork-side issue. It copies only public source metadata and a
+  source link, not the full upstream discussion.
 
 The mirror workflow requires the repository secret `MIRROR_GITHUB_TOKEN`.
 Prefer a narrowly installed GitHub App. A fine-grained token is also supported
