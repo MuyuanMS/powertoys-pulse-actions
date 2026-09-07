@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-08T04:27:33.4658233+08:00",
+  "generated_at": "2026-09-08T04:56:19.9824164+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 378
   },
   "impact": {
-    "as_of": "2026-09-08T04:27:33.4658233+08:00",
+    "as_of": "2026-09-08T04:56:19.9824164+08:00",
     "issues_helped": 10,
     "prs_iterated": 27,
     "constructive_comments_posted": 3,
@@ -740,7 +740,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 706,
+        "fork_title": "[PR 50398] CmdPal: Fix repeated details loading in Command Palette",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50398-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/706"
+      }
     },
     {
       "id": "pr-50397",
@@ -769,7 +777,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-05T00:22:50Z",
-      "updated_at": "2026-09-07T19:45:41Z",
+      "updated_at": "2026-09-07T20:18:17Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1144,8 +1152,8 @@ window.BOARD_INDEX = {
         "khmyznikov"
       ],
       "created_at": "2026-09-03T09:03:26Z",
-      "updated_at": "2026-09-03T09:17:37Z",
-      "comments": 2,
+      "updated_at": "2026-09-07T20:46:03Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
