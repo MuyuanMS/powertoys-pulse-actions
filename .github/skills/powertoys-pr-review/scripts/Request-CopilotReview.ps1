@@ -3,9 +3,11 @@
     Request a GitHub Copilot code review on a fork PR and poll until it lands.
 .DESCRIPTION
     Requests 'copilot-pull-request-reviewer[bot]' as a reviewer (the plain
-    'copilot' name silently no-ops), verifies the request was accepted, then
-    polls the PR reviews until a Copilot review is submitted after the request
-    time or the timeout elapses.
+    'copilot' name silently no-ops), then polls the PR reviews until a Copilot
+    review is submitted after the request time or the timeout elapses. GitHub
+    may complete the review before returning the request response, so an empty
+    requested_reviewers collection is not treated as evidence that the feature
+    is disabled.
 .PARAMETER ForkRepo
     owner/PowerToys for the fork that holds the mirror PR.
 .PARAMETER PRNumber
@@ -29,9 +31,9 @@ $resp = gh api "repos/$ForkRepo/pulls/$PRNumber/requested_reviewers" `
     -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]" | ConvertFrom-Json
 
 $requested = @($resp.requested_reviewers)
-if (-not $requested -or $requested.Count -eq 0) {
-    Write-Warning "Copilot review was not accepted (requested_reviewers is empty). Enable 'Copilot code review' on the fork settings, or fall back to local review."
-    return [pscustomobject]@{ Available = $false; Submitted = $false }
+$requestPending = $requested.Count -gt 0
+if (-not $requestPending) {
+    Write-Host "Copilot is not listed as pending; checking for an asynchronously completed review."
 }
 
 Write-Host "Requested Copilot review on $ForkRepo#$PRNumber. Polling (timeout ${TimeoutMinutes}m)..."
@@ -44,9 +46,20 @@ while ((Get-Date).ToUniversalTime() -lt $deadline) {
         ([datetime]$_.submitted_at).ToUniversalTime() -gt $requestedAt
     }
     if ($new) {
+        $latest = $new | Sort-Object { [datetime]$_.submitted_at } -Descending |
+            Select-Object -First 1
         Write-Host "Copilot review submitted."
-        return [pscustomobject]@{ Available = $true; Submitted = $true; SubmittedAt = $requestedAt }
+        return [pscustomobject]@{
+            Available = $true
+            Submitted = $true
+            SubmittedAt = ([datetime]$latest.submitted_at).ToUniversalTime()
+            RequestPending = $requestPending
+        }
     }
 }
 Write-Warning "Timed out waiting for the Copilot review. Re-run, or check the fork PR manually."
-return [pscustomobject]@{ Available = $true; Submitted = $false }
+return [pscustomobject]@{
+    Available = $null
+    Submitted = $false
+    RequestPending = $requestPending
+}

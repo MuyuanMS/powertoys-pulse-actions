@@ -36,10 +36,10 @@ Run [scripts/Test-Prerequisites.ps1](./scripts/Test-Prerequisites.ps1) to check 
 | --- | --- | --- |
 | 1 | Personal fork of `microsoft/PowerToys` | `gh repo list --fork` includes `<owner>/PowerToys` |
 | 2 | Local clone with a remote pointing to the fork | a `PowerToys` clone with a non-`microsoft` remote |
-| 3 | GitHub Copilot code review enabled on the fork | first review request returns a non-empty `requested_reviewers` |
+| 3 | GitHub Copilot code review enabled on the fork | a requested review produces a Copilot review; `requested_reviewers` may already be empty when an asynchronous review finishes quickly |
 | 4 | Visual Studio 2022 (Desktop C++ + .NET desktop) | `vswhere.exe -latest` resolves an install |
 
-If a prerequisite is missing, guide the user through setup ([references/prerequisites.md](./references/prerequisites.md)) before proceeding. Prerequisite 3 must be enabled by the user in the fork's settings; for 4, offer to install the tools via winget.
+If a prerequisite is missing, guide the user through setup ([references/prerequisites.md](./references/prerequisites.md)) before proceeding. Do not infer that prerequisite 3 is missing solely from an empty `requested_reviewers` response; check for a review submitted after the request. Prerequisite 3 must be enabled by the user in the fork's settings; for 4, offer to install the tools via winget.
 
 ## Critical Rules
 
