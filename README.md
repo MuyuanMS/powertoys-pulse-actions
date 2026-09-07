@@ -117,3 +117,29 @@ pwsh -NoProfile -File .\.github\skills\powertoys-pr-review\tests\Test-ReviewPayl
 Generated action data belongs only in the repository-root `data/` directory.
 The packaged `.github/skills` directories must not contain generated artifacts,
 credentials, approval decisions, or machine-specific run state.
+
+## GitHub Actions automation
+
+The repository includes two deliberately bounded workflows:
+
+- **Refresh dashboard action data** runs at 05:30 and 17:30 UTC and can also be
+  dispatched manually. It inventories public upstream state, regenerates and
+  sanitizes the feed, validates it, and opens or updates
+  `automation/dashboard-data-refresh`. It does not push directly to `main` and
+  never writes to `microsoft/PowerToys`.
+- **Sync an upstream issue mirror** is manual-only and idempotently creates or
+  refreshes a fork-side issue such as `MuyuanMS/PowerToys#[mirror]`. It copies
+  only public source metadata and a source link, not the full upstream
+  discussion.
+
+The mirror workflow requires the repository secret `MIRROR_GITHUB_TOKEN`.
+Prefer a narrowly installed GitHub App. A fine-grained token is also supported
+when it is limited to **Metadata: read** and **Issues: write** on the selected
+target repository. Do not use a classic token. The standard workflow
+`GITHUB_TOKEN` cannot write to another repository.
+
+AI-assisted judgments can be added as a separate bounded worker after the
+deterministic refresh is proven stable. Keep AI output behind
+`Test-DashboardArtifacts.ps1`, set explicit batch/time/credit limits, and never
+grant that worker permission to post reviews, comments, merges, or CI commands
+to `microsoft/PowerToys`.
