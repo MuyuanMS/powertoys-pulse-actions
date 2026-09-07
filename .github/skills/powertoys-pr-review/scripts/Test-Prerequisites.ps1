@@ -28,7 +28,7 @@ try {
 }
 
 # 3. Copilot code review - manual confirmation only
-$results['CopilotReview'] = "MANUAL - confirm 'Copilot code review' is enabled on the fork settings; the first review request must return a non-empty requested_reviewers"
+$results['CopilotReview'] = "MANUAL - confirm a requested fork review produces a Copilot review; requested_reviewers may be empty after a fast asynchronous completion"
 
 # 4. Visual Studio build tools
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
