@@ -13,8 +13,31 @@ $skillRoot = Join-Path $dashboard '.github\skills\powertoys-dashboard-update'
 & (Join-Path $dashboard 'emit.ps1') -AllowStaleReviewQueue
 & (Join-Path $dashboard 'Sanitize-ActionData.ps1') `
   -DataPath (Join-Path $dashboard 'data')
-& (Join-Path $skillRoot 'scripts\Test-DashboardArtifacts.ps1') `
-  -Dashboard $dashboard -RequireIssueContext
+$index = Get-Content (Join-Path $dashboard 'data\index.json') -Raw |
+  ConvertFrom-Json
+$publishedArtifactNumbers = [System.Collections.Generic.HashSet[int]]::new()
+foreach ($number in @($index.artifact_numbers)) {
+  [void]$publishedArtifactNumbers.Add([int]$number)
+}
+$changedArtifactNumbers = @(
+  & git -C $dashboard status --short -- data/items |
+    ForEach-Object {
+      $match = [regex]::Match($_, 'data/items/(\d+)\.json$')
+      if ($match.Success) {
+        $number = [int]$match.Groups[1].Value
+        if ($publishedArtifactNumbers.Contains($number)) {
+          $number
+        }
+      }
+    } |
+    Sort-Object -Unique
+)
+if ($changedArtifactNumbers.Count -gt 0) {
+  & (Join-Path $skillRoot 'scripts\Test-DashboardArtifacts.ps1') `
+    -Dashboard $dashboard `
+    -Numbers $changedArtifactNumbers `
+    -RequireIssueContext
+}
 
 if (-not $SkipSkillSuite) {
   & (Join-Path $dashboard 'Test-SkillSuite.ps1')
