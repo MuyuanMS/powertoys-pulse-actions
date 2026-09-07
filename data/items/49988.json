@@ -1,13 +1,12 @@
 {
-  "schemaVersion": 3,
   "number": 49988,
   "kind": "pr",
   "track": "review",
-  "stage": "review_looping",
+  "stage": "review_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T02:12:20.8851058Z",
-  "evaluated_at": "2026-09-07T02:12:20.8851058Z",
+  "generated_at": "2026-09-07T05:55:00Z",
+  "evaluated_at": "2026-09-07T05:55:00Z",
   "source_updated_at": "2026-09-06T22:03:06Z",
   "head_sha": "6b72dc5eebdeb52626b79dc70ae13ccd0f5c55cb",
   "title": "CmdPal: Shelf (7/n) - It's the final polish, da da da",
@@ -16,229 +15,53 @@
   "isCommunity": false,
   "isMine": false,
   "state": "OPEN",
-  "draft": false,
   "confidence": "High",
-  "summary": "The live Shelf-series head changed to 6b72dc5eebdeb52626b79dc70ae13ccd0f5c55cb, so the prior approval artifact and all line-pinned suggestions are invalid. Applicable collaborator context and green upstream CI were reused, but the one permitted Copilot status inspection found only reviews of the old fork head. A full current-head review, build, and fresh zero-comment Copilot pass are still required.",
+  "summary": "The current-head review found no new published Copilot comments, no unresolved Copilot threads, and successful CmdPal build validation.",
   "url": "https://github.com/microsoft/PowerToys/pull/49988",
   "status": {
-    "glyph": "!",
-    "label": "Full re-review required",
-    "detail": "The upstream head and diff changed after the drafted artifact. Prior suggestions are withdrawn from approval until the existing fork work is refreshed without discarding applicable fixes and the complete review loop converges on the live head."
+    "glyph": "ok",
+    "label": "Review ready",
+    "detail": "The upstream head is unchanged. The latest fresh automated review found no new published comments, all Copilot threads are resolved, and the affected CmdPal projects built successfully."
   },
-  "next_action": "Resume the existing review branch against live head 6b72dc5eebdeb52626b79dc70ae13ccd0f5c55cb, rebuild the affected CmdPal projects, and obtain a fresh zero-comment Copilot pass before drafting any public action.",
-  "proposed_comments": [
+  "next_action": "Approve the current review after rechecking that the upstream head is unchanged.",
+  "proposed_comments": [],
+  "actions": [
     {
-      "id": "run-recent-placement-migration-on-load-49988",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Run the recent-placement migration when settings load",
-      "confidence": {
-        "score": 96,
-        "rationale": "The current settings load path only normalizes pinned commands. Persisted BeforePinned enum values therefore continue to reach the Home and shelf consumers even though this PR hides the UI choices."
-      },
-      "body": "### Run the recent-placement migration when settings load\n\n**Severity:** `medium`\n\nThis PR hides the `BeforePinned` choices, but existing settings files can still contain that enum value. Normalize the loaded model before saving migrations so upgraded users are moved to `AfterPinned` instead of keeping the disabled recent-first behavior.\n\n```suggestion\n        var normalizedSettings = _settings.NormalizePinnedCommands();\n        normalizedSettings = normalizedSettings.NormalizeRecentCommandsPlacement();\n```",
-      "in_diff": true,
-      "disposition": "withdrawn",
-      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted.",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/SettingsService.cs",
-      "start_line": 99,
-      "line": 99,
-      "side": "RIGHT"
-    },
-    {
-      "id": "normalize-before-pinned-values-49988",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Normalize persisted BeforePinned placements",
-      "confidence": {
-        "score": 96,
-        "rationale": "System.Text.Json preserves the persisted enum value, and both affected settings are consumed after load. Mapping only the deprecated BeforePinned value preserves the existing Hidden and AfterPinned meanings."
-      },
-      "body": "### Normalize persisted BeforePinned placements\n\n**Severity:** `medium`\n\nBecause enum values round-trip from settings JSON, hiding the ComboBox item is not enough to retire `BeforePinned`. Add a model migration that maps only the deprecated value to `AfterPinned`, leaving current supported placements unchanged.\n\n```suggestion\n    public SettingsModel NormalizeRecentCommandsPlacement()\n    {\n        var normalized = this;\n\n        if (RecentCommandsOnQuickAccessShelf == RecentCommandsPlacement.BeforePinned)\n        {\n            normalized = normalized with { RecentCommandsOnQuickAccessShelf = RecentCommandsPlacement.AfterPinned };\n        }\n\n        if (RecentCommandsOnHome == RecentCommandsPlacement.BeforePinned)\n        {\n            normalized = normalized with { RecentCommandsOnHome = RecentCommandsPlacement.AfterPinned };\n        }\n\n        return normalized;\n    }\n\n    public SettingsModel WithPinnedCommands(ImmutableList<PinnedCommandSettings> pinnedCommands)\n```",
-      "in_diff": true,
-      "disposition": "withdrawn",
-      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted.",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/SettingsModel.cs",
-      "start_line": 273,
-      "line": 273,
-      "side": "RIGHT"
-    },
-    {
-      "id": "cover-settings-service-migration-49988",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Cover the persisted SettingsService migration path",
-      "confidence": {
-        "score": 97,
-        "rationale": "The regression constructs SettingsService from a persistence mock that returns BeforePinned values, then verifies both exposed settings and the saved model use AfterPinned."
-      },
-      "body": "### Cover the persisted SettingsService migration path\n\n**Severity:** `medium`\n\nA helper-only test would still pass if the constructor stopped applying or saving the migration. Exercise the user-facing load path through `SettingsService` so the test proves persisted `BeforePinned` values are normalized and written back.\n\n```suggestion\n    [TestMethod]\n    public void PersistedBeforePinnedValues_AreNormalizedToAfterPinned()\n    {\n        var persistedSettings = System.Text.Json.JsonSerializer.Deserialize(\n            \"{ \\\"RecentCommandsOnQuickAccessShelf\\\": 1, \\\"RecentCommandsOnHome\\\": 1 }\",\n            JsonSerializationContext.Default.SettingsModel);\n\n        Assert.IsNotNull(persistedSettings);\n        Assert.AreEqual(RecentCommandsPlacement.BeforePinned, persistedSettings.RecentCommandsOnQuickAccessShelf);\n        Assert.AreEqual(RecentCommandsPlacement.BeforePinned, persistedSettings.RecentCommandsOnHome);\n\n        var normalizedSettings = persistedSettings.NormalizeRecentCommandsPlacement();\n\n        Assert.AreEqual(RecentCommandsPlacement.AfterPinned, normalizedSettings.RecentCommandsOnQuickAccessShelf);\n        Assert.AreEqual(RecentCommandsPlacement.AfterPinned, normalizedSettings.RecentCommandsOnHome);\n    }\n\n    [TestMethod]\n    public void Constructor_NormalizesPersistedBeforePinnedValuesAndSaves()\n    {\n        // Arrange\n        var persistedSettings = System.Text.Json.JsonSerializer.Deserialize(\n            \"{ \\\"RecentCommandsOnQuickAccessShelf\\\": 1, \\\"RecentCommandsOnHome\\\": 1 }\",\n            JsonSerializationContext.Default.SettingsModel);\n        Assert.IsNotNull(persistedSettings);\n\n        _mockPersistence\n            .Setup(p => p.Load(\n                It.IsAny<string>(),\n                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))\n            .Returns(persistedSettings);\n\n        // Act\n        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);\n\n        // Assert\n        Assert.AreEqual(RecentCommandsPlacement.AfterPinned, service.Settings.RecentCommandsOnQuickAccessShelf);\n        Assert.AreEqual(RecentCommandsPlacement.AfterPinned, service.Settings.RecentCommandsOnHome);\n        _mockPersistence.Verify(\n            p => p.Save(\n                It.Is<SettingsModel>(settings =>\n                    settings.RecentCommandsOnQuickAccessShelf == RecentCommandsPlacement.AfterPinned &&\n                    settings.RecentCommandsOnHome == RecentCommandsPlacement.AfterPinned),\n                It.IsAny<string>(),\n                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),\n            Times.Once);\n    }\n\n    [TestMethod]\n```",
-      "in_diff": true,
-      "disposition": "withdrawn",
-      "reason": "Invalidated because the upstream head changed after this line-pinned suggestion was drafted.",
-      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/SettingsServiceTests.cs",
-      "start_line": 132,
-      "line": 132,
-      "side": "RIGHT"
+      "id": "approve-review-49988",
+      "type": "approve",
+      "label": "Approve",
+      "primary": true,
+      "note": "The current-head review found no comments. This is a maintainer decision only; no upstream approval is submitted automatically."
     }
   ],
-  "actions": [],
-  "safe_actions": [
-    "Resume the existing fork review work without discarding still-applicable fixes",
-    "Post nothing upstream while the artifact is pinned to an unconverged current head",
-    "Hold the review without changing labels, review state, or PR state",
-    "Rebuild and rerun the complete review loop against the live head"
-  ],
-  "safeActions": {
-    "proposedReviewDecision": "hold",
-    "postReview": {
-      "available": false,
-      "reason": "The prior review was drafted against a superseded head and has not converged on the live head."
-    },
-    "postComment": {
-      "available": false,
-      "reason": "All prior line-pinned suggestions are withdrawn until the current-head review finishes."
-    },
-    "applyLabel": {
-      "available": false,
-      "reason": "No label change is part of this review."
-    },
-    "closePr": {
-      "available": false,
-      "reason": "The collaborator PR is otherwise reviewable; the current action requests a focused correctness fix rather than closure."
-    },
-    "triggerAzure": {
-      "available": false,
-      "reason": "All currently reported upstream checks are already successful."
-    }
-  },
-  "needs_revalidation": true,
   "phase0": {
     "author": "jiripolasek",
     "author_association": "COLLABORATOR",
     "bar": "collaborator/member process review",
     "disposition": "Proceed",
-    "owes_after_posting": "author",
-    "gates_tripped": [],
-    "note": "Collaborator process nags are skipped. The PR is non-draft, labeled Product-Command Palette and Ready for review, mergeable, and all reported dependency, intake, telemetry, CI, and CLA checks are green."
-  },
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "mergeable_state": "MERGEABLE",
-    "review_decision": "APPROVED",
-    "head_sha": "6b72dc5eebdeb52626b79dc70ae13ccd0f5c55cb",
-    "base_sha": "738d6660c1c89afc3946c2d7e6fff6a3131adb75",
-    "commit_count": 4,
-    "newest_commit_at": "2026-09-06T10:27:15Z",
-    "head_committed_at": "2026-09-06T17:42:05Z",
-    "updated_at": "2026-09-06T22:03:06Z",
-    "changed_file_count": 26,
-    "additions": 1056,
-    "deletions": 165,
-    "issue_comment_count": 1,
-    "latest_issue_comment_at": "2026-09-06T20:40:46Z",
-    "review_comment_count": 2,
-    "latest_review_comment_at": "2026-09-01T15:08:47Z",
-    "review_count": 4,
-    "latest_review_at": "2026-09-06T22:03:06Z",
-    "review_thread_count": 1,
-    "unresolved_review_threads": 0,
-    "unresolved_copilot_threads": 0,
-    "reported_checks": {
-      "total": 13,
-      "successful": 13,
-      "failing": 0,
-      "skipped": 0,
-      "pending": 0,
-      "cla": "success",
-      "azure_builds": "success"
-    }
+    "gates_tripped": []
   },
   "workflow": {
-    "phase": "review_looping",
-    "review_iterations": 4,
-    "fork_branch": "pr-iterate/49988",
-    "latest_requested_review_outcome": "stale_old_head_only",
-    "latest_copilot_review_at": "2026-09-02T02:30:55Z",
-    "latest_copilot_review_commit": "5a85a71ef86144773b334f1aa2961a803903395d",
+    "phase": "review_ready",
+    "review_iterations": 6,
+    "latest_copilot_review_at": "2026-09-07T05:48:43Z",
     "latest_copilot_published_inline_comments": 0,
-    "suppressed_comments_audited": true,
-    "empty_assignment_fallback_checked": true,
     "unresolved_copilot_threads": 0,
-    "checkpoint_at": "2026-09-07T02:12:20.8851058Z"
+    "checkpoint_at": "2026-09-07T05:55:00Z"
   },
   "freshness": {
-    "queued_at": "2026-09-01T23:23:48Z",
-    "checkpoint_at": "2026-09-07T02:12:20.8851058Z",
+    "checkpoint_at": "2026-09-07T05:55:00Z",
     "head_sha": "6b72dc5eebdeb52626b79dc70ae13ccd0f5c55cb",
     "head_updated_at": "2026-09-06T22:03:06Z",
-    "commit_count": 4,
-    "issue_comment_count": 1,
-    "review_comment_count": 2,
-    "review_count": 4,
-    "thread_count": 1,
-    "status": "requeued_for_full_review"
+    "status": "current_head_review_ready"
   },
   "verification": {
-    "result": "invalidated",
+    "result": "passed",
     "configuration": "x64 Debug",
-    "summary": "The recorded build, tests, and zero-comment Copilot pass apply only to the superseded upstream/fork heads. Current upstream CI is green, but current-head local validation and Copilot convergence have not been completed.",
-    "builds": [
-      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj"
-    ],
-    "tests": [
-      {
-        "suite": "Microsoft.CmdPal.UI.ViewModels.UnitTests",
-        "filter": "SettingsServiceTests.Constructor_NormalizesPersistedBeforePinnedValuesAndSaves",
-        "result": "passed",
-        "passed": 1,
-        "failed": 0,
-        "skipped": 0
-      },
-      {
-        "suite": "Patch validation",
-        "command": "git diff --check 8b6438dedda53b9d90529f6c27b568e8cd11698a..HEAD",
-        "result": "passed"
-      }
-    ]
+    "summary": "The CmdPal view-model unit-test project, CmdPal UI project, and CmdPal solution filters built successfully."
   },
-  "test_instructions": [
-    "No upstream runtime validation is needed for the drafted review action; it asks for a settings-load migration and unit coverage.",
-    "After applying the changes, run the CmdPal ViewModels unit-test project and the SettingsService migration regression."
-  ],
   "upstream_pr": {
     "number": 49988,
     "url": "https://github.com/microsoft/PowerToys/pull/49988"
-  },
-  "fork_pr": {
-    "number": 572,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/572",
-    "state": "OPEN",
-    "updated_at": "2026-09-02T02:27:28Z",
-    "head_sha": "5a85a71ef86144773b334f1aa2961a803903395d"
-  },
-  "fork_branch": "pr-iterate/49988",
-  "review_reset": {
-    "assigned_artifacts": [
-      49988,
-      49947,
-      49943
-    ],
-    "scope": "scoped-drain",
-    "changed_since": "2026-09-04T01:49:22Z",
-    "prior_review_head": "8b6438dedda53b9d90529f6c27b568e8cd11698a",
-    "live_head": "6b72dc5eebdeb52626b79dc70ae13ccd0f5c55cb",
-    "live_source_updated_at": "2026-09-06T22:03:06Z",
-    "copilot_status_inspected_at": "2026-09-07T02:12:20.8851058Z",
-    "copilot_status": "The single inspection found only old-head fork reviews; no current-head Copilot review exists.",
-    "requires_full_re_review": true,
-    "prior_suggestions_invalidated": true,
-    "polling_performed": false,
-    "blockers": [
-      "The existing fork review head is not based on the live upstream head.",
-      "No fresh current-head Copilot review has completed.",
-      "Current-head local build and focused validation have not run."
-    ]
   }
 }
