@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 5,
+  "number": 50445,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-07T20:18:00Z",
+  "evaluated_at": "2026-09-07T20:18:00Z",
+  "source_updated_at": "2026-09-07T18:30:27Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50445",
+  "title": "[Peek] Images do not size to fill the entire client area",
+  "author": "daverayment",
+  "authorAssociation": "COLLABORATOR",
+  "assignees": [
+    "daverayment"
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Peek"
+  ],
+  "confidence": "Medium",
+  "status": {
+    "glyph": "🛠️",
+    "label": "Design fix: normalize image/client sizing",
+    "detail": "The screenshots reproduce persistent seams at multiple image aspect ratios and 125%/175% scaling; the sizing pipeline has identifiable DPI and chrome-unit boundaries."
+  },
+  "next_action": {
+    "glyph": "🛠️",
+    "label": "Approve Peek sizing design",
+    "reason": "The likely fix path is concrete but should be reconciled with the assigned maintainer's broader Peek scaling work before implementation."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report is reproducible from supplied screenshots across square, wide, tall, 125%, and 175% cases. Current Peek code exposes a concrete sizing path where image dimensions, monitor scale, title-bar height, minimums, and the 80% monitor cap are converted and fitted separately; fractional DPI rounding and mixed physical-pixel/DIP values can leave a visible residual seam between the image and client chrome. The assigned collaborator has already identified connected Peek scaling work, so the proposed design should be coordinated rather than implemented as an isolated image-only patch.",
+    "evidence": [
+      "The issue author supplied screenshots for seven image sizes/aspect ratios on 1920x1080 at 125% and 3840x2160 at 175%.",
+      "The symptom is a persistent bottom, left/right, or tall bottom seam between the image and the Peek window chrome.",
+      "The report is on current main 0.102, is assigned to daverayment, and includes no bugreport ZIP; the screenshots and dimensions are sufficient for focused UI reproduction.",
+      "ImagePreviewer.GetPreviewSizeAsync returns decoded image dimensions as PreviewSize.MonitorSize.",
+      "FilePreview.UpdatePreviewSizeAsync forwards that size to MainWindow.FilePreviewer_PreviewSizeChanged.",
+      "MainWindow.FilePreviewer_PreviewSizeChanged divides by monitor scale, applies SizeExtensions.Fit, then adds TitleBarControl.ActualHeight to the window height.",
+      "FilePreview.xaml constrains ImagePreview with MaxWidth/MaxHeight from ImagePreviewer.MaxImageSize while the parent Grid and window chrome are laid out in XAML DIPs.",
+      "Related issues #50193, #50243, and #50244 document adjacent mixed-DPI, minimum-size, and native-pixel sizing defects; #50243's assigned maintainer stated that a broader Peek scaling solution was underway."
+    ],
+    "recommended_action": "Approve a coordinated Peek sizing design that establishes one unit contract, rounds at the physical-pixel/window boundary, and verifies image-to-client edge alignment at the reported aspect ratios and DPI scales; ask the assignee to confirm how this issue is covered by the broader sizing work."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is applicable in the Peek sizing pipeline, but the exact seam-producing rounding boundary needs targeted validation and must be coordinated with the assigned maintainer's related scaling/minimum-size work."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Normalize Peek image and client-area sizing at the DPI boundary",
+      "root_cause": "The current pipeline mixes decoded image pixels, effective DIPs, monitor-scale division, title-bar ActualHeight, XAML minimums, and the 80% monitor cap. Independent fractional conversions and final layout rounding can make the computed window/client rectangle differ by one or more physical pixels, leaving a seam on one or both axes.",
+      "plan": [
+        "Define and document whether PreviewSize.MonitorSize and the image MaxImageSize values are physical pixels or effective DIPs, then keep that unit through ImagePreviewer, FilePreview, and MainWindow until one explicit conversion boundary.",
+        "In MainWindow.FilePreviewer_PreviewSizeChanged and its monitor-size helpers, compute content bounds and title-bar/chrome bounds in the same effective-pixel space before applying SizeExtensions.Fit and the 80% cap.",
+        "Round the final content and outer window dimensions together at the physical-pixel boundary so the image client rectangle and window chrome cannot diverge through separate fractional rounding.",
+        "Remove or reconcile the competing hard-coded XAML minimums and WindowConstants minimums as part of the coordinated work, preserving the 80% safe zone and the existing pinned-window behavior.",
+        "Add focused sizing tests for square, wide, and tall images at 125% and 175%, plus a mixed-DPI transition and a navigation refresh, asserting no residual client-area gap within the chosen pixel tolerance."
+      ],
+      "verification": [
+        "Build the Peek projects and run the focused Peek UI test selection covering image preview, pinning, navigation, and display scaling.",
+        "On a 1920x1080 display at 125%, open 1024x1024, 1428x582, and 1681x67 images and verify the image edges meet the client-area edges without persistent left/right/bottom seams.",
+        "On a 3840x2160 display at 175%, open 1408x768, 1280x896, 1024x1024, and 1080x1920 images and verify the same edge alignment.",
+        "Move Peek between 125% and 175% displays, navigate away and back, and verify the computed image/client bounds remain aligned and the 80% monitor cap still applies.",
+        "Confirm pinned windows retain their intended size and position and that non-image previews are not regressed."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The complete sizing path and related DPI defects are identified, and the screenshots strongly fit a mixed-unit/fractional-rounding problem. The exact seam-producing boundary still needs a focused before/after bounds trace, and the assignee's broader scaling work may already contain part of the solution."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Peek leaves persistent seams between image content and window chrome for multiple image aspect ratios at 125% and 175% display scaling, including square, wide, and tall images.",
+    "known_information": [
+      "The report targets Peek on current main 0.102 from a Visual Studio development build.",
+      "The author is daverayment, a collaborator, and the issue is assigned to daverayment.",
+      "Screenshots cover 1024x1024, 1428x582, 1681x67, 1408x768, 1280x896, 1080x1920, and another 1024x1024 image.",
+      "The affected display configurations include 1920x1080 at 125% and 3840x2160 at 175%.",
+      "The visible defects are bottom gaps, left/right gaps, and a tall bottom gap; the report notes that some apparent bottom gaps may also include a top client-area gap hidden by matching chrome color.",
+      "No bugreport ZIP, additional software, or other diagnostic attachment was supplied; the screenshots are the relevant evidence already provided.",
+      "Related open issues #50193, #50243, and #50244 cover cross-display scaling, minimum-size unit disagreement, and native-pixel image sizing respectively.",
+      "The assigned maintainer stated on #50243 that a broader Peek scaling and size solution was underway."
+    ],
+    "inferences": [
+      "The consistent seams across aspect ratios and both non-100% scales are more consistent with a shared layout/unit boundary than with one malformed image.",
+      "The likely defect is fractional rounding or mixed physical-pixel/DIP conversion between the image preview size, client Grid, title bar, and final HWND dimensions; this remains a hypothesis until bounds are traced.",
+      "A coordinated fix is safer than an image-only adjustment because the neighboring issues identify shared monitor, title-bar, and minimum-size calculations."
+    ],
+    "analysis": "The public report already provides enough reproducible visual evidence to justify a fix design and does not need a generic /bugreport request. Source inspection identifies exact symbols and a plausible failure mechanism: image dimensions are decoded as image pixels, converted using monitor scale, constrained through SizeExtensions.Fit, and combined with TitleBarControl.ActualHeight while XAML layout uses effective pixels. At 125% and 175%, independent fractional rounding can produce a client rectangle that does not exactly meet the outer window dimensions. The assignee's related work is a coordination risk, not a reason to hide the actionable design.",
+    "initial_investigation": [
+      "Read the complete issue body, screenshots/descriptions, labels, assignee, author, and timeline; no comments or bugreport archive were present.",
+      "Inspected src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs: GetPreviewSizeAsync returns image dimensions, UpdateMaxImageSize divides by ScalingFactor, and the loaded image is bound as ImagePreview.",
+      "Inspected src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs: UpdatePreviewSizeAsync forwards the preview size and OnScalingFactorPropertyChanged refreshes it.",
+      "Inspected src/modules/peek/Peek.FilePreviewer/FilePreview.xaml: ImagePreview uses MaxWidth/MaxHeight while the parent Grid fills the client area; no explicit final pixel rounding or edge-alignment contract exists.",
+      "Inspected src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs: FilePreviewer_PreviewSizeChanged converts monitor units, calls SizeExtensions.Fit, adds TitleBarControl.ActualHeight, and centers the HWND; the code contains a TODO about portrait images not fitting edge-to-edge.",
+      "Inspected src/modules/peek/Peek.UI/Extensions/SizeExtensions.cs and WindowConstants.cs, and reviewed the prior image-scaling history change 6e4d3bcdc; the current code still has multiple scale/minimum/chrome boundaries.",
+      "Checked related issue #50244's ownership decision and #50243's maintainer discussion; no completed public fix PR was linked for #50445 at this evaluation."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the assignee's broader Peek scaling/minimum-size implementation already covers Issue 50445, and if not, a before/after trace of image, client, title-bar, and outer HWND bounds at 125% and 175%.",
+        "why_needed": "This distinguishes a duplicate of the in-progress coordinated fix from a remaining rounding defect and identifies which conversion boundary should be changed without regressing related display transitions.",
+        "how_to_collect": "The assignee should confirm the covering branch/PR or capture the computed bounds while reproducing the supplied image cases; no additional screenshots or generic bugreport are required unless the implementation trace cannot be obtained."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "Likely mixed-unit and fractional-rounding drift between decoded image pixels, effective DIPs, monitor-scale conversion, title-bar ActualHeight, XAML minimums, and the final HWND/client rectangle. The drift is exposed by non-100% scaling and produces persistent seams even though the image aspect ratio is preserved.",
+    "evidence": [
+      "The same symptom appears across seven image sizes and both 125% and 175% scaling configurations.",
+      "ImagePreviewer returns raw image dimensions; MainWindow converts by monitor scale and separately adds TitleBarControl.ActualHeight before showing the window.",
+      "FilePreview.xaml constrains ImagePreview through MaxWidth/MaxHeight but does not establish a shared physical-pixel rounding boundary with the outer window.",
+      "MainWindow.xaml.cs contains a TODO specifically noting that portrait images do not perfectly fit edge-to-edge.",
+      "Related issues #50193, #50243, and #50244 independently identify stale monitor metrics, inconsistent minimum units, and native-pixel sizing problems in the same subsystem."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "purpose": "Computes monitor-constrained preview content and outer window dimensions, then centers/shows the Peek HWND.",
+        "symbols": [
+          "MainWindow::FilePreviewer_PreviewSizeChanged",
+          "MainWindow::GetMonitorMaxContentSize",
+          "MainWindow::GetMonitorMinContentSize"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/Extensions/SizeExtensions.cs",
+        "purpose": "Fits the image/requested size within monitor maximum and minimum content bounds.",
+        "symbols": [
+          "SizeExtensions::Fit"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+        "purpose": "Reads image dimensions, applies ScalingFactor to MaxImageSize, and returns PreviewSize to the window.",
+        "symbols": [
+          "ImagePreviewer::GetPreviewSizeAsync",
+          "ImagePreviewer::UpdateMaxImageSize",
+          "ImagePreviewer::OnScalingFactorChanged",
+          "ImagePreviewer::OnImageSizeChanged"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.FilePreviewer/FilePreviewer.xaml.cs",
+        "purpose": "Refreshes preview sizing and raises the event consumed by MainWindow when item or DPI state changes.",
+        "symbols": [
+          "FilePreview::UpdatePreviewSizeAsync",
+          "FilePreview::OnScalingFactorPropertyChanged",
+          "FilePreview::OnItemPropertyChanged"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.FilePreviewer/FilePreview.xaml",
+        "purpose": "Lays out the image inside the client Grid and binds its maximum display dimensions.",
+        "symbols": [
+          "FilePreview::ImagePreview"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.Common/Constants/WindowConstants.cs",
+        "purpose": "Defines the 80% monitor cap and code-side minimum dimensions that must share the same unit contract as XAML.",
+        "symbols": [
+          "WindowConstants::MaxWindowToMonitorRatio",
+          "WindowConstants::MinWindowWidth",
+          "WindowConstants::MinWindowHeight"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml",
+        "purpose": "Declares the client Grid, title-bar row, preview row, and competing XAML minimum dimensions.",
+        "symbols": [
+          "MainWindow::MainGrid",
+          "MainWindow::TitleBarControl",
+          "MainWindow::FilePreviewer"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+        "symbols": [
+          "ImagePreviewer::GetPreviewSizeAsync",
+          "ImagePreviewer::UpdateMaxImageSize"
+        ],
+        "current_behavior": "Image dimensions are returned as PreviewSize.MonitorSize and MaxImageSize is computed by dividing image pixels by ScalingFactor, without a documented shared unit contract with the outer window.",
+        "change": "Choose one effective-pixel representation for the preview request, carry it through the preview event, and make the conversion to physical HWND pixels explicit and single-owner. Keep image aspect ratio and avoid a second independent scale/round operation in the view.",
+        "code_block": "```csharp\n// Keep preview dimensions in effective pixels until the HWND boundary.\nvar contentSize = ConvertImagePixelsToEffectivePixels(ImageSize, monitorScale);\nreturn new PreviewSize { MonitorSize = contentSize, UseEffectivePixels = true };\n\n// Compute MaxImageSize from the same effective content size used by the window.\nMaxImageSize = ContentSize;\n```",
+        "edge_cases": [
+          "Preserve QOI and WIC fallback dimension loading.",
+          "Do not resize the visible front-buffer image prematurely during navigation or a DPI change.",
+          "Keep very large images subject to the monitor safe-zone cap."
+        ],
+        "tests": [
+          "Unit-test square, wide, and tall image dimensions at 1.25 and 1.75 scale factors.",
+          "Verify navigation and a scale-factor refresh use the same content-size contract."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "symbols": [
+          "MainWindow::FilePreviewer_PreviewSizeChanged",
+          "MainWindow::GetMonitorMaxContentSize",
+          "MainWindow::GetMonitorMinContentSize"
+        ],
+        "current_behavior": "The handler divides requested size by contentScale, fits it against monitor bounds, then adds TitleBarControl.ActualHeight; title-bar and content values can be in different effective/physical spaces and are rounded later by independent layout/HWND paths.",
+        "change": "Compute title-bar, minimum, maximum, fitted content, and outer window dimensions in one effective-pixel space. Apply the 80% cap before one final conversion/rounding of the complete outer rectangle, then use that same rounded content size for the image client area.",
+        "code_block": "```csharp\nvar content = FitInMonitor(requestedContent, maxContent, minContent);\nvar outer = new Size(content.Width, content.Height + titleBarHeightDip);\nvar roundedOuter = RoundAtPhysicalPixelBoundary(outer, monitorScale);\nvar roundedContent = SubtractRoundedTitleBar(roundedOuter, titleBarHeightDip, monitorScale);\nSetWindowAndPreviewSize(roundedOuter, roundedContent);\n```",
+        "edge_cases": [
+          "Use the current foreground monitor and current scale after a cross-display move.",
+          "Preserve pinned-window positioning and the 80% safe-zone behavior.",
+          "Ensure minimum dimensions remain enforceable without reintroducing the XAML/code disagreement."
+        ],
+        "tests": [
+          "Assert final outer and client rectangles differ only by the intended title-bar/chrome dimensions.",
+          "Exercise transitions between 125% and 175% monitors and navigation back to the original image."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/peek/Peek.FilePreviewer/FilePreview.xaml",
+        "symbols": [
+          "FilePreview::ImagePreview"
+        ],
+        "current_behavior": "The Image control is constrained by MaxWidth and MaxHeight inside a filling Grid, but no explicit alignment/size binding guarantees that its final client rectangle matches the rounded window content rectangle.",
+        "change": "Bind the image's effective content size from the shared sizing result and set alignment/stretch behavior deliberately so the image fills exactly the client rectangle while preserving aspect ratio; avoid adding arbitrary margins to hide the seam.",
+        "code_block": "```xml\n<Image x:Name=\"ImagePreview\"\n       Width=\"{x:Bind ImagePreviewer.ContentSize.Width}\"\n       Height=\"{x:Bind ImagePreviewer.ContentSize.Height}\"\n       Stretch=\"Uniform\"\n       HorizontalAlignment=\"Center\"\n       VerticalAlignment=\"Center\" />\n```",
+        "edge_cases": [
+          "Do not crop images when the safe-zone cap scales them down.",
+          "Preserve tooltip, loading opacity, and image navigation behavior.",
+          "Leave non-image preview controls unaffected."
+        ],
+        "tests": [
+          "Visual UI checks for no persistent edge gap on all supplied aspect ratios and scale factors.",
+          "Verify image content remains centered and uniformly scaled when capped."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/peek/Peek.Common/Constants/WindowConstants.cs and src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml",
+        "symbols": [
+          "WindowConstants::MinWindowWidth",
+          "WindowConstants::MinWindowHeight",
+          "MainWindow::MinWidth",
+          "MainWindow::MinHeight"
+        ],
+        "current_behavior": "Code-side minimums are 500x500 while XAML declares 480x320 DIPs, so the active minimum depends on the sizing path and scale.",
+        "change": "Select one source of truth and express it in the same unit space as the new sizing contract; use the Windows App SDK minimum-size API when available or explicitly convert the code-side minimums before applying them.",
+        "code_block": "```csharp\n// One minimum-size source, converted once for the current monitor.\nvar minimumDip = WindowConstants.GetMinimumContentSizeDip(monitorScale);\nApplyWindowMinimum(minimumDip);\n```",
+        "edge_cases": [
+          "Maintain accessibility/usability minimums for non-image previews.",
+          "Do not let minimums defeat the 80% monitor cap on small displays.",
+          "Coordinate with the assigned maintainer's related #50243 work instead of landing a competing definition."
+        ],
+        "tests": [
+          "Verify minimum sizes at 100%, 125%, and 175% scaling.",
+          "Confirm small-monitor behavior remains usable and does not introduce new seams."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the Peek solution using the repository's existing Peek build configuration and run the focused Peek UI tests for image preview, navigation, pinning, and scaling.",
+      "Reproduce all supplied 125% and 175% image cases and compare the rounded image/client/outer bounds, not only screenshot appearance.",
+      "Move the window between the 125% and 175% displays, navigate to another image and back, and verify the same image/client alignment.",
+      "Confirm pinned-window size/position, minimum window usability, 80% monitor cap, and non-image preview layout."
+    ],
+    "risks": [
+      "Changing the unit contract can affect every Peek preview type if the event or window sizing model is shared.",
+      "Rounding the outer HWND and client content incorrectly could cause a one-pixel crop or reintroduce cross-display resize jumps.",
+      "Minimum-size changes may alter existing window behavior and should be coordinated with the assigned maintainer's #50243 work.",
+      "The issue's apparent top/bottom seam can be visually obscured by matching title-bar and client colors, so bounds instrumentation is needed alongside screenshots."
+    ],
+    "alternatives": [
+      "Adding a small negative margin or oversizing the Image control would hide some seams but would be a brittle visual workaround and could crop content.",
+      "Changing only ImagePreview MaxWidth/MaxHeight would not fix title-bar, minimum-size, or outer HWND unit mismatches.",
+      "Waiting for the assigned maintainer's broader fix avoids duplicate work but leaves no explicit design coverage for this newly reported symptom; reconcile the design with that implementation before approval."
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve Peek sizing design",
+      "design_summary": "Normalize image, client-area, title-bar, minimum-size, and final HWND calculations to one effective-pixel contract with one physical-pixel rounding boundary; verify the supplied 125%/175% cases and coordinate with the assigned maintainer's related scaling work."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm coverage in Peek scaling work",
+      "comment": {
+        "body": "The supplied screenshots already establish the seam across multiple image sizes at 125% and 175%, so no generic logs or additional screenshots are needed. Could you confirm whether your broader Peek scaling/minimum-size work covers #50445 and, if not, share a focused before/after trace of the image content bounds, client-area bounds, title-bar height, and outer HWND bounds for one 125% and one 175% reproduction? That will distinguish a remaining rounding defect from work already covering the shared sizing path and let the implementation preserve the 80% safe zone and cross-display behavior."
+      }
+    }
+  ]
+}
