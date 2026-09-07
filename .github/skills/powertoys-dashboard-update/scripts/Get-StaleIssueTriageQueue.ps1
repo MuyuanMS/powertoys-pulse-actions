@@ -56,6 +56,22 @@ foreach ($row in @($index.items | Where-Object {
 
     $actions = @($artifact.actions | Where-Object { $null -ne $_ })
     $fixes = @($artifact.proposed_fixes | Where-Object { $null -ne $_ })
+    $requestInfo = @($actions | Where-Object { $_.type -eq 'request_info' }) |
+      Select-Object -First 1
+    if ($requestInfo) {
+      $commentBody = [string]$requestInfo.comment.body
+      $informationGaps = @($artifact.issue_context.information_gaps)
+      if ([string]$requestInfo.label -match '^(?i:request|ask for) (more )?information$') {
+        $reasons.Add('request_info label does not name the requested evidence')
+      }
+      if ($commentBody -notmatch '(?i)\b(please|could you|can you|would you|share|provide|confirm|capture|attach|run|reproduce)\b') {
+        $reasons.Add('request_info comment has no direct request')
+      }
+      if ($informationGaps.Count -gt 1 -and
+          $commentBody -notmatch '(?m)^\s*(?:[-*]|\d+[.)])\s+\S') {
+        $reasons.Add('request_info comment does not list multiple requested items clearly')
+      }
+    }
     if ($fixStatus -eq 'proposed') {
       if ($fixes.Count -eq 0) {
         $reasons.Add('missing proposed_fixes')
@@ -94,7 +110,6 @@ foreach ($row in @($index.items | Where-Object {
         $reasons.Add('yellow/red fix missing information gaps')
       }
       if ($nonGreen.Count -gt 0) {
-        $requestInfo = @($actions | Where-Object { $_.type -eq 'request_info' }) | Select-Object -First 1
         $commentBody = [string]$requestInfo.comment.body
         if ($commentBody.Trim().Length -lt 160) {
           $reasons.Add('request_info comment is too generic')
