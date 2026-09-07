@@ -1,0 +1,66 @@
+name: Sync an upstream issue mirror
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "microsoft/PowerToys issue number"
+        required: true
+        type: number
+      target_repository:
+        description: "Fork-side repository that owns the mirror"
+        required: true
+        default: "MuyuanMS/PowerToys"
+        type: string
+      apply_changes:
+        description: "Create or update the mirror (off performs a safe dry run)"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout automation scripts
+        uses: actions/checkout@v6
+
+      - name: Preview mirror synchronization
+        if: inputs.apply_changes == false
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          .\Sync-UpstreamIssueMirror.ps1 `
+            -Number ${{ inputs.issue_number }} `
+            -TargetRepository '${{ inputs.target_repository }}' `
+            -WhatIf
+
+      - name: Require cross-repository credential
+        if: inputs.apply_changes == true
+        shell: pwsh
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_GITHUB_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:MIRROR_TOKEN)) {
+            throw @'
+          MIRROR_GITHUB_TOKEN is not configured. Set it to a fine-grained
+          token with Metadata: read and Issues: write on only the selected
+          target repository.
+          '@
+          }
+
+      - name: Create or update mirror
+        if: inputs.apply_changes == true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.MIRROR_GITHUB_TOKEN }}
+        run: |
+          .\Sync-UpstreamIssueMirror.ps1 `
+            -Number ${{ inputs.issue_number }} `
+            -TargetRepository '${{ inputs.target_repository }}'
