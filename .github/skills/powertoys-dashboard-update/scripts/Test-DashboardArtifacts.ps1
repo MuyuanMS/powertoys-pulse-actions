@@ -157,7 +157,7 @@ foreach ($path in @($paths)) {
       $proposedComments |
         Where-Object {
           $_.kind -eq 'inline' -or
-          ($null -eq $_.kind -and $_.in_diff -eq $true)
+          $_.in_diff -eq $true
         }
     )
     foreach ($comment in $inlineComments) {
@@ -169,8 +169,11 @@ foreach ($path in @($paths)) {
       if ($comment.side -and $comment.side -ne 'RIGHT') {
         $errors.Add("$prefix inline comment '$($comment.id)' must target side RIGHT")
       }
-      if (([regex]::Matches([string]$comment.body, '(?s)```suggestion\s*\r?\n.+?\r?\n```')).Count -ne 1) {
-        $errors.Add("$prefix inline comment '$($comment.id)' must contain exactly one non-empty suggestion block")
+      $suggestionStarts = ([regex]::Matches([string]$comment.body, '(?i)```suggestion')).Count
+      $validSuggestions = ([regex]::Matches([string]$comment.body, '(?s)```suggestion\s*\r?\n.+?\r?\n```')).Count
+      if ($suggestionStarts -gt 0 -and
+          ($suggestionStarts -ne 1 -or $validSuggestions -ne 1)) {
+        $errors.Add("$prefix inline comment '$($comment.id)' has an invalid suggestion block")
       }
     }
     foreach ($comment in $proposedComments | Where-Object { $null -ne $_.confidence }) {
@@ -196,8 +199,8 @@ foreach ($path in @($paths)) {
     }
     if ($reviewAction -and $proposedComments.Count -gt 0 -and $inlineComments.Count -eq 0) {
       $presentationText = "$($reviewAction.label) $($reviewAction.note)"
-      if ($presentationText -notmatch '(?i)general|no inline|text block') {
-        $errors.Add("$prefix companion-only review action must disclose that it posts general notes with no inline suggestions")
+      if ($presentationText -notmatch '(?i)general|no inline|separate|conversation') {
+        $errors.Add("$prefix companion-only review action must disclose that it posts separate general PR comments")
       }
     }
   }
