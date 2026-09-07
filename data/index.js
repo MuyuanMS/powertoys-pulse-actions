@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-07T11:16:08.8596609+08:00",
+  "generated_at": "2026-09-07T11:35:51.4027533+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 373
   },
   "impact": {
-    "as_of": "2026-09-07T11:16:08.8596609+08:00",
+    "as_of": "2026-09-07T11:35:51.4027533+08:00",
     "issues_helped": 10,
     "prs_iterated": 29,
     "constructive_comments_posted": 3,
@@ -608,7 +608,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 669,
+        "fork_title": "[PR 50421] Fix grammar in Logging and Telemetry documentation",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50421-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/669"
+      }
     },
     {
       "id": "pr-50419",
@@ -642,7 +650,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 670,
+        "fork_title": "[PR 50419] Add shortcut guide v2 contribution to community.md",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50419-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/670"
+      }
     },
     {
       "id": "pr-50418",
@@ -713,7 +729,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 671,
+        "fork_title": "[PR 50414] [PTRun][UnitConverter] Use invariant casing for degree unit tokens",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50414-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/671"
+      }
     },
     {
       "id": "pr-50399",
@@ -998,7 +1022,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 667,
+        "fork_title": "[PR 50377] build(deps): bump azure/login from 3.0.1 to 3.0.2",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50377-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/667"
+      }
     },
     {
       "id": "pr-50375",
@@ -1115,11 +1147,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 651,
-        "fork_title": "[PR 50357] [Shortcut Guide] Support symlinked and unlocalized manifests",
+        "fork_number": 666,
+        "fork_title": "[PR 50357] [Shortcut Guide] Support symlinked and unlocalized manifests (rebased)",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50357",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/651"
+        "fork_branch": "pr-iterate/50357-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/666"
       }
     },
     {
@@ -1457,11 +1489,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 557,
-        "fork_title": "[PR 50268] Add anthropic support 12025191860560465632",
+        "fork_number": 672,
+        "fork_title": "[PR 50268] Add Anthropic support to Advanced Paste",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50268",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/557"
+        "fork_branch": "pr-iterate/50268-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/672"
       }
     },
     {
@@ -4938,7 +4970,7 @@ window.BOARD_INDEX = {
       "comments": 13,
       "priority": 10,
       "review_decision": "APPROVED",
-      "ci_state": "pending",
+      "ci_state": "failed",
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
