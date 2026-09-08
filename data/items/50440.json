@@ -4,97 +4,99 @@
   "number": 50440,
   "title": "The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)",
   "url": "https://github.com/microsoft/PowerToys/issues/50440",
-  "state": "OPEN",
+  "state": "open",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-LightSwitch"
   ],
   "assignees": [],
-  "generated_at": "2026-09-08T10:55:04Z",
-  "evaluated_at": "2026-09-08T10:55:04Z",
-  "source_updated_at": "2026-09-08T09:48:47Z",
+  "generated_at": "2026-09-08T15:10:00Z",
+  "evaluated_at": "2026-09-08T15:10:00Z",
+  "source_updated_at": "2026-09-08T14:31:55Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The report establishes that an enabled feature can later appear disabled and includes a diagnostic archive, but the latest discussion has not established whether the behavior recurs on the current stable build or whether the state loss affects only LightSwitch. The available code points to settings/module initialization as plausible areas, not a confirmed root cause.",
+    "status": "actionable_design",
+    "rationale": "The report describes a recurring loss of an enabled Light Switch state, and the supplied diagnostic triage found no crash signature. The repository has a dedicated Light Switch settings loader and file watcher, so a settings reload, persistence, or initialization boundary is a plausible code-fix area, but the exact transition that clears the setting is not confirmed.",
     "evidence": [
-      "The reporter says PowerToys 0.101.2362 sometimes disables LightSwitch without user action.",
-      "The reporter supplied PowerToysReport_2026-09-07-21-56-18.zip.",
-      "Automated triage found no matching crash or error signature in the diagnostic subset and suggested a silent persistence or initialization problem with medium confidence.",
-      "A maintainer asked whether the behavior is random or occurs after upgrading, and that question is unanswered."
+      "The reporter uses PowerToys 0.101.2362 stable on Windows build 26200 with a per-user installation and supplied a PowerToys diagnostic ZIP.",
+      "The reporter clarified that the feature disables every few days rather than only immediately after an upgrade.",
+      "The existing automated triage comment reports no matching error or crash signatures and characterizes the problem as a possible silent state-persistence or module-initialization issue.",
+      "LightSwitchSettings loads persisted schedule and theme-target values, watches the settings file, debounces changes, and reloads state asynchronously."
     ],
-    "recommended_action": "Request confirmation of recurrence and scope on the current stable build, then use the result to decide whether to investigate LightSwitch state persistence or a broader module-enable/settings path."
+    "recommended_action": "Run a focused Light Switch state-transition investigation with a fresh diagnostic archive captured immediately after the next spontaneous disable, then implement and test the confirmed persistence or reload fix.",
+    "full_design_candidate": true
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A repository fix is applicable, but the current evidence does not distinguish a LightSwitch settings persistence problem from a broader settings or module initialization problem."
+    "rationale": "No open or merged fix attempt was found for this issue. A repository change is applicable, but the failing state transition still needs to be distinguished between external settings overwrite, debounced reload, and module initialization."
   },
   "proposed_fixes": [
     {
-      "title": "Preserve enabled-module state across reload and startup",
-      "root_cause": "Hypothesis: a settings reload, migration, or module initialization path can write or consume an incomplete enabled-state snapshot, causing an enabled LightSwitch entry to be treated as disabled.",
+      "title": "Preserve Light Switch enablement across spontaneous settings reloads",
+      "root_cause": "Hypothesis: a settings-file rewrite or module reload can replace or reinitialize Light Switch state without preserving the user's enabled configuration; the current loader and asynchronous file-watcher path are the most relevant code boundaries.",
       "plan": [
-        "Trace the LightSwitch settings read/write and the general enabled-module state through startup and settings-change notifications.",
-        "Compare the persisted enabled state with the module's runtime initialization state after an observed disable event.",
-        "Ensure state reload and migration preserve an explicitly enabled module and add regression coverage for restart and settings-change boundaries."
+        "Trace the Light Switch enablement and schedule/theme-target values from Settings UI persistence through LightSwitchSettings::LoadSettings and module initialization.",
+        "Capture the exact settings-file and lifecycle transition that occurs when the feature disables, then guard reload or initialization so unchanged persisted enablement is not reset.",
+        "Add regression coverage for debounced settings reload, restart, and an external settings update while Light Switch is enabled."
       ],
       "verification": [
-        "On the affected stable build, reproduce the state loss and capture the time and whether any other module changes state.",
-        "After the owning path is identified, restart PowerToys and toggle unrelated settings repeatedly; verify LightSwitch remains enabled and its persisted state is unchanged."
+        "Reproduce the issue over the reported multi-day interval or with the identified triggering transition and confirm Light Switch remains enabled.",
+        "Run the focused Light Switch settings unit tests and verify that a settings reload preserves the persisted enablement and theme-target values."
       ],
       "confidence": {
-        "score": 60,
+        "score": 62,
         "level": "yellow",
-        "rationale": "The symptom and the LightSwitch/general-settings ownership fit a persistence or initialization defect, but the diagnostic subset showed no direct failure and the discussion does not yet identify the triggering transition."
+        "rationale": "The recurring symptom, silent diagnostic result, and dedicated asynchronous settings reload path align with a plausible state-reset defect, but no trace yet identifies which transition actually clears the setting."
       }
     }
   ],
   "issue_context": {
-    "summary": "The reporter observes that an enabled LightSwitch feature sometimes becomes disabled without an intentional change. A diagnostic archive was supplied, but the latest maintainer question about upgrade dependence and recurrence remains unanswered.",
+    "summary": "Light Switch intermittently turns itself off in stable 0.101.2362 after running for several days. The report includes a diagnostic archive and the author has clarified that the behavior is not tied to upgrading, but the archive and public discussion do not identify the state transition that disables the feature.",
     "known_information": [
-      "PowerToys version reported was 0.101.2362 on Windows build 26200.",
-      "The installation is per-user, non-elevated, and from GitHub.",
-      "The report names LightSwitch and General, and the expected state is that an enabled feature remains enabled.",
-      "A PowerToys diagnostic ZIP is attached to the issue.",
-      "Automated triage found no matching crash or error signature in its sanitized diagnostic subset."
+      "The affected module is Light Switch.",
+      "The reporter expects the feature to remain enabled after enabling it.",
+      "The reporter has observed the feature disable itself twice since the last installation, approximately every two or three days.",
+      "The issue includes a PowerToys diagnostic ZIP captured on 2026-09-07.",
+      "Automated triage found no matching error or crash signatures in its analyzed diagnostic subset.",
+      "The issue has Issue-Bug, Needs-Triage, and Product-LightSwitch labels and no assignee."
     ],
     "inferences": [
-      "The behavior may involve state persistence or module initialization rather than an exception-driven crash, but this is not confirmed.",
-      "If multiple enabled modules change together, the general settings path is more likely than a LightSwitch-only scheduler defect."
+      "The symptom may be caused by silent settings persistence, a settings-file reload, or module initialization rather than an exception-driven crash.",
+      "Because the failure is intermittent and not upgrade-triggered, a periodic lifecycle or external settings-write boundary is more likely than a one-time installer migration, but this is unconfirmed."
     ],
-    "analysis": "The issue is actionable only after one targeted clarification because the report mixes a module-specific example with a general claim about features being disabled. The repository has distinct LightSwitch settings/state code and a general enabled-module path, so the maintainer needs the recurrence and scope details to select the correct investigation boundary.",
+    "analysis": "The public evidence supports investigating the Light Switch settings and reload path instead of treating this as a generic crash report. The code's debounced file watcher and LoadSettings method provide concrete ownership signals, while the absence of a captured trigger means a full implementation design would otherwise risk fixing the wrong transition. A fresh archive immediately after reproduction and a precise trigger classification are the smallest additional evidence that can separate competing hypotheses.",
     "initial_investigation": [
-      "LightSwitch settings are represented in Settings.UI.Library and consumed by LightSwitchService state management, including reloads on settings changes.",
-      "LightSwitchStateManager reloads module settings before evaluating and applying the theme, making settings reload and persisted values relevant ownership points.",
-      "The issue's automated diagnostic summary did not identify a direct exception or crash signature.",
-      "No linked fix or duplicate was provided in the issue discussion."
+      "Reviewed LightSwitchSettings.cpp: it loads schedule, latitude/longitude, time offsets, and changeSystem/changeApps values under a mutex; a debounced file watcher calls LoadSettings asynchronously after settings-file changes.",
+      "Reviewed recent Light Switch history, including the July 2026 stable profile ID change and earlier settings/refactor work; no linked fix for this issue was identified.",
+      "Searched related Light Switch issues; existing results concern scheduling, theme behavior, profiles, and feature requests rather than this intermittent disable symptom.",
+      "Reviewed the complete issue body and five comments, including the maintainer question about upgrade correlation and the reporter's answer that the failure occurs every few days."
     ],
     "information_gaps": [
       {
-        "information": "Whether the behavior still reproduces on the current stable build after the reporter's latest update, and the approximate time or trigger when it happens.",
-        "why_needed": "This distinguishes an upgrade-specific regression from an ongoing state-loss defect and provides a correlation point for logs.",
-        "how_to_collect": "Use the current stable build, note the last time LightSwitch was confirmed enabled, and record the approximate time it becomes disabled."
+        "information": "A fresh PowerToys diagnostic archive captured immediately after Light Switch disables itself, plus the exact local time of the transition.",
+        "why_needed": "This can correlate the spontaneous disable with a settings-file write, restart, sleep/resume, scheduled mode transition, or module error and distinguish the competing root-cause hypotheses.",
+        "how_to_collect": "Please reproduce the problem and submit a comment containing /bugreport immediately after the feature turns off; include the approximate timestamp and whether the PC resumed from sleep or PowerToys restarted."
       },
       {
-        "information": "Whether only LightSwitch is disabled or other enabled PowerToys features change state at the same time.",
-        "why_needed": "This separates a LightSwitch-specific path from general enabled-module/settings persistence.",
-        "how_to_collect": "After the next occurrence, compare the affected module list in Settings and submit a fresh /bugreport immediately after reproducing."
+        "information": "Whether only Light Switch becomes disabled, or whether other PowerToys modules also lose their enabled state at the same time.",
+        "why_needed": "A single-module symptom points to Light Switch persistence or initialization, while multiple modules would implicate shared settings storage or an installer/update process.",
+        "how_to_collect": "After the next occurrence, record the enabled/disabled state of the other PowerToys modules before changing any settings."
       }
     ]
   },
   "actions": [
     {
       "type": "request_info",
-      "label": "Confirm LightSwitch state loss",
-      "note": "Ask for the two issue-specific facts that determine whether to investigate LightSwitch or general settings persistence.",
+      "label": "Request Light Switch activation trace",
+      "note": "Ask for only the evidence needed to identify the intermittent state transition.",
       "comment": {
-        "body": "Thanks for the report and for attaching the diagnostic ZIP. The report confirms that LightSwitch can appear disabled without an intentional change, but the current discussion does not yet show whether this still reproduces on the current stable build or whether other PowerToys features change state with it. Please provide:\n\n1. Whether it reproduces after your latest update, including the approximate time or trigger.\n2. Whether only LightSwitch is disabled or other enabled features change too.\n\nAfter the next occurrence, please compare the affected module list in Settings and submit a fresh /bugreport immediately so the logs cover the failure window."
+        "body": "Thanks for confirming that Light Switch turns off every few days rather than only after an upgrade, and for providing the first diagnostic report. The current report does not show what event clears the setting. Please provide the next occurrence as follows:\n\n1. Immediately after Light Switch turns off, submit a comment containing /bugreport and include the approximate time it happened; please also note whether the PC had resumed from sleep or PowerToys had restarted.\n2. Confirm whether any other PowerToys modules lost their enabled state at the same time.\n\nThis will let us distinguish a Light Switch settings reload from a shared settings or lifecycle problem."
       }
     },
     {
       "type": "approve_design",
-      "label": "Design fix for enabled-state persistence",
-      "note": "Approve a focused investigation of LightSwitch and general enabled-module state persistence after the requested evidence narrows the ownership boundary."
+      "label": "Design Light Switch state persistence fix",
+      "note": "Approve a fork-side investigation and implementation focused on the settings reload and initialization boundaries after the targeted evidence is available."
     }
   ]
 }
