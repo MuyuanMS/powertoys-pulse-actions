@@ -1,30 +1,152 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50444",
   "number": 50444,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "review_blocked",
+  "owes": "reviewer",
   "pending_author": false,
-  "generated_at": "2026-09-08T11:29:53.4409523Z",
-  "evaluated_at": "2026-09-08T11:29:53.4409523Z",
+  "generated_at": "2026-09-08T15:32:15.206319Z",
+  "evaluated_at": "2026-09-08T15:32:15.206319Z",
   "source_updated_at": "2026-09-08T10:22:30Z",
   "head_sha": "c2cb5f47ac1d6b0b1c2d0f9dcbb8df3d896be1de",
   "title": "ZoomIt - add smooth zoom animations",
   "url": "https://github.com/microsoft/PowerToys/pull/50444",
+  "author": "foxmsft",
+  "authorAssociation": "MEMBER",
+  "isCommunity": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Product-ZoomIt",
+    "Ready for review"
+  ],
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "summary": "Current upstream head c2cb5f47ac1d6b0b1c2d0f9dcbb8df3d896be1de was resumed and validated, but the latest freshly requested Copilot review on the review copy produced two unresolved comments. Because the stop-initiation cutoff was reached, this is blocked rather than review_ready.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Selected for bounded re-review, but the resumable worker returned no durable current-head result before the cutoff; resume the existing fork review next run."
+    "glyph": "BLOCKED",
+    "label": "Fresh review still has unresolved findings",
+    "detail": "The current-head review copy builds and passes the targeted native tests, but the latest fresh Copilot review generated two comments and two unresolved threads, so terminal review_ready criteria are not met."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Resume another review-fix round",
+    "reason": "Fix the two fresh Copilot comments, rebuild ZoomItBreak, ZoomIt, ZoomItAnimation.UnitTests, run all 17 native tests, resolve threads, and request another fresh Copilot review before drafting or publishing any upstream action."
+  },
+  "blockers": [
+    {
+      "detail": "Fresh Copilot review at 2026-09-08T15:30:52Z reported that save/crop handling still floors the fractional viewport and reconstructs the zoomed save from integer saveX/saveY rather than carrying the fractional source offset and destination compensation used by WM_PAINT. The comment targets src/modules/ZoomIt/ZoomIt/Zoomit.cpp around lines 10917-10920 and also references the annotation rendering path around line 11636.",
+      "remediation": "Centralize or persist the fractional viewport transform so rendering, save/crop output, annotation input/conversion, clipping, and invalidation all use the same source bounds and destination compensation; then rebuild the required ZoomIt sequence, reply to and resolve the thread, and request a fresh Copilot review."
+    },
+    {
+      "detail": "Fresh Copilot review at 2026-09-08T15:30:52Z reported that the non-composited live-zoom Ctrl+Up/Ctrl+Down path updates zoomLevel and stops the animation but leaves transformDirty false, so with the cursor inside movement boundaries the next timer tick may build no matrix and may not call the magnifier transform API. The comment targets src/modules/ZoomIt/ZoomIt/Zoomit.cpp around lines 12249-12250.",
+      "remediation": "Mark the transform dirty after stopping the animation on the non-DWM path, matching the show-path behavior; then rebuild the required ZoomIt sequence, reply to and resolve the thread, and request a fresh Copilot review."
+    }
+  ],
+  "phase0": {
+    "author": "foxmsft",
+    "author_association": "MEMBER",
+    "bar": "repository member; routine community process nags skipped",
+    "disposition": "Proceed",
+    "who_owes_next": "Reviewer automation",
+    "gates_tripped": [],
+    "note": "The PR is open, non-draft, labeled Product-ZoomIt and Ready for review, authored by a repository member, and current reported checks are successful."
+  },
+  "judgment": {
+    "status": "review_blocked",
+    "rationale": "The current upstream delta from the previously reviewed head only removes moved BreakTimer project/filter entries, and the review copy was forward-updated to include that live head plus prior review fixes. However, the final fresh Copilot review did not converge, leaving two unresolved current-head findings.",
+    "evidence": [
+      "Prior reviewed upstream head was bcd8ad3844350cde8a5e7a6cb681f9806c104128; live upstream head is c2cb5f47ac1d6b0b1c2d0f9dcbb8df3d896be1de.",
+      "The upstream delta from prior reviewed head is commit c2cb5f47a, modifying src/modules/ZoomIt/ZoomIt/ZoomIt.vcxproj and src/modules/ZoomIt/ZoomIt/ZoomIt.vcxproj.filters to remove moved BreakTimer entries.",
+      "The review copy was forward-updated without rewriting protected branch history and includes live upstream head plus review fixes.",
+      "Required validation sequence passed after the latest local fixes: ZoomItBreak Debug x64, ZoomIt Debug x64, ZoomItAnimation.UnitTests Debug x64, and VSTest 17/17.",
+      "Latest fresh Copilot review at 2026-09-08T15:30:52Z generated two comments and left two unresolved threads."
+    ],
+    "recommended_action": "Do not publish an upstream review from this artifact. Resume the fix loop for the two blockers, rerun validation, resolve threads, and require a fresh zero-comment Copilot review before emitting review_ready or a current-head post_review/request_changes artifact."
+  },
   "proposed_comments": [],
   "actions": [],
+  "safe_actions": [
+    "No upstream write is authorized or safe from this blocked artifact.",
+    "Do not post review_ready: the latest fresh review had two comments and two unresolved threads.",
+    "Resume with the exact remediation in blockers before drafting public review actions."
+  ],
+  "safeActions": {
+    "proposedReviewDecision": "blocked",
+    "postReview": {
+      "available": false,
+      "reason": "Fresh Copilot review did not converge."
+    },
+    "requestChanges": {
+      "available": false,
+      "reason": "Review-copy findings remain unresolved; publishable upstream findings must be regenerated after convergence."
+    },
+    "postComment": {
+      "available": false,
+      "reason": "No terminal public comment is safe while the review loop is blocked."
+    },
+    "applyLabel": {
+      "available": false,
+      "reason": "No label action is part of this artifact."
+    },
+    "closePr": {
+      "available": false,
+      "reason": "Phase 0 proceeds; this is not a close recommendation."
+    },
+    "triggerAzure": {
+      "available": false,
+      "reason": "Current upstream checks are already successful; the blocker is review convergence."
+    }
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "review_decision": "REVIEW_REQUIRED",
+    "head_sha": "c2cb5f47ac1d6b0b1c2d0f9dcbb8df3d896be1de",
+    "head_ref": "foxmsft/smoothzoom",
+    "base_branch": "main",
+    "updated_at": "2026-09-08T10:22:30Z",
+    "changed_file_count": 9,
+    "reported_checks": {
+      "total": 10,
+      "successful": 10,
+      "failing": [],
+      "pending": [],
+      "note": "All reported upstream checks were successful at artifact generation time."
+    }
+  },
+  "verification": {
+    "result": "blocked_after_local_pass",
+    "scope": "ZoomIt smooth zoom animation and native ZoomAnimation unit tests",
+    "checks": [
+      "ZoomItBreak Debug x64 build passed.",
+      "ZoomIt Debug x64 build passed.",
+      "ZoomItAnimation.UnitTests Debug x64 build passed.",
+      "VSTest passed 17 of 17 ZoomItAnimation tests.",
+      "Final fresh Copilot review did not pass terminal convergence: two comments, two unresolved threads."
+    ]
+  },
+  "test_instructions": [
+    "After remediating blockers, rerun the required sequence under the shared lock: ZoomItBreak Debug x64, ZoomIt Debug x64, ZoomItAnimation.UnitTests Debug x64, then VSTest for all 17 ZoomItAnimation native tests.",
+    "Then request a fresh Copilot review and confirm zero new comments and zero unresolved threads before drafting upstream actions."
+  ],
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-08T11:29:53.4409523Z"
+    "phase": "review_blocked",
+    "checkpoint_at": "2026-09-08T15:32:15.206319Z",
+    "resume_action": "fix-two-fresh-copilot-comments-and-rerun-loop",
+    "upstream_head_sha": "c2cb5f47ac1d6b0b1c2d0f9dcbb8df3d896be1de",
+    "latest_copilot_review_at": "2026-09-08T15:30:52Z",
+    "latest_copilot_new_comments": 2,
+    "unresolved_copilot_threads": 2,
+    "build_result": "passed",
+    "upstream_ci": "passed"
   },
   "freshness": {
-    "queued_at": "2026-09-08T11:29:53.4409523Z",
-    "checkpoint_at": "2026-09-08T11:29:53.4409523Z"
+    "status": "current_head_but_review_blocked",
+    "evaluated_at": "2026-09-08T15:32:15.206319Z",
+    "source_updated_at": "2026-09-08T10:22:30Z",
+    "head_sha": "c2cb5f47ac1d6b0b1c2d0f9dcbb8df3d896be1de"
   }
 }
