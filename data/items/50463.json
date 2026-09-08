@@ -1,30 +1,131 @@
 {
-  "number": 50463,
+  "schemaVersion": 5,
   "kind": "pr",
-  "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-09-08T11:29:53.5578726Z",
-  "evaluated_at": "2026-09-08T11:29:53.5578726Z",
-  "source_updated_at": "2026-09-08T11:20:48Z",
-  "head_sha": "a47bef0fca7ed53acb61d47fa2e0cc41e7e53e5c",
-  "title": "",
+  "number": 50463,
+  "repository": "microsoft/PowerToys",
+  "title": "Move monaco to an external dependency",
   "url": "https://github.com/microsoft/PowerToys/pull/50463",
-  "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Selected during this bounded run, but its upstream head changed before a worker slot became available; start or resume review from this current head next run."
+  "generated_at": "2026-09-08T13:38:14.3771993Z",
+  "evaluated_at": "2026-09-08T13:38:14.3842348Z",
+  "source_updated_at": "2026-09-08T13:13:23Z",
+  "head_sha": "d5958c566314b5f8d64c85d7fdbf2106b417be8a",
+  "requested_head": "afc11b1f1e9b49f34eb4442656ed5616a48a3191",
+  "observed_head_before_review": "a82258de94fbacba2da2bd095858a8dbf539fcd3",
+  "current_head": "d5958c566314b5f8d64c85d7fdbf2106b417be8a",
+  "stage": "review_blocked",
+  "pending_author": false,
+  "author_wait_evidence": null,
+  "phase0": {
+    "author": "noraa-junker",
+    "association": "COLLABORATOR",
+    "draft": false,
+    "title_state": "The live title is not WIP and the PR is non-draft; Phase 0 was inspected instead of excluded.",
+    "disposition": "proceed_with_code_review_when_current",
+    "gates": [
+      {
+        "id": "P1",
+        "status": "passed",
+        "evidence": "license/cla is SUCCESS."
+      },
+      {
+        "id": "P2",
+        "status": "not_required",
+        "evidence": "Automated intake says visual evidence is not needed because this is a build/dependency packaging change, not a visible UI change."
+      },
+      {
+        "id": "P4",
+        "status": "pending",
+        "evidence": "Azure Pipelines build for current head d5958c566314b5f8d64c85d7fdbf2106b417be8a is still in progress/pending; resolved affected UI test projects and Command Palette Toolkit SDK jobs are successful."
+      },
+      {
+        "id": "P8",
+        "status": "not_triggered",
+        "evidence": "Live PR is non-draft and no longer titled WIP."
+      }
+    ],
+    "notes": [
+      "Author is a collaborator, so community-template process nags were skipped. The PR body still has empty checklist/validation fields, but that was not treated as an author-facing gate for a collaborator PR."
+    ]
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
+  "review": {
+    "status": "blocked_stale_after_cutoff",
+    "rationale": "Fork-side review work and a targeted build were completed against a reviewed branch derived from a82258de94fbacba2da2bd095858a8dbf539fcd3 with additional review fixes, but the upstream PR advanced to d5958c566314b5f8d64c85d7fdbf2106b417be8a before the review could be refreshed and the 13:35:50Z initiation cutoff passed. No current-head upstream action is safe to publish from this checkpoint.",
+    "copilot": {
+      "fresh_requests_completed": [
+        "2026-09-08T13:15:52Z",
+        "2026-09-08T13:24:01Z",
+        "2026-09-08T13:32:03Z"
+      ],
+      "latest_review_commit": "ba5c5ab9dcd216fd5bc2e4ca04f55bc33cecf4f3",
+      "latest_published_inline_comments": 0,
+      "unresolved_copilot_threads_at_checkpoint": 7,
+      "latest_suppressed_issue": "Documentation still says to update only pkgVersion; it also needs to instruct updating the pinned package integrity value."
+    },
+    "validation": {
+      "status": "passed_on_stale_review_branch",
+      "build_lock": "<PowerToysCheckout>\\.pr-review-build.lock",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.cmd in src\\common\\FilePreviewCommon",
+        "tools\\build\\build.cmd in src\\modules\\registrypreview\\RegistryPreviewUILib"
+      ],
+      "evidence": [
+        "Build retry succeeded after setting malformed inherited GIT_CONFIG_VALUE_2 to false for the validation process.",
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe existed after build.",
+        "<PowerToysCheckout>\\src\\Monaco\\monacoSRC\\min\\vs\\loader.js existed after build.",
+        "<PowerToysCheckout>\\src\\Monaco\\monacoSRC\\.monaco-version existed after build."
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "monaco-download-integrity-and-cache",
+      "severity": "high",
+      "confidence": 92,
+      "status": "fixed_on_stale_review_branch_not_publishable",
+      "paths": [
+        "src/common/FilePreviewCommon/downloadMonaco.ps1",
+        "src/Monaco.props"
+      ],
+      "summary": "The build-time Monaco download needs a pinned integrity check, terminating process/cmdlet failures, an atomic version-stamped publish, and shared Monaco.props wiring so clean builds include generated assets reliably."
+    },
+    {
+      "id": "registrypreview-build-order-reference",
+      "severity": "medium",
+      "confidence": 88,
+      "status": "fixed_on_stale_review_branch_not_publishable",
+      "paths": [
+        "src/modules/registrypreview/RegistryPreviewUILib/RegistryPreviewUILib.csproj"
+      ],
+      "summary": "The FilePreviewCommon project reference should be build-order-only with ReferenceOutputAssembly=\"false\" so RegistryPreviewUILib does not gain an unintended compile/runtime dependency."
+    },
+    {
+      "id": "monaco-update-doc-integrity",
+      "severity": "medium",
+      "confidence": 86,
+      "status": "open_on_review_branch_needs_current_head_check",
+      "paths": [
+        "doc/devdocs/common/FilePreviewCommon.md"
+      ],
+      "summary": "The Monaco update instructions must mention updating the pinned package integrity value when pkgVersion changes; otherwise the documented update process will fail the integrity check."
+    }
+  ],
   "actions": [],
-  "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-08T11:29:53.5578726Z"
-  },
-  "freshness": {
-    "queued_at": "2026-09-08T11:29:53.5578726Z",
-    "checkpoint_at": "2026-09-08T11:29:53.5578726Z"
-  }
+  "blockers": [
+    {
+      "code": "upstream_head_changed_before_cutoff",
+      "detail": "The review was started from observed head a82258de94fbacba2da2bd095858a8dbf539fcd3, but the live upstream PR head is now d5958c566314b5f8d64c85d7fdbf2106b417be8a. The requested afc11b1f1e9b49f34eb4442656ed5616a48a3191 is also no longer the live head.",
+      "remediation": "After the deadline window, refresh the review branch from upstream head d5958c566314b5f8d64c85d7fdbf2106b417be8a, compare whether the Monaco.props/downloadMonaco.ps1/RegistryPreviewUILib fixes and FilePreviewCommon.md integrity documentation are still needed, then regenerate a current-head post_review or request_changes artifact."
+    },
+    {
+      "code": "copilot_loop_not_converged_at_cutoff",
+      "detail": "The latest fresh Copilot review returned zero published inline comments but left seven unresolved Copilot review threads from the private review loop, and the latest suppressed issue about FilePreviewCommon.md was not fixed before the 13:35:50Z cutoff.",
+      "remediation": "Resolve or supersede the outstanding Copilot threads after applying any still-valid current-head fixes, request one more fresh Copilot review, and require zero new published comments plus zero unresolved Copilot threads before marking review_ready."
+    },
+    {
+      "code": "ci_pending_current_head",
+      "detail": "Current upstream head d5958c566314b5f8d64c85d7fdbf2106b417be8a still has pending Azure Pipelines PowerToys CI jobs at checkpoint time.",
+      "remediation": "Wait for the current-head Azure Pipelines build jobs to complete; if any required job fails, inspect the failing log and include the exact failing check and required author remediation in the refreshed artifact."
+    }
+  ]
 }
