@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "id": "pr-49915",
   "number": 49915,
   "kind": "pr",
@@ -7,26 +7,25 @@
   "stage": "review_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T07:50:49Z",
-  "evaluated_at": "2026-09-07T07:57:21Z",
-  "source_updated_at": "2026-09-06T21:47:25Z",
-  "head_sha": "a040cb76effe00cbb7a8211160d6251d22bc33ad",
-  "fork_head_sha": "cdeef64d8decf4eaddddd4197b5b74219ca8e8a7",
+  "generated_at": "2026-09-08T11:19:30Z",
+  "evaluated_at": "2026-09-08T11:21:06Z",
+  "source_updated_at": "2026-09-08T09:43:02Z",
+  "head_sha": "c194623b992e6458472577ac41c941e97ca0baf6",
   "title": "CmdPal: Shelf (1/n) - Add quick access shelf prototype",
   "url": "https://github.com/microsoft/PowerToys/pull/49915",
   "author": "jiripolasek",
   "author_association": "COLLABORATOR",
   "confidence": "high",
-  "summary": "The current upstream head still needs five focused fixes for mnemonic handling, recycled shelf access-key bindings, UI Automation metadata, overflow icon accessibility, and Alt+Down routing. The fixes are implemented on the fork head, the fork diff remains limited to the upstream PR's 16 files, and targeted Debug builds plus all 303 CmdPal ViewModels tests pass.",
+  "summary": "The rebased current upstream head still needs five focused fixes for mnemonic handling, recycled shelf access-key bindings, UI Automation metadata, overflow icon accessibility, and Alt+Down routing. The corrected implementation passed the targeted Debug build chain and all 328 CmdPal ViewModels tests.",
   "status": {
     "glyph": "ACTION",
     "label": "Current-head findings drafted",
-    "detail": "The review is pinned to upstream head a040cb76effe00cbb7a8211160d6251d22bc33ad. Five apply-ready findings remain; no upstream review or comment was posted."
+    "detail": "Five apply-ready findings remain on upstream head c194623b992e6458472577ac41c941e97ca0baf6. No upstream review or comment was posted."
   },
   "next_action": {
     "glyph": "ACTION",
     "label": "Review and post the drafted request-changes review",
-    "reason": "The proposed comments target the current upstream diff. Recheck the upstream head and conversation immediately before any authorized maintainer publishes them."
+    "reason": "Recheck the upstream head and conversation immediately before an authorized maintainer publishes the five current-head suggestions."
   },
   "proposed_comments": [
     {
@@ -36,7 +35,7 @@
       "title": "Limit menu-character suppression to shelf digits",
       "confidence": {
         "score": 99,
-        "rationale": "The current unconditional WM_MENUCHAR branch returns MNC_CLOSE for every unmatched mnemonic, while the shelf only needs Alt+0 through Alt+9 chime suppression."
+        "rationale": "The unconditional WM_MENUCHAR branch returns MNC_CLOSE for every unmatched mnemonic, while the shelf only needs Alt+0 through Alt+9 chime suppression."
       },
       "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
       "startLine": 1714,
@@ -53,14 +52,14 @@
       "title": "Refresh access keys when repeater elements are reused",
       "confidence": {
         "score": 91,
-        "rationale": "Visible shelf items and their indexes are rebuilt as capacity changes, while OneTime bindings do not reliably refresh values on recycled ItemsRepeater elements."
+        "rationale": "Visible shelf items and indexes are rebuilt as capacity changes, while OneTime bindings do not reliably refresh values on recycled ItemsRepeater elements."
       },
       "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml",
       "startLine": 486,
       "line": 500,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Refresh access keys when repeater elements are reused\n\n**Severity:** `medium`\n\nThe visible shelf collection is rebuilt when available capacity changes, and `ItemsRepeater` can reuse an existing element for a different `QuickAccessShelfItem`. With `Mode=OneTime`, the button and tooltip can retain the previous item's digit, exposing a stale shortcut and invoking a different command than the UI advertises. Keep these three bindings live so recycled elements receive the current item's shortcut.\n\n```suggestion\n                                AccessKey=\"{x:Bind ShortcutDigit, Mode=OneWay}\"\n                                AutomationProperties.Name=\"{x:Bind Command.Title, Mode=OneWay}\"\n                                Click=\"QuickAccessShelfItem_Click\"\n                                Style=\"{StaticResource SubtleButtonStyle}\"\n                                Tag=\"{x:Bind}\"\n                                UseSystemFocusVisuals=\"{StaticResource UseSystemFocusVisuals}\">\n                                <ToolTipService.ToolTip>\n                                    <ToolTip>\n                                        <StackPanel Spacing=\"2\">\n                                            <TextBlock Text=\"{x:Bind Command.Title, Mode=OneWay}\" />\n                                            <TextBlock\n                                                Foreground=\"{ThemeResource TextFillColorSecondaryBrush}\"\n                                                Style=\"{StaticResource CaptionTextBlockStyle}\"\n                                                Text=\"{x:Bind ShortcutDigit, Mode=OneWay, Converter={StaticResource QuickAccessShortcutTextConverter}}\"\n                                                Visibility=\"{x:Bind ShortcutDigit, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}\" />\n```",
+      "body": "### Refresh access keys when repeater elements are reused\n\n**Severity:** `medium`\n\nThe visible shelf collection is rebuilt when available capacity changes, and `ItemsRepeater` can reuse an existing element for a different item. With `Mode=OneTime`, the button and tooltip can retain the previous item's digit, exposing a stale shortcut. Keep these bindings live so recycled elements receive the current shortcut.\n\n```suggestion\n                                AccessKey=\"{x:Bind ShortcutDigit, Mode=OneWay}\"\n                                AutomationProperties.Name=\"{x:Bind Command.Title, Mode=OneWay}\"\n                                Click=\"QuickAccessShelfItem_Click\"\n                                Style=\"{StaticResource SubtleButtonStyle}\"\n                                Tag=\"{x:Bind}\"\n                                UseSystemFocusVisuals=\"{StaticResource UseSystemFocusVisuals}\">\n                                <ToolTipService.ToolTip>\n                                    <ToolTip>\n                                        <StackPanel Spacing=\"2\">\n                                            <TextBlock Text=\"{x:Bind Command.Title, Mode=OneWay}\" />\n                                            <TextBlock\n                                                Foreground=\"{ThemeResource TextFillColorSecondaryBrush}\"\n                                                Style=\"{StaticResource CaptionTextBlockStyle}\"\n                                                Text=\"{x:Bind ShortcutDigit, Mode=OneWay, Converter={StaticResource QuickAccessShortcutTextConverter}}\"\n                                                Visibility=\"{x:Bind ShortcutDigit, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}\" />\n```",
       "disposition": "proposed"
     },
     {
@@ -77,7 +76,7 @@
       "line": 420,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Provide the custom landmark type for assistive technology\n\n**Severity:** `medium`\n\nThe shelf is declared as a custom landmark, but its `x:Uid` supplies only an accessible name. Custom landmarks also require a localized landmark type; without it, screen readers cannot announce what kind of region users entered. Add the matching localized resource for this surface.\n\n```suggestion\n  <data name=\"QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name\" xml:space=\"preserve\">\n    <value>Quick access</value>\n  </data>\n  <data name=\"QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.LocalizedLandmarkType\" xml:space=\"preserve\">\n    <value>Quick access shelf</value>\n  </data>\n```",
+      "body": "### Provide the custom landmark type for assistive technology\n\n**Severity:** `medium`\n\nThe shelf is declared as a custom landmark, but its `x:Uid` supplies only an accessible name. Custom landmarks also require a localized landmark type; without it, screen readers cannot announce what kind of region users entered.\n\n```suggestion\n  <data name=\"QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name\" xml:space=\"preserve\">\n    <value>Quick access</value>\n  </data>\n  <data name=\"QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.LocalizedLandmarkType\" xml:space=\"preserve\">\n    <value>Quick access shelf</value>\n  </data>\n```",
       "disposition": "proposed"
     },
     {
@@ -90,10 +89,10 @@
         "rationale": "Each MenuFlyoutItem already exposes its command title, while the generated IconBox has no independent accessible name and otherwise remains visible to UI Automation."
       },
       "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
-      "line": 1013,
+      "line": 1036,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Hide decorative overflow icons from the UI Automation tree\n\n**Severity:** `medium`\n\nEach overflow menu item already exposes its command title, so the generated icon is decorative. Leaving the `IconBox` in the content accessibility view can create a separate unlabeled UI Automation node beside every command. Mark it as raw to keep the menu's accessible structure focused on the named item.\n\n```suggestion\n            iconBox.SourceRequested += IconProvider.SourceRequested16;\n            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAccessibilityView(\n                iconBox,\n                Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);\n```",
+      "body": "### Hide decorative overflow icons from the UI Automation tree\n\n**Severity:** `medium`\n\nEach overflow menu item already exposes its command title, so the generated icon is decorative. Leaving the `IconBox` in the content accessibility view can create a separate unlabeled UI Automation node beside every command.\n\n```suggestion\n            iconBox.SourceRequested += IconProvider.SourceRequested16;\n            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAccessibilityView(\n                iconBox,\n                Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);\n```",
       "disposition": "proposed"
     },
     {
@@ -103,14 +102,14 @@
       "title": "Let the focused filter keep its Alt+Down shortcut",
       "confidence": {
         "score": 99,
-        "rationale": "The shell preview handler runs before the filter control's handler and currently consumes Alt+Down whenever collapsed compact mode can expand."
+        "rationale": "The shell preview handler runs before the filter control's handler and consumes Alt+Down whenever collapsed compact mode can expand."
       },
       "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
-      "startLine": 1085,
-      "line": 1097,
+      "startLine": 1108,
+      "line": 1120,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Let the focused filter keep its Alt+Down shortcut\n\n**Severity:** `medium`\n\nThis shell-level preview handler runs before the focused filter dropdown receives its existing Alt+Down command. In collapsed compact mode, the shell therefore expands the palette instead of opening the filter. Detect events originating within `FiltersDropDown` and route them through the existing child/default handling before claiming the chord for compact expansion.\n\n```suggestion\n            case VirtualKey.Down when modifiers.OnlyAlt:\n                {\n                    var source = e.OriginalSource as DependencyObject;\n                    while (source is not null && !ReferenceEquals(source, shellPage.FiltersDropDown))\n                    {\n                        source = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(source);\n                    }\n\n                    if (source is not null)\n                    {\n                        goto default;\n                    }\n\n                    if (shellPage.TryExpandCollapsedCompact())\n                    {\n                        e.Handled = true;\n                    }\n                    else\n                    {\n                        // Outside collapsed compact mode, Alt+Down remains available to requested\n                        // command keybindings just like every other unreserved chord.\n                        goto default;\n                    }\n\n                    break;\n                }\n```",
+      "body": "### Let the focused filter keep its Alt+Down shortcut\n\n**Severity:** `medium`\n\nThis shell-level preview handler runs before the focused filter dropdown receives its existing Alt+Down command. In collapsed compact mode, the shell therefore expands the palette instead of opening the filter. Detect events originating within `FiltersDropDown` before claiming the chord for compact expansion.\n\n```suggestion\n            case VirtualKey.Down when modifiers.OnlyAlt:\n                {\n                    var source = e.OriginalSource as DependencyObject;\n                    while (source is not null && !ReferenceEquals(source, shellPage.FiltersDropDown))\n                    {\n                        source = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(source);\n                    }\n\n                    if (source is not null)\n                    {\n                        goto default;\n                    }\n\n                    if (shellPage.TryExpandCollapsedCompact())\n                    {\n                        e.Handled = true;\n                    }\n                    else\n                    {\n                        // Outside collapsed compact mode, Alt+Down remains available to requested\n                        // command keybindings just like every other unreserved chord.\n                        goto default;\n                    }\n\n                    break;\n                }\n```",
       "disposition": "proposed"
     }
   ],
@@ -122,56 +121,47 @@
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Five apply-ready inline suggestions are pinned to the current upstream head. Require explicit authorization and a final upstream freshness check before publishing.",
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 49915,
         "event": "REQUEST_CHANGES",
-        "head_sha": "a040cb76effe00cbb7a8211160d6251d22bc33ad",
+        "head_sha": "c194623b992e6458472577ac41c941e97ca0baf6",
         "body_prefix": "Thanks for the Shelf work. Before merge, please address the mnemonic scoping, access-key refresh, accessibility metadata, and Alt+Down routing issues below."
-      }
+      },
+      "note": "Five apply-ready inline suggestions are pinned to the current upstream head. Require explicit authorization and a final upstream freshness check before publishing."
     }
   ],
   "judgment": {
     "status": "review_drafted",
-    "rationale": "The current upstream head does not include five valid fixes retained on the converged fork branch. The issues affect normal window mnemonics, recycled shelf shortcut presentation, screen-reader semantics, overflow menu accessibility, and the existing filter dropdown shortcut.",
+    "rationale": "The current upstream head does not include five validated fixes affecting normal window mnemonics, recycled shelf shortcut presentation, screen-reader semantics, overflow menu accessibility, and the existing filter dropdown shortcut.",
     "evidence": [
-      "Live upstream head is a040cb76effe00cbb7a8211160d6251d22bc33ad; reviewed fork head is cdeef64d8decf4eaddddd4197b5b74219ca8e8a7.",
-      "The fork PR contains exactly the same 16 changed paths as upstream, with no extra or missing files.",
-      "A fresh Copilot review submitted at 2026-09-07T07:22:53Z produced zero new published comments, and zero Copilot threads remain unresolved.",
-      "The PowerToys Debug x64 essentials build, CmdPal UI build, CmdPal module-interface build, and CmdPal ViewModels test-project build all exited successfully.",
-      "The CmdPal UI ViewModels unit-test assembly passed 303 of 303 tests."
+      "The upstream PR remains open and non-draft at head c194623b992e6458472577ac41c941e97ca0baf6.",
+      "The current review diff contains exactly the same 16 changed paths as the upstream PR.",
+      "A freshly requested automated review completed with zero new published comments, and zero review threads remain unresolved.",
+      "The Debug x64 essentials, CmdPal UI, CmdPal module-interface, and CmdPal ViewModels test-project builds succeeded.",
+      "The CmdPal UI ViewModels unit-test assembly passed 328 of 328 tests."
     ],
-    "recommended_action": "After a final live freshness check and explicit maintainer approval, publish the five current-head suggestions as a request-changes review.",
-    "evaluated_at": "2026-09-07T07:57:21Z",
-    "source_updated_at": "2026-09-06T21:47:25Z"
+    "recommended_action": "After explicit maintainer approval and a final current-head freshness check, publish the five suggestions as a request-changes review."
   },
   "phase0": {
     "author_association": "COLLABORATOR",
     "disposition": "Proceed",
     "gates_tripped": [],
     "who_owes_next": "Maintainer review workflow",
-    "note": "Collaborator-authored change with a recording, settings imagery, linked issue context, a current maintainer approval, green CLA/intake/telemetry checks, and successful x64/arm64 upstream CI. Routine community-contributor process gates do not apply."
+    "note": "Collaborator-authored change with a recording, settings imagery, linked issue context, green CLA/intake/telemetry checks, and successful x64 and arm64 CI. Routine community-contributor process gates do not apply."
   },
-  "fork_pr": {
-    "number": 562,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/562"
-  },
-  "fork_branch": "pr-iterate/49915-v3",
   "workflow": {
     "phase": "review_ready",
-    "review_round": 8,
-    "latest_copilot_review_at": "2026-09-07T07:22:53Z",
+    "latest_copilot_review_at": "2026-09-08T11:07:45Z",
     "latest_copilot_published_comments": 0,
     "unresolved_copilot_threads": 0,
-    "copilot_result": "clean_zero_published_comments",
-    "checkpoint_at": "2026-09-07T07:57:21Z"
+    "copilot_result": "clean_zero_published_comments"
   },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "upstream_updated_at": "2026-09-06T21:47:25Z",
-    "upstream_head_sha": "a040cb76effe00cbb7a8211160d6251d22bc33ad",
+    "upstream_updated_at": "2026-09-08T09:43:02Z",
+    "upstream_head_sha": "c194623b992e6458472577ac41c941e97ca0baf6",
     "changed_file_count": 16,
     "additions": 765,
     "deletions": 41,
@@ -181,26 +171,23 @@
     "reported_checks": {
       "failing": 0,
       "pending": 0,
-      "summary": "The current upstream checks are green, including dependency review, intake, telemetry, license/CLA, and PowerToys CI for x64 and arm64."
+      "summary": "Dependency review, intake, telemetry, license/CLA, and PowerToys CI for x64 and arm64 succeeded on the current head."
     }
   },
-  "validation": {
-    "upstream_head_matches": true,
-    "fork_diff_matches_upstream_scope": true,
+  "verification": {
+    "result": "passed_with_findings",
     "configuration": "x64 Debug",
-    "builds": [
-      "PowerToys Debug x64 essentials: passed",
-      "Microsoft.CmdPal.UI Debug x64: passed",
-      "PowerToys.CmdPalModuleInterface Debug x64: passed",
-      "Microsoft.CmdPal.UI.ViewModels.UnitTests Debug x64: passed"
-    ],
-    "tests": "Microsoft.CmdPal.UI.ViewModels.UnitTests: 303 passed, 0 failed, 0 skipped.",
-    "result": "passed_with_findings"
+    "checks": [
+      "PowerToys essentials build passed.",
+      "CmdPal UI build passed.",
+      "CmdPal module-interface build passed.",
+      "CmdPal ViewModels test-project build passed.",
+      "CmdPal UI ViewModels tests passed: 328 passed, 0 failed, 0 skipped."
+    ]
   },
   "freshness": {
     "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-07T07:57:21Z",
-    "upstream_head_sha": "a040cb76effe00cbb7a8211160d6251d22bc33ad",
-    "fork_head_sha": "cdeef64d8decf4eaddddd4197b5b74219ca8e8a7"
+    "evaluated_at": "2026-09-08T11:21:06Z",
+    "head_sha": "c194623b992e6458472577ac41c941e97ca0baf6"
   }
 }
