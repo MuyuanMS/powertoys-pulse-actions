@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T01:20:29.2786597+08:00",
+  "generated_at": "2026-09-09T01:41:20.8654017+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,9 +91,9 @@ window.BOARD_INDEX = {
     "artifacts": 387
   },
   "impact": {
-    "as_of": "2026-09-09T01:20:29.2786597+08:00",
+    "as_of": "2026-09-09T01:41:20.8654017+08:00",
     "issues_helped": 10,
-    "prs_iterated": 27,
+    "prs_iterated": 26,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
@@ -3421,11 +3421,11 @@ window.BOARD_INDEX = {
       "merge_state": "DIRTY",
       "mirror": {
         "kind": "pr",
-        "fork_number": 711,
+        "fork_number": 717,
         "fork_title": "[PR 49963] [Peek] Enable reusable previewers for Peek to fix flicker",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49963-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/711"
+        "fork_branch": "pr-iterate/49963-v4",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/717"
       }
     },
     {
@@ -6177,15 +6177,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 345,
-        "fork_title": "[PR 48658] Installer: fix terminate script hanging on fresh install",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/48658-v4",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/345"
-      }
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-48627",
