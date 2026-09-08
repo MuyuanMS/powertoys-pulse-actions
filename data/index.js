@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T01:14:12.0153409+08:00",
+  "generated_at": "2026-09-09T01:20:29.2786597+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 150,
-    "open_issues": 7736,
-    "community": 7168,
-    "artifacts": 385
+    "open_issues": 7738,
+    "community": 7170,
+    "artifacts": 387
   },
   "impact": {
-    "as_of": "2026-09-09T01:14:12.0153409+08:00",
+    "as_of": "2026-09-09T01:20:29.2786597+08:00",
     "issues_helped": 10,
     "prs_iterated": 27,
     "constructive_comments_posted": 3,
@@ -482,7 +482,9 @@ window.BOARD_INDEX = {
     16,
     10,
     8,
-    4
+    4,
+    50468,
+    50465
   ],
   "items": [
     {
@@ -28242,7 +28244,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_information",
+      "stage": "waiting_on_author",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/08/2026 04:08:44",
@@ -28250,10 +28252,7 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
@@ -263319,6 +263318,75 @@ window.BOARD_INDEX = {
       "created_at": "2019-05-07T01:10:22Z",
       "updated_at": "2024-05-31T18:32:19Z",
       "comments": 27,
+      "priority": null
+    },
+    {
+      "id": "issue-50468",
+      "kind": "issue",
+      "number": 50468,
+      "url": "https://github.com/microsoft/PowerToys/issues/50468",
+      "title": "PowerToys Run: one-off startup crash – PowerToys.ManagedCommon 0.98.1.0 not found",
+      "author": "boardtc",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "waiting_on_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "09/08/2026 16:51:51",
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-08T16:41:51Z",
+      "updated_at": "2026-09-08T16:51:51Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-50465",
+      "kind": "issue",
+      "number": 50465,
+      "url": "https://github.com/microsoft/PowerToys/issues/50465",
+      "title": "[Advanced Paste] - Media transcoding truncates filenames with multiple periods",
+      "author": "carmatos",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "fix",
+      "stage": "design_ready",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-08T15:40:04Z",
+      "updated_at": "2026-09-08T15:40:04Z",
+      "comments": 0,
       "priority": null
     }
   ]
