@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-08T11:36:40.7257867+08:00",
+  "generated_at": "2026-09-08T12:00:37.7316617+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 375
   },
   "impact": {
-    "as_of": "2026-09-08T11:36:40.7257867+08:00",
+    "as_of": "2026-09-08T12:00:37.7316617+08:00",
     "issues_helped": 10,
     "prs_iterated": 27,
     "constructive_comments_posted": 3,
@@ -1772,18 +1772,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "post_review",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "waiting_on_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-09-07T00:30:50.0000000Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 2,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post 2 current-head review items"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Quick Accent",
         "Ready for review"
@@ -2581,8 +2578,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve",
-        "label": "Approve clean review"
+        "type": "trigger_ci",
+        "label": "Re-run failed Azure Pipelines CI"
       },
       "labels": [
         "Product-Shortcut Guide",
@@ -2934,18 +2931,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_ready",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "waiting_on_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "09/07/2026 03:44:13",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve",
-        "label": "Approve"
-      },
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Ready for review"
@@ -48350,8 +48344,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Post 0.101 manual-update guidance"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -50547,8 +50541,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -53317,8 +53311,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -53361,8 +53355,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -54094,8 +54088,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "type": "post_comment",
+        "label": "Link existing fix"
       },
       "labels": [
         "Issue-Bug",
@@ -73056,8 +73050,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Post matching-version Mouse Without Borders guidance"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -102157,8 +102151,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Mark handled by package fix"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -123767,7 +123761,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "owned_elsewhere",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -158680,7 +158674,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Link existing fix"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -186825,7 +186822,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "design_ready",
+      "stage": "reproduction_ready",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -186834,8 +186831,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "reproduce",
+        "label": "Reproduce Copilot-key Right Ctrl mapping"
       },
       "labels": [
         "Issue-Bug",
@@ -201483,10 +201480,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "needs_reply",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "needs_information",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "09/07/2026 07:38:48",
       "has_artifact": true,
       "agent_status": "fix",
       "issue_type": "bug",
@@ -207085,17 +207082,17 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "ownership_review",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "needs_information",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "09/07/2026 18:39:04",
       "has_artifact": true,
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "post_comment",
-        "label": "Explain native Citrix ownership"
+        "type": "request_info",
+        "label": "Reply with suggested comments"
       },
       "labels": [
         "Issue-Bug",
@@ -347677,7 +347674,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "owned_elsewhere",
+      "stage": "handled",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -347687,7 +347684,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "post_comment",
-        "label": "Link the canonical New+ classic-menu issue"
+        "label": "Link canonical New+ tracker"
       },
       "labels": [
         "Issue-Bug",
@@ -393085,7 +393082,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "post_comment",
-        "label": "Post duplicate-triage note linking #47585"
+        "label": "Link canonical Grab And Move tracker"
       },
       "labels": [
         "Issue-Bug",
