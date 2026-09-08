@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "id": "pr-49427",
   "number": 49427,
   "kind": "pr",
@@ -7,10 +7,10 @@
   "stage": "request_changes",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T09:24:12.8712804Z",
-  "evaluated_at": "2026-09-07T09:24:12.8712804Z",
-  "source_updated_at": "2026-09-07T02:08:32Z",
-  "head_sha": "4f83d0a4577434561524ff74805f2620a628f057",
+  "generated_at": "2026-09-08T04:55:31.4986803Z",
+  "evaluated_at": "2026-09-08T04:55:31.4986803Z",
+  "source_updated_at": "2026-09-08T03:21:07Z",
+  "head_sha": "9b1bfece79fb80f6883c07641690281f53fbcd03",
   "title": "Add DSC v3 profile resource to deploy key and shortcut remappings",
   "url": "https://github.com/microsoft/PowerToys/pull/49427",
   "author": "Gijsreyn",
@@ -19,32 +19,59 @@
   "isMine": false,
   "state": "OPEN",
   "draft": false,
-  "labels": [],
+  "labels": [
+    "Area-Localization",
+    "Product-Keyboard Manager",
+    "Ready for review"
+  ],
   "confidence": "High",
-  "processVerdict": "ask",
-  "summary": "The current-head review found two author-facing issues: the profile-resource integration tests use live user settings and the production synchronization event, making them destructive and order-dependent, and the current x64 release validation is failing. Isolate the tests from the user's settings and event state, then investigate and restore a passing x64 release build before merge.",
+  "processVerdict": "proceed",
+  "summary": "The current upstream head has been mirrored into the durable fork review, the fork changes remain scoped to the same 26 upstream files, a freshly requested Copilot review returned zero new published comments, and zero Copilot threads remain unresolved. Debug x64 essentials, the DSC resource, and its unit-test project built successfully, and all 101 DSC unit tests passed. One high-confidence author-facing concern remains: the integration tests still overwrite the active user's Keyboard Manager settings and signal the production reload event instead of using isolated test storage and signaling.",
   "status": {
     "glyph": "ACTION",
     "label": "Request-changes review ready",
-    "detail": "The review is pinned to upstream head 4f83d0a4577434561524ff74805f2620a628f057. CLA, intake, telemetry, and arm64 release validation pass, but the x64 release validation is failing."
+    "detail": "Review is pinned to upstream head 9b1bfece79fb80f6883c07641690281f53fbcd03. Fork review convergence and local validation passed; one high-severity test-isolation finding remains for maintainer approval."
   },
   "next_action": {
     "glyph": "ACTION",
-    "label": "Request changes for test isolation and failed x64 validation",
-    "reason": "The author should make the integration tests hermetic and resolve the current x64 release failure, after which the head and checks must be revalidated."
+    "label": "Request test isolation changes",
+    "reason": "The current integration tests can temporarily replace a developer's real Keyboard Manager profile and notify a running engine. Post only after explicit maintainer authorization and a final freshness check."
   },
-  "needs_revalidation": false,
   "phase0": {
-    "verdict": "ask",
-    "disposition": "Ask",
+    "verdict": "proceed",
+    "disposition": "Proceed",
     "author": "Gijsreyn",
     "author_association": "CONTRIBUTOR",
     "bar": "full community-contributor process review",
-    "owes_after_post": "author",
-    "processAsks": [
-      "Investigate and resolve the failed x64 release validation on the current head."
+    "who_owes_next": "Maintainer review decision",
+    "gates_tripped": [],
+    "processAsks": [],
+    "summary": "The PR is open, non-draft, atomic, linked to issues 38233 and 4452, and includes tests and documentation. CLA, intake, and telemetry checks pass. The latest head has no Azure Pipelines build result, which is expected for an external-fork PR until an authorized maintainer triggers it and is not treated as a failed process gate.",
+    "evidence": [
+      "Author association is CONTRIBUTOR, so the full community-contributor process bar was applied.",
+      "The PR description documents scope, replacement semantics, tests, localization, and developer documentation.",
+      "Issue 38233 contains maintainer feedback supporting DSC coverage for Keyboard Manager remappings; issue 4452 supplies import/export context.",
+      "Searches for open PRs linked to issue 38233 or KeyboardManagerProfile found no competing implementation.",
+      "license/cla, pr-intake, and detect-telemetry-events pass on the current head.",
+      "No current failing build or spelling check is reported; Azure Pipelines has not yet been triggered for this external-fork head.",
+      "One older design-comment thread remains unresolved upstream, but later maintainer approval and continued CI coordination show no current author-blocking process request."
+    ]
+  },
+  "judgment": {
+    "status": "review_findings",
+    "rationale": "The implementation and fork-side corrective commits are build- and test-clean, but the command-level integration tests still use SettingsUtils.Default against the signed-in user's real Keyboard Manager settings directory and the production reload event. This can transiently apply sample remappings to a running Keyboard Manager instance, and cleanup restores files without notifying the engine to reload the restored profile.",
+    "evidence": [
+      "ProfileResourceKeyboardManagerTest saves and replaces settings.json, default.json, and work.json under the normal Keyboard Manager settings path.",
+      "Set_SignalsSettingsChangedEvent opens ProfileFunctionData.SettingsEventName, the same auto-reset event consumed by the production Keyboard Manager engine.",
+      "Test cleanup restores or deletes the files but does not signal the engine after restoration.",
+      "The current upstream commit adds a mutable elevation-check hook for CI but does not isolate settings storage or event signaling.",
+      "The fork review branch includes the current upstream head plus fixes for persistence, malformed profiles, remap conditions, unsupported stored key codes, and related regression coverage.",
+      "The latest freshly requested Copilot review at 2026-09-08T04:52:02Z produced zero new published inline comments, and the fork has zero unresolved Copilot threads.",
+      "Debug x64 essentials and targeted DSC builds passed, and PowerToys.DSC.UnitTests passed 101 of 101 tests."
     ],
-    "summary": "The PR is open, non-draft, and has successful CLA, intake, and telemetry checks. The current x64 release validation is failing, so the PR does not clear the CI gate."
+    "recommended_action": "Request that the integration tests use isolated settings storage and a test-only signaling dependency, with cleanup that cannot leave a running Keyboard Manager process on temporary remappings.",
+    "evaluated_at": "2026-09-08T04:55:31.4986803Z",
+    "source_updated_at": "2026-09-08T03:21:07Z"
   },
   "proposed_comments": [
     {
@@ -54,22 +81,9 @@
       "title": "Make profile-resource integration tests hermetic",
       "confidence": {
         "score": 98,
-        "rationale": "The integration tests write the real Keyboard Manager settings files and use the production synchronization event, so another local Keyboard Manager instance or concurrent test run can consume the event, retain remappings, or prevent cleanup."
+        "rationale": "The current test class directly uses SettingsUtils.Default and the production Keyboard Manager reload event; cleanup restores disk files but does not reload the restored state in a running engine."
       },
-      "body": "### Make profile-resource integration tests hermetic\n\n**Severity:** `high`\n\nThe profile-resource integration tests currently operate on the user's real Keyboard Manager settings directory and the production synchronization event. That makes the test outcome dependent on the local user's settings and on other processes, and cleanup can restore the files without reloading the restored state, leaving test remappings active. Run the tests against an isolated settings root and test-only synchronization primitive, or otherwise fully virtualize those dependencies, and ensure cleanup reloads the restored state before the suite exits.",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "resolve-x64-release-failure",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Resolve the current x64 release validation failure",
-      "confidence": {
-        "score": 99,
-        "rationale": "The current upstream commit status reports the x64 release build and aggregate PowerToys CI as failed while the arm64 release build succeeds."
-      },
-      "body": "### Resolve the current x64 release validation failure\n\n**Severity:** `high`\n\nThe current head has a failed x64 release validation result and the aggregate PowerToys CI result is also failing, while the arm64 release result succeeds. Please inspect the x64 failure, fix any issue attributable to this change, and rerun the affected validation so the current head is green before merge.",
+      "body": "### Make profile-resource integration tests hermetic\n\n**Severity:** `high`\n\nThese tests still replace the signed-in user's real Keyboard Manager `settings.json`, `default.json`, and `work.json` files and signal the production reload event. A running Keyboard Manager instance can therefore load the temporary sample profile, and cleanup restores the files without signaling another reload, so the test mappings may remain active until the engine restarts. Please inject isolated settings storage and a test-only signaling dependency (including the elevation check) so the suite never reads, writes, or signals live user state.",
       "in_diff": false,
       "disposition": "proposed"
     }
@@ -78,47 +92,114 @@
     {
       "id": "request-changes-49427",
       "type": "request_changes",
-      "label": "Request changes with two current-head review items",
+      "label": "Request changes with one general review note",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "The request is pinned to the current upstream head. Recheck the head, checks, comments, reviews, and threads before publication.",
+      "note": "General review note with no inline suggestion. Recheck the upstream head, checks, comments, reviews, and thread state immediately before publication.",
       "review": {
         "pr": 49427,
         "pullRequest": 49427,
         "repository": "microsoft/PowerToys",
-        "head_sha": "4f83d0a4577434561524ff74805f2620a628f057",
+        "head_sha": "9b1bfece79fb80f6883c07641690281f53fbcd03",
         "event": "REQUEST_CHANGES",
-        "body_prefix": "Thanks for adding the DSC v3 profile resource. Before merge, please make the profile-resource integration tests hermetic instead of using live user settings and the production synchronization event, and resolve the current x64 release validation failure."
+        "body_prefix": "Thanks for the thorough DSC profile work and the latest test fix. One test-isolation issue still needs to be addressed before merge: the integration tests must not modify or signal the signed-in user's live Keyboard Manager configuration."
       }
     }
   ],
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "review_decision": "APPROVED",
-    "head_sha": "4f83d0a4577434561524ff74805f2620a628f057",
-    "updated_at": "2026-09-07T02:08:32Z",
+    "review_decision": "REVIEW_REQUIRED",
+    "mergeable": true,
+    "merge_state_status": "BLOCKED",
+    "head_sha": "9b1bfece79fb80f6883c07641690281f53fbcd03",
+    "updated_at": "2026-09-08T03:21:07Z",
     "author": "Gijsreyn",
     "author_association": "CONTRIBUTOR",
     "assignees": [],
-    "review_requests": [],
-    "issue_comment_count": 14,
-    "review_count": 7,
-    "review_thread_count": 0,
-    "unresolved_upstream_review_threads": 0,
+    "issue_comment_count": 13,
+    "review_count": 15,
+    "review_thread_count": 16,
+    "unresolved_upstream_review_threads": 1,
     "reported_checks": {
-      "total": 9,
-      "successful": 7,
-      "failing": 2,
+      "total": 3,
+      "successful": 3,
+      "failing": 0,
       "pending": 0,
-      "summary": "CLA, intake, telemetry, command palette SDK, affected UI test resolution, and arm64 release validation succeeded. The x64 release validation and aggregate PowerToys CI results failed."
+      "summary": "CLA, PR intake, and telemetry checks pass. No Azure Pipelines build result is attached to the new external-fork head."
     }
   },
+  "fork_pr": {
+    "repository": "MuyuanMS/PowerToys",
+    "number": 692,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/692",
+    "branch": "pr-iterate/49427-v9",
+    "base_branch": "review-base-49427-current",
+    "head_sha": "b4c4de4fc4d59b676345de9a58a0646c3e0e02cb",
+    "reviewed_upstream_head": "9b1bfece79fb80f6883c07641690281f53fbcd03",
+    "file_count": 26,
+    "scope_matches_upstream": true
+  },
+  "fork_branch": "pr-iterate/49427-v9",
+  "workflow": {
+    "phase": "request_changes",
+    "checkpoint_at": "2026-09-08T04:55:31.4986803Z",
+    "copilot_rounds": 11,
+    "copilot_latest_review_at": "2026-09-08T04:52:02Z",
+    "copilot_result": "clean_zero_published_comments",
+    "unresolved_copilot_threads": 0,
+    "local_validation": "completed"
+  },
   "freshness": {
-    "evaluated_at": "2026-09-07T09:24:12.8712804Z",
-    "head_sha": "4f83d0a4577434561524ff74805f2620a628f057",
-    "head_updated_at": "2026-09-07T02:08:32Z",
-    "status": "fresh"
-  }
+    "checkpoint_at": "2026-09-08T04:55:31.4986803Z",
+    "live_upstream_head": "9b1bfece79fb80f6883c07641690281f53fbcd03",
+    "live_source_updated_at": "2026-09-08T03:21:07Z"
+  },
+  "build_evidence": {
+    "status": "passed",
+    "lock": "<PowerToysCheckout>\\.pr-review-build.lock",
+    "commands": [
+      "tools\\build\\build-essentials.cmd",
+      "src\\dsc\\v3\\PowerToys.DSC: tools\\build\\build.cmd",
+      "src\\dsc\\v3\\PowerToys.DSC.UnitTests: tools\\build\\build.cmd",
+      "vstest.console.exe PowerToys.DSC.UnitTests.dll /Platform:x64"
+    ],
+    "tests": {
+      "status": "passed",
+      "passed": 101,
+      "failed": 0,
+      "skipped": 0
+    },
+    "outputs": [
+      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.DSC.exe"
+    ],
+    "notes": [
+      "Inherited GIT_CONFIG_* variables were cleared before build and test commands.",
+      "POWERTOYS_DISABLE_SPECTRE=1 was set.",
+      "The first lock acquisition waited 30 seconds for the shared lock and did not bypass it; final targeted validation reacquired the same lock.",
+      "Targeted DSC and unit-test error logs are empty. The DSC build reports the existing unrelated CsWinRT1028 warning in ManagedCommon."
+    ]
+  },
+  "testInstructions": [
+    "Launch the already-built runner at <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe and enable Keyboard Manager.",
+    "From a non-elevated shell, run <PowerToysCheckout>\\x64\\Debug\\PowerToys.DSC.exe export --resource profile --module KeyboardManager and save the current output.",
+    "Apply a disposable profile with set, confirm the remapping activates without restarting PowerToys, then use test to verify the desired state.",
+    "Restore the exported profile and verify key, shortcut, chord, app-specific, text, run-program, URI, and tap-alone condition entries round-trip without loss."
+  ],
+  "copilot": {
+    "latest_review_at": "2026-09-08T04:52:02Z",
+    "reviewed_fork_head": "b4c4de4fc4d59b676345de9a58a0646c3e0e02cb",
+    "new_comments": 0,
+    "unresolved_threads": 0,
+    "suppressed_comments_ignored_after_round_five": true
+  },
+  "safe_actions": [
+    "Do not post to microsoft/PowerToys without explicit maintainer approval.",
+    "Fork-side review fixes are pushed and the fork PR is converged.",
+    "Before publishing, revalidate upstream head 9b1bfece79fb80f6883c07641690281f53fbcd03 and the current discussion/check state."
+  ],
+  "upstream_writes": false,
+  "dashboard_modified": false
 }

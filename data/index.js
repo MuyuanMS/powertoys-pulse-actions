@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-08T12:48:30.7522624+08:00",
+  "generated_at": "2026-09-08T13:18:00.5759225+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 383
   },
   "impact": {
-    "as_of": "2026-09-08T12:48:30.7522624+08:00",
+    "as_of": "2026-09-08T13:18:00.5759225+08:00",
     "issues_helped": 10,
     "prs_iterated": 27,
     "constructive_comments_posted": 3,
@@ -693,15 +693,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve clean review"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3244,17 +3247,17 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_ready",
-      "owes": "none",
+      "stage": "review_drafted",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 3,
       "primary_action": {
-        "type": "approve",
-        "label": "Approve"
+        "type": "post_review",
+        "label": "Post selected review suggestions"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -4866,10 +4869,10 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 2,
+      "proposed_open": 1,
       "primary_action": {
         "type": "request_changes",
-        "label": "Request changes with two current-head review items"
+        "label": "Request changes with one general review note"
       },
       "labels": [
         "Area-Localization",

@@ -4,59 +4,234 @@
   "number": 49963,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
-  "owes": "none",
+  "stage": "review_drafted",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T20:58:29.8636812Z",
-  "evaluated_at": "2026-09-03T20:58:29.8636812Z",
-  "source_updated_at": "2026-08-30T00:55:59Z",
-  "url": "https://github.com/microsoft/PowerToys/pull/49963",
+  "generated_at": "2026-09-08T05:03:43.1259923Z",
+  "evaluated_at": "2026-09-08T05:03:43.1259923Z",
+  "source_updated_at": "2026-09-08T02:16:16Z",
+  "head_sha": "e2138655d5edce9b00926a654d7825e5d01f2769",
   "title": "[Peek] Enable reusable previewers for Peek to fix flicker",
+  "url": "https://github.com/microsoft/PowerToys/pull/49963",
+  "author": "daverayment",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "head_sha": "4c4c3a66d200e23b0496240dbbec1c7d890da2e6",
-  "summary": "The current-head fork review is clean for the Peek reusable-previewer change. Copilot review converged with zero unresolved threads and no current author-facing findings; prior targeted Peek FilePreviewer and unit-test project builds have zero error logs.",
+  "summary": "Current-head review is converged on the refreshed fork mirror. The latest fresh Copilot review generated zero new published comments, all fork Copilot threads are resolved, and focused Peek builds/tests passed. The upstream PR currently has merge conflicts, but that does not suppress the current supported review findings.",
   "status": {
-    "glyph": "✅",
-    "label": "Review ready — clean",
-    "detail": "Copilot loop is clean and targeted Peek validation logs are error-free."
+    "glyph": "review",
+    "label": "Current-head review drafted",
+    "detail": "Upstream head e2138655d5edce9b00926a654d7825e5d01f2769 is fully reviewed. The fork review at 529f9c84552213c1f2c41f3d74533bd8915cbe92 converged with a fresh zero-comment Copilot pass and zero unresolved threads; three current upstream findings await maintainer approval."
   },
-  "next_action": "Approve the current review after rechecking that the upstream head is unchanged.",
-  "needs_revalidation": false,
-  "proposed_comments": [],
+  "next_action": {
+    "glyph": "post",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "The suggestions are pinned to the current upstream head. Recheck freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys. The live merge conflict should be handled separately from the review comments."
+  },
   "actions": [
     {
-      "id": "approve-review-49963",
-      "type": "approve",
-      "label": "Approve",
+      "id": "post-review-49963",
+      "type": "post_review",
+      "label": "Post selected review suggestions",
       "primary": true,
-      "note": "The current-head review found no comments. This is a maintainer decision only; no upstream approval is submitted automatically."
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 49963,
+        "pullRequest": 49963,
+        "event": "COMMENT",
+        "head_sha": "e2138655d5edce9b00926a654d7825e5d01f2769",
+        "body_prefix": "Thanks for the Peek flicker improvements and the added async/reuse coverage. I found a few remaining current-head issues around the new image buffering and reused previewer state that should be addressed before this merges."
+      },
+      "note": "Mandatory: revalidate the upstream head and activity snapshot, validate the pinned review payload, and require explicit maintainer approval before publishing."
     }
   ],
+  "proposed_comments": [
+    {
+      "id": "present-source-changes-immediately",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Present ordinary Source changes immediately",
+      "path": "src/modules/peek/Peek.FilePreviewer/Controls/DoubleBufferedImageControl.xaml.cs",
+      "start_line": 83,
+      "line": 87,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Present ordinary Source changes immediately\n\n**Severity:** `medium`\n\nAfter the first image is displayed, assigning `Source` only stages the new value in the hidden buffer and never promotes it. Any caller that uses the dependency property directly can therefore keep showing the previous image indefinitely. Present normal `Source` updates immediately and reserve `PrepareNextImage` for coordinated staged swaps.\n\n```suggestion\n        // Ordinary Source changes should present immediately. Coordinated transitions use PrepareNextImage.\n        _currentImage.Opacity = 1;\n        _currentImage.Source = newSource;\n        _hiddenImage.Source = null;\n        _hiddenImage.Opacity = 0;\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The control only assigns the new source to _hiddenImage in UpdateSource after the first load, and no subsequent call promotes that buffer for ordinary dependency-property updates."
+      }
+    },
+    {
+      "id": "preserve-image-intrinsic-bounds",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Preserve intrinsic image bounds with double buffering",
+      "body": "### Preserve intrinsic image bounds with double buffering\n\n**Severity:** `medium`\n\nThe new buffered image control removed the previous `MaxWidth` and `MaxHeight` bindings that were derived from the image's intrinsic size and DPI scale. Because the host enforces a minimum content area, small images can now be enlarged to fill that area instead of staying at native size. Please restore the image previewer's DPI-adjusted maximum size on the buffered control, including the interface/property support needed for the binding.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current XAML replaces the bounded Image with a Stretch-aligned buffered control and the current IImagePreviewer no longer exposes the MaxImageSize value used by the old binding."
+      }
+    },
+    {
+      "id": "guard-unsupported-preview-ui-commits",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Discard stale unsupported-preview UI and icon updates",
+      "body": "### Discard stale unsupported-preview UI and icon updates\n\n**Severity:** `medium`\n\n`RunOnUiThread` and the icon-loading awaits can complete after navigation has canceled and rebound the reusable unsupported-file previewer to a different item. The queued delegate can then restore the old file name/date or `Loaded` state, and the later icon assignment can overwrite the new item's icon. Recheck both cancellation and the current bound item inside delayed UI work and again after asynchronous icon retrieval before mutating the shared preview state.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The load path captures currentItem but mutates Preview and State inside delayed UI/asynchronous continuations without a final current-item guard on the current upstream head."
+      }
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted current-head review for explicit maintainer approval.",
+    "Post nothing upstream until the pinned head and activity snapshot are revalidated.",
+    "Hold or edit any suggestion without changing upstream labels, review state, or PR state.",
+    "Treat the live upstream merge conflict as merge readiness context, not as a reason to suppress valid review comments.",
+    "Rerun the fork review loop if the upstream head changes."
+  ],
+  "needs_revalidation": false,
+  "phase0": {
+    "author": "daverayment",
+    "author_association": "COLLABORATOR",
+    "bar": "repository collaborator; process nags skipped",
+    "disposition": "Proceed",
+    "owes_after_posting": "author",
+    "gates_tripped": [],
+    "note": "The collaborator-authored PR has visual evidence and validation notes in the description. CLA, intake, telemetry detection, and dependency review are successful; the Azure CI aggregate is action_required because the PR is currently dirty/has conflicts, not because a review finding should be suppressed.",
+    "evidence": [
+      "The PR is open, non-draft, and authored by a collaborator.",
+      "The PR description includes unit-test/manual validation and before/after recordings.",
+      "The current live upstream head is e2138655d5edce9b00926a654d7825e5d01f2769 with updated_at/source_updated_at 2026-09-08T02:16:16Z.",
+      "GitHub reports mergeable_state dirty; this is live merge-readiness context separate from the review findings."
+    ]
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "e2138655d5edce9b00926a654d7825e5d01f2769",
+    "base_sha": "ddc536c69668837470439ecce68b7ce1b2094175",
+    "updated_at": "2026-09-08T02:16:16Z",
+    "source_updated_at": "2026-09-08T02:16:16Z",
+    "newest_commit_at": "2026-09-07T21:52:43Z",
+    "commit_count": 8,
+    "changed_file_count": 27,
+    "additions": 1605,
+    "deletions": 365,
+    "issue_comment_count": 10,
+    "review_comment_count": 10,
+    "review_count": 10,
+    "review_decision": "REVIEW_REQUIRED",
+    "mergeable": false,
+    "mergeable_state": "dirty",
+    "reported_checks": {
+      "total": 4,
+      "successful": 3,
+      "failing": 0,
+      "pending": 0,
+      "action_required": 1,
+      "note": "CLA, intake, and telemetry detection are successful. PowerToys CI is action_required while the PR is dirty/has conflicts."
+    }
+  },
+  "upstream_pr": {
+    "number": 49963,
+    "url": "https://github.com/microsoft/PowerToys/pull/49963"
+  },
   "fork_pr": {
-    "number": 415,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/415",
-    "state": "OPEN"
+    "number": 711,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/711",
+    "state": "OPEN",
+    "head_sha": "529f9c84552213c1f2c41f3d74533bd8915cbe92",
+    "changed_files": 27,
+    "checks": "not_required_for_terminal_artifact"
   },
-  "fork_branch": "pr-iterate/49963-v2",
-  "fork_head_sha": "889a6b3e20f67700b70b98a46d7b4f7ea4cfd7e6",
-  "workflow": {
-    "phase": "review_drafted",
-    "latest_copilot_review_at": "2026-09-03T12:29:58Z",
-    "checkpoint_at": "2026-09-03T20:58:29.8636812Z",
-    "unresolved_copilot_threads": 0,
-    "copilot_final": "zero_unresolved_threads"
+  "fork_branch": "pr-iterate/49963-v3",
+  "fork_head_sha": "529f9c84552213c1f2c41f3d74533bd8915cbe92",
+  "copilot_review": {
+    "latest_submitted_at": "2026-09-08T04:29:50Z",
+    "latest_commit_id": "529f9c84552213c1f2c41f3d74533bd8915cbe92",
+    "latest_new_comments": 0,
+    "published_inline_comments_after_latest": 0,
+    "unresolved_threads": 0,
+    "review_count": 2,
+    "policy_note": "All round-one published findings were fixed, replied to, and resolved on the fork. The latest fresh current-head review generated zero published comments. Its suppressed ResourceLoaderInstance public-surface advisory was not used to trigger another round under the suppression policy and does not block convergence."
   },
-  "validation": {
-    "upstream_head_matches": true,
-    "fork_diff_matches_upstream_scope": true,
-    "targeted_build": "passed",
-    "detail": "x64 Debug build-essentials, Peek.FilePreviewer, and Peek.Common.UnitTests builds produced zero-length error logs on 2026-09-02."
-  },
-  "build_result": {
-    "status": "passed",
+  "verification": {
+    "result": "passed",
     "configuration": "x64 Debug",
-    "detail": "x64 Debug build-essentials, Peek.FilePreviewer, and Peek.Common.UnitTests builds produced zero-length error logs on 2026-09-02."
+    "scope": "Peek reusable previewers, double-buffered image presentation, Peek UI, and focused unit tests",
+    "builds": [
+      "PowerToys essentials completed successfully in x64 Debug under <PowerToysCheckout>\\.pr-review-build.lock.",
+      "Peek.FilePreviewer built successfully in x64 Debug under <PowerToysCheckout>\\.pr-review-build.lock.",
+      "Peek.UI built successfully in x64 Debug under <PowerToysCheckout>\\.pr-review-build.lock.",
+      "Peek.Common.UnitTests built successfully in x64 Debug under <PowerToysCheckout>\\.pr-review-build.lock.",
+      "Native Peek module interface built successfully in x64 Debug under <PowerToysCheckout>\\.pr-review-build.lock."
+    ],
+    "tests": [
+      {
+        "suite": "ReusablePreviewerTests and PreviewerFactoryAndReuseTests",
+        "result": "passed",
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0,
+        "reason": "Focused VSTest run passed 12/12 against PowerToys.Peek.Common.UnitTests.dll."
+      },
+      {
+        "suite": "Fresh Copilot review",
+        "result": "passed",
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "reason": "Latest fresh Copilot review at 2026-09-08T04:29:50Z produced zero new published comments and zero unresolved threads remain."
+      }
+    ],
+    "copilot": {
+      "latest_fresh_review_at": "2026-09-08T04:29:50Z",
+      "comments_generated": 0,
+      "unresolved_threads": 0
+    }
+  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe on an interactive desktop.",
+    "Enable Peek and rapidly navigate through images of different dimensions; verify transitions avoid the white flash and small images are not upscaled beyond intrinsic DPI-adjusted bounds.",
+    "Navigate across unsupported files and folders; verify file name, modified date, file type, size, icon, and error state do not revert to a previously previewed item after rapid navigation.",
+    "Set a non-100% display scale or move Peek across monitors with different DPI; verify image bounds update without stale sizing."
+  ],
+  "workflow": {
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-08T05:03:43.1259923Z",
+    "resume_action": "none",
+    "fork_pr": 711,
+    "fork_branch": "pr-iterate/49963-v3",
+    "fork_head_sha": "529f9c84552213c1f2c41f3d74533bd8915cbe92",
+    "upstream_head_sha": "e2138655d5edce9b00926a654d7825e5d01f2769",
+    "latest_copilot_review_at": "2026-09-08T04:29:50Z",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "focused_tests": "12/12 passed"
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-08T05:03:43.1259923Z",
+    "source_updated_at": "2026-09-08T02:16:16Z",
+    "head_sha": "e2138655d5edce9b00926a654d7825e5d01f2769",
+    "fork_head_sha": "529f9c84552213c1f2c41f3d74533bd8915cbe92"
   },
   "blockers": []
 }
