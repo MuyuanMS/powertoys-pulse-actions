@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-08T08:27:10.8085432+08:00",
+  "generated_at": "2026-09-08T08:59:57.9875478+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 146,
-    "open_issues": 12601,
-    "community": 11754,
-    "artifacts": 380
+    "open_prs": 147,
+    "open_issues": 12603,
+    "community": 11756,
+    "artifacts": 378
   },
   "impact": {
-    "as_of": "2026-09-08T08:27:10.8085432+08:00",
+    "as_of": "2026-09-08T08:59:57.9875478+08:00",
     "issues_helped": 10,
     "prs_iterated": 27,
     "constructive_comments_posted": 3,
@@ -285,7 +285,6 @@ window.BOARD_INDEX = {
     50223,
     50221,
     50219,
-    50208,
     50204,
     50199,
     50196,
@@ -351,7 +350,6 @@ window.BOARD_INDEX = {
     49227,
     10942,
     279,
-    45816,
     45630,
     26,
     16762,
@@ -480,6 +478,44 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-50448",
+      "kind": "pr",
+      "number": 50448,
+      "url": "https://github.com/microsoft/PowerToys/pull/50448",
+      "title": "CmdPal: Prevent ShellPage from losing focus",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "CmdPal-HostUX",
+        "Ready for review"
+      ],
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-09-07T23:06:18Z",
+      "updated_at": "2026-09-07T23:55:50Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-50444",
       "kind": "pr",
@@ -707,7 +743,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 707,
+        "fork_title": "[PR 50399] CmdPal: Stop reloading clipboard entries that have not changed",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50399",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/707"
+      }
     },
     {
       "id": "pr-50398",
@@ -780,10 +824,10 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-05T00:22:50Z",
-      "updated_at": "2026-09-07T21:22:23Z",
-      "comments": 1,
+      "updated_at": "2026-09-08T00:24:46Z",
+      "comments": 4,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
       "merge_state": "BLOCKED"
     },
@@ -1329,8 +1373,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-01T00:26:05Z",
-      "updated_at": "2026-09-07T18:50:25Z",
-      "comments": 17,
+      "updated_at": "2026-09-07T23:02:56Z",
+      "comments": 18,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -44255,6 +44299,35 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50449",
+      "kind": "issue",
+      "number": 50449,
+      "url": "https://github.com/microsoft/PowerToys/issues/50449",
+      "title": "[Power Display] Samsung Odyssey G7 can enter persistent abnormal state after DDC/CI power-state interaction",
+      "author": "mandarinblueberry-blip",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [],
+      "assignees": [],
+      "created_at": "2026-09-07T23:33:11Z",
+      "updated_at": "2026-09-07T23:37:06Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-29905",
       "kind": "issue",
       "number": 29905,
@@ -47536,8 +47609,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-07T18:38:52Z",
-      "comments": 37,
+      "updated_at": "2026-09-08T00:13:20Z",
+      "comments": 41,
       "priority": null
     },
     {
@@ -51508,8 +51581,8 @@ window.BOARD_INDEX = {
       "owes": "agent",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "other",
       "proposed_open": 0,
       "primary_action": null,
@@ -51518,8 +51591,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-28T14:15:31Z",
-      "updated_at": "2026-08-28T14:21:15Z",
-      "comments": 1,
+      "updated_at": "2026-09-07T23:40:37Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -110062,12 +110135,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-30643",
+      "id": "issue-50450",
       "kind": "issue",
-      "number": 30643,
-      "url": "https://github.com/microsoft/PowerToys/issues/30643",
-      "title": "[Keyboard manager] Some way to NOT use remapped key in remapped shortcuts?",
-      "author": "AlexFullmoon",
+      "number": 50450,
+      "url": "https://github.com/microsoft/PowerToys/issues/50450",
+      "title": "[Bug]: 2026-08 .NET Framework Update (KB5122385) Crash on Boot",
+      "author": "EphremTil17",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -110080,18 +110153,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-Keyboard Shortcut Manager",
-        "Needs-Triage"
+        "Issue-Bug",
+        "Resolution-Duplicate"
       ],
       "assignees": [],
-      "created_at": "2023-12-29T11:19:01Z",
-      "updated_at": "2026-04-19T14:25:07Z",
-      "comments": 1,
+      "created_at": "2026-09-08T00:03:57Z",
+      "updated_at": "2026-09-08T00:15:30Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -177641,14 +177713,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Status-Reproducible",
@@ -177656,8 +177725,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-02-26T21:37:58Z",
-      "updated_at": "2026-09-02T14:05:51Z",
-      "comments": 2,
+      "updated_at": "2026-09-07T23:14:19Z",
+      "comments": 3,
       "priority": null,
       "mirror": {
         "kind": "issue",
@@ -390381,6 +390450,39 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-04-28T03:30:30Z",
       "updated_at": "2026-04-29T07:20:08Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-30643",
+      "kind": "issue",
+      "number": 30643,
+      "url": "https://github.com/microsoft/PowerToys/issues/30643",
+      "title": "[Keyboard manager] Some way to NOT use remapped key in remapped shortcuts?",
+      "author": "AlexFullmoon",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Product-Keyboard Shortcut Manager",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2023-12-29T11:19:01Z",
+      "updated_at": "2026-04-19T14:25:07Z",
       "comments": 1,
       "priority": null
     },
