@@ -1,103 +1,66 @@
 {
+  "schemaVersion": 5,
   "number": 50183,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "review_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T10:49:57.0035317Z",
-  "evaluated_at": "2026-08-28T10:49:57.0035317Z",
-  "source_updated_at": "2026-08-28T08:54:57Z",
-  "head_sha": "078285c34b8a3c0d274c0c00a077993fe00894f2",
+  "generated_at": "2026-09-08T22:18:00Z",
+  "evaluated_at": "2026-09-08T22:18:00Z",
+  "source_updated_at": "2026-09-08T19:43:10Z",
+  "head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
   "title": "CmdPal: Icons (3/n) - Harden icon caches and coalesce redundant refreshes",
   "url": "https://github.com/microsoft/PowerToys/pull/50183",
-  "summary": "Fork-side review converged after fixing stale SourceRequested-handler completions and ETW-only request attribution. Two current-head comments are drafted with zero unresolved Copilot threads and passing focused validation.",
-  "status": {
-    "glyph": "⚠️",
-    "label": "Review comments drafted",
-    "detail": "One inline suggestion and one general review note are pinned to the current upstream head."
+  "authorAssociation": "COLLABORATOR",
+  "state": "OPEN",
+  "draft": false,
+  "summary": "The current upstream head completed the fork-side review loop with no remaining findings. Required CmdPal builds passed and all 37 focused UI unit tests passed.",
+  "judgment": {
+    "status": "review_ready",
+    "rationale": "The latest freshly requested Copilot review returned no published comments, no Copilot threads remain unresolved, the reviewed head is current, and the targeted build and test chain passed.",
+    "evidence": [
+      "The current upstream head is 8cc367d9d00d9aa91d2515f84ed64fa195561f41.",
+      "The latest Copilot pass published zero comments and unresolved Copilot thread count is zero.",
+      "PowerToys essentials, CmdPalModuleInterface, Microsoft.CmdPal.UI, and the unit-test project built successfully.",
+      "All 37 Microsoft.CmdPal.UI focused unit tests passed.",
+      "Upstream CI and license/CLA checks were successful at evaluation time."
+    ],
+    "recommended_action": "Approve the current pull request after the maintainer confirms the live head and checks remain unchanged."
   },
-  "next_action": {
-    "glyph": "▶",
-    "label": "Review drafted comments",
-    "reason": "Recheck the upstream head and obtain explicit approval before posting."
-  },
-  "proposed_comments": [
-    {
-      "id": "iconbox-stale-handler-completion",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Reject completions from a replaced SourceRequested handler",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs",
-      "start_line": 448,
-      "line": 448,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "body": "### Reject completions from a replaced SourceRequested handler\n\n**Severity:** `medium`\n\nThe request captures the handler before awaiting, but the stale-completion guard only checks the request version and source key. If a subscriber is replaced while the old handler is still in flight, the old completion can overwrite the icon produced by the current handler. Include the captured handler in the guard.\n\n```suggestion\n            if (requestVersion != iconBox._requestVersion ||\n                !ReferenceEquals(sourceKey, iconBox.SourceKey) ||\n                !ReferenceEquals(sourceRequested, iconBox._sourceRequested))\n```",
-      "confidence": {
-        "score": 90,
-        "rationale": "The changed code captures sourceRequested before await, but the current stale check does not verify that the captured delegate remains current."
-      }
-    },
-    {
-      "id": "iconbox-etw-request-diagnostics",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Preserve IconBox request diagnostics for ETW-only sessions",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Preserve IconBox request diagnostics for ETW-only sessions\n\n**Severity:** `medium`\n\nWhen an external ETW listener is attached without starting a text-report session, `IsRecording` remains false even though `BeginRequest` can create the hidden ETW diagnostics session. `IconBox` therefore skips request, origin, provider-resolution, and demand-attribution events. Include the EventSource-enabled state in the `RequestIconFromSource` diagnostics gate so ETW-only traces retain the same request attribution as text-report sessions.",
-      "confidence": {
-        "score": 92,
-        "rationale": "The diagnostics layer creates a hidden session for an enabled EventSource, but IconBox bypasses BeginRequest unless text recording is active."
-      }
-    }
-  ],
+  "proposed_comments": [],
   "actions": [
     {
-      "id": "request-changes-50183",
-      "type": "request_changes",
-      "label": "Post 2 review comments and request changes",
+      "id": "approve-pr-50183",
+      "type": "approve",
+      "label": "Approve PR 50183",
       "primary": true,
       "confirm": true,
-      "requiresApproval": true,
-      "note": "Current-head review draft; one inline suggestion and one general note. Explicit approval and freshness recheck required before posting.",
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50183,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "078285c34b8a3c0d274c0c00a077993fe00894f2",
-        "body_prefix": "Thanks for hardening the CmdPal icon cache path. I found two diagnostics and lifecycle issues that should be addressed before merging."
-      }
+      "head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41"
     }
   ],
-  "confidence": "High",
-  "judgment": {
-    "status": "review_drafted",
-    "rationale": "Two valid findings were fixed and validated on the fork. Later reviewer assignments were unavailable, but the final completed-iteration audit found zero unresolved Copilot threads and no newer findings.",
-    "evidence": [
-      "An async completion can originate from a SourceRequested delegate that has since been replaced.",
-      "ETW-only icon diagnostics omit IconBox request attribution because the caller gates only on text-session recording.",
-      "CmdPalModuleInterface, Microsoft.CmdPal.UI, and its unit-test project built successfully.",
-      "Eighteen targeted CmdPal UI tests passed at the converged fork head.",
-      "The fork Copilot thread audit reports zero unresolved threads."
-    ],
-    "recommended_action": "After explicit approval and a current-head freshness check, post the two drafted comments as a request-changes review.",
-    "evaluated_at": "2026-08-28T10:49:57.0035317Z",
-    "source_updated_at": "2026-08-28T08:54:57Z"
+  "build_evidence": {
+    "status": "passed",
+    "configuration": "x64/Debug",
+    "projects": [
+      "PowerToys essentials",
+      "CmdPalModuleInterface",
+      "Microsoft.CmdPal.UI",
+      "Microsoft.CmdPal.UI.UnitTests"
+    ]
   },
-  "fork_pr": {
-    "number": 495,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/495"
+  "test_evidence": {
+    "status": "passed",
+    "total": 37,
+    "passed": 37,
+    "failed": 0
   },
-  "fork_branch": "pr-iterate/50183",
-  "workflow": {
-    "phase": "review_drafted",
-    "checkpoint_at": "2026-08-28T10:49:57.0035317Z",
-    "fork_head_sha": "06f7e609f25fbcbd4678e375ee27467343d2486f",
+  "convergence_evidence": {
+    "status": "converged",
+    "copilot_review_count": 5,
+    "latest_review_published_comments": 0,
     "unresolved_copilot_threads": 0,
-    "build_result": "passed",
-    "unit_test_result": "18 targeted tests passed"
-  }
+    "fresh_zero_comment_review": true
+  },
+  "upstream_writes": false
 }
