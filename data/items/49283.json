@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 5,
+  "kind": "issue",
+  "number": 49283,
+  "title": "CmdPal: Content dialogs and collapsed mode do not play well together",
+  "url": "https://github.com/microsoft/PowerToys/issues/49283",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette"
+  ],
+  "assignees": [
+    "zadjii-msft"
+  ],
+  "generated_at": "2026-09-08T10:55:04Z",
+  "evaluated_at": "2026-09-08T10:55:04Z",
+  "source_updated_at": "2026-09-08T10:43:12Z",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The issue was previously marked fixed by merged PR 49451, which changed CmdPal to temporarily expand the host while confirmation ContentDialogs are shown. The new comment says the problem was observed on v0.101.2492 but does not describe the current failure or establish whether it is the same dialog/clipping path, so a targeted revalidation request is required before proposing duplicate work.",
+    "evidence": [
+      "A collaborator previously commented that the issue was fixed by PR 49451.",
+      "PR 49451 was merged and changed ShellPage, MainWindow, and a dialog-expansion message to prevent confirmation dialogs from being clipped in compact mode.",
+      "The collaborator reported observing the issue again on v0.101.2492 on 2026-09-08.",
+      "The new comment contains no reproduction steps, expected/actual behavior, or indication of which dialog is affected."
+    ],
+    "recommended_action": "Ask for the exact current repro flow and whether the affected dialog is the confirmation ContentDialog covered by PR 49451; then revalidate the merged fix before considering a regression design."
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "A merged upstream fix directly covers the previously described compact-mode ContentDialog clipping behavior. The new observation may be a regression or a different dialog path, but that cannot be determined from the latest comment.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49451"
+    ]
+  },
+  "issue_context": {
+    "summary": "CmdPal's compact/collapsed layout previously clipped content dialogs. That behavior was addressed by merged PR 49451, but the collaborator now reports seeing the issue on v0.101.2492 without describing the current dialog or reproduction sequence.",
+    "known_information": [
+      "The issue was originally filed against a dev build and concerns Command Palette content dialogs in collapsed mode.",
+      "PR 49451 was merged on 2026-08-08 and temporarily forces the visible card to fill the host window while confirmation dialogs are displayed.",
+      "The merged change touches MainWindow.xaml.cs, ShellPage.xaml.cs, and MaximizeForDialogMessage.cs.",
+      "The latest observation is on v0.101.2492 and was posted by a collaborator on 2026-09-08."
+    ],
+    "inferences": [
+      "The new report could be a regression in the merged expansion/restoration flow, or it could involve a dialog type not covered by PR 49451.",
+      "The absence of current expected/actual details prevents a code-level regression hypothesis from being selected responsibly."
+    ],
+    "analysis": "Because a concrete merged fix already exists, opening a competing design would risk duplicating handled work. The next maintainer decision is whether the new observation reproduces the exact confirmation-dialog clipping path addressed by PR 49451. A short, issue-specific request for the dialog and steps is sufficient to choose between regression validation and a different ownership path.",
+    "initial_investigation": [
+      "PR 49451's implementation sends MaximizeForDialogMessage before and after HandleConfirmArgsOnUiThread shows a confirmation dialog.",
+      "MainWindow tracks dialog-full-expand state and restores the last compact-mode request after the dialog closes.",
+      "ShellPage owns confirmation dialog presentation, while MainWindow owns the compact-mode host layout, matching the issue's reported interaction.",
+      "No newer linked fix or duplicate was present in the issue discussion beyond the merged PR reference."
+    ],
+    "information_gaps": [
+      {
+        "information": "The exact numbered steps on v0.101.2492, including how compact mode was entered, which command or action opened the dialog, and what was clipped or unavailable.",
+        "why_needed": "This determines whether the report is a regression of PR 49451's confirmation-dialog path or a separate ContentDialog/layout path.",
+        "how_to_collect": "Reproduce on v0.101.2492 and reply with the compact-mode setting, command/action used, dialog title or text, and the observed versus expected result."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm CmdPal dialog regression",
+      "note": "Ask for the exact current flow needed to revalidate the merged PR 49451 fix without duplicating it.",
+      "comment": {
+        "body": "Thanks for the update. PR 49451 already changed CmdPal to expand the host while confirmation ContentDialogs are shown, so the new observation on v0.101.2492 may be a regression or a different dialog path. Please reproduce it and provide: 1. how compact/collapsed mode was entered; 2. the command or action that opened the dialog; and 3. the dialog title/text plus what was clipped or unavailable compared with the expected result. This will let us revalidate PR 49451 before opening duplicate fix work."
+      }
+    }
+  ]
+}

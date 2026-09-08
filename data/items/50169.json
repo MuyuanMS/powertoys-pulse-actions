@@ -2,64 +2,74 @@
   "schemaVersion": 5,
   "kind": "issue",
   "number": 50169,
-  "title": "PowerToys exits randomly",
+  "title": "PowerToys randomly exits",
   "url": "https://github.com/microsoft/PowerToys/issues/50169",
-  "generated_at": "2026-09-08T02:51:49.9453166Z",
-  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
-  "source_updated_at": "2026-09-07T04:53:07Z",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-General"
+  ],
+  "assignees": [
+    "moooyo"
+  ],
+  "generated_at": "2026-09-08T10:55:04Z",
+  "evaluated_at": "2026-09-08T10:55:04Z",
+  "source_updated_at": "2026-09-08T08:44:29Z",
+  "pending_author": true,
+  "author_wait_evidence": {
+    "comment_author": "moooyo",
+    "url": "https://github.com/microsoft/PowerToys/issues/50169#issuecomment-5565216834",
+    "created_at": "2026-09-07T04:53:01Z",
+    "requested_evidence": "Upgrade to the preview release containing additional Runner logging, wait for another exit, and upload the log again."
+  },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Merged PR #50273 adds Runner logging for WM_QUERYENDSESSION and WM_ENDSESSION and explicitly references this issue. It provides diagnostic coverage for a likely system/session-end exit path, but is not proof that every random exit cause is fixed; further user-facing fix work should be driven by logs from a recurrence after that change.",
-    "recommended_action": "Use the merged session-end telemetry to classify any remaining recurrence before opening a new implementation plan.",
+    "status": "waiting_on_author",
+    "rationale": "The issue has a credible recurring symptom and an earlier diagnostic archive, but the maintainer reports that the existing log did not distinguish the exit cause and has added Runner logging for a preview build. The latest author comment asks to be notified when that preview is available, so the next useful step is the already-requested preview reproduction rather than another duplicate information request.",
     "evidence": [
-      {
-        "fact": "The author supplied a bug report and confirmed recurrence on the latest stable release.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50169"
-      },
-      {
-        "fact": "Merged PR #50273 adds Runner logging for Windows session-end reasons and explicitly relates to issue #50169.",
-        "source": "https://github.com/microsoft/PowerToys/pull/50273"
-      },
-      {
-        "fact": "Related live issue #50270 covers random PowerToys exits and links the same diagnostic direction.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50270"
-      }
-    ]
+      "The reporter supplied a diagnostic archive after an exit and confirmed the behavior continued after updating to the latest stable release.",
+      "The reporter states that Command Palette remains active while the main PowerToys tray/tools stop working.",
+      "The maintainer reviewed the log, found no distinguishing evidence, and announced additional Runner logging for a preview release.",
+      "The latest author comment asks for the preview release notification and does not provide new diagnostic evidence."
+    ],
+    "recommended_action": "Wait for the preview build with the added Runner logging, then inspect a fresh log captured after the next exit; do not post a duplicate request while the maintainer's request is current."
   },
   "fix_assessment": {
     "status": "existing_fix",
-    "rationale": "The linked PR is merged and adds the targeted diagnostic coverage requested by the issue investigation; no separate behavioral fix is justified without a post-merge recurrence trace.",
+    "rationale": "An active diagnostic fix attempt exists: the maintainer added Runner logging intended to distinguish the exit cause in a forthcoming preview release. This is not yet a confirmed behavioral fix.",
     "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/50273"
+      "https://github.com/microsoft/PowerToys/issues/50169#issuecomment-5565216834"
     ]
   },
-  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Random PowerToys exits have merged diagnostic coverage for Windows session-end reasons, but recurrence classification is still required if the issue persists.",
+    "summary": "PowerToys repeatedly disappears from the tray and stops launching utilities after running for hours, while Command Palette remains active. The supplied report did not identify the failure, and the maintainer is waiting for a preview build with additional Runner logging.",
     "known_information": [
-      "Issue is assigned to moooyo and labeled Needs-Team-Response.",
-      "The reporter confirmed recurrence on the latest stable release and supplied diagnostics.",
-      "PR #50273 is merged and logs session-end reason details in Runner."
+      "The original report was on PowerToys 0.100.2 from the Microsoft Store.",
+      "The reporter supplied a PowerToys diagnostic ZIP after reopening PowerToys following an exit.",
+      "The reporter later said the behavior continued after updating to the latest stable release.",
+      "The reporter describes browsing the web and watching videos before the failure and denies installing other software during the period.",
+      "The reporter linked related open issues 50270, 49438, and 49208.",
+      "The maintainer stated that the existing log did not show anything strange and added more Runner logging for a preview release."
     ],
     "inferences": [
-      "Some apparent random exits may be Windows shutdown, sign-out, restart, or session-end behavior rather than an unexplained crash.",
-      "A recurrence after the merged logging change would need a new, classified trace."
+      "The surviving Command Palette process suggests the failure may be isolated to the main Runner or one of its hosted components, but this is not confirmed.",
+      "The issue may share a broader failure mode with the linked silent-exit reports, but the supplied logs have not established a common cause."
     ],
-    "analysis": "Treat #50273 as the current diagnostic fix and avoid duplicating an implementation plan until a post-merge failure is classified.",
+    "analysis": "The latest upstream activity is an active maintainer diagnostic request, not a resolved fix. Repeating a generic bug-report request would duplicate the existing workflow and would not improve triage. The correct lightweight state is author-waiting with the requested preview/log evidence preserved and no speculative competing implementation plan.",
     "initial_investigation": [
-      "src/runner",
-      "https://github.com/microsoft/PowerToys/pull/50273"
+      "Runner startup and module-loading code is the likely ownership boundary because the tray and multiple utilities stop while Command Palette remains active.",
+      "The Runner contains an unhandled-exception diagnostic path, but the maintainer's review of the supplied archive found no distinguishing evidence.",
+      "Related issues 50270 and 49438 describe similar silent exits; issue 50270's automated summary reported malformed settings JSON, while issue 50169's maintainer review did not identify that cause.",
+      "The current maintainer comment explicitly says more Runner logs will ship in preview, so further causal classification should wait for that evidence."
     ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "type": "post_comment",
-      "label": "Record merged diagnostic fix",
-      "note": "Post the evidence-based status and linked public work.",
-      "comment": {
-        "body": "PR #50273 is merged and adds Runner logging for WM_QUERYENDSESSION and WM_ENDSESSION, including decoded session-end reasons and confirmed/cancelled state. That is the current fix coverage for this issue unexplained-exit investigation. If PowerToys still exits unexpectedly after the change, please attach a fresh report from a recurrence so the new reason fields can distinguish session-end behavior from an application crash before another code fix is designed."
+    "information_gaps": [
+      {
+        "information": "A fresh Runner log from the preview release with the added diagnostics, captured after the next unexpected exit.",
+        "why_needed": "The maintainer needs the new exit-path logging to distinguish a Runner crash, a hosted-module failure, or an external termination.",
+        "how_to_collect": "Install the preview build when available, wait for the next exit, reopen PowerToys if needed, then use /bugreport and attach the resulting archive."
       }
-    }
-  ]
+    ]
+  },
+  "actions": []
 }
