@@ -4,82 +4,100 @@
   "number": 50349,
   "title": "CmdPal: App is not being properly disposed",
   "url": "https://github.com/microsoft/PowerToys/issues/50349",
-  "state": "open",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-Command Palette"
-  ],
-  "assignees": [],
-  "generated_at": "2026-09-08T02:40:00Z",
-  "evaluated_at": "2026-09-08T02:40:00Z",
-  "source_updated_at": "2026-09-03T09:23:05Z",
+  "generated_at": "2026-09-08T04:21:41.1929899Z",
+  "evaluated_at": "2026-09-08T04:21:41.1929899Z",
+  "source_updated_at": "2026-09-08T02:59:07Z",
+  "pending_author": false,
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The current source confirms a forced process exit after unawaited extension shutdown; this is a precise lifecycle fix with no material uncertainty.",
+    "rationale": "The issue identifies a concrete lifecycle defect in current source: MainWindow_Closed starts IExtensionService.SignalStopAsync without observing or awaiting the returned tasks, then calls Environment.Exit(0). The App constructor also has a separate exit-event callback that disposes ETW, closes the window, and force-exits. The latest maintainer comment agrees that the async stop calls need a completion result or bounded timeout. This is sufficient for an implementation-grade design, while the exact timeout and ownership contract remain a yellow-confidence decision point.",
     "evidence": [
-      "MainWindow_Closed calls IExtensionService.SignalStopAsync without awaiting.",
-      "The same handler calls Environment.Exit(0).",
-      "The issue identifies service disposal and async completion risks."
+      "MainWindow_Closed enumerates IExtensionService instances, calls SignalStopAsync(), does not await or retain the tasks, and ends with Environment.Exit(0).",
+      "IExtensionService.SignalStopAsync is explicitly asynchronous; WinRTExtensionService awaits extension discovery and then signals installed extensions.",
+      "App also handles the named PowerToysCmdPal-ExitEvent by disposing ETW, closing AppWindow, and calling Environment.Exit(0), creating a second shutdown entry point.",
+      "The issue author warned that MainWindow is becoming a second lifecycle driver and that async stop signals may not complete before process termination.",
+      "The latest maintainer response agreed that the stop calls should return completion information, potentially with a timeout.",
+      "Recent CmdPal history includes PR #48884, which fixed several resource/event-handler leaks but did not remove the forced process exit or make MainWindow_Closed await service shutdown."
     ],
-    "recommended_action": "Approve the app-owned, awaitable shutdown design."
+    "recommended_action": "Approve the detailed shutdown-coordination design after confirming the bounded-timeout and exit-event ownership policy."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt was found covering the CmdPal shutdown lifecycle issue."
-  },
-  "issue_context": {
-    "summary": "CmdPal closes MainWindow by starting asynchronous extension shutdown and then calling Environment.Exit(0). This can bypass service-container disposal and terminate SignalStopAsync work before completion.",
-    "known_information": [
-      "Issue is open and labeled Product-Command Palette.",
-      "MainWindow.xaml.cs enumerates IExtensionService and calls SignalStopAsync without awaiting.",
-      "It then destroys the tray icon, disposes listeners/backdrop, and calls Environment.Exit(0).",
-      "The reporter questions whether async shutdown signals complete."
-    ],
-    "inferences": [
-      "Environment.Exit likely prevents normal service disposal and can race extension cleanup.",
-      "Shutdown should be owned by App/service lifetime."
-    ],
-    "analysis": "The exact sequence is visible in source; replace forced termination with coordinated application shutdown while preserving thread-affine cleanup.",
-    "initial_investigation": [
-      "Inspected MainWindow.xaml.cs lines 1148-1184.",
-      "Reviewed the live cross-reference to #50098 and found no concrete lifecycle fix there."
-    ],
-    "information_gaps": []
+    "rationale": "No current PR or merged change covers the specific split lifecycle and unawaited extension shutdown in MainWindow_Closed. The existing disposal work in PR #48884 is related background but does not resolve the forced exit ordering."
   },
   "proposed_fixes": [
     {
-      "title": "Make CmdPal shutdown awaitable and service-owned",
-      "root_cause": "MainWindow_Closed starts async extension stops and force-terminates the process, bypassing normal disposal.",
+      "title": "Coordinate CmdPal shutdown before process exit",
+      "root_cause": "MainWindow_Closed acts as a process-lifecycle owner, starts asynchronous extension shutdown without awaiting it, and immediately calls Environment.Exit(0); App has a second exit-event path with the same force-exit behavior.",
       "plan": [
-        "Move shutdown orchestration to App/composition root.",
-        "Have MainWindow request shutdown and keep only UI-thread cleanup.",
-        "Replace Environment.Exit with supported application exit after services complete.",
-        "Add lifecycle tests for disposal and repeated close."
+        "Introduce one idempotent application-owned shutdown coordinator that is callable from both the window-close path and the named exit-event path.",
+        "Await all IExtensionService.SignalStopAsync tasks, preferably concurrently with a bounded timeout and explicit logging for timed-out services.",
+        "Move process termination and final disposable cleanup after the coordinated stop completes; keep UI-thread-affine cleanup on the DispatcherQueue.",
+        "Make repeated close/exit notifications share the same shutdown task so they cannot double-dispose services or race Environment.Exit.",
+        "Add focused lifecycle tests for successful completion, timeout, exception handling, repeated shutdown requests, and the existing external exit event."
       ],
       "verification": [
-        "Close with active extensions and verify each stop completes.",
-        "Assert service disposal after close.",
-        "Run repeated open/close with FailFast workaround enabled."
+        "Close CmdPal with active WinRT extensions and verify SignalStopAsync completion is observed before process termination.",
+        "Trigger the PowerToysCmdPal-ExitEvent and verify the same coordinator runs without a second independent Environment.Exit path.",
+        "Use a test extension that delays or throws during stop and verify timeout/error logging, bounded shutdown, and no unobserved task exception.",
+        "Run repeated close requests and confirm extension services, tray icon, ETW trace, and window resources are disposed once.",
+        "Build and run the focused CmdPal test suite, then manually exercise normal close, Alt+F4 when enabled, and Runner-triggered exit."
       ],
       "confidence": {
-        "score": 88,
-        "level": "green",
-        "rationale": "The forced exit and fire-and-forget calls are confirmed; the lifecycle change is localized and testable."
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The unawaited task and forced exit are confirmed in current source, but the correct ownership and timeout semantics for the independent Runner exit event and WinUI shutdown behavior need maintainer confirmation."
       }
     }
   ],
+  "issue_context": {
+    "summary": "CmdPal currently starts asynchronous extension shutdown from MainWindow_Closed and then force-exits, while App separately force-exits on the named Runner event. This can bypass service disposal and leave async stop work incomplete.",
+    "known_information": [
+      "The issue is open, labeled Issue-Bug, Needs-Triage, and Product-Command Palette, and has no assignee.",
+      "The reporter identified MainWindow.xaml.cs lines around MainWindow_Closed as the lifecycle problem.",
+      "The current MainWindow_Closed implementation calls every IExtensionService.SignalStopAsync without awaiting the returned Task, performs cleanup, and calls Environment.Exit(0).",
+      "IExtensionService.SignalStopAsync returns Task; BuiltInExtensionService completes synchronously, while WinRTExtensionService performs asynchronous work before signaling extensions.",
+      "App registers a NativeEventWaiter callback for PowerToysCmdPal-ExitEvent that disposes ETW, closes AppWindow, and calls Environment.Exit(0).",
+      "A recent maintainer comment supports making stop calls return completion information, with a possible timeout.",
+      "The issue has two discussion comments, no attachments, no linked fix PR, no assignee, and no project item."
+    ],
+    "inferences": [
+      "Environment.Exit can terminate the process before asynchronous extension stop and DI-owned IDisposable cleanup complete.",
+      "The split between MainWindow_Closed and the App exit-event callback can cause competing shutdown paths and double-close/double-dispose races.",
+      "A bounded timeout is likely necessary for a hung extension, but the timeout duration and whether to force-exit after it are product/lifecycle decisions.",
+      "PR #48884 reduced several CmdPal leaks but does not cover this shutdown ordering defect."
+    ],
+    "analysis": "The defect is directly visible in the call and lifetime graph, so a design is justified without additional reproduction. The design must not merely replace Environment.Exit with an arbitrary delay: it needs one idempotent coordinator, explicit Task observation, bounded handling for hung providers, and clear ownership between the MainWindow close path and the named external exit event. The latest maintainer comment validates the central concern but leaves timeout and ownership policy open, so the fix is scored yellow and paired with a targeted request.",
+    "initial_investigation": [
+      "Inspected src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs: MainWindow_Closed updates settings, calls each extension service SignalStopAsync without await, destroys the tray icon, disposes listeners/backdrop, and calls Environment.Exit(0).",
+      "Inspected src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs: NativeEventWaiter.WaitForEventLoop handles PowerToysCmdPal-ExitEvent by disposing ETW, closing AppWindow, and calling Environment.Exit(0); App.Dispose disposes the service provider and ETW but is not used by the close handler.",
+      "Inspected IExtensionService.cs: SignalStopAsync returns Task and is documented to signal running providers to stop/dispose.",
+      "Inspected BuiltInExtensionService.cs and WinRTExtensionService.cs: the WinRT service performs asynchronous installed-extension discovery and stop signaling, so fire-and-forget is not equivalent to completed shutdown.",
+      "Inspected TopLevelCommandManager: it already awaits SignalStopAsync in an orderly provider-refresh path, showing the service contract is intended to be awaited.",
+      "Reviewed PR #48884 history: it fixes several event-handler and disposable-resource leaks but leaves the MainWindow_Closed forced-exit path in current main.",
+      "Reviewed all live comments and timeline events; the only linked work is an unrelated cross-reference to PR #50098, and no current fix PR is linked."
+    ],
+    "information_gaps": [
+      {
+        "information": "The maintainer-approved shutdown policy for a provider that does not finish within the bounded timeout, and whether the external PowerToysCmdPal-ExitEvent should enter the same coordinator or remain an emergency path.",
+        "why_needed": "This determines whether the implementation can guarantee disposal before exit, how it behaves with a hung extension, and how to avoid competing lifecycle owners.",
+        "how_to_collect": "Confirm the timeout and external-exit ownership policy in the issue discussion before implementation."
+      }
+    ]
+  },
   "design": {
-    "root_cause": "MainWindow_Closed is both UI close handler and process lifecycle owner; it calls Environment.Exit immediately after unawaited SignalStopAsync calls.",
+    "root_cause": "MainWindow_Closed is both a UI close handler and a process-lifecycle owner. It fires IExtensionService.SignalStopAsync without awaiting the returned tasks, then performs partial cleanup and calls Environment.Exit(0). App also has a separate named-exit callback that closes the window and force-exits, so service disposal is not guaranteed and shutdown can race across two entry points.",
     "evidence": [
-      "MainWindow.xaml.cs calls SignalStopAsync without awaiting.",
-      "The handler ends with Environment.Exit(0).",
-      "The issue identifies disposal and async completion risk."
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs MainWindow_Closed calls SignalStopAsync without await and ends with Environment.Exit(0).",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/IExtensionService.cs defines an asynchronous Task-returning stop contract.",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/WinRTExtensionService.cs awaits extension discovery before signaling providers.",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs has a second PowerToysCmdPal-ExitEvent path that closes the window and force-exits.",
+      "The issue discussion and latest maintainer response explicitly identify the unobserved async shutdown concern."
     ],
     "affected_files": [
       {
         "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
-        "purpose": "Current close handler and UI cleanup",
+        "purpose": "Remove process termination from the window handler and route close cleanup through the application shutdown coordinator.",
         "symbols": [
           "MainWindow_Closed",
           "DisposeAcrylic"
@@ -87,80 +105,151 @@
       },
       {
         "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
-        "purpose": "Application/service lifetime owner",
+        "purpose": "Own one idempotent shutdown task and coordinate the window-close and named external-exit paths.",
         "symbols": [
           "App",
-          "OnLaunched",
-          "shutdown coordination"
+          "App.Dispose",
+          "NativeEventWaiter.WaitForEventLoop"
         ]
       },
       {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels",
-        "purpose": "Extension/service stop contracts",
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/IExtensionService.cs",
+        "purpose": "Preserve and document the asynchronous stop contract used by the coordinator.",
         "symbols": [
-          "IExtensionService",
-          "SignalStopAsync"
+          "IExtensionService.SignalStopAsync"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/WinRTExtensionService.cs",
+        "purpose": "Ensure extension stop tasks are awaited and provider failures are observable within the coordinator policy.",
+        "symbols": [
+          "WinRTExtensionService.SignalStopAsync"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelCommandManager.cs",
+        "purpose": "Use the existing awaited stop pattern as a contract reference and avoid changing provider-refresh semantics.",
+        "symbols": [
+          "TopLevelCommandManager",
+          "SignalStopAsync call site"
         ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
         "symbols": [
-          "MainWindow_Closed"
+          "App",
+          "ShutdownAsync",
+          "NativeEventWaiter.WaitForEventLoop"
         ],
-        "current_behavior": "The close handler starts async stops, performs UI cleanup, then force-exits.",
-        "change": "Request app shutdown and await/hand off service completion rather than terminating directly.",
-        "code_block": "await App.Current.ShutdownAsync();\n// no Environment.Exit from the window close handler",
+        "current_behavior": "The named exit event disposes ETW, closes the window, and calls Environment.Exit independently of MainWindow_Closed. App.Dispose exists but is not the common shutdown path.",
+        "change": "Add an idempotent application-owned ShutdownAsync task. It should snapshot the registered IExtensionService instances, await their stop tasks concurrently with the agreed bounded timeout, log timeout/exception outcomes, perform final service/ETW disposal once, and only then complete the supported application exit path. Route the named exit event into this coordinator instead of directly calling Environment.Exit.",
+        "code_block": "private Task? _shutdownTask;\r\n\r\npublic Task ShutdownAsync()\r\n{\r\n    return _shutdownTask ??= ShutdownCoreAsync();\r\n}\r\n\r\nprivate async Task ShutdownCoreAsync()\r\n{\r\n    var stops = Services.GetServices<IExtensionService>()\r\n        .Select(service => service.SignalStopAsync());\r\n    await Task.WhenAll(stops).WaitAsync(ShutdownTimeout);\r\n    Dispose();\r\n    AppWindow?.Close();\r\n}",
         "edge_cases": [
-          "Close reentrancy",
-          "Shutdown timeouts",
-          "Backdrop thread affinity",
-          "Extension stop failures"
+          "Repeated close and exit-event notifications must share one task.",
+          "A provider that hangs must not hold the process forever.",
+          "Provider exceptions must be logged and must not become unobserved task failures.",
+          "Window and backdrop cleanup remain on the UI thread.",
+          "Avoid recursive close handling when the coordinator closes AppWindow."
         ],
         "tests": [
-          "Extension lifecycle test",
-          "Repeated close integration test",
-          "Disposal assertion"
+          "Unit test idempotence and concurrent stop-task observation.",
+          "Test a delayed provider and a throwing provider with timeout/error assertions.",
+          "Exercise the named exit event and verify it enters the same coordinator.",
+          "Verify App.Dispose and ETW disposal occur once."
         ]
       },
       {
         "order": 2,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
         "symbols": [
-          "App shutdown coordinator"
+          "MainWindow_Closed",
+          "DisposeAcrylic"
         ],
-        "current_behavior": "MainWindow is the effective finish line.",
-        "change": "Own one idempotent shutdown task that stops extensions, disposes services, and completes app exit.",
-        "code_block": "if (_shutdownTask is null) _shutdownTask = StopExtensionsAsync().ContinueWith(_ => ExitApplication()); await _shutdownTask;",
+        "current_behavior": "The close handler performs settings persistence and UI cleanup, starts fire-and-forget extension stops, then calls Environment.Exit(0).",
+        "change": "Keep close-handler work that must be performed on the window/UI thread, then await or dispatch to App.ShutdownAsync without a second process-exit call. Guard reentrancy and ensure the tray icon, listeners, backdrop, and window position are cleaned exactly once.",
+        "code_block": "internal async void MainWindow_Closed(object sender, WindowEventArgs args)\r\n{\r\n    if (_closeStarted)\r\n    {\r\n        return;\r\n    }\r\n\r\n    _closeStarted = true;\r\n    PersistWindowPosition();\r\n    DisposeUiResources();\r\n    await App.Current.ShutdownAsync();\r\n}",
         "edge_cases": [
-          "Multiple close paths",
-          "Extension exceptions",
-          "Async disposal ordering"
+          "WinUI event handlers cannot propagate exceptions to callers; log shutdown failures explicitly.",
+          "The handler must not await a task that requires the closed window to pump messages.",
+          "Settings persistence must happen before the window is disposed.",
+          "The external exit event may close the window while this handler is running."
         ],
         "tests": [
-          "Idempotency and exception propagation tests"
+          "Close with active extension services and assert completion before process termination.",
+          "Send repeated close notifications and verify one cleanup sequence.",
+          "Validate window-position persistence and tray cleanup remain unchanged."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/WinRTExtensionService.cs",
+        "symbols": [
+          "WinRTExtensionService.SignalStopAsync"
+        ],
+        "current_behavior": "SignalStopAsync asynchronously enumerates installed extensions and signals each provider; callers must await its returned Task for completion.",
+        "change": "Keep provider-specific stop semantics but make failure/timeout behavior explicit to the application coordinator. If individual provider calls can hang, apply the agreed per-service or overall timeout without swallowing exceptions.",
+        "code_block": "public async Task SignalStopAsync()\r\n{\r\n    var extensions = await GetInstalledExtensionsAsync().ConfigureAwait(false);\r\n    await Task.WhenAll(\r\n        extensions.Select(extension => extension.SignalStopAsync()));\r\n}",
+        "edge_cases": [
+          "An extension may disappear during shutdown.",
+          "Provider stop calls may throw or never complete.",
+          "Do not change normal refresh/load behavior while adding shutdown observability."
+        ],
+        "tests": [
+          "Mock installed extensions with success, delay, and exception outcomes.",
+          "Verify all stop tasks are observed and the coordinator receives failure state."
         ]
       }
     ],
     "verify": [
-      "Build CmdPal UI and run focused lifecycle tests.",
-      "Close with active extension providers and verify clean termination after stop completion."
+      "Build the CmdPal target with tools\\\\build\\\\build.ps1 -Path src\\\\modules\\\\cmdpal -Platform x64 -Configuration Debug.",
+      "Run the focused CmdPal unit/lifecycle tests, including the existing service tests and new shutdown coordinator tests.",
+      "Launch a development CmdPal instance with at least one active WinRT extension, close normally, and verify the extension stop completes before process exit.",
+      "Trigger the PowerToysCmdPal-ExitEvent path and verify it uses the same idempotent shutdown flow.",
+      "Exercise repeated close, Alt+F4 when enabled, a delayed provider, and a provider exception; expect bounded completion, logged failures, and no unobserved task exceptions."
     ],
     "risks": [
-      "Changing shutdown timing can expose thread-affinity assumptions.",
-      "Hung extensions need bounded timeout and diagnostics."
+      "Changing shutdown ordering may expose extension implementations that assumed immediate process termination.",
+      "A timeout that is too short could interrupt legitimate cleanup; one that is too long could make CmdPal appear hung.",
+      "Closing AppWindow from the coordinator can re-enter MainWindow_Closed unless guarded.",
+      "UI-thread-affine WinUI resources must not be disposed from a background continuation."
     ],
     "alternatives": [
-      "Keep Environment.Exit and add delays; rejected because disposal is not guaranteed.",
-      "Dispose only in MainWindow; rejected because lifecycle remains split."
+      "Keep Environment.Exit and add a fixed delay; rejected because it still cannot prove async completion and is timing-dependent.",
+      "Only await SignalStopAsync in MainWindow_Closed; rejected because the named external exit event remains a second lifecycle owner.",
+      "Remove explicit extension shutdown and rely solely on DI disposal; rejected because WinRT providers have an explicit asynchronous stop contract that must be signaled."
     ]
   },
   "actions": [
     {
+      "type": "request_info",
+      "label": "Confirm CmdPal shutdown timeout policy",
+      "note": "The source defect is confirmed; this targeted maintainer decision resolves the remaining design ambiguity before fork implementation.",
+      "comment": {
+        "body": "The current source confirms the issue: MainWindow_Closed calls IExtensionService.SignalStopAsync without awaiting the returned Tasks and then calls Environment.Exit(0), while App has a second PowerToysCmdPal-ExitEvent path that also closes and force-exits. Before implementation, please confirm the intended shutdown policy for a provider that does not finish: should the app use one shared coordinator with a bounded timeout and log/continue after timeout, and should the external exit event enter that same coordinator? This determines the safe ownership and timeout behavior; it is more useful than adding an arbitrary delay."
+      }
+    },
+    {
       "type": "approve_design",
-      "label": "Design fix"
+      "label": "Approve coordinated CmdPal shutdown design",
+      "note": "The artifact contains the affected symbols, implementation sketch, edge cases, tests, verification, risks, and alternatives for fork-side work after the timeout policy is confirmed.",
+      "design": {
+        "scope": "Coordinate CmdPal window-close and external-exit shutdown so asynchronous extension disposal completes or reaches an explicit bounded outcome before process termination.",
+        "affected_files": [
+          "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
+          "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
+          "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/IExtensionService.cs",
+          "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/WinRTExtensionService.cs"
+        ],
+        "acceptance_criteria": [
+          "All SignalStopAsync tasks are observed before normal process termination.",
+          "Only one idempotent coordinator owns final shutdown.",
+          "Hung or failing providers produce bounded, public-safe diagnostics.",
+          "Normal close, external exit, and repeated close requests do not double-dispose resources."
+        ]
+      }
     }
   ]
 }

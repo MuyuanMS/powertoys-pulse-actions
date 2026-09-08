@@ -1,27 +1,28 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
+  "id": "pr-50252",
   "number": 50252,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "post_review",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T09:12:33Z",
-  "evaluated_at": "2026-09-03T09:12:33Z",
-  "source_updated_at": "2026-09-02T22:19:10Z",
+  "generated_at": "2026-09-08T03:26:48Z",
+  "evaluated_at": "2026-09-08T03:26:48Z",
+  "source_updated_at": "2026-09-07T06:22:47Z",
   "head_sha": "55e06add26ba5817c87d21fc86e002151689c8e0",
   "title": "[File Explorer Add-Ons] Combine all providers into one provider",
   "url": "https://github.com/microsoft/PowerToys/pull/50252",
-  "summary": "The current consolidated exporter builds, but it retains process-global logger replacement and process/event handle leaks that become material when formerly separate providers share one Explorer-hosted DLL. Three current-head findings are drafted.",
+  "summary": "The consolidated File Explorer provider remains at the same head. Three previously drafted findings remain unposted and current: shared process-global logger replacement and two kernel-handle leaks. A later maintainer approval and positive comment do not resolve findings that were never posted.",
   "status": {
     "glyph": "📝",
     "label": "Review drafted — action pending approval",
-    "detail": "Protected fork branch pr-iterate/50252-v3 retained its history and could not be force-pushed after rebase, so fork PR 601 uses the permitted pr-iterate/50252-v4 fallback. The fork branch contains the current upstream head plus the validated corrections. Copilot review was requested once but is unavailable on the fork."
+    "detail": "The live head is unchanged. The resize-event finding was addressed by an author commit before the prior artifact; the three findings below were never posted, and later approval/comments do not supersede them."
   },
   "next_action": {
     "glyph": "▶",
     "label": "Post selected review requests",
-    "reason": "The findings are pinned to the current upstream head. Obtain explicit approval and recheck upstream freshness before any post."
+    "reason": "The three findings remain pinned to the unchanged live head. Obtain explicit approval and recheck freshness before posting."
   },
   "proposed_comments": [
     {
@@ -31,10 +32,10 @@
       "title": "Keep provider-specific logging safe in the shared exporter",
       "confidence": {
         "score": 95,
-        "rationale": "Logger::logger is a mutable process-global shared_ptr. Each exported provider now calls Logger::init with its own logger name and file from the same DLL, so concurrent Explorer activations can replace the active sink while another provider is logging. The fork correction serializes provider initialization and log writes."
+        "rationale": "Logger::logger is a mutable process-global shared_ptr. Each exported provider now calls Logger::init with its own logger name and file from the same DLL, so concurrent Explorer activations can replace the active sink while another provider is logging. The fork correction previously validated this concern."
       },
-      "body": "### Keep provider-specific logging safe in the shared exporter\n\n**Severity:** `high`\n\nThe consolidated DLL now serves every preview and thumbnail provider in one process, but each provider constructor reinitializes the mutable process-global logger with a different file. Concurrent Explorer activations can therefore replace the active logger while another handler is writing, which misroutes diagnostics and races the shared logger pointer. Please retain each provider's logger identity and serialize initialization together with every log operation, or make the logger instance-scoped.\n\nThis requires coordinated changes across the preview and thumbnail handlers, so it is a general review note rather than an unsafe partial apply suggestion.",
-      "in_diff": true,
+      "body": "### Keep provider-specific logging safe in the shared exporter\r\n\r\n**Severity:** `high`\r\n\r\nThe consolidated DLL now serves every preview and thumbnail provider in one process, but each provider constructor reinitializes the mutable process-global logger with a different file. Concurrent Explorer activations can therefore replace the active logger while another provider is writing, which misroutes diagnostics and races the shared logger pointer. Please retain each provider's logger identity and serialize initialization together with every log operation, or make the logger instance-scoped.\r\n\r\nThis requires coordinated changes across the preview and thumbnail handlers, so it is a general review note rather than an unsafe partial apply suggestion.",
+      "in_diff": false,
       "disposition": "proposed"
     },
     {
@@ -44,13 +45,13 @@
       "title": "Release preview handler handles",
       "confidence": {
         "score": 93,
-        "rationale": "The new shared PreviewHandler creates a resize-event handle and retains a child-process handle, while its destructor only decrements the DLL reference count. The current code closes neither handle."
+        "rationale": "The shared PreviewHandler creates a resize-event handle and retains a child-process handle, while its destructor only decrements the DLL reference count. The current code closes neither handle."
       },
       "path": "src/modules/previewpane/FileExplorerDllExporter/PreviewHandler.cpp",
       "side": "RIGHT",
       "start_line": 26,
       "line": 29,
-      "body": "### Release preview handler handles\n\n**Severity:** `medium`\n\nEach shared preview-handler instance owns both a resize event and, after preview launch, a process handle. The destructor currently releases neither, so repeated Explorer previews leak kernel handles in the long-lived host process. Unload the child process and close the event when the COM object is destroyed.\n\n```suggestion\nPreviewHandler::~PreviewHandler()\n{\n    Unload();\n    if (m_resizeEvent)\n    {\n        CloseHandle(m_resizeEvent);\n    }\n\n    InterlockedDecrement(&g_cDllRef);\n}\n```",
+      "body": "### Release preview handler handles\r\n\r\n**Severity:** `medium`\r\n\r\nEach shared preview-handler instance owns both a resize event and, after preview launch, a process handle. The destructor currently releases neither, so repeated Explorer previews leak kernel handles in the long-lived host process. Unload the child process and close the event when the COM object is destroyed.\r\n\r\n```suggestion\r\nPreviewHandler::~PreviewHandler()\r\n{\r\n    Unload();\r\n    if (m_resizeEvent)\r\n    {\r\n        CloseHandle(m_resizeEvent);\r\n    }\r\n\r\n    InterlockedDecrement(&g_cDllRef);\r\n}\r\n```",
       "in_diff": true,
       "disposition": "proposed"
     },
@@ -67,7 +68,7 @@
       "side": "RIGHT",
       "start_line": 148,
       "line": 149,
-      "body": "### Close the completed thumbnail process handle\n\n**Severity:** `medium`\n\n`SEE_MASK_NOCLOSEPROCESS` returns an owned process handle. Waiting for the thumbnail generator does not release that handle, so every thumbnail request leaks one in the Explorer host. Close it immediately after the wait and clear the member before continuing.\n\n```suggestion\nm_process = sei.hProcess;\nWaitForSingleObject(m_process, INFINITE);\nCloseHandle(m_process);\nm_process = NULL;\n```",
+      "body": "### Close the completed thumbnail process handle\r\n\r\n**Severity:** `medium`\r\n\r\n`SEE_MASK_NOCLOSEPROCESS` returns an owned process handle. Waiting for the thumbnail generator does not release that handle, so every thumbnail request leaks one in the Explorer host. Close it immediately after the wait and clear the member before continuing.\r\n\r\n```suggestion\r\nm_process = sei.hProcess;\r\nWaitForSingleObject(m_process, INFINITE);\r\nCloseHandle(m_process);\r\nm_process = NULL;\r\n```",
       "in_diff": true,
       "disposition": "proposed"
     }
@@ -76,7 +77,7 @@
     {
       "id": "post-review-50252",
       "type": "post_review",
-      "label": "Post selected requests as REQUEST_CHANGES",
+      "label": "Post general logger note and inline handle findings",
       "primary": true,
       "confirm": true,
       "note": "Require explicit approval and a final upstream freshness check before publishing.",
@@ -91,26 +92,22 @@
   "confidence": "High",
   "judgment": {
     "status": "review_drafted",
-    "rationale": "The fork correction rebases onto the current upstream head and corrects the shared logger lifecycle plus preview and thumbnail handle ownership. The target project builds successfully. Copilot review is unavailable, so the required request was made once and the local fallback review was used.",
+    "rationale": "The live head is unchanged and the three prior proposed findings remain absent from upstream review comments. The later maintainer approval and positive comment do not constitute resolution of unposted findings.",
     "evidence": [
-      "Live upstream head is 55e06add26ba5817c87d21fc86e002151689c8e0 and is open.",
-      "The live author association is COLLABORATOR; Phase 0 process nags are not applicable.",
-      "All current upstream checks, including license/cla, x64 and arm64 builds, and File Explorer tests, succeeded.",
-      "Fork PR 601 is rebased on the current upstream implementation and adds only the review corrections.",
-      "The rebased fork correction at f13be6f9d583d27e728e4a4a3b367bf5f299527b passed the targeted FileExplorerDllExporter Debug x64 build and git diff --check.",
-      "Logger::logger is a process-global mutable shared_ptr, while both shared-provider constructors call Logger::init with provider-specific sinks.",
-      "PreviewHandler creates m_resizeEvent and stores m_process without closing either; ThumbnailProvider waits for m_process without closing it.",
-      "A fresh Copilot review request returned an empty requested_reviewers array, so the documented local fallback review was used."
+      "Live upstream head remains 55e06add26ba5817c87d21fc86e002151689c8e0.",
+      "Live activity after the prior artifact consists of a screenshot comment, a positive “I love it!” comment, and an unsubscribe event; no author commit or response resolves the three findings.",
+      "The only live inline review comment concerns provider-specific resize events and was addressed by an earlier author commit, so it is not one of the three retained findings.",
+      "The three retained findings are not present in current upstream review comments and remain actionable at the same head."
     ],
-    "recommended_action": "After explicit authorization and a live head check, request the logger and handle-lifecycle corrections.",
-    "evaluated_at": "2026-09-03T09:12:33Z",
-    "source_updated_at": "2026-09-02T22:19:10Z"
+    "recommended_action": "After explicit authorization and a live head check, post the shared logger and handle-lifecycle findings.",
+    "evaluated_at": "2026-09-08T03:26:48Z",
+    "source_updated_at": "2026-09-07T06:22:47Z"
   },
   "phase0": {
     "author_association": "COLLABORATOR",
     "disposition": "Proceed",
     "gates_tripped": [],
-    "note": "Collaborator-authored refactor; upstream CI and CLA are green. The missing closing issue is context only and does not gate review."
+    "note": "Collaborator-authored refactor; no newer process gate changes were found."
   },
   "fork_pr": {
     "number": 601,
@@ -121,8 +118,7 @@
   "fork_branch": "pr-iterate/50252-v4",
   "workflow": {
     "phase": "review_drafted_local_fallback",
-    "checkpoint_at": "2026-09-03T09:12:33Z",
-    "current_worktree": "<PowerToysCheckout>",
+    "checkpoint_at": "2026-09-08T03:26:48Z",
     "unresolved_copilot_threads": 0,
     "copilot_requested_once": true,
     "copilot_result": "unavailable_empty_requested_reviewers",
@@ -131,12 +127,12 @@
     "fallback_reason": "Fork rule GH013 prevents force-pushing the protected preserved branch."
   },
   "revalidation": {
-    "completed_at": "2026-09-03T09:12:33Z",
-    "result": "passed",
+    "completed_at": "2026-09-08T03:26:48Z",
+    "result": "context_revalidated_findings_still_owed",
     "builds": [
       "build-essentials Debug x64",
       "FileExplorerDllExporter Debug x64"
     ],
-    "tests": "The upstream File Explorer test jobs passed. Local installed Explorer UI tests were not run."
+    "tests": "The upstream File Explorer test jobs previously passed. No new code review or build was run because the upstream head is unchanged."
   }
 }

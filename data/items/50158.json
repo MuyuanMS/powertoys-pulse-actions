@@ -3,121 +3,230 @@
   "number": 50158,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T06:55:32.8539216Z",
-  "evaluated_at": "2026-09-03T10:04:54.485Z",
-  "source_updated_at": "2026-08-27T13:05:18Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50158",
+  "generated_at": "2026-09-08T04:10:49Z",
+  "evaluated_at": "2026-09-08T04:10:49Z",
+  "source_updated_at": "2026-09-08T03:29:52Z",
   "title": "command palette performance monitor missing 2 icon after last update",
-  "author": "Chasapple4",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Author-Feedback",
-    "Needs-Triage",
-    "Needs-Team-Response",
-    "Product-Command Palette"
-  ],
-  "assignees": null,
-  "comments": 2,
-  "confidence": "Medium-high",
-  "summary": "The screenshot shows missing Performance Monitor icons and diagnostics load the Performance Monitor bands, but the two affected entries and a usable targeted reproduction remain unidentified.",
-  "status": {
-    "detail": "The current evidence cannot distinguish specific glyph/data entries from shared FontIcon or grid presentation behavior.",
-    "glyph": "💬",
-    "label": "Needs exact icons and diagnostics"
-  },
-  "next_action": {
-    "reason": "Get the minimum information needed to choose the Performance Monitor data/glyph path or common icon rendering path.",
-    "glyph": "➡",
-    "label": "Request exact entries and /bugreport"
-  },
+  "url": "https://github.com/microsoft/PowerToys/issues/50158",
   "judgment": {
-    "source_updated_at": "2026-08-27T13:05:18Z",
+    "status": "actionable_design",
+    "rationale": "The reporter's new reply identifies the missing icons as GPU and Network, narrowing the investigation from arbitrary Performance Monitor bands to two defined glyphs. Current source maps both metrics to specific Fluent glyph codepoints, while the related merged grid FontIcon fix may cover a shared presentation boundary but is not confirmed as a fix for this issue.",
     "evidence": [
-      "The issue includes a screenshot of missing icons after updating to 0.101.2362 stable.",
-      "The reporter clarified that the version field was transformed and logs were in the attached archive.",
-      "Downloaded CmdPal logs repeatedly show Performance monitor loading 1 command and 8 bands.",
-      "The logs contain unrelated UWP resource and package repository errors but no direct Performance Monitor icon exception.",
-      "Performance Monitor defines separate CPU, memory, network, disk, GPU, and battery icons in Icons.cs and maps per-metric dock bands in PerformanceMonitorCommandsProvider and PerformanceWidgetsPage.",
-      "PR 50231 changed CmdPal grid FontIcon sizing but closes a different issue and is not linked as a confirmed fix for this report."
+      "The reporter supplied a screenshot from PowerToys 0.101.2362 Stable on Windows 11 25H2 showing two missing Performance Monitor icons.",
+      "A PowerToys member requested the missing icon identities on 2026-09-08, and the reporter answered GPU and Network.",
+      "PerformanceMonitorCommandsProvider maps Network and NetworkSpeed to Icons.NetworkIcon and Gpu to Icons.GpuIcon.",
+      "Icons.NetworkIcon is U+EC05 and Icons.GpuIcon is U+E950.",
+      "Merged PR #50231 fixed auto-sized FontIcon clipping or loss in Command Palette grid and gallery views, but it closes #50225 and is not linked to this report.",
+      "No linked fix, assignee, or maintainer-confirmed duplicate covers #50158."
     ],
-    "recommended_action": "Ask for the exact affected Performance Monitor entries and a fresh targeted bug report captured immediately after reproducing.",
-    "evaluated_at": "2026-09-03T10:04:54.485Z",
-    "rationale": "Reprocessing downloaded the archive and found CmdPal loading Performance Monitor with 1 command and 8 bands, plus unrelated app/resource errors. The screenshot proves a visible regression, but it still does not identify the two missing metric entries. PR 50231 fixed grid FontIcon sizing for a different linked issue and is not confirmed as a fix here.",
-    "status": "needs_information"
+    "recommended_action": "Approve the bounded GPU/Network glyph and grid-presentation investigation design, while requesting a current reproduction only if the two entries are still missing after the #50231 release.",
+    "evaluated_at": "2026-09-08T04:10:49Z",
+    "source_updated_at": "2026-09-08T03:29:52Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A repository fix remains plausible at the shared Command Palette grid-icon presentation boundary, but the two affected metric entries and a targeted reproduction are still missing. PR 50231 is a related merged change, not confirmed coverage for this issue.",
-    "existing_fix_urls": []
+    "rationale": "A PowerToys fix is applicable if the identified glyphs are absent from the active icon font or are clipped by CmdPal presentation. The exact mechanism has not yet been reproduced on a build containing the related merged grid fix."
   },
   "proposed_fixes": [
     {
-      "title": "Correct the shared Performance Monitor icon rendering path",
-      "root_cause": "The missing glyphs may result from the shared Command Palette grid FontIcon sizing/recycling path, or from specific Performance Monitor glyph/data entries; current evidence cannot distinguish these mechanisms.",
+      "title": "Make Performance Monitor GPU and Network glyph presentation resilient",
+      "root_cause": "GPU and Network have now been identified as the missing Performance Monitor icons. Their icon definitions use U+E950 and U+EC05, respectively. The defect may be specific to those glyphs in the active icon font or may be clipping/loss in the shared CmdPal grid FontIcon container addressed for another report by PR #50231; public evidence does not yet distinguish the two.",
       "plan": [
-        "Obtain the exact two affected metric names and reproduce them on the current build while tracing the Performance Monitor band-to-icon mapping.",
-        "Compare the affected controls with the grid FontIcon sizing/recycling behavior addressed by merged PR 50231, and inspect the corresponding icon definitions before selecting a production change.",
-        "Add a focused regression check for the identified entries and retain a separate request for a fresh /bugreport if the rendering and glyph paths remain ambiguous."
+        "Reproduce GPU and Network Performance Monitor items on a build containing the merged grid-icon fixes and inspect their resolved FontIcon glyph, font family, size, and container bounds.",
+        "Compare the two glyph codepoints against the active Fluent icon font and a known-rendering glyph in the same template.",
+        "If the glyphs resolve but are clipped, extend the shared grid/glyph sizing fix with regression coverage; if either glyph is unavailable, replace it with a compatible Fluent glyph and cover the metric-to-icon mapping."
       ],
       "verification": [
-        "Reproduce the two named missing icons in the Performance Monitor surface after the targeted code path is identified.",
-        "Verify both icons render after the fix without regressing the other Performance Monitor bands and grid views.",
-        "Confirm a fresh diagnostic captured immediately after reproduction contains no Performance Monitor-specific icon failure."
+        "Open Performance Monitor in the Command Palette list, grid, and gallery presentations and verify GPU and Network glyphs are visible at normal and scaled DPI.",
+        "Verify NetworkSpeed continues to use the intended Network icon and other CPU, memory, disk, and battery glyphs do not regress.",
+        "Confirm the corrected behavior after container virtualization and repeated page opening."
       ],
       "confidence": {
-        "score": 38,
+        "score": 49,
         "level": "red",
-        "rationale": "The screenshot proves a visual bug and the extension loads, but the missing entry identities and direct icon failure are absent; the shared grid path is only a bounded hypothesis."
+        "rationale": "The affected metrics and their exact codepoints are now confirmed, but the report predates the related grid FontIcon fix and lacks a current post-fix reproduction or diagnostic evidence that distinguishes unavailable glyphs from clipping."
       }
     }
   ],
   "issue_context": {
-    "summary": "Two Performance Monitor icons are missing in Command Palette after the update. A screenshot establishes the regression, and the downloaded logs show the extension loading, but the affected metric identities are still unknown.",
+    "summary": "Two Command Palette Performance Monitor icons disappeared after the 0.101.2362 update. The new reporter response identifies them as GPU and Network, linking the visual regression to two concrete icon definitions but not yet proving whether the glyphs or their shared grid presentation is at fault.",
     "known_information": [
-      "PowerToys version is 0.101.2362 stable on Windows 11 25H2.",
-      "The screenshot shows missing icons in the Performance Monitor surface.",
-      "The attached diagnostic archive was downloaded and inspected; CmdPal logs show Performance monitor loading successfully with 1 command and 8 bands.",
-      "The issue currently has Needs-Team-Response and Needs-Author-Feedback labels, with no later reporter reply identifying the entries."
+      "The issue is open, marked Issue-Bug, Needs-Triage, Needs-Team-Response, and Product-Command Palette, and appears in the project as Needs Attention.",
+      "The report is for PowerToys 0.101.2362 Stable on Windows 11 25H2.",
+      "The reporter supplied a screenshot and a diagnostic archive, though automated triage could not analyze that archive.",
+      "A member asked which icons were missing; the reporter confirmed GPU and Network.",
+      "The current Performance Monitor provider maps GPU to U+E950 and Network to U+EC05.",
+      "PR #50231 later shipped a CmdPal grid and gallery FontIcon clipping/loss correction for a different issue."
+    ],
+    "inferences": [
+      "The two missing entries may share a glyph-font compatibility characteristic rather than a metric-data failure because Performance Monitor still loads.",
+      "The merged shared presentation fix may already resolve the report in a newer build, but that is not established by the live discussion."
+    ],
+    "analysis": "The reporter supplied the missing decision-changing fact requested by the maintainer, so a generic request for icon names is no longer valid. The exact GPU and Network mappings enable a focused visual and glyph-resolution investigation. Because the screenshot came from a release preceding the related shared FontIcon correction, a short current-build confirmation is needed to avoid implementing a duplicate or choosing a replacement glyph without proving the active rendering path.",
+    "initial_investigation": [
+      "Read the complete live issue, all four comments, labels, assignees, and project context.",
+      "Confirmed the latest reporter reply names GPU and Network as the missing icons.",
+      "Reviewed PerformanceMonitorCommandsProvider and confirmed mappings for Network, NetworkSpeed, and GPU.",
+      "Reviewed Icons.cs and confirmed NetworkIcon is U+EC05 and GpuIcon is U+E950.",
+      "Reviewed related merged PR #50231, which fixes grid and gallery FontIcon sizing/container recycling for #50225 but is not linked to this issue.",
+      "Searched live PowerToys pull requests and issue links and found no fix or confirmed duplicate specific to #50158."
     ],
     "information_gaps": [
       {
-        "information": "Names of the two Performance Monitor entries whose icons are missing.",
-        "how_to_collect": "List the visible metric titles exactly as shown in Command Palette.",
-        "why_needed": "Determines whether the issue follows particular glyph code points or a shared icon container."
+        "information": "Whether GPU and Network icons are still missing on the first released build containing merged PR #50231, and which Command Palette presentation is affected.",
+        "why_needed": "This distinguishes an already-shipped shared grid rendering correction from a remaining glyph-specific or list-template defect.",
+        "how_to_collect": "Update to the current PowerToys release, open Performance Monitor in list, grid, and gallery views, and provide one screenshot naming the affected presentation."
       },
       {
-        "information": "A valid current diagnostic archive captured immediately after reproducing.",
-        "how_to_collect": "Add a comment containing /bugreport immediately after reproducing and attach the generated ZIP.",
-        "why_needed": "The existing archive does not identify the affected entries or a direct icon failure."
+        "information": "A fresh diagnostic archive captured immediately after reproducing the current-build failure, if it persists.",
+        "why_needed": "It may reveal font/resource initialization or extension-load evidence that the older archive did not expose.",
+        "how_to_collect": "Reproduce the missing GPU and Network icons, then add a comment containing /bugreport immediately afterward and attach the generated ZIP."
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "The public report now narrows the missing visuals to the GPU and Network Performance Monitor glyphs. The provider maps those metrics to U+E950 and U+EC05, but current evidence cannot establish whether those glyphs fail to resolve in the packaged icon font or whether the shared CmdPal grid FontIcon layout clips them.",
+    "evidence": [
+      "The reporter explicitly identified GPU and Network in the current live discussion.",
+      "Icons.cs defines GpuIcon as U+E950 and NetworkIcon as U+EC05.",
+      "PerformanceMonitorCommandsProvider routes GPU, Network, and NetworkSpeed through those definitions.",
+      "PR #50231 documents a distinct CmdPal grid/gallery FontIcon clipping and recycled-container loss fix.",
+      "There is no current-build reproduction or linked fix proving which rendering boundary causes this report."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/Icons.cs",
+        "purpose": "Defines the Fluent glyph codepoints used by Performance Monitor metric icons.",
+        "symbols": [
+          "Icons.NetworkIcon",
+          "Icons.GpuIcon"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceMonitorCommandsProvider.cs",
+        "purpose": "Maps Network, NetworkSpeed, and GPU metrics to icon definitions and creates dock-band command items.",
+        "symbols": [
+          "PerformanceMonitorCommandsProvider.GetBandIcon",
+          "PerformanceMonitorCommandsProvider.SetEnabledState"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml",
+        "purpose": "Hosts the shared Command Palette list, grid, and gallery item icon presentation templates.",
+        "symbols": [
+          "SmallGridItemViewModelTemplate",
+          "MediumGridItemViewModelTemplate",
+          "GalleryGridItemViewModelTemplate"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.UITests/PerformanceMonitorIconTests.cs",
+        "purpose": "Add targeted rendering or UI Automation coverage for GPU and Network icon visibility.",
+        "symbols": [
+          "PerformanceMonitorIconTests"
+        ]
       }
     ],
-    "inferences": [
-      "The problem may be common icon rendering after the CmdPal update, or it may follow particular Performance Monitor glyphs such as disk, network, GPU, or battery.",
-      "Because the extension loads and no Performance Monitor-specific exception appears in logs, a rendering/template issue remains plausible."
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/Icons.cs; src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceMonitorCommandsProvider.cs",
+        "symbols": [
+          "Icons.NetworkIcon",
+          "Icons.GpuIcon",
+          "PerformanceMonitorCommandsProvider.GetBandIcon"
+        ],
+        "current_behavior": "Network and GPU use fixed Fluent glyph codepoints, with NetworkSpeed sharing the Network icon.",
+        "change": "Add a focused testable mapping seam or test fixture that enumerates Network, NetworkSpeed, and GPU icon values. If current-build reproduction proves either codepoint is unavailable in the packaged font, substitute a verified compatible glyph while keeping the metric identity and NetworkSpeed relationship explicit.",
+        "code_block": "AssertGlyph(PerformanceMetricKind.Network, \"\\uEC05\");\nAssertGlyph(PerformanceMetricKind.NetworkSpeed, \"\\uEC05\");\nAssertGlyph(PerformanceMetricKind.Gpu, \"\\uE950\");\n// Replace only a glyph proven unavailable by the packaged font.",
+        "edge_cases": [
+          "Do not change a glyph based on its Unicode value alone; verify the active packaged font.",
+          "Keep Network and NetworkSpeed semantically consistent.",
+          "Do not use a raster asset fallback unless a compatible Fluent glyph is unavailable and packaging ownership is established."
+        ],
+        "tests": [
+          "Unit test for metric-to-icon mapping.",
+          "Current-build manual inspection of GPU and Network glyph resolution."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml",
+        "symbols": [
+          "SmallGridItemViewModelTemplate",
+          "MediumGridItemViewModelTemplate",
+          "GalleryGridItemViewModelTemplate"
+        ],
+        "current_behavior": "Shared grid and gallery templates render extension icons; PR #50231 recently adjusted auto-sized FontIcon/Viewbox behavior and container recycling for clipping/loss in this area.",
+        "change": "Only if the glyphs resolve but are not visible, trace GPU and Network through the same template at normal and scaled DPI. Extend the existing sizing/recycling logic so measured glyph bounds remain visible after virtualization; do not reintroduce fixed icon sizes that regress other icon types.",
+        "code_block": "// Preserve the #50231 measured FontIcon/Viewbox behavior.\n// Add a regression fixture whose icon source is U+EC05 or U+E950,\n// then assert the realized icon has nonzero visible bounds after recycling.",
+        "edge_cases": [
+          "Test list, small-grid, medium-grid, and gallery presentation independently.",
+          "Exercise virtualization/recycling rather than only the first realized container.",
+          "Validate high-DPI scaling and avoid clipping paths that differ by font ascent."
+        ],
+        "tests": [
+          "UI test that realizes, scrolls away, and re-realizes GPU and Network items.",
+          "Visible-bounds or screenshot assertion at normal and scaled DPI."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.UITests/PerformanceMonitorIconTests.cs",
+        "symbols": [
+          "PerformanceMonitorIconTests"
+        ],
+        "current_behavior": "No focused regression test connects the reported GPU and Network metrics to their rendered CmdPal icon containers.",
+        "change": "Create a deterministic fixture that supplies GPU and Network items from the Performance Monitor provider, opens each supported presentation, and asserts a visible icon element with the expected glyph source. Add a recycled-container pass after changing pages or scrolling.",
+        "code_block": "await ShowPerformanceMetricAsync(PerformanceMetricKind.Gpu, view);\nAssert.IsTrue(await FindIconAsync().HasVisibleBounds());\nAssert.AreEqual(\"\\uE950\", await FindIconAsync().GlyphAsync());\nawait RecycleContainerAsync();\nAssert.IsTrue(await FindIconAsync().HasVisibleBounds());",
+        "edge_cases": [
+          "Mock performance counters so no GPU, battery, or network hardware is required.",
+          "Avoid snapshot-only assertions that cannot distinguish a blank glyph from a clipped one.",
+          "Dispose provider pages to avoid timer and counter subscriptions leaking between tests."
+        ],
+        "tests": [
+          "GPU and Network in list, grid, and gallery modes.",
+          "NetworkSpeed shares the Network icon.",
+          "Recycled-container and high-DPI visual checks."
+        ]
+      }
     ],
-    "initial_investigation": [
-      "Read the complete issue, all comments, current labels, project item, timeline, duplicate search results, PR 50231, current Performance Monitor code, and downloaded diagnostic archive.",
-      "Confirmed no assignee, linked duplicate, or confirmed fix is present in the live issue."
+    "verify": [
+      "Build the Performance Monitor extension and CmdPal UI using the repository's existing x64 Debug workflow.",
+      "Run focused Performance Monitor metric-to-icon and CmdPal icon-rendering UI tests.",
+      "On a current release containing PR #50231, verify GPU and Network in list, grid, and gallery views at normal and scaled DPI.",
+      "If the reporter still reproduces, inspect a fresh /bugreport archive captured immediately after the visible failure."
     ],
-    "analysis": "The exact missing entries are the decision-changing fact. Without them, a design would either duplicate PR 50231 speculatively or overfit to an arbitrary glyph path."
+    "risks": [
+      "Replacing glyphs without proving packaged-font availability could alter established icon meaning.",
+      "A broad layout change could regress unrelated extension icons or virtualized grid performance.",
+      "The report may already be fixed by PR #50231, making a new source change redundant."
+    ],
+    "alternatives": [
+      "Treat the report as already fixed by PR #50231. Rejected because the reporter has not tested a release containing that merged change.",
+      "Request only another generic diagnostic archive. Rejected because the live discussion now provides concrete GPU and Network targets that support focused code investigation.",
+      "Change all Performance Monitor icons to image assets. Rejected because it expands packaging and theming scope without evidence that the Fluent glyph path is fundamentally unsuitable."
+    ]
   },
   "actions": [
     {
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "id": "request-info-50158",
-      "confirm": true,
-      "primary": true,
+      "type": "approve_design",
+      "label": "Approve GPU and Network icon investigation design",
+      "note": "Start fork-side implementation only after explicit design approval."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm GPU and Network icons on current release",
       "comment": {
+        "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50158,
-        "target": "issue",
-        "body": "The screenshot confirms a visible Performance Monitor icon regression on 0.101.2362, and the attached logs show the Performance Monitor extension loading, but they do not identify which metric entries lost their icons. To decide whether this is a specific Performance Monitor glyph/data issue or a shared Command Palette icon-rendering issue, please name the two affected Performance Monitor entries exactly as they appear. Then reproduce the issue and add a comment containing `/bugreport` immediately afterward; attach the generated ZIP. That should provide the targeted evidence needed for the next investigation."
+        "body": "Thanks for confirming that the missing Performance Monitor icons are GPU and Network. Current source maps those entries to specific Fluent glyphs, and a later Command Palette change fixed a separate grid/gallery FontIcon clipping issue. To determine whether this remains a GPU/Network glyph problem or was already addressed by that shared rendering fix, please:\n\n1. Update to the current PowerToys release and check Performance Monitor in list, grid, and gallery views. Provide one screenshot identifying any view where either icon is still missing.\n2. If it still reproduces, reproduce it once more and add a comment containing `/bugreport` immediately afterward with the generated ZIP attached. That will help distinguish glyph loading from container rendering."
       },
-      "type": "request_info",
-      "label": "Request exact icons and fresh diagnostics"
+      "note": "Draft only; no upstream comment is posted automatically."
     }
   ]
 }

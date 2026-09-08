@@ -1,61 +1,81 @@
 {
-  "number": 49604,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triaged",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🔁",
-    "label": "Handled elsewhere / already owned",
-    "detail": "The dashboard already carries a converged local design/fork fix for this dock issue."
-  },
-  "next_action": {
-    "glyph": "🔁",
-    "label": "Track existing ownership",
-    "reason": "Linked work or existing ownership signals already cover the next step."
-  },
-  "actions": [],
-  "confidence": "High",
-  "design": {
-    "adversary": {
-      "rounds": 8,
-      "status": "signed_off"
-    },
-    "root_cause": "MonitorConfigReconciler creates secondary-monitor configs with IsCustomized=true but empty band lists; the DockSettings resolvers then return the empty custom bands instead of the global defaults -> blank bar.",
-    "fix_plan": "Leave secondary configs uncustomized and migrate legacy empty-band configs; extend DockMultiMonitorTests to cover secondary + mixed-DPI + all edge arrangements.",
-    "repro": [
-      "Enable CmdPal Dock (Preview)",
-      "Enable dock for a secondary monitor",
-      "Secondary shows an empty bar at the top; content indents down"
-    ],
-    "confidence": "High",
-    "verify": [
-      "With fix: secondary dock renders default bands/stats",
-      "Multi-monitor + mixed-DPI + top/bottom/left/right arrangements"
-    ],
-    "mirror_issue": {
-      "number": 176,
-      "url": "https://github.com/MuyuanMS/PowerToys/issues/176"
+  "number": 49604,
+  "title": "Command Palette Dock blank on secondary display/monitor.",
+  "url": "https://github.com/microsoft/PowerToys/issues/49604",
+  "state": "open",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-08T04:17:27Z",
+  "evaluated_at": "2026-09-08T04:17:27Z",
+  "source_updated_at": "2026-09-08T03:27:18Z",
+  "project_context": [
+    {
+      "title": "CmdPal Roadmap",
+      "status": "Todo"
     }
-  },
-  "fork_pr": {
-    "number": 177,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/177"
-  },
-  "fork_branch": "copilot/fix-dock-secondary-blank",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-07T15:48:34Z",
+  ],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The dashboard already carries a converged local design/fork fix for this dock issue.",
+    "status": "not_actionable",
+    "rationale": "The latest maintainer clarification and current Dock tests show that blank secondary-monitor docks are intentional until the user customizes that monitor-specific dock.",
     "evidence": [
-      "The dashboard already carries a converged local design/fork fix for this dock issue.",
-      "No upstream action. Follow the linked PR, issue, assignment, localization queue, or existing fork work."
+      "Reporter enabled Dock Preview and enabled the Dock for a secondary monitor; the visible secondary dock bar was blank.",
+      "Another commenter confirmed a blank secondary dock but said right-clicking and choosing Edit Dock allowed adding bands.",
+      "On 2026-09-08 michaeljolley clarified that secondary monitors do not receive preconfigured bands; they are a blank canvas customized through Edit Dock.",
+      "DockMultiMonitorTests.cs asserts Reconciler_NewSecondaryMonitor_StartsWithEmptyBands for secondary monitors.",
+      "Related #48516 was fixed by merged PR #49814 for monitor-topology changes; #48466 remains a separate positioning/scaling issue, not the blank-band default described here."
     ],
-    "recommended_action": "Linked work or existing ownership signals already cover the next step.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-07T15:48:34Z"
-  }
+    "recommended_action": "Treat the current report as by-design documentation/support guidance unless new evidence shows customized secondary-dock bands fail to render."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current behavior is intentional: secondary-monitor docks start empty and are customized independently, so no PowerToys code fix is indicated by the latest evidence."
+  },
+  "issue_context": {
+    "summary": "The report describes a secondary-monitor Command Palette Dock that reserves space but shows no PC-vitals/default bands. Current maintainer guidance states this is expected: primary monitors get default bands, while secondary monitors start blank and must be customized through Edit Dock.",
+    "known_information": [
+      "Issue is open and labeled Issue-Bug, Needs-Triage, Product-Command Palette, and CmdPal - Dock.",
+      "The issue is in the CmdPal Roadmap project with status Todo.",
+      "Reporter used PowerToys 0.100.2 from the Microsoft Store on Windows 10.0.26200 and attached a PowerToys report ZIP plus a screenshot/recording link.",
+      "Reporter explicitly enabled the Dock for the secondary monitor and observed an empty bar at the top.",
+      "Iautner reproduced the blank secondary dock and found they could right-click, choose Edit Dock, and add bands.",
+      "michaeljolley stated that primary monitors get default things like perf monitor bands, but secondary monitors are a blank canvas."
+    ],
+    "inferences": [
+      "The empty secondary bar itself is not evidence of a rendering bug under the current design.",
+      "The issue may indicate discoverability/documentation friction for the secondary-dock customization flow rather than an implementation defect.",
+      "If future evidence shows user-pinned bands disappearing or failing to render on the secondary monitor, that would be a distinct bug from the default blank state."
+    ],
+    "analysis": "Full issue review plus focused source/test inspection aligns the reported blank secondary dock with the intended per-monitor design. Since linked monitor-topology work (#48516/#49814) and positioning work (#48466) cover different symptoms, this item should not start a duplicate fix design from the current evidence.",
+    "initial_investigation": [
+      "Read live issue body, labels, assignees, comments, timeline, events, and project item context for #49604.",
+      "Read linked issues #49598, #48516, and #48466 to distinguish blank bands from monitor-topology and positioning/scaling problems.",
+      "Read PR #49814, which fixed Dock breakage during monitor topology changes and explicitly left scaling behavior to #48466.",
+      "Inspected DockSettings.cs: global bands include built-in home, WinGet, PerformanceMonitor, network speed, and datetime defaults; per-monitor configs can hold independent bands.",
+      "Inspected DockMultiMonitorTests.cs: the test Reconciler_NewSecondaryMonitor_StartsWithEmptyBands documents the expected empty secondary-monitor band lists.",
+      "Inspected DockMonitorConfigViewModel.cs: enabling customization forks global bands for a monitor, while per-monitor band lists are otherwise independently managed."
+    ],
+    "information_gaps": [
+      {
+        "information": "Evidence that bands explicitly pinned through Edit Dock on the secondary monitor disappear or fail to render.",
+        "why_needed": "Would distinguish a real per-monitor band-rendering bug from the intended blank default state.",
+        "how_to_collect": "If the problem persists after pinning bands to the secondary dock, comment with the pinned-band list and a fresh /bugreport captured immediately after reproducing."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Explain secondary dock default",
+      "comment": {
+        "body": "The latest maintainer clarification and current Dock behavior indicate this is expected for a newly enabled secondary-monitor dock: primary monitors get default bands such as PC vitals, while secondary monitor docks start as a blank canvas. Right-click the secondary dock, choose `Edit Dock`, and pin the bands you want on that monitor. If bands that were explicitly pinned to the secondary dock still do not render, please comment with the pinned-band list and a fresh `/bugreport` captured immediately after reproducing so that can be tracked as a separate rendering/persistence bug."
+      }
+    }
+  ]
 }
