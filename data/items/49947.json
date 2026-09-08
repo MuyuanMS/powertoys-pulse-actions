@@ -1,116 +1,77 @@
 {
-  "schemaVersion": 3,
-  "id": "pr-49947",
-  "number": 49947,
+  "schemaVersion": 5,
   "kind": "pr",
-  "track": "review",
-  "stage": "review_ready",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-07T08:34:32Z",
-  "evaluated_at": "2026-09-07T08:34:32Z",
-  "source_updated_at": "2026-09-06T22:02:41Z",
-  "head_sha": "738d6660c1c89afc3946c2d7e6fff6a3131adb75",
+  "number": 49947,
   "title": "CmdPal: Shelf (6/n) - Add numbered shortcuts (Alt+#) to list pages",
   "url": "https://github.com/microsoft/PowerToys/pull/49947",
-  "author": "jiripolasek",
-  "authorAssociation": "COLLABORATOR",
-  "isCommunity": false,
-  "isMine": false,
+  "stage": "request_changes",
+  "generated_at": "2026-09-08T11:27:25Z",
+  "evaluated_at": "2026-09-08T11:27:25Z",
+  "source_updated_at": "2026-09-08T09:43:02Z",
+  "head_sha": "cea058b057ccdccdba23701647c3f5b7accf6abc",
   "state": "OPEN",
   "draft": false,
-  "labels": [
-    "Product-Command Palette"
-  ],
-  "confidence": "High",
+  "pending_author": true,
   "processVerdict": "proceed",
-  "summary": "Current-head review is clean. CmdPal UI and UI-test projects build successfully, the fresh Copilot pass generated no new comments, and no unresolved Copilot threads remain.",
-  "status": {
-    "glyph": "READY",
-    "label": "Review ready",
-    "detail": "No current-head review findings require author action."
-  },
-  "next_action": "Maintainer review and merge decision.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "review_ready",
-    "review_iterations": 10,
-    "checkpoint_at": "2026-09-07T08:34:32Z"
-  },
-  "freshness": {
-    "queued_at": "2026-09-02T02:45:50Z",
-    "checkpoint_at": "2026-09-07T08:34:32Z",
-    "head_sha": "738d6660c1c89afc3946c2d7e6fff6a3131adb75",
-    "head_updated_at": "2026-09-06T22:02:41Z",
-    "status": "current_head_reviewed"
-  },
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "head_sha": "738d6660c1c89afc3946c2d7e6fff6a3131adb75",
-    "base_sha": "0687b1041b7506352b4c70168a2cf576bf89b0eb",
-    "updated_at": "2026-09-06T22:02:41Z",
-    "head_committed_at": "2026-09-06T17:41:03Z",
-    "newest_commit_at": "2026-09-05T15:27:55Z",
-    "commit_count": 5,
-    "changed_file_count": 28,
-    "additions": 1538,
-    "deletions": 90,
-    "issue_comment_count": 1,
-    "review_comment_count": 6,
-    "latest_review_comment_at": "2026-09-04T22:09:08Z",
-    "review_count": 4,
-    "latest_review_at": "2026-09-06T22:02:41Z",
-    "review_decision": "APPROVED",
-    "assignees": [
-      "jiripolasek"
+  "summary": "The refreshed current-head review found two code issues requiring correction before approval. The contributor is a collaborator and all reported CI and CLA checks are successful, so no process action is needed.",
+  "judgment": {
+    "status": "findings",
+    "rationale": "The visual numbered-shortcut cues are intentionally conditional, but their UI Automation accelerator metadata must remain available while the list is shown. In addition, the new UI coverage tests only the simultaneous Alt+number chord and does not cover the latched Alt-then-number path.",
+    "evidence": [
+      "The latest current-head Copilot review published one unresolved comment requesting sequential-key coverage for the latched shortcut path.",
+      "The same review identified that ListItemsView returns before refreshing AcceleratorKey values when cue display mode is inactive and clears them when cues are hidden.",
+      "PowerToys CI and license/cla checks report success for head cea058b057ccdccdba23701647c3f5b7accf6abc."
     ],
-    "reported_checks": {
-      "total": 13,
-      "successful": 13,
-      "failing": 0,
-      "pending": 0,
-      "cancelled": 0,
-      "note": "All current intake, CI, dependency review, telemetry detection, and CLA checks are successful."
-    }
+    "recommended_action": "Correct the metadata lifecycle and add a sequential Alt-tap then number UI test, then rerun the focused CmdPal validation and request a fresh review."
   },
+  "proposed_comments": [
+    {
+      "id": "accelerator-metadata-lifecycle",
+      "severity": "medium",
+      "confidence": 96,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml.cs",
+      "title": "Keep numbered accelerator metadata available outside cue-display mode",
+      "body": "The Alt+number shortcuts remain active when the visual cues are hidden, but `UpdateNumberedShortcutCues` exits before assigning `AutomationProperties.AcceleratorKey` and hiding cues clears it. Refresh accelerator metadata for realized numbered targets while the view is loaded; limit cue positioning and visual visibility to access-key display mode."
+    },
+    {
+      "id": "latched-shortcut-ui-coverage",
+      "severity": "medium",
+      "confidence": 94,
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/BasicTests.cs",
+      "title": "Cover the latched Alt shortcut integration path",
+      "body": "The UI test covers a simultaneous Alt+number chord only. Add a separate test that taps and releases Alt, then sends the number key, and verifies invocation or selection so the native hook, access-key controller, and list dispatch path are covered."
+    }
+  ],
+  "actions": [
+    {
+      "type": "request_changes",
+      "label": "Address current-head CmdPal shortcut findings",
+      "note": "Two current-head code findings remain; no upstream action was posted."
+    }
+  ],
   "verification": {
-    "result": "passed",
+    "result": "partial",
     "configuration": "x64 Debug",
     "builds": [
       "CmdPal UI project",
-      "PowerToys essentials"
+      "CmdPal UI tests project"
     ],
     "tests": [
       {
-        "suite": "CmdPal UI build",
+        "suite": "Focused CmdPal UI project builds",
         "result": "passed",
-        "reason": "The current-head CmdPal UI project built successfully."
-      },
-      {
-        "suite": "CmdPal UI tests build",
-        "result": "passed",
-        "reason": "The focused CmdPal UI test project built successfully, including direct numbered shortcut and selection coverage."
+        "reason": "The CmdPal UI and CmdPal UI-tests projects built successfully after the current-head merge."
       },
       {
         "suite": "Fresh Copilot review",
-        "result": "passed",
-        "reason": "The current-head review generated zero new comments and zero unresolved Copilot threads remain."
+        "result": "findings",
+        "reason": "The latest fresh review has one published unresolved comment and one important suppressed metadata finding."
       }
     ],
     "copilot": {
-      "comments_generated": 0,
-      "unresolved_threads": 0
+      "comments_generated": 1,
+      "unresolved_threads": 1,
+      "reviewed_head_sha": "758da499e917b3d977002f532561fb91a5030662"
     }
-  },
-  "upstream_pr": {
-    "number": 49947,
-    "url": "https://github.com/microsoft/PowerToys/pull/49947"
-  },
-  "fork_pr": {
-    "number": 693,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/693"
-  },
-  "fork_branch": "pr-iterate/49947-v3"
+  }
 }
