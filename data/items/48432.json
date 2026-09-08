@@ -1,76 +1,178 @@
 {
   "schemaVersion": 5,
-  "number": 48432,
-  "kind": "issue",
-  "track": "fix",
-  "evaluated_at": "2026-09-04T03:00:00Z",
+  "generated_at": "2026-09-08T02:59:27Z",
+  "evaluated_at": "2026-09-08T02:59:27Z",
   "source_updated_at": "2026-09-02T21:29:27Z",
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The known packaging defect was fixed in Scoop Extras and users confirmed the update removes the prompt; this is not a demonstrated PowerToys code defect.",
-    "evidence": [
-      "Scoop users saw the .NET prompt.",
-      "ScoopInstaller/Extras PR 18020 merged.",
-      "Users confirmed `scoop update powertoys --force` resolved it.",
-      "Discussion identifies missing WinUI3Apps payload files."
+  "repository": "microsoft/PowerToys",
+  "item": {
+    "type": "issue",
+    "number": 48432,
+    "title": "you must install .NET Desktop Runtime torun this application.",
+    "url": "https://github.com/microsoft/PowerToys/issues/48432",
+    "state": "OPEN",
+    "created_at": "2026-06-10T12:00:48Z",
+    "updated_at": "2026-09-02T21:29:27Z",
+    "author": "JaylanCharles",
+    "labels": [
+      "Issue-Bug",
+      "Area-Setup/Install",
+      "Needs-Triage"
     ],
-    "recommended_action": "Post a handled-status comment referencing the external fix."
+    "assignees": []
   },
-  "fix_assessment": {
-    "status": "existing_fix",
-    "rationale": "The concrete fix is in the Scoop packaging repository.",
-    "existing_fix_urls": [
-      "https://github.com/ScoopInstaller/Extras/pull/18020"
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 16,
+    "timeline_events_read": 21,
+    "activity_sources": [
+      "https://github.com/microsoft/PowerToys/issues/48432",
+      "https://github.com/microsoft/PowerToys/issues/48432#issuecomment-stream"
     ]
   },
-  "proposed_fixes": [],
+  "upstream_public_action_taken": false,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Multiple public reports and a .NET host trace show WinUI3Apps apphosts failing because required self-contained runtime files are missing beside the WinUI3Apps executables; Scoop fixed the same layout by copying hardlinks.txt entries, and origin/main contains matching installer copy logic.",
+    "evidence": [
+      "Settings, Quick Access, and Peek show the runtime prompt even when Desktop Runtime 10 is installed.",
+      "ScoopInstaller/Extras#18020 was linked and a reporter confirmed force-updating Scoop resolved the popup.",
+      "A public host trace shows PowerToys.Settings.exe treated as self-contained and failing to find hostpolicy.dll.",
+      "Later comments report similar symptoms on Chocolatey/manual/winget and v0.101.2432.0."
+    ],
+    "recommended_action": "Approve installer/package validation for WinUI3Apps hardlinks.txt copy/repair coverage, then ask affected reporters to retest a build with that repair."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "PowerToys should own installer/upgrade repair while package managers consume the same manifest; current reports need channel/build confirmation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Repair missing WinUI3Apps runtime-file copies",
+      "root_cause": "Some install or upgrade paths leave files listed by WinUI3Apps/hardlinks.txt absent from WinUI3Apps, so self-contained WinUI apphosts fall back to global dotnet probing and fail hostpolicy resolution.",
+      "plan": [
+        "Ensure CreateWinAppSDKHardlinksCA runs for fresh install, upgrade, and repair.",
+        "Copy every hardlinks.txt entry from install root to WinUI3Apps when target is missing or stale.",
+        "Keep containment/UTF-8 validation and avoid hard-links because shared DACLs can break low-integrity preview handlers.",
+        "Add package validation that apphost runtime/deps files are either installed directly or listed in hardlinks.txt."
+      ],
+      "verification": [
+        "Upgrade from 0.99.x/0.100.x and launch Settings, Quick Access, and Peek without a .NET prompt.",
+        "Validate package-manager extraction/update has the complete WinUI3Apps copy set."
+      ],
+      "confidence": {
+        "score": 84,
+        "level": "yellow",
+        "rationale": "Host trace and workaround directly match the failure; latest affected build/channel still needs confirmation."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Third-party package layouts omitted required WinUI files; the known Scoop fix was merged and confirmed by users.",
+    "summary": "WinUI3Apps executables can show a misleading .NET Desktop Runtime prompt because required self-contained runtime files are missing from WinUI3Apps after some installs or upgrades.",
     "known_information": [
-      "Reports include Scoop and Chocolatey installations.",
-      "Official installer behavior differs.",
-      "The missing-file set was identified through WinUI3Apps hardlinks.",
-      "Scoop PR 18020 was merged and confirmed effective."
+      "Open Issue-Bug / Area-Setup-Install report.",
+      "Affected commands include Settings, Quick Access, and Peek.",
+      "Scoop manifest repair was merged and confirmed by one reporter.",
+      "A public host trace shows hostpolicy.dll missing during self-contained startup."
     ],
     "inferences": [
-      "PowerToys source is not the demonstrated failure boundary.",
-      "Other package managers need their own manifest correction."
+      "The missing-copy mechanism likely covers package-manager and installer upgrade reports, but exact release coverage is unconfirmed."
     ],
-    "analysis": "External packaging work already covers the main reported path, so a competing PowerToys design would duplicate or hide the package defect.",
+    "analysis": "The failure occurs before managed UI code runs; the public workaround copies exactly the runtime files the .NET host expects next to the apphost.",
     "initial_investigation": [
-      "No PowerToys PR/source path is linked.",
-      "The merged external fix and user confirmations provide direct coverage."
+      "Read live body, comments, labels, events, and timeline through 2026-09-02T21:29:27Z.",
+      "Checked origin/main installer generation/custom-action snippets at 5abd20e355998a865075a06676bebfc1d9925be4.",
+      "Searched public PRs by related terms; no direct upstream PR surfaced, while the external Scoop PR is linked."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "information": "Whether the v0.101.2432 reporter has a build containing the WinUI3Apps copy custom action and whether MSI logs show failures.",
+        "why_needed": "Distinguishes unreleased/already-fixed packaging from still-broken upgrade repair.",
+        "how_to_collect": "Attach installer log or comment /bugreport immediately after reproducing the prompt."
+      }
+    ]
   },
   "design": {
-    "root_cause": "Third-party manifests omitted required WinUI/desktop runtime files, causing a misleading .NET prompt.",
+    "root_cause": "Missing hardlinks.txt copy repair leaves self-contained runtime files absent under WinUI3Apps.",
     "evidence": [
-      "Observed: official installer workaround.",
-      "Observed: Scoop manifest fix resolved the issue.",
-      "Observed: hardlinks identified the required payload."
+      "Issue host trace and linked hardlinks workaround."
     ],
-    "affected_files": [],
-    "implementation_steps": [],
+    "affected_files": [
+      {
+        "path": "installer/PowerToysSetupVNext/generateAllFileComponents.ps1",
+        "purpose": "Writes WinUI3Apps/hardlinks.txt",
+        "symbols": [
+          "hardlinks.txt generation"
+        ]
+      },
+      {
+        "path": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+        "purpose": "Copies manifest entries during install/repair",
+        "symbols": [
+          "CreateWinAppSDKHardlinksCA"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+        "symbols": [
+          "CreateWinAppSDKHardlinksCA"
+        ],
+        "current_behavior": "Copies manifest entries when the custom action runs.",
+        "change": "Schedule/execute for install, upgrade, and repair; overwrite missing/stale targets.",
+        "code_block": "for entry in hardlinks.txt: validate source/target containment; if source exists and target missing or hash differs, copy_file(source,target,overwrite_existing);",
+        "edge_cases": [
+          "Empty manifest remains non-fatal.",
+          "Reject path traversal.",
+          "Do not use NTFS hard-links."
+        ],
+        "tests": [
+          "Installer upgrade test validates WinUI3Apps runtime files exist."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "installer/PowerToysSetupVNext/generateAllFileComponents.ps1",
+        "symbols": [
+          "hardlinks.txt generation"
+        ],
+        "current_behavior": "Builds manifest from duplicate root/WinUI3Apps files.",
+        "change": "Fail package validation when required apphost runtime files are neither installed nor listed.",
+        "code_block": "assert required runtime/deps files for WinUI3Apps apphosts are in WinUI3ApplicationsFiles or hardlinks.txt;",
+        "edge_cases": [
+          "Preserve UTF-8 no-BOM output."
+        ],
+        "tests": [
+          "Inspect generated WinUI3Applications.wxs and hardlinks.txt."
+        ]
+      }
+    ],
     "verify": [
-      "For Scoop run `scoop update` then `scoop update powertoys --force`; restart and open Settings/Peek.",
-      "Other package managers should compare their manifests with the corrected file set."
+      "Install fixed build and launch Settings/Quick Access/Peek."
     ],
     "risks": [
-      "A separate Chocolatey manifest defect could remain.",
-      "Packaging fixes are outside PowerToys."
+      "Installer scheduling can affect upgrade/uninstall behavior."
     ],
     "alternatives": [
-      "Add application self-repair; rejected because it hides packaging defects and creates unsupported behavior."
+      "Package-manager-only fix rejected because installer/winget reports exist."
     ]
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Mark handled by package fix",
+      "type": "approve_design",
+      "label": "Design fix",
+      "requires_confirmation": true
+    },
+    {
+      "type": "request_info",
+      "label": "Request installer repair evidence",
+      "requires_confirmation": true,
       "comment": {
-        "body": "This is covered by the merged Scoop Extras packaging fix in PR 18020. Multiple reporters confirmed that `scoop update` followed by `scoop update powertoys --force` removes the prompt. The missing WinUI payload is package-manager-specific, so there is no evidence for a competing PowerToys source change; other package managers should compare their manifests with the corrected file set."
+        "body": "Thanks for the detailed reports and host trace. The evidence points to required files from `WinUI3Apps\\hardlinks.txt` missing under `WinUI3Apps`. Could someone still seeing this on the latest build please provide the PowerToys installer log, or reproduce and comment `/bugreport` immediately afterward? We need to know whether the installer repair step copied the manifest entries or logged failures."
       }
     }
-  ]
+  ],
+  "number": 48432,
+  "kind": "issue"
 }

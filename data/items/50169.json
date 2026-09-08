@@ -1,80 +1,64 @@
 {
   "schemaVersion": 5,
-  "number": 50169,
   "kind": "issue",
-  "track": "fix",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "waiting_since": "2026-09-07T04:53:07Z",
-  "generated_at": "2026-09-07T15:31:34Z",
-  "evaluated_at": "2026-09-07T15:31:34Z",
+  "number": 50169,
+  "title": "PowerToys exits randomly",
+  "url": "https://github.com/microsoft/PowerToys/issues/50169",
+  "generated_at": "2026-09-08T02:51:49.9453166Z",
+  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
   "source_updated_at": "2026-09-07T04:53:07Z",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The issue remains reproducible on the latest stable release, but the existing archive was collected after PowerToys restarted. PR #50273 has now merged the required Runner session-end instrumentation, so the next useful evidence is a fresh preview-build report captured immediately after the next exit.",
+    "status": "duplicate_or_handled",
+    "rationale": "Merged PR #50273 adds Runner logging for WM_QUERYENDSESSION and WM_ENDSESSION and explicitly references this issue. It provides diagnostic coverage for a likely system/session-end exit path, but is not proof that every random exit cause is fixed; further user-facing fix work should be driven by logs from a recurrence after that change.",
+    "recommended_action": "Use the merged session-end telemetry to classify any remaining recurrence before opening a new implementation plan.",
     "evidence": [
-      "The issue reports that the PowerToys tray icon and tools disappear after several hours while Command Palette remains active.",
-      "On 2026-09-04, the reporter confirmed that the behavior happened again after upgrading to the newest stable release from GitHub.",
-      "The reporter explained that the attached PowerToys report was generated only after restarting PowerToys.",
-      "Maintainer moooyo stated on 2026-08-31 that the supplied log contained no distinguishing failure evidence and that more logging was needed.",
-      "PR #50273 merged on 2026-09-07 and adds Runner logging for WM_QUERYENDSESSION and WM_ENDSESSION without changing session-end behavior.",
-      "Issues #50270, #49438, and #49208 contain similar public reports of PowerToys disappearing while Command Palette or other utilities remain unavailable."
-    ],
-    "recommended_action": "Wait for a preview containing PR #50273, then request a fresh diagnostic archive immediately after the next Runner disappearance."
+      {
+        "fact": "The author supplied a bug report and confirmed recurrence on the latest stable release.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50169"
+      },
+      {
+        "fact": "Merged PR #50273 adds Runner logging for Windows session-end reasons and explicitly relates to issue #50169.",
+        "source": "https://github.com/microsoft/PowerToys/pull/50273"
+      },
+      {
+        "fact": "Related live issue #50270 covers random PowerToys exits and links the same diagnostic direction.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50270"
+      }
+    ]
   },
   "fix_assessment": {
     "status": "existing_fix",
-    "rationale": "Merged PR #50273 directly covers the current investigation by recording Windows session-end and Restart Manager close-app signals. It improves observability rather than correcting a confirmed root cause.",
+    "rationale": "The linked PR is merged and adds the targeted diagnostic coverage requested by the issue investigation; no separate behavioral fix is justified without a post-merge recurrence trace.",
     "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/50273",
-      "https://github.com/microsoft/PowerToys/issues/50169"
+      "https://github.com/microsoft/PowerToys/pull/50273"
     ]
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "PowerToys' tray-hosted functionality reportedly exits after hours of normal desktop use while Command Palette stays active. The behavior now reportedly persists on a newer stable build, but the only submitted diagnostic archive was collected after a restart and cannot identify why the Runner exited.",
+    "summary": "Random PowerToys exits have merged diagnostic coverage for Windows session-end reasons, but recurrence classification is still required if the issue persists.",
     "known_information": [
-      "The original report used PowerToys 0.100.2 installed from the Microsoft Store.",
-      "The reporter observes the issue during ordinary browsing and video use, and reports seeing it on multiple systems.",
-      "The reporter supplied a PowerToys diagnostic archive after reopening PowerToys, not while the failure state was still present.",
-      "The reporter later installed the newest stable release from GitHub and reports that the same behavior recurred.",
-      "No software installation was reported during the period leading to the latest observed exit.",
-      "There are no assignees on the issue; labels are Issue-Bug, Needs-Triage, Needs-Team-Response, and Product-General.",
-      "PR #50273 is a merged, publicly linked diagnostic change for the Runner session-end message path."
+      "Issue is assigned to moooyo and labeled Needs-Team-Response.",
+      "The reporter confirmed recurrence on the latest stable release and supplied diagnostics.",
+      "PR #50273 is merged and logs session-end reason details in Runner."
     ],
     "inferences": [
-      "The surviving Command Palette makes a Runner-specific termination path more plausible than a complete PowerToys process shutdown, but this is not confirmed.",
-      "Because the archive was created after restart, it may have missed the log and Windows error state needed to distinguish a Runner crash, session-end request, Restart Manager request, or external termination.",
-      "The similar reports support prioritizing shared Runner diagnostics, but do not prove that all reports have the same cause."
+      "Some apparent random exits may be Windows shutdown, sign-out, restart, or session-end behavior rather than an unexplained crash.",
+      "A recurrence after the merged logging change would need a new, classified trace."
     ],
-    "analysis": "Current public evidence is sufficient to establish a recurring Runner-facing symptom on a current release, but not to select a safe behavioral fix. The existing maintainer PR instruments the exact tray-window session-end path that could explain a silent Runner exit. The next useful evidence is therefore a fresh failure-time report and Windows error record that can confirm or rule out that path, rather than a speculative watchdog or restart change.",
+    "analysis": "Treat #50273 as the current diagnostic fix and avoid duplicating an implementation plan until a post-merge failure is classified.",
     "initial_investigation": [
-      "The current Runner tray-window procedure in src/runner/tray_icon.cpp delegates WM_QUERYENDSESSION and WM_ENDSESSION to handle_stateless_session_end_message.",
-      "src/common/utils/window.h shows that a confirmed WM_ENDSESSION destroys the tray window and allows the Runner message loop to exit; ENDSESSION_CLOSEAPP is treated as an application-only close request.",
-      "Runner history includes PR #48363, which added the session-end handling to avoid APPLICATION_HANG_QUIESCE during shutdown, sign-out, or restart.",
-      "PR #50273 modifies src/runner/tray_icon.cpp to log the session-end message phase and decoded close-app, critical, and logoff flags before that handler executes.",
-      "The issue's own public discussion links #50270, #49438, and #49208; all remain open Issue-Bug reports and do not provide a confirmed duplicate or completed remediation."
+      "src/runner",
+      "https://github.com/microsoft/PowerToys/pull/50273"
     ],
-    "information_gaps": [
-      {
-        "information": "A fresh PowerToys diagnostic ZIP collected immediately after the tray icon and PowerToys tools disappear, before manually restarting PowerToys.",
-        "why_needed": "It can preserve the Runner state and new session-end diagnostics needed to distinguish the proposed session-end path from a crash or external termination.",
-        "how_to_collect": "After reproducing on the newest stable release, comment /bugreport immediately after noticing the disappearance and before relaunching PowerToys."
-      },
-      {
-        "information": "The exact installed PowerToys version and install channel, plus any Event Viewer Application Error entry at the observed exit time.",
-        "why_needed": "It confirms the current build under test and identifies whether Windows recorded a crashing process or termination signature.",
-        "how_to_collect": "Include the version and install channel in the issue reply, then copy the Event Viewer Application Error details whose timestamp matches the disappearance."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Submit post-exit Runner trace",
+      "type": "post_comment",
+      "label": "Record merged diagnostic fix",
+      "note": "Post the evidence-based status and linked public work.",
       "comment": {
-        "body": "Thanks for confirming that this still happens on the latest stable release and that the earlier archive was collected after restarting PowerToys. PR #50273 has now added Runner logging for Windows session-end and Restart Manager close-app messages. After a preview containing that change is available, please provide:\n\n1. A fresh diagnostic archive by commenting `/bugreport` immediately after the next unexpected exit and before restarting PowerToys if possible.\n2. The exact preview version used.\n\nThe new archive will distinguish a Windows-requested Runner shutdown from a crash or another termination path."
+        "body": "PR #50273 is merged and adds Runner logging for WM_QUERYENDSESSION and WM_ENDSESSION, including decoded session-end reasons and confirmed/cancelled state. That is the current fix coverage for this issue unexplained-exit investigation. If PowerToys still exits unexpectedly after the change, please attach a fresh report from a recurrence so the new reason fields can distinguish session-end behavior from an application crash before another code fix is designed."
       }
     }
   ]

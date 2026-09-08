@@ -1,118 +1,107 @@
 {
   "schemaVersion": 5,
-  "number": 50440,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-07T16:05:18Z",
-  "evaluated_at": "2026-09-07T16:05:18Z",
-  "source_updated_at": "2026-09-07T14:12:11Z",
+  "number": 50440,
+  "title": "The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)",
   "url": "https://github.com/microsoft/PowerToys/issues/50440",
-  "title": "The app sometimes disables enabled features such as LightSwitch",
-  "confidence": "yellow",
-  "status": {
-    "label": "Likely state-persistence or initialization regression",
-    "detail": "The diagnostic summary found no crash signature and the report describes silent feature disablement."
-  },
-  "next_action": {
-    "label": "Approve state-persistence investigation",
-    "reason": "Compare GeneralSettings.Enabled.LightSwitch with the persisted settings and startup/module initialization state at the moment the feature turns off."
-  },
+  "generated_at": "2026-09-08T02:51:49.9453166Z",
+  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
+  "source_updated_at": "2026-09-08T01:40:47Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report has a reproducible-enough silent state symptom, a diagnostic archive, and a focused module label, but no evidence yet identifies whether persisted settings, profile migration, or startup reconciliation changes the value.",
+    "rationale": "The report is reproducible enough to justify a focused persistence/startup investigation, but the supplied diagnostic analysis found no exception signature and does not distinguish settings write loss from module startup reconciliation.",
+    "recommended_action": "Collect one targeted reproduction with before/after general settings evidence, then validate the LightSwitch state transition through settings persistence and Runner startup.",
     "evidence": [
-      "The issue reports LightSwitch becoming disabled without user action on PowerToys 0.101.2362.",
-      "The diagnostic triage found no matching crash or error signature.",
-      "Current LightSwitchViewModel initializes IsEnabled from GeneralSettingsConfig.Enabled.LightSwitch and writes changes through outgoing general settings.",
-      "The issue is per-user, non-elevated, stable-channel, and uses a Chinese locale."
-    ],
-    "recommended_action": "Trace the enabled value from persisted GeneralSettings through startup and module initialization, then add a regression test for silent state changes."
+      {
+        "fact": "The reporter says LightSwitch can turn itself off on stable 0.101.2362 without user action and supplied a diagnostic report.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50440"
+      },
+      {
+        "fact": "Automated analysis found no matching crash or error signature, so a silent state or initialization path remains possible rather than proven.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50440#issuecomment-5571883843"
+      },
+      {
+        "fact": "The current code reads and writes GeneralSettingsConfig.Enabled.LightSwitch in the LightSwitch settings view model; Runner applies enabled module settings during startup.",
+        "source": "https://github.com/microsoft/PowerToys/tree/main/src/settings-ui/Settings.UI/ViewModels"
+      }
+    ]
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No linked fix or concrete implementation covers the silent LightSwitch disablement.",
-    "existing_fix_urls": []
+    "rationale": "No complete fix is present. The most supportable next step is instrumentation and persistence validation around the existing LightSwitch setting flow."
   },
   "proposed_fixes": [
     {
-      "title": "Preserve LightSwitch enabled state across startup and settings reconciliation",
-      "root_cause": "A startup, profile, restore, or settings-write path may overwrite GeneralSettings.Enabled.LightSwitch without a corresponding user action.",
+      "title": "Trace and harden LightSwitch enabled-state persistence",
+      "root_cause": "The symptom is consistent with an unconfirmed divergence between the persisted GeneralSettingsConfig.Enabled.LightSwitch value and the Runner/module state.",
       "plan": [
-        "Capture the enabled value at startup, module IPC initialization, and every outgoing GeneralSettings write.",
-        "Identify any reconciliation or migration path that can write false during module initialization.",
-        "Make state updates authoritative and distinguish user changes from startup synchronization.",
-        "Add regression coverage for restart, update, profile, and settings-file preservation."
+        "Add narrowly scoped diagnostic logging around LightSwitch enabled-state reads, writes, and Runner application, excluding private settings values beyond the boolean state.",
+        "Reproduce across a settings refresh, Runner restart, and update-adjacent startup to identify the first transition to false.",
+        "Fix the identified write or initialization path and preserve the existing explicit user-disable behavior."
       ],
       "verification": [
-        "Enable LightSwitch, restart PowerToys repeatedly, and confirm the persisted enabled value remains true.",
-        "Verify startup synchronization does not write false when the module settings load successfully.",
-        "Confirm explicit user disablement still persists and takes effect."
+        "Unit or integration coverage proves a true enabled value survives serialization, reload, and Runner startup.",
+        "A regression reproduction no longer disables LightSwitch without an explicit user action.",
+        "A clean startup still honors an intentionally disabled LightSwitch."
       ],
       "confidence": {
-        "score": 62,
+        "score": 58,
         "level": "yellow",
-        "rationale": "The state boundary is clear, but the public evidence does not identify the writer that changes the value."
+        "rationale": "The code path is identifiable, but the supplied evidence does not yet identify the failing transition."
       }
     }
   ],
   "issue_context": {
-    "summary": "LightSwitch silently turns off in a stable per-user installation without a crash or visible error, suggesting a settings or initialization overwrite.",
+    "summary": "LightSwitch is reported to become disabled spontaneously on a non-elevated per-user stable installation.",
     "known_information": [
-      "The issue is open and labeled Issue-Bug, Needs-Triage, and Product-LightSwitch.",
-      "The reporter supplied a diagnostic ZIP and detailed OS, .NET, locale, and installation metadata.",
-      "The symptom is that LightSwitch can turn itself off after previously being enabled.",
-      "The automated triage found no matching exception or crash signature.",
-      "LightSwitchViewModel reads and writes the enabled state through GeneralSettingsConfig.Enabled.LightSwitch."
+      "Version 0.101.2362, GitHub installation, Windows build 26200, per-user and non-elevated.",
+      "The issue includes a diagnostic report and a subsequent author comment offering help.",
+      "No public code change or linked PR was identified as fixing this behavior."
     ],
     "inferences": [
-      "The failure is more likely silent state persistence or initialization than a process crash.",
-      "A settings restore, migration, profile, or startup reconciliation path may be involved.",
-      "The current report does not establish when the value changes."
+      "The missing error signature suggests a silent settings persistence or startup reconciliation path.",
+      "The exact transition may occur during a settings write, Runner restart, update, or module initialization."
     ],
-    "analysis": "The source identifies the authoritative property and write boundary. A focused state-transition investigation is justified, but a reporter trace is still needed to identify the triggering lifecycle event.",
+    "analysis": "Compare the persisted enabled state before and after the observed disablement and trace whether the Runner or Settings UI writes the changed value.",
     "initial_investigation": [
-      "Read the complete issue body, automated triage comment, labels, and attachment link.",
-      "Reviewed LightSwitchViewModel.InitializeEnabledValue, IsEnabled, and outgoing GeneralSettings writes.",
-      "No public linked fix or duplicate was identified."
+      "src/settings-ui/Settings.UI/ViewModels/LightSwitchViewModel.cs",
+      "src/settings-ui/Settings.UI/SettingsXAML/Views/LightSwitchPage.xaml.cs",
+      "src/runner/settings_window.cpp",
+      "src/runner/main.cpp"
     ],
     "information_gaps": [
       {
-        "information": "The exact lifecycle point when LightSwitch changes from enabled to disabled, including whether it occurs after restart, update, profile change, or settings restore.",
-        "why_needed": "This identifies the writer and prevents changing the wrong state path.",
-        "how_to_collect": "Record the state before shutdown, after startup, after the first module refresh, and immediately after the next unexpected disablement."
-      },
-      {
-        "information": "The relevant GeneralSettings and LightSwitch settings values before and after the failure.",
-        "why_needed": "This distinguishes persisted-value corruption from an in-memory UI or module-state mismatch.",
-        "how_to_collect": "Capture a fresh /bugreport immediately after the feature disables and include the before/after settings observation."
+        "information": "A fresh reproduction showing the exact timestamp and whether the general settings file changes when LightSwitch turns off.",
+        "why_needed": "The report identifies the symptom but not which component performed the state transition.",
+        "how_to_collect": "Reproduce once, run /bugreport immediately, and include the before/after value of the LightSwitch enabled setting if it is safe to share."
       }
     ]
   },
   "actions": [
     {
-      "id": "approve-design-50440",
-      "type": "approve_design",
-      "label": "Approve LightSwitch state-persistence investigation",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Draft only; no upstream action is posted."
+      "type": "request_info",
+      "label": "Request targeted evidence",
+      "note": "The requested evidence separates a persistence write from a startup/module initialization problem.",
+      "comment": {
+        "body": "Thanks for the diagnostic report and the stable 0.101.2362 details. It contains no matching crash signature, so the remaining decision is whether the enabled value is being persisted as false or is only being interpreted as disabled during startup. Please reproduce once, note the approximate time, run /bugreport immediately after the toggle is observed, and state whether PowerToys was restarted or updated between the last known-good and disabled states. If possible, compare the LightSwitch enabled value in the general settings before and after the event without posting private profile data."
+      }
     },
     {
-      "id": "request-info-50440",
-      "type": "request_info",
-      "label": "Request LightSwitch state-transition evidence",
-      "primary": false,
-      "confirm": true,
-      "requiresApproval": true,
-      "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 50440,
-        "body": "Thanks for the report. Please provide:\n\n1. The exact lifecycle point when LightSwitch changes from enabled to disabled, including whether it occurs after restart, update, profile change, or settings restore. Collection: Record the state before shutdown, after startup, after the first module refresh, and immediately after the next unexpected disablement.\n2. The relevant GeneralSettings and LightSwitch settings values before and after the failure. Collection: Capture a fresh /bugreport immediately after the feature disables and include the before/after settings observation."
+      "type": "approve_design",
+      "label": "Approve focused fix design",
+      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
+      "design": {
+        "scope": "Instrument and test the existing LightSwitch enabled-state flow; do not change user-facing defaults.",
+        "files": [
+          "src/settings-ui/Settings.UI/ViewModels/LightSwitchViewModel.cs",
+          "src/runner/settings_window.cpp",
+          "src/runner/main.cpp"
+        ],
+        "acceptance_criteria": [
+          "A user-enabled LightSwitch remains enabled across Runner restart and ordinary settings refresh.",
+          "A diagnostic trace identifies whether a false value was written or only observed by module startup.",
+          "Existing settings behavior remains unchanged when no spontaneous disablement occurs."
+        ]
       }
     }
   ]

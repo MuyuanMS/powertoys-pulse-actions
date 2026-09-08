@@ -1,103 +1,106 @@
 {
   "schemaVersion": 5,
-  "number": 50438,
   "kind": "issue",
-  "track": "fix",
-  "stage": "design_ready",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-07T15:31:35Z",
-  "evaluated_at": "2026-09-07T15:31:35Z",
-  "source_updated_at": "2026-09-07T10:00:32Z",
+  "number": 50438,
+  "title": "Mouse Without Borders fails to resynchronize after minutes",
   "url": "https://github.com/microsoft/PowerToys/issues/50438",
-  "title": "Mouse Withotu Borders desync",
-  "confidence": "Medium",
-  "status": {
-    "glyph": "🛠",
-    "label": "Synchronization recovery investigation ready",
-    "detail": "Two peers desynchronize after several minutes and restart recovery points to stale connection or peer state; the submitted archive was invalid."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request valid failure-time diagnostics",
-    "reason": "Distinguish socket loss, heartbeat timeout, reconnect failure, and stale receiver state before implementation."
-  },
+  "generated_at": "2026-09-08T02:51:49.9453166Z",
+  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
+  "source_updated_at": "2026-09-07T10:00:32Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue provides a repeatable failure and restart recovery, while source review identifies the send, receive, heartbeat, and socket-reopen boundaries. A fresh valid trace is needed to select the exact recovery change.",
+    "rationale": "The symptom is clear: resynchronization fails until restart, but the attached diagnostic archive was invalid, so socket error and machine-state evidence are missing. The reconnect and power/network event paths are identifiable, making this a red-confidence investigation rather than a ready implementation.",
+    "recommended_action": "Obtain a valid post-reproduction diagnostic report and correlate socket reopen, network availability, and machine-pool state before changing reconnect behavior.",
     "evidence": [
-      "Two peers desynchronize after several minutes.",
-      "Administrator and service modes show the same behavior.",
-      "Restarting PowerToys restores synchronization temporarily.",
-      "The submitted diagnostic archive was rejected as invalid.",
-      "Common.SkSend, MachineStuff.UpdateClientSockets, ReopenSockets, and Receiver.ProcessPackage own the likely path."
-    ],
-    "recommended_action": "Request valid failure-time diagnostics and approve a focused peer-session recovery investigation.",
-    "evaluated_at": "2026-09-07T15:31:35Z",
-    "source_updated_at": "2026-09-07T10:00:32Z"
+      {
+        "fact": "The reporter says Mouse Without Borders stops resynchronizing after several minutes and only restart repairs it.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50438"
+      },
+      {
+        "fact": "The submitted diagnostic archive could not be analyzed as valid evidence.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50438"
+      },
+      {
+        "fact": "InitAndCleanup schedules socket reopening on network availability and power-mode events, coordinated with Common.Sk and SocketStuff.",
+        "source": "https://github.com/microsoft/PowerToys/tree/main/src/modules/MouseWithoutBorders/App/Core"
+      }
+    ]
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A repository fix is likely, but the evidence cannot distinguish transport failure from stale connection or machine state."
+    "rationale": "Reconnect/state recovery is a valid design target, but there is no usable trace showing whether the failure is socket, peer, authentication, or stale machine-state."
   },
   "proposed_fixes": [
     {
-      "title": "Recover Mouse Without Borders from a lost or stale peer session",
-      "root_cause": "A failed TCP/session or stale peer state may remain logically usable while the receiver no longer processes synchronized input.",
+      "title": "Make Mouse Without Borders recovery reset stale transport state",
+      "root_cause": "The restart-only recovery symptom is consistent with a stale socket or connection state surviving the existing reopen triggers, but the failing state is not yet identified.",
       "plan": [
-        "Correlate a fresh trace with send failures, heartbeat state, client socket updates, socket reopen, and receiver processing.",
-        "Invalidate the failed peer session and rebuild socket plus machine state before accepting input.",
-        "Bound reconnect attempts while the peer is unavailable.",
-        "Add tests for failed send/receive, reconnect, and resumed synchronization."
+        "Correlate socket read/write failures, network availability events, and machine-pool state transitions.",
+        "Reset or recreate only the stale transport state after a confirmed recoverable failure.",
+        "Add bounded retry/backoff and a diagnostic event that identifies why synchronization was reset."
       ],
       "verification": [
-        "Run Mouse Without Borders tests.",
-        "Reproduce on two PCs and confirm bounded automatic recovery without restarting PowerToys."
+        "The captured failure recovers without restarting PowerToys.",
+        "Repeated network interruption and resume tests do not leave a stale synchronized/unsynchronized state.",
+        "Intentional disconnect and peer authentication remain stable."
       ],
       "confidence": {
-        "score": 63,
-        "level": "yellow",
-        "rationale": "Restart recovery implicates session reconstruction, but the invalid archive prevents identifying the failing branch."
+        "score": 42,
+        "level": "red",
+        "rationale": "The symptom strongly suggests recovery-state handling, but the invalid diagnostics leave the exact state machine failure unknown."
       }
     }
   ],
   "issue_context": {
-    "summary": "Mouse Without Borders repeatedly loses synchronization between two PCs after a few minutes on 0.101.2362, and restarting PowerToys temporarily restores it.",
+    "summary": "Mouse Without Borders loses synchronization after running for minutes and recovers only after restart.",
     "known_information": [
-      "The issue reproduces with administrator and service modes.",
-      "Restarting PowerToys restores operation.",
-      "The diagnostic ZIP was rejected because its archive structure was invalid."
+      "The issue provides a clear duration-dependent symptom.",
+      "A diagnostic archive was attached but is invalid for analysis.",
+      "The repository has explicit network/power-triggered socket reopening paths."
     ],
     "inferences": [
-      "A connection, heartbeat, or peer-state failure is more likely than initial setup.",
-      "The application may retain a logically connected peer that no longer carries input."
+      "A stale socket or machine-pool state may survive a recoverable network failure.",
+      "The restart workaround suggests recovery state is not fully reset."
     ],
-    "analysis": "A failure-time trace can select among the existing send, receive, heartbeat, and reopen paths without speculative reconnect logic.",
+    "analysis": "Capture a valid report at the first failed sync and compare socket lifecycle events with peer connectivity and state resets.",
     "initial_investigation": [
-      "Event.MouseEvent sends through Common.SkSend.",
-      "Send failures clear sockets and schedule MachineStuff.UpdateClientSockets.",
-      "Common.ReopenSockets replaces socket state.",
-      "Receiver.ProcessPackage applies incoming input."
+      "src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs",
+      "src/modules/MouseWithoutBorders/App/Core",
+      "src/modules/MouseWithoutBorders/App"
     ],
     "information_gaps": [
       {
-        "information": "A valid diagnostic archive from the failure moment and peer connection/reachability state.",
-        "why_needed": "This distinguishes dead transport, missed heartbeat, reconnect failure, and stale receiver state.",
-        "how_to_collect": "Reproduce, comment /bugreport immediately, attach the generated ZIP unchanged, and record whether the peer appears connected and responds to ping."
+        "information": "The first failure timestamp, affected peer count, whether both machines remain connected, and socket reopen/error events.",
+        "why_needed": "Without this evidence a reconnect change could mask authentication or peer-state problems.",
+        "how_to_collect": "Reproduce until synchronization fails, run /bugreport on both sides if possible, and record the first failure time and whether restarting only one side recovers it."
       }
     ]
   },
   "actions": [
     {
-      "type": "approve_design",
-      "label": "Approve synchronization recovery investigation",
-      "design_summary": "Trace and repair stale peer-session recovery across send, heartbeat, reconnect, and machine-state publication."
+      "type": "request_info",
+      "label": "Request targeted evidence",
+      "note": "Replace the invalid archive with a time-correlated report and isolate the recovery boundary.",
+      "comment": {
+        "body": "The symptom is actionable, but the previously attached diagnostic archive was invalid, so there is no socket or peer-state evidence to distinguish a stale connection from a machine-pool/authentication problem. Please reproduce until synchronization first fails, record the approximate time and whether one or both machines are affected, then run /bugreport immediately on the affected side (and the peer if possible). Please state whether restarting only one side restores sync; this is the key recovery discriminator."
+      }
     },
     {
-      "type": "request_info",
-      "label": "Request valid failure-time diagnostics",
-      "comment": {
-        "body": "The report gives a useful repeatable symptom. Please provide:\n\n1. A fresh diagnostic archive by commenting `/bugreport` immediately after the next desynchronization and attaching the ZIP unchanged.\n2. Whether the peer still appears connected in Mouse Without Borders.\n3. Whether the two PCs can still ping each other.\n\nThis will distinguish a lost TCP session, missed heartbeat, reconnect failure, and stale peer state."
+      "type": "approve_design",
+      "label": "Approve focused fix design",
+      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
+      "design": {
+        "scope": "Trace and reset the Mouse Without Borders reconnect state at the first recoverable transport failure without disrupting intentional disconnects.",
+        "files": [
+          "src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs",
+          "src/modules/MouseWithoutBorders/App/Core/SocketStuff.cs",
+          "src/modules/MouseWithoutBorders/App/Core/Common.cs"
+        ],
+        "acceptance_criteria": [
+          "A transient network/socket failure restores synchronization without process restart.",
+          "The first failure produces a bounded, actionable diagnostic event.",
+          "Peer authentication and intentional disconnect behavior are unchanged."
+        ]
       }
     }
   ]

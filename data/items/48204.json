@@ -1,120 +1,110 @@
 {
   "schemaVersion": 5,
-  "number": 48204,
   "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
-  "evaluated_at": "2026-09-04T07:14:14Z",
-  "source_updated_at": "2026-09-03T03:00:14Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/48204",
+  "number": 48204,
   "title": "Can't disable Runner Logs",
+  "url": "https://github.com/microsoft/PowerToys/issues/48204",
+  "state": "open",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-08T02:40:00Z",
+  "evaluated_at": "2026-09-08T02:40:00Z",
+  "source_updated_at": "2026-09-03T03:00:14Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The common logger creates its daily file sink before applying the configured level, while Runner has neither a user-facing off control nor a size limit.",
+    "rationale": "The report is concrete and the code has a central logging seam, but the file inventory is needed before selecting the exact policy.",
     "evidence": [
-      "The report identifies about 500 MB of Runner logs and asks for disablement or a size bound.",
-      "Logger::init reads the level, creates a daily sink, and only then sets the logger level.",
-      "The persisted log settings contain logLevel, but Runner logging remains unbounded by file size."
+      "The report says Runner logs occupy about 500 MB and requests disabling or limiting them.",
+      "Historical issue #8419 explicitly said earlier cleanup did not cover RunnerLogs.",
+      "logger_settings.h defines RunnerLogs paths and retention=30; runner/main.cpp initializes the runner logger centrally."
     ],
-    "recommended_action": "Approve the hard-off and Runner-scoped bounded-log design, while selecting UI placement and defaults."
+    "recommended_action": "Approve a focused logger-growth design after confirming the current file-size distribution."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No linked implementation provides both a true no-file off setting and Runner-specific bounded storage.",
-    "existing_fix_urls": []
+    "rationale": "No current upstream or fork fix attempt was found covering #48204."
   },
-  "proposed_fixes": [
-    {
-      "title": "Make Runner logging disableable and size-bounded",
-      "root_cause": "Logger::init opens a daily file sink before applying logLevel; retention counts days rather than bounding bytes, and no Runner control exposes these policies.",
-      "plan": [
-        "When resolved logLevel is off, create or use a null logger before any file sink is opened.",
-        "Add validated Runner-only maximum bytes and file-count settings, then initialize Runner with a rotating or capped sink without changing other modules' logging policy.",
-        "Expose an explicitly restart-required logging toggle and Runner cap through the existing settings persistence path, preserving unknown fields.",
-        "Add focused logger, rotation, and settings persistence tests."
-      ],
-      "verification": [
-        "Set logging off, restart PowerToys, launch Runner, and confirm the Runner log is neither created nor modified.",
-        "Use a tiny test cap, generate logs, and confirm bounded count and size while diagnostics can still read files.",
-        "Verify normal non-off module logging is unchanged."
-      ],
-      "confidence": {
-        "score": 78,
-        "level": "yellow",
-        "rationale": "The initialization order proves the hard-off defect; cap defaults and user experience are product-policy decisions."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "Runner logs can grow substantially because the logger opens a daily file sink before honoring an off level, and its retention policy does not limit size.",
+    "summary": "The reporter has accumulated about 500 MB of PowerToys Runner logs and wants logging disabled or bounded. Current source exposes age retention and fixed RunnerLogs paths, but the report does not establish whether growth is one oversized file or many retained files.",
     "known_information": [
-      "The reporter has about 500 MB of Runner logs.",
-      "logger.cpp creates daily_file_sink_mt before calling set_level.",
-      "log_settings.json has a logLevel option.",
-      "The issue asks for either disablement or a size limit."
+      "Issue is open and labeled Issue-Bug/Needs-Triage.",
+      "The report requests disablement or a file-size limit.",
+      "Issue #8419 is closed but its discussion said RunnerLogs cleanup was not covered.",
+      "src/common/logger/logger_settings.h defines Runner and ActionRunner log paths and retention=30.",
+      "src/runner/main.cpp initializes the runner logger."
     ],
     "inferences": [
-      "A null logger before sink creation gives a true hard-off mode.",
-      "A Runner-only cap avoids changing diagnostics for unrelated modules."
+      "Current retention likely bounds age rather than an active file size.",
+      "A size cap or opt-out likely belongs at the shared logger configuration seam."
     ],
-    "analysis": "The current logger lifecycle supplies a direct hard-off fix. Bounded Runner storage is also concrete but needs policy values and a UI decision.",
+    "analysis": "The report supports a focused design, but file inventory is needed to distinguish rotation, retention, and opt-out work.",
     "initial_investigation": [
-      "Read the issue and linked retention context.",
-      "Read Logger::init and current log-level mapping.",
-      "Reviewed fork mirror 640 design trace."
+      "Read #8419 history and confirmed RunnerLogs were not covered by the earlier cleanup work.",
+      "Inspected logger_settings.h and runner/main.cpp for the current configuration seam."
     ],
     "information_gaps": [
       {
-        "information": "Maintainer choice of default Runner cap, retained file count, and Settings placement",
-        "why_needed": "These choices define supportability and UX but do not change the proven hard-off mechanism.",
-        "how_to_collect": "During design approval, select a cap and whether the restart-required control belongs in General or Diagnostics settings."
+        "information": "Current RunnerLogs filenames, sizes, and dates, including whether one file is unbounded",
+        "why_needed": "Determines whether the fix should target rotation, size limits, retention, or an opt-out",
+        "how_to_collect": "Provide the file inventory or submit a fresh /bugreport immediately after reproducing"
       }
     ]
   },
+  "proposed_fixes": [
+    {
+      "title": "Bound Runner log growth and expose an intentional logging policy",
+      "root_cause": "Fixed RunnerLogs destinations and age retention provide no evidence of a bounded active-file size or user-controlled opt-out.",
+      "plan": [
+        "Trace common logger initialization and cleanup/rotation.",
+        "Add bounded rolling or maximum-size enforcement while preserving retention.",
+        "If disablement is supported, add a documented setting and migration.",
+        "Add regression coverage for rollover, retention, and disabled logging."
+      ],
+      "verification": [
+        "Sustain Runner logging and verify files stay below the configured bound.",
+        "Verify old logs are pruned without deleting newest diagnostics.",
+        "Verify settings survive restart."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "The central logger seam is confirmed, but the missing file inventory prevents choosing the least invasive policy."
+      }
+    }
+  ],
   "design": {
-    "root_cause": "Logger::init constructs the daily sink before honoring off; daily retention does not limit each file or total bytes, and Runner has no user-facing policy.",
+    "root_cause": "Runner logging has fixed destinations and age retention but no confirmed active-file size bound or opt-out.",
     "evidence": [
-      "[Observed] Logger::init creates daily_file_sink_mt before set_level.",
-      "[Observed] The log-level map supports off.",
-      "[Observed] The issue reports substantial Runner storage.",
-      "[Inferred] A Runner-only rotating sink minimizes behavior changes."
+      "logger_settings.h defines RunnerLogs paths and retention=30.",
+      "runner/main.cpp initializes the runner logger centrally.",
+      "#8419 history distinguishes unresolved RunnerLogs cleanup."
     ],
     "affected_files": [
       {
-        "path": "src/common/logger/logger.cpp",
-        "purpose": "Resolves levels and constructs shared sinks.",
-        "symbols": [
-          "getLogLevel",
-          "Logger::init"
-        ]
-      },
-      {
         "path": "src/common/logger/logger_settings.h",
-        "purpose": "Defines persisted logging options.",
+        "purpose": "Shared Runner paths and retention policy",
         "symbols": [
-          "LogSettings",
-          "logLevelOption"
+          "LogSettings::runnerLogPath",
+          "LogSettings::actionRunnerLogPath",
+          "LogSettings::retention"
         ]
       },
       {
         "path": "src/runner/main.cpp",
-        "purpose": "Initializes Runner logging.",
+        "purpose": "Runner logger initialization",
         "symbols": [
-          "Runner logger initialization"
+          "wWinMain",
+          "runner"
         ]
       },
       {
-        "path": "src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs",
-        "purpose": "Potential settings persistence surface.",
+        "path": "src/common/logger/logger.cpp",
+        "purpose": "File sink, rotation, and cleanup behavior to verify/change",
         "symbols": [
-          "GeneralViewModel"
-        ]
-      },
-      {
-        "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/GeneralPage.xaml",
-        "purpose": "Potential user-facing control.",
-        "symbols": [
-          "GeneralPage"
+          "Logger file sink initialization"
         ]
       }
     ],
@@ -123,93 +113,65 @@
         "order": 1,
         "file": "src/common/logger/logger.cpp",
         "symbols": [
-          "Logger::init"
+          "Logger file sink initialization",
+          "retention cleanup"
         ],
-        "current_behavior": "The file sink is opened even when configuration resolves to off.",
-        "change": "Return with a null logger before sink creation for off.",
-        "code_block": "auto level = getLogLevel(path); if (level == spdlog::level::off) { logger = spdlog::null_logger_mt(name); return; }",
+        "current_behavior": "Runner uses fixed files and exposed age retention; active-file size enforcement is unconfirmed.",
+        "change": "Introduce deterministic size rollover or maximum-size enforcement before append, then prune by age.",
+        "code_block": "if (current_size + incoming_size > max_bytes) { close_sink(); rotate_oldest(); open_next_sink(); } prune_by_age(retention_days);",
         "edge_cases": [
-          "Avoid duplicate logger registration in tests.",
-          "Do not display an initialization error for intentional off."
+          "Concurrent Runner and ActionRunner writes",
+          "Locked files",
+          "Existing oversized files"
         ],
         "tests": [
-          "Assert off creates and locks no target file."
+          "Logger rollover and retention tests",
+          "Runner startup with temporary log root"
         ]
       },
       {
         "order": 2,
-        "file": "src/common/logger/logger_settings.h and src/runner/main.cpp",
+        "file": "src/common/logger/logger_settings.h",
         "symbols": [
-          "LogSettings",
-          "Runner logger initialization"
+          "LogSettings"
         ],
-        "current_behavior": "Runner uses a daily sink with day-count retention only.",
-        "change": "Add validated Runner cap settings and a Runner-specific rotating or capped initialization path.",
-        "code_block": "runnerMaxBytes = validOrDefault(configuredBytes); initRotating(runnerName, path, runnerMaxBytes, runnerMaxFiles);",
+        "current_behavior": "Static paths and retention are visible in the shared contract.",
+        "change": "Add a documented size/disable policy at the shared configuration boundary if approved.",
+        "code_block": "inline const static uint64_t maxLogBytes = ...;",
         "edge_cases": [
-          "Reject zero or invalid values.",
-          "Keep non-Runner daily log behavior unchanged."
+          "Backward-compatible defaults",
+          "Settings migration",
+          "Diagnostics when disabled"
         ],
         "tests": [
-          "Write beyond a tiny cap and assert file-count and size bounds."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs and src/settings-ui/Settings.UI/SettingsXAML/Views/GeneralPage.xaml",
-        "symbols": [
-          "GeneralViewModel",
-          "GeneralPage"
-        ],
-        "current_behavior": "No logging controls are exposed.",
-        "change": "Persist a restart-required toggle and Runner cap using the existing log settings file.",
-        "code_block": "LoggingEnabled = logLevel != \"off\"; set -> save logLevel and validated Runner cap.",
-        "edge_cases": [
-          "Preserve unknown settings fields.",
-          "Do not promise a live logger reload."
-        ],
-        "tests": [
-          "Defaults, persistence, invalid cap validation, and unknown-field preservation."
+          "Settings serialization/migration coverage"
         ]
       }
     ],
     "verify": [
-      "Build affected logger, Runner, and Settings projects with tools\\build\\build.cmd.",
-      "Run focused existing logger/settings tests after locating their projects.",
-      "Perform hard-off and tiny-cap manual checks."
+      "Build common logger and Runner projects.",
+      "Run focused logger/settings tests.",
+      "Reproduce sustained logging and inspect bounded files."
     ],
     "risks": [
-      "Hard-off removes diagnostic data.",
-      "Changing Runner filenames can affect collection scripts."
+      "Changing defaults can reduce diagnostic data.",
+      "Shared logger changes affect multiple modules."
     ],
     "alternatives": [
-      "Increase daily retention only; rejected because it does not meet either requested outcome.",
-      "Apply a global cap; rejected because it changes unrelated diagnostics."
+      "Cleanup command only; insufficient for one runaway file.",
+      "Disable logs by default; rejected until diagnostic impact is agreed."
     ]
-  },
-  "mirror": {
-    "kind": "issue",
-    "fork_number": 640,
-    "fork_title": "[Issue 48204] Runner logs cannot be disabled or size-limited",
-    "fork_state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/640"
-  },
-  "adversary": {
-    "rounds": 1,
-    "verdict": "No blocking objection to hard-off and Runner-only bounds.",
-    "notes": "Defaults, UI placement, and restart semantics must be decided before implementation."
   },
   "actions": [
     {
       "type": "approve_design",
-      "label": "Approve Runner logging design",
-      "mirror_issue": 640
+      "label": "Design fix"
     },
     {
       "type": "request_info",
-      "label": "Request Runner logging policy decision",
+      "label": "Request Runner log size evidence",
       "comment": {
-        "body": "The current logger opens its daily sink before honoring the stored off level, so a true hard-off and Runner-only size cap have a concrete design. Before implementation, please choose the default Runner maximum size and retained file count, and whether the restart-required control belongs in General or Diagnostics settings; this will keep the change scoped without altering other modules' diagnostics."
+        "body": "The report confirms about 500 MB of Runner logs, and historical cleanup work did not cover RunnerLogs. Please provide the current RunnerLogs filenames, sizes, and last-write dates, or submit a fresh /bugreport immediately after reproducing. This distinguishes an unbounded active file from retention cleanup."
       }
     }
   ]

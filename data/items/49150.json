@@ -1,93 +1,104 @@
 {
   "schemaVersion": 5,
-  "number": 49150,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-07T16:05:18Z",
-  "evaluated_at": "2026-09-07T16:05:18Z",
-  "source_updated_at": "2026-09-07T12:58:47Z",
+  "number": 49150,
+  "title": "Quick Accent randomly deactivates",
   "url": "https://github.com/microsoft/PowerToys/issues/49150",
-  "title": "Quick Accent deactivates itself",
-  "confidence": "low",
-  "status": {
-    "label": "Needs failure-mode evidence",
-    "detail": "Discussion suggests character-dependent failure, but it does not establish whether the hook, UI process, or toolbar state fails."
-  },
-  "next_action": {
-    "label": "Request Quick Accent failure capture",
-    "reason": "Identify whether PowerToys.PowerAccent.exe exits, remains alive, or loses its keyboard hook."
-  },
+  "generated_at": "2026-09-08T02:51:49.9453166Z",
+  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
+  "source_updated_at": "2026-09-07T12:58:47Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is plausible and has updated discussion, but the failure boundary remains unresolved and the original reproduction is only 'use quick accent'.",
+    "status": "actionable_design",
+    "rationale": "The report is too underspecified to establish a root cause, but the comments and logs indicate random deactivation and possible character-triggered process termination. The PowerAccent interface launches a child process without proving the failing event, so focused evidence collection is required before implementation.",
+    "recommended_action": "Capture one reproducible deactivation with a fresh diagnostic report and the exact character/input sequence, then trace child-process exit and relaunch handling.",
     "evidence": [
-      "The report says Quick Accent stops working until reboot.",
-      "A commenter reports that characters such as 'o' may cause the process to die in Task Manager.",
-      "The author says the trigger is random and supplied a later diagnostic ZIP without an error.",
-      "Current source separates KeyboardListener hook state, character preparation, UI rendering, and PowerAccent process lifecycle.",
-      "The issue remains open with Issue-Bug, Needs-Triage, and Product-Quick Accent."
-    ],
-    "recommended_action": "Request a current-build reproduction with process-state observations and a fresh diagnostic archive."
+      {
+        "fact": "The issue body provides only \"use quick accent\"; comments indicate some characters may kill the process and logs show disable/relaunch activity without an error signature.",
+        "source": "https://github.com/microsoft/PowerToys/issues/49150"
+      },
+      {
+        "fact": "PowerAccentModuleInterface enable launches PowerToys.PowerAccent.exe; disable signals exit, waits, may terminate, and closes the process handle.",
+        "source": "https://github.com/microsoft/PowerToys/blob/main/src/modules/poweraccent/PowerAccentModuleInterface/dllmain.cpp"
+      },
+      {
+        "fact": "No confirmed public fix or exact reproduction sequence was identified.",
+        "source": "https://github.com/microsoft/PowerToys/issues/49150"
+      }
+    ]
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The evidence does not yet isolate a code path sufficiently to propose a non-speculative fix."
+    "status": "proposed",
+    "rationale": "A child-process lifecycle fix is plausible but not safe to implement without separating user-triggered disable, crash, and input-triggered termination."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Harden Quick Accent child-process lifecycle handling",
+      "root_cause": "The interface may treat an unexpected PowerToys.PowerAccent.exe exit or shutdown race as a normal disable, but the triggering condition is unconfirmed.",
+      "plan": [
+        "Record process exit reason and the initiating enable/disable transition with public-safe diagnostics.",
+        "Reproduce the reported character matrix and identify whether input causes termination or only exposes a lifecycle race.",
+        "Make relaunch/state reconciliation explicit without relaunching after an intentional user disable."
+      ],
+      "verification": [
+        "The original character/input sequence is stable across repeated runs.",
+        "Unexpected exits recover or surface a clear error without silently flipping the feature off.",
+        "Intentional disable remains deterministic."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The current evidence is insufficient to choose a safe lifecycle change."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Quick Accent intermittently stops responding, possibly after character-dependent input; no public evidence distinguishes process exit, hook loss, or stuck UI state.",
+    "summary": "Quick Accent sometimes deactivates without an intentional user action; the available evidence suggests a process-lifecycle or input-triggered failure but does not identify which.",
     "known_information": [
-      "The original report used PowerToys 0.100.2 and supplied a diagnostic ZIP.",
-      "The author describes the behavior as random.",
-      "A commenter observed possible failure with characters such as 'o'.",
-      "The later diagnostic excerpt contains launch and initialization entries but no clear error.",
-      "Quick Accent uses a low-level keyboard listener, character preparation, a separate UI process, and reset/disable paths."
+      "The issue lacks a concrete sequence, affected character set, and fresh diagnostic report tied to one occurrence.",
+      "The module interface owns child-process launch and shutdown.",
+      "Existing logs show disable/relaunch but no confirmed error signature."
     ],
     "inferences": [
-      "A process that remains alive would make hook or state failure more likely than a crash.",
-      "A character-specific failure could involve character preparation or rendering.",
-      "The need for a full reboot may reflect untested PowerToys-only restart behavior."
+      "The failure may be caused by a child process exit that the interface does not distinguish from an intentional disable.",
+      "Character-specific input may be relevant, but this is not confirmed."
     ],
-    "analysis": "The next evidence request is narrowly targeted at the three relevant failure boundaries and avoids inventing a fix from an ambiguous symptom.",
+    "analysis": "Instrument the child-process lifecycle and reproduce with a minimal character matrix before changing relaunch policy.",
     "initial_investigation": [
-      "Read the complete issue body and all three public comments.",
-      "Reviewed KeyboardListener, PowerAccent character preparation, UI launch, and disable/reset paths.",
-      "No confirmed duplicate or linked fix was identified."
+      "src/modules/poweraccent/PowerAccentModuleInterface/dllmain.cpp",
+      "src/modules/poweraccent"
     ],
     "information_gaps": [
       {
-        "information": "Current PowerToys version, activation settings, selected languages, and the smallest character sequence that reproduces the failure.",
-        "why_needed": "This distinguishes a legacy-version regression from a character-preparation or activation-timing defect.",
-        "how_to_collect": "Reply with the current settings and numbered reproduction steps."
-      },
-      {
-        "information": "Whether PowerToys.PowerAccent.exe exits or remains running, and whether restarting PowerToys alone restores Quick Accent.",
-        "why_needed": "This separates process failure from hook or in-memory state failure.",
-        "how_to_collect": "Check Task Manager immediately after failure and restart PowerToys without rebooting."
-      },
-      {
-        "information": "A fresh diagnostic archive captured immediately after failure.",
-        "why_needed": "The existing logs do not capture the failure boundary.",
-        "how_to_collect": "Add a comment containing `/bugreport` immediately after reproducing."
+        "information": "The exact character/input sequence, whether the PowerAccent process exits or the setting flips, and the time of one occurrence.",
+        "why_needed": "These facts distinguish input handling from process supervision and settings persistence.",
+        "how_to_collect": "Reproduce once, note the character sequence and time, and run /bugreport immediately after the deactivation."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-info-49150",
       "type": "request_info",
-      "label": "Request Quick Accent failure boundary",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
+      "label": "Request targeted evidence",
+      "note": "Separate process exit from settings-state changes before implementation.",
       "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 49150,
-        "body": "Thanks for the report. Please provide:\n\n1. Current PowerToys version, activation settings, selected languages, and the smallest character sequence that reproduces the failure. Collection: Reply with the current settings and numbered reproduction steps.\n2. Whether PowerToys.PowerAccent.exe exits or remains running, and whether restarting PowerToys alone restores Quick Accent. Collection: Check Task Manager immediately after failure and restart PowerToys without rebooting.\n3. A fresh diagnostic archive captured immediately after failure. Collection: Add a comment containing `/bugreport` immediately after reproducing."
+        "body": "The current report says Quick Accent deactivates, and the available logs show disable/relaunch activity but no confirmed error. Please provide one exact reproduction: the trigger character or key sequence, whether the PowerAccent window/process disappears, whether the Settings toggle changes, and the approximate time. Reproduce once on the current build and run /bugreport immediately afterward. This targeted sequence will distinguish input handling, child-process exit, and settings persistence without requiring private logs in the issue body."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve focused fix design",
+      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
+      "design": {
+        "scope": "Add minimal child-process lifecycle diagnostics and correct only the confirmed exit/relaunch or input path.",
+        "files": [
+          "src/modules/poweraccent/PowerAccentModuleInterface/dllmain.cpp",
+          "src/modules/poweraccent"
+        ],
+        "acceptance_criteria": [
+          "An unexpected child-process exit is distinguishable from intentional disable.",
+          "The reported character sequence no longer deactivates Quick Accent.",
+          "Intentional disable still shuts down promptly without an unwanted relaunch."
+        ]
       }
     }
   ]

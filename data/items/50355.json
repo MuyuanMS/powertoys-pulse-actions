@@ -1,162 +1,66 @@
 {
   "schemaVersion": 5,
-  "number": 50355,
   "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
-  "evaluated_at": "2026-09-04T07:14:14Z",
-  "source_updated_at": "2026-09-03T12:54:22Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50355",
+  "number": 50355,
   "title": "Something went wrong",
+  "url": "https://github.com/microsoft/PowerToys/issues/50355",
+  "state": "open",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-08T02:40:00Z",
+  "evaluated_at": "2026-09-08T02:40:00Z",
+  "source_updated_at": "2026-09-03T12:54:22Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The stack proves a WPF binding failure during system-theme resource invalidation, but not the PowerToys visual, property, or framework ownership that must change.",
+    "status": "waiting_on_author",
+    "rationale": "The report has an exact historical duplicate signature but lacks current-version confirmation and the requested diagnostic archive.",
     "evidence": [
-      "The report stack reaches BindingExpression.SetupDefaultValueConverter, StyleHelper.GetDataTriggerValue, and WPF ThemeManager.OnSystemThemeChanged.",
-      "The current issue is on 0.100.2 and has Needs-Author-Feedback.",
-      "The triage discussion identifies prior stack-matched reports."
+      "Issue retains Needs-Author-Feedback.",
+      "The stack trace is from PowerToys 0.100.2 and names BindingExpression.SetupDefaultValueConverter.",
+      "Closed duplicates include #46873, tracked under #37859.",
+      "No author response followed the automated request."
     ],
-    "recommended_action": "Request a current diagnostic and trigger matrix while retaining the exact-stack investigation design."
+    "recommended_action": "Wait for current-version reproduction and fresh /bugreport; do not invent a competing fix."
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "Only a red, evidence-gathering design is defensible; no product change should be implemented until the failing WPF target is identified.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "This artifact is duplicate/author-evidence tracking, not a new confirmed fix target."
   },
-  "proposed_fixes": [
-    {
-      "title": "Identify the failing PowerToys Run theme binding before changing behavior",
-      "root_cause": "Provisional: WPF reevaluates a style DataTrigger or resource binding during a system-theme update and throws NullReferenceException; the failing PowerToys target is unknown.",
-      "plan": [
-        "Capture a fresh trace after reproduction with Run visibility and display/theme transition recorded.",
-        "Enable binding diagnostics or instrument the PowerLauncher theme-update path to identify the FrameworkElement, DependencyProperty, and XAML resource.",
-        "Rewrite only a proven PowerToys binding or, with maintainer approval, consider an exact-stack nonfatal classification after confirming UI health."
-      ],
-      "verification": [
-        "The trace identifies a specific binding or establishes a framework-owned failure before any code change.",
-        "Any approved mitigation must preserve Run rendering and continue reporting unrelated UI exceptions."
-      ],
-      "confidence": {
-        "score": 46,
-        "level": "red",
-        "rationale": "The WPF stack is precise about timing but does not identify the application binding that failed."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "PowerToys Run reports a WPF NullReferenceException while WPF refreshes theme resources, without identifying the failing application binding.",
+    "summary": "The report is a WPF binding NullReferenceException from PowerToys 0.100.2. It has no reporter follow-up beyond the automated request for a fresh archive and version confirmation, while several exact duplicate crash reports are already closed.",
     "known_information": [
-      "The report is from PowerToys 0.100.2 on Windows build 26200.",
-      "The stack includes WPF binding, style, resource dictionary, and ThemeManager frames.",
-      "Similar stack reports are referenced by triage."
+      "Issue is open and labeled Needs-Author-Feedback.",
+      "The stack names System.Windows.Data.BindingExpression.SetupDefaultValueConverter.",
+      "The automated comment requests a fresh bug report and current-version confirmation.",
+      "#46873 and other exact duplicate reports are closed; #46873 points to #37859."
     ],
     "inferences": [
-      "The failure may be framework-owned or in a PowerLauncher style/resource binding.",
-      "Suppressing the report without proving UI health could conceal corruption."
+      "This is likely duplicate tracking rather than a new independently actionable root cause.",
+      "A current-version report is needed to determine whether it remains live."
     ],
-    "analysis": "The generic WPF stack cannot distinguish a faulty PowerToys template from a runtime defect. Collection must name the binding before a product fix is selected.",
+    "analysis": "The exact stack and duplicate history justify preserving duplicate/author-wait context, but the old version and missing archive prevent a new design.",
     "initial_investigation": [
-      "Reviewed the issue stack, triage duplicate references, and fork mirror 643.",
-      "Candidate areas are PowerLauncher theme management, XAML triggers, and exception classification."
+      "Read the full body, comment, labels, and timeline.",
+      "Compared the signature with closed duplicate issues, including #46873 and its closure to #37859."
     ],
     "information_gaps": [
       {
-        "information": "A fresh diagnostic captured immediately after reproduction plus the exact trigger matrix",
-        "why_needed": "It is needed to identify the WPF target and distinguish theme, high-contrast, sleep, dock, and visibility paths.",
-        "how_to_collect": "On the current stable build, reproduce once, add a comment containing /bugreport immediately afterward, and report light/dark, high-contrast, sleep/hibernate, dock/undock, and Run visible/hidden results."
+        "information": "Whether the crash reproduces on current stable PowerToys and a fresh diagnostic archive",
+        "why_needed": "Distinguishes an old duplicate from a current regression and supplies binding context",
+        "how_to_collect": "Update to 0.101.2362.0, reproduce once, and submit a /bugreport comment immediately afterward"
       }
     ]
-  },
-  "design": {
-    "root_cause": "Not established; an application DataTrigger or resource binding is a candidate only.",
-    "evidence": [
-      "[Observed] WPF throws during SetupDefaultValueConverter while ThemeManager updates resources.",
-      "[Observed] The report does not name a FrameworkElement or DependencyProperty.",
-      "[Inferred] A target-specific rewrite is safer than broad exception suppression."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs",
-        "purpose": "Applies PowerLauncher theme resources.",
-        "symbols": [
-          "OnUserPreferenceChanged",
-          "SetSystemTheme",
-          "UpdateThemeWithRetryAsync"
-        ]
-      },
-      {
-        "path": "src/modules/launcher/PowerLauncher/Helper/ErrorReporting.cs",
-        "purpose": "Reports dispatcher exceptions.",
-        "symbols": [
-          "DispatcherUnhandledException",
-          "HandleException"
-        ]
-      },
-      {
-        "path": "src/modules/launcher/PowerLauncher/LauncherControl.xaml",
-        "purpose": "Contains candidate template bindings.",
-        "symbols": [
-          "QueryTextBoxStyle"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs and candidate XAML",
-        "symbols": [
-          "SetSystemTheme",
-          "QueryTextBoxStyle"
-        ],
-        "current_behavior": "Theme invalidation causes WPF to reevaluate bindings without exposing the failing target in the report.",
-        "change": "Collect target-level binding evidence, then change only the proven binding to a theme-safe mechanism.",
-        "code_block": "Theme transition -> capture FrameworkElement, DependencyProperty, and resource key -> reproduce -> replace only the failing binding.",
-        "edge_cases": [
-          "Keep resource mutations dispatcher-affine.",
-          "Cover high contrast and rapid preference changes."
-        ],
-        "tests": [
-          "Manual target-specific theme regression after identification."
-        ]
-      }
-    ],
-    "verify": [
-      "Reproduce the exact stack on current and affected builds.",
-      "After a targeted change, repeat theme, high-contrast, sleep, and dock transitions with Run visible and hidden.",
-      "Confirm unrelated UI exceptions remain reportable."
-    ],
-    "risks": [
-      "Broad NullReferenceException suppression can mask broken UI.",
-      "Speculative XAML changes can churn unrelated templates."
-    ],
-    "alternatives": [
-      "Wait for runtime servicing if diagnostics establish framework ownership.",
-      "Use exact-stack mitigation only after approval and UI-health proof."
-    ]
-  },
-  "mirror": {
-    "kind": "issue",
-    "fork_number": 643,
-    "fork_title": "[Issue 50355] Something went wrong",
-    "fork_state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/643"
-  },
-  "adversary": {
-    "rounds": 1,
-    "verdict": "Blocking objection remains: ownership and the failing binding are unproven.",
-    "notes": "Do not implement a speculative product fix."
   },
   "actions": [
     {
-      "type": "approve_design",
-      "label": "Approve WPF binding investigation design",
-      "mirror_issue": 643
-    },
-    {
       "type": "request_info",
-      "label": "Request PowerToys Run theme diagnostics",
+      "label": "Request current crash evidence",
       "comment": {
-        "body": "The reported stack narrows the failure to WPF binding evaluation during a system-theme resource update, but it does not identify the failing PowerToys control or show whether the runtime owns it. Please reproduce once on the current stable build, add a comment containing `/bugreport` immediately afterward, and report results for light/dark and high-contrast changes, sleep/hibernate, dock/undock, and with PowerToys Run visible versus hidden."
+        "body": "The stack trace matches the previously tracked binding crash family, including #46873, and this report is from PowerToys 0.100.2. Please update to 0.101.2362.0, reproduce the crash once, and submit a /bugreport comment immediately afterward. This will show whether it remains active and provide the context needed to separate it from existing duplicate tracking."
       }
     }
   ]

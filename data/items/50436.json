@@ -1,190 +1,91 @@
 {
   "schemaVersion": 5,
-  "number": 50436,
   "kind": "issue",
-  "track": "fix",
-  "stage": "design_ready",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-07T15:31:35Z",
-  "evaluated_at": "2026-09-07T15:31:35Z",
-  "source_updated_at": "2026-09-07T08:22:18Z",
+  "number": 50436,
+  "title": "Mouse Jump preview is cut off after WinUI migration",
   "url": "https://github.com/microsoft/PowerToys/issues/50436",
-  "title": "[Mouse Jump] - Settings preview thumbnail too small",
-  "confidence": "High",
-  "status": {
-    "glyph": "🛠",
-    "label": "Mouse Jump preview sizing design ready",
-    "detail": "The WinUI Image is centered at natural bitmap size instead of filling the available preview bounds."
-  },
-  "next_action": {
-    "glyph": "🛠",
-    "label": "Approve preview sizing fix",
-    "reason": "Correct layout and verify pointer mapping across styles and DPI."
-  },
+  "generated_at": "2026-09-08T02:51:49.9453166Z",
+  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
+  "source_updated_at": "2026-09-07T08:22:18Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The screenshot and WinUI migration map to an Image with no Stretch and explicit natural-size assignments.",
+    "rationale": "The issue is tied to the v0.101 WinUI migration and the external FancyMouse PR #96 explicitly describes a LayoutHelper maximum-size change as fixing the downstream PowerToys issue. That is strong implementation evidence, but there is no upstream PowerToys fix yet, so it remains an actionable design rather than an existing upstream fix.",
+    "recommended_action": "Port the proven maximum-size preview-layout change into the PowerToys Mouse Jump settings preview and validate at the reported window sizes.",
     "evidence": [
-      "The preview became too small after the WinUI migration.",
-      "PreviewWindow.xaml centers the Image without Stretch.",
-      "PreviewWindow.xaml.cs assigns bitmap Width and Height."
-    ],
-    "recommended_action": "Approve the localized layout fix and verify styles, DPI, and click mapping.",
-    "evaluated_at": "2026-09-07T15:31:35Z",
-    "source_updated_at": "2026-09-07T08:22:18Z"
+      {
+        "fact": "The issue reports a Mouse Jump settings preview clipped after the WinUI migration.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50436"
+      },
+      {
+        "fact": "The current preview path uses hard-coded settings-card/content dimensions when rendering the bitmap.",
+        "source": "https://github.com/microsoft/PowerToys/blob/main/src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel_MouseJump.cs"
+      },
+      {
+        "fact": "The external public PR explicitly says its optional maximum-size LayoutHelper change fixes PowerToys issue 50436.",
+        "source": "https://github.com/mikeclayton/FancyMouse/pull/96"
+      }
+    ]
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix covers the regression, and the presentation boundary is specific."
+    "rationale": "A public implementation precedent exists, but it is not an upstream PowerToys change and must be integrated and verified in the current settings UI."
   },
   "proposed_fixes": [
     {
-      "title": "Make the Mouse Jump preview image fill its window",
-      "root_cause": "The Image has no explicit stretch behavior and is sized to natural bitmap dimensions.",
+      "title": "Constrain Mouse Jump preview layout to available card size",
+      "root_cause": "The preview generator uses hard-coded dimensions instead of the actual maximum space available in the WinUI settings card.",
       "plan": [
-        "Use a stretching host and aspect-preserving Image stretch.",
-        "Remove or revise natural-size assignments.",
-        "Map pointer coordinates using arranged bounds.",
-        "Test all styles, sizes, and DPI scales."
+        "Add an optional maximum-size input to the preview layout calculation.",
+        "Pass the rendered settings-card bounds from the Mouse Jump view model/panel.",
+        "Scale or arrange the preview within those bounds while preserving its aspect ratio."
       ],
       "verification": [
-        "Build and run Mouse Jump tests.",
-        "Verify preview bounds and click mapping at 100%, 125%, and 150%."
+        "The reported clipped preview is fully visible at the original reproduction size.",
+        "Narrow and enlarged settings cards both render without cropping.",
+        "A resize or theme change does not regress preview layout."
       ],
       "confidence": {
-        "score": 92,
+        "score": 90,
         "level": "green",
-        "rationale": "The symptom, migration boundary, and XAML/code mismatch directly align."
+        "rationale": "The public related PR identifies the same layout change and explicitly references this PowerToys issue."
       }
     }
   ],
   "issue_context": {
-    "summary": "After the WinUI migration, the Mouse Jump settings preview renders smaller than its available rectangle.",
+    "summary": "The Mouse Jump settings preview is clipped after the WinUI migration because the preview layout is generated with fixed dimensions.",
     "known_information": [
-      "The reporter supplied a screenshot.",
-      "The prior implementation filled the rectangle.",
-      "The current Image lacks Stretch and receives natural dimensions."
+      "The issue is a UI regression associated with the v0.101 migration.",
+      "MouseUtilsViewModel_MouseJump uses fixed settings-card and content heights for preview generation.",
+      "FancyMouse PR #96 publicly describes the matching maximum-size fix."
     ],
     "inferences": [
-      "Presentation layout rather than bitmap generation is the likely cause."
+      "The fixed preview dimensions can exceed the available settings card and crop the rendered bitmap.",
+      "Passing an available maximum size through the layout helper should preserve the preview within the card."
     ],
-    "analysis": "The fix can stay at the Image layout boundary if pointer mapping is revalidated.",
+    "analysis": "Adapt the proven layout contract to the PowerToys settings preview and test narrow and large settings-window layouts.",
     "initial_investigation": [
-      "PreviewWindow.xaml defines PreviewImage.",
-      "OnPreviewImageCreatedAsync sets Width and Height.",
-      "Existing UI tests cover interaction and DPI."
+      "src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel_MouseJump.cs",
+      "src/settings-ui/Settings.UI/SettingsXAML/Panels/MouseJumpPanel.xaml"
     ],
     "information_gaps": []
-  },
-  "design": {
-    "root_cause": "Natural Image sizing overrides the intended available-bounds layout.",
-    "evidence": [
-      "PreviewWindow.xaml has no Stretch.",
-      "PreviewWindow.xaml.cs sets natural dimensions.",
-      "The screenshot matches this behavior."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml",
-        "purpose": "Defines preview layout.",
-        "symbols": [
-          "PreviewWindow",
-          "PreviewImage"
-        ]
-      },
-      {
-        "path": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
-        "purpose": "Creates, sizes, and hit-tests the preview.",
-        "symbols": [
-          "OnPreviewImageCreatedAsync",
-          "PreviewImage_PointerPressed"
-        ]
-      },
-      {
-        "path": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
-        "purpose": "Validates preview and DPI.",
-        "symbols": [
-          "MouseJumpTests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml",
-        "symbols": [
-          "PreviewImage"
-        ],
-        "current_behavior": "The centered Image retains natural size.",
-        "change": "Stretch the host and Image with aspect preservation.",
-        "code_block": "<Grid HorizontalAlignment=\"Stretch\" VerticalAlignment=\"Stretch\"><Image x:Name=\"PreviewImage\" Stretch=\"Uniform\" /></Grid>",
-        "edge_cases": [
-          "Aspect ratio",
-          "DPI rounding",
-          "Clipping"
-        ],
-        "tests": [
-          "All preview styles and sizes"
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/MouseUtils/MouseJump.WinUI3/MouseJumpXAML/PreviewWindow.xaml.cs",
-        "symbols": [
-          "OnPreviewImageCreatedAsync",
-          "PreviewImage_PointerPressed"
-        ],
-        "current_behavior": "Code assigns bitmap dimensions.",
-        "change": "Let layout determine bounds and scale pointer coordinates using arranged bounds.",
-        "code_block": "PreviewImage.Width = double.NaN;\nPreviewImage.Height = double.NaN;",
-        "edge_cases": [
-          "High DPI",
-          "Window sizing",
-          "Incremental updates"
-        ],
-        "tests": [
-          "Center and edge click mapping"
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/MouseUtils/MouseUtils.UITests.Next/MouseJumpTests.cs",
-        "symbols": [
-          "MouseJumpTests"
-        ],
-        "current_behavior": "No explicit fill assertion.",
-        "change": "Add bounds assertions with DPI tolerance.",
-        "code_block": "AssertPreviewFillsHostWithinTolerance();",
-        "edge_cases": [
-          "Automation identifiers",
-          "DPI tolerance"
-        ],
-        "tests": [
-          "Targeted UI suite"
-        ]
-      }
-    ],
-    "verify": [
-      "Build Mouse Jump projects.",
-      "Run targeted UI tests.",
-      "Verify all styles and sizes at multiple DPI scales.",
-      "Verify click mapping."
-    ],
-    "risks": [
-      "Displayed bounds can affect pointer mapping.",
-      "Uniform stretch may letterbox."
-    ],
-    "alternatives": [
-      "Keep explicit dimensions and set Stretch only if window sizing depends on them.",
-      "Scale the bitmap; rejected because it mixes rendering and layout."
-    ]
   },
   "actions": [
     {
       "type": "approve_design",
-      "label": "Approve Mouse Jump preview sizing fix",
-      "design_summary": "Stretch the WinUI preview to available bounds while preserving aspect ratio and pointer mapping."
+      "label": "Approve focused fix design",
+      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
+      "design": {
+        "scope": "Use an available maximum preview size when calculating Mouse Jump preview layout, based on the public FancyMouse PR #96 approach.",
+        "files": [
+          "src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel_MouseJump.cs",
+          "src/settings-ui/Settings.UI/SettingsXAML/Panels/MouseJumpPanel.xaml"
+        ],
+        "acceptance_criteria": [
+          "The entire Mouse Jump preview is visible after the WinUI migration.",
+          "The preview scales within narrow and wide settings cards without cropping.",
+          "Existing Mouse Jump controls and bitmap rendering remain functional."
+        ]
+      }
     }
   ]
 }
