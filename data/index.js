@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T01:41:20.8654017+08:00",
+  "generated_at": "2026-09-09T01:55:16.6616813+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 387
   },
   "impact": {
-    "as_of": "2026-09-09T01:41:20.8654017+08:00",
+    "as_of": "2026-09-09T01:55:16.6616813+08:00",
     "issues_helped": 10,
     "prs_iterated": 26,
     "constructive_comments_posted": 3,
@@ -1497,18 +1497,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "post_review",
-      "owes": "maintainer",
+      "stage": "review_blocked",
+      "owes": "review-automation",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Post current-head request-changes review"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Mouse Utilities",
         "Product-Command Palette",
