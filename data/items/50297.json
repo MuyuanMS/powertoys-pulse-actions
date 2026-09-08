@@ -3,100 +3,63 @@
   "number": 50297,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_design_approval",
+  "stage": "not_actionable",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T16:08:59Z",
-  "evaluated_at": "2026-09-07T16:08:59Z",
+  "generated_at": "2026-09-08T02:27:54Z",
+  "evaluated_at": "2026-09-08T02:27:54Z",
   "source_updated_at": "2026-09-01T19:14:48Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50297",
   "title": "Command Pallet Multiple Displays",
-  "confidence": "medium",
-  "status": {
-    "glyph": "🖥️",
-    "label": "Likely display-order bug",
-    "detail": "The report describes a monitor ordering mismatch between Windows and Command Palette."
-  },
-  "next_action": {
-    "glyph": "✅",
-    "label": "Approve display-order fix design",
-    "reason": "The issue describes a concrete mismatch between Windows monitor numbering and Command Palette placement logic."
-  },
+  "author": "xtremewaianae",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific and matches a real boundary condition: Command Palette is choosing a monitor index from a different enumeration order than Windows, which can move the palette away from the expected primary display after docking or display reordering.",
+    "status": "not_actionable",
+    "rationale": "The report identifies a display-numbering expectation, not a demonstrated failure to open Command Palette on the configured primary display. Windows display labels are not a stable cross-API identity.",
     "evidence": [
-      "The reporter states the laptop is primary in Windows but appears as display #3 in Command Palette settings.",
-      "The issue explicitly describes a multi-display order mismatch between Windows and Command Palette.",
-      "This is a monitor enumeration and placement bug, not a generic UI issue."
+      "The reporter says Windows labels the laptop display as 1 while Command Palette settings show it as 3.",
+      "The report does not say that Command Palette cannot be configured or opens on the wrong physical display.",
+      "MonitorInfo::GetMonitors enumerates monitors and sorts them by geometry rather than Windows display-label ordinal."
     ],
-    "recommended_action": "Approve a targeted design to align Command Palette display indexing with Windows monitor ordering and add a regression for display reconfiguration."
+    "recommended_action": "Explain that display ordinals are presentation identifiers and request a separate report only if the selected physical monitor is not honored.",
+    "evaluated_at": "2026-09-08T02:27:54Z",
+    "source_updated_at": "2026-09-01T19:14:48Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The report is actionable and likely points to a display-order enumeration mismatch, but precise monitor-ID validation is still required before implementation.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "No functional Command Palette failure is established; changing UI numbering alone could imply a Windows identity guarantee the implementation cannot safely make."
   },
-  "proposed_fixes": [
-    {
-      "title": "Align Command Palette monitor ordering with Windows display enumeration",
-      "root_cause": "The palette likely enumerates monitors using a different order or display identity than Windows, leaving the window anchored to a secondary display after dock/undock changes.",
-      "plan": [
-        "Inspect the display-enumeration path used by Command Palette when choosing the launch monitor.",
-        "Align the monitor selection with Windows primary/display-order data instead of a raw device-order fallback.",
-        "Add a regression for dynamic monitor reordering and temporary external display attachment."
-      ],
-      "verification": [
-        "Connect/disconnect a docked monitor and confirm the palette launches on the same display Windows identifies as primary.",
-        "Verify the display index stays stable after reorder and reconnect events."
-      ],
-      "confidence": {
-        "score": 74,
-        "level": "yellow",
-        "rationale": "The report is internally consistent and the monitor-order mismatch is a strong fit, but the exact enumeration boundary should be confirmed before patching."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "Command Palette is using a different display ordering or monitor identity than Windows after the laptop is connected to a dock or additional displays.",
+    "summary": "Command Palette's monitor ordinal differs from Windows Settings' display number after a multi-monitor dock is connected.",
     "known_information": [
-      "The report is on PowerToys 0.100.2 from Microsoft Store.",
-      "The reporter has multiple displays and expects laptop screen #1 to remain primary.",
-      "The issue includes a screenshot showing Command Palette reporting the laptop as display #3.",
-      "No maintainer or duplicate resolution is present in the public issue thread."
+      "The laptop display remains Windows display 1.",
+      "Command Palette displays it as 3.",
+      "The report includes a screenshot and no discussion."
     ],
     "inferences": [
-      "Command Palette likely uses an internal display index that diverges from Windows' display-order metadata after docking."
+      "The mismatch is likely caused by distinct enumeration and sorting conventions, not a changed primary-display selection."
     ],
-    "analysis": "This is a classic monitor-order bug and should be treated as a fix candidate, but it still needs a narrow display-enumeration check and one validation pass to ensure the correct Windows ordering API is used.",
+    "analysis": "A number mismatch is insufficient to justify a code change without a physical-display placement failure. The current monitor utility's geometric ordering explains why an ordinal should not be treated as Windows Settings' label.",
     "initial_investigation": [
-      "Read the full public issue body, labels, and screenshot description.",
-      "Confirmed the issue is specific to multi-monitor placement and order, not general Command Palette execution.",
-      "No public duplicate or fix link is present in the issue discussion."
+      "Read the complete issue and empty discussion.",
+      "Inspected src/common/Display/monitors.cpp enumeration and sorting behavior.",
+      "Searched for a direct live duplicate involving Command Palette monitor ordering and found none."
     ],
-    "information_gaps": [
-      {
-        "information": "Exact monitor layout and Windows display IDs after docking",
-        "why_needed": "This confirms whether the palette is using a stale or different display index than Windows after a dock event.",
-        "how_to_collect": "Reply with the Windows display settings page order and the Command Palette settings order, ideally with a fresh /bugreport archive after reconnecting."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "approve-design-50297",
-      "type": "approve_design",
-      "label": "Approve display-order fix design",
+      "id": "explain-monitor-identity-50297",
+      "type": "post_comment",
+      "label": "Explain display numbering behavior",
       "primary": true,
-      "requiresApproval": true
-    },
-    {
-      "id": "request-info-50297",
-      "type": "request_info",
-      "label": "Request display-order details",
-      "requiresApproval": false,
+      "confirm": true,
       "comment": {
-        "body": "Thanks for the report and screenshot. Please confirm the exact monitor order in Windows Settings before and after docking, and whether the issue reproduces after reconnecting the same displays in the same order. This will confirm whether Command Palette is using a stale or mismatched monitor enumeration and help validate the fix before we approve it.\n\nPlease comment /bugreport immediately after reproducing and attach the generated ZIP."
+        "body": "Thanks for the screenshot. The numbers shown by Command Palette are not guaranteed to match Windows Settings display labels because monitor APIs can enumerate and order the same physical displays differently. The important behavior is whether the configured physical display is honored. If Command Palette opens on a different physical monitor than the one selected in its settings, please provide those exact steps and the current build version; that would be a separate functional issue."
       }
     }
   ]

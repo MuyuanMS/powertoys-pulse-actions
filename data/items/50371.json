@@ -2,74 +2,68 @@
   "schemaVersion": 5,
   "number": 50371,
   "kind": "issue",
-  "track": "triage",
-  "stage": "awaiting_author_information",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-07T16:01:11Z",
-  "evaluated_at": "2026-09-07T16:01:11Z",
-  "source_updated_at": "2026-09-04T05:14:21Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50371",
   "title": "Settings not synced between elevated and non-levated runs; configs reset after restart / update",
-  "confidence": "medium",
-  "status": "needs_information",
-  "next_action": "Wait for same-account before/after settings evidence; no competing fix should start.",
+  "url": "https://github.com/microsoft/PowerToys/issues/50371",
+  "state": "open",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-General"
+  ],
+  "generated_at": "2026-09-08T02:27:54Z",
+  "evaluated_at": "2026-09-08T02:27:54Z",
+  "source_updated_at": "2026-09-04T05:14:21Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The attached report shows elevated and non-elevated activity but only a final settings snapshot. It cannot distinguish a same-account persistence failure from expected settings separation after elevating with another Windows account.",
+    "rationale": "The sequence is actionable, but the exact configuration paths and timing of the reset are needed before selecting a safe shared-settings change.",
     "evidence": [
-      "Reporter supplied a diagnostic archive after triage requested it.",
-      "The archive records is_elevated=true and run_elevated=true.",
-      "The runner log contains a non-elevated start before later settings activity.",
-      "Related issue: https://github.com/microsoft/PowerToys/issues/47238",
-      "Cross-references exist to issues 50376, 50401, 50415, and 50437."
+      "Repeatable privilege-switch sequence is supplied.",
+      "Multiple modules are named as affected.",
+      "A fresh report ZIP was attached in follow-up activity.",
+      "Related #47238 is open but covers a different administrator-startup symptom."
     ],
-    "recommended_action": "Request the account relationship and a controlled before/after comparison using the same Windows account."
+    "recommended_action": "Request paired config-path/timestamp evidence and distinguish same-version restart from update migration."
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A repository fix cannot be responsibly scoped until expected per-user isolation is separated from a same-account settings persistence defect.",
-    "existing_fix_urls": []
+    "rationale": "No implementation-grade fix is selected until the configuration identity and reset boundary are confirmed."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Settings appear different after switching between non-elevated and elevated PowerToys sessions, but the diagnostic does not establish whether the sessions used the same Windows profile.",
+    "summary": "The report says settings differ between non-elevated and elevated runs and may reset after restart or update; a fresh report was attached after the first triage pass.",
     "known_information": [
-      "PowerToys 0.101.2362 was installed from GitHub.",
-      "FancyZones, Keyboard Manager, and PowerToys Run are cited as affected.",
-      "The diagnostic contains elevated and non-elevated activity.",
-      "The final settings snapshot has is_elevated=true and run_elevated=true."
+      "PowerToys 0.101.2362 is reported.",
+      "The user gives a repeatable privilege-switch sequence involving Settings, FancyZones, Keyboard Manager, and PowerToys Run.",
+      "The issue says admin and non-admin runs use different configuration files.",
+      "A fresh diagnostic ZIP was attached in a follow-up comment.",
+      "Open #47238 concerns administrator startup behavior, but is not the same settings-synchronization report."
     ],
     "inferences": [
-      "Using a different administrator account would legitimately use a different per-user configuration.",
-      "A same-account reproduction could still reveal a settings-path or persistence defect."
+      "Separate per-user/elevation configuration locations are plausible, but the public report does not identify the exact paths or which module writes last.",
+      "The restart/update reset may be a second symptom of the same identity/path split or a separate migration issue."
     ],
-    "analysis": "The new diagnostic resolves the missing-log request but not the decisive account and before/after state questions. A code change now could incorrectly merge configurations across Windows users.",
+    "analysis": "The report justifies targeted evidence collection before a design: identify the actual config paths and file timestamps under both tokens, then separate privilege switching from update migration.",
     "initial_investigation": [
-      "Read the complete issue body, comments, labels, attachment reference, and linked issue activity.",
-      "Reviewed runner elevation selection and settings-window behavior.",
-      "No linked upstream PR or concrete fix attempt covers this issue."
+      "The issue is not a duplicate of #47238 based on current titles: #47238 focuses on always-start-as-admin, while #50371 focuses on settings divergence.",
+      "Current PowerToys elevation code and Settings module paths should be inspected together during implementation.",
+      "The diagnostic attachment is newer than the original automated triage comment."
     ],
     "information_gaps": [
       {
-        "information": "Whether the UAC prompt used the same Windows account that originally configured PowerToys.",
-        "why_needed": "Separates expected per-user settings isolation from a defect.",
-        "how_to_collect": "Confirm the account relationship without naming the accounts."
-      },
-      {
-        "information": "One visible non-default setting recorded before and after Restart as administrator and one reboot, with is_elevated and run_elevated values.",
-        "why_needed": "Identifies whether the value changes at elevation, startup, or update.",
-        "how_to_collect": "Use the same account, record the values, and add `/bugreport` immediately after a failing transition."
+        "information": "The exact settings file paths and module/file timestamps observed in non-elevated versus elevated runs.",
+        "why_needed": "Determines whether the root cause is per-user path separation, permissions, or update migration.",
+        "how_to_collect": "Capture both runs with `/bugreport` after changing one distinctive setting in each mode; include the affected module and whether the files differ by path or contents."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-info-50371",
       "type": "request_info",
-      "label": "Request same-account settings comparison",
+      "label": "Request elevated/non-elevated config paths",
+      "note": "Ask for evidence that separates path identity from update migration.",
       "comment": {
-        "body": "Thanks for the report. To resolve the recorded uncertainty, please provide:\n\n1. Whether the UAC prompt used the same Windows account that originally configured PowerToys. Collection: Confirm the account relationship without naming the accounts.\n2. One visible non-default setting recorded before and after Restart as administrator and one reboot, with is_elevated and run_elevated values. Collection: Use the same account, record the values, and add `/bugreport` immediately after a failing transition."
+        "body": "The report already provides a useful sequence across non-admin and administrator launches and confirms that settings differ or reset; the follow-up also adds a fresh PowerToys report. To identify the fix boundary, please change one distinctive setting (for example a Keyboard Manager shortcut) in non-elevated mode, then capture the effective settings path and file timestamp in both modes and submit `/bugreport` immediately after switching back. Please also state whether the reset occurs only after an update or already after a same-version restart. This distinguishes per-user/config-path separation from migration or permission failure."
       }
     }
   ]

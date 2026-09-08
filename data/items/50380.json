@@ -2,207 +2,211 @@
   "schemaVersion": 5,
   "number": 50380,
   "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "pending_author": true,
-  "generated_at": "2026-09-07T16:01:11Z",
-  "evaluated_at": "2026-09-07T16:01:11Z",
-  "source_updated_at": "2026-09-04T13:59:42Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50380",
   "title": "Administrator mode lock",
-  "confidence": "medium",
-  "status": "actionable_design",
-  "next_action": "Approve the elevation-restart design or request the specified failure-time evidence.",
+  "url": "https://github.com/microsoft/PowerToys/issues/50380",
+  "state": "open",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Product-Settings",
+    "Needs-Triage"
+  ],
+  "generated_at": "2026-09-08T02:27:54Z",
+  "evaluated_at": "2026-09-08T02:27:54Z",
+  "source_updated_at": "2026-09-04T13:59:42Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "Persistent administrator mode, manual Run as administrator, and Settings restart-as-administrator all reportedly fail. The attached diagnostic was rejected, so the exact elevation boundary remains unconfirmed.",
+    "rationale": "The report gives a reproducible elevation symptom across multiple entry points and current runner code provides a plausible failing boundary, but diagnostics are insufficient to identify the first failure.",
     "evidence": [
-      "PowerToys 0.101.2362 from Microsoft Store on Windows 11 25H2.",
-      "Always run as administrator is enabled, but the active process appears non-elevated.",
-      "Manual and in-app elevation attempts fail or close/crash PowerToys.",
-      "Automated triage reports the attached ZIP contains an oversized entry and was not analyzable.",
-      "Related duplicate candidate: https://github.com/microsoft/PowerToys/issues/17094"
+      "Always-run-as-admin is enabled but the active process remains non-elevated.",
+      "Manual and in-app elevation attempts fail on Windows 11 25H2.",
+      "Attached diagnostic was rejected before analysis.",
+      "Current code returns limited elevation-launch state and has a restarted-elevated loop-break path."
     ],
-    "recommended_action": "Approve focused runner/settings elevation diagnostics and request a fresh failure-time report."
+    "recommended_action": "Request a fresh failure-time report and approve the result-aware elevation design for fork investigation."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No public open or merged fix covers this Store/Windows 11 25H2 elevation failure."
+    "rationale": "The Settings restart path schedules an elevated relaunch, but the current runner path can continue or exit without proving that the child obtained an elevated token; this can present as a mode lock or silent fallback."
   },
   "proposed_fixes": [
     {
-      "title": "Make failed administrator relaunches observable and non-silent",
-      "root_cause": "Hypothesis: the elevated relaunch starts with --restartedElevated but receives a non-elevated token; runner/main.cpp then intentionally breaks the loop by continuing in user mode, making the setting appear ineffective.",
+      "title": "Make administrator relaunch result-aware",
+      "root_cause": "The Settings restart path schedules an elevated relaunch, but the current runner path can continue or exit without proving that the child obtained an elevated token; this can present as a mode lock or silent fallback.",
       "plan": [
-        "Trace GeneralViewModel.RestartElevated through settings_window.cpp and restart_elevated.cpp.",
-        "Capture ShellExecuteEx failure, UAC cancellation, process identity, and relaunch outcome.",
-        "Keep the loop-prevention behavior but report failed elevation instead of presenting a successful administrator-mode launch.",
-        "Add Store/non-Store and accepted/denied-UAC regression coverage."
+        "Trace GeneralViewModel.RestartElevated through runner restart scheduling and run_elevated.",
+        "Record ShellExecuteEx failure details and verify the child process token before treating relaunch as successful.",
+        "Surface a clear failure instead of silently continuing non-elevated, while preserving the loop-break guard."
       ],
       "verification": [
-        "Enable Always run as administrator and verify the process token or a visible failure result.",
-        "Use Settings > Restart PowerToys as administrator and verify elevated relaunch or explicit failure.",
-        "Verify a non-elevated --restartedElevated launch cannot loop indefinitely."
+        "Test Store and GitHub installs on Windows 11 25H2.",
+        "Test accepted and denied UAC, manual Run as administrator, and Settings restart-as-admin.",
+        "Verify a non-elevated --restartedElevated child does not loop and reports failure."
       ],
       "confidence": {
         "score": 63,
         "level": "yellow",
-        "rationale": "The shared relaunch path matches all reported symptoms, but the rejected diagnostic leaves Store packaging, UAC, policy, and token state unresolved."
+        "rationale": "The reported behavior matches the relaunch/elevation boundary and historical administrator-mode issues, but the rejected diagnostic leaves the first failing boundary unconfirmed."
       }
     }
   ],
   "issue_context": {
-    "summary": "PowerToys remains non-elevated despite administrator mode being enabled, and both manual and Settings-driven elevation fail.",
+    "summary": "PowerToys 0.101.2362 from the Microsoft Store remains non-elevated despite the administrator-mode setting; manual elevation and the in-app restart-as-admin path also fail.",
     "known_information": [
-      "Affected version is 0.101.2362 from Microsoft Store.",
-      "Environment is Windows 11 25H2 and the user reports an administrator account.",
-      "Always run as administrator is enabled.",
-      "Right-click elevation and in-app restart-as-administrator do not produce an elevated session.",
-      "The only diagnostic ZIP was rejected by automated triage."
+      "The issue is on Windows 11 25H2 with an administrator account.",
+      "Always run as administrator is enabled, but the active process remains user-mode.",
+      "Right-click Run as administrator and in-app Restart PowerToys as administrator do not change the outcome.",
+      "The attached diagnostic was rejected by automated triage because of an oversized entry.",
+      "Current code uses GeneralViewModel restart commands, runner restart scheduling, and ShellExecuteEx runas helpers."
     ],
     "inferences": [
-      "The common failure likely belongs to the shared runner/settings relaunch path.",
-      "A non-elevated --restartedElevated child could explain the apparent fallback to user mode.",
-      "Store packaging, UAC, compatibility settings, or policy may instead be the first failing boundary."
+      "The child may fail to elevate, may be launched from a Store-specific boundary, or may be rejected by UAC/policy.",
+      "The current loop-break behavior may hide a failed elevation by allowing a non-elevated child to continue."
     ],
-    "analysis": "The report supports a focused code investigation, but a precise implementation should not be approved as confirmed root cause without usable failure-time diagnostics.",
+    "analysis": "The code path is concrete enough for a yellow design, while a fresh failure-time diagnostic is needed to distinguish ShellExecuteEx failure, Store packaging, policy, or UAC denial.",
     "initial_investigation": [
-      "Reviewed the full body, labels, automated discussion, duplicate reference, and attachment status.",
-      "Relevant source paths are GeneralViewModel.RestartElevated, settings_window.cpp restart_elevation handling, restart_elevated.cpp, elevation.h, and runner/main.cpp.",
-      "No linked upstream PR or concrete public fix attempt was found."
+      "GeneralViewModel exposes the restart/elevation commands.",
+      "restart_elevated.cpp stores restart state and invokes the relaunch path.",
+      "elevation.h run_elevated returns a process handle but does not expose a structured failure result.",
+      "main.cpp handles startup elevation and the --restartedElevated loop-break path.",
+      "Related live issues #17094 (closed), #41333 (open), and #47238 (open) show recurring administrator-mode/startup interactions."
     ],
     "information_gaps": [
       {
-        "information": "A fresh diagnostic archive captured immediately after one failed administrator-mode attempt.",
-        "why_needed": "The rejected archive provides no runner, UAC, or startup evidence.",
-        "how_to_collect": "Reproduce once, then comment `/bugreport` immediately after PowerToys closes, crashes, or restarts non-elevated."
-      },
-      {
-        "information": "Whether UAC appears and is accepted for each elevation path, plus the Elevated state of PowerToys.exe and PowerToys.Settings.exe.",
-        "why_needed": "Separates launch denial, accepted-UAC fallback, and Settings-only failure.",
-        "how_to_collect": "Report the UAC result and check the Elevated column in Task Manager Details."
+        "information": "A fresh bug report captured immediately after a failed Restart PowerToys as administrator or startup elevation.",
+        "why_needed": "Identifies whether the first failure is ShellExecuteEx, Store activation, UAC/policy, or the child token.",
+        "how_to_collect": "Reproduce once, then comment /bugreport immediately; include whether UAC was accepted or denied."
       }
     ]
   },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Request elevation failure trace",
+      "note": "Ask for evidence that distinguishes the relaunch boundary before implementation.",
+      "comment": {
+        "body": "The report already confirms that “always run as administrator,” right-click Run as administrator, and Settings > Restart PowerToys as administrator all leave the active process non-elevated on Windows 11 25H2. To distinguish a ShellExecute/Store/UAC failure from a child-process fallback, please reproduce one failed restart and immediately submit a fresh PowerToys report with `/bugreport`; please also state whether a UAC prompt appeared and whether it was accepted. The attached archive was rejected for an oversized entry, so this fresh capture is needed to select the correct fix."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Design fix: report failed elevation relaunch",
+      "note": "Approve a fork-side design that makes elevation failure observable and avoids silent non-elevated fallback.",
+      "design_prompt": "Trace and harden the PowerToys administrator relaunch path; verify child elevation before declaring success and preserve the loop-break guard."
+    }
+  ],
   "design": {
-    "root_cause": "Unconfirmed failed elevated relaunch followed by the existing non-elevated loop-break path.",
+    "root_cause": "The Settings restart path schedules an elevated relaunch, but the current runner path can continue or exit without proving that the child obtained an elevated token; this can present as a mode lock or silent fallback.",
     "evidence": [
-      "The issue reports failure across persistent, manual, and Settings restart elevation.",
-      "restart_elevated.cpp passes --restartedElevated to the child.",
-      "runner/main.cpp deliberately continues non-elevated when that argument is present without an elevated token."
+      "GeneralViewModel.RestartElevated initiates the user-visible restart command.",
+      "restart_elevated.cpp schedules and performs the relaunch.",
+      "elevation.h run_elevated uses ShellExecuteExW with SEE_MASK_NOCLOSEPROCESS but returns only a handle/null.",
+      "main.cpp contains the --restartedElevated startup branch and loop-break behavior."
     ],
     "affected_files": [
       {
         "path": "src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs",
-        "purpose": "Administrator-mode commands and persisted preference.",
+        "purpose": "Defines administrator-mode settings and restart commands.",
         "symbols": [
           "GeneralViewModel.RunElevated",
           "GeneralViewModel.RestartElevated"
         ]
       },
       {
-        "path": "src/runner/settings_window.cpp",
-        "purpose": "Receives restart_elevation and schedules relaunch.",
-        "symbols": [
-          "restart_elevation",
-          "schedule_restart_as_elevated"
-        ]
-      },
-      {
         "path": "src/runner/restart_elevated.cpp",
-        "purpose": "Launches the elevated child.",
+        "purpose": "Stores restart state and performs scheduled relaunches.",
         "symbols": [
-          "restart_if_scheduled",
-          "schedule_restart_as_elevated"
+          "schedule_restart_as_elevated",
+          "restart_if_scheduled"
         ]
       },
       {
         "path": "src/common/utils/elevation.h",
-        "purpose": "ShellExecuteEx and token helpers.",
+        "purpose": "Wraps ShellExecuteExW runas and process-token helpers.",
         "symbols": [
           "run_elevated",
-          "is_process_elevated"
+          "is_process_elevated",
+          "IsProcessOfWindowElevated"
         ]
       },
       {
         "path": "src/runner/main.cpp",
-        "purpose": "Startup elevation decision and loop prevention.",
+        "purpose": "Applies startup elevation and the restarted-elevated loop-break path.",
         "symbols": [
-          "with_restartedElevated_arg handling"
+          "restart_if_scheduled",
+          "--restartedElevated startup handling"
         ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/common/utils/elevation.h; src/runner/restart_elevated.cpp",
+        "file": "src/common/utils/elevation.h",
         "symbols": [
-          "run_elevated",
-          "restart_if_scheduled"
+          "run_elevated"
         ],
-        "current_behavior": "A successful ShellExecuteEx launch is treated as sufficient.",
-        "change": "Return structured launch diagnostics, close process handles, and preserve an explicit failed-relaunch result.",
-        "code_block": "auto result = RunElevatedWithDiagnostics(exe, args); if (!result.started) { LogElevationFailure(result.error); return false; }",
+        "current_behavior": "ShellExecuteExW failure is reduced to a null handle and successful launch is not the same as an elevated child.",
+        "change": "Return a structured launch result or log GetLastError and retain the process handle long enough to verify token/elevation state.",
+        "code_block": "auto result = ShellExecuteExW(&exec_info); if (!result) return ElevationLaunchResult::Failure(GetLastError()); return VerifyChildElevation(exec_info.hProcess);",
         "edge_cases": [
-          "Do not retry in a loop.",
-          "Treat UAC cancellation as a reported failure.",
-          "Preserve successful open-settings behavior."
+          "Close process handles on all paths.",
+          "Treat UAC cancellation distinctly from invalid path/policy failure."
         ],
         "tests": [
-          "Accepted UAC.",
-          "Denied UAC.",
-          "ShellExecuteEx failure and handle cleanup."
+          "Unit-test failure mapping where seams exist.",
+          "Exercise accepted and denied UAC manually."
         ]
       },
       {
         "order": 2,
-        "file": "src/runner/main.cpp; src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs",
+        "file": "src/runner/restart_elevated.cpp",
         "symbols": [
-          "with_restartedElevated_arg handling",
-          "GeneralViewModel.RestartElevated"
+          "restart_if_scheduled",
+          "schedule_restart_as_elevated"
         ],
-        "current_behavior": "A non-elevated child continues as a normal user and the UI can still show the persisted preference.",
-        "change": "Keep loop prevention but surface failed administrator-mode state distinctly from a successful elevated launch.",
-        "code_block": "if (!elevated && restartedElevated) { LogElevationFallback(); ReportAdminRestartFailed(); }",
+        "current_behavior": "Scheduled restart records intent but does not make success observable to the exiting parent.",
+        "change": "Propagate the launch result to logging/UI state and only complete the restart transition after a valid child launch.",
+        "code_block": "if (auto result = run_elevated(...); !result.elevated) { Logger::error(...); return RestartResult::Failed; }",
         "edge_cases": [
-          "Do not clear the persisted preference automatically.",
-          "Keep ordinary non-elevated startup unchanged."
+          "Parent may already be exiting.",
+          "Do not introduce an elevation retry loop."
         ],
         "tests": [
-          "Non-elevated restartedElevated child.",
-          "Successful elevated restart.",
-          "Normal launch with run_elevated disabled."
+          "Test scheduled restart with valid and invalid child paths."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/runner/main.cpp",
+        "symbols": [
+          "restart_if_scheduled",
+          "restartedElevated argument handling"
+        ],
+        "current_behavior": "A non-elevated child with the loop-break argument can continue in user mode.",
+        "change": "Make failed elevation explicit for the administrator-mode flow while retaining the existing loop-break safety behavior.",
+        "code_block": "if (hasRestartedElevated && !is_process_elevated(false)) { report_elevation_failure(); return; }",
+        "edge_cases": [
+          "Do not loop indefinitely.",
+          "Do not block normal non-admin startup."
+        ],
+        "tests": [
+          "Simulate a non-elevated restarted child and verify a clear failure path."
         ]
       }
     ],
     "verify": [
-      "Build runner and Settings with the existing PowerToys Windows workflow.",
-      "Repeat persistent, manual, and Settings elevation on Windows 11 25H2.",
-      "Confirm either an elevated token or a clear failure result."
+      "Build runner, common utilities, and Settings projects.",
+      "Validate Store and GitHub installs on Windows 11 25H2.",
+      "Verify Always run as administrator, in-app restart, right-click elevation, accepted UAC, denied UAC, and restart-loop protection."
     ],
     "risks": [
-      "Changing restart timing can affect update and Settings reopen flows.",
-      "A retry must not recreate the existing elevation loop."
+      "Store activation and UAC policy may differ from desktop ShellExecute behavior.",
+      "A token check that is too early could race child initialization.",
+      "Changing failure handling may affect unattended startup."
     ],
     "alternatives": [
-      "Disable administrator mode for Store installs; rejected without evidence.",
-      "Always retry elevation; rejected because it risks an infinite loop."
+      "Blindly retrying runas is rejected because it risks an elevation loop.",
+      "Only changing the Settings checkbox is insufficient because manual and startup relaunches also fail."
     ]
-  },
-  "actions": [
-    {
-      "id": "approve-design-50380",
-      "type": "approve_design",
-      "label": "Approve elevation-restart design"
-    },
-    {
-      "id": "request-info-50380",
-      "type": "request_info",
-      "label": "Request administrator-mode failure evidence",
-      "comment": {
-        "body": "Thanks for the report. To resolve the recorded uncertainty, please provide:\n\n1. A fresh diagnostic archive captured immediately after one failed administrator-mode attempt. Collection: Reproduce once, then comment `/bugreport` immediately after PowerToys closes, crashes, or restarts non-elevated.\n2. Whether UAC appears and is accepted for each elevation path, plus the Elevated state of PowerToys.exe and PowerToys.Settings.exe. Collection: Report the UAC result and check the Elevated column in Task Manager Details."
-      }
-    }
-  ]
+  }
 }

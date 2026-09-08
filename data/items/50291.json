@@ -3,387 +3,79 @@
   "number": 50291,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_design_approval",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-04T03:24:09Z",
-  "evaluated_at": "2026-09-04T03:24:09Z",
+  "generated_at": "2026-09-08T02:27:54Z",
+  "evaluated_at": "2026-09-08T02:27:54Z",
   "source_updated_at": "2026-09-01T17:28:04Z",
-  "source_reference": "Issue 50291",
+  "url": "https://github.com/microsoft/PowerToys/issues/50291",
   "title": "calculations on powertoys run don't give expected value",
   "author": "STEo3",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
+  "assignees": [],
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The reported calculator value change is directly explained by the Run calculator converting a Mages double through Convert.ToDecimal before display. The focused conversion-path design preserves the round-trip value while retaining existing overflow handling.",
+    "status": "reproducible",
+    "rationale": "The report supplies a deterministic expression and expected integer result. The magnitude is beyond exact IEEE double integer precision, but the affected PowerToys Run calculator and its expression-engine result type must be reproduced before choosing decimal versus precision-preserving handling.",
     "evidence": [
-      "The issue reports 1230954857433123+21313652323312 displaying 1252268509756440 instead of 1252268509756435.",
-      "CalculateEngine.Interpret calls Convert.ToDecimal(result, cultureInfo) after Mages evaluation.",
-      "A numeric probe shows the double round-trip string is 1252268509756435 while Convert.ToDecimal(double) yields 1252268509756440.",
-      "No linked PR, fork implementation, comments, or attachments establish an existing fix."
+      "The reporter gives 1230954857433123+21313652323312 and reports a result five units too high.",
+      "The expected sum is 1252268509756435.",
+      "The PowerToys Run calculator passes engine output through Convert.ToDecimal, while its expression engine can return non-decimal numeric values.",
+      "There are no comments, attachments, or linked fixes."
     ],
-    "recommended_action": "Approve the focused Run calculator conversion design, then implement the regression coverage and overflow safeguards in the fork.",
-    "evaluated_at": "2026-09-04T03:24:09Z",
+    "recommended_action": "Run the exact expression on the affected PowerToys Run calculator and inspect the expression-engine numeric type and formatting path.",
+    "evaluated_at": "2026-09-08T02:27:54Z",
     "source_updated_at": "2026-09-01T17:28:04Z"
   },
-  "assignees": [],
-  "comments": 0,
-  "confidence": "High",
-  "summary": "PowerToys Run changes the reported exact calculator result during its Mages-result-to-decimal conversion. A narrow Run calculator fix can preserve round-trip double values while keeping existing overflow behavior.",
-  "status": {
-    "glyph": "📝",
-    "label": "Design ready for approval",
-    "detail": "Converged fork-side design for Issue 50291 is ready; no code or upstream action has been taken."
-  },
-  "next_action": {
-    "glyph": "✅",
-    "label": "Approve fork-side fix design",
-    "reason": "The root cause is tied to the exact conversion used by PowerToys Run and the design includes tests and overflow safeguards."
-  },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The wrong displayed value is reproduced by the exact .NET double-to-decimal conversion currently used by PowerToys Run after Mages evaluation. The proposed fix is a bounded conversion-path mitigation, not a full arbitrary-precision calculator replacement.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "The numeric precision hypothesis is strong but must be confirmed in the old PowerToys Run engine rather than inferred from similarly named Command Palette code."
   },
-  "proposed_fixes": [
-    {
-      "title": "Preserve round-trip double values before converting Run calculator results to decimal",
-      "root_cause": "CalculateEngine.Interpret converts a Mages double result through Convert.ToDecimal(result, cultureInfo). For double input, that conversion rounds to limited significant digits, changing the issue expression from the round-trip value 1252268509756435 to 1252268509756440 before display and copy.",
-      "plan": [
-        "Add a private ConvertResultToDecimal helper in the PowerToys Run calculator CalculateEngine.",
-        "For double results, throw OverflowException for infinities, then parse doubleResult.ToString(\"R\", CultureInfo.InvariantCulture) with NumberStyles.Float and invariant culture.",
-        "For non-double results, convert with invariant culture instead of user output culture because the engine result is culture-invariant data.",
-        "Keep ResultHelper and Main.Query display, clipboard, replace-on-equals, and overflow error routing unchanged.",
-        "Add engine and query regression tests for the Issue 50291 expression and preserve existing too-large result tests."
-      ],
-      "verification": [
-        "Evaluate 1230954857433123+21313652323312 in PowerToys Run global search and with the calculator action keyword.",
-        "Verify both paths display and copy 1252268509756435.",
-        "Verify existing invalid and too-large keyword queries still return the localized calculator error rather than a generic exception."
-      ],
-      "confidence": {
-        "score": 90,
-        "level": "green",
-        "rationale": "The exact reported output is produced by Convert.ToDecimal(double), which is the conversion used by the Run calculator. The adversary-identified infinity path is explicitly handled in the design."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "The public report describes a PowerToys Run calculator addition where the mathematical integer result is changed by five in the displayed result. There are no comments or attachments, so the design is based on the report, local source, related history, and numeric reproduction of the conversion path.",
+    "summary": "PowerToys Run's calculator displays an incorrect result for an integer addition whose result exceeds double's exact integer range.",
     "known_information": [
-      "Issue 50291 reports PowerToys 0.100.0 Stable on Windows 11 25H2.",
-      "The reported expression is 1230954857433123+21313652323312.",
-      "The expected result is 1252268509756435 and the actual displayed result is 1252268509756440.",
-      "The issue has no comments, no assignees, and no diagnostic ZIP or other attachments.",
-      "CalculateEngine.Interpret in the PowerToys Run calculator calls _magesEngine.Interpret(input), then Convert.ToDecimal(result, cultureInfo), then Round(decimalResult).",
-      "Main.Query catches OverflowException from the calculator path and maps it to the existing too-large or too-small localized error.",
-      "A .NET numeric probe produced a double round-trip string of 1252268509756435, Convert.ToDecimal(double) of 1252268509756440, and an exact decimal sum of 1252268509756435.",
-      "CmdPal calculator uses a separate CalculatorEngineCommon path and recent CmdPal precision/display commits do not modify the PowerToys Run calculator plugin.",
-      "Earlier large-number calculator reports were consolidated under broader Run calculator precision work."
+      "The issue has exact operands, expected output, and observed output.",
+      "The report is on 0.100.0 stable.",
+      "The legacy calculator converts its evaluated result to decimal after evaluation."
     ],
     "inferences": [
-      "The issue is caused after Mages evaluation and before ResultHelper display because the changed value appears when converting the double result to decimal.",
-      "The existing Round method is downstream of the value change for this integer expression and is not the primary cause.",
-      "A round-trip double-string conversion can preserve this reported value, but cannot recover mathematical precision for cases where Mages has already produced an inexact double."
+      "Binary floating-point evaluation may have rounded the integer before decimal conversion, but the engine result must be observed to confirm it."
     ],
-    "analysis": "This issue can be treated as a concrete conversion-path bug rather than only a duplicate of broad calculator-engine replacement work. The design remains bounded: it preserves exact Mages double results when decimal can represent the round-trip value, keeps existing overflow handling, and avoids claiming arbitrary-precision arithmetic.",
+    "analysis": "This is immediately reproducible and has a narrowly scoped precision boundary. It should be reproduced rather than sent back for generic diagnostics.",
     "initial_investigation": [
-      "Read the live Issue 50291 body, timeline, labels, state, and absence of comments or attachments.",
-      "Searched for an existing fork mirror issue and found none before creating fork issue 631.",
-      "Inspected PowerToys Run calculator CalculateEngine, Main, ResultHelper, CalculateResult, and existing Run calculator unit tests.",
-      "Inspected CmdPal calculator CalculateEngine, ResultHelper, large-integer tests, and recent calculator history to distinguish the separate CmdPal engine path.",
-      "Checked related large-number precision issue history, including the older broad tracker and a prior duplicate report.",
-      "Validated the numeric conversion mechanism with .NET double, decimal, and exact decimal arithmetic."
+      "Read the full issue and empty discussion.",
+      "Inspected src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs.",
+      "Checked live duplicate searches; no direct duplicate was found."
     ],
     "information_gaps": []
   },
-  "design": {
-    "root_cause": "PowerToys Run's calculator changes the result in CalculateEngine.Interpret when it converts a Mages double result with Convert.ToDecimal(result, cultureInfo). For the Issue 50291 expression, the Mages double round-trip value is 1252268509756435, but Convert.ToDecimal(double) yields 1252268509756440. The existing Round(decimal) call then preserves the already-mutated integer because it rounds fractional digits only.",
-    "evidence": [
-      {
-        "type": "observed",
-        "source": "Issue 50291 report",
-        "detail": "Expression 1230954857433123+21313652323312 should show 1252268509756435 but shows 1252268509756440."
-      },
-      {
-        "type": "observed",
-        "source": "Issue 50291 discussion",
-        "detail": "No comments or attachments provide another failing path."
-      },
-      {
-        "type": "observed",
-        "source": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs",
-        "detail": "CalculateEngine.Interpret calls _magesEngine.Interpret(input), then Convert.ToDecimal(result, cultureInfo), then Round(decimalResult)."
-      },
-      {
-        "type": "observed",
-        "source": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs",
-        "detail": "Main.Query maps OverflowException to the existing calculator not-convert-to-decimal user error."
-      },
-      {
-        "type": "observed",
-        "source": ".NET numeric reproduction",
-        "detail": "The double round-trip string is 1252268509756435, Convert.ToDecimal(double) returns 1252268509756440, and exact decimal arithmetic returns 1252268509756435."
-      },
-      {
-        "type": "observed",
-        "source": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Calc/Helper/CalculateEngine.cs",
-        "detail": "CmdPal calculator is separate, evaluates through CalculatorEngineCommon, and parses an invariant string result."
-      },
-      {
-        "type": "inferred",
-        "source": "control-flow analysis",
-        "detail": "ResultHelper culture formatting and clipboard code are not the cause because the decimal value is already wrong before it is rendered."
-      }
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs",
-        "role": "Convert Mages engine output into CalculateResult for PowerToys Run.",
-        "symbols": [
-          "CalculateEngine.Interpret",
-          "CalculateEngine.Round",
-          "CalculateEngine.ConvertResultToDecimal"
-        ]
-      },
-      {
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs",
-        "role": "Route calculator results and preserve existing error behavior.",
-        "symbols": [
-          "Main.Query"
-        ]
-      },
-      {
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/ResultHelper.cs",
-        "role": "Render and copy the rounded decimal result using output culture.",
-        "symbols": [
-          "ResultHelper.CreateResult",
-          "ResultHelper.Action"
-        ]
-      },
-      {
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/ExtendedCalculatorParserTests.cs",
-        "role": "Engine-level regression tests.",
-        "symbols": [
-          "ExtendedCalculatorParserTests"
-        ]
-      },
-      {
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs",
-        "role": "PowerToys Run query/display regression tests.",
-        "symbols": [
-          "QueryTests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs",
-        "symbols": [
-          "CalculateEngine.Interpret",
-          "CalculateEngine.ConvertResultToDecimal"
-        ],
-        "current_flow": "After TransformResult, Interpret checks result.ToString(), then converts the engine result directly with Convert.ToDecimal(result, cultureInfo). Double results therefore use .NET's lossy double-to-decimal conversion.",
-        "change": "Replace the direct conversion with a helper that treats engine output as invariant data. Double results are converted through their round-trip string representation, while non-double results use invariant Convert.ToDecimal.",
-        "pseudo_diff": [
-          "- var decimalResult = Convert.ToDecimal(result, cultureInfo);",
-          "+ var decimalResult = ConvertResultToDecimal(result);",
-          "+",
-          "+ private static decimal ConvertResultToDecimal(object result)",
-          "+ {",
-          "+     if (result is double doubleResult)",
-          "+     {",
-          "+         if (double.IsInfinity(doubleResult))",
-          "+         {",
-          "+             throw new OverflowException();",
-          "+         }",
-          "+",
-          "+         return decimal.Parse(",
-          "+             doubleResult.ToString(\"R\", CultureInfo.InvariantCulture),",
-          "+             NumberStyles.Float,",
-          "+             CultureInfo.InvariantCulture);",
-          "+     }",
-          "+",
-          "+     return Convert.ToDecimal(result, CultureInfo.InvariantCulture);",
-          "+ }"
-        ],
-        "edge_state_error_handling": [
-          "Keep TransformResult responsible for NaN, function, array, and complex-result errors.",
-          "Throw OverflowException for double infinities so Main.Query keeps the existing localized too-large or too-small error.",
-          "Let decimal parse overflow propagate as OverflowException for values outside decimal range.",
-          "No threading, lifetime, settings, or clipboard behavior changes are needed."
-        ],
-        "tests": [
-          "Add an engine regression asserting both Result and RoundedResult are 1252268509756435M for the Issue 50291 expression.",
-          "Retain existing too-large result coverage and add a non-finite keyword-query regression if implementation confirms a Mages expression that returns infinity."
-        ]
-      },
-      {
-        "order": 2,
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs",
-        "symbols": [
-          "Main.Query"
-        ],
-        "current_flow": "Main.Query catches ParseException, OverflowException, and generic exceptions around CalculateEngine.Interpret.",
-        "change": "Do not change this file unless tests reveal the helper bypasses the intended OverflowException path. The CalculateEngine helper must preserve the existing Main.Query behavior.",
-        "pseudo_diff": [
-          "// no intended code change",
-          "return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, Properties.Resources.wox_plugin_calculator_not_covert_to_decimal);"
-        ],
-        "edge_state_error_handling": [
-          "Keyword queries should still show the localized error for decimal overflow.",
-          "Global invalid queries should still return no result rather than a visible error."
-        ],
-        "tests": [
-          "Keep QueryTests.ErrorResultOnInvalidKeywordQuery coverage for too-large decimal results."
-        ]
-      },
-      {
-        "order": 3,
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/ResultHelper.cs",
-        "symbols": [
-          "ResultHelper.CreateResult",
-          "ResultHelper.Action"
-        ],
-        "current_flow": "ResultHelper receives RoundedResult and formats it with the selected output culture for title, query text, and clipboard.",
-        "change": "Leave display and copy formatting unchanged; the corrected decimal should flow into existing culture-aware rendering.",
-        "pseudo_diff": [
-          "// no intended code change",
-          "Title = roundedResult?.ToString(outputCulture)",
-          "QueryTextDisplay = roundedResult?.ToString(inputCulture)"
-        ],
-        "edge_state_error_handling": [
-          "Do not parse user culture in ResultHelper.",
-          "Clipboard thread and ExternalException handling remain unchanged."
-        ],
-        "tests": [
-          "Add query-level tests rather than ResultHelper-specific tests unless formatting changes become necessary."
-        ]
-      },
-      {
-        "order": 4,
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/ExtendedCalculatorParserTests.cs",
-        "symbols": [
-          "ExtendedCalculatorParserTests"
-        ],
-        "current_flow": "Existing rounding data mostly asserts RoundedResult and would not necessarily catch an incorrect unrounded Result value.",
-        "change": "Add a dedicated exact-conversion regression test for the reported expression that asserts Result and RoundedResult.",
-        "pseudo_diff": [
-          "+ var result = engine.Interpret(\"1230954857433123+21313652323312\", CultureInfo.InvariantCulture, out _);",
-          "+ Assert.AreEqual(1252268509756435M, result.Result);",
-          "+ Assert.AreEqual(1252268509756435M, result.RoundedResult);"
-        ],
-        "edge_state_error_handling": [
-          "Keep existing null, invalid, complex, division-by-zero, culture, and overflow coverage."
-        ],
-        "tests": [
-          "Run the calculator unit test project after implementation."
-        ]
-      },
-      {
-        "order": 5,
-        "path": "src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs",
-        "symbols": [
-          "QueryTests"
-        ],
-        "current_flow": "Query tests validate visible titles for global and action-keyword calculator queries.",
-        "change": "Add a displayed-result regression for both global and equals-keyword forms of the Issue 50291 expression.",
-        "pseudo_diff": [
-          "+ [DataRow(\"1230954857433123+21313652323312\", \"1252268509756435\")]",
-          "+ public void RightAnswerForLargeIntegerAddition(string typedString, string answer)",
-          "+ {",
-          "+     Query expectedQuery = new(typedString);",
-          "+     Query expectedQueryWithKeyword = new(\"=\" + typedString, \"=\");",
-          "+     Assert.AreEqual(answer, _main.Object.Query(expectedQuery).FirstOrDefault()?.Title);",
-          "+     Assert.AreEqual(answer, _main.Object.Query(expectedQueryWithKeyword).FirstOrDefault()?.Title);",
-          "+ }"
-        ],
-        "edge_state_error_handling": [
-          "Use string expected values rather than double expected values so the test itself does not repeat floating-point formatting behavior."
-        ],
-        "tests": [
-          "Run the calculator unit test project after implementation."
-        ]
-      }
-    ],
-    "verify": {
-      "build_test_commands": [
-        "Build src\\modules\\launcher\\Plugins\\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest\\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.csproj with the repository build scripts.",
-        "Run the built MSTest assembly with Visual Studio Test Explorer or vstest.console.exe, following the repository guidance to avoid dotnet test."
-      ],
-      "manual_steps": [
-        "Before the fix, evaluate 1230954857433123+21313652323312 in PowerToys Run and observe 1252268509756440.",
-        "After the fix, evaluate the same expression in global Run search and with the calculator action keyword.",
-        "Confirm both paths display 1252268509756435.",
-        "Copy or replace the result and confirm the value remains 1252268509756435.",
-        "Verify invalid and too-large calculations still use the existing keyword-query error behavior and do not show generic exception text."
-      ]
-    },
-    "risks": [
-      "Round-trip double parsing can expose more exact intermediate digits before the existing Round step; common fractional-result tests must remain green.",
-      "This fix does not recover correctness when Mages has already rounded an integer outside double's exact range.",
-      "Using invariant parsing is correct for engine output but must not change user-facing localized display."
-    ],
-    "alternatives": [
-      {
-        "option": "Replace the PowerToys Run calculator engine with CalculatorEngineCommon or the Windows Calculator engine.",
-        "reason_rejected": "That is broader, riskier, and belongs to long-running calculator-engine replacement work rather than this narrow conversion defect."
-      },
-      {
-        "option": "Treat Issue 50291 only as a duplicate of broad precision work.",
-        "reason_rejected": "The reported exact value is caused by a specific conversion call that can be mitigated independently without promising arbitrary precision."
-      },
-      {
-        "option": "Parse result.ToString() with the current culture for every result.",
-        "reason_rejected": "Engine output is culture-invariant data, and current-culture parsing would couple internal conversion to display settings."
-      }
-    ],
-    "confidence": {
-      "score": 90,
-      "level": "green",
-      "rationale": "The exact bad value is reproduced by the current conversion call, and the design explicitly preserves existing overflow behavior."
-    },
-    "adversary": {
-      "rounds": 1,
-      "sign_off": "No blocking objections after the infinity/overflow handling requirement was added.",
-      "blocking_objections_resolved": [
-        "Initial design parsed double infinity strings as decimal, which would throw FormatException instead of preserving Main.Query's OverflowException path. The final design throws OverflowException for double infinities."
-      ],
-      "non_blocking_notes": [
-        "The design should not be presented as a complete arbitrary-precision calculator fix.",
-        "The engine test should assert both Result and RoundedResult."
-      ]
-    }
-  },
-  "mirror": {
-    "kind": "issue",
-    "fork": "MuyuanMS/PowerToys",
-    "fork_number": 631,
-    "fork_title": "[Issue 50291] calculations on powertoys run don't give expected value",
-    "fork_state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/631",
-    "node_id": "I_kwDOM2Pyb88AAAABPoSWeQ",
-    "updated_at": "2026-09-04T03:23:46Z",
-    "source_reference": "Issue 50291"
-  },
   "actions": [
     {
-      "id": "approve-design-50291",
-      "type": "approve_design",
-      "label": "Approve design for Issue 50291",
+      "id": "reproduce-50291",
+      "type": "reproduce",
+      "label": "Reproduce large-integer calculation",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "fork_issue",
-        "repo": "MuyuanMS/PowerToys",
-        "number": 631,
-        "body": "Approved design for Issue 50291. Proceed to implementation from the fork-side design artifact."
-      },
-      "note": "Fork-side approval only; no upstream comment, PR, or code change is included."
+      "reproduce": {
+        "module": "PowerToys Run Calculator",
+        "version_requirements": "Affected 0.100.0 build and current build for comparison",
+        "prerequisites": [
+          "Enable the Calculator plugin in PowerToys Run."
+        ],
+        "steps": [
+          "Open PowerToys Run.",
+          "Enter 1230954857433123+21313652323312.",
+          "Record displayed and copied result.",
+          "Repeat on a current build and inspect the evaluator result type in a debugger if the result differs."
+        ],
+        "expected_result": "The displayed and copied result is exactly 1252268509756435.",
+        "setup_requirements": [
+          "Use an invariant input culture for the numeric-only expression."
+        ]
+      }
     }
   ]
 }

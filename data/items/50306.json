@@ -3,100 +3,70 @@
   "number": 50306,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-09-07T16:08:59Z",
-  "evaluated_at": "2026-09-07T16:08:59Z",
+  "generated_at": "2026-09-08T02:27:54Z",
+  "evaluated_at": "2026-09-08T02:27:54Z",
   "source_updated_at": "2026-09-02T02:17:27Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50306",
   "title": "quick accent inserts `」` as `「` in the wechat desktop app",
-  "confidence": "medium",
-  "status": {
-    "glyph": "🎯",
-    "label": "Likely Quick Accent mapping bug",
-    "detail": "The symptom is specific and plausible as a character-selection bug in the Quick Accent insertion path."
-  },
-  "next_action": {
-    "glyph": "✅",
-    "label": "Approve targeted Quick Accent fix design",
-    "reason": "The report is precise and points to a likely character-selection regression in the insertion logic."
-  },
+  "author": "brauljo",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report identifies a precise regression: the selected accent character is inserted as the mirrored glyph in a specific app, which fits an insertion-layer mapping bug rather than a general Quick Accent configuration failure.",
+    "status": "needs_information",
+    "rationale": "The report contains an exact character mismatch and a diagnostic attachment, but not the Quick Accent activation gesture, selected language/layout, WeChat version, or a control application result needed to isolate an app-specific text-input transformation.",
     "evidence": [
-      "The issue states typing `」` in WeChat causes `「` to be inserted instead.",
-      "The report is specific to Quick Accent and the observed mismatch is directional and app-specific.",
-      "The issue includes a diagnostic ZIP, which is enough for a focused boundary check on insertion mapping."
+      "The reporter says selecting or typing 」 through Quick Accent produces 「 only in WeChat Desktop.",
+      "A public bug-report ZIP is attached.",
+      "Power Accent uses a low-level keyboard listener and supports excluding foreground applications.",
+      "There are no follow-up comments or linked fix attempts."
     ],
-    "recommended_action": "Approve a targeted design to verify the Quick Accent selection/insertion mapping in the app-input path and add a regression test for mirrored character pairs."
+    "recommended_action": "Request the exact gesture and an app comparison that can identify whether the issue is in Quick Accent output or WeChat input handling.",
+    "evaluated_at": "2026-09-08T02:27:54Z",
+    "source_updated_at": "2026-09-02T02:17:27Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "A fix is plausible but not yet grounded in the exact mapping/insertion boundary; the issue needs a focused design and validation on the fast-path selection logic.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "No code fix can be responsibly targeted until the selection path, keyboard layout, and application-specific scope are confirmed."
   },
-  "proposed_fixes": [
-    {
-      "title": "Validate Quick Accent selected-character mapping before insertion",
-      "root_cause": "The selected accent target may be mapped or normalized incorrectly before the text is injected, causing the mirrored glyph to be written for a specific input context.",
-      "plan": [
-        "Inspect the Quick Accent selection and insertion pipeline for the active character mapping step.",
-        "Verify whether the selected glyph is transformed before being sent to the app or composed into the input stream.",
-        "Add a regression for mirrored punctuation pairs and verify the same character is inserted in WeChat Desktop."
-      ],
-      "verification": [
-        "Repeat the exact `」`/`「` flow in WeChat Desktop and confirm the selected symbol is emitted without mirroring.",
-        "Add a unit/regression test covering the mapping pair to prevent future reversal."
-      ],
-      "confidence": {
-        "score": 68,
-        "level": "yellow",
-        "rationale": "The symptom is specific and consistent with a mapping bug, but the exact insertion boundary should be confirmed before patching."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "Quick Accent appears to insert the mirrored punctuation character in WeChat Desktop, suggesting a selection or injection-path mapping error rather than a general keyboard/layout problem.",
+    "summary": "Quick Accent appears to produce the opening corner bracket instead of the requested closing bracket when the destination application is WeChat Desktop.",
     "known_information": [
-      "The report is on PowerToys 0.100.2 via auto-update.",
-      "The issue is limited to a single character pair and a single desktop app.",
-      "The reporter included a PowerToys diagnostic ZIP.",
-      "The issue is labeled Issue-Bug and Needs-Triage only."
+      "The issue identifies Quick Accent, WeChat Desktop, and the two distinct Unicode characters.",
+      "The report is from PowerToys 0.100.2 and includes a public diagnostic archive.",
+      "No discussion supplies activation, language, or comparison details."
     ],
     "inferences": [
-      "The problem is likely in the Quick Accent text insertion or normalization layer, not a broad app input issue."
+      "The destination application or active input method may be transforming the text, but Quick Accent emission is not ruled out."
     ],
-    "analysis": "This is a credible fix candidate with a narrow boundary and enough specificity to justify a focused design review, but we still need one app-level validation and a small mapping check before patching.",
+    "analysis": "An exact character pair is valuable, but the report has no discriminator between an output-selection defect and an application/IME compatibility path. A small application comparison is more relevant than requesting another generic log.",
     "initial_investigation": [
-      "Read the public issue body and diagnostic attachment context.",
-      "Checked the issue label state and timeline; no maintainer position is present yet.",
-      "Inspected the likely Quick Accent insertion path only as necessary to confirm the report is within the known character-selection boundary."
+      "Read the full issue body and discussion.",
+      "Inspected src/modules/PowerAccent/PowerAccentKeyboardService/KeyboardListener.cpp and its keyboard-hook/excluded-app boundary.",
+      "Searched live issue titles for a directly matching WeChat bracket report; no direct duplicate was found."
     ],
     "information_gaps": [
       {
-        "information": "Exact keyboard layout / app input method state during reproduction",
-        "why_needed": "A layout or IME setting could cause the mirrored insert even when the internal mapping is correct.",
-        "how_to_collect": "Reply with the active keyboard layout, whether the app uses IME composition, and whether the same input is mirrored in another app."
+        "information": "The Quick Accent activation and selection steps, active Windows keyboard layout/IME, WeChat Desktop version, and results in Notepad plus one other application.",
+        "why_needed": "These observations identify whether the incorrect character is selected by PowerToys or changed only by the destination application's input path.",
+        "how_to_collect": "Record the exact key sequence and selected candidate, then paste or enter the same candidate in WeChat Desktop, Notepad, and one additional application without changing the active input language."
       }
     ]
   },
   "actions": [
     {
-      "id": "approve-design-50306",
-      "type": "approve_design",
-      "label": "Approve Quick Accent mapping fix design",
-      "primary": true,
-      "requiresApproval": true
-    },
-    {
-      "id": "request-info-50306",
+      "id": "request-ime-comparison-50306",
       "type": "request_info",
-      "label": "Confirm app/input layout details",
-      "requiresApproval": false,
+      "label": "Request Quick Accent app comparison",
+      "primary": true,
+      "confirm": true,
       "comment": {
-        "body": "Thanks for the precise reproduction. Please confirm whether the same mirrored insert happens in another app with the same keyboard layout and whether WeChat is using IME composition for the character. This helps distinguish a general Quick Accent mapping issue from an app-specific input path problem before we approve the design."
+        "body": "Thank you for identifying the exact bracket pair and attaching a report. To determine whether Quick Accent selects the wrong character or WeChat changes it through its input path, please provide the exact activation and selection keys, active Windows keyboard layout/IME, and WeChat Desktop version. Please also repeat the same selection in Notepad and one other application, without changing the input language, and share which applications produce 」 versus 「."
       }
     }
   ]

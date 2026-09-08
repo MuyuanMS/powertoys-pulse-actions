@@ -2,111 +2,132 @@
   "schemaVersion": 5,
   "number": 50368,
   "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
-  "generated_at": "2026-09-04T07:30:00Z",
-  "evaluated_at": "2026-09-04T07:30:00Z",
-  "source_updated_at": "2026-09-04T00:07:17Z",
+  "title": "Advanced Paste: Foundry Local provider shows no models – empty Service URL with Foundry Local 0.10.x",
   "url": "https://github.com/microsoft/PowerToys/issues/50368",
-  "title": "Advanced Paste cannot discover Foundry Local 0.10.x models",
+  "state": "open",
   "labels": [
     "Issue-Bug",
-    "Product-Advanced Paste",
     "Needs-Triage"
   ],
-  "assignees": [],
+  "generated_at": "2026-09-08T02:27:54Z",
+  "evaluated_at": "2026-09-08T02:27:54Z",
+  "source_updated_at": "2026-09-04T00:07:17Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The reporter supplied a reproducible Foundry Local 0.10.3.0 failure, including logs that show an empty service URL followed by invalid relative-URI requests. The current provider reads Endpoint for its displayed URL but uses ServiceUri to construct the OpenAI client, making endpoint discovery and validation a concrete compatibility boundary.",
+    "rationale": "The public log and current code identify a concrete endpoint-discovery mismatch with a plausible compatibility fix; one SDK-value trace remains useful before implementation.",
     "evidence": [
-      "Foundry Local 0.10.3.0 starts and serves phi-4-mini through the foundry CLI.",
-      "The supplied Advanced Paste log records an empty Service URL and invalid absolute-URI errors from both catalog and cached-model requests.",
-      "FoundryClient.GetServiceUrl reads FoundryLocalManager.Endpoint while GetServiceUri reads ServiceUri; FoundryLocalModelProvider.InitializeAsync and GetIChatClient consume those values independently.",
-      "No open linked upstream PR, duplicate, assignee, or additional fork implementation was found; fork issue 623 is the existing design trace."
+      "Foundry Local 0.10.3.0 and a loaded phi-4-mini model are supplied.",
+      "PowerToys logs an empty Service URL and invalid absolute-URI errors.",
+      "Current code exposes Endpoint and ServiceUri through separate accessors.",
+      "The report distinguishes this from the older 0.8.x fixed-port issue."
     ],
-    "recommended_action": "Approve the fork-side endpoint-discovery design and request a fresh diagnostic only to pin the exact SDK endpoint state before implementation."
+    "recommended_action": "Request the endpoint trace and approve the endpoint-unification design."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No concrete fix attempt covers the 0.10.x endpoint-discovery path. A localized compatibility and validation change is supported by the reported failure and the current provider flow.",
-    "existing_fix_urls": []
+    "rationale": "FoundryClient reads Endpoint for the service URL while the provider uses ServiceUri for the OpenAI client; with Foundry Local 0.10.x the endpoint property can be empty or incompatible, causing relative URI failures and an empty model list."
   },
   "proposed_fixes": [
     {
-      "title": "Validate and unify Foundry Local endpoint discovery",
-      "root_cause": "The provider treats FoundryLocalManager.Endpoint and ServiceUri as interchangeable but reads them at different points without validating either. With the Foundry Local 0.10.x SDK/daemon contract, that leaves the provider with an empty endpoint and converts a discovery failure into invalid relative requests and an empty model list.",
+      "title": "Validate Foundry Local endpoint discovery for 0.10.x",
+      "root_cause": "FoundryClient reads Endpoint for the service URL while the provider uses ServiceUri for the OpenAI client; with Foundry Local 0.10.x the endpoint property can be empty or incompatible, causing relative URI failures and an empty model list.",
       "plan": [
-        "Centralize endpoint acquisition in FoundryClient and return a single validated absolute base URI or a diagnostic result that identifies the missing manager property.",
-        "Use that result consistently from InitializeAsync, GetModelsAsync, and GetIChatClient; do not report the provider as usable when model discovery failed solely because no valid service URI exists.",
-        "Verify the referenced Foundry Local package exposes the supported 0.10.x endpoint contract and update the package/API usage only where required by that contract.",
-        "Add focused coverage for valid legacy endpoint data, valid 0.10.x endpoint data, and empty/non-absolute endpoint data."
+        "Centralize endpoint acquisition and validate an absolute base URI.",
+        "Use one validated endpoint for model enumeration and OpenAI client creation.",
+        "Report unavailable endpoint state instead of advertising availability with zero models."
       ],
       "verification": [
-        "With PowerToys 0.101.2362.0 and Foundry Local 0.10.3.0, start the server, load phi-4-mini, and confirm Advanced Paste lists the cached model and creates a chat client.",
-        "Verify that an unavailable or malformed endpoint produces a clear provider diagnostic rather than an empty model list.",
-        "Retest a supported pre-0.10 Foundry Local installation to preserve existing discovery behavior."
+        "Run Foundry Local 0.10.3.0 with phi-4-mini loaded and confirm cached models appear.",
+        "Test empty/non-absolute endpoint behavior.",
+        "Retest a supported pre-0.10 Foundry Local installation."
       ],
       "confidence": {
-        "score": 72,
+        "score": 78,
         "level": "yellow",
-        "rationale": "The empty endpoint and split accessor usage are directly observed, but a fresh diagnostic that records the manager's endpoint properties is needed to select the exact 0.10.x SDK compatibility API."
+        "rationale": "The issue log directly shows an empty Service URL and invalid URI errors, and current code reads Endpoint and ServiceUri through separate paths; the exact SDK 0.10.x contract still needs confirmation."
       }
     }
   ],
   "issue_context": {
-    "summary": "Advanced Paste reports no downloaded Foundry Local models despite a working Foundry Local 0.10.3.0 server and loaded phi-4-mini model.",
+    "summary": "Advanced Paste reports no Foundry Local models even though Foundry Local 0.10.3.0 starts, loads phi-4-mini, and responds in its CLI.",
     "known_information": [
-      "The reporter uses PowerToys 0.101.2362.0 on Windows 11 24H2 with Foundry Local 0.10.3.0 installed through winget.",
-      "The foundry CLI can start the server and chat with phi-4-mini.",
-      "The supplied log records an empty service URL, invalid request URI errors while listing catalog and cached models, and IsAvailable returning true.",
-      "The current source separates Endpoint-based URL display from ServiceUri-based chat-client construction."
+      "PowerToys 0.101.2362.0 and Foundry Local 0.10.3.0 are specified.",
+      "The issue includes exact invalid-absolute-URI errors and an empty Service URL.",
+      "Current FoundryClient exposes Endpoint and ServiceUri separately.",
+      "FoundryLocalModelProvider initializes, lists catalog/cached models, and creates an OpenAI client from service data.",
+      "The reporter distinguishes this from older issue #45340/#45362 behavior."
     ],
     "inferences": [
-      "The failure is likely a mismatch between the provider's endpoint assumptions and the 0.10.x SDK/daemon discovery contract, rather than an absent or unloaded model.",
-      "The provider's availability result may be too broad because successful manager creation does not prove that a usable endpoint was discovered."
+      "The 0.10.x SDK/daemon contract may no longer populate the property PowerToys currently reads.",
+      "IsAvailable may be true because client creation succeeds even though endpoint-based requests cannot run."
     ],
-    "analysis": "The report isolates discovery: the local CLI proves the model/server path works, while PowerToys fails before a valid request can be created. The provider has two unvalidated endpoint access paths, so consolidating and validating discovery is a defensible fork-side plan. The exact supported 0.10.x property still needs confirmation before choosing a package/API change.",
+    "analysis": "The code and logs support a focused endpoint compatibility fix; a fresh manager-property trace would confirm the exact API mapping before implementation.",
     "initial_investigation": [
-      "Reviewed src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs: GetServiceUrl returns Endpoint and GetServiceUri returns ServiceUri without validating either value.",
-      "Reviewed src/common/LanguageModelProvider/FoundryLocalModelProvider.cs: InitializeAsync logs the Endpoint-based URL, while GetIChatClient constructs its OpenAI endpoint from ServiceUri.",
-      "Checked current upstream references and fork traces; no linked fix was found, and the existing fork mirror is https://github.com/MuyuanMS/PowerToys/issues/623."
+      "FoundryClient.TryCreateClientAsync starts or reuses the SDK manager.",
+      "FoundryClient.GetServiceUrl returns Endpoint, while GetServiceUri returns ServiceUri.",
+      "FoundryLocalModelProvider.InitializeAsync logs Service URL and calls ListCatalogModels.",
+      "GetModelsAsync calls ListCachedModels even when endpoint-dependent calls have failed.",
+      "Search found the prior 0.8.x issue/fix referenced by the reporter; the current report targets 0.10.x."
     ],
     "information_gaps": [
       {
-        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing with Foundry Local 0.10.3.0, including the FoundryClient and FoundryLocal log lines.",
-        "why_needed": "It will show whether Endpoint, ServiceUri, or both are absent at runtime and distinguish an SDK contract change from a service-start timing failure.",
-        "how_to_collect": "Start Foundry Local and load phi-4-mini, reproduce the empty-model result once, then add a comment containing /bugreport immediately afterward."
+        "information": "The values and absolute/relative forms of FoundryLocalManager.Endpoint and ServiceUri under SDK 0.10.3.0.",
+        "why_needed": "Confirms which SDK property should be the single base URI and whether a /v1 suffix is required.",
+        "how_to_collect": "Capture the Advanced Paste FoundryLocal log immediately after starting the 0.10.3.0 server; include the existing Log attachment or a fresh `/bugreport` if the log is not sufficient."
       }
     ]
   },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Request Foundry Local endpoint trace",
+      "note": "Ask for the one missing SDK compatibility fact.",
+      "comment": {
+        "body": "The report already supplies the important reproduction: Foundry Local 0.10.3.0 starts, `phi-4-mini` loads, and PowerToys logs an empty Service URL followed by invalid absolute-URI errors. The remaining decision is whether 0.10.x exposes the usable base address through `Endpoint`, `ServiceUri`, or a different SDK API. Please capture the Advanced Paste log immediately after starting the server and opening the provider page (or submit `/bugreport` immediately after reproducing) so the manager’s discovered endpoint values and SDK errors are visible; this avoids changing the provider against the wrong 0.10.x contract."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Design fix: unify Foundry Local endpoint handling",
+      "note": "Approve a fork-side compatibility design for the 0.10.x endpoint contract.",
+      "design_prompt": "Unify Foundry Local endpoint discovery, validate the base URI, and preserve supported legacy behavior while fixing 0.10.x model enumeration."
+    }
+  ],
   "design": {
-    "root_cause": "Foundry endpoint discovery is split between unvalidated manager Endpoint and ServiceUri values. A 0.10.x service can therefore be considered available while providing no absolute URI for the provider's catalog, cached-model, or OpenAI-client operations.",
+    "root_cause": "FoundryClient reads Endpoint for the service URL while the provider uses ServiceUri for the OpenAI client; with Foundry Local 0.10.x the endpoint property can be empty or incompatible, causing relative URI failures and an empty model list.",
     "evidence": [
-      "Observed: the issue log shows an empty Service URL and invalid absolute-URI errors for both model-listing calls.",
-      "Observed: FoundryClient.GetServiceUrl and GetServiceUri read different FoundryLocalManager properties.",
-      "Observed: FoundryLocalModelProvider uses the former during initialization and the latter during chat-client creation.",
-      "Inferred: Foundry Local 0.10.x changed the available manager endpoint contract or its initialization timing."
+      "FoundryClient.GetServiceUrl reads FoundryLocalManager.Endpoint.",
+      "FoundryClient.GetServiceUri reads FoundryLocalManager.ServiceUri.",
+      "The provider logs an empty Service URL before model-list calls fail with invalid URI errors.",
+      "The reporter confirms Foundry Local CLI operation independently of PowerToys."
     ],
     "affected_files": [
       {
         "path": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
-        "purpose": "Wraps FoundryLocalManager service startup, endpoint access, and model enumeration.",
+        "purpose": "Wraps SDK manager startup, endpoint access, and model enumeration.",
         "symbols": [
-          "TryCreateClientAsync",
-          "GetServiceUrl",
-          "GetServiceUri",
-          "ListCatalogModels",
-          "ListCachedModels"
+          "FoundryClient.TryCreateClientAsync",
+          "FoundryClient.GetServiceUrl",
+          "FoundryClient.GetServiceUri",
+          "FoundryClient.ListCatalogModels",
+          "FoundryClient.ListCachedModels"
         ]
       },
       {
         "path": "src/common/LanguageModelProvider/FoundryLocalModelProvider.cs",
-        "purpose": "Initializes the Advanced Paste provider, exposes cached models, and creates the OpenAI chat client.",
+        "purpose": "Initializes the provider and creates model lists/OpenAI clients.",
         "symbols": [
-          "InitializeAsync",
-          "GetModelsAsync",
-          "GetIChatClient",
-          "IsAvailable"
+          "FoundryLocalModelProvider.InitializeAsync",
+          "FoundryLocalModelProvider.GetModelsAsync",
+          "FoundryLocalModelProvider.GetIChatClient",
+          "FoundryLocalModelProvider.IsAvailable"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/AdvancedPastePage.xaml.cs",
+        "purpose": "Loads provider availability and model configuration in Settings.",
+        "symbols": [
+          "AdvancedPastePage.LoadFoundryLocalModels"
         ]
       }
     ],
@@ -115,21 +136,18 @@
         "order": 1,
         "file": "src/common/LanguageModelProvider/FoundryLocal/FoundryClient.cs",
         "symbols": [
-          "GetServiceUrl",
-          "GetServiceUri"
+          "FoundryClient.GetServiceUrl",
+          "FoundryClient.GetServiceUri"
         ],
-        "current_behavior": "The wrapper returns Endpoint for one caller and ServiceUri for another, suppressing accessor failures and allowing null or non-absolute values to propagate.",
-        "change": "Introduce one endpoint-resolution path that consults the supported manager contract, validates an absolute base URI, and returns a diagnostic failure when no usable endpoint exists. Retain a compatibility path only for documented legacy SDK values.",
-        "code_block": "var baseUri = ResolveSupportedServiceUri(_foundryManager);\\nif (baseUri is not { IsAbsoluteUri: true })\\n{\\n    Logger.LogError(\"[FoundryClient] No usable Foundry Local service URI was discovered\");\\n    return null;\\n}\\nreturn baseUri;",
+        "current_behavior": "Two accessors expose different SDK properties and callers use them inconsistently.",
+        "change": "Add one validated endpoint result that selects the supported SDK property and rejects empty/non-absolute values with a diagnostic.",
+        "code_block": "var endpoint = ResolveBaseUri(_foundryManager); if (endpoint is null || !endpoint.IsAbsoluteUri) throw new FoundryEndpointException(...);",
         "edge_cases": [
-          "Service starts but has not published its endpoint yet.",
-          "A legacy endpoint already includes /v1.",
-          "An accessor throws or returns a relative URI.",
-          "Cancellation or refresh must not retain a stale URI."
+          "Support legacy and 0.10.x SDK shapes explicitly.",
+          "Do not log credentials or local sensitive data."
         ],
         "tests": [
-          "Mock or wrap endpoint resolution for valid legacy data, valid 0.10.x data, null data, and relative data.",
-          "Assert that diagnostics differentiate endpoint discovery failure from an empty catalog."
+          "Test valid legacy, valid 0.10.x, empty, and malformed endpoint values."
         ]
       },
       {
@@ -141,72 +159,47 @@
           "GetIChatClient",
           "IsAvailable"
         ],
-        "current_behavior": "Initialization logs a nullable URL and then lists models; availability is true whenever a client object exists, even after invalid-URI model-list failures.",
-        "change": "Consume the validated URI/result before model operations, clear any stale URI during refresh, and report unavailable or initialization failure when discovery cannot supply a usable endpoint. Build the OpenAI /v1 URI from the normalized base only once.",
-        "code_block": "var serviceUri = await _foundryClient.GetRequiredServiceUriAsync().ConfigureAwait(false);\\nif (serviceUri is null)\\n    throw new InvalidOperationException(\"Foundry Local service endpoint is unavailable.\");\\n_serviceUrl = serviceUri.ToString().TrimEnd('/');",
+        "current_behavior": "Initialization can report a client as available while endpoint-dependent model calls fail.",
+        "change": "Use the validated endpoint consistently and make availability reflect usable model discovery/client state.",
+        "code_block": "await _foundryClient.InitializeEndpoint(); if (!endpointValid) return unavailable; var models = await _foundryClient.ListCachedModels();",
         "edge_cases": [
-          "A client refresh races server startup.",
-          "The catalog is genuinely empty after a valid endpoint is confirmed.",
-          "The OpenAI endpoint must not receive a duplicated /v1 path."
+          "Keep model loading errors distinct from endpoint discovery errors.",
+          "Avoid repeated provider initialization loops."
         ],
         "tests": [
-          "Provider initialization rejects an absent endpoint without returning an empty-model success state.",
-          "Cached-model enumeration and chat-client construction use the same normalized endpoint.",
-          "Existing supported endpoint behavior remains unchanged."
+          "Verify model list and chat-client endpoint use the same base URI."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/settings-ui/Settings.UI/SettingsXAML/Views/AdvancedPastePage.xaml.cs",
+        "symbols": [
+          "LoadFoundryLocalModels"
+        ],
+        "current_behavior": "Settings displays no models after provider calls return an empty list.",
+        "change": "Show a clear unavailable diagnostic when endpoint discovery fails instead of presenting a misleading empty catalog.",
+        "code_block": "if (!provider.IsAvailable()) { ShowProviderUnavailable(); return; }",
+        "edge_cases": [
+          "Do not block other Advanced Paste providers."
+        ],
+        "tests": [
+          "Run the Settings page against running and unavailable Foundry Local."
         ]
       }
     ],
     "verify": [
-      "Build the existing LanguageModelProvider and Advanced Paste targets using the repository build workflow.",
-      "Reproduce with Foundry Local 0.10.3.0, a running server, and phi-4-mini; confirm model enumeration and a chat request work from Advanced Paste.",
-      "Test an unavailable service, a delayed service endpoint, and a supported older Foundry Local installation."
+      "Build the common language-model provider and Advanced Paste projects.",
+      "Run Foundry Local 0.10.3.0 with phi-4-mini and verify cached model discovery/chat creation.",
+      "Retest a supported pre-0.10 installation and malformed endpoint handling."
     ],
     "risks": [
-      "Selecting an undocumented 0.10.x accessor could break another supported SDK version.",
-      "Incorrect /v1 normalization could create a duplicated or missing OpenAI path.",
-      "Changing availability semantics could alter UI messaging for a genuinely empty catalog."
+      "SDK API compatibility may require a package-version change.",
+      "Incorrect /v1 normalization could break chat requests.",
+      "Availability UI changes must not hide unrelated provider errors."
     ],
     "alternatives": [
-      "Hard-code a localhost port: rejected because Foundry Local endpoint and deployment details are not guaranteed.",
-      "Keep returning an empty list on endpoint failure: rejected because it hides a configuration/discovery error as no downloaded models.",
-      "Only update the displayed Service URL: rejected because catalog and chat paths must share the same validated endpoint."
+      "Hard-coding a fixed port is rejected because the report targets a changed 0.10.x architecture.",
+      "Using Endpoint for one caller and ServiceUri for another is rejected because it caused the current inconsistency."
     ]
-  },
-  "fork_trace": {
-    "fork_number": 623,
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/623",
-    "status": "OPEN",
-    "note": "Existing fork-only design mirror; no upstream action implied."
-  },
-  "adversarial_review": {
-    "rounds": 1,
-    "conclusion": "No blocking objection after narrowing the design to endpoint validation and supported-SDK compatibility; the exact 0.10.x accessor remains an explicit implementation investigation item.",
-    "non_blocking_notes": [
-      "Keep endpoint-discovery failure distinct from a valid empty model catalog."
-    ]
-  },
-  "actions": [
-    {
-      "id": "approve-design-50368",
-      "type": "approve_design",
-      "label": "Approve Foundry endpoint design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Fork-side design approval only."
-    },
-    {
-      "id": "request-info-50368",
-      "type": "request_info",
-      "label": "Request endpoint discovery diagnostic",
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 50368,
-        "body": "Thanks for the detailed CLI reproduction and the log showing an empty Service URL. To determine whether Foundry Local 0.10.3.0 exposes neither Endpoint nor ServiceUri to PowerToys, please start the server, load phi-4-mini, reproduce the empty-model result once, then add a comment containing `/bugreport` immediately afterward. The fresh archive should include the FoundryClient and FoundryLocal log lines from that attempt so we can distinguish endpoint discovery from service-start timing."
-      },
-      "note": "Draft only; no upstream comment posted."
-    }
-  ]
+  }
 }
