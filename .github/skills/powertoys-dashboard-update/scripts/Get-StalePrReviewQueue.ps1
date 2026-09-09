@@ -22,6 +22,7 @@ param(
     }),
     [string]$Upstream = 'microsoft/PowerToys',
     [int]$Limit = 200,
+    [string]$PullRequestsJsonPath,
     [switch]$AsJson,
     [switch]$FailOnStale
 )
@@ -46,6 +47,11 @@ function Invoke-GhJson {
     }
 
     return ($raw -join "`n" | ConvertFrom-Json)
+}
+
+function Read-JsonFile {
+    param([Parameter(Mandatory)][string]$Path)
+    return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
 }
 
 function Get-Artifact {
@@ -129,12 +135,14 @@ function Test-IsTerminalBlocker {
         return $false
     }
 
-    $blockers = @($Artifact.blockers | Where-Object { $null -ne $_ })
-    if ($blockers.Count -eq 0) {
+    $terminalBlockers = @($Artifact.blockers | Where-Object {
+        $null -ne $_ -and $_.terminal -eq $true
+    })
+    if ($terminalBlockers.Count -eq 0) {
         return $false
     }
 
-    foreach ($blocker in $blockers) {
+    foreach ($blocker in $terminalBlockers) {
         if ([string]::IsNullOrWhiteSpace([string]$blocker.detail) -or
             [string]::IsNullOrWhiteSpace([string]$blocker.remediation)) {
             return $false
@@ -144,11 +152,15 @@ function Test-IsTerminalBlocker {
     return $true
 }
 
-$pullRequests = @(
-    Invoke-GhJson @('pr', 'list', '-R', $Upstream, '--state', 'open',
-        '--json', 'number,title,author,labels,updatedAt,isDraft,headRefOid,url',
-        '--limit', "$Limit")
-)
+$pullRequests = if ($PullRequestsJsonPath) {
+    @(Read-JsonFile $PullRequestsJsonPath)
+} else {
+    @(
+        Invoke-GhJson @('pr', 'list', '-R', $Upstream, '--state', 'open',
+            '--json', 'number,title,author,labels,updatedAt,isDraft,headRefOid,url',
+            '--limit', "$Limit")
+    )
+}
 
 $queue = [System.Collections.Generic.List[object]]::new()
 foreach ($pr in $pullRequests) {

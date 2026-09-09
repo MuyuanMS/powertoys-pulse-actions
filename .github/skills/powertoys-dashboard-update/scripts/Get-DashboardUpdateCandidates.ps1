@@ -85,8 +85,10 @@ function Test-IsTerminalBlocker {
         [string]$Artifact.stage -ne 'review_blocked') {
         return $false
     }
-    $blockers = @($Artifact.blockers | Where-Object { $null -ne $_ })
-    return $blockers.Count -gt 0 -and @($blockers | Where-Object {
+    $terminalBlockers = @($Artifact.blockers | Where-Object {
+        $null -ne $_ -and $_.terminal -eq $true
+    })
+    return $terminalBlockers.Count -gt 0 -and @($terminalBlockers | Where-Object {
         [string]::IsNullOrWhiteSpace([string]$_.detail) -or
         [string]::IsNullOrWhiteSpace([string]$_.remediation)
     }).Count -eq 0

@@ -65,10 +65,18 @@ If a prerequisite is missing, guide the user through setup ([references/prerequi
     review with zero proposed comments as `stage: review_ready`, never
     `concluded`, `complete`, or another synonym. A review with findings must
     instead include a current-head `post_review` or `request_changes` action.
-    When automation cannot proceed, emit `stage: review_blocked` only for a
-    current-head terminal blocker and include `blockers[]` entries with
-    non-empty `detail` and exact `remediation`; do not leave it as
+    Emit `stage: review_blocked` only for a current-head unrecoverable/manual
+    blocker and include a `blockers[]` entry with `terminal: true`, non-empty
+    `detail`, and exact `remediation`. A pending Copilot review, unresolved
+    findings, incomplete validation, or a run cutoff remains resumable as
+    `waiting_copilot`, `reviewing_findings`, `building`, or
     `review_in_progress`.
+20. **Consume an outstanding review request before making another one.** On
+    resume, read the checkpoint/request timestamp and inspect reviews already
+    submitted for that fork head. If the requested review is still pending,
+    preserve `waiting_copilot` and return; do not create duplicate requests. If
+    it arrived, process that result before deciding whether another review
+    round is needed.
 
 ## Phase 0: Context & Process Review
 
