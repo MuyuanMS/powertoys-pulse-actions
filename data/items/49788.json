@@ -1,44 +1,107 @@
 {
-  "number": 49788,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
+  "number": 49788,
+  "title": "Peek/Preview stops working and need re-enabling in settings to work again",
+  "url": "https://github.com/microsoft/PowerToys/issues/49788",
+  "author": "desvaters",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Peek"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-09-09T17:17:10.9885956Z",
+  "evaluated_at": "2026-09-09T17:17:10.9885956Z",
+  "source_updated_at": "2026-08-09T14:30:13Z",
+  "pending_author": false,
   "stage": "needs_reply",
   "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "confidence": "Medium",
   "status": {
     "glyph": "💬",
-    "label": "Diagnostics attached; trigger still unknown",
-    "detail": "Peek stops responding after an unspecified period and recovers after toggling the module. The report archive is useful, but the triggering lifecycle transition is not identified."
+    "label": "Needs failure timing and a fresh Peek capture",
+    "detail": "The attached bug-report ZIP confirms Peek was enabled, but it does not reveal which lifecycle transition makes preview stop working or whether the UI process is still alive when the failure occurs."
   },
-  "next_action": null,
+  "next_action": {
+    "glyph": "💬",
+    "label": "Request the exact failure transition and a fresh /bugreport",
+    "reason": "The reporter can cheaply supply the one missing discriminator: what changed immediately before Peek stopped responding."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The attached diagnostic bundle is useful, but the issue still never identifies what lifecycle transition precedes the failure or whether Peek loses its UI process, its registration, or only file-type handling. That missing discriminator should come from the next failing session rather than from a speculative design.",
+    "evidence": [
+      "The issue says Peek stops opening previews after some unspecified amount of time and starts working again after the module is disabled and re-enabled.",
+      "A PowerToysReport ZIP is attached.",
+      "The uploaded Peek settings show Peek enabled with Ctrl+Space as the activation shortcut and space activation enabled.",
+      "The bundled Peek UI log contains a DefaultAppHelper error, but it does not connect that error to the later no-preview symptom or any specific lifecycle event."
+    ],
+    "recommended_action": "Request the exact preceding transition, current Peek process state, and a fresh /bugreport captured immediately after the next failure."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A Peek code fix may be applicable, but the current public evidence does not yet isolate whether the failure is process lifetime, shell registration, or file-type handling."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Peek eventually stops opening previews and starts working again only after the module is toggled off and back on. The current bug report confirms configuration state but not the lifecycle event that breaks the module.",
+    "known_information": [
+      "The reporter is on PowerToys 0.100.2 from WinGet on Windows 11 Pro 25H2.",
+      "Peek initially works, then later stops opening previews for files such as .md and .png.",
+      "Disabling and re-enabling Peek in settings restores the feature.",
+      "A PowerToysReport ZIP is attached.",
+      "The issue has Issue-Bug, Needs-Triage, and Product-Peek labels with no assignee."
+    ],
+    "inferences": [
+      "The failure likely involves a lifecycle or registration boundary because toggling the module reinitializes state and restores functionality.",
+      "The current archive is not enough to choose between a dead UI process, shell registration loss, or a narrower previewer path."
+    ],
+    "analysis": "The reporter already provided the expensive part - a bugreport ZIP. The remaining high-value step is to attach that same evidence to a precise failing transition and current process state, which only the next failing session can provide.",
+    "initial_investigation": [
+      "Reviewed the complete issue body, labels, assignees, and empty live timeline.",
+      "Downloaded and unpacked the attached PowerToysReport ZIP, then inspected Peek settings and the latest Peek logs.",
+      "Observed that the bugreport proves Peek was enabled and shows a DefaultAppHelper error in the UI log, but does not tie the no-preview state to sleep/resume, Explorer restart, monitor changes, or process exit."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Which lifecycle transition happened immediately before Peek stopped working.",
+        "why_needed": "Separates ordinary file handling from a sleep, shell, or display lifecycle bug.",
+        "how_to_collect": "Note whether the failure followed sleep/resume, lock/unlock, Explorer restart, a monitor change, or an update when replying."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether PowerToys.Peek.UI.exe is still running and whether Ctrl+Space fails for multiple file types during the failure.",
+        "why_needed": "Distinguishes a dead UI process from a narrower file-type or registration problem.",
+        "how_to_collect": "Check Task Manager for PowerToys.Peek.UI.exe and try the same shortcut on more than one file type before replying."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic bundle captured immediately after the next failing session.",
+        "why_needed": "Provides logs and settings state that correspond to the exact broken session instead of an older healthy one.",
+        "how_to_collect": "Reproduce the failure and then post a GitHub comment containing /bugreport immediately afterward."
+      }
+    ]
+  },
   "actions": [
     {
       "id": "request-info-49788",
       "type": "request_info",
-      "label": "Ask for failure timing and process state",
+      "label": "Request Peek failure timing and fresh /bugreport",
       "primary": true,
       "confirm": true,
+      "requiresApproval": true,
       "comment": {
         "target": "issue",
+        "repository": "microsoft/PowerToys",
         "number": 49788,
-        "body": "Thanks for the bug-report ZIP. When Peek next stops working, could you note the approximate time and confirm whether it followed sleep/resume, lock/unlock, Explorer restart, monitor changes, or a PowerToys update? Please check whether PowerToys.Peek.UI.exe is still running, whether Ctrl+Space does anything for multiple file types, and whether restarting Explorer alone restores it. A second bug report captured immediately after the failure would let us align the logs to that timestamp."
+        "body": "Thanks for attaching the bug-report ZIP. I could confirm from it that Peek was enabled, but the current capture still does not show which transition caused preview to stop responding.\r\n\r\nWhen Peek fails again, please provide:\r\n1. Whether it happened right after sleep/resume, lock/unlock, an Explorer restart, a monitor change, or a PowerToys update.\r\n2. Whether `PowerToys.Peek.UI.exe` is still running at that moment and whether Ctrl+Space still fails for more than one file type (for example both .md and .png).\r\n3. Whether restarting Explorer alone restores Peek, or whether only disabling and re-enabling Peek fixes it.\r\n4. A fresh diagnostic ZIP captured immediately after reproducing the failure by posting a comment that contains `/bugreport`.\r\n\r\nThat will separate a dead UI process from a registration or shell-lifecycle problem."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-09T14:30:13Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "Peek stops responding after an unspecified period and recovers after toggling the module. The report archive is useful, but the triggering lifecycle transition is not identified.",
-    "evidence": [
-      "Peek stops responding after an unspecified period and recovers after toggling the module. The report archive is useful, but the triggering lifecycle transition is not identified.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "Hold for maintainer review.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-09T14:30:13Z"
-  }
+  "design": null
 }

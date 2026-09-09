@@ -1,35 +1,283 @@
 {
+  "schemaVersion": 5,
   "number": 49856,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-14T00:25:39.6245114Z",
+  "generated_at": "2026-09-09T16:56:19Z",
+  "evaluated_at": "2026-09-09T16:56:19Z",
+  "source_updated_at": "2026-08-13T09:56:21Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49856",
+  "title": "[Command Palette] The icons on the dock are not displayed correctly, and the dock is moved to the center of the screen.",
+  "author": "skirillacloud",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "confidence": "Medium",
   "status": {
     "glyph": "🎯",
-    "label": "Actionable Command Palette dock regression",
-    "detail": "The issue includes reproducible startup/click steps, a screenshot, and a bug-report ZIP for a visible dock positioning/icon corruption bug, with no current owner or linked fix."
+    "label": "Implementation-grade dock repair design",
+    "detail": "The screenshot and bug-report logs point to stale or duplicate persisted dock-band command IDs that are logged and dropped at runtime but not repaired durably."
   },
   "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue a Command Palette dock/layout investigation",
-    "reason": "The report is specific enough for a focused design pass without first asking the reporter to restate the problem."
+    "glyph": "✅",
+    "label": "Approve dock-band repair design",
+    "reason": "The issue has enough public evidence for a focused repair plan, but the centered fallback still needs maintainer-side replay during implementation."
   },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:25:39.6245114Z",
-  "source_updated_at": "2026-08-13T09:56:21Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The behavior is concrete, user-visible, and already supported by both a screenshot and a bug-report ZIP, so it is ready for a deeper design/investigation pass.",
+    "rationale": "The issue is user-visible, already has a screenshot and bug-report ZIP, and the attached CmdPal logs show stale or duplicate pinned dock-band commands plus a failed settings save while the issue reproduces. Current dock code logs and drops those invalid bands in memory, but it does not durably repair the persisted dock settings.",
     "evidence": [
-      "The reporter says the dock displays correctly right after startup but shifts to the center of the screen when clicked or when launching a pinned app, and Windows restart resets it until the next boot.",
-      "The issue includes a screenshot plus an attached PowerToysReport ZIP.",
-      "There are no assignees, comments, or linked PRs/issues indicating that someone else already owns the investigation."
+      "The screenshot shows the dock misrendered and displaced away from its expected top-edge location.",
+      "The attached monitor report shows a single active display, so this is not limited to the multi-monitor topology issue fixed by PR 49814.",
+      "The attached CmdPal log records repeated 'failed to find band command' warnings for persisted dock items and duplicate pinned performance-widget bands.",
+      "The same CmdPal log records a settings save failure because CmdPal settings.json was in use by another process.",
+      "Current DockViewModel.SetupBands only logs unresolved bands and omits them from the in-memory dock, while CommandProviderWrapper only skips duplicate bands during materialization without sanitizing persisted settings."
     ],
-    "recommended_action": "Queue a focused Command Palette dock/window-layout design investigation using the supplied screenshot and bug report.",
-    "evaluated_at": "2026-08-14T00:25:39.6245114Z",
+    "recommended_action": "Approve a dock-settings repair design that validates persisted bands, removes unresolved duplicates, and persists the cleaned configuration safely.",
+    "evaluated_at": "2026-09-09T16:56:19Z",
     "source_updated_at": "2026-08-13T09:56:21Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked upstream fix covers this single-monitor persisted dock-band corruption path. The public logs and current dock code support a focused settings-repair change.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Repair stale dock-band settings before rendering",
+      "root_cause": "Persisted dock settings can retain duplicate or no-longer-resolvable band command IDs. DockViewModel drops those invalid bands only in memory, while PersistenceService may fail to rewrite the repaired settings if another CmdPal instance still holds settings.json, so the dock keeps reloading a corrupted band list.",
+      "plan": [
+        "Validate each active dock-band list against the current TopLevelCommandManager snapshot and remove unresolved or duplicate band entries before rendering.",
+        "When invalid entries are pruned, persist the sanitized DockSettings back to disk instead of only logging missing commands.",
+        "Make dock-settings writes resilient to transient file-sharing conflicts so the repaired settings survive concurrent CmdPal startup."
+      ],
+      "verification": [
+        "Load the reporter-style persisted dock settings, restart CmdPal, and confirm the dock stays anchored to the configured edge with only valid bands displayed.",
+        "Regression-test duplicate performance-widget bands and stale AllApps band IDs so they are removed once and do not reappear on the next launch."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "The bug-report logs prove stale band IDs and failed settings persistence, but the exact centered fallback still needs maintainer-side replay during implementation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Command Palette Dock shifts away from its configured top edge and shows missing or broken icons after startup interactions, with logs showing stale dock-band settings that CmdPal can no longer resolve.",
+    "known_information": [
+      "The issue targets Command Palette on PowerToys 0.100.2 from the Microsoft Store.",
+      "The report says the dock can render correctly at startup and then move to the center after a click or launch.",
+      "A screenshot and a public bug-report ZIP were attached.",
+      "The bug-report monitor data shows a single active monitor.",
+      "The CmdPal logs show unresolved dock band IDs, duplicate pinned performance widgets, and a failed settings save due to a file-sharing conflict."
+    ],
+    "inferences": [
+      "The immediate problem is persisted dock-band corruption, not the multi-monitor topology issue already fixed elsewhere.",
+      "Because missing bands are only dropped in memory today, the same broken dock settings can survive across launches.",
+      "The centered behavior likely happens after the dock loses enough valid content to fall back to the main palette presentation path."
+    ],
+    "analysis": "This is strong enough for a design because the logs, screenshot, and current code all line up on one repair area: sanitize dock settings when persisted band IDs no longer resolve, and ensure the sanitized settings can actually be written back. The remaining uncertainty is how much of the visible centering behavior disappears once the invalid bands are removed durably.",
+    "initial_investigation": [
+      "Read the full issue body, labels, timeline, and screenshot reference.",
+      "Downloaded and inspected the public bug-report ZIP, including the monitor report and CmdPal logs from the reproduction window.",
+      "Inspected src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs, CommandProviderWrapper.cs, Settings/DockSettings.cs, and Services/PersistenceService.cs.",
+      "Reviewed existing CmdPal dock unit tests covering monitor reconciliation and dock settings persistence."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "Command Palette Dock persists band command IDs that can later become stale or duplicated. At startup, CommandProviderWrapper and DockViewModel detect some of those problems, but they only log them and build a partial in-memory dock. Because PersistenceService writes settings with a single File.WriteAllText call that can fail on sharing violations, the cleaned band list is never durably saved, so the dock repeatedly reloads broken data and can fall back to an empty or centered presentation.",
+    "evidence": [
+      "Observed: the issue screenshot shows the dock displaced from the configured screen edge and missing expected icon content.",
+      "Observed: the attached monitor report shows a single active monitor, reducing the likelihood that PR 49814's topology-specific path explains this issue.",
+      "Observed: the attached CmdPal log records repeated 'failed to find band command' warnings for persisted AllApps, Files, and PerformanceMonitor dock entries.",
+      "Observed: the same log records duplicate pinned performance-widget bands and a persistence failure because the CmdPal settings file was already in use.",
+      "Observed: DockViewModel.SetupBands currently logs unresolved bands and simply omits them from the new in-memory dock list.",
+      "Observed: CommandProviderWrapper skips duplicate band IDs when loading pinned dock items, but does not sanitize the persisted settings that produced them.",
+      "Observed: PersistenceService.Save writes the entire settings file in one shot and only logs sharing violations.",
+      "Inferred: once enough invalid band entries survive across launches, the dock can render partially empty and behave like a fallback palette surface instead of a stable edge dock."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs",
+        "purpose": "Builds the live dock band list from persisted settings and currently drops unresolved bands only in memory.",
+        "symbols": [
+          "DockViewModel.SetupBands",
+          "DockViewModel.GetActiveBands",
+          "DockViewModel.SaveSettings"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandProviderWrapper.cs",
+        "purpose": "Materializes pinned dock-band commands and already detects duplicate command IDs during provider loading.",
+        "symbols": [
+          "CommandProviderWrapper.InitializeCommands"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/DockSettings.cs",
+        "purpose": "Defines global and per-monitor dock band persistence and the all-pinned-commands projection.",
+        "symbols": [
+          "DockSettings.AllPinnedCommands",
+          "DockMonitorConfig.ResolveStartBands",
+          "DockMonitorConfig.ResolveCenterBands",
+          "DockMonitorConfig.ResolveEndBands"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/PersistenceService.cs",
+        "purpose": "Persists CmdPal settings and currently loses repairs on transient sharing violations.",
+        "symbols": [
+          "PersistenceService.Save"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockLabelPersistenceTests.cs",
+        "purpose": "Existing dock persistence test project that can validate sanitized dock-band state after save.",
+        "symbols": [
+          "DockLabelPersistenceTests"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockMultiMonitorTests.cs",
+        "purpose": "Existing dock-settings test project that can add stale-band and duplicate-band regression coverage.",
+        "symbols": [
+          "DockMultiMonitorTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Dock/DockViewModel.cs",
+        "symbols": [
+          "DockViewModel.SetupBands",
+          "DockViewModel.GetActiveBands"
+        ],
+        "current_behavior": "DockViewModel walks the persisted band list, logs any command IDs that no longer resolve, and builds a partial in-memory dock from whatever commands still exist. The persisted DockSettings object is left unchanged.",
+        "change": "Refactor SetupBands to build both the renderable band list and a sanitized band-settings list. Remove unresolved entries, collapse duplicates that point to the same provider/command pair, and detect whether any repair occurred for the active global or per-monitor dock list.",
+        "code_block": "var sanitized = ImmutableList.CreateBuilder<DockBandSettings>();\nvar seen = new HashSet<(string ProviderId, string CommandId)>(StringComparer.OrdinalIgnoreCase);\nforeach (var band in bands)\n{\n    var key = (band.ProviderId, band.CommandId);\n    var topLevel = _topLevelCommandManager.LookupDockBand(band.CommandId);\n    if (topLevel is null || !seen.Add(key))\n    {\n        repaired = true;\n        continue;\n    }\n    sanitized.Add(band);\n    newBands.Add(CreateBandItem(band, topLevel.ItemViewModel));\n}\nif (repaired) PersistSanitizedBands(sanitized.ToImmutable());",
+        "edge_cases": [
+          "Do not prune bands until the TopLevelCommandManager snapshot for the current provider load is ready; otherwise valid late-loaded providers could be removed prematurely.",
+          "Preserve per-monitor customized bands independently from global bands so a repair on one monitor does not wipe another monitor's configuration.",
+          "Keep label-visibility metadata for surviving bands when sanitizing duplicates."
+        ],
+        "tests": [
+          "Add a unit test where the persisted dock list contains one valid band, one stale band ID, and one duplicate; the rendered dock should keep only the valid unique band and mark settings dirty."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandProviderWrapper.cs and Settings/DockSettings.cs",
+        "symbols": [
+          "CommandProviderWrapper.InitializeCommands",
+          "DockSettings.AllPinnedCommands"
+        ],
+        "current_behavior": "Pinned dock commands are materialized from all persisted global and per-monitor band lists. Duplicate IDs are skipped during provider loading, but the underlying settings remain duplicated and stale bands continue to be projected on the next load.",
+        "change": "Add a shared canonicalization path for dock-band settings that deduplicates provider/command pairs before materialization and exposes enough information for DockViewModel to persist the normalized result once provider loading completes.",
+        "code_block": "IEnumerable<DockBandSettings> CanonicalizeBands(IEnumerable<DockBandSettings> source)\n    => source.GroupBy(b => (b.ProviderId, b.CommandId), StringComparer.OrdinalIgnoreCase)\n             .Select(g => g.First());",
+        "edge_cases": [
+          "Per-monitor lists should still override global lists; dedupe only within the list being sanitized.",
+          "Do not drop intentionally distinct bands that happen to share a provider but have different command IDs."
+        ],
+        "tests": [
+          "Add regression coverage for duplicated PerformanceMonitor widget bands and repeated AllApps command IDs in persisted settings."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/PersistenceService.cs",
+        "symbols": [
+          "PersistenceService.Save"
+        ],
+        "current_behavior": "PersistenceService serializes settings and writes them directly with File.WriteAllText. A transient sharing violation only produces a log entry, so repaired settings can be lost during concurrent CmdPal startup.",
+        "change": "Persist through a temp-file plus replace/move sequence, or a short bounded retry on sharing violations, so one transient concurrent reader/writer does not discard a just-repaired dock configuration.",
+        "code_block": "for (var attempt = 0; attempt < 3; attempt++)\n{\n    try { File.WriteAllText(tempPath, serialized); File.Move(tempPath, filePath, overwrite: true); return; }\n    catch (IOException ex) when (IsSharingViolation(ex) && attempt < 2) { Thread.Sleep(100 * (attempt + 1)); }\n}",
+        "edge_cases": [
+          "Keep the write atomic so a failed save does not leave a truncated settings file behind.",
+          "Do not swallow non-sharing I/O failures; log them explicitly and preserve the old settings file."
+        ],
+        "tests": [
+          "Add a persistence test double that simulates one transient sharing violation and verifies the sanitized dock settings are eventually written."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockLabelPersistenceTests.cs and DockMultiMonitorTests.cs",
+        "symbols": [
+          "DockLabelPersistenceTests",
+          "DockMultiMonitorTests"
+        ],
+        "current_behavior": "Current dock tests cover monitor reconciliation and label persistence, but they do not assert that stale or duplicate persisted bands are repaired durably.",
+        "change": "Add focused regression tests that initialize DockSettings with stale/duplicate band metadata, run the dock initialization path, and assert both the live band list and the saved settings are sanitized.",
+        "code_block": "var settings = CreateDockSettings(... stale + duplicate bands ...);\nusing var dock = new DockViewModel(...);\ndock.InitializeBands();\nAssert.AreEqual(expectedBands, settingsService.Settings.DockSettings.StartBands);",
+        "edge_cases": [
+          "Cover both global and customized per-monitor band lists.",
+          "Verify surviving bands retain their ShowTitles/ShowSubtitles flags after dedupe."
+        ],
+        "tests": [
+          "Run the CmdPal view-model unit tests filtered to DockLabelPersistenceTests and DockMultiMonitorTests after adding the new cases."
+        ]
+      }
+    ],
+    "verify": [
+      "dotnet build src/modules/cmdpal/Microsoft.CmdPal.UI/Microsoft.CmdPal.UI.csproj -c Debug",
+      "dotnet test src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj --filter \"Dock\"",
+      "Replay the reporter's startup sequence with persisted stale dock-band settings and confirm the dock stays anchored to the configured edge with valid icons only.",
+      "Re-test after a restart to confirm the sanitized settings persist and the invalid bands do not return."
+    ],
+    "risks": [
+      "Repairing settings too early could remove bands from providers that have not finished loading yet; the sanitization point must run only after provider discovery for the current session is stable.",
+      "Over-aggressive dedupe could discard legitimate repeated bands if the same provider intentionally exposes distinct commands; dedupe by provider-plus-command pair only.",
+      "Retrying settings writes must remain bounded and atomic so CmdPal does not hide persistent storage failures or leave a partial file behind."
+    ],
+    "alternatives": [
+      "Only log missing bands and leave settings untouched: rejected because the broken entries survive every restart and keep corrupting the dock.",
+      "Reset the entire dock to defaults on any unresolved band: rejected because it would discard surviving user customizations that can be preserved safely.",
+      "Treat this as the same bug as PR 49814's multi-monitor topology fix: rejected because the attached monitor report shows a single active display and the logs point to stale band metadata instead of monitor-ID reconciliation."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-49856",
+      "type": "approve_design",
+      "label": "Approve dock-band repair design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Fork-side implementation only; no upstream action."
+    },
+    {
+      "id": "reproduce-dock-settings-49856",
+      "type": "reproduce",
+      "label": "Reproduce dock-band settings regression",
+      "reproduce": {
+        "title": "Verify stale dock-band settings against current CmdPal providers",
+        "module": "Command Palette",
+        "version_requirement": "PowerToys 0.100.2 or current main with CmdPal Dock enabled",
+        "prerequisites": [
+          "CmdPal Dock enabled",
+          "A persisted settings state containing duplicated or stale dock-band command IDs"
+        ],
+        "setup": [
+          "Start CmdPal with the reporter-style dock configuration and restart once to simulate the persisted state."
+        ],
+        "steps": [
+          "Launch CmdPal and let Dock initialize from persisted settings.",
+          "Click the dock or one of its pinned items to trigger the visible misrender path.",
+          "Inspect the CmdPal log for unresolved band-command warnings, duplicate pinned bands, and any settings-save failures.",
+          "Restart CmdPal and confirm whether the same invalid bands are still present in settings and in the rendered dock."
+        ],
+        "expected_result": "Only valid unique dock bands remain, the dock stays on its configured edge, and invalid persisted bands do not survive a restart.",
+        "setup_prompt": "Prepare a CmdPal test session with Dock enabled and a persisted settings file containing one stale AllApps band ID plus duplicate PerformanceMonitor dock entries."
+      }
+    }
+  ]
 }

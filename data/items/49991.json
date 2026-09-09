@@ -1,47 +1,120 @@
 {
-  "number": 49991,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-20T06:32:32.8984947Z",
-  "evaluated_at": "2026-08-20T06:32:32.8984947Z",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
+  "owes": "maintainer",
+  "pending_author": false,
+  "number": 49991,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-08-19T13:59:12Z",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs visible diagnostics",
-    "detail": "The Mouse Finder failure has a maintainer request and author reply, but the promised diagnostic ZIPs are not visible in the GitHub thread."
+  "title": "Mouse Finder has stopped working",
+  "url": "https://github.com/microsoft/PowerToys/issues/49991",
+  "author": "PSRainey",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Mouse Utilities",
+    "Product-Find My Mouse"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "summary": "The thread now has a maintainer question and an author follow-up, but the promised diagnostics never appeared in GitHub, so the next actionable step is a precise public-safe diagnostic request rather than treating the issue as still waiting on the old ask.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The reporter added one useful symptom refinement after the maintainer asked for logs, but the public thread still lacks the diagnostic ZIPs needed to distinguish a graphics overlay problem from a Find My Mouse activation/settings problem.",
+    "evidence": [
+      "The original report says double-tapping Ctrl no longer finds the mouse on PowerToys 0.100.2.",
+      "Maintainer niels9001 asked for a bug report or better repro/error logs.",
+      "The reporter replied that repeated presses produced a black screen and white circle and said \"2 zips\" were available, but no ZIP attachment is visible in the GitHub issue.",
+      "The current labels include Needs-Team-Response rather than Needs-Author-Feedback, so the old waiting state has already advanced."
+    ],
+    "recommended_action": "Request a fresh public bug-report ZIP and the exact activation/settings details needed to separate overlay rendering from trigger-detection failure."
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Ask author to attach diagnostics on GitHub",
-    "reason": "The current public thread does not contain the bug report ZIP or logs needed to distinguish configuration, graphics, or input-hook failures."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is plausible, but the current public thread still cannot tell whether the primary problem is Find My Mouse activation detection, overlay rendering, or an environment-specific graphics/elevation interaction."
   },
-  "actions": [
+  "proposed_fixes": [
     {
-      "id": "request-info-49991",
-      "type": "request_info",
-      "label": "Reply with diagnostic request",
-      "primary": true,
-      "comment": {
-        "target": "issue",
-        "number": 49991,
-        "body": "Thanks for the follow-up. Could you attach the PowerToys bug report ZIP directly in a GitHub comment, then confirm whether Find My Mouse is enabled, which activation method is selected, whether PowerToys is running elevated, and whether the black-screen/white-circle behavior happens every time or only after repeated Ctrl presses?"
+      "title": "Stabilize Find My Mouse activation and overlay rendering after failed trigger attempts",
+      "root_cause": "The current best hypotheses are either that Find My Mouse is not consistently recognizing the double-Ctrl trigger on the affected machine, or that the trigger succeeds but the overlay falls back to the black-screen/white-circle state and never reaches the normal render path.",
+      "plan": [
+        "Collect a fresh diagnostic bundle captured immediately after the failing trigger.",
+        "Use the bundle to determine whether the failure is in activation detection, settings interpretation, or the overlay render path.",
+        "Implement the narrowest fix in the failing layer and add a regression around the reported black-screen/white-circle fallback if that path is confirmed."
+      ],
+      "verification": [
+        "Double-tap Ctrl on the affected configuration and confirm the normal Find My Mouse highlight appears consistently instead of doing nothing or showing only the black-screen/white-circle state.",
+        "Repeat on a working machine or configuration to ensure the fix does not regress successful activation."
+      ],
+      "confidence": {
+        "score": 28,
+        "level": "red",
+        "rationale": "The issue is clearly real, but the missing diagnostic ZIPs mean the public thread still does not discriminate between trigger failure and overlay-render failure."
       }
     }
   ],
-  "confidence": "Medium",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The reporter confirmed abnormal Mouse Finder behavior after a maintainer asked for logs, but the diagnostic ZIPs mentioned in the reply are not visible in the GitHub issue thread.",
-    "evidence": [
-      "Issue body: pressing Ctrl twice no longer activates Mouse Finder on PowerToys 0.100.2.",
-      "Maintainer asked for a bug report, better repro steps, or error logs.",
-      "Reporter replied that repeated presses can produce a black screen and white circle, but no visible ZIP attachment or logs appear in the thread."
+  "issue_context": {
+    "summary": "Find My Mouse no longer behaves normally on one machine, and the reporter later clarified that repeated attempts can produce a black-screen overlay with a white circle instead of the expected highlight.",
+    "known_information": [
+      "The report is on PowerToys 0.100.2 under Mouse Utilities.",
+      "A maintainer already asked for logs or a bug report.",
+      "The reporter says the same monitor works on a separate work laptop, which argues against a purely monitor-specific explanation.",
+      "The public issue thread still has no visible diagnostic ZIP attachment."
     ],
-    "recommended_action": "Draft a request asking the reporter to attach the bug report ZIP directly on GitHub and confirm Find My Mouse settings/elevation/repro consistency.",
-    "evaluated_at": "2026-08-20T06:32:32.8984947Z",
-    "source_updated_at": "2026-08-19T13:59:12Z"
-  }
+    "inferences": [
+      "The failure may be environment-specific, but it is more narrowly scoped than a total module outage because the reporter observed some partial overlay behavior on repeated attempts.",
+      "The black-screen/white-circle symptom suggests a possible overlay-render or composition path rather than only a missed hotkey trigger."
+    ],
+    "analysis": "This is no longer a passive wait state. The maintainer got a reply, but the reply did not include the needed public diagnostics, so the dashboard should draft the next, narrower information request.",
+    "initial_investigation": [
+      "The issue changed labels after the author reply, so clearing Needs-Author-Feedback was not proof that the missing ZIP had arrived.",
+      "The current thread provides a better symptom description than the original report, but still lacks the concrete bundle needed to identify the failing layer."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing the black-screen/white-circle or no-response Find My Mouse failure.",
+        "why_needed": "This distinguishes trigger-detection failure from overlay-render failure and exposes any composition, graphics, or module errors from the same run.",
+        "how_to_collect": "Reproduce the problem, then submit a GitHub comment containing /bugreport immediately afterward."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact Find My Mouse activation method/settings in use and whether the black-screen/white-circle state happens on the first double-Ctrl attempt or only after repeated presses.",
+        "why_needed": "This tells maintainers whether to investigate trigger interpretation, debounce timing, or the overlay path that runs after activation succeeds.",
+        "how_to_collect": "Reply with the current Find My Mouse activation settings and a short description of the first failing attempt versus later repeated attempts."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-49991",
+      "type": "approve_design",
+      "label": "Approve Find My Mouse failure investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The current hypothesis is intentionally low-confidence until a fresh diagnostic ZIP lands in the public thread.",
+      "issue": {
+        "number": 49991,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "request-info-49991",
+      "type": "request_info",
+      "label": "Request Find My Mouse bug report and activation details",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "issue": 49991,
+        "repository": "microsoft/PowerToys",
+        "body": "Thanks for the follow-up and for noting the black-screen / white-circle behavior. That detail helps because it suggests the issue may be deeper than “nothing happens,” but the two ZIPs you mentioned are not visible in the GitHub thread yet, so we still cannot tell whether the failure is in trigger detection or in the overlay that appears after activation.\n\n**Needed**\n1. Please reproduce the issue again, then submit a GitHub comment containing `/bugreport` immediately afterward so the diagnostic ZIP captures the failing run.\n2. Please confirm which Find My Mouse activation option is enabled and whether the black-screen / white-circle state happens on the first double-Ctrl attempt or only after repeated presses.\n\nThis will distinguish an activation-path problem from an overlay-render problem and tell us which part of Find My Mouse to inspect first."
+      }
+    }
+  ]
 }

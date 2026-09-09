@@ -1,47 +1,117 @@
 {
-  "number": 50013,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "triage",
-  "stage": "triaged",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+  "number": 50013,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-08-20T13:33:36Z",
   "title": "Quick access tray shadow appears over taskbar and does not behave native (animation and clicking again)",
   "url": "https://github.com/microsoft/PowerToys/issues/50013",
-  "summary": "The report identifies several visual and toggle symptoms, but the current evidence is insufficient to distinguish a consistent product defect from environment-specific tray, window-focus, animation, or taskbar behavior. The automated triage request for concrete reproduction details remains unanswered.",
-  "status": {
-    "glyph": "❓",
-    "label": "needs information",
-    "detail": "Ask for the exact PowerToys and Windows versions, monitor count and scaling, tray-icon focus state, precise click sequence, and a short recording or fresh bug report showing the shadow and second-click behavior."
-  },
+  "author": "CoennW",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "The public report plus current runner code are enough to reproduce a plausible Quick Access tray-toggle bug locally, and the single-click path currently always reissues a show request instead of checking whether the flyout is already visible.",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The report identifies several visual and toggle symptoms, but the current evidence is insufficient to distinguish a consistent product defect from environment-specific tray, window-focus, animation, or taskbar behavior. The automated triage request for concrete reproduction details remains unanswered.",
+    "status": "reproducible",
+    "rationale": "The issue already includes a video and a concrete click sequence, and a focused code pass shows a believable toggle flaw in the runner without needing the reporter to provide more logs first.",
     "evidence": [
-      "The reporter describes missing animation, an overly dark shadow over the taskbar, and a second click that closes and reopens the panel.",
-      "The only reproduction step currently states to left-click the tray icon once while another window is focused.",
-      "No PowerToys version, Windows version/build, display configuration, scaling, or bug report is provided.",
-      "The visible automated triage comment explicitly requests concrete reproduction steps.",
-      "The issue has no assignee or linked fix visible in the discussion."
+      "The report is on PowerToys 0.100.2 and includes a video of the tray-flyout shadow and close/reopen behavior.",
+      "runner/tray_icon.cpp routes every confirmed single left click to open_quick_access_flyout_window() when Quick Access is enabled.",
+      "runner/quick_access_host.cpp implements show() as start() plus SetEvent(show_event) with no current-state check or toggle path.",
+      "Common.UI.Controls/Window/FlyoutWindowHelper.cs positions flyout windows at the bottom-right work area edge and explicitly clamps size to avoid spilling into the taskbar, so a dark shadow over the taskbar points to runtime presentation behavior rather than raw placement math alone."
     ],
-    "recommended_action": "Ask for the exact PowerToys and Windows versions, monitor count and scaling, tray-icon focus state, precise click sequence, and a short recording or fresh bug report showing the shadow and second-click behavior.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
-    "source_updated_at": "2026-08-20T13:33:36Z"
+    "recommended_action": "Run a targeted local reproduction on a current build, then design a runner/Quick Access toggle fix that does not re-show an already visible flyout and verifies shadow/animation behavior against the shared flyout host."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "There is no linked fix attempt, and current runner code exposes a concrete show-without-toggle path that matches the second-click symptom well enough to justify a maintainer reproduction and design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make tray single-click honor Quick Access visibility instead of always signaling show",
+      "root_cause": "The runner currently treats every single left click as a show request. If the flyout is already open, the host receives another show signal instead of a hide/toggle command, which can produce the visible close-and-reopen behavior and interact badly with non-activating flyout presentation.",
+      "plan": [
+        "Reproduce the issue on a current build while tracking Quick Access visibility and click flow.",
+        "Add an explicit visibility-aware toggle contract between tray_icon.cpp and the Quick Access host/UI so a second click hides an already open flyout instead of re-showing it.",
+        "Validate the resulting flyout shadow and entrance/exit behavior on the taskbar edge and mixed-focus scenarios."
+      ],
+      "verification": [
+        "Single-click the tray icon with another window focused and confirm Quick Access opens once with the expected animation.",
+        "Single-click again while the flyout is still open and confirm it closes without an immediate reopen."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The runner-side toggle gap strongly matches the second-click symptom, but the shadow/animation behavior still needs a live repro to confirm whether the same change fully explains the visual artifact."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Access appears visually non-native at the tray edge and reopens when the tray icon is clicked again, suggesting a runner/host visibility contract problem rather than a missing issue report.",
+    "known_information": [
+      "The issue includes a direct video link and a concrete single-click repro on 0.100.2.",
+      "The reporter expects the flyout to behave like other Windows tray utilities, including second-click close behavior.",
+      "No assignee or linked fix is present.",
+      "The automated triage request for more steps did not add new public evidence."
+    ],
+    "inferences": [
+      "The second-click symptom likely originates in the tray runner path, because it always reissues show and never branches on current flyout visibility.",
+      "The dark shadow over the taskbar may be a separate presentation bug, but it is best investigated in the same focused local repro because the flyout uses a shared window-positioning helper."
+    ],
+    "analysis": "A maintainer-side reproduce action is more useful than another reporter request. The issue already has a clear click path and media, while the remaining uncertainty is about internal visibility and rendering behavior.",
+    "initial_investigation": [
+      "runner/tray_icon.cpp: click_timer_elapsed() always opens Quick Access on a single click when Quick Access is enabled.",
+      "runner/quick_access_host.cpp: QuickAccessHost::show() only starts the process and signals the show event; it does not track whether the flyout is already visible.",
+      "src/common/Common.UI.Controls/Window/FlyoutWindowHelper.cs already clamps bottom-right placement to the work area, so the taskbar-overlapping shadow is unlikely to be a simple size spill bug."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request_info-50013",
-      "type": "request_info",
-      "label": "Request information",
-      "primary": true,
+      "id": "approve-design-50013",
+      "type": "approve_design",
+      "label": "Approve Quick Access tray toggle design",
+      "primary": false,
       "confirm": true,
       "requiresApproval": true,
-      "comment": {
-        "issue": 50013,
-        "repository": "microsoft/PowerToys",
-        "body": "Please provide the exact PowerToys version and Windows version/build, the number of connected monitors and display-scaling percentages, and the precise click sequence that reproduces each symptom. In particular, please state whether the first click is made while another window is focused, whether the Quick Access panel is already open, and whether the second click is on the tray icon or the panel. A short screen recording showing the shadow over the taskbar and the close-and-reopen behavior, together with a fresh PowerToys bug report generated immediately after reproducing it, would help us investigate this reliably."
+      "note": "Current hypothesis is strong enough to investigate locally, but the rendering symptom still needs live confirmation.",
+      "issue": {
+        "number": 50013,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-50013",
+      "type": "reproduce",
+      "label": "Reproduce Quick Access tray toggle and shadow behavior",
+      "primary": true,
+      "note": "Use the current build and watch whether the second click goes through a pure show path instead of hide/toggle.",
+      "reproduce": {
+        "module": "Quick Access / runner tray icon",
+        "version": "0.100.2 or current main",
+        "prerequisites": [
+          "Enable Quick Access so single left click opens the flyout from the tray icon.",
+          "Use a taskbar/dark-theme setup where the tray flyout shadow is easy to observe."
+        ],
+        "steps": [
+          "Launch PowerToys with Quick Access enabled and focus another foreground window.",
+          "Single-click the PowerToys tray icon once and observe the flyout entrance animation and shadow relative to the taskbar edge.",
+          "Without moving focus elsewhere, single-click the same tray icon again while the flyout is still open.",
+          "Capture whether the second click closes the flyout cleanly or closes and immediately reopens it."
+        ],
+        "expected_result": "The first click opens Quick Access once with native-looking presentation, and the second click closes it without a close-and-reopen cycle.",
+        "attachments": [
+          "https://github.com/user-attachments/assets/a523146c-33ce-4429-bfff-1c06d4365610"
+        ]
       }
     }
   ]

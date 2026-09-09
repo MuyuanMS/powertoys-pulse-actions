@@ -1,34 +1,100 @@
 {
+  "schemaVersion": 5,
   "number": 49927,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "reproduction_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-09T16:56:19Z",
+  "evaluated_at": "2026-09-09T16:56:19Z",
   "source_updated_at": "2026-08-15T18:46:47Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49927",
+  "title": "Баг на русской раскладке в диспетчере клавиатуры",
+  "author": "MrSmaZz",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-Keyboard Manager",
+    "0.100.2"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "confidence": "Medium",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "The upstream thread is waiting for reporter evidence or confirmation requested by triage."
+    "glyph": "🧪",
+    "label": "Russian-layout repro is specific enough",
+    "detail": "The issue already includes a concrete Russian-layout workflow, the saved editor JSON symptom, and a destructive workaround, but the exact editor reconciliation bug is not proven yet."
   },
   "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for reporter follow-up",
-    "reason": "Wait for the reporter to provide the requested current-version reproduction or diagnostics before investigating code."
+    "glyph": "🧪",
+    "label": "Reproduce Russian-layout duplicate rule",
+    "reason": "Confirm whether the failure is in layout normalization, metadata reconciliation, or deletion persistence before proposing a code change."
   },
-  "actions": [],
-  "confidence": "Medium",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The upstream thread is waiting for reporter evidence or confirmation requested by triage.",
+    "status": "reproducible",
+    "rationale": "Despite the automated translation request, the issue already provides a concrete Keyboard Manager repro: switching to a Russian layout and creating a shortcut yields duplicate rules that reappear after deletion, with a settings-file reset as the only workaround. Current editor code has layout-aware mapping and reconciliation paths, so the next step is a controlled maintainer repro, not another request for generic information.",
     "evidence": [
-      "The upstream thread is waiting for reporter evidence or confirmation requested by triage.",
-      "Latest triage request: <!-- powertoys-ai-triage:canonical:v1 --> <!-- powertoys-ai-triage:input-sha256:613076c5e787f5443fe140cec48ce8dbc821cc5e6138afbdd06c94e9e94a774b --> ## 🧭 Triage summary ### 🙋 For the issue author @MrSmaZz, please revie"
+      "The report says switching to a Russian keyboard layout and creating a shortcut creates multiple rules instead of one.",
+      "The report says deleting the rules is not durable and that removing the local Keyboard Manager settings file is the only workaround.",
+      "The issue includes a concrete editorSettings.json sample showing the affected remap metadata structure.",
+      "Current Keyboard Manager editor code contains layout-aware controls and reconciliation logic in KeyboardManagerEditorUI/Settings/SettingsManager.cs."
     ],
-    "recommended_action": "Wait for the reporter to provide the requested current-version reproduction or diagnostics before investigating code.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the rule-creation/deletion flow on a Russian layout and inspect how the editor reconciles persisted shortcut metadata before proposing a fix.",
+    "evaluated_at": "2026-09-09T16:56:19Z",
     "source_updated_at": "2026-08-15T18:46:47Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The issue is ready for maintainer reproduction, but the current evidence does not yet prove whether the defect is trigger normalization, duplicate metadata reconciliation, or a delete/save failure in the new editor.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "On a Russian keyboard layout, creating a Keyboard Manager shortcut appears to generate duplicate rules that return after deletion, and the only public workaround is removing the local settings file.",
+    "known_information": [
+      "The report targets PowerToys 0.100.2 from the Microsoft Store.",
+      "The affected module is Keyboard Manager.",
+      "The issue includes a concrete editorSettings.json example for the problematic shortcut metadata.",
+      "The automated triage comment only asked for translation and did not add technical evidence."
+    ],
+    "inferences": [
+      "The fault is more likely in the editor's layout-aware metadata reconciliation than in the low-level key hook, because the visible symptom is duplicate persisted rules that reappear after deletion.",
+      "A maintainer can already reproduce the reported workflow without asking the reporter for more general logs first."
+    ],
+    "analysis": "The issue is specific enough to move directly to maintainer reproduction. Current Keyboard Manager editor code already contains settings normalization, duplicate/stale metadata tests, and layout-aware key-name handling, so the right next step is to replay this exact layout scenario against those paths and see which persisted entry comes back.",
+    "initial_investigation": [
+      "Read the full issue body, the automated triage comment, labels, and timeline.",
+      "Reviewed the attached Keyboard Manager settings snippets from the issue body.",
+      "Inspected KeyboardManagerEditorUI/Settings/SettingsManager.cs and the editor unit tests that cover duplicate/stale shortcut metadata."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-russian-layout-49927",
+      "type": "reproduce",
+      "label": "Reproduce Russian-layout duplicate rule",
+      "primary": true,
+      "reproduce": {
+        "title": "Verify duplicate Keyboard Manager shortcuts on a Russian layout",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or current main with the new Keyboard Manager editor enabled",
+        "prerequisites": [
+          "Windows configured with a Russian keyboard layout",
+          "Keyboard Manager enabled with the new editor path active"
+        ],
+        "setup": [
+          "Open the Keyboard Manager shortcut editor on the Russian layout."
+        ],
+        "steps": [
+          "Create the reported shortcut rule while the active keyboard layout is Russian.",
+          "Save the rule, close the editor, and reopen it.",
+          "Delete the rule and save again.",
+          "Reopen the editor and inspect whether duplicate or resurrected rules reappear in the UI and in editorSettings.json."
+        ],
+        "expected_result": "Exactly one shortcut rule is created, deleting it removes it durably, and no duplicate metadata is recreated on reopen."
+      }
+    }
+  ]
 }

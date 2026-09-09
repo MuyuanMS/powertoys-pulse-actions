@@ -1,43 +1,247 @@
 {
-  "number": 49776,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaging",
-  "owes": "maintainer",
+  "number": 49776,
+  "title": "Remapping right shift also affects left shift.",
+  "url": "https://github.com/microsoft/PowerToys/issues/49776",
+  "author": "Rashastt",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-09-09T17:17:10.9885956Z",
+  "evaluated_at": "2026-09-09T17:17:10.9885956Z",
+  "source_updated_at": "2026-08-08T17:02:33Z",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "confidence": "High",
   "status": {
     "glyph": "🎯",
-    "label": "Clear design candidate",
-    "detail": "A right-shift-only remap should not change left shift behavior."
+    "label": "Implementation-grade Shift-side fix design ready",
+    "detail": "The current low-level keyboard hook forwards the raw vkCode into the editor capture flow, while the save/apply path expands a generic Shift mapping to both physical Shift keys. That makes a right-Shift-only remap designable now."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Design fix",
-    "reason": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input."
+    "glyph": "✅",
+    "label": "Approve the physical Shift-side capture fix",
+    "reason": "The failing mechanism, affected files, and focused regression tests are identified without needing more reporter evidence."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report is short but decisive, and the current code path clearly explains it: KeyboardHook.cpp forwards the raw low-level hook vkCode without decoding the physical Shift side, the editor capture path records that value as the original key, and LoadingAndSavingRemappingHelper expands a generic Shift mapping to both left and right Shift during save/apply.",
+    "evidence": [
+      "The issue says remapping right Shift causes left Shift to perform the same remap even though only right Shift was configured.",
+      "Current keyboard_layout.cpp distinguishes Shift (Left) and Shift (Right), so the UI and storage model already have side-specific names available.",
+      "Current KeyboardHook.cpp forwards reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->vkCode directly into the managed KeyboardEvent without decoding the physical Shift side from scanCode.",
+      "Current LoadingAndSavingRemappingHelper.cpp expands a generic VK_SHIFT original key into both VK_LSHIFT and VK_RSHIFT when building the remap table."
+    ],
+    "recommended_action": "Approve a narrow fix that decodes the physical Shift side before Keyboard Manager records remaps and add regression tests that prove a right-Shift remap stays right-Shift only."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers this side-specific Keyboard Manager capture bug, and the current code path identifies a precise root cause and narrow implementation boundary."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Decode physical Shift side before Keyboard Manager records remaps",
+      "root_cause": "The shared low-level keyboard hook currently publishes the raw vkCode to the managed editor capture path. For Shift, that can remain generic instead of side-specific, so the editor stores VK_SHIFT as the original key and the remap loader expands that generic mapping to both VK_LSHIFT and VK_RSHIFT.",
+      "plan": [
+        "Decode generic low-level hook modifier keys to their physical side before they become KeyboardEvent.ev.key, using scanCode and flags from KBDLLHOOKSTRUCT.",
+        "Keep the captured side-specific key all the way through Keyboard Manager editor formatting and key-code round-tripping so Right Shift remains VK_RSHIFT instead of collapsing to VK_SHIFT.",
+        "Add focused regressions proving that right-Shift-only capture saves a right-Shift-only mapping and that a generic Shift mapping still deliberately expands to both sides when chosen intentionally."
+      ],
+      "verification": [
+        "Capture and save a Right Shift remap, then confirm only Right Shift triggers the remap while Left Shift remains unchanged.",
+        "Capture and save a Left Shift remap and confirm the inverse behavior.",
+        "Intentionally choose generic Shift and confirm the save/apply path still expands to both physical sides."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The current capture and save/apply code paths line up directly with the user-visible symptom, and the fix boundary is narrow and testable."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A right-Shift-only remap is being captured or saved as generic Shift, so the save/apply path turns it into a both-sides remap. The current hook and remap-loading code make the failing mechanism explicit enough for an implementation-grade design.",
+    "known_information": [
+      "The reporter is on PowerToys 0.100.2 from the Microsoft Store.",
+      "The affected area is Keyboard Manager.",
+      "The issue states that remapping Right Shift also affects Left Shift.",
+      "There are no comments, attachments, assignees, or linked work on the live issue.",
+      "Current keyboard_layout.cpp exposes distinct names for Shift (Left) and Shift (Right)."
+    ],
+    "inferences": [
+      "The product intends to support side-specific modifier keys because it already names and stores them distinctly.",
+      "The bug is likely in key-capture normalization rather than in the later runtime remap lookup, because the save/apply path already has special handling for a generic Shift source key."
+    ],
+    "analysis": "The issue needs no more reporter evidence. The current low-level hook and remap-loader code expose a clear cause-and-effect chain that explains why a right-Shift remap can become a both-sides remap. That makes this the single full-design candidate in the batch.",
+    "initial_investigation": [
+      "Reviewed the full issue body, labels, assignees, and empty live timeline.",
+      "Inspected src/common/interop/KeyboardHook.cpp and confirmed that the hook forwards the raw KBDLLHOOKSTRUCT vkCode directly as KeyboardEvent.ev.key.",
+      "Inspected src/common/interop/keyboard_layout.cpp and confirmed the repository already distinguishes Shift (Left) and Shift (Right) display names.",
+      "Inspected src/modules/KeyboardManager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.cpp and confirmed that a generic VK_SHIFT original key expands to both VK_LSHIFT and VK_RSHIFT."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "design-49776",
+      "id": "approve-design-49776",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve physical Shift-side capture fix",
       "primary": true,
-      "confirm": false,
-      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Decode physical Shift side before Keyboard Manager records remaps"
+      },
+      "note": "Draft only; no upstream code, PR, comment, or issue write is authorized by this artifact."
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-08T17:02:33Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "A right-shift-only remap should not change left shift behavior.",
+  "design": {
+    "root_cause": "Keyboard Manager records a side-specific Shift remap through a shared low-level keyboard hook that currently emits the raw vkCode without decoding the physical Shift side. When the recorded source key collapses to generic VK_SHIFT, the existing save/apply logic intentionally expands that generic source to both VK_LSHIFT and VK_RSHIFT, so a right-Shift-only remap becomes a both-sides remap.",
     "evidence": [
-      "A right-shift-only remap should not change left shift behavior.",
-      "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "Observed: KeyboardHook.cpp assigns KeyboardEvent.ev.key from KBDLLHOOKSTRUCT.vkCode directly.",
+      "Observed: keyboard_layout.cpp has separate key names for Shift (Left) and Shift (Right), proving the UI/storage model expects side-specific Shift keys.",
+      "Observed: LoadingAndSavingRemappingHelper.cpp expands a generic VK_SHIFT source into both VK_LSHIFT and VK_RSHIFT when building the single-key remap table.",
+      "Inferred: once the editor capture path stores VK_SHIFT instead of VK_RSHIFT, the later both-sides expansion exactly matches the user-visible symptom."
     ],
-    "recommended_action": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-08T17:02:33Z"
+    "affected_files": [
+      {
+        "path": "src/common/interop/KeyboardHook.cpp",
+        "purpose": "Publishes low-level keyboard events to managed hotkey consumers and currently forwards raw vkCode without physical-side decoding.",
+        "symbols": [
+          "KeyboardHook::HookProc callback path",
+          "KeyboardEvent.ev.key population"
+        ]
+      },
+      {
+        "path": "src/common/ManagedCommon/HotkeySettingsControlHook.cs",
+        "purpose": "Managed bridge used by Keyboard Manager and other shortcut controls to receive KeyboardEvent.ev.key.",
+        "symbols": [
+          "HotkeySettingsControlHook.HotkeySettingsHookCallback"
+        ]
+      },
+      {
+        "path": "src/modules/KeyboardManager/KeyboardManagerEditorUI/Helpers/KeyboardHookHelper.cs",
+        "purpose": "Captures the incoming key identity, formats it for the editor, and preserves the recorded original key order.",
+        "symbols": [
+          "KeyboardHookHelper.KeyDown",
+          "KeyboardHookHelper.GetFormattedKeyList"
+        ]
+      },
+      {
+        "path": "src/modules/KeyboardManager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.cpp",
+        "purpose": "Expands generic modifier source keys to both physical sides during save/apply.",
+        "symbols": [
+          "LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings"
+        ]
+      },
+      {
+        "path": "src/common/interop/keyboard_layout.cpp",
+        "purpose": "Maps virtual-key codes to display names and already exposes side-specific Shift labels.",
+        "symbols": [
+          "LayoutMap::LayoutMapImpl::GetKeyName",
+          "LayoutMap::LayoutMapImpl::GetKeyFromName"
+        ]
+      },
+      {
+        "path": "src/common/interop/interop-tests/InteropTests.cs",
+        "purpose": "Existing interop test project that can host a deterministic regression seam for low-level key decoding.",
+        "symbols": [
+          "InteropTests",
+          "KeyboardHook shift-side regression test (new)"
+        ]
+      },
+      {
+        "path": "src/modules/KeyboardManager/KeyboardManagerEditorTest/LoadingAndSavingRemappingTests.cpp",
+        "purpose": "Existing Keyboard Manager editor save/apply test suite that can verify generic Shift still expands only when intentionally chosen.",
+        "symbols": [
+          "LoadingAndSavingRemappingHelper tests",
+          "new right-Shift roundtrip regression"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/common/interop/KeyboardHook.cpp",
+        "symbols": [
+          "KeyboardHook::HookProc callback path",
+          "new ResolvePhysicalVirtualKey helper"
+        ],
+        "current_behavior": "The shared low-level keyboard hook constructs KeyboardEvent by copying only KBDLLHOOKSTRUCT.vkCode into ev.key. For Shift, that loses the physical side before any managed consumer sees the event.",
+        "change": "Introduce a small helper that decodes the physical virtual key from KBDLLHOOKSTRUCT using scanCode and flags, and use the decoded key when populating KeyboardEvent.ev.key. Preserve the raw vkCode for non-ambiguous keys and fall back safely if decoding fails.",
+        "code_block": "static int ResolvePhysicalVirtualKey(const KBDLLHOOKSTRUCT* data)\\n{\\n    if (!data)\\n    {\\n        return 0;\\n    }\\n\\n    if (data->vkCode == VK_SHIFT)\\n    {\\n        const auto decoded = MapVirtualKeyW(data->scanCode, MAPVK_VSC_TO_VK_EX);\\n        return decoded == VK_LSHIFT || decoded == VK_RSHIFT ? static_cast<int>(decoded) : VK_SHIFT;\\n    }\\n\\n    return static_cast<int>(data->vkCode);\\n}\\n\\nKeyboardEvent ev;\\nev.message = wParam;\\nev.key = ResolvePhysicalVirtualKey(reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam));",
+        "edge_cases": [
+          "Do not break Ctrl/Alt/Win or ordinary action keys that already arrive with an unambiguous virtual key.",
+          "Keep the hook callback allocation-free and free of I/O so it remains safe in the low-level hook path.",
+          "If scan-code decoding ever fails, fall back to the existing vkCode instead of dropping the event."
+        ],
+        "tests": [
+          "Add an interop regression seam that proves a synthetic VK_SHIFT event with left and right scan codes resolves to VK_LSHIFT and VK_RSHIFT.",
+          "Keep existing shortcut-control and keyboard-manager capture behavior unchanged for non-Shift keys."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/KeyboardManager/KeyboardManagerEditorUI/Helpers/KeyboardHookHelper.cs",
+        "symbols": [
+          "KeyboardHookHelper.KeyDown",
+          "KeyboardHookHelper.GetFormattedKeyList"
+        ],
+        "current_behavior": "Keyboard Manager trusts the key identity supplied by the shared hook and immediately formats it for display and later key-code round-tripping.",
+        "change": "Verify the editor capture path preserves the now-side-specific key all the way through formatting and saving. No new generic coalescing should convert Right Shift back to Shift during capture or display-name round-tripping.",
+        "code_block": "VirtualKey virtualKey = (VirtualKey)key;\\nif (RemappingHelper.IsModifierKey(virtualKey))\\n{\\n    RemoveExistingModifierVariant(virtualKey);\\n}\\n\\n// With ev.key now decoded to RightShift or LeftShift, GetFormattedKeyList()\\n// must keep that concrete key name instead of collapsing back to generic Shift.",
+        "edge_cases": [
+          "Retain canonical modifier ordering in the display string even when the captured modifier is side-specific.",
+          "Continue allowing an intentionally generic Shift choice from dropdown-based selection flows."
+        ],
+        "tests": [
+          "Manual or automated capture of Right Shift should show Shift (Right) in the editor and persist the right-side key code.",
+          "Left Shift capture should remain side-specific and not conflict with a stored right-side mapping."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/KeyboardManager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.cpp",
+        "symbols": [
+          "LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings",
+          "LoadingAndSavingRemappingHelper::PreProcessRemapTable"
+        ],
+        "current_behavior": "The save/apply path intentionally expands a generic VK_SHIFT source into both VK_LSHIFT and VK_RSHIFT. That is correct only when the user really chose generic Shift.",
+        "change": "Leave generic-both-sides expansion intact, but add regression coverage proving that side-specific keys bypass the generic expansion and remain one-sided when the capture flow records VK_RSHIFT or VK_LSHIFT.",
+        "code_block": "if (originalKey == VK_SHIFT)\\n{\\n    originalKeysWithModifiers.push_back(VK_LSHIFT);\\n    originalKeysWithModifiers.push_back(VK_RSHIFT);\\n}\\nelse\\n{\\n    originalKeysWithModifiers.push_back(originalKey);\\n}\\n\\n// New regression: VK_RSHIFT must reach this branch as VK_RSHIFT, not VK_SHIFT.",
+        "edge_cases": [
+          "Do not regress the intentionally generic modifier behavior for users who truly want both Shift keys remapped.",
+          "Preserve the existing combine-both-sides optimization only when both explicit sides map to the same target."
+        ],
+        "tests": [
+          "Extend LoadingAndSavingRemappingTests.cpp with a right-Shift-only source mapping and assert that the resulting table contains only VK_RSHIFT for that remap.",
+          "Retain the existing tests that generic VK_SHIFT expands to both sides and that paired explicit modifiers can still combine when they intentionally share the same target."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the shared interop component with: pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\common\\interop\\PowerToys.Interop.vcxproj",
+      "Build the Keyboard Manager editor tests with: pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\KeyboardManager\\KeyboardManagerEditorTest\\KeyboardManagerEditorTest.vcxproj",
+      "Run the interop tests with: dotnet test .\\src\\common\\interop\\interop-tests\\Common.Interop.UnitTests.csproj -c Debug",
+      "Run the Keyboard Manager editor tests from the built test binary or Visual Studio Test Explorer, focusing on the new right-Shift roundtrip regression and the existing generic-modifier expansion tests.",
+      "Manually capture a Right Shift remap in the new Keyboard Manager editor, save it, then verify only Right Shift triggers the remap while Left Shift behaves normally."
+    ],
+    "risks": [
+      "The shared hook is used outside Keyboard Manager, so decoding must remain additive and not change non-ambiguous keys.",
+      "Ctrl and Alt have their own left/right semantics and should be audited so a future generic-vkCode ambiguity does not get worse while fixing Shift.",
+      "Any new test seam in the interop layer must stay deterministic and avoid requiring an actual global keyboard hook in CI."
+    ],
+    "alternatives": [
+      "Collapse both Shift keys intentionally in the editor: rejected because the product already exposes side-specific Shift names and the reporter specifically expects right-side-only behavior.",
+      "Patch only the save/apply path to special-case Right Shift guesses: rejected because the root cause is earlier capture-time loss of physical-side identity.",
+      "Fix only the runtime engine lookup: rejected because the bug begins when the editor records a generic Shift source key, and the same shared hook is also used by other shortcut capture controls."
+    ]
   }
 }

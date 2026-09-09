@@ -1,48 +1,111 @@
 {
-  "number": 49829,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
+  "number": 49829,
+  "title": "Some keys remapped with Keyboard Manager have arbitraily reverted to standard mapping. I've double checked the Edit tool and the program \"knows\" what I want, but some keys have reverted anyway. This never used to happen with the eold Editor.",
+  "url": "https://github.com/microsoft/PowerToys/issues/49829",
+  "author": "marklaporta1",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-09-09T17:17:10.9885956Z",
+  "evaluated_at": "2026-09-09T17:17:10.9885956Z",
+  "source_updated_at": "2026-08-11T14:55:04Z",
+  "pending_author": false,
   "stage": "needs_reply",
   "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "confidence": "Low",
   "status": {
     "glyph": "💬",
-    "label": "Needs affected-remap details",
-    "detail": "Keyboard Manager still displays the configured mappings, but an unspecified subset stops applying. The report lacks the affected keys, target applications, timing, elevation state, and diagnostics."
+    "label": "Needs failing-remap specifics",
+    "detail": "Keyboard Manager reportedly still shows the saved mappings, but the issue never identifies which remaps fail, which apps are involved, whether elevation matters, or what state the runtime hook is in when the regression appears."
   },
   "next_action": {
     "glyph": "💬",
-    "label": "Request a minimal remap reproduction",
-    "reason": "The current description cannot distinguish configuration loading, application targeting, elevation, hook lifetime, or a specific key-handling regression."
+    "label": "Request the failing remap matrix and a fresh bug report",
+    "reason": "The report is too underspecified to tell whether this is a side-specific remap bug, an app-specific scope problem, or a stale runtime state."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report says some remapped keys arbitrarily reverted, but it omits the affected mappings, the applications where they fail, whether the problem is app-specific or elevation-sensitive, and any diagnostics captured during the failure.",
+    "evidence": [
+      "The issue body says the Keyboard Manager editor still shows the intended remaps while some keys behave like their original mapping.",
+      "No expected or actual behavior details, comment follow-up, screenshot, or bug-report ZIP are attached.",
+      "The issue has Issue-Bug and Needs-Triage labels and no assignee.",
+      "Focused review found the only closely related open issue in this batch is #49776, which is specifically about side-specific Shift capture, not arbitrary remap loss."
+    ],
+    "recommended_action": "Ask for the exact failing remaps, an app/elevation comparison, timing of the regression, and a fresh /bugreport before pursuing a code fix."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A repository-side fix may be applicable, but the current report is too underspecified to choose a safe root-cause hypothesis or implementation boundary."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Keyboard Manager appears to retain the saved mapping definitions, but the issue does not identify which remaps fail or under what conditions, so the next step is to collect the smallest evidence set that localizes the regression.",
+    "known_information": [
+      "The reporter is using PowerToys 100.2 from the Microsoft Store.",
+      "The affected area is Keyboard Manager.",
+      "The report says the editor still \"knows\" the desired remaps even when some keys revert to their standard behavior.",
+      "There are no comments, assignees, screenshots, or bug-report attachments on the live issue."
+    ],
+    "inferences": [
+      "The editor state and runtime behavior may be diverging, but the public report does not show whether the failure is tied to specific keys, a target application, or an elevation boundary.",
+      "This could be a different class of problem from side-specific modifier capture bugs because the reporter describes only an arbitrary subset of remaps failing."
+    ],
+    "analysis": "Without at least one exact failing mapping and a current diagnostic bundle, a maintainer cannot distinguish configuration persistence, app targeting, hook lifetime, or modifier-specific parsing. The targeted information request is cheaper and more honest than a speculative fix plan.",
+    "initial_investigation": [
+      "Reviewed the full issue body, labels, assignees, and the empty comment/timeline state.",
+      "Checked current Keyboard Manager editor and validation code paths, including keyboard capture, generic-versus-sided modifier handling, and remap-name round-tripping.",
+      "Compared the batch to issue #49776 and found that the only concrete side-specific regression already in scope is the Shift-side capture bug, which does not explain an unspecified arbitrary subset of remaps."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A screenshot of the failing Keyboard Manager entries as they are saved in the current editor.",
+        "why_needed": "Confirms the exact mappings the maintainer should compare against runtime behavior.",
+        "how_to_collect": "Open Keyboard Manager, capture the relevant rows in the editor UI, and upload the screenshot in a GitHub comment."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "One exact source key, intended target, and target application for each remap that currently fails.",
+        "why_needed": "Separates a broad runtime failure from a key-specific or app-specific regression.",
+        "how_to_collect": "List the remap pairs and the application where the failure occurs in a short numbered reply."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the same remap fails in Notepad and whether PowerToys or the target application is elevated.",
+        "why_needed": "Determines whether the issue depends on application scope or privilege boundaries.",
+        "how_to_collect": "Retry the same remap in Notepad and note whether PowerToys or the target app is running as administrator."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic bundle captured immediately after the remap fails.",
+        "why_needed": "Provides current Keyboard Manager runtime state and logs for the exact failing session.",
+        "how_to_collect": "Reproduce the failure and then post a GitHub comment containing /bugreport immediately afterward."
+      }
+    ]
   },
   "actions": [
     {
       "id": "request-info-49829",
       "type": "request_info",
-      "label": "Ask for affected remaps and diagnostics",
+      "label": "Request failing remap matrix and /bugreport",
       "primary": true,
       "confirm": true,
+      "requiresApproval": true,
       "comment": {
         "target": "issue",
+        "repository": "microsoft/PowerToys",
         "number": 49829,
-        "body": "Could you attach a PowerToys bug-report ZIP and a screenshot of the affected Keyboard Manager mappings, then list one exact source key, destination key, and application where it fails? Please confirm whether it also fails in Notepad, whether either app is elevated, and whether restarting PowerToys temporarily restores the mapping. It would also help to know when it first stopped working (after reboot, sleep, PowerToys update, or Windows update)."
+        "body": "Thanks for calling out that Keyboard Manager still shows the mappings you configured even when some keys fall back to their normal behavior.\r\n\r\nTo narrow whether this is a specific remap definition, an app/elevation boundary, or the runtime hook losing state, please provide:\r\n1. A screenshot of the affected Keyboard Manager entries, plus one exact source key and expected target for each remap that is failing.\r\n2. Whether the same remap fails in Notepad, and whether PowerToys or the target application is running elevated when it fails.\r\n3. When it first started happening (for example after reboot, sleep, a PowerToys update, or a Windows update) and whether restarting PowerToys temporarily restores the remap.\r\n4. A fresh diagnostic ZIP captured immediately after reproducing the problem by posting a comment that contains `/bugreport`.\r\n\r\nThose details will separate a specific remap-definition bug from a broader hook or application-targeting problem."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-11T14:55:04Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "Keyboard Manager still displays the configured mappings, but an unspecified subset stops applying. The report lacks the affected keys, target applications, timing, elevation state, and diagnostics.",
-    "evidence": [
-      "Keyboard Manager still displays the configured mappings, but an unspecified subset stops applying. The report lacks the affected keys, target applications, timing, elevation state, and diagnostics.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "The current description cannot distinguish configuration loading, application targeting, elevation, hook lifetime, or a specific key-handling regression.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-11T14:55:04Z"
-  }
+  "design": null
 }

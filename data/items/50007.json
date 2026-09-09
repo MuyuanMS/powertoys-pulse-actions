@@ -1,44 +1,113 @@
 {
-  "number": 50007,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triaging",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-20T06:32:32.8984947Z",
-  "evaluated_at": "2026-08-20T06:32:32.8984947Z",
+  "number": 50007,
+  "track": "fix",
+  "stage": "design_queued",
   "source_updated_at": "2026-08-19T06:19:16Z",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design candidate",
-    "detail": "Keyboard Manager modifier remap leaves Ctrl logically stuck after a specific Ctrl+Alt chord."
+  "title": "Pressing the Ctrl and Alt keys simultaneously causes subsequent actions to behave as if the Ctrl key is being held down.",
+  "url": "https://github.com/microsoft/PowerToys/issues/50007",
+  "author": "kjin",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "The repro is specific enough to point at Keyboard Manager’s modifier-state normalization for swapped Ctrl/Win remaps, but the exact stuck-key branch still needs maintainer-side reproduction rather than a blind patch.",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue provides a concrete remap pair, a specific Ctrl+Alt chord, and a manual recovery key, which is enough to investigate the modifier-state machine directly.",
+    "evidence": [
+      "The report swaps Left Ctrl -> Left Win and Left Win -> Left Ctrl, then triggers the bug with Left Ctrl + Alt + 4 in Chrome.",
+      "After the chord is released, later scroll operations behave as if Ctrl is still held until Left Ctrl is pressed again.",
+      "KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp has explicit modifier reset logic for some remap classes, but it is narrowly targeted at Caps Lock and modifier-to-nonmodifier/text cases.",
+      "Current Keyboard Manager tests exercise many modifier remaps, but there is no targeted regression for this exact swapped Ctrl/Win plus Alt chord sequence."
+    ],
+    "recommended_action": "Run the exact swapped-modifier repro against the Keyboard Manager engine and design a state-normalization fix for modifier-to-modifier remaps that can strand Ctrl/Win state after Alt-generated system-key paths."
   },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Design fix",
-    "reason": "The repro gives exact remaps, key chord, host app symptom, and recovery key."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix exists, and the source still lacks an explicit regression or reset path for the exact modifier-to-modifier chord reported here."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resynchronize modifier state for swapped Ctrl/Win remaps across Alt-driven system-key chords",
+      "root_cause": "The most likely bug is a mismatched modifier-down/modifier-up sequence when Ctrl is remapped to Win, Win is remapped back to Ctrl, and Alt causes WM_SYSKEY* delivery. That can leave the engine or the foreground app believing Ctrl is still active until another physical Ctrl transition arrives.",
+      "plan": [
+        "Reproduce the exact Ctrl<->Win swap plus Alt+4 sequence against the engine test harness and a real app surface.",
+        "Trace which modifier state remains asserted after source key-up and normalize both injected and suppressed key-up paths for modifier-to-modifier remaps.",
+        "Add a focused regression covering the reported sequence and a nearby variant without Chrome-specific behavior."
+      ],
+      "verification": [
+        "With Left Ctrl <-> Left Win swaps active, press Ctrl+Alt+4 and confirm subsequent scrolling no longer zooms as if Ctrl remained down.",
+        "Verify ordinary Ctrl/Win swaps and unrelated Alt shortcuts still behave correctly."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "The symptom and current reset coverage point strongly at a modifier-state bug, but the exact stuck-key branch still needs live reproduction or a dedicated failing engine test."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A swapped Ctrl/Win mapping leaves the system behaving as though Ctrl is latched after a Ctrl+Alt+4 chord until Ctrl is pressed again.",
+    "known_information": [
+      "The issue is on PowerToys 0.100.2 via WinGet.",
+      "The remap pair and triggering chord are fully spelled out.",
+      "No assignee, linked PR, or follow-up discussion is present.",
+      "The reporter identified a reliable manual recovery action: press Left Ctrl once."
+    ],
+    "inferences": [
+      "The bug likely sits in Keyboard Manager’s modifier state tracking rather than Chrome itself, because the stuck state persists into later unrelated input handling.",
+      "Alt involvement matters because it changes Windows message semantics to WM_SYSKEY*, which is where remap state bugs often diverge."
+    ],
+    "analysis": "This is actionable without more reporter input. The remaining uncertainty is in the internal state path, so the correct next step is a maintainer reproduce action rather than a generic log request.",
+    "initial_investigation": [
+      "KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp resets lower-level modifier state only for certain remap classes, leaving a likely gap for modifier-to-modifier swaps that also involve Alt.",
+      "SingleKeyRemappingTests.cpp already contains other stuck-key hardening tests, which makes this issue a good candidate for a new targeted engine regression."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "design-50007",
+      "id": "approve-design-50007",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve swapped-modifier state fix design",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The current hypothesis points to the modifier state machine, but the failing branch still needs a direct repro or failing test.",
+      "issue": {
+        "number": 50007,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-50007",
+      "type": "reproduce",
+      "label": "Reproduce stuck Ctrl after Ctrl/Win swap",
       "primary": true,
-      "confirm": false,
-      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "note": "Drive the exact remap pair and Alt-modified chord before choosing a narrower engine patch.",
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version": "0.100.2 or current main",
+        "prerequisites": [
+          "Enable Keyboard Manager and configure Left Ctrl -> Left Win plus Left Win -> Left Ctrl.",
+          "Use a desktop app where Ctrl+scroll visibly changes behavior, such as Chrome zoom."
+        ],
+        "steps": [
+          "Open the target app and verify the Ctrl/Win swap is active.",
+          "Press and release Left Ctrl + Alt + 4 exactly as reported.",
+          "Scroll the mouse wheel or perform another Ctrl-sensitive action without pressing Ctrl again.",
+          "Press Left Ctrl once and compare behavior before and after that recovery key press."
+        ],
+        "expected_result": "After the chord is released, later actions should behave normally without requiring an extra Ctrl press to clear a latched state."
+      }
     }
-  ],
-  "confidence": "Medium",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The Keyboard Manager report has a concrete modifier-remap scenario and observable stuck-Ctrl symptom suitable for targeted design investigation.",
-    "evidence": [
-      "Issue body: Left Ctrl is remapped to Left Win and Left Win to Left Ctrl.",
-      "Repro: in Chrome, pressing Left Ctrl + Alt + 4 causes later mouse scrolling to zoom as if Ctrl is held.",
-      "Reporter says pressing Left Ctrl once releases the stuck state."
-    ],
-    "recommended_action": "Run a full Keyboard Manager design investigation focused on modifier key-up/state handling for swapped Ctrl/Win remaps and Ctrl+Alt chords.",
-    "evaluated_at": "2026-08-20T06:32:32.8984947Z",
-    "source_updated_at": "2026-08-19T06:19:16Z"
-  }
+  ]
 }

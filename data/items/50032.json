@@ -1,48 +1,216 @@
 {
-  "number": 50032,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "triage",
-  "stage": "design_queued",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+  "number": 50032,
+  "track": "fix",
+  "stage": "awaiting_design_approval",
   "source_updated_at": "2026-08-20T14:41:45Z",
   "title": "[Shortcut Guide] Core UI remains English when PowerToys language is German",
   "url": "https://github.com/microsoft/PowerToys/issues/50032",
-  "summary": "The localization gap is clearly reproducible, lists the affected strings, distinguishes core UI from manifest text, and provides a concrete implementation clue based on existing PowerToys language-loading patterns.",
-  "status": {
-    "glyph": "🔧",
-    "label": "Design queued",
-    "detail": "Start a focused localization design covering Shortcut Guide Settings and overlay resource loading, language initialization timing, and regression coverage for German and other supported languages."
-  },
+  "author": "CarlosGtrz",
+  "labels": [
+    "Issue-Bug",
+    "Product-Shortcut Guide",
+    "Area-Localization",
+    "Needs-Triage",
+    "Issue-Translation"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "Shortcut Guide is the outlier WinUI utility that still starts without applying the shared language override, which explains why both its own overlay resources and the settings strings it loads can fall back to English.",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The localization gap is clearly reproducible, lists the affected strings, distinguishes core UI from manifest text, and provides a concrete implementation clue based on existing PowerToys language-loading patterns.",
+    "rationale": "The issue body already isolates the missing language-override pattern, and the current Shortcut Guide startup code still differs from other localized WinUI modules in exactly that place.",
     "evidence": [
-      "The issue identifies German de-DE, PowerToys 0.101.2312.0, and Shortcut Guide as the affected utility.",
-      "PowerToys Settings is confirmed to switch to German while Shortcut Guide Settings and overlay chrome remain English.",
-      "The report lists affected strings including Search shortcuts, Close, Settings, Pin, and No results found.",
-      "The reporter points to ShortcutGuideXAML/App.xaml.cs and the missing ApplicationLanguages.PrimaryLanguageOverride/LanguageHelper.LoadLanguage pattern.",
-      "The issue has localization and translation labels but no visible assignee or linked work."
+      "The reporter confirms PowerToys Settings switches to German after restart, while Shortcut Guide settings strings and overlay chrome remain English.",
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs currently calls InitializeComponent() without first loading the saved PowerToys language and setting ApplicationLanguages.PrimaryLanguageOverride.",
+      "Comparable WinUI utilities such as Environment Variables and Peek call LanguageHelper.LoadLanguage() and assign Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride before InitializeComponent().",
+      "Shortcut Guide uses both ResourceLoaderInstance.ResourceLoader (PowerToys.ShortcutGuide.pri) and ResourceLoaderInstance.SettingsResourceLoader (PowerToys.Settings.pri), so missing process-level language override can affect both surfaces reported in the issue."
     ],
-    "recommended_action": "Start a focused localization design covering Shortcut Guide Settings and overlay resource loading, language initialization timing, and regression coverage for German and other supported languages.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
-    "source_updated_at": "2026-08-20T14:41:45Z"
+    "recommended_action": "Approve the language-override startup fix so Shortcut Guide resolves its own and shared settings resources under the selected PowerToys UI language."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt is present, and the current app startup path exposes a narrow, code-level discrepancy from the other WinUI modules."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply the saved PowerToys UI language before Shortcut Guide initializes WinUI resources",
+      "root_cause": "Shortcut Guide creates its WinUI application and overlay resource loaders without first setting ApplicationLanguages.PrimaryLanguageOverride from LanguageHelper.LoadLanguage(). That leaves the process on the default language path even when PowerToys settings were changed, so Shortcut Guide-specific settings strings and overlay chrome can fall back to English.",
+      "plan": [
+        "Mirror the startup language-initialization pattern already used by other WinUI PowerToys utilities.",
+        "Apply the saved language override before InitializeComponent() so XAML resources and ResourceLoader instances resolve the intended language from first load.",
+        "Add focused regression coverage and manual validation for the reported German flow and at least one additional non-English language."
+      ],
+      "verification": [
+        "Set PowerToys to German, restart PowerToys, and confirm the Shortcut Guide settings text and overlay chrome use German resources.",
+        "Verify application-manifest names/descriptions keep their current behavior so the fix remains scoped to core UI strings."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "Shortcut Guide is missing the same startup language override already used by comparable modules, and the missing override directly matches both affected surfaces described in the issue."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Shortcut Guide keeps rendering core UI strings in English even after PowerToys is set to German, while the broader Settings shell localizes correctly.",
+    "known_information": [
+      "The report isolates German (de-DE) and distinguishes core UI strings from manifest-provided app names/descriptions.",
+      "The issue lists affected settings strings and overlay strings explicitly.",
+      "No assignee or linked PR is present.",
+      "Current Shortcut Guide startup code differs from other WinUI modules by omitting the shared language-override initialization."
+    ],
+    "inferences": [
+      "The failure is process-local to Shortcut Guide rather than a global PowerToys language-selection failure.",
+      "Because Shortcut Guide reads both module and settings PRI resources inside its own process, one missing language override can explain why both UI surfaces stay in English."
+    ],
+    "analysis": "This is ready for an implementation-grade design. The report is precise, the startup discrepancy is concrete, and the change surface is narrow enough to describe without speculative architecture work.",
+    "initial_investigation": [
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs does not call LanguageHelper.LoadLanguage() or set ApplicationLanguages.PrimaryLanguageOverride before InitializeComponent().",
+      "src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariablesXAML/App.xaml.cs and src/modules/peek/Peek.UI/PeekXAML/App.xaml.cs both apply the language override first, which is the pattern Shortcut Guide is missing.",
+      "ShortcutGuide.Helpers.ResourceLoaderInstance constructs both PowerToys.ShortcutGuide.pri and PowerToys.Settings.pri loaders, so the same missing override affects reported overlay and settings strings."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
       "id": "approve-design-50032",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve Shortcut Guide localization design",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Approve a focused design investigation for this recent issue.",
+      "note": "High-confidence startup-language fix aligned with other localized WinUI utilities.",
       "issue": {
         "number": 50032,
         "repository": "microsoft/PowerToys"
       }
     }
-  ]
+  ],
+  "design": {
+    "root_cause": "Shortcut Guide starts its WinUI process without applying the user-selected PowerToys language override. In src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs, the constructor calls InitializeComponent() directly, while other WinUI utilities first call LanguageHelper.LoadLanguage() and set Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride. Because Shortcut Guide later resolves both module resources (PowerToys.ShortcutGuide.pri) and settings resources (PowerToys.Settings.pri) inside that same process, both surfaces can fall back to English even though the main Settings app is already localized.",
+    "evidence": [
+      "Observed: issue #50032 reports that PowerToys Settings itself is in German while Shortcut Guide settings labels and overlay chrome stay in English after restart.",
+      "Observed: src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs lacks a LanguageHelper.LoadLanguage() / PrimaryLanguageOverride block before InitializeComponent().",
+      "Observed: src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariablesXAML/App.xaml.cs and src/modules/peek/Peek.UI/PeekXAML/App.xaml.cs do apply the override before InitializeComponent().",
+      "Observed: src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/ResourceLoaderInstance.cs creates both a Shortcut Guide PRI loader and a Settings PRI loader inside the Shortcut Guide process.",
+      "Inferred: the missing process-level override is sufficient to explain why both the issue’s overlay strings and the Shortcut Guide-specific settings strings stay in English."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs",
+        "purpose": "Creates the Shortcut Guide WinUI process and is the correct place to apply the persisted PowerToys language before resources are initialized.",
+        "symbols": [
+          "ShortcutGuide.App",
+          "App()"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/ResourceLoaderInstance.cs",
+        "purpose": "Defines the module and settings resource loaders whose culture resolution depends on the process-level language override.",
+        "symbols": [
+          "ResourceLoaderInstance.ResourceLoader",
+          "ResourceLoaderInstance.SettingsResourceLoader"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs",
+        "purpose": "Consumes the module resource loader for the overlay window title and should localize automatically once startup language is fixed.",
+        "symbols": [
+          "OverlayWindow.OverlayWindow"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Pages/ShortcutsPage.xaml.cs",
+        "purpose": "Consumes the module resource loader for Pinned/Recommended/No results strings and should localize automatically once startup language is fixed.",
+        "symbols": [
+          "ShortcutsPage.UpdateNoResultsState",
+          "ShortcutsPage.RebuildRows"
+        ]
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.UnitTests/ActivationTests/ShortcutGuideActivationPolicyTests.cs",
+        "purpose": "Existing Shortcut Guide test project; add a small startup-language regression helper test or place a new localization-focused test beside it.",
+        "symbols": [
+          "ShortcutGuide.UnitTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs",
+        "symbols": [
+          "ShortcutGuide.App",
+          "App()"
+        ],
+        "current_behavior": "Shortcut Guide initializes WinUI components immediately, without loading the saved PowerToys language or setting the WinUI language override first.",
+        "change": "Mirror the startup pattern already used by other WinUI utilities: read the persisted language with LanguageHelper.LoadLanguage(), and when a non-empty tag is returned, assign Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride before InitializeComponent().",
+        "code_block": "public App()\n{\n    string appLanguage = LanguageHelper.LoadLanguage();\n    if (!string.IsNullOrEmpty(appLanguage))\n    {\n        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;\n    }\n\n    this.InitializeComponent();\n    // existing startup logic continues unchanged\n}",
+        "edge_cases": [
+          "Do not overwrite system language when the saved value is empty or invalid; preserve the current default-language behavior in that case.",
+          "Apply the override before any XAML or ResourceLoader-backed string is touched, otherwise early-bound resources will already have chosen the wrong culture."
+        ],
+        "tests": [
+          "Manual startup validation with German configured before launch: settings strings and overlay strings named in the issue must localize on first open.",
+          "Regression validation with English/default language to confirm no change when no override is configured."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/ResourceLoaderInstance.cs",
+        "symbols": [
+          "ResourceLoaderInstance.ResourceLoader",
+          "ResourceLoaderInstance.SettingsResourceLoader"
+        ],
+        "current_behavior": "Resource loaders are created assuming the process culture was already configured, but the app constructor currently never establishes that culture.",
+        "change": "Keep the loader construction unchanged, but validate that no eager access happens before the app-level language override is applied. If a helper test reveals early static access, defer that access until after app startup rather than duplicating override logic here.",
+        "code_block": "// no new language-selection logic here;\n// ensure loader creation remains downstream of App() setting PrimaryLanguageOverride",
+        "edge_cases": [
+          "Avoid duplicating language-selection code in multiple places; the process-level override should stay single-sourced in App().",
+          "If any future static initializer touches these loaders before App() runs, that must be treated as a separate startup regression."
+        ],
+        "tests": [
+          "Launch Shortcut Guide after changing the PowerToys language and verify ResourceLoader-backed strings from both PowerToys.ShortcutGuide.pri and PowerToys.Settings.pri follow the selected language."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/ShortcutGuide/ShortcutGuide.UnitTests/ActivationTests/ShortcutGuideLocalizationStartupTests.cs",
+        "symbols": [
+          "ShortcutGuideLocalizationStartupTests"
+        ],
+        "current_behavior": "Shortcut Guide tests cover activation policy but do not guard the localized startup contract that other WinUI utilities already follow.",
+        "change": "Add a focused regression test around a small extracted helper or startup routine so the persisted language tag is applied before resource-backed UI initialization. If direct WinUI app-constructor testing is too heavy, test the extracted decision logic and keep the UI verification manual.",
+        "code_block": "var language = ShortcutGuideStartupLanguage.Resolve(savedLanguage);\nShortcutGuideStartupLanguage.Apply(language);\nAssert.AreEqual(\"de-DE\", ApplicationLanguages.PrimaryLanguageOverride);",
+        "edge_cases": [
+          "The test should not require shipping non-English resource files in the repo; it only needs to verify the override is set before resource lookup begins.",
+          "Keep the helper small enough that it mirrors the app startup contract rather than introducing a second configuration source."
+        ],
+        "tests": [
+          "Run ShortcutGuide.UnitTests with the startup-language helper coverage.",
+          "Manually verify German and one additional non-English language in a built Shortcut Guide process."
+        ]
+      }
+    ],
+    "verify": [
+      "Build src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuide.Ui.csproj.",
+      "Run src/modules/ShortcutGuide/ShortcutGuide.UnitTests/ShortcutGuide.UnitTests.csproj if a startup-language helper test is added.",
+      "Set the PowerToys language to German, restart PowerToys, open Settings > Shortcut Guide, and confirm strings such as Hold Windows key, Open Shortcut Guide, Search shortcuts, Close, Settings, Pinned shortcuts, Recommended shortcuts, Pin, and No results found are localized.",
+      "Repeat with English/default language to confirm the fix does not change the default path or manifest-name behavior."
+    ],
+    "risks": [
+      "Applying the override too late would produce a partial localization fix where some early strings remain English for the lifetime of the process.",
+      "Shortcut Guide consumes both module and shared settings resources, so startup ordering errors could make localization appear flaky rather than fully broken."
+    ],
+    "alternatives": [
+      "Patch every reported string manually or duplicate them into a different resource map. Rejected because the existing shared-language mechanism should localize the existing resources once the process is initialized correctly.",
+      "Set language override inside ResourceLoaderInstance. Rejected because resource loaders are downstream consumers; the app constructor is the canonical place to establish process language."
+    ]
+  }
 }

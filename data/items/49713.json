@@ -1,33 +1,91 @@
 {
-  "number": 49713,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
+  "number": 49713,
+  "title": "Environment Variables module didn't work with Administrator right",
+  "url": "https://github.com/microsoft/PowerToys/issues/49713",
+  "author": "stEve0x33",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Environment Variables"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "generated_at": "2026-09-09T17:17:10.9885956Z",
+  "evaluated_at": "2026-09-09T17:17:10.9885956Z",
+  "source_updated_at": "2026-08-10T06:28:00Z",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "stage": "owned_elsewhere",
+  "owes": "maintainer",
+  "confidence": "High",
   "status": {
-    "glyph": "🔁",
-    "label": "Duplicate or already handled",
-    "detail": "Bug report evidence points at the already-guarded WinUI startup/title path."
+    "glyph": "🔗",
+    "label": "Likely covered by the title-bar startup guard",
+    "detail": "The attached diagnostics point at a Microsoft.UI.Windowing startup failure in the elevated Environment Variables window, and current main already contains an Environment Variables-specific empty-title guard in that path."
   },
   "next_action": {
-    "glyph": "🔁",
-    "label": "Verify the existing handling path before doing new work",
-    "reason": "Ask the reporter to verify the latest main/nightly or next release containing the title-bar startup guard, and only reopen code investigation if the same Microsoft.UI.Windowing crash still reproduces there."
+    "glyph": "💬",
+    "label": "Ask for a retest on a build with the guard",
+    "reason": "Current source already contains a targeted startup hardening change for the same Environment Variables title-bar path."
   },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T06:28:00Z",
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "Bug report evidence points at the already-guarded WinUI startup/title path.",
+    "rationale": "The uploaded diagnostics show PowerToys.EnvironmentVariables.exe faulting in Microsoft.UI.Windowing.dll during startup, which matches the title-bar initialization path that current main already hardens for Environment Variables in PR #49069. The public issue does not show a post-fix retest yet.",
     "evidence": [
-      "Bug report evidence points at the already-guarded WinUI startup/title path."
+      "The issue says the Environment Variables window opens as a blank black window and closes only when the administrator option is enabled.",
+      "The reporter replied to a /bugreport request with a diagnostic ZIP.",
+      "The uploaded Event Viewer XML shows PowerToys.EnvironmentVariables.exe faulting in Microsoft.UI.Windowing.dll with exception code e0464645.",
+      "Current src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariablesXAML/MainWindow.xaml.cs contains an explicit non-empty title fallback, and file history shows that hardening landed in PR #49069."
     ],
-    "recommended_action": "Ask the reporter to verify the latest main/nightly or next release containing the title-bar startup guard, and only reopen code investigation if the same Microsoft.UI.Windowing crash still reproduces there.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T06:28:00Z"
-  }
+    "recommended_action": "Point maintainers and the reporter to the existing title-bar startup guard and ask for confirmation on a build that contains it."
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "The current source tree already contains a targeted Environment Variables startup hardening change in the reported window-construction path.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49069"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Environment Variables closes immediately only when elevated. The attached diagnostics point at a Microsoft.UI.Windowing startup fault, and current main already carries an Environment Variables title-bar guard for that initialization path.",
+    "known_information": [
+      "The reporter is on PowerToys 0.100.2 from GitHub on Windows 25H2 build 26200.8973.",
+      "Normal launch works; enabling the administrator option makes the window open blank and close after one to three seconds.",
+      "A maintainer requested /bugreport, and the reporter uploaded a PowerToysReport ZIP.",
+      "The issue has Issue-Bug, Needs-Triage, Needs-Team-Response, and Product-Environment Variables labels with no assignee."
+    ],
+    "inferences": [
+      "The failure likely occurs during elevated WinUI window startup rather than deeper Environment Variables business logic, because the window never becomes interactive.",
+      "The Event Viewer module and current source change both point at the title-bar / window-title initialization path."
+    ],
+    "analysis": "Current main already hardens the exact Environment Variables startup path implicated by the bugreport. The maintainer-facing action is to connect this report to that fix path and seek a current-build confirmation rather than creating a second speculative design.",
+    "initial_investigation": [
+      "Reviewed the full issue body, both comments, labels, assignees, and attachments.",
+      "Downloaded and unpacked the uploaded bug-report ZIP and inspected EventViewer-PowerToys.EnvironmentVariables.exe.xml, which records a Microsoft.UI.Windowing.dll startup fault.",
+      "Inspected EnvironmentVariablesXAML/MainWindow.xaml.cs and its file history, which shows the non-empty title fallback added in PR #49069 specifically to protect this startup path."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "post-comment-49713",
+      "type": "post_comment",
+      "label": "Ask for retest with the title-bar guard build",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49713,
+        "body": "Thanks for uploading the diagnostic ZIP. The crash event in PowerToys.EnvironmentVariables.exe points at Microsoft.UI.Windowing.dll during startup, and current main already has an Environment Variables title-bar guard from #49069 for this window-construction path. Please retest with a build that includes that change and confirm whether the elevated launch still opens as a blank black window and closes immediately."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ],
+  "design": null
 }

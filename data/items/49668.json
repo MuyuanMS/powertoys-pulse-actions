@@ -1,43 +1,89 @@
 {
-  "number": 49668,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaging",
-  "owes": "maintainer",
+  "number": 49668,
+  "title": "The Command Palette dock is disappearing",
+  "url": "https://github.com/microsoft/PowerToys/issues/49668",
+  "author": "comassdesign",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "generated_at": "2026-09-09T17:17:10.9885956Z",
+  "evaluated_at": "2026-09-09T17:17:10.9885956Z",
+  "source_updated_at": "2026-08-09T17:13:05Z",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "stage": "owned_elsewhere",
+  "owes": "maintainer",
+  "confidence": "High",
   "status": {
-    "glyph": "🎯",
-    "label": "Clear design candidate",
-    "detail": "Dock visibility and icon state are lost after lid-close / deep-sleep display disconnect scenarios."
+    "glyph": "🔗",
+    "label": "Likely covered by the dock topology fix",
+    "detail": "Current Command Palette dock code already contains a monitor-topology recovery change that explicitly targets docking, undocking, and similar transient display reconfiguration cases that leave the dock empty or missing."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Design fix",
-    "reason": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input."
+    "glyph": "💬",
+    "label": "Point to the monitor-topology fix and request a retest",
+    "reason": "A recent upstream fix directly targets the same lid-close, monitor-disconnect, and missing-dock family."
+  },
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The issue matches the monitor-topology churn class already addressed by upstream PR #49814, which explicitly describes docking, undocking, Win+P changes, and stale monitor snapshots leaving the Command Palette Dock empty or missing.",
+    "evidence": [
+      "The issue says the Command Palette dock disappears after lid-close hibernation or after a monitor deep-sleep disconnect and wake cycle.",
+      "A confirmer says the dock crash started after an update and that restarting PowerToys temporarily restores it.",
+      "Current DockWindowManager and DockWindow code now debounce monitor-change events, refresh monitor caches, and recreate AppBar registration on topology changes.",
+      "File history shows these dock-monitor fixes landed in upstream PR #49814 after this issue was filed."
+    ],
+    "recommended_action": "Treat the item as handled by the monitor-topology fix and ask for a retest on a build that includes #49814."
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Current main already contains a dock monitor-topology recovery fix that matches the reported wake and reconnect scenarios.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49814"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The Command Palette dock disappears after hibernation, lid-close, or display deep-sleep reconnect. Current main already carries a dock monitor-topology recovery fix for this class of display-change failures.",
+    "known_information": [
+      "The reporter is on PowerToys 0.100.2 from the Microsoft Store.",
+      "The issue reports two symptoms: the dock disappears after sleep or display reconnect, and icons can be missing on startup.",
+      "A confirmer says their monitor disconnects during deep sleep, the dock crashes after reconnect, and restarting PowerToys restores it temporarily.",
+      "There are no attachments, assignees, or linked work on the live issue."
+    ],
+    "inferences": [
+      "The public repro lines up with transient display-topology churn rather than ordinary dock visibility settings.",
+      "The missing icons at startup may be the same stale-monitor snapshot family, because the current dock fix also updates monitor caches even when no dock window is visible."
+    ],
+    "analysis": "The current source tree already contains a recent dock-monitor recovery change with the same wake, reconnect, and topology-change shape described here. The maintainer action is to connect this report to that fix and seek retest feedback, not to start a new design.",
+    "initial_investigation": [
+      "Reviewed the full issue body, the confirming comment, labels, assignees, and empty live timeline.",
+      "Inspected DockWindowManager.cs and DockWindow.xaml.cs, which now debounce monitor changes, refresh target monitors, and recreate AppBar registration on topology changes.",
+      "Reviewed file history and the upstream summary for PR #49814, which explicitly targets missing or broken dock state after docking, undocking, or display-mode changes."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "design-49668",
-      "type": "approve_design",
-      "label": "Design fix",
+      "id": "post-comment-49668",
+      "type": "post_comment",
+      "label": "Point to dock topology fix #49814",
       "primary": true,
-      "confirm": false,
-      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49668,
+        "body": "Thanks for the detailed lid-close and deep-sleep reproduction. Current main already contains the Command Palette dock monitor-topology fix from #49814, which specifically targets dock/undock, display-mode, and stale-monitor snapshots that can leave the dock empty, missing, or misconfigured after display changes. Please retest on a build that includes #49814 and confirm whether the dock still disappears after sleep or display reconnect."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-09T17:13:05Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "Dock visibility and icon state are lost after lid-close / deep-sleep display disconnect scenarios.",
-    "evidence": [
-      "Dock visibility and icon state are lost after lid-close / deep-sleep display disconnect scenarios.",
-      "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
-    ],
-    "recommended_action": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-09T17:13:05Z"
-  }
+  "design": null
 }

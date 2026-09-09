@@ -1,33 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 49908,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-09T16:56:19Z",
+  "evaluated_at": "2026-09-09T16:56:19Z",
   "source_updated_at": "2026-08-14T19:28:04Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49908",
+  "title": "Ctrl + Z after resizing batch of images just deletes everything",
+  "author": "gfleig",
+  "labels": [
+    "Issue-Bug",
+    "Product-Image Resizer",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Explorer undo path needs direct replay",
+    "detail": "The report is concrete, and the attached settings confirm Image Resizer was not in replace-original mode, but the current code path does not yet prove whether the destructive Ctrl+Z behavior is in PowerToys or Explorer undo integration."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "Reproduce batch-resize undo deletion",
+    "reason": "Separate Image Resizer's file-creation path from Explorer undo semantics before proposing a fix."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue already contains a clean Explorer repro, and the attached Image Resizer settings confirm that overwrite-original mode was disabled. Current code only calls File.Replace when replace is true, so the next step is a maintainer reproduction that determines whether Image Resizer is registering a destructive shell operation or whether Explorer undo is misattributing the file operation.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body gives a concrete sequence: resize without overwriting originals, then press Ctrl+Z in the folder and observe both original and resized files disappear.",
+      "The attached settings show Image Resizer had imageresizer_replace set to false.",
+      "The attached Image Resizer log shows normal startup and registration rather than a crash or install failure.",
+      "Current ResizeOperation.ExecuteAsync only calls File.Replace when the Replace setting is true."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Replay the exact shell flow with replace disabled and inspect what file-system operation Explorer records as undoable before proposing a code change.",
+    "evaluated_at": "2026-09-09T16:56:19Z",
     "source_updated_at": "2026-08-14T19:28:04Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A product fix may be needed, but the current evidence does not yet prove whether the deletion is caused by Image Resizer's output path or by Explorer's undo interpretation of the shell operation.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "After resizing images without overwriting the originals, pressing Ctrl+Z in Explorer reportedly deletes both the generated copies and the original files.",
+    "known_information": [
+      "The issue targets Image Resizer on PowerToys 0.100.2.",
+      "The issue explicitly says the originals were not supposed to be overwritten.",
+      "The attached settings confirm that replace-original mode was disabled.",
+      "The attached Image Resizer logs do not show a corresponding module crash."
+    ],
+    "inferences": [
+      "The next engineering question is how Explorer recorded the undoable operation, not whether the UI repro exists.",
+      "Because the current code only replaces the source file when replace is enabled, maintainer reproduction should verify whether the destructive behavior is happening above the direct resize/write path."
+    ],
+    "analysis": "This is ready for local replay, not a generic info request. The issue and attachment already give the key user-facing setup, and the current code inspection narrows the open question to shell undo integration versus the resize write path.",
+    "initial_investigation": [
+      "Read the full issue body, automated triage comment, labels, and timeline.",
+      "Reviewed the attached Image Resizer settings and module log from the uploaded ZIP.",
+      "Inspected src/modules/imageresizer/ui/Models/ResizeOperation.cs to confirm that File.Replace is gated behind the replace-original setting."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-image-resizer-undo-49908",
+      "type": "reproduce",
+      "label": "Reproduce batch-resize undo deletion",
+      "primary": true,
+      "reproduce": {
+        "title": "Verify Explorer Ctrl+Z after non-destructive Image Resizer output",
+        "module": "Image Resizer",
+        "version_requirement": "PowerToys 0.100.2 or current main",
+        "prerequisites": [
+          "Image Resizer enabled",
+          "Replace-original mode disabled",
+          "A test folder with multiple source images"
+        ],
+        "setup": [
+          "Open the test folder in Explorer and confirm Image Resizer is configured to create copies, not overwrite originals."
+        ],
+        "steps": [
+          "Resize a batch of images from Explorer without enabling overwrite-original mode.",
+          "Confirm that resized copies were created alongside the source files.",
+          "Press Ctrl+Z in the same Explorer window.",
+          "Inspect which files Explorer removes and whether the originals, the generated copies, or both are affected."
+        ],
+        "expected_result": "Explorer undo should remove only the generated copies created by the resize operation and must not delete the original source images."
+      }
+    }
+  ]
 }

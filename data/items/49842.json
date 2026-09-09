@@ -1,48 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 49842,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-09T16:56:19Z",
+  "evaluated_at": "2026-09-09T16:56:19Z",
+  "source_updated_at": "2026-08-12T16:49:51Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49842",
+  "title": "Alt-Bindings in Keyboard Manager bugged after windows update",
+  "author": "sssssy",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "confidence": "Medium",
   "status": {
-    "glyph": "💬",
-    "label": "Reproducible symptom; diagnostics needed",
-    "detail": "Alt-based Keyboard Manager remaps miss the first chord after Alt is released, while Ctrl and Shift mappings work. The report lacks the exact Windows build and a bug-report archive needed to distinguish an OS input change from PowerToys state handling."
+    "glyph": "🧪",
+    "label": "Alt-remap regression is specific enough",
+    "detail": "The issue isolates a first-press failure after Alt release, and current Keyboard Manager engine code already has special Alt and WM_SYSKEYDOWN handling that needs direct replay."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Collect input-state diagnostics",
-    "reason": "The symptom is specific, but implementation design would be speculative without exact OS and remap configuration evidence."
+    "glyph": "🧪",
+    "label": "Reproduce Alt-first-press remap regression",
+    "reason": "Identify which Alt modifier-state branch is leaking through after recent Windows updates before proposing a fix."
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report cleanly isolates a specific Alt-only regression: the first Alt-based shortcut remap after releasing Alt emits the original Alt+key instead of the remapped target, while later presses work until Alt is released again. Current Keyboard Manager engine code has explicit AltGr and WM_SYSKEYDOWN modifier-state handling, so the right next step is a controlled maintainer replay on a current build.",
+    "evidence": [
+      "The issue says Alt-based remaps fail on the first press after Alt is released, then start working on subsequent presses.",
+      "The report says the same mappings work correctly when Ctrl or Shift is used instead of Alt.",
+      "The issue associates the change with a recent Windows update, making current-build replay important.",
+      "Current Keyboard Manager engine code contains dedicated AltGr and WM_SYSKEYDOWN state-handling branches in KeyboardEventHandlers.cpp."
+    ],
+    "recommended_action": "Replay the exact Alt-remap scenario on a current build and inspect the Alt modifier-state transitions before choosing a code path.",
+    "evaluated_at": "2026-09-09T16:56:19Z",
+    "source_updated_at": "2026-08-12T16:49:51Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix may be needed, but the current evidence does not yet prove which Alt-specific state path regressed after the reported Windows update.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "Alt-based Keyboard Manager remaps miss the first chord after Alt is released, while analogous Ctrl and Shift remaps continue to work.",
+    "known_information": [
+      "The issue targets Keyboard Manager on PowerToys 0.100.2.",
+      "The repro uses Alt-hjkl style remaps to cursor keys.",
+      "The first Alt-based press after releasing Alt emits the original Alt+key instead of the remapped result, but repeated presses work until Alt is released again.",
+      "The reporter ties the behavior to a recent Windows update."
+    ],
+    "inferences": [
+      "The problem is likely in Alt modifier-state tracking rather than in the generalized remap pipeline, because Ctrl and Shift variants still work.",
+      "The regression may involve a change in how Windows emits Alt key-down/key-up or WM_SYSKEYDOWN events after the update."
+    ],
+    "analysis": "The report is already specific enough to move to maintainer reproduction. Current engine code has special-case Alt state handling, but the artifact should stop at a reproduce action until a current replay identifies the exact branch that misfires.",
+    "initial_investigation": [
+      "Read the full issue body, labels, and timeline.",
+      "Inspected KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp around AltGr tracking and WM_SYSKEYDOWN handling.",
+      "Checked for assignees, attachments, and linked fixes; none were present."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-49842",
-      "type": "request_info",
-      "label": "Ask for Keyboard Manager diagnostics",
+      "id": "reproduce-alt-remap-49842",
+      "type": "reproduce",
+      "label": "Reproduce Alt-first-press remap regression",
       "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 49842,
-        "body": "Thanks for the detailed Alt-key reproduction. Could you attach a PowerToys bug-report ZIP and confirm your exact Windows build (`winver`), whether the problem affects Left Alt, Right Alt, or both, and whether it reproduces in Notepad? Please also include a screenshot of one affected remap and say whether PowerToys or the target app is running elevated. If practical, confirm whether uninstalling the suspected Windows update changes the behavior."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "reproduce": {
+        "title": "Verify first Alt-remap press after Alt release",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or current main on a machine with the reported Windows update behavior",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "Alt-based shortcut remaps such as Alt+H/J/K/L configured"
+        ],
+        "setup": [
+          "Prepare a simple text or cursor-target application where the original Alt+key behavior is visible."
+        ],
+        "steps": [
+          "Press an Alt-based remapped shortcut once after Alt has been fully released.",
+          "Observe whether the first press emits the original Alt+key instead of the remapped target.",
+          "Repeat the same shortcut again without fully resetting Alt state and compare the second press.",
+          "Repeat with a Ctrl-based or Shift-based equivalent to confirm the issue is Alt-specific."
+        ],
+        "expected_result": "Every Alt-based remap press should produce the remapped target immediately, including the first press after Alt is released."
+      }
     }
-  ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-12T16:49:51Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "Alt-based Keyboard Manager remaps miss the first chord after Alt is released, while Ctrl and Shift mappings work. The report lacks the exact Windows build and a bug-report archive needed to distinguish an OS input change from PowerToys state handling.",
-    "evidence": [
-      "Alt-based Keyboard Manager remaps miss the first chord after Alt is released, while Ctrl and Shift mappings work. The report lacks the exact Windows build and a bug-report archive needed to distinguish an OS input change from PowerToys state handling.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "The symptom is specific, but implementation design would be speculative without exact OS and remap configuration evidence.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-12T16:49:51Z"
-  }
+  ]
 }

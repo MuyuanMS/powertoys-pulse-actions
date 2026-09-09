@@ -1,47 +1,216 @@
 {
-  "number": 50039,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "triage",
-  "stage": "design_queued",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+  "number": 50039,
+  "track": "fix",
+  "stage": "awaiting_design_approval",
   "source_updated_at": "2026-08-20T17:46:29Z",
   "title": "I can't assign numpad * and  numpad + in the keyboard shortcuts editor",
   "url": "https://github.com/microsoft/PowerToys/issues/50039",
-  "summary": "The issue has a clear regression report, reproducible shortcut mappings, expected and actual output, and identifies the affected Keyboard Manager behavior. A focused investigation can compare numpad output generation with prior versions.",
-  "status": {
-    "glyph": "🔧",
-    "label": "Design queued",
-    "detail": "Start a focused Keyboard Manager design investigation comparing numpad key injection and shortcut serialization behavior between the current and prior working versions."
-  },
+  "author": "CarlosGtrz",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "Keyboard Manager appears to lose numpad operator identity in the new shortcut editor because the editor round-trips display names back into key codes and `*`/`+` are not disambiguated from the main keyboard characters.",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue has a clear regression report, reproducible shortcut mappings, expected and actual output, and identifies the affected Keyboard Manager behavior. A focused investigation can compare numpad output generation with prior versions.",
+    "rationale": "The issue is reproducible from the public report, and the current editor code shows a concrete round-trip ambiguity between display names and virtual-key identities for numpad operator keys.",
     "evidence": [
-      "Reporter is using PowerToys 0.100.2 and identifies Keyboard Manager as the affected area.",
-      "The reporter states that Alt+8 mapped to numpad * and Alt+= mapped to numpad + previously worked but now emit regular * and +.",
-      "The expected and actual key outputs are concrete and directly testable.",
-      "The issue has no assignee or linked fix recorded in the visible issue discussion."
+      "The reporter says Alt+8 -> numpad * and Alt+= -> numpad + worked in earlier builds but now emit regular * and + in 0.100.2.",
+      "KeyboardManagerEditorUI/Pages/MainPage.xaml.cs converts chosen key names back to stored codes through GetKeyCodeFromName before saving a shortcut mapping.",
+      "src/common/interop/keyboard_layout.cpp gives explicit numpad-only names to VK_DIVIDE, VK_DECIMAL, and numpad-origin navigation keys, but not to VK_MULTIPLY or VK_ADD.",
+      "src/common/interop/keyboard_layout.cpp implements LayoutMap::GetKeyFromName() as a first-match scan over display names, so duplicate labels resolve to whichever key appears first in the list."
     ],
-    "recommended_action": "Start a focused Keyboard Manager design investigation comparing numpad key injection and shortcut serialization behavior between the current and prior working versions.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
-    "source_updated_at": "2026-08-20T17:46:29Z"
+    "recommended_action": "Approve the layout-map round-trip fix so the shortcut editor stores and redisplays numpad operator keys as distinct virtual keys."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing linked fix attempt covers this regression, and the current editor/display-name path points to a concrete PowerToys code change."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Disambiguate numpad operator keys in the editor key map",
+      "root_cause": "The new shortcut editor persists selected keys by display name and converts them back with LayoutMap::GetKeyFromName(), but VK_MULTIPLY and VK_ADD currently reuse the plain character labels \"*\" and \"+\". That makes the round-trip ambiguous and lets the editor save the main-keyboard character key instead of the numpad operator virtual key.",
+      "plan": [
+        "Give VK_MULTIPLY and VK_ADD unique user-facing names in the shared layout map, alongside the existing \"/ (Numpad)\" and \". (Numpad)\" entries.",
+        "Keep dropdown capture and save logic using display names, but make the name-to-key round trip unique for shortcut targets.",
+        "Add focused regression coverage that enumerates the key list, resolves the saved names back to VKs, and verifies numpad operator mappings survive save/reload."
+      ],
+      "verification": [
+        "Create shortcut remaps for Alt+8 -> * (Numpad) and Alt+= -> + (Numpad), save them, reopen the editor, and confirm the same numpad targets are still shown.",
+        "Use the saved remaps in a target app and confirm they emit VK_MULTIPLY and VK_ADD instead of the regular keyboard character keys."
+      ],
+      "confidence": {
+        "score": 88,
+        "level": "green",
+        "rationale": "The current code path has a direct display-name collision and the symptom matches a save/load round-trip bug in the editor rather than a low-level injection failure."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Keyboard Manager shortcut mapping that used to send numpad operator keys now saves as the regular keyboard characters in the new editor.",
+    "known_information": [
+      "The report identifies version 0.100.2 and names Keyboard Manager as the affected area.",
+      "The affected mappings are Alt+8 -> numpad * and Alt+= -> numpad + on a laptop keyboard.",
+      "The issue is a regression from prior behavior and has no linked PR or assignee.",
+      "The automated triage comment marked reproduction as sufficient."
+    ],
+    "inferences": [
+      "The low-level engine can inject distinct numpad-origin keys, so the higher-probability failure is the editor’s serialization path before the mapping reaches the engine.",
+      "The ambiguity is limited to keys whose display names collide; the existing dedicated labels for / and decimal explain why the report singles out * and +."
+    ],
+    "analysis": "This is ready for an implementation-grade design because the public report identifies a small failing surface, and the shared keyboard layout map exposes the exact place where the numpad operator identity can be lost.",
+    "initial_investigation": [
+      "src/common/interop/keyboard_layout.cpp uses special labels for VK_DIVIDE and VK_DECIMAL but leaves VK_MULTIPLY and VK_ADD with layout-derived character names.",
+      "LayoutMap::GetKeyFromName() in src/common/interop/keyboard_layout.cpp returns the first matching display string from GetKeyNameList(false), so duplicate labels cannot round-trip safely.",
+      "KeyboardManagerEditorUI/Pages/MainPage.xaml.cs and KeyboardManagerEditorUI/Interop/KeyboardMappingService.cs both depend on GetKeyCodeFromName for shortcut save paths."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
       "id": "approve-design-50039",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve Keyboard Manager numpad-target design",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Approve a focused design investigation for this recent issue.",
+      "note": "High-confidence fix centered on shared keyboard display-name round-tripping.",
       "issue": {
         "number": 50039,
         "repository": "microsoft/PowerToys"
       }
     }
-  ]
+  ],
+  "design": {
+    "root_cause": "Keyboard Manager’s shortcut editor stores selected keys by display name, then converts those names back to virtual-key codes through LayoutMap::GetKeyFromName(). In src/common/interop/keyboard_layout.cpp, VK_MULTIPLY and VK_ADD are left with the same display strings as the shifted main-keyboard characters \"*\" and \"+\", while GetKeyFromName() returns the first matching label it finds. That makes the round trip ambiguous and causes numpad operator targets to be saved as the wrong key code.",
+    "evidence": [
+      "Observed: issue #50039 reports that shortcut targets meant to send numpad * and numpad + now send regular * and + in 0.100.2.",
+      "Observed: KeyboardManagerEditorUI/Pages/MainPage.xaml.cs builds saved shortcut strings by converting chosen key labels back into codes with GetKeyCodeFromName().",
+      "Observed: src/common/interop/keyboard_layout.cpp explicitly disambiguates \"/ (Numpad)\", \". (Numpad)\", and numpad-origin navigation keys, but not VK_MULTIPLY or VK_ADD.",
+      "Observed: LayoutMap::GetKeyFromName() does a first-match scan over display names, so duplicate names cannot preserve numpad identity.",
+      "Inferred: because the regression is limited to the editor and operator targets, the most likely failure point is the editor round-trip rather than the runtime injection layer."
+    ],
+    "affected_files": [
+      {
+        "path": "src/common/interop/keyboard_layout.cpp",
+        "purpose": "Defines the canonical display names and reverse lookup used by the Keyboard Manager editor.",
+        "symbols": [
+          "LayoutMap::GetKeyFromName",
+          "LayoutMap::LayoutMapImpl::UpdateLayout",
+          "LayoutMap::LayoutMapImpl::GetKeyNameList"
+        ]
+      },
+      {
+        "path": "src/common/interop/keyboard_layout.h",
+        "purpose": "Declares the shared layout-map interface used by the editor interop layer.",
+        "symbols": [
+          "LayoutMap"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardMappingService.cs",
+        "purpose": "Managed bridge that converts saved key names back into key codes for shortcut mappings.",
+        "symbols": [
+          "KeyboardMappingService.GetKeyCodeFromName",
+          "KeyboardMappingService.GetKeyboardKeysList"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs",
+        "purpose": "Builds and persists shortcut mappings from the editor’s selected key names.",
+        "symbols": [
+          "GetKeyCodes",
+          "AddMapping"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI.UnitTests/RemappingHelperTests.cs",
+        "purpose": "Existing managed test project suitable for save/reload and shortcut-editor regression coverage.",
+        "symbols": [
+          "RemappingHelperTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/common/interop/keyboard_layout.cpp",
+        "symbols": [
+          "LayoutMap::LayoutMapImpl::UpdateLayout"
+        ],
+        "current_behavior": "The layout map gives dedicated labels to some numpad-only keys but leaves VK_MULTIPLY and VK_ADD with plain character display names that collide with non-numpad keys.",
+        "change": "Assign unique labels to the numpad operator keys so the editor can distinguish them when users capture or pick them from the shortcut dropdown. Keep the labels human-readable and consistent with the existing numpad naming scheme.",
+        "code_block": "keyboardLayoutMap[VK_MULTIPLY] = L\"* (Numpad)\";\nkeyboardLayoutMap[VK_ADD] = L\"+ (Numpad)\";\nkeyboardLayoutMap[VK_SUBTRACT] = L\"- (Numpad)\";\n// preserve the existing explicit entries for / (Numpad), Enter (Numpad), and . (Numpad)",
+        "edge_cases": [
+          "Do not rename ordinary shifted character keys; only disambiguate the numpad operators.",
+          "Preserve current behavior for numpad-origin navigation aliases and saved mappings that already store numeric VK codes.",
+          "Check whether VK_SUBTRACT should be renamed to the same pattern for consistency without breaking any localized expectations."
+        ],
+        "tests": [
+          "Enumerate the shortcut key list and verify the visible labels for VK_MULTIPLY and VK_ADD are unique.",
+          "Verify GetKeyDisplayName() returns the same unique labels when a key is captured from the hook instead of chosen from the dropdown."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/common/interop/keyboard_layout.cpp",
+        "symbols": [
+          "LayoutMap::GetKeyFromName",
+          "LayoutMap::LayoutMapImpl::GetKeyNameList"
+        ],
+        "current_behavior": "Reverse lookup returns the first exact display-name match from the non-shortcut key list, so any duplicate label silently resolves to the wrong key.",
+        "change": "Keep the simple reverse lookup, but rely on the newly unique numpad labels and add a targeted regression assertion or helper to prevent future duplicate display names in the editor key list.",
+        "code_block": "const auto keyNames = impl->GetKeyNameList(false);\nfor (const auto& [value, key] : keyNames)\n{\n    if (key == name)\n    {\n        return value;\n    }\n}\n// test coverage guards against duplicate labels for editor-selectable keys",
+        "edge_cases": [
+          "The shortcut list inserts a synthetic None entry; the uniqueness check must ignore that placeholder.",
+          "Locale-driven character names can still duplicate by keyboard layout, so the regression guard should focus on editor-selectable numpad operator entries rather than inventing a global uniqueness invariant for every printable key."
+        ],
+        "tests": [
+          "Round-trip * (Numpad) and + (Numpad) through GetKeyDisplayName() -> GetKeyCodeFromName() and assert the result is VK_MULTIPLY / VK_ADD.",
+          "Confirm ordinary * and + character labels still resolve to the existing non-numpad keys."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEditorUI.UnitTests/RemappingHelperTests.cs",
+        "symbols": [
+          "RemappingHelperTests"
+        ],
+        "current_behavior": "Managed regression coverage focuses on remapping normalization and profile behavior, but it does not assert that shortcut-editor key labels round-trip to the intended numpad operator VKs.",
+        "change": "Add a focused editor regression that builds a shortcut mapping using the managed interop path, saves Alt+8 -> * (Numpad) and Alt+= -> + (Numpad), and verifies the stored TargetKeys use VK_MULTIPLY / VK_ADD and survive a reload.",
+        "code_block": "using var service = new KeyboardMappingService();\nAssert.AreEqual(VK_MULTIPLY, service.GetKeyCodeFromName(\"* (Numpad)\"));\nAssert.AreEqual(VK_ADD, service.GetKeyCodeFromName(\"+ (Numpad)\"));\n// persist a ShortcutKeyMapping and assert TargetKeys contains the expected VK codes",
+        "edge_cases": [
+          "Cover both dropdown selection and keyboard-capture display names if the test harness can access both paths.",
+          "Ensure the regression stays valid on layouts where the printable character for the top-row key is not literally the US \"+\" or \"*\" glyph."
+        ],
+        "tests": [
+          "Run KeyboardManagerEditorUI unit tests covering the managed save path.",
+          "Perform a manual save/reopen check in the running Keyboard Manager editor on a layout without a physical numpad."
+        ]
+      }
+    ],
+    "verify": [
+      "Build src/modules/keyboardmanager/KeyboardManagerEditorUI/KeyboardManagerEditorUI.csproj.",
+      "Build and run src/modules/keyboardmanager/KeyboardManagerEditorUI.UnitTests/KeyboardManagerEditorUI.UnitTests.csproj.",
+      "Open Keyboard Manager, add Alt+8 -> * (Numpad) and Alt+= -> + (Numpad), save, reopen the editor, and confirm the same targets remain selected.",
+      "Use the saved mappings in a target app and confirm they emit numpad operators rather than the regular keyboard characters."
+    ],
+    "risks": [
+      "Changing user-facing labels for numpad operators can affect saved-editor UX and any test baselines that expect the old text.",
+      "Locale-specific layouts may still produce other duplicate printable names; the fix should stay scoped to the confirmed numpad-operator regression instead of over-generalizing the entire key map."
+    ],
+    "alternatives": [
+      "Carry numeric virtual-key codes through the editor UI instead of round-tripping display names. This is more robust long-term but changes a wider surface than the current regression needs.",
+      "Special-case VK_MULTIPLY and VK_ADD only in managed code. Rejected because the shared layout map is the canonical display-name source used by both old and new editor paths."
+    ]
+  }
 }

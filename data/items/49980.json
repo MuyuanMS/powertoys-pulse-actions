@@ -1,33 +1,113 @@
 {
-  "number": 49980,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "number": 49980,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-08-17T19:42:03Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "[Keyboard Manager] glitches (requires restart) under heavy load",
+  "url": "https://github.com/microsoft/PowerToys/issues/49980",
+  "author": "DavidBabel",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "The report is strong enough for a maintainer-side Keyboard Manager stress repro, and its “stuck Win key until key press + disable/re-enable” behavior points to the same modifier-state class as the newer swapped-modifier bug rather than a vague performance complaint.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "Even though the report says the trigger is random under load, it specifies the exact remap (Alt -> Win), the visible stuck-key effect, and the manual reset path, which is enough to investigate the modifier state machine.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report uses a single remap: Alt is remapped to the Windows key.",
+      "Under heavy CPU spikes, the real Windows-key behavior becomes latched until Keyboard Manager is disabled and the Windows key is pressed once.",
+      "The reporter adds that trying to revert to a previous version can also break the settings flow, which suggests state persistence or cleanup concerns rather than a one-off application conflict.",
+      "No assignee, linked PR, or open duplicate was found in the current issue thread."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-08-17T19:42:03Z"
-  }
+    "recommended_action": "Run a local stress repro focused on modifier state cleanup for remapped Alt/Win paths and design a fix that cannot strand the effective Win key down after delayed or interrupted input sequences."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "This still looks like a PowerToys keyboard-state bug rather than an external hardware issue, and there is no linked fix attempt yet."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Harden remapped modifier release and recovery under delayed input conditions",
+      "root_cause": "The best current hypothesis is that heavy load exposes a path where the remapped Alt->Win state is injected or suppressed asymmetrically, leaving the effective Win key logically down until another explicit key transition forces the state machine to recover.",
+      "plan": [
+        "Reproduce the Alt->Win remap under input or CPU stress and capture the exact sequence that strands the Win state.",
+        "Normalize key-up handling and recovery for remapped modifier keys even when the injected/suppressed event pair is delayed or interrupted.",
+        "Add an engine regression that proves a remapped modifier cannot stay latched after the physical keys are released."
+      ],
+      "verification": [
+        "Under the failing remap and a stress condition, confirm Win+R or similar behavior no longer appears spontaneously after the physical keys are released.",
+        "Disable/re-enable and settings-save flows should continue to work after the fix."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "The stuck-Win symptom clearly points to modifier-state handling, but the exact stressed sequence still needs a direct repro to isolate the failing release path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A remapped Alt key can leave the effective Windows key stuck under heavy load until Keyboard Manager is disabled and the Windows key is pressed manually.",
+    "known_information": [
+      "The issue is on Windows 11 and PowerToys 0.101.2262.",
+      "The reporter uses Alt -> Win because the physical Alt key is broken.",
+      "The stuck state persists until manual recovery rather than clearing on its own.",
+      "No maintainer response or linked work is present."
+    ],
+    "inferences": [
+      "The failure likely sits in the Keyboard Manager engine’s modifier state tracking, because the user can clear it only with a real key transition.",
+      "The heavy-load qualifier suggests timing-sensitive cleanup rather than a static mapping configuration error."
+    ],
+    "analysis": "This should not be turned into a reporter information request yet. The remaining work is maintainer-side stress reproduction and engine tracing, which maps better to a reproduce action plus a tentative design hypothesis.",
+    "initial_investigation": [
+      "The current open-keyboard issue set does not expose another exact duplicate, but the symptom class overlaps with #50007’s stuck-modifier report.",
+      "Current Keyboard Manager tests already include stuck-key hardening for some paths, which makes a targeted engine regression the right next validation surface."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49980",
+      "type": "approve_design",
+      "label": "Approve Keyboard Manager stress-state design",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The hypothesis is useful now, but the exact delayed-release branch should be captured in a failing repro or engine test before code lands.",
+      "issue": {
+        "number": 49980,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-49980",
+      "type": "reproduce",
+      "label": "Reproduce stuck Win after Alt remap under load",
+      "primary": true,
+      "note": "Exercise the exact Alt -> Win mapping while generating CPU or UI load to trap the latching sequence.",
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version": "0.101.2262 or current main",
+        "prerequisites": [
+          "Configure Alt -> Win remapping.",
+          "Use a target app where unexpected Win-key behavior is obvious, such as Win+R opening Run."
+        ],
+        "steps": [
+          "Enable the Alt -> Win remap and begin interacting with the machine under moderate to heavy CPU load.",
+          "Trigger ordinary Alt-key usage patterns and then release the physical keys.",
+          "Watch for later keypresses such as R acting as if Win is still held.",
+          "Press the real Windows key once and compare whether that clears the latched state."
+        ],
+        "expected_result": "The remapped modifier should never remain logically held once the physical key is released, even under load."
+      }
+    }
+  ]
 }

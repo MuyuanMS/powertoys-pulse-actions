@@ -1,45 +1,123 @@
 {
-  "number": 50038,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "triage",
-  "stage": "triaged",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T08:06:02.7945569Z",
+  "number": 50038,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-08-20T17:17:39Z",
   "title": "Username path gets truncated, causing PowerToys to create config files in a wrong C:\\Users\\<truncated_name> folder",
   "url": "https://github.com/microsoft/PowerToys/issues/50038",
-  "summary": "The historical Mouse Without Borders LocalAppData use-after-free is already fixed in current and v0.100.2 source. The remaining command-line quoting risk does not explain the reported one-character truncation, so a current-version reproduction is required before a defensible fix design.",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs current reproduction",
-    "detail": "Request current-version diagnostics before designing a fix."
-  },
+  "author": "CarlosGtrz",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "The reported truncated user-profile path still looks real, but current source no longer contains the previously suspected LocalAppData lifetime bug, so the next useful step is a fresh reproduction package rather than a speculative code change.",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The historical Mouse Without Borders LocalAppData use-after-free is already fixed in current and v0.100.2 source. The remaining command-line quoting risk does not explain the reported one-character truncation, so a current-version reproduction is required before a defensible fix design.",
+    "rationale": "Focused code review removes the strongest historical root-cause candidate, while the remaining public report does not yet show which current path is truncating the profile name in 0.100.2/0.101 preview builds.",
     "evidence": [
-      "Current source copies SHGetKnownFolderPath output through wil::unique_cotaskmem_string before the buffer is released.",
-      "The historical use-after-free could corrupt a profile path, but that implementation is not present in the reported v0.100.2 source.",
-      "The remaining unquoted LocalAppData service argument is a hardening concern for whitespace or quotes, not evidence for truncating a numeric username by one character."
+      "The reporter says both 0.100.2 stable and 0.101 preview create C:\\Users\\2514 instead of C:\\Users\\25146 for Keyboard Manager files.",
+      "The issue has no assignee, linked PR, or maintainer diagnosis in the public thread.",
+      "Current source no longer exposes the old Mouse Without Borders LocalAppData lifetime/use-after-free pattern that was previously suspected for profile-path corruption.",
+      "The issue body does not include a current diagnostic ZIP, install scope details, or a confirmation that the same truncation still occurs on the latest available build after reboot."
     ],
-    "recommended_action": "Request a fresh latest-version reproduction and diagnostics that preserve the service command-line argument boundaries.",
-    "evaluated_at": "2026-08-28T08:06:02.7945569Z",
-    "source_updated_at": "2026-08-20T17:17:39Z"
+    "recommended_action": "Request a fresh latest-build reproduction package and the missing installation details before selecting a fix path."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix is still plausible, but the current public evidence is too weak to choose between the remaining path-resolution and install-time hypotheses without refreshed diagnostics."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Harden user-profile path resolution before module settings are materialized",
+      "root_cause": "The most plausible remaining explanations are a stale profile-path string crossing process/module boundaries or a module-specific startup path that rebuilds LocalAppData/config roots from truncated state. The current report is not enough to choose the exact failing boundary.",
+      "plan": [
+        "Capture a fresh reproduction on the latest available build and identify which process creates the truncated user directory.",
+        "Audit every startup path that resolves profile-relative settings locations for Keyboard Manager and any shared runner/service handoff.",
+        "Apply the smallest fix that keeps resolved user-profile paths stable and fully quoted from source discovery through settings creation."
+      ],
+      "verification": [
+        "Reproduce with the affected username length and confirm PowerToys only writes under the real profile directory.",
+        "Confirm no extra truncated directory is created across initial launch and after reboot."
+      ],
+      "confidence": {
+        "score": 36,
+        "level": "red",
+        "rationale": "The symptom is clear, but the earlier likely culprit is already absent from current source and the issue lacks the fresh diagnostics needed to identify the live failing path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys creates Keyboard Manager files under a truncated C:\\Users path, but the current public thread does not yet identify which current process or path handoff is producing the shortened profile name.",
+    "known_information": [
+      "The report claims the behavior reproduces on both 0.100.2 stable and 0.101 preview.",
+      "The unexpected directory contains Keyboard Manager default.json and settings.json.",
+      "The real profile path still contains other PowerToys data, which suggests a split or stale path source rather than a total profile-discovery failure.",
+      "No bug report ZIP or maintainer follow-up is present in the issue."
+    ],
+    "inferences": [
+      "The bug likely sits in a narrower profile-path handoff than a global Windows-known-folder failure, because some PowerToys files still land in the correct user profile.",
+      "The issue may involve Keyboard Manager-specific startup or service/module boundary handling rather than the general Settings UI path."
+    ],
+    "analysis": "This should remain in needs-information state. The public report is valuable, but revalidating old hypotheses without fresh diagnostics would create a weak and potentially wrong design artifact.",
+    "initial_investigation": [
+      "Current source no longer contains the historical LocalAppData lifetime bug previously suspected from older Mouse Without Borders code paths.",
+      "The issue is not actually duplicated by #50111; the dedupe digest kept #50038 as the canonical item and described #50111 as a different installer-upgrade problem.",
+      "No linked PR or assignee exists, so a refreshed artifact should focus on discriminating the exact failing process/path boundary."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after the truncated C:\\Users\\2514 folder is created on the latest available build.",
+        "why_needed": "This identifies which PowerToys process or module resolves the wrong profile path and whether the bad path is already present in startup/config logs.",
+        "how_to_collect": "Reproduce the bug, then submit a GitHub comment containing /bugreport immediately afterward."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Confirmation of the newest PowerToys build tested and whether the extra truncated directory still appears after a clean reboot on that build.",
+        "why_needed": "This distinguishes a stale older-build report from a still-current regression and tells maintainers whether to investigate release or main behavior first.",
+        "how_to_collect": "Install the newest available stable or preview build, reboot, reproduce once, and report the exact version and whether the unexpected directory still appears."
+      },
+      {
+        "evidence_type": "install_scope",
+        "information": "Whether the affected installation is per-user or per-machine, and whether Mouse Without Borders or any other module service starts before Keyboard Manager settings are first created.",
+        "why_needed": "This narrows the startup boundary that may be materializing the wrong path and separates general runner startup from module-specific service behavior.",
+        "how_to_collect": "Reply with the install scope shown by the installer choice or Apps settings, and note which PowerToys modules are enabled when the extra directory is created."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "request_info-50038",
+      "id": "approve-design-50038",
+      "type": "approve_design",
+      "label": "Approve profile-path investigation design",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current hypothesis is intentionally low-confidence until fresh diagnostics identify the live truncation boundary.",
+      "issue": {
+        "number": 50038,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "request-info-50038",
       "type": "request_info",
-      "label": "Request current reproduction and profile-path diagnostics",
+      "label": "Request fresh bug report and install scope",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
       "comment": {
         "issue": 50038,
         "repository": "microsoft/PowerToys",
-        "body": "The historical profile-path lifetime defect is already fixed in the current and reported source, so we need a fresh reproduction before changing a different path boundary. Please update to the latest stable PowerToys release and confirm whether the truncated profile-directory behavior still occurs. If it does, attach a newly generated PowerToys bug report ZIP and provide the exact Windows user-profile path, the unexpected directory path created, installation scope, whether Mouse Without Borders is enabled, and the approximate time of reproduction. Please also include the service command line from Windows Services with personal values redacted, preserving quotation and argument boundaries."
+        "body": "Thanks for the concrete directory comparison and for calling out that both the stable and preview builds showed the same truncated profile path. I rechecked the most likely historical path-lifetime culprit and it is no longer present in current source, so the next useful step is a fresh reproduction package that shows which live process is still creating the wrong folder.\n\n**Needed**\n1. Please reproduce the issue on the newest PowerToys build you can test, then submit a GitHub comment containing `/bugreport` immediately afterward so the diagnostic ZIP captures the bad path while it is still live.\n2. Please confirm the exact PowerToys version you reproduced, whether the extra truncated directory still appears after a clean reboot on that build, and whether the installation is per-user or per-machine.\n3. Please note whether Mouse Without Borders or any other PowerToys service-backed module is enabled when the unexpected directory is created.\n\nThis will distinguish a still-current profile-path regression from an older fixed path and tell us which startup boundary to inspect before proposing code changes."
       }
     }
   ]

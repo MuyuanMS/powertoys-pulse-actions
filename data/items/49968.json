@@ -1,34 +1,118 @@
 {
-  "number": 49968,
+  "schemaVersion": 5,
   "kind": "issue",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
+  "owes": "maintainer",
+  "pending_author": false,
+  "number": 49968,
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "design_queued",
   "source_updated_at": "2026-08-17T06:57:49Z",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "The upstream thread is waiting for reporter evidence or confirmation requested by triage."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for reporter follow-up",
-    "reason": "Wait for the reporter to provide the requested current-version reproduction or diagnostics before investigating code."
-  },
-  "actions": [],
-  "confidence": "Medium",
+  "title": "[Install] Install fails with 0x80070002 when user TEMP/TMP is on RAM‑Disk",
+  "url": "https://github.com/microsoft/PowerToys/issues/49968",
+  "author": "WHJWNAVY",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "0.100.2"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "The issue body already contains a strong installer root-cause hypothesis and workaround, so the next useful step is a maintainer reproduction and design around elevation-safe staging rather than another generic bug-report request.",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The upstream thread is waiting for reporter evidence or confirmation requested by triage.",
+    "status": "actionable_design",
+    "rationale": "The public report spells out a narrow environment change, the failing bootstrapper stage, the error code, and a working workaround, which is enough to design around the elevated child-process staging path.",
     "evidence": [
-      "The upstream thread is waiting for reporter evidence or confirmation requested by triage.",
-      "Latest triage request: <!-- powertoys-ai-triage:canonical:v1 --> <!-- powertoys-ai-triage:input-sha256:0d28fd86bd6b478dd471a512a13c8363644ef058425cdec7130a990fe68002ba --> ## 🧭 Triage summary ### 🙋 For the issue author @WHJWNAVY, please revi"
+      "The report moves user TEMP/TMP to a RAM-disk and then reproduces a normal-user installer failure at the elevated child-process launch step.",
+      "The visible error is 0x80070002 (ERROR_FILE_NOT_FOUND).",
+      "The issue body states that the WiX Burn bootstrapper extracts the inner bundle under %TEMP%\\{GUID}\\.be\\ and that the elevated context cannot access that file on the RAM-disk.",
+      "Restoring TEMP/TMP to a physical disk path works around the issue."
     ],
-    "recommended_action": "Wait for the reporter to provide the requested current-version reproduction or diagnostics before investigating code.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-08-17T06:57:49Z"
-  }
+    "recommended_action": "Approve a focused installer design that stages elevation payloads in a UAC-accessible location or fails early with a precise message when the temp path cannot be shared across the elevation boundary."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt is visible for this specific RAM-disk/UAC staging bug, and the report provides a credible installer-layer root cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Stage elevated installer payloads outside user-only RAM-disk temp paths",
+      "root_cause": "The bootstrapper appears to stage the elevated child bundle under a user TEMP/TMP location that the elevated context cannot reopen when that temp path is implemented by a RAM-disk with different visibility or ACL semantics.",
+      "plan": [
+        "Reproduce the installer flow with TEMP/TMP redirected to a RAM-disk and confirm the failing child-bundle path at elevation time.",
+        "Move the elevated handoff to a machine-accessible staging location or preflight the temp path and fail before elevation with a specific remediation message.",
+        "Add installer validation for redirected TEMP/TMP scenarios so the bootstrapper no longer silently reaches a file-not-found failure at elevation time."
+      ],
+      "verification": [
+        "Install PowerToys with TEMP/TMP redirected to a RAM-disk and confirm the bootstrapper either succeeds or gives the new explicit preflight failure before breaking the install.",
+        "Verify the normal physical-disk TEMP/TMP path still installs successfully without regressing existing flows."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The public report is unusually specific about the failing bootstrapper boundary, but the exact staging code path still needs a maintainer-side repro because Burn/elevation behavior is partly external to the repository."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys installation fails only when TEMP/TMP points at a RAM-disk, and the report already narrows the problem to the bootstrapper’s elevated child-process handoff.",
+    "known_information": [
+      "The issue includes a bootstrapper log attachment and a screenshot of the installer error.",
+      "The reporter gave concrete reproduction steps and a working workaround.",
+      "The public report already states the suspected failing extracted path under %TEMP%\\{GUID}\\.be\\.",
+      "No assignee or linked PR is visible."
+    ],
+    "inferences": [
+      "This is likely an elevation-boundary staging issue rather than a generic MSI failure.",
+      "Because the workaround is to move TEMP/TMP back to disk, the fix likely belongs in bootstrapper staging or preflight validation rather than in application payload code."
+    ],
+    "analysis": "The old automated request for a bug report ZIP is not the best next step. The report is already strong enough to justify a maintainer-side installer repro and a targeted design hypothesis.",
+    "initial_investigation": [
+      "The installer repository still contains the older WinUI3Apps custom action and broader installer hardening work, but no linked issue or PR in this thread targets the RAM-disk temp/elevation scenario directly.",
+      "This issue is distinct from #49992/#49996, which focus on mixed-version WinUI3Apps copies after upgrade rather than temp-path staging before elevation."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49968",
+      "type": "approve_design",
+      "label": "Approve RAM-disk installer staging design",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The report is already specific enough for installer design work; remaining uncertainty is in the exact Burn/elevation handoff implementation.",
+      "issue": {
+        "number": 49968,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-49968",
+      "type": "reproduce",
+      "label": "Reproduce installer failure with RAM-disk TEMP",
+      "primary": true,
+      "note": "Capture the exact extracted child-bundle path and elevation boundary before narrowing the bootstrapper fix.",
+      "reproduce": {
+        "module": "Installer bootstrapper",
+        "version": "0.100.2-x64 or current equivalent bundle",
+        "prerequisites": [
+          "Redirect user TEMP and TMP to a RAM-disk path.",
+          "Run the standard PowerToys installer as a normal user and allow it to elevate normally."
+        ],
+        "steps": [
+          "Start the installer with TEMP/TMP redirected to the RAM-disk.",
+          "Proceed until the installer launches the elevated child process.",
+          "Observe whether the child bundle path under %TEMP%\\{GUID}\\.be\\ is present and accessible to the elevated context.",
+          "Capture whether the install fails with 0x80070002 at the handoff step."
+        ],
+        "expected_result": "The installer should either complete successfully or fail early with a targeted message instead of file-not-found during elevation.",
+        "attachments": [
+          "https://github.com/user-attachments/files/31132312/powertoys-bootstrapper-msi-0.100.2_20260817144040.log"
+        ]
+      }
+    }
+  ]
 }

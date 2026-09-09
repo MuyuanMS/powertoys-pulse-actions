@@ -1,32 +1,403 @@
 {
   "schemaVersion": 5,
+  "id": "pr-50188",
   "number": 50188,
   "kind": "pr",
-  "generated_at": "2026-09-08T22:26:47Z",
-  "evaluated_at": "2026-09-08T22:26:47Z",
+  "track": "review",
+  "stage": "request_changes",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-09T17:09:20.645Z",
+  "evaluated_at": "2026-09-09T17:09:20.645Z",
   "source_updated_at": "2026-09-08T19:43:11Z",
   "head_sha": "3db9019f03e09355f6420f634a921ec3fd725543",
-  "stage": "review_blocked",
-  "actions": [],
-  "blockers": [
+  "title": "CmdPal: Icons (8/n) - Add icon protocols and defer app icon extraction",
+  "url": "https://github.com/microsoft/PowerToys/pull/50188",
+  "repository": "microsoft/PowerToys",
+  "author": "jiripolasek",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Product-Command Palette",
+    "Ready for review"
+  ],
+  "confidence": "High",
+  "summary": "Resumed from stale fork PR 506 and local checkout <PowerToysCheckout> refreshed the mirror onto current upstream head 3db9019f03e09355f6420f634a921ec3fd725543, and because force-push was blocked created branch pr-iterate/50188-v3 with fork PR 732. The fork review loop consumed the already-posted Copilot results before issuing any new request, applied six fork-side fix commits, converged to a zero-comment Copilot review at 2026-09-09T16:58:51Z on fork head 4269fc42620e138e770dabb753c675d0fa7c9c84, and revalidated the current head with targeted Debug x64 builds and tests. The current upstream head still needs maintainer-facing review notes about ordered candidate resolution, usable fallback detection, Installed Apps placeholder/generic fallback behavior, and font-family propagation, so the concluded result is a current-head request_changes draft.",
+  "status": {
+    "glyph": "ACTION",
+    "label": "Current-head request-changes review ready",
+    "detail": "Current upstream head 3db9019f03e09355f6420f634a921ec3fd725543 is still the reviewed head. Fork PR 732 converged with zero new published Copilot comments at 2026-09-09T16:58:51Z on head 4269fc42620e138e770dabb753c675d0fa7c9c84, unresolved Copilot threads are zero, and the targeted Debug x64 validation passed."
+  },
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Review the current-head request-changes action",
+    "reason": "After explicit maintainer authorization and one final freshness check, publish the validated request-changes review below as separate general PR comments."
+  },
+  "phase0": {
+    "verdict": "proceed",
+    "disposition": "Proceed",
+    "author": "jiripolasek",
+    "author_association": "COLLABORATOR",
+    "bar": "repository collaborator; routine community-contributor process review skipped",
+    "who_owes_next": "Maintainer review decision",
+    "owes": "maintainer",
+    "gates_tripped": [],
+    "processAsks": [],
+    "summary": "The PR is open, non-draft, collaborator-authored, and the current reported checks are green, so no process blocker remains."
+  },
+  "judgment": {
+    "status": "review_findings",
+    "rationale": "The reviewed upstream head is current and the fork loop converged, but the current upstream implementation still needs follow-ups around end-to-end candidate resolution, rejecting unusable fallbacks before they suppress later candidates, preserving GenericAppIcon through deferred Installed Apps paths, and threading custom font families through glyph fallback preparation.",
+    "evidence": [
+      "Current upstream head remains 3db9019f03e09355f6420f634a921ec3fd725543 with source_updated_at 2026-09-08T19:43:11Z.",
+      "The stale v2 mirror was resumed rather than restarted; branch protection blocked force-pushing pr-iterate/50188-v2, so the current review continued on pr-iterate/50188-v3 with fork PR 732.",
+      "Existing Copilot results on fork PR 732 were inspected and consumed before any new review request was sent, so no outstanding request was duplicated.",
+      "The freshest Copilot review submitted at 2026-09-09T16:58:51Z on fork head 4269fc42620e138e770dabb753c675d0fa7c9c84 produced zero new published comments.",
+      "Get-UnresolvedCopilotThreads.ps1 now reports 0 unresolved Copilot threads for fork PR 732.",
+      "Manual Debug x64 validation passed for runner, CmdPalModuleInterface, the toolkit, Apps, UI, and the focused unit-test projects; targeted tests passed 85 UI tests, 8 Apps tests, and 22 toolkit tests.",
+      "The validated current-head follow-ups are reflected in the proposed comments below."
+    ],
+    "recommended_action": "After explicit approval and one final freshness check, publish a REQUEST_CHANGES review containing the validated general review notes below.",
+    "evaluated_at": "2026-09-09T17:09:20.645Z",
+    "source_updated_at": "2026-09-08T19:43:11Z"
+  },
+  "proposed_comments": [
     {
-      "detail": "The review has one unresolved automated review finding concerning executable fallback candidates: when thumbnail extraction fails, an executable may still be accepted as a direct image fallback, preventing the generic icon fallback from being reached.",
-      "remediation": "Update the implementation so executable fallback candidates are rejected as direct image sources, or continue to the next candidate after image decoding fails. Add focused coverage for the all-candidates-fail path, rerun the automated review, and continue until there are zero new findings and zero unresolved review threads."
+      "id": "ordered-candidate-resolution",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Resolve each app-icon candidate end-to-end before advancing to the next fallback",
+      "confidence": {
+        "score": 96,
+        "rationale": "The converged fork diff had to separately fix indexed candidates, missing rooted files, directly renderable SVG/image candidates, and duplicate extraction for ordinary executable candidates before the ordered-fallback loop became coherent."
+      },
+      "body": "### Resolve each app-icon candidate end-to-end before advancing to the next fallback\n\n**Severity:** `high`\n\nThe current app-icon path still mixes thumbnail extraction and ordinary conversion in ways that let one candidate interfere with the next one. Indexed binary references, missing rooted files, directly renderable SVG/image candidates, and ordinary executable candidates need different handling, but the overall rule is the same: finish the current candidate's applicable resolution path before moving on. Otherwise an earlier valid candidate can be skipped, a missing candidate can surface an unrelated shell icon, or a cold executable path can pay duplicate extraction cost before the ordered fallback is even considered.\n\nPlease restructure the candidate loop so that explicit indexed references and directly renderable assets are handled on their own path, missing rooted files never reach the shell-thumbnail path, and ordinary shell binaries fall back to converter-based extraction only after their thumbnail path misses.",
+      "disposition": "proposed",
+      "in_diff": false
     },
     {
-      "detail": "Required local validation did not complete during this bounded review. The initial restore failed for insufficient disk space; space was recovered later in the run, but there was not enough time before the build-initiation cutoff to rerun the changed-project build and affected tests.",
-      "remediation": "In the next bounded run, rerun dependency restoration and the required Debug builds, then run the affected Command Palette tests before resuming review convergence."
+      "id": "usable-fallback-validation",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep walking until a fallback can actually render",
+      "confidence": {
+        "score": 92,
+        "rationale": "The fork validation needed extra guards for existing non-image files and non-decodable URI candidates because existence or a recognized scheme alone still let later valid fallbacks get masked."
+      },
+      "body": "### Keep walking until a fallback can actually render\n\n**Severity:** `high`\n\nThe fallback loop should stop only when a candidate can really produce the intended icon, not merely when it is syntactically shaped like a path or URI. Local non-image files and undecodable URI candidates can still look acceptable early, but they fail only later during image materialization and prevent a later valid fallback from ever being tried.\n\nPlease make the fallback acceptance criteria reflect actual renderability, or continue with the remaining candidates when URI/file materialization fails instead of treating the first plausible-looking candidate as success.",
+      "disposition": "proposed",
+      "in_diff": false
+    },
+    {
+      "id": "installed-apps-placeholder-and-terminal-fallback",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Preserve GenericAppIcon through deferred Installed Apps row and hero icon loading",
+      "confidence": {
+        "score": 94,
+        "rationale": "The validated fork fixes needed both an immediate placeholder and a terminal generic fallback to keep failed deferred icon paths from leaving blank or recycled UI state."
+      },
+      "body": "### Preserve GenericAppIcon through deferred Installed Apps row and hero icon loading\n\n**Severity:** `medium`\n\nInstalled Apps should keep `GenericAppIcon` as both the immediate placeholder and the terminal fallback for row and hero icon requests. Without that, a deferred Win32 icon request can leave a cold row blank, keep a recycled icon visible, or exhaust its candidate list without restoring a stable generic app glyph.\n\nPlease keep the generic app icon visible until the deferred request is ready to replace it, and include it as the final ordered candidate for both the row and hero request shapes.",
+      "disposition": "proposed",
+      "in_diff": false
+    },
+    {
+      "id": "glyph-font-family-propagation",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Thread the declared font family through protocol fallback preparation",
+      "confidence": {
+        "score": 91,
+        "rationale": "The converged fork diff had to thread IconData.FontFamily through IIconProtocolProcessor and IconLoaderService before glyph fallbacks stopped regressing to Segoe UI."
+      },
+      "body": "### Thread the declared font family through protocol fallback preparation\n\n**Severity:** `medium`\n\nWhen an app-icon protocol candidate eventually falls back to a glyph, it should still honor the `FontFamily` that came in with the outer `IconData`. Right now the protocol preparation path drops that context, so a custom glyph fallback can silently render in Segoe UI instead of the declared font.\n\nPlease carry the outer font family through protocol preparation and use it when a glyph candidate becomes the winning fallback.",
+      "disposition": "proposed",
+      "in_diff": false
     }
   ],
-  "build": {
-    "status": "blocked",
-    "restore": "initial attempt failed for insufficient disk space; environment space was recovered after the cutoff",
-    "changed_projects": "not run",
-    "tests": "not run"
+  "actions": [
+    {
+      "id": "request-changes-50188-current-head",
+      "type": "request_changes",
+      "label": "Request changes with four separate general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "No inline suggestions: these validated findings are broader current-head follow-ups that are clearer as separate general PR conversation comments. Recheck the upstream head, checks, comments, reviews, and thread state immediately before publication.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50188,
+        "pullRequest": 50188,
+        "head_sha": "3db9019f03e09355f6420f634a921ec3fd725543",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for continuing the CmdPal app-icon protocol work. I rechecked the current head and still see follow-ups around end-to-end candidate resolution, usable fallback detection, Installed Apps placeholder/generic fallback behavior, and custom glyph font-family propagation."
+      }
+    }
+  ],
+  "publicPayload": {
+    "comments": [
+      {
+        "id": "ordered-candidate-resolution",
+        "kind": "companion",
+        "severity": "high",
+        "title": "Resolve each app-icon candidate end-to-end before advancing to the next fallback",
+        "body": "### Resolve each app-icon candidate end-to-end before advancing to the next fallback\n\n**Severity:** `high`\n\nThe current app-icon path still mixes thumbnail extraction and ordinary conversion in ways that let one candidate interfere with the next one. Indexed binary references, missing rooted files, directly renderable SVG/image candidates, and ordinary executable candidates need different handling, but the overall rule is the same: finish the current candidate's applicable resolution path before moving on. Otherwise an earlier valid candidate can be skipped, a missing candidate can surface an unrelated shell icon, or a cold executable path can pay duplicate extraction cost before the ordered fallback is even considered."
+      },
+      {
+        "id": "usable-fallback-validation",
+        "kind": "companion",
+        "severity": "high",
+        "title": "Keep walking until a fallback can actually render",
+        "body": "### Keep walking until a fallback can actually render\n\n**Severity:** `high`\n\nThe fallback loop should stop only when a candidate can really produce the intended icon, not merely when it is syntactically shaped like a path or URI. Local non-image files and undecodable URI candidates can still look acceptable early, but they fail only later during image materialization and prevent a later valid fallback from ever being tried."
+      },
+      {
+        "id": "installed-apps-placeholder-and-terminal-fallback",
+        "kind": "companion",
+        "severity": "medium",
+        "title": "Preserve GenericAppIcon through deferred Installed Apps row and hero icon loading",
+        "body": "### Preserve GenericAppIcon through deferred Installed Apps row and hero icon loading\n\n**Severity:** `medium`\n\nInstalled Apps should keep `GenericAppIcon` as both the immediate placeholder and the terminal fallback for row and hero icon requests. Without that, a deferred Win32 icon request can leave a cold row blank, keep a recycled icon visible, or exhaust its candidate list without restoring a stable generic app glyph."
+      },
+      {
+        "id": "glyph-font-family-propagation",
+        "kind": "companion",
+        "severity": "medium",
+        "title": "Thread the declared font family through protocol fallback preparation",
+        "body": "### Thread the declared font family through protocol fallback preparation\n\n**Severity:** `medium`\n\nWhen an app-icon protocol candidate eventually falls back to a glyph, it should still honor the `FontFamily` that came in with the outer `IconData`. Right now the protocol preparation path drops that context, so a custom glyph fallback can silently render in Segoe UI instead of the declared font."
+      }
+    ]
   },
-  "convergence": {
-    "status": "not_converged",
-    "unresolved_review_threads": 1,
-    "latest_review_had_zero_new_findings": false
-  }
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "review_decision": "CHANGES_REQUESTED",
+    "head_sha": "3db9019f03e09355f6420f634a921ec3fd725543",
+    "changed_file_count": 24,
+    "issue_comment_count": 2,
+    "review_count": 2,
+    "reported_checks": {
+      "failing": 0,
+      "pending": 0,
+      "note": "dependency-review, pr-intake, detect-telemetry-events, PowerToys CI, the CmdPal SDK build leg, the x64 and arm64 Release legs, and license/cla all succeeded on the current head."
+    }
+  },
+  "validation": {
+    "status": "passed",
+    "configuration": "Debug x64",
+    "builds": [
+      {
+        "name": "PowerToys.slnx restore",
+        "result": "passed",
+        "detail": "The scripted build-essentials restore succeeded in the refreshed local checkout before the runner build hit shared vcpkg contention."
+      },
+      {
+        "name": "runner.vcxproj",
+        "result": "passed",
+        "detail": "Manual msbuild succeeded with /p:VcpkgManifestInstall=false and /p:VcpkgInstalledDir=<PowerToysCheckout>\\vcpkg_installed\\x64 after the scripted path was blocked by shared registry-lock contention and an inherited empty GIT_CONFIG_VALUE_2 environment value."
+      },
+      {
+        "name": "CmdPalModuleInterface.vcxproj",
+        "result": "passed"
+      },
+      {
+        "name": "Microsoft.CommandPalette.Extensions.Toolkit.csproj",
+        "result": "passed"
+      },
+      {
+        "name": "Microsoft.CmdPal.Ext.Apps.csproj",
+        "result": "passed"
+      },
+      {
+        "name": "Microsoft.CmdPal.UI.csproj",
+        "result": "passed"
+      },
+      {
+        "name": "Microsoft.CmdPal.UI.UnitTests.csproj",
+        "result": "passed"
+      },
+      {
+        "name": "Microsoft.CmdPal.Ext.Apps.UnitTests.csproj",
+        "result": "passed"
+      },
+      {
+        "name": "Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj",
+        "result": "passed"
+      }
+    ],
+    "tests": [
+      {
+        "name": "Microsoft.CmdPal.UI focused unit tests",
+        "result": "passed",
+        "passed": 85,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "name": "Microsoft.CmdPal.Ext.Apps unit tests",
+        "result": "passed",
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "name": "Microsoft.CommandPalette.Extensions.Toolkit unit tests",
+        "result": "passed",
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "outputs": {
+      "powerToysExe": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+      "cmdPalModuleDll": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll",
+      "cmdPalUiExe": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe",
+      "uiTests": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CmdPal.UI.UnitTests.dll",
+      "appsTests": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CmdPal.Ext.Apps.UnitTests.dll",
+      "toolkitTests": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.dll"
+    },
+    "diff_check": "passed",
+    "notes": [
+      "POWERTOYS_DISABLE_SPECTRE=1 was used throughout validation.",
+      "The scripted build-essentials path was partially blocked by shared vcpkg registry-lock contention and an inherited empty GIT_CONFIG_VALUE_2 environment value, so the final successful validation used manual msbuild fallback with the populated <PowerToysCheckout>\\vcpkg_installed\\x64 dependency tree.",
+      "The current fork validation branch intentionally adds IconPathParser.cs and IconPathParserTests.cs beyond the upstream 24-file diff so that uppercase indexed binary references are covered by the same ordered-fallback fix set."
+    ],
+    "logs": [
+      "<local-artifact>",
+      "<local-artifact>",
+      "<local-artifact>",
+      "<local-artifact>",
+      "<local-artifact>",
+      "<local-artifact>",
+      "<local-artifact>",
+      "<local-artifact>",
+      "<local-artifact>",
+      "<local-artifact>"
+    ]
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-09T17:09:20.645Z",
+    "head_sha": "3db9019f03e09355f6420f634a921ec3fd725543",
+    "source_updated_at": "2026-09-08T19:43:11Z",
+    "head_matches_reviewed_upstream": true,
+    "upstream_changed_file_count": 24,
+    "fork_review_changed_file_count": 26,
+    "exact_scope_verified": false,
+    "fork_review_commit": "4269fc42620e138e770dabb753c675d0fa7c9c84",
+    "fork_review_completed_at": "2026-09-09T16:58:51Z",
+    "note": "The validated fork review branch intentionally carried two support-file follow-ups beyond the upstream 24-file diff while staying pinned to the current upstream head and preserving the authored scope for the maintainer-facing comments."
+  },
+  "freshReview": {
+    "status": "completed_clean",
+    "stored_request_timestamp": null,
+    "latest_review_at": "2026-09-09T16:58:51Z",
+    "fork_pr": 732,
+    "fork_head": "4269fc42620e138e770dabb753c675d0fa7c9c84",
+    "published_comments": 0,
+    "unresolved_threads": 0,
+    "converged": true
+  },
+  "copilot": {
+    "status": "clean_zero_published_comments",
+    "fork_pr": 732,
+    "reviewed_upstream_head": "3db9019f03e09355f6420f634a921ec3fd725543",
+    "current_fork_head": "4269fc42620e138e770dabb753c675d0fa7c9c84",
+    "published_threads_total": 8,
+    "threads_replied": 8,
+    "threads_resolved": 8,
+    "unresolved_threads": 0,
+    "latest_completed_review_at": "2026-09-09T16:58:51Z",
+    "latest_completed_review_commit": "4269fc42620e138e770dabb753c675d0fa7c9c84",
+    "latest_completed_review_published_comments": 0,
+    "converged": true,
+    "convergence_requirement": "Satisfied: the freshest review submitted after the final request contained zero published comments and the Copilot thread count is zero."
+  },
+  "threads": {
+    "copilot": {
+      "total": 8,
+      "resolved": 8,
+      "unresolved": 0
+    },
+    "spelling_bot": {
+      "observed": 1,
+      "status": "resolved",
+      "detail": "The single check-spelling thread on the fork was replied to and resolved after replacing the imageres test sample."
+    },
+    "upstream": {
+      "review_threads_reviewed": 2,
+      "new_writes": 0
+    }
+  },
+  "fork_pr": {
+    "repository": "MuyuanMS/PowerToys",
+    "number": 732,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/732",
+    "state": "OPEN",
+    "branch": "pr-iterate/50188-v3",
+    "base_branch": "pr-iterate/50187-v2",
+    "head_sha": "4269fc42620e138e770dabb753c675d0fa7c9c84",
+    "reviewed_upstream_head": "3db9019f03e09355f6420f634a921ec3fd725543",
+    "file_count": 26,
+    "scope_matches_upstream": false,
+    "scope_note": "Compared with the upstream 24-file diff, the fork review branch adds IconPathParser.cs and IconPathParserTests.cs to validate case-insensitive indexed-binary handling for the same current-head issue set."
+  },
+  "fork_changes": {
+    "recent_commits": [
+      {
+        "sha": "4269fc42620e138e770dabb753c675d0fa7c9c84",
+        "subject": "Avoid duplicate extraction for ordinary app icon binaries"
+      },
+      {
+        "sha": "7cc13d1112c2506fa4826ab5b1583d85f96c3f01",
+        "subject": "Address final published app icon review finding"
+      },
+      {
+        "sha": "80b120544ca41b551dcb6db9ba02c0a5e88c8a4c",
+        "subject": "Address suppressed app icon review findings"
+      },
+      {
+        "sha": "cc8cae9a4772e6636f0c7eea635c9976cf4b14ff",
+        "subject": "Address third app icon review round"
+      },
+      {
+        "sha": "e8b097ddd344377f84cc7dc173119040faec0bf0",
+        "subject": "Address second app icon review round"
+      },
+      {
+        "sha": "28674fc71f2cd535f1910d2284c71f0e5c789221",
+        "subject": "Address app icon fallback review findings"
+      }
+    ],
+    "new_fork_writes_this_drain": [
+      "pr-iterate/50188-v3",
+      "fork PR 732",
+      "commit 28674fc71f2cd535f1910d2284c71f0e5c789221",
+      "commit e8b097ddd344377f84cc7dc173119040faec0bf0",
+      "commit cc8cae9a4772e6636f0c7eea635c9976cf4b14ff",
+      "commit 80b120544ca41b551dcb6db9ba02c0a5e88c8a4c",
+      "commit 7cc13d1112c2506fa4826ab5b1583d85f96c3f01",
+      "commit 4269fc42620e138e770dabb753c675d0fa7c9c84"
+    ]
+  },
+  "workflow": {
+    "phase": "review_ready",
+    "resume_action": "resume-review-loop",
+    "stored_request_timestamp": null,
+    "consumed_existing_request": true,
+    "duplicate_request_avoided": true,
+    "force_push_blocked": true,
+    "superseded_fork_pr": 506,
+    "active_fork_pr": 732
+  },
+  "safe_actions": [
+    "Perform one final live freshness check before any maintainer publication.",
+    "If the current upstream head is unchanged, publish the validated REQUEST_CHANGES review as four separate general PR comments.",
+    "Do not write to microsoft/PowerToys without explicit maintainer approval."
+  ],
+  "needs_revalidation": false,
+  "blockers": [],
+  "upstream_writes": false,
+  "dashboard_modified": false
 }

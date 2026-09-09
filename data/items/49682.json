@@ -1,34 +1,96 @@
 {
+  "schemaVersion": 5,
   "number": 49682,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "stage": "reproduction_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-09T16:56:19Z",
+  "evaluated_at": "2026-09-09T16:56:19Z",
   "source_updated_at": "2026-08-15T14:48:52Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49682",
+  "title": "KBM -  Editor doesn't launch (nothing happens after clicking the button)",
+  "author": "slt-uxd",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback"
+  ],
+  "assignees": [],
+  "comments": 5,
+  "confidence": "Medium",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "The upstream thread is waiting for reporter evidence or confirmation requested by triage."
+    "glyph": "🧪",
+    "label": "New editor crash is already evidenced",
+    "detail": "Multiple reporters supplied bug-report archives and a workaround that narrows the problem to the new Keyboard Manager editor path."
   },
   "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for reporter follow-up",
-    "reason": "Wait for the reporter to provide the requested current-version reproduction or diagnostics before investigating code."
+    "glyph": "🧪",
+    "label": "Reproduce new editor launch crash",
+    "reason": "Confirm the crash on a current build and capture the exact WinUI/editor path before drafting a fix."
   },
-  "actions": [],
-  "confidence": "Medium",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The upstream thread is waiting for reporter evidence or confirmation requested by triage.",
+    "status": "reproducible",
+    "rationale": "This is no longer blocked on author response. Multiple users attached bug-report ZIPs, one follow-up says the classic editor works, and the available event/log data shows the new Keyboard Manager editor process starting and then crashing with an access violation. The issue is ready for maintainer reproduction on the new editor path.",
     "evidence": [
-      "The upstream thread is waiting for reporter evidence or confirmation requested by triage.",
-      "Latest triage request: Switching back to the classic editor fixes this."
+      "The original report says clicking 'Open editor' shows a busy cursor briefly and then nothing happens.",
+      "Two later commenters say they see the same issue and attached bug-report ZIPs.",
+      "A later follow-up says switching back to the classic editor fixes the problem.",
+      "The attached bug-report data shows PowerToys.KeyboardManagerEditor crashing with an access violation in Windows.UI.Xaml.dll after launch."
     ],
-    "recommended_action": "Wait for the reporter to provide the requested current-version reproduction or diagnostics before investigating code.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the crash on the current new-editor path, compare it to the classic editor path, and capture the exact view/state transition that faults.",
+    "evaluated_at": "2026-09-09T16:56:19Z",
     "source_updated_at": "2026-08-15T14:48:52Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The evidence proves a current new-editor failure, but it does not yet isolate whether the fault is a specific WinUI page/state transition, persisted remap metadata, or a broader launch lifecycle issue.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "The new Keyboard Manager editor launches and then disappears, while the classic editor path still works for at least one affected user.",
+    "known_information": [
+      "The issue targets PowerToys 0.100.2 from the Microsoft Store.",
+      "Multiple users reproduced the failure and attached bug-report archives.",
+      "One follow-up says switching back to the classic editor avoids the problem.",
+      "The available event viewer data shows an access-violation crash in PowerToys.KeyboardManagerEditor after launch."
+    ],
+    "inferences": [
+      "The problem is specific to the new editor path rather than the Keyboard Manager settings entry point in general.",
+      "The next engineering question is which loaded page/state transition or persisted editor data causes the crash, not whether the bug exists."
+    ],
+    "analysis": "This is ready for maintainer reproduction because the thread already contains bug-report archives and a narrowing workaround. The public evidence is enough to move from 'please send logs' to 'replay the new editor launch path and isolate the crashing UI state'.",
+    "initial_investigation": [
+      "Read the full issue discussion and timeline.",
+      "Reviewed one attached bug-report archive's Keyboard Manager editor log, settings, and event-viewer entry.",
+      "Inspected Keyboard Manager's launch path in src/modules/KeyboardManager/dll/dllmain.cpp."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-editor-crash-49682",
+      "type": "reproduce",
+      "label": "Reproduce new editor launch crash",
+      "primary": true,
+      "reproduce": {
+        "title": "Verify new Keyboard Manager editor launch versus classic editor",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or newer with the new editor available",
+        "prerequisites": [
+          "Keyboard Manager enabled",
+          "New editor path enabled in settings"
+        ],
+        "setup": [
+          "Open the Keyboard Manager settings page."
+        ],
+        "steps": [
+          "Click 'Open editor' with the new editor enabled and watch whether the process appears and then crashes.",
+          "Compare the result with the classic editor path on the same machine.",
+          "If the new editor crashes, inspect the editor log and event viewer entry for the exact page/state transition before the fault."
+        ],
+        "expected_result": "The new editor opens and stays usable just like the classic editor; any crash should be attributable to a concrete post-launch state transition."
+      }
+    }
+  ]
 }

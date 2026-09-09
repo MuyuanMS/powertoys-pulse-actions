@@ -1,33 +1,119 @@
 {
-  "number": 49906,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
+  "generated_at": "2026-09-09T17:15:18.929Z",
+  "evaluated_at": "2026-09-09T17:15:18.929Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "number": 49906,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-08-17T12:48:52Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "[Environment Variables] This APP crashed with Chinese Simplified (windows default)",
+  "url": "https://github.com/microsoft/PowerToys/issues/49906",
+  "author": "KagaJiankui",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Environment Variables",
+    "0.100.2"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "summary": "The public thread already demonstrates a language-specific crash that reproduces across multiple CJK languages, so the next step is a maintainer-side startup repro with a focused resource/title-path design rather than another reporter request.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue now has both a bug-report ZIP and a later confirmation that zh-CN, zh-TW, and ja-JP reproduce in v0.101.2242, which is enough to reproduce locally and narrow the startup resource path.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The reporter says Environment Variables crashes when PowerToys language follows Windows default on zh-CN, but works when PowerToys language is forced to English.",
+      "The thread includes a PowerToys bug-report ZIP.",
+      "A later commenter confirms zh-CN, zh-TW, and ja-JP all reproduce in v0.101.2242.",
+      "Current Environment Variables startup already applies LanguageHelper.LoadLanguage() and also includes an empty-title fallback in MainWindow.xaml.cs, so the remaining failure is likely in another localized startup resource path rather than the simplest missing-override bug."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-08-17T12:48:52Z"
-  }
+    "recommended_action": "Run a debugger-backed local repro on a CJK language build and design the smallest startup-resource hardening needed to keep Environment Variables alive when localized resources resolve late or empty."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The issue still looks like a real PowerToys startup bug, but the exact failing localized resource/title path is not yet identified in the public thread."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Harden Environment Variables startup against failing localized resource resolution",
+      "root_cause": "The most plausible remaining cause is an early localized startup path that still assumes a successfully resolved resource or title string under CJK languages. The obvious language-override and empty-window-title guards exist in current source, so the crash likely sits in another startup string or TitleBar-related resource lookup.",
+      "plan": [
+        "Reproduce the crash under zh-CN/zh-TW/ja-JP with current main and capture the first-chance exception site.",
+        "Audit Environment Variables startup for localized resource reads that occur before the window is fully initialized or that assume non-empty resource values.",
+        "Add the narrowest fallback or deferred initialization needed so the app survives localized startup and still shows translated UI."
+      ],
+      "verification": [
+        "Launch Environment Variables under zh-CN, zh-TW, and ja-JP with PowerToys language set to Windows Default and confirm the window stays open.",
+        "Switch PowerToys language back to English and verify no regression in the existing successful path."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The issue is clearly reproducible, but current main already contains the two most obvious startup safeguards, so the exact failing localized resource path still needs live debugging."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Environment Variables crashes only when it launches under CJK language settings, and later comments broaden the repro from zh-CN to zh-TW and ja-JP.",
+    "known_information": [
+      "The issue includes a PowerToys diagnostic ZIP and a six-step reproduction flow.",
+      "English mode works, which narrows the bug to localized startup behavior rather than general launch failure.",
+      "A later commenter confirmed the same bug in multiple CJK languages on v0.101.2242.",
+      "No assignee or linked fix attempt is visible."
+    ],
+    "inferences": [
+      "The failure is likely inside Environment Variables startup/resource handling rather than in the global PowerToys language selection setting.",
+      "Because multiple CJK languages reproduce, the bug is probably tied to localization/resource loading patterns rather than a single mistranslated string."
+    ],
+    "analysis": "This is best represented as reproducible with a maintainer-side reproduce action. The remaining uncertainty is internal debugging detail, not missing reporter evidence.",
+    "initial_investigation": [
+      "src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariablesXAML/App.xaml.cs already applies LanguageHelper.LoadLanguage() and PrimaryLanguageOverride before InitializeComponent().",
+      "commit de4859454 added a MainWindow.xaml.cs fallback title specifically to avoid WinUI TitleBar startup faults when a localized title resolves empty.",
+      "EnvironmentVariablesUILib still reads localized strings from ResourceLoaderInstance during startup/view-model creation, which leaves room for another early resource-resolution failure path."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49906",
+      "type": "approve_design",
+      "label": "Approve Environment Variables CJK startup design",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The crash is reproducible, but the exact startup resource path still needs debugger confirmation before code changes are narrowed.",
+      "issue": {
+        "number": 49906,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-49906",
+      "type": "reproduce",
+      "label": "Reproduce Environment Variables crash under CJK languages",
+      "primary": true,
+      "note": "Use a current build with Windows Default language selection and capture the first failing startup resource path.",
+      "reproduce": {
+        "module": "Environment Variables",
+        "version": "0.100.2 / 0.101.2242 or current main",
+        "prerequisites": [
+          "Set Windows display language to zh-CN, zh-TW, or ja-JP.",
+          "Set PowerToys language to Windows Default and restart PowerToys."
+        ],
+        "steps": [
+          "Launch Environment Variables from the PowerToys tray or settings.",
+          "Observe whether the window appears and closes within a few seconds.",
+          "Repeat under at least two of zh-CN, zh-TW, and ja-JP to confirm the language family behavior.",
+          "Compare against the same flow with PowerToys language forced to English."
+        ],
+        "expected_result": "The app should stay open and render localized UI under each tested language instead of crashing on startup.",
+        "attachments": [
+          "https://github.com/user-attachments/files/31077669/PowerToysReport_2026-08-15-00-08-19.zip"
+        ]
+      }
+    }
+  ]
 }

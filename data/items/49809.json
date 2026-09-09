@@ -1,29 +1,98 @@
 {
-  "number": 49809,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "⏳",
-    "label": "Reporter is narrowing the trigger",
-    "detail": "The failure appears tied to a 1920x1080 headed Playwright browser, and the reporter is testing viewport size versus actual window size and activation behavior."
-  },
-  "next_action": null,
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49809,
+  "title": "Headed Playwright browser steals foreground from PowerToys Always On Top window when launched at 1920×1080",
+  "url": "https://github.com/microsoft/PowerToys/issues/49809",
+  "author": "bryanconklin-wltic",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "generated_at": "2026-09-09T17:17:10.9885956Z",
+  "evaluated_at": "2026-09-09T17:17:10.9885956Z",
   "source_updated_at": "2026-08-10T19:17:39Z",
+  "pending_author": false,
+  "stage": "reproduction_ready",
+  "owes": "maintainer",
+  "confidence": "Medium",
+  "status": {
+    "glyph": "🧪",
+    "label": "Needs local reproduction at 1920x1080",
+    "detail": "The report is unusually specific about the trigger, but the current thread still does not prove whether Playwright is intentionally forcing the browser above the pinned window or Always On Top is losing state at that size."
+  },
+  "next_action": {
+    "glyph": "🧪",
+    "label": "Reproduce the headed-browser focus steal locally",
+    "reason": "The issue already contains a maintainer-ready repro sketch; the remaining uncertainty is maintainer-side behavior, not missing reporter logs."
+  },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The failure appears tied to a 1920x1080 headed Playwright browser, and the reporter is testing viewport size versus actual window size and activation behavior.",
+    "status": "reproducible",
+    "rationale": "The issue provides a concrete maintainer-side repro path: pin a normal window, launch a headed Playwright browser at 1920x1080, and observe that the browser rises above the pinned window and takes focus. What remains unproven is whether that comes from Playwright/browser window policy or a PowerToys Always On Top state loss.",
     "evidence": [
-      "The failure appears tied to a 1920x1080 headed Playwright browser, and the reporter is testing viewport size versus actual window size and activation behavior."
+      "The reporter provided a full numbered repro using Win+Ctrl+T, a headed Playwright browser, and a 1920x1080 browser or viewport size.",
+      "The thread says smaller sizes such as 1280x720 or 1600x900 do not appear to reproduce the issue.",
+      "The reporter says running PowerToys as administrator did not help and that page.bringToFront() is not being called.",
+      "Current Always On Top code refreshes borders on foreground events and re-pins windows whose topmost bit is lost, but no linked issue-specific fix or test covers a full-size headed Playwright browser launch."
     ],
-    "recommended_action": "Hold for maintainer review.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T19:17:39Z"
-  }
+    "recommended_action": "Treat the issue as reproducible and run a focused local repro to capture whether the topmost flag or only foreground ownership changes during the Playwright launch."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix may be needed, but the current public evidence does not yet distinguish product behavior from browser or Playwright windowing behavior strongly enough to choose a safe implementation."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A headed Playwright browser configured at 1920x1080 reportedly rises above a window pinned with Always On Top and steals focus. The issue is detailed enough for maintainer-side reproduction, but not yet for a code-level fix choice.",
+    "known_information": [
+      "The reporter is on PowerToys v0.101.2211.0 from GitHub.",
+      "Always On Top is enabled, and the pinned window initially stays above other windows.",
+      "The regression appears when a headed Chromium, Chrome, or Edge browser is launched at 1920x1080.",
+      "The reporter says smaller browser sizes reduce or avoid the problem.",
+      "Running PowerToys as administrator did not fix the behavior.",
+      "There are no attachments, assignees, or linked pull requests on the live issue."
+    ],
+    "inferences": [
+      "The trigger likely depends on a specific shell or browser window-state transition near full-screen or maximized heuristics, not on ordinary focus changes alone.",
+      "Because page.bringToFront() is not involved, the behavior may be tied to how the external browser window is created, resized, or activated."
+    ],
+    "analysis": "The remaining discriminator is maintainer-side observation of live topmost and focus behavior at launch time. Asking the reporter for more logs first would be lower value than reproducing the scenario from the already-detailed public steps.",
+    "initial_investigation": [
+      "Reviewed the complete issue body, all three public comments, labels, assignees, and the empty live timeline.",
+      "Inspected current Always On Top runtime behavior: HandleWinHookEvent refreshes borders on foreground events and re-pins windows if the topmost bit drops.",
+      "Checked the new Always On Top UI test suite and found coverage for topmost state, border rendering, virtual desktops, and normal minimize/restore, but no scenario for a headed Playwright browser taking foreground at a specific size."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-49809",
+      "type": "reproduce",
+      "label": "Reproduce 1920x1080 Playwright foreground steal",
+      "primary": false,
+      "reproduce": {
+        "module": "Always On Top",
+        "version_requirement": "PowerToys 0.101.2211.0 or current main",
+        "prerequisites": [
+          "Enable Always On Top in PowerToys.",
+          "Have Node.js, Playwright, and a headed Chromium/Chrome/Edge browser available.",
+          "Use a non-elevated browser process and a normal non-elevated application window such as Notepad."
+        ],
+        "steps": [
+          "Pin a normal application window with Win+Ctrl+T and confirm the Always On Top border is visible.",
+          "Launch a headed Playwright browser configured to 1920x1080 without calling page.bringToFront().",
+          "Observe whether the browser rises above the pinned window and whether the pinned window loses the topmost bit or only foreground ownership.",
+          "Repeat with a smaller window size such as 1280x720 for comparison."
+        ],
+        "expected_result": "The pinned window should remain above the non-elevated browser regardless of the Playwright window size.",
+        "setup_prompt": "Create a minimal headed Playwright script that launches Chromium at 1920x1080, opens any page, and leaves the browser idle long enough to inspect focus and z-order."
+      },
+      "note": "Local maintainer reproduction only; no upstream write is performed by this artifact."
+    }
+  ],
+  "design": null
 }

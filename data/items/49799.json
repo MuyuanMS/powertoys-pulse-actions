@@ -1,44 +1,97 @@
 {
-  "number": 49799,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
+  "number": 49799,
+  "title": "Bug Report: Unintended Vertical Snap on Single Click with Custom-Framed Apps and FancyZones Padding Thresholds",
+  "url": "https://github.com/microsoft/PowerToys/issues/49799",
+  "author": "oldhandben",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-09-09T17:17:10.9885956Z",
+  "evaluated_at": "2026-09-09T17:17:10.9885956Z",
+  "source_updated_at": "2026-08-10T18:05:05Z",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "stage": "reproduction_ready",
+  "owes": "maintainer",
+  "confidence": "Medium",
   "status": {
-    "glyph": "💬",
-    "label": "Needs boundary and OS-snap evidence",
-    "detail": "The report maps padding thresholds well, but disabling Windows Snap removes the behavior, so evidence is needed to separate FancyZones placement from native border hit testing."
+    "glyph": "🧪",
+    "label": "Needs maintainer reproduction with a custom-frame app",
+    "detail": "The report already isolates low-padding and custom-window-frame conditions, but the current code and test coverage do not prove whether FancyZones placement or native Windows snap hit testing is the dominant cause."
   },
-  "next_action": null,
+  "next_action": {
+    "glyph": "🧪",
+    "label": "Reproduce the border click on an ultrawide layout",
+    "reason": "A local repro against the exact geometry is more valuable than another generic request for logs."
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The issue provides concrete padding thresholds, a specific custom-framed app example (Opera), and a reliable symptom triggered by a single border click. That is enough for maintainer-side reproduction even though the fix boundary between FancyZones placement and native Windows snap remains uncertain.",
+    "evidence": [
+      "At 1 px padding the reporter says all apps trigger a vertical maximize on a single bottom-border click; at 5 px, standard apps recover but custom-framed apps such as Opera still fail.",
+      "Disabling native Windows Snap eliminates the problem entirely, while FancyZones Override Windows Snap does not.",
+      "The report is on an ultrawide monitor and says the zone top edge is at the top of the screen.",
+      "Current FancyZones tests cover layout spacing and keyboard snap behavior, but no focused coverage exists for custom-framed bottom-border clicks after zone placement."
+    ],
+    "recommended_action": "Run a focused local repro with an ultrawide-style layout and a custom-framed app before publishing a fix hypothesis."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys change may be needed, but the current public evidence does not yet isolate whether FancyZones should adjust geometry, snap override policy, or nothing at all."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "FancyZones-placed windows can vertically maximize on a single bottom-border click when the zone is flush to the top of the monitor, especially for custom-framed applications. The report is detailed enough to reproduce, but not yet to select a code change.",
+    "known_information": [
+      "The reporter is on PowerToys 0.100.2 with an ultrawide setup on Windows 11 25H2.",
+      "At 1 px padding the issue affects all apps; at 5 px padding it still affects custom-framed apps such as Opera.",
+      "The issue is triggered by snapping the window into a zone whose top edge touches the top of the screen and then single-clicking the bottom border.",
+      "Disabling Windows Snap stops the behavior entirely.",
+      "Enabling FancyZones Override Windows Snap does not stop the behavior."
+    ],
+    "inferences": [
+      "Native Windows snap heuristics are clearly involved because disabling Windows Snap removes the symptom.",
+      "FancyZones geometry and custom-frame border calculations still likely matter because the custom-framed app threshold differs from standard apps."
+    ],
+    "analysis": "The report already contains the kind of layout and threshold detail a maintainer needs to recreate the bug. The missing piece is a local observation of actual window bounds and snap state under a known custom-framed application; that is a maintainer task, not a reporter task.",
+    "initial_investigation": [
+      "Reviewed the complete issue body, labels, assignees, and empty live timeline.",
+      "Inspected FancyZones spacing-related unit tests, including WorkArea.Spec.cpp coverage for edited spacing and Layout.Spec.cpp spacing behavior.",
+      "Checked the current FancyZones test tree and found no focused regression around custom-framed bottom-border clicks or OS vertical snap after zone placement."
+    ],
+    "information_gaps": []
+  },
   "actions": [
     {
-      "id": "request-info-49799",
-      "type": "request_info",
-      "label": "Ask for recording and zone geometry",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 49799,
-        "body": "Could you attach a short recording with the pointer visible and export the affected FancyZones layout? Please include monitor resolution/scaling, the exact zone padding, whether the zone touches the monitor work-area edge, and comparison results for Explorer and Opera with Windows Snap enabled. A PowerToys bug-report ZIP would also help confirm the calculated zone and window rectangles."
+      "id": "reproduce-49799",
+      "type": "reproduce",
+      "label": "Reproduce vertical snap with custom-frame padding",
+      "primary": false,
+      "reproduce": {
+        "module": "FancyZones",
+        "version_requirement": "PowerToys 0.100.2 or current main",
+        "prerequisites": [
+          "Use a wide or ultrawide monitor where a FancyZones zone can touch the top of the work area.",
+          "Install at least one custom-framed app such as Opera.",
+          "Leave native Windows Snap enabled."
+        ],
+        "steps": [
+          "Create a FancyZones layout whose target zone touches the top of the monitor work area.",
+          "Set zone padding to 1 px and place Explorer in the zone, then single-click the bottom border and observe whether Windows vertically maximizes it.",
+          "Raise zone padding to 5 px and repeat with Explorer and then Opera.",
+          "Repeat once with native Windows Snap disabled to confirm the issue disappears."
+        ],
+        "expected_result": "Single border clicks should only begin manual resizing and must not vertically maximize the window.",
+        "setup_prompt": "Create a simple top-anchored FancyZones layout with configurable spacing and prepare both Explorer and Opera windows for repeated zone placement."
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Local maintainer reproduction only; no upstream write is performed by this artifact."
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T18:05:05Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The report maps padding thresholds well, but disabling Windows Snap removes the behavior, so evidence is needed to separate FancyZones placement from native border hit testing.",
-    "evidence": [
-      "The report maps padding thresholds well, but disabling Windows Snap removes the behavior, so evidence is needed to separate FancyZones placement from native border hit testing.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "Hold for maintainer review.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T18:05:05Z"
-  }
+  "design": null
 }

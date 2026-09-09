@@ -1,33 +1,87 @@
 {
+  "schemaVersion": 5,
   "number": 49789,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "handled",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-09T16:56:19Z",
+  "evaluated_at": "2026-09-09T16:56:19Z",
   "source_updated_at": "2026-08-16T18:39:05Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49789",
+  "title": "File Locksmith: Handle enumeration can freeze the system and crash with heap corruption",
+  "author": "jiripolasek",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-File Locksmith"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "confidence": "High",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "Linked open pull request(s) 49966 already carry the fix, so parallel agent work would duplicate active upstream work."
+    "glyph": "🔁",
+    "label": "Covered by open File Locksmith PR",
+    "detail": "The reporter follow-up already links the active pull request that removes the unsafe watchdog path from File Locksmith handle enumeration."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the linked canonical issue or pull request and do not start duplicate work."
+    "glyph": "💬",
+    "label": "Post linked-fix response",
+    "reason": "Keep follow-up on PR 49966 instead of creating a competing design."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "Linked open pull request(s) 49966 already carry the fix, so parallel agent work would duplicate active upstream work.",
+    "rationale": "The issue already has a concrete upstream implementation attempt: PR 49966 is open, explicitly closes issue 49789, and carries the same detached-thread/TerminateThread root-cause analysis described in the reporter follow-up.",
     "evidence": [
-      "Linked open pull request(s) 49966 already carry the fix, so parallel agent work would duplicate active upstream work."
+      "The issue body reports File Locksmith hangs followed by a crash during handle enumeration.",
+      "The only public follow-up independently reproduces the crash and explains why the detached worker/TerminateThread path can corrupt memory instead of recovering.",
+      "The live issue cross-references open PR 49966, titled '[File Locksmith] Stop terminating the handle-enumeration worker'.",
+      "PR 49966 states that it closes issue 49789 and changes FileLocksmithLibInterop/NtdllExtensions.cpp."
     ],
-    "recommended_action": "Monitor the linked canonical issue or pull request and do not start duplicate work.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Keep investigation on PR 49966 and avoid a second parallel fix design from the dashboard.",
+    "evaluated_at": "2026-09-09T16:56:19Z",
     "source_updated_at": "2026-08-16T18:39:05Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Open PR 49966 is the concrete upstream fix attempt for this crash: it replaces the unsafe watchdog termination path with a safe abandonment strategy in File Locksmith handle enumeration.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49966"
+    ]
+  },
+  "issue_context": {
+    "summary": "File Locksmith can hang and crash while enumerating handles; the reporter follow-up already escalated the root cause into an open upstream PR.",
+    "known_information": [
+      "The report targets File Locksmith on PowerToys 0.100.2.",
+      "The issue describes a crash during handle enumeration and cites heap-corruption style failures.",
+      "The follow-up comment reproduces the crash repeatedly and links a patch that removes the unsafe recovery path.",
+      "The live issue links open PR 49966."
+    ],
+    "inferences": [
+      "The active implementation is already grounded in the same root-cause theory the dashboard would otherwise propose.",
+      "A second dashboard-authored design would duplicate active upstream work instead of reducing uncertainty."
+    ],
+    "analysis": "This is no longer an unowned bug. The issue already has concrete code, current review state, and reproductions attached to PR 49966, so the most useful artifact is a maintainer-facing handoff to that PR rather than another design prompt.",
+    "initial_investigation": [
+      "Read the full issue body, the single detailed follow-up comment, and the live cross-references.",
+      "Read PR 49966's summary, open state, and changed-file list to confirm that it targets the same watchdog path."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "post-linked-pr-49789",
+      "type": "post_comment",
+      "label": "Post linked File Locksmith PR response",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 49789,
+        "body": "Thanks for the detailed reproduction and the follow-up analysis. This issue is already linked to PR #49966, which removes the unsafe thread-termination recovery path in File Locksmith handle enumeration and replaces it with a safe abandonment path. That PR is the concrete fix attempt for this crash, so a separate competing design is not needed here. Please keep further validation on PR #49966."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

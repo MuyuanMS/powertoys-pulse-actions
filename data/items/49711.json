@@ -1,80 +1,92 @@
 {
-  "number": 49711,
+  "schemaVersion": 5,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
+  "number": 49711,
+  "title": "Power Display tray icon won't appear until I restart PowerToys each time I start my PC",
+  "url": "https://github.com/microsoft/PowerToys/issues/49711",
+  "author": "sudo-saif",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "generated_at": "2026-09-09T17:17:10.9885956Z",
+  "evaluated_at": "2026-09-09T17:17:10.9885956Z",
+  "source_updated_at": "2026-08-11T07:11:06Z",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "stage": "owned_elsewhere",
+  "owes": "maintainer",
+  "confidence": "High",
   "status": {
-    "glyph": "🎯",
-    "label": "Existing fork design ready",
-    "detail": "The dashboard already contains a converged fork-side design for the tray-registration race."
+    "glyph": "🔗",
+    "label": "Duplicate Power Display startup tray report",
+    "detail": "Older open Power Display issues already track the same startup symptom: the tray icon is absent after sign-in or restart until the user manually opens Power Display or restarts PowerToys."
   },
   "next_action": {
     "glyph": "👀",
-    "label": "Use existing design artifact",
-    "reason": "This issue already has a prepared design and request-info path; it is not a fresh unowned bug."
+    "label": "Consolidate with the existing startup tray issue",
+    "reason": "Re-triaging this as a separate fix would duplicate the open Power Display startup-tray queue."
+  },
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The issue describes the same missing-on-startup Power Display tray icon symptom already tracked by open issues #47721 and #48295. The current code already contains tray-icon startup retry logic, so this report is better treated as duplicate tracking than as a new design candidate.",
+    "evidence": [
+      "The issue says the Power Display tray icon is absent after each PC start until the user restarts PowerToys.",
+      "A second reporter confirmed the same behavior and said the utilities still work.",
+      "Open issue #47721 describes the icon disappearing on restart and reappearing when the user opens Power Display settings.",
+      "Open issue #48295 says the tray icon never runs on Windows startup until Power Display is opened manually.",
+      "Current TrayIconService handles Shell_NotifyIcon startup failure and TaskbarCreated retries, which is the same tray-startup area rather than a separate feature path."
+    ],
+    "recommended_action": "Link this report to the existing startup-tray tracking issues instead of opening a separate Power Display investigation."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A separate PowerToys code fix should not be designed from this report because open Power Display issues already track the same startup-tray symptom.",
+    "related_issue_urls": [
+      "https://github.com/microsoft/PowerToys/issues/47721",
+      "https://github.com/microsoft/PowerToys/issues/48295"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Power Display itself appears to run, but its tray icon does not consistently appear after startup. The symptom matches older open Power Display startup-tray reports, so the maintainer action is duplicate consolidation rather than a new fix design.",
+    "known_information": [
+      "The reporter is on PowerToys 0.100.2 installed from GitHub or PowerToys auto-update.",
+      "The issue is specific to the Power Display tray icon; a confirmer says the utilities themselves still work.",
+      "There are no attachments, assignees, or linked pull requests on the live issue.",
+      "Open issue #47721 reports the icon missing on restart and reappearing after opening Power Display settings.",
+      "Open issue #48295 reports the tray icon never running at Windows startup until Power Display is opened manually."
+    ],
+    "inferences": [
+      "This issue is very likely another manifestation of the same Power Display startup tray-registration problem already tracked elsewhere.",
+      "The current tray retry logic suggests the failure remains inside startup registration timing, not a separate monitor or UI feature area."
+    ],
+    "analysis": "The public symptom overlaps the older open Power Display startup-tray reports almost exactly. Because the current repository already has startup retry logic in the same code path, maintainers gain more by consolidating evidence on the existing issues than by reopening a duplicate queue entry.",
+    "initial_investigation": [
+      "Reviewed the complete issue body, the confirming comment, labels, assignees, and empty live timeline for linked work.",
+      "Inspected src/modules/powerdisplay/PowerDisplay/Helpers/TrayIconService.cs, which already retries Shell_NotifyIcon startup failure and TaskbarCreated recovery.",
+      "Compared the report against open Power Display issues #47721 and #48295 and found the same startup-only tray-icon disappearance pattern."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "approve-design-49711",
-      "label": "Start fixing",
+      "id": "post-comment-49711",
+      "type": "post_comment",
+      "label": "Link duplicate startup tray issues",
       "primary": true,
-      "comment": {
-        "target": "fork_issue",
-        "body": "Design approved — proceed to build the narrow defensive fix in the fork.",
-        "number": 235
-      },
-      "type": "approve_design"
-    },
-    {
-      "id": "request-info-49711",
-      "label": "Request cold-boot logs",
+      "confirm": true,
+      "requiresApproval": true,
       "comment": {
         "target": "issue",
-        "body": "Could you provide Power Display logs from a cold boot where the tray icon is missing? We need to confirm the failed Shell_NotifyIcon registration and retry path.",
-        "number": 49711
+        "repository": "microsoft/PowerToys",
+        "number": 49711,
+        "body": "Thanks for the confirmation that Power Display itself keeps working even when the tray icon is missing after startup. This appears to match the older open Power Display startup-tray reports in #47721 and #48295, which describe the icon disappearing on restart until the user reopens Power Display or restarts PowerToys. Please consolidate the startup-tray investigation there rather than splitting a second parallel issue with the same symptom."
       },
-      "type": "request_info"
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ],
-  "confidence": "High",
-  "design": {
-    "adversary": {
-      "rounds": 2,
-      "status": "signed_off"
-    },
-    "root_cause": "Shell_NotifyIcon(NIM_ADD) can fail while Explorer is unavailable during cold start; the existing recovery path does not guarantee a retry.",
-    "fix_plan": "Add a bounded retry for failed tray registration, handle Explorer restart, and verify settings toggles, shutdown, and duplicate prevention.",
-    "repro": [
-      "Enable Power Display tray icon",
-      "Cold-boot Windows while Explorer is starting",
-      "Observe the icon is missing until PowerToys restarts"
-    ],
-    "confidence": "Medium",
-    "verify": [
-      "Retry succeeds without duplicate icons",
-      "Explorer restart recovers the icon",
-      "Settings toggles and shutdown remain clean"
-    ],
-    "mirror_issue": {
-      "number": 235,
-      "url": "https://github.com/MuyuanMS/PowerToys/issues/235"
-    }
-  },
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-11T07:11:06Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The dashboard already contains a converged fork-side design for the tray-registration race.",
-    "evidence": [
-      "The dashboard already contains a converged fork-side design for the tray-registration race.",
-      "Design approved — proceed to build the narrow defensive fix in the fork.",
-      "Could you provide Power Display logs from a cold boot where the tray icon is missing? We need to confirm the failed Shell_NotifyIcon registration and retry path."
-    ],
-    "recommended_action": "This issue already has a prepared design and request-info path; it is not a fresh unowned bug.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-11T07:11:06Z"
-  }
+  "design": null
 }
