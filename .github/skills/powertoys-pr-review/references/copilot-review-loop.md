@@ -8,6 +8,11 @@ The fork Copilot loop is **not optional** and is independent of the posting deci
 
 Run [scripts/Request-CopilotReview.ps1](../scripts/Request-CopilotReview.ps1), or:
 
+0. **Resume before requesting.** Inspect the durable checkpoint and existing
+   reviews for the current fork head. If an earlier request is outstanding,
+   consume a review submitted after that request timestamp. Do not submit a
+   second request merely because a prior bounded run returned while Copilot was
+   still working.
 1. Request Copilot as reviewer on the fork PR:
    ```powershell
    gh api repos/<FORK_REPO>/pulls/<fork_pr_number>/requested_reviewers -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]"
@@ -15,6 +20,12 @@ Run [scripts/Request-CopilotReview.ps1](../scripts/Request-CopilotReview.ps1), o
    The reviewer name **must** be `copilot-pull-request-reviewer[bot]` (not plain `copilot`, which silently returns 200 with an empty `requested_reviewers`). The `--add-reviewer copilot` flag also does not work for bot accounts.
 2. **Verify** the response's `requested_reviewers` array is non-empty. If empty, Copilot review is unavailable → see [Fallback: local review](#fallback-local-review).
 3. Wait for the review to complete — poll every 30–60 seconds for up to 10 minutes: `gh api repos/<FORK_REPO>/pulls/<fork_pr_number>/reviews`, looking for a new review from `copilot-pull-request-reviewer[bot]` with `submitted_at` after the request time.
+
+For bounded dashboard workers, perform only the orchestrator-required immediate
+check. If no review has arrived, checkpoint `waiting_copilot` with the request
+timestamp and return the worker slot. This is resumable queue state, not
+`review_blocked`. A later scheduled run must inspect that existing request
+before creating another one.
 
 ### Fallback: local review
 

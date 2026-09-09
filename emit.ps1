@@ -48,7 +48,7 @@ if ($src.stage_labels) {
   }
 }
 $stageLabels['review_ready'] = 'Review ready'
-$stageLabels['review_blocked'] = 'Review blocked'
+$stageLabels['review_blocked'] = 'Review pending'
 $stageLabels['review_iteration_cap_reached'] = 'Review iteration limit reached'
 $stageLabels['upstream_merged_before_review_converged'] = 'Merged before review converged'
 $src.stage_labels = [pscustomobject]$stageLabels

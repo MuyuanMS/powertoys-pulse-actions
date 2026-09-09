@@ -381,9 +381,16 @@ the author, does not have a current terminal blocker, and that either:
 
 A terminal blocker must be pinned to the live upstream head, use
 `stage: review_blocked`, and include one or more `blockers[]` entries whose
-`detail` explains the exact failure and whose `remediation` names the concrete
-manual step needed to resume. Generic checkpoints, missing validation, or a
-bare "blocked" label do not clear the queue.
+`terminal` field is explicitly `true`, whose `detail` explains the exact
+failure, and whose `remediation` names the concrete manual step needed to
+resume. Waiting for Copilot, unresolved review findings, incomplete builds, a
+run-budget cutoff, generic checkpoints, missing validation, or a bare
+"blocked" label are resumable workflow states and do not clear the queue.
+Workers must publish those states as `waiting_copilot`,
+`reviewing_findings`, `building`, or `review_in_progress` rather than
+`review_blocked`. Existing `review_blocked` artifacts without an explicit
+`terminal: true` blocker are treated as legacy resumable work and selected by a
+later run.
 
 The queue is exhaustive. Build the run plan:
 

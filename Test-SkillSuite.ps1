@@ -186,6 +186,7 @@ foreach ($script in $scripts) {
 }
 
 $runPlanScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-PrReviewRunPlan.ps1'
+$staleQueueScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-StalePrReviewQueue.ps1'
 $candidateScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-DashboardUpdateCandidates.ps1'
 $updatePlanScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-DashboardUpdateRunPlan.ps1'
 $targetGuard = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Assert-CanonicalDashboardTarget.ps1'
@@ -283,6 +284,25 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
       pending_author = $true; source_updated_at = '2026-08-02T00:00:00Z'
     } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\11.json')
     @{
+      number = 14; kind = 'pr'; stage = 'review_blocked'; head_sha = ('f' * 40)
+      source_updated_at = '2026-08-05T00:00:00Z'
+      blockers = @(@{
+        id = 'fresh-copilot-review-pending'
+        detail = 'The fresh Copilot review has not arrived yet.'
+        remediation = 'Resume the existing fork review after it arrives.'
+      })
+    } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\14.json')
+    @{
+      number = 15; kind = 'pr'; stage = 'review_blocked'; head_sha = ('g' * 40)
+      source_updated_at = '2026-08-05T00:00:00Z'
+      blockers = @(@{
+        id = 'manual-access-required'
+        terminal = $true
+        detail = 'The configured fork is no longer writable.'
+        remediation = 'Restore fork write access before resuming.'
+      })
+    } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\15.json')
+    @{
       number = 20; kind = 'issue'; schemaVersion = 5
       source_updated_at = '2026-08-01T00:00:00Z'; evaluated_at = '2026-08-01T00:00:00Z'
     } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\20.json')
@@ -297,6 +317,8 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
       @{ number = 11; title = 'Waiting author'; url = 'https://example.test/11'; updatedAt = '2026-08-02T00:00:00Z'; headRefOid = ('b' * 40); isDraft = $false; labels = @() }
       @{ number = 12; title = 'Same head discussion'; url = 'https://example.test/12'; updatedAt = '2026-08-05T00:00:00Z'; headRefOid = ('d' * 40); isDraft = $false; labels = @() }
       @{ number = 13; title = 'Draft'; url = 'https://example.test/13'; updatedAt = '2026-08-05T00:00:00Z'; headRefOid = ('e' * 40); isDraft = $true; labels = @() }
+      @{ number = 14; title = 'Copilot still pending'; url = 'https://example.test/14'; updatedAt = '2026-08-05T00:00:00Z'; headRefOid = ('f' * 40); isDraft = $false; labels = @() }
+      @{ number = 15; title = 'Manual access blocker'; url = 'https://example.test/15'; updatedAt = '2026-08-05T00:00:00Z'; headRefOid = ('g' * 40); isDraft = $false; labels = @() }
     ) | ConvertTo-Json -Depth 5 | Set-Content $pullRequestsPath
     $issuesPath = Join-Path $fixtureRoot 'issues.json'
     @(
@@ -305,10 +327,35 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
       @{ number = 22; title = 'Feature'; url = 'https://example.test/22'; updatedAt = '2026-08-03T00:00:00Z'; labels = @('Idea-Enhancement') }
     ) | ConvertTo-Json -Depth 5 | Set-Content $issuesPath
     $prQueuePath = Join-Path $fixtureRoot 'pr-queue.json'
+    $resumeQueue = & $staleQueueScript -Dashboard $fixtureRoot `
+      -PullRequestsJsonPath $pullRequestsPath -AsJson | ConvertFrom-Json
+    $resumeNumbers = @($resumeQueue.stale_prs | ForEach-Object { [int]$_.number })
+    if (-not ($resumeNumbers -contains 14) -or ($resumeNumbers -contains 15)) {
+      $errors.Add('Stale PR queue did not resume workflow blockers while preserving explicit terminal blockers.')
+    }
+    @{
+      number = 14; kind = 'pr'; stage = 'review_ready'; head_sha = ('f' * 40)
+      source_updated_at = '2026-08-05T00:00:00Z'; proposed_comments = @(); actions = @()
+    } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\14.json')
+    $completedQueue = & $staleQueueScript -Dashboard $fixtureRoot `
+      -PullRequestsJsonPath $pullRequestsPath -AsJson | ConvertFrom-Json
+    if (@($completedQueue.stale_prs | Where-Object { [int]$_.number -eq 14 }).Count -ne 0) {
+      $errors.Add('Stale PR queue did not clear a resumed Copilot wait after a clean review result.')
+    }
+    @{
+      number = 14; kind = 'pr'; stage = 'review_blocked'; head_sha = ('f' * 40)
+      source_updated_at = '2026-08-05T00:00:00Z'
+      blockers = @(@{
+        id = 'fresh-copilot-review-pending'
+        detail = 'The fresh Copilot review has not arrived yet.'
+        remediation = 'Resume the existing fork review after it arrives.'
+      })
+    } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\14.json')
     @{
       stale_prs = @(
         @{ number = 10; work_type = 'full_review'; artifact_stage = 'review_ready'; reasons = @('new_commits_since_artifact_head') }
         @{ number = 12; work_type = 'context_revalidation'; artifact_stage = 'review_ready'; reasons = @('new_discussion_on_reviewed_head') }
+        @{ number = 14; work_type = 'full_review'; artifact_stage = 'review_blocked'; reasons = @('missing_current_review_action') }
       )
     } | ConvertTo-Json -Depth 5 | Set-Content $prQueuePath
     $issueQueuePath = Join-Path $fixtureRoot 'issue-queue.json'
@@ -321,10 +368,11 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
       -PrQueueJsonPath $prQueuePath -IssueQueueJsonPath $issueQueuePath -AsJson |
       Set-Content $inventoryPath
     $inventory = Get-Content $inventoryPath -Raw | ConvertFrom-Json
-    if ($inventory.summary.full_review -ne 1 -or
+    if ($inventory.summary.full_review -ne 2 -or
         $inventory.summary.context_revalidation -ne 1 -or
         $inventory.summary.issue_revalidation -ne 1 -or
         $inventory.summary.waiting_author -ne 1 -or
+        $inventory.summary.blocked -ne 1 -or
         $inventory.summary.no_action -ne 1 -or
         $inventory.summary.excluded -ne 1) {
       $errors.Add('Dashboard candidate inventory did not classify the complete fixture set.')
@@ -332,7 +380,7 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
 
     $plan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
       -PrBatchSize 1 -IssueBatchSize 1 -AsJson | ConvertFrom-Json
-    if ($plan.selected_pr_count -ne 1 -or $plan.deferred_pr_count -ne 1 -or
+    if ($plan.selected_pr_count -ne 1 -or $plan.deferred_pr_count -ne 2 -or
         $plan.selected_issue_count -ne 1 -or $plan.deferred_issue_count -ne 0 -or
         @($plan.selected_prs)[0].classification -ne 'full_review') {
       $errors.Add('Combined dashboard run plan did not prioritize and bound candidate work.')
@@ -340,7 +388,7 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
 
     $drainPlan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
       -DrainQueue -AsJson | ConvertFrom-Json
-    if ($drainPlan.selected_pr_count -ne 2 -or $drainPlan.deferred_pr_count -ne 0 -or
+    if ($drainPlan.selected_pr_count -ne 3 -or $drainPlan.deferred_pr_count -ne 0 -or
         $drainPlan.selected_issue_count -ne 1 -or $drainPlan.deferred_issue_count -ne 0) {
       $errors.Add('Combined dashboard drain plan did not select every candidate.')
     }
