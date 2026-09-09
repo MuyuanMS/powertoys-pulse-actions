@@ -84,6 +84,7 @@ $IssueWindowDays = 30
 $DrainReviewQueue = $env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1'
 $DesignBatchSize = if ($env:POWERTOYS_DESIGN_BATCH_SIZE) { [int]$env:POWERTOYS_DESIGN_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 4 }
 $PrReviewBatchSize = if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) { [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 16 }
+$IssueRevalidationBatchSize = if ($env:POWERTOYS_ISSUE_REVALIDATION_BATCH_SIZE) { [int]$env:POWERTOYS_ISSUE_REVALIDATION_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 50 }
 $PrReviewConcurrency = if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) { [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY } elseif ($DrainReviewQueue) { 6 } else { 3 }
 $RunBudgetMinutes = if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) { [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES } elseif ($DrainReviewQueue) { 0 } else { 50 }
 $RunStartedAt = (Get-Date).ToUniversalTime().ToString('o')
@@ -288,6 +289,38 @@ Do not limit PR discovery to `$Since`; `$Since` is only an optimization for
 activity queries. Join the live list to artifacts and fork traces by upstream
 number.
 
+Start with the exhaustive update inventory:
+
+```powershell
+pwsh -NoProfile -File `
+  "$SkillRoot\scripts\Get-DashboardUpdateCandidates.ps1" `
+  -Dashboard $Dashboard -Upstream $Upstream -AsJson
+```
+
+This inventory is the durable discovery boundary. It classifies every open PR
+and bug as `full_review`, `context_revalidation`, `issue_revalidation`,
+`waiting_author`, `blocked`, `no_action`, or `excluded`. Candidate discovery is
+never bounded by recency or batch size; only execution is bounded.
+
+Build the combined execution plan:
+
+```powershell
+$updatePlanArgs = @(
+  '-NoProfile', '-File', "$SkillRoot\scripts\Get-DashboardUpdateRunPlan.ps1",
+  '-Dashboard', $Dashboard, '-Upstream', $Upstream,
+  '-PrBatchSize', $PrReviewBatchSize,
+  '-IssueBatchSize', $IssueRevalidationBatchSize,
+  '-AsJson'
+)
+if ($DrainReviewQueue) { $updatePlanArgs += '-DrainQueue' }
+pwsh @updatePlanArgs
+```
+
+Normal runs process only `selected_prs` and `selected_issues`; all deferred
+entries remain in the exhaustive inventory for the next run. Drain mode selects
+all candidates. A targeted operator run may pass `-PrNumbers` and
+`-IssueNumbers` without changing discovery semantics.
+
 ### PR freshness
 
 Every open, non-draft PR must end the run in exactly one state:
@@ -387,8 +420,9 @@ pwsh -NoProfile -File `
 ```
 
 Every returned issue must receive the lightweight correction pass during the
-run. Re-run the command before publication and report any remaining entries as
-explicitly deferred; do not count them as updated or action-ready.
+run when selected by the combined update plan. Re-run the command before
+publication and report any remaining entries as explicitly deferred; do not
+count them as updated or action-ready.
 
 Every open `Issue-Bug` issue with no `judgment`, with live `updatedAt` newer
 than `source_updated_at`, or whose artifact fails the complete current

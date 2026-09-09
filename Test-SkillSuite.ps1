@@ -186,6 +186,8 @@ foreach ($script in $scripts) {
 }
 
 $runPlanScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-PrReviewRunPlan.ps1'
+$candidateScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-DashboardUpdateCandidates.ps1'
+$updatePlanScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-DashboardUpdateRunPlan.ps1'
 $targetGuard = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Assert-CanonicalDashboardTarget.ps1'
 if (-not (Test-Path $targetGuard)) {
   $errors.Add("Missing canonical dashboard target guard: $targetGuard")
@@ -262,6 +264,90 @@ if (-not (Test-Path $runPlanScript)) {
     $errors.Add("Bounded PR run planner validation failed: $($_.Exception.Message)")
   } finally {
     Remove-Item $fixturePath -Force -ErrorAction SilentlyContinue
+  }
+}
+
+if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
+  $errors.Add('Missing exhaustive dashboard candidate inventory or combined run planner.')
+} else {
+  $fixtureRoot = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-update-candidates-$PID"
+  try {
+    New-Item -ItemType Directory -Force -Path (Join-Path $fixtureRoot 'data\items') | Out-Null
+    @{
+      number = 10; kind = 'pr'; stage = 'review_ready'; head_sha = ('a' * 40)
+      evaluated_at = '2026-08-01T00:00:00Z'; source_updated_at = '2026-08-01T00:00:00Z'
+      proposed_comments = @(); actions = @()
+    } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\10.json')
+    @{
+      number = 11; kind = 'pr'; stage = 'waiting_on_author'; head_sha = ('b' * 40)
+      pending_author = $true; source_updated_at = '2026-08-02T00:00:00Z'
+    } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\11.json')
+    @{
+      number = 20; kind = 'issue'; schemaVersion = 5
+      source_updated_at = '2026-08-01T00:00:00Z'; evaluated_at = '2026-08-01T00:00:00Z'
+    } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\20.json')
+    @{
+      number = 21; kind = 'issue'; schemaVersion = 5
+      source_updated_at = '2026-08-03T00:00:00Z'; evaluated_at = '2026-08-03T00:00:00Z'
+    } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $fixtureRoot 'data\items\21.json')
+
+    $pullRequestsPath = Join-Path $fixtureRoot 'prs.json'
+    @(
+      @{ number = 10; title = 'Changed head'; url = 'https://example.test/10'; updatedAt = '2026-08-04T00:00:00Z'; headRefOid = ('c' * 40); isDraft = $false; labels = @() }
+      @{ number = 11; title = 'Waiting author'; url = 'https://example.test/11'; updatedAt = '2026-08-02T00:00:00Z'; headRefOid = ('b' * 40); isDraft = $false; labels = @() }
+      @{ number = 12; title = 'Same head discussion'; url = 'https://example.test/12'; updatedAt = '2026-08-05T00:00:00Z'; headRefOid = ('d' * 40); isDraft = $false; labels = @() }
+      @{ number = 13; title = 'Draft'; url = 'https://example.test/13'; updatedAt = '2026-08-05T00:00:00Z'; headRefOid = ('e' * 40); isDraft = $true; labels = @() }
+    ) | ConvertTo-Json -Depth 5 | Set-Content $pullRequestsPath
+    $issuesPath = Join-Path $fixtureRoot 'issues.json'
+    @(
+      @{ number = 20; title = 'Changed bug'; url = 'https://example.test/20'; updatedAt = '2026-08-06T00:00:00Z'; labels = @(@{ name = 'Issue-Bug' }) }
+      @{ number = 21; title = 'Current bug'; url = 'https://example.test/21'; updatedAt = '2026-08-03T00:00:00Z'; labels = @('Issue-Bug') }
+      @{ number = 22; title = 'Feature'; url = 'https://example.test/22'; updatedAt = '2026-08-03T00:00:00Z'; labels = @('Idea-Enhancement') }
+    ) | ConvertTo-Json -Depth 5 | Set-Content $issuesPath
+    $prQueuePath = Join-Path $fixtureRoot 'pr-queue.json'
+    @{
+      stale_prs = @(
+        @{ number = 10; work_type = 'full_review'; artifact_stage = 'review_ready'; reasons = @('new_commits_since_artifact_head') }
+        @{ number = 12; work_type = 'context_revalidation'; artifact_stage = 'review_ready'; reasons = @('new_discussion_on_reviewed_head') }
+      )
+    } | ConvertTo-Json -Depth 5 | Set-Content $prQueuePath
+    $issueQueuePath = Join-Path $fixtureRoot 'issue-queue.json'
+    @{ issues = @(@{ number = 20; reasons = @('upstream activity is newer than the artifact') }) } |
+      ConvertTo-Json -Depth 5 | Set-Content $issueQueuePath
+
+    $inventoryPath = Join-Path $fixtureRoot 'inventory.json'
+    & $candidateScript -Dashboard $fixtureRoot `
+      -PullRequestsJsonPath $pullRequestsPath -IssuesJsonPath $issuesPath `
+      -PrQueueJsonPath $prQueuePath -IssueQueueJsonPath $issueQueuePath -AsJson |
+      Set-Content $inventoryPath
+    $inventory = Get-Content $inventoryPath -Raw | ConvertFrom-Json
+    if ($inventory.summary.full_review -ne 1 -or
+        $inventory.summary.context_revalidation -ne 1 -or
+        $inventory.summary.issue_revalidation -ne 1 -or
+        $inventory.summary.waiting_author -ne 1 -or
+        $inventory.summary.no_action -ne 1 -or
+        $inventory.summary.excluded -ne 1) {
+      $errors.Add('Dashboard candidate inventory did not classify the complete fixture set.')
+    }
+
+    $plan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
+      -PrBatchSize 1 -IssueBatchSize 1 -AsJson | ConvertFrom-Json
+    if ($plan.selected_pr_count -ne 1 -or $plan.deferred_pr_count -ne 1 -or
+        $plan.selected_issue_count -ne 1 -or $plan.deferred_issue_count -ne 0 -or
+        @($plan.selected_prs)[0].classification -ne 'full_review') {
+      $errors.Add('Combined dashboard run plan did not prioritize and bound candidate work.')
+    }
+
+    $drainPlan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
+      -DrainQueue -AsJson | ConvertFrom-Json
+    if ($drainPlan.selected_pr_count -ne 2 -or $drainPlan.deferred_pr_count -ne 0 -or
+        $drainPlan.selected_issue_count -ne 1 -or $drainPlan.deferred_issue_count -ne 0) {
+      $errors.Add('Combined dashboard drain plan did not select every candidate.')
+    }
+  } catch {
+    $errors.Add("Dashboard candidate inventory validation failed: $($_.Exception.Message)")
+  } finally {
+    Remove-Item $fixtureRoot -Recurse -Force -ErrorAction SilentlyContinue
   }
 }
 
