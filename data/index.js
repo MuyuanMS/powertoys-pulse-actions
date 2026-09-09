@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T19:48:30.7772272+08:00",
+  "generated_at": "2026-09-09T19:59:52.3338692+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,9 +91,9 @@ window.BOARD_INDEX = {
     "artifacts": 392
   },
   "impact": {
-    "as_of": "2026-09-09T19:48:30.7772272+08:00",
+    "as_of": "2026-09-09T19:59:52.3338692+08:00",
     "issues_helped": 10,
-    "prs_iterated": 24,
+    "prs_iterated": 23,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
@@ -510,7 +510,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -525,7 +525,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 733,
+        "fork_title": "[PR 50480] feat(mwb): improve handling of unexpected settings-sync callers",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50480",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/733"
+      }
     },
     {
       "id": "pr-50479",
@@ -2514,7 +2522,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_blocked",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2522,7 +2530,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "trigger_ci",
+        "label": "Re-run failed Azure Pipelines CI"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -4631,15 +4642,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 356,
-        "fork_title": "[PR 49726] fix(mousewithoutborders): harden impersonation cleanup",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49726-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/356"
-      }
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-49724",
