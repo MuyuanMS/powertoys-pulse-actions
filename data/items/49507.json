@@ -1,34 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 49507,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
+  "stage": "triaging",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-09T19:27:57Z",
+  "evaluated_at": "2026-09-09T19:27:57Z",
   "source_updated_at": "2026-07-27T09:37:17Z",
+  "title": "Quick Accent: \"Do not activate when Game Mode is on\" has no effect",
+  "url": "https://github.com/microsoft/PowerToys/issues/49507",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The Quick Accent report is specific enough to support a focused design hypothesis: the current Game Mode suppression check appears narrower than the user-facing setting promises.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The issue says Quick Accent still activates in games even when “Do not activate when Game Mode is on” is enabled, including games explicitly remembered in Xbox Game Bar.",
+      "Current code in src/common/utils/game_mode.h treats Game Mode as SHQueryUserNotificationState == QUNS_RUNNING_D3D_FULL_SCREEN.",
+      "Quick Accent suppression in src/modules/poweraccent/PowerAccentKeyboardService/KeyboardListener.cpp relies entirely on that detect_game_mode() helper."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a focused Quick Accent design that broadens or refines game suppression, and verify it against borderless or remembered-game scenarios.",
+    "evaluated_at": "2026-09-09T19:27:57Z",
     "source_updated_at": "2026-07-27T09:37:17Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The code already points to a likely gap between the UI setting and the runtime suppression signal used for Game Mode."
+  },
+  "issue_context": {
+    "summary": "The reporter says Quick Accent still appears during gameplay even when its “Do not activate when Game Mode is on” option is enabled, especially in games that Game Bar already remembers as games.",
+    "known_information": [
+      "The issue is filed against PowerToys 0.98.1 and explicitly describes interference during gameplay.",
+      "The body distinguishes this from a feature request and says the existing setting is real but ineffective.",
+      "The report points to games remembered in Game Bar, not only to exclusive full-screen titles."
+    ],
+    "inferences": [
+      "The bug likely sits in the runtime definition of “Game Mode” rather than in the Quick Accent UI or settings save path.",
+      "If the implementation only recognizes exclusive full-screen D3D sessions, it would miss the remembered-game scenarios the reporter calls out."
+    ],
+    "analysis": "Unlike several weaker reports in this batch, this one already narrows both the user-visible setting and the likely code boundary. A lightweight actionable-design judgment is appropriate because the code exposes a plausible mismatch between promised behavior and the actual detection signal, while the remaining uncertainty is best reduced with a maintainer-side repro rather than another reporter comment.",
+    "initial_investigation": [
+      "src/common/utils/game_mode.h implements detect_game_mode() by checking only for QUNS_RUNNING_D3D_FULL_SCREEN.",
+      "src/modules/poweraccent/PowerAccentKeyboardService/KeyboardListener.cpp gates Quick Accent activation on IsSuppressedByGameMode(), which directly uses that helper."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-49507",
+      "type": "reproduce",
+      "label": "Reproduce Quick Accent game suppression failure",
+      "primary": true,
+      "confirm": false,
+      "reproduce": {
+        "module": "Quick Accent",
+        "version": "0.98.1 or newer",
+        "prerequisites": [
+          "Enable Quick Accent and turn on “Do not activate when Game Mode is on”.",
+          "Use a game that Windows Game Bar already recognizes or remembers as a game."
+        ],
+        "steps": [
+          "Launch the game in the mode that currently reproduces the problem (including borderless/windowed if that is how Game Bar remembers it).",
+          "Use the Quick Accent trigger during gameplay.",
+          "Compare behavior with the same trigger in a normal desktop app."
+        ],
+        "expected_result": "Quick Accent should remain suppressed in the game and should still work in non-game apps."
+      },
+      "note": "Maintainer-side local repro guidance only; this artifact does not post upstream content."
+    },
+    {
+      "id": "approve-design-49507",
+      "type": "approve_design",
+      "label": "Approve Quick Accent game-mode design",
+      "primary": false,
+      "confirm": false,
+      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Broaden Quick Accent game suppression beyond full-screen D3D detection",
+      "root_cause": "Quick Accent currently suppresses itself only when SHQueryUserNotificationState reports QUNS_RUNNING_D3D_FULL_SCREEN, so borderless or Game Bar-remembered games can still activate Quick Accent even though the setting says not to activate during Game Mode.",
+      "plan": [
+        "Trace the current detect_game_mode() signal and confirm which game/window types never report QUNS_RUNNING_D3D_FULL_SCREEN.",
+        "Update the Quick Accent suppression logic to use a broader game-detection signal or to combine full-screen detection with the remembered-game path the setting implies.",
+        "Add targeted tests or manual validation for both true full-screen and remembered borderless-window game scenarios."
+      ],
+      "verification": [
+        "With the setting enabled, Quick Accent should stay suppressed in a game that Windows Game Bar already recognizes and remembers as a game.",
+        "Quick Accent should still work normally in non-game applications with the same keyboard gestures."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The current code path matches the wording gap in the report closely, but the exact replacement signal still needs maintainer-side validation across full-screen and borderless game scenarios."
+      }
+    }
+  ]
 }

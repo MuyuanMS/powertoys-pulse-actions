@@ -1,48 +1,104 @@
 {
-  "number": 49307,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
-  },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
-  },
-  "actions": [
-    {
-      "id": "request-info-49307",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 49307,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
-      }
-    }
+  "number": 49307,
+  "title": "Keyboard Manager Key Remapping Fails After Sleep or Startup",
+  "url": "https://github.com/microsoft/PowerToys/issues/49307",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "assignees": [],
+  "generated_at": "2026-09-09T19:51:48Z",
+  "evaluated_at": "2026-09-09T19:51:48Z",
   "source_updated_at": "2026-08-07T22:32:55Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
+    "rationale": "The issue still mixes at least two failure moments—startup and wake-from-sleep—and the current thread does not isolate whether the failure affects single-key remaps, shortcut remaps, or Keyboard Manager activation itself.",
     "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+      "The issue body says remapped keys stop working after either sleep or automatic startup, but it does not separate those scenarios into a reproducible sequence.",
+      "The public comments are only '+1' reports plus one user asking for clearer steps, whether Keyboard Manager logs errors, and whether toggling the module restores behavior.",
+      "The attached public bug-report bundle I reviewed did not isolate a post-sleep failure signature; the Keyboard Manager logs mostly show startup and an editor-shortcut parse failure rather than a clear remap-engine crash.",
+      "The runner evidence showed other PowerToys activity, so the available data does not yet prove a general hook failure after resume."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-07T22:32:55Z"
-  }
+    "recommended_action": "Request a precise repro that separates startup from wake-from-sleep and a fresh post-failure bug report captured immediately after the remaps stop working."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A fix should not be proposed until the failing trigger and affected remap class are narrowed to one reproducible path."
+  },
+  "issue_context": {
+    "summary": "Keyboard Manager remaps reportedly stop working after startup or after the machine wakes from sleep, but the public issue and reviewed bug-report data do not yet isolate which trigger is real or which class of remap breaks.",
+    "known_information": [
+      "The issue targets Keyboard Manager on PowerToys 0.100.2 from the Microsoft Store.",
+      "The body explicitly names two possible trigger moments: automatic startup and wake from sleep.",
+      "Multiple commenters reported seeing something similar, but none added precise steps or narrowed the failing remap type.",
+      "A public PowerToysReport ZIP was attached and reviewed locally during triage."
+    ],
+    "inferences": [
+      "This could be a resume-state problem, a startup-timing issue, or a narrower remap-engine state problem; the current thread does not distinguish among them.",
+      "If only certain remap classes fail after resume, the next investigation needs that distinction before it can responsibly choose engine code to inspect."
+    ],
+    "analysis": "The request should stay lightweight. The existing public evidence is enough to know the issue is real for multiple users, but not enough to select a safe code path. A targeted follow-up can cheaply separate wake-from-sleep from cold-start behavior and identify whether the broken scope is all remaps or only a subset.",
+    "initial_investigation": [
+      "Reviewed the full issue body, all comments, and the live labels from the GitHub issue.",
+      "Downloaded and unpacked the attached public bug-report archive for local inspection.",
+      "Reviewed Keyboard Manager module and engine logs from that bundle and did not find a single conclusive remap-engine failure that explains both startup and wake-from-sleep paths.",
+      "Reviewed runner evidence and noted that the available data did not prove a full PowerToys hotkey-hook outage."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "A numbered reproduction sequence that separates the startup case from the wake-from-sleep case.",
+        "why_needed": "The current body merges two different trigger moments, which blocks targeted debugging and regression checking.",
+        "how_to_collect": "Please test each path separately and reply with exact numbered steps for the startup case and for the sleep/wake case, including when the remaps stop working."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the failure affects single-key remaps, shortcut remaps, or both, and whether disabling then re-enabling Keyboard Manager restores behavior without restarting PowerToys.",
+        "why_needed": "That tells maintainers whether the problem is a broad resume-state failure or a narrower remap-engine state transition.",
+        "how_to_collect": "Please list one specific single-key remap and one specific shortcut remap you tested, note which one failed, and confirm whether toggling Keyboard Manager off/on restores them."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic bundle captured immediately after the remaps stop working.",
+        "why_needed": "The reviewed older bundle did not isolate the failing moment; a capture taken immediately after reproduction is much more likely to contain the relevant log window.",
+        "how_to_collect": "Right after the remaps fail, please comment /bugreport on the issue and attach the generated ZIP from that failing run."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Separate startup and wake-remap failure",
+      "note": "Ask for the smallest issue-specific evidence that distinguishes the failing trigger and remap scope.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49307,
+        "body": "Thanks for the report. The current thread shows the symptom, but it still mixes two different trigger moments: PowerToys startup and wake-from-sleep. To narrow this down, could you please provide:\n1. exact numbered steps for the startup case and, separately, for the sleep/wake case;\n2. whether the failure affects single-key remaps, shortcut remaps, or both; and whether toggling Keyboard Manager off/on restores them;\n3. one concrete remap example that fails; and\n4. a fresh diagnostic bundle captured immediately after the failure by commenting /bugreport on the issue and attaching the generated ZIP.\nThat will let us compare the failing moment instead of guessing between startup timing and resume-state handling."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "MU-XICHEN",
+  "comments": 4,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 4
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 63,
+    "level": "yellow",
+    "rationale": "The report looks real, but the current evidence still does not separate startup timing from post-sleep state loss."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

@@ -1,48 +1,102 @@
 {
-  "number": 49679,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
-  },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
-  },
-  "actions": [
-    {
-      "id": "request-info-49679",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 49679,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
-      }
-    }
+  "number": 49679,
+  "title": "Workspace not capturing a running application",
+  "url": "https://github.com/microsoft/PowerToys/issues/49679",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "assignees": [],
+  "generated_at": "2026-09-09T19:51:48Z",
+  "evaluated_at": "2026-09-09T19:51:48Z",
   "source_updated_at": "2026-08-05T02:59:26Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
+    "rationale": "The issue does not identify which running applications were skipped by Capture, and current Workspaces snapshot code intentionally filters several window classes and privilege cases.",
     "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+      "The issue body only says 'Workspace > Add Workspace > Capture' and that not all running applications are captured.",
+      "The same body also asks for a manual way to add applications to an existing workspace, which is a separate feature request from the missing-capture bug.",
+      "SnapshotUtils.cpp filters popup windows, untitled windows, zero-sized windows, some default-excluded processes, windows without accessible process paths, and windows lacking thick frames unless they are Steam games.",
+      "The same code explicitly skips elevated windows when PowerToys itself is not elevated because it cannot read their process paths."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-05T02:59:26Z"
-  }
+    "recommended_action": "Ask exactly which windows were skipped and whether those windows were elevated, minimized, or special host windows before selecting an engineering path."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A fix would be premature until the missing-window class is identified, because current code already has several deliberate capture exclusions."
+  },
+  "issue_context": {
+    "summary": "Workspaces Capture skipped one or more running applications, but the report does not name the affected apps. Current snapshot code already excludes multiple window categories by design, and the 'manual add' request broadens scope beyond the capture bug itself.",
+    "known_information": [
+      "The issue targets Workspaces on PowerToys 0.100.2 and Windows 11 25H2.",
+      "The report does not include a bug-report ZIP, screenshots, or public follow-up comments naming the missing applications.",
+      "SnapshotUtils enumerates windows through a filter pipeline and drops popup, untitled, zero-sized, default-excluded, and some non-thick-frame windows.",
+      "If PowerToys is not elevated, the code also skips elevated app windows whose process paths cannot be queried."
+    ],
+    "inferences": [
+      "The capture miss may be expected behavior for a filtered/elevated/special-host window rather than a universal Workspaces failure.",
+      "The request for manual addition likely deserves a separate feature discussion once the actual capture-bug scope is known."
+    ],
+    "analysis": "This issue needs narrower evidence, not a guessed fix. The source already shows several intentional capture exclusions, so the missing detail is the identity and state of the skipped apps. That is the smallest next question that can separate a true bug from existing limitations or from a separate feature request.",
+    "initial_investigation": [
+      "Reviewed the full issue body and confirmed there are no public comments or attachments adding scope.",
+      "Inspected WorkspacesSnapshotTool/SnapshotUtils.cpp to trace the current capture filters and privilege behavior.",
+      "Confirmed the capture pipeline can intentionally exclude elevated windows, popup/untitled windows, and windows without usable app identity."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The names/processes of the running applications that Capture skipped, plus whether each skipped window was minimized, elevated, or a PWA/UWP host window.",
+        "why_needed": "That tells maintainers which current capture filter or unsupported window class is involved.",
+        "how_to_collect": "Please list the exact apps that were visible on screen but missing from the Capture result, and note whether each one was minimized, running as administrator, or hosted inside another shell such as Edge/Chrome."
+      },
+      {
+        "evidence_type": "settings_permissions",
+        "information": "Whether PowerToys itself was running elevated when Capture was used.",
+        "why_needed": "Workspaces currently cannot inspect some elevated windows when PowerToys is not elevated, so that changes the expected result set.",
+        "how_to_collect": "Please confirm whether PowerToys was running as administrator when you clicked Add Workspace > Capture."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "A numbered repro that distinguishes the capture omission from the separate request for manually adding apps to an existing workspace.",
+        "why_needed": "The current issue combines a bug report and a feature request in one thread.",
+        "how_to_collect": "Please reply with short numbered steps for the missing-capture bug first, and separately note whether the manual-add request should be treated as a different feature ask."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Identify which windows Capture skipped",
+      "note": "Ask for the exact omitted app types before investigating Workspaces capture logic.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49679,
+        "body": "Thanks for the report. Workspaces Capture already filters some window types by design (for example certain popup/untitled windows and some elevated windows when PowerToys is not running elevated), so before we chase code changes, could you please provide:\n1. the exact app names/processes that were visible but missing from Capture;\n2. whether each missing window was minimized, running as administrator, or hosted inside another app such as Edge/Chrome;\n3. whether PowerToys itself was running as administrator when you used Add Workspace > Capture; and\n4. whether the request for manually adding an app to an existing workspace is a separate feature ask from the missing-capture bug.\nThat will tell us whether this is an unsupported window class, a privilege limitation, or a reproducible capture bug."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "AshwinChandarana",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 58,
+    "level": "yellow",
+    "rationale": "The source shows multiple deliberate capture filters, but the issue never says which skipped apps hit them."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

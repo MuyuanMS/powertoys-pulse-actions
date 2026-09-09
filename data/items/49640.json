@@ -1,48 +1,118 @@
 {
-  "number": 49640,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
+  "generated_at": "2026-09-09T19:39:53Z",
+  "evaluated_at": "2026-09-09T19:39:53Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs more evidence",
-    "detail": "The symptom is not yet localized enough to choose a safe code owner or design path."
+  "number": 49640,
+  "track": "triage",
+  "stage": "triaged",
+  "source_updated_at": "2026-08-03T15:47:50Z",
+  "title": "Causing Input Delay At Startup For Like 10-20 Seconds",
+  "url": "https://github.com/microsoft/PowerToys/issues/49640",
+  "author": "therabug",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "The startup-lag report already narrows the enabled-module set and includes a bug-report ZIP, so the next useful step is a maintainer-side reproduce and profile pass rather than another generic request to the reporter.",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The issue identifies the startup trigger, rules out Keyboard Manager, names the only enabled modules, and includes a bug-report ZIP, which is enough for a focused local repro against the remaining startup paths.",
+    "evidence": [
+      "The report says enabling open at startup causes 10-20 seconds of input delay during sign-in or startup.",
+      "The reporter explicitly says Keyboard Manager is disabled and that only Command Palette with Drag And Move is enabled.",
+      "A PowerToys bug-report ZIP is attached.",
+      "Current Grab And Move source installs global low-level keyboard and mouse hooks during startup, which is the kind of early input-path work that deserves profiling in this scenario."
+    ],
+    "recommended_action": "Reproduce startup with only Command Palette and Grab And Move enabled, then profile which synchronous startup path is blocking early input.",
+    "evaluated_at": "2026-09-09T19:39:53Z",
+    "source_updated_at": "2026-08-03T15:47:50Z"
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused diagnostics",
-    "reason": "The missing evidence is specific and cheaper to collect than speculative code investigation."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is plausible because the issue already narrows the enabled-module set to startup-sensitive input or UI components, but the exact blocking path still needs local profiling."
+  },
+  "issue_context": {
+    "summary": "PowerToys introduces 10-20 seconds of startup input lag, with the report already narrowed to a configuration where only Command Palette and Drag And Move are enabled.",
+    "known_information": [
+      "The report is on PowerToys 0.100.2 installed via WinGet on Windows 11 build 26200.8973.",
+      "Keyboard Manager is explicitly ruled out by the reporter.",
+      "Only Command Palette with Drag And Move is enabled according to the issue body.",
+      "A public bug-report ZIP is attached."
+    ],
+    "inferences": [
+      "The startup lag is more likely tied to one of the remaining enabled modules than to a generic system-wide PowerToys startup problem.",
+      "Because the symptom is input delay during sign-in, early low-level hook or synchronous initialization work is a more plausible suspect than a later background task."
+    ],
+    "analysis": "This is best treated as reproducible. The thread already narrowed the configuration enough that maintainer-side profiling should add more value than another broad evidence request.",
+    "initial_investigation": [
+      "src/modules/GrabAndMove/GrabAndMove/main.cpp installs global low-level keyboard and mouse hooks during startup and then enters its message loop, which makes it a credible candidate for input-path startup lag.",
+      "No public discussion currently narrows whether Command Palette alone or the CmdPal + Grab And Move combination is the trigger, so the local reproduce step should keep both enabled first and then split them."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-49640",
-      "type": "request_info",
-      "label": "Draft request for details",
-      "primary": true,
+      "id": "approve-design-49640",
+      "type": "approve_design",
+      "label": "Approve startup-lag investigation for CmdPal and Grab And Move",
+      "primary": false,
       "confirm": true,
-      "comment": {
-        "target": "issue",
+      "requiresApproval": true,
+      "note": "The likely fix is within PowerToys startup sequencing, but local profiling is still needed to identify the dominant blocking path.",
+      "issue": {
         "number": 49640,
-        "body": "Could you confirm whether this still reproduces on PowerToys 0.100.2 or newer, rewrite the steps as a short numbered sequence from a clean start, and attach a PowerToys bug-report ZIP plus any screenshot or recording that shows the failure?"
-      },
-      "note": "Draft only; never posted upstream without explicit approval."
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-49640",
+      "type": "reproduce",
+      "label": "Reproduce startup lag with CmdPal and Grab And Move",
+      "primary": true,
+      "note": "Use the exact minimal module set from the issue and measure input responsiveness immediately after sign-in.",
+      "reproduce": {
+        "module": "Command Palette / Grab And Move startup",
+        "version": "0.100.2 or current main",
+        "prerequisites": [
+          "Enable PowerToys open at startup.",
+          "Disable Keyboard Manager and leave only Command Palette and Grab And Move enabled.",
+          "Prefer a Windows 11 environment similar to the report if available."
+        ],
+        "steps": [
+          "Sign out or reboot and sign back in with the reported module configuration.",
+          "During the first 10-20 seconds after sign-in, test basic keyboard and mouse responsiveness.",
+          "If lag appears, correlate the lag window with PowerToys startup timestamps and then compare by disabling Grab And Move or Command Palette one at a time."
+        ],
+        "expected_result": "PowerToys startup should not introduce noticeable keyboard or mouse lag during the first seconds after sign-in.",
+        "attachments": [
+          "https://github.com/user-attachments/files/30667846/PowerToysReport_2026-08-03-18-45-03.zip"
+        ]
+      }
     }
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-03T15:47:50Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The symptom is not yet localized enough to choose a safe code owner or design path.",
-    "evidence": [
-      "The symptom is not yet localized enough to choose a safe code owner or design path.",
-      "Draft only; never posted upstream without explicit approval."
-    ],
-    "recommended_action": "The missing evidence is specific and cheaper to collect than speculative code investigation.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-03T15:47:50Z"
-  }
+  "proposed_fixes": [
+    {
+      "title": "Defer or shorten synchronous startup work when CmdPal and Grab And Move are enabled",
+      "root_cause": "One of the remaining enabled modules is likely performing synchronous hook registration or startup work on the logon path long enough to delay normal keyboard or mouse input for the first 10-20 seconds after sign-in.",
+      "plan": [
+        "Reproduce the issue with only Command Palette and Grab And Move enabled at startup, and correlate the lag window with module startup timestamps.",
+        "Profile the remaining synchronous work on that path, especially low-level hook install and any early UI or extension initialization.",
+        "Move expensive startup work off the immediate logon hot path or defer it until the shell is responsive, then validate that startup latency drops without breaking module activation."
+      ],
+      "verification": [
+        "Sign in with only the reported modules enabled and confirm keyboard and mouse input remains responsive during the first 20 seconds.",
+        "Re-enable the same modules individually to verify the latency regression is actually fixed and not just masked by a configuration change."
+      ],
+      "confidence": {
+        "score": 56,
+        "level": "yellow",
+        "rationale": "The enabled-module set is already well narrowed, but the public thread does not yet prove whether the dominant startup cost is in Grab And Move, Command Palette, or their interaction."
+      }
+    }
+  ]
 }

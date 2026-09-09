@@ -1,136 +1,116 @@
 {
-  "number": 49617,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
+  "generated_at": "2026-09-09T19:39:53Z",
+  "evaluated_at": "2026-09-09T19:39:53Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design ready — needs approval",
-    "detail": "The crash path is narrowed to a cross-thread Shortcut Guide visibility check during Win-key release."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Approve the design and build the fix",
-    "reason": "Approve the UI-thread visibility-state fix and implement it before more crash dumps or user repro rounds are collected."
-  },
-  "actions": [],
-  "confidence": "High",
-  "design": {
-    "root_cause": "ShortcutGuide.App installs a low-level keyboard hook callback that reads OverlayWindow.AppWindow.IsVisible directly from the hook thread when Win is released. AppWindow is a WinUI/COM object owned by the UI thread; touching it from the native keyboard-hook thread while the overlay is hiding or switching panes can fault across the C++/WinRT boundary, which matches the fully reproducible crash when taskbar Win+number shortcuts are pressed while the taskbar pane is visible.",
-    "evidence": [
-      "The issue is a fully reproducible crash in PowerToys.ShortcutGuide.exe whenever Win+number is pressed while taskbar labels are shown.",
-      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs reads OverlayWindow.AppWindow.IsVisible inside the low-level Win-key-up callback rather than on the UI thread.",
-      "The same file already marshals CloseAnimated back to OverlayWindow.DispatcherQueue, showing the code expects window operations to happen on the UI thread.",
-      "OverlayWindow.xaml.cs owns the show/hide lifecycle through ShowOverlay(), CloseAnimated(), and OnCloseTimerTick(), so a UI-thread visibility flag can replace cross-thread AppWindow property reads."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs",
-        "purpose": "Stop the hook thread from dereferencing AppWindow and use a UI-safe visibility signal instead.",
-        "symbols": [
-          "App.OnLaunched",
-          "_winKeyUpKeyboardHook",
-          "ListenForLaunchedEvents"
-        ]
-      },
-      {
-        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs",
-        "purpose": "Publish a UI-owned overlay-visible state that is updated in the show/hide lifecycle.",
-        "symbols": [
-          "OverlayWindow.ShowOverlay",
-          "OverlayWindow.CloseAnimated",
-          "OverlayWindow.OnCloseTimerTick"
-        ]
-      },
-      {
-        "path": "src/modules/ShortcutGuide/ShortcutGuide.UnitTests/OverlayVisibilityStateTests.cs",
-        "purpose": "Add narrow regression coverage for the new visibility-state decision logic without needing a full WinUI window in tests.",
-        "symbols": [
-          "OverlayVisibilityStateTests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs",
-        "symbols": [
-          "OverlayWindow.ShowOverlay",
-          "OverlayWindow.OnCloseTimerTick"
-        ],
-        "current_behavior": "Only AppWindow.Show()/Hide() reflects visibility, so non-UI code must read AppWindow.IsVisible to know whether the overlay is on screen.",
-        "change": "Add a lightweight UI-thread-owned visibility flag/property that is set true immediately before/after ShowOverlay and set false in the hide-timer completion path before AppWindow.Hide().",
-        "code_block": "internal volatile int _overlayVisible;\r\ninternal bool IsOverlayVisibleForHooks => Volatile.Read(ref _overlayVisible) == 1;\r\n\r\npublic void ShowOverlay()\r\n{\r\n    Volatile.Write(ref _overlayVisible, 1);\r\n    this.AppWindow.Show();\r\n    ...\r\n}\r\n\r\nprivate void OnCloseTimerTick(...)\r\n{\r\n    Volatile.Write(ref _overlayVisible, 0);\r\n    this.AppWindow.Hide();\r\n}",
-        "tests": [
-          "Add OverlayVisibilityStateTests covering show/hide transitions.",
-          "Manual Win+number crash repro after the flag is introduced."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs",
-        "symbols": [
-          "App.OnLaunched",
-          "_winKeyUpKeyboardHook",
-          "ListenForLaunchedEvents"
-        ],
-        "current_behavior": "The Win-key-up hook callback and show-event listener branch on OverlayWindow.AppWindow.IsVisible from non-UI threads.",
-        "change": "Replace every non-UI AppWindow.IsVisible check with the new OverlayWindow.IsOverlayVisibleForHooks flag, and keep all real UI work inside DispatcherQueue.TryEnqueue().",
-        "code_block": "if (OverlayWindow.IsOverlayVisibleForHooks)\r\n{\r\n    OverlayWindow.DispatcherQueue.TryEnqueue(() => OverlayWindow.CloseAnimated());\r\n    SendSingleKeyboardInput((short)key, 0x2);\r\n}\r\nelse\r\n{\r\n    SendSingleKeyboardInput((short)key, 0x2);\r\n}",
-        "tests": [
-          "Add a unit test or extracted helper test that verifies the close/no-close decision is based only on the flag.",
-          "Manual taskbar-pane + Win+number regression repro."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/ShortcutGuide/ShortcutGuide.UnitTests/OverlayVisibilityStateTests.cs",
-        "symbols": [
-          "OverlayVisibilityStateTests"
-        ],
-        "current_behavior": "There is no regression coverage for the show/hide state used by the keyboard hook, so cross-thread visibility regressions are easy to reintroduce.",
-        "change": "Add a focused unit-test surface for the extracted visibility/close-decision helper so the hook path can be validated without instantiating a real WinUI AppWindow.",
-        "code_block": "[TestMethod]\r\npublic void WinKeyUp_WhenOverlayFlagIsSet_RequestsCloseWithoutReadingAppWindow()\r\n{\r\n    // Assert that the decision path uses the UI-safe flag only.\r\n}",
-        "tests": [
-          "Add unit coverage for visible vs hidden hook decisions.",
-          "Keep existing Shortcut Guide converter/unit tests green."
-        ]
-      }
-    ],
-    "verify": [
-      "Build Shortcut Guide.Ui and ShortcutGuide.UnitTests in x64 Debug or Release using the repo build scripts.",
-      "Run the new ShortcutGuide.UnitTests visibility-state tests.",
-      "Manually reproduce: open Shortcut Guide, wait for Win+number taskbar labels, press Win+1/Win+2/Win+3 repeatedly, and confirm the target app activates without crashing ShortcutGuide.exe or producing a dump.",
-      "Verify ordinary long-press Win, Esc close, and click-outside close behavior still work after the visibility flag change."
-    ],
-    "risks": [
-      "If any show/hide path forgets to update the new flag, the overlay may stop closing on Win release or may close when it should remain visible.",
-      "The close animation timer means visibility transitions are intentionally asynchronous; the flag must represent “hook-visible” semantics, not just AppWindow current state.",
-      "Hook-thread logic must continue to avoid feedback loops when injected key-up events are replayed."
-    ],
-    "alternatives": [
-      "Catching the crash around AppWindow.IsVisible is not viable because access violations and apartment violations can terminate the process before managed catch logic helps.",
-      "Marshalling every visibility query back to the UI thread adds latency on the hook path and still races the taskbar Win+number gesture.",
-      "Disabling Win+number handling while Shortcut Guide is open would avoid the crash but would regress a legitimate Windows shortcut."
-    ]
-  },
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49617,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-08-02T18:41:11Z",
+  "title": "[Shortcut Guide] Crashes when pressing any Win+number taskbar shortcut while the guide is open",
+  "url": "https://github.com/microsoft/PowerToys/issues/49617",
+  "author": "kmhaugen",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "Shortcut Guide has a concrete crash repro when Win+number is pressed while taskbar indicators are showing, and the next useful step is a maintainer-side debugger repro against the taskbar-indicator path.",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The crash path is narrowed to a cross-thread Shortcut Guide visibility check during Win-key release.",
+    "status": "reproducible",
+    "rationale": "The issue already provides exact steps, says the crash happens on every tested Win+number shortcut, and includes crash-dump symptom details, so a reporter-facing info request would add less value than a direct local repro.",
     "evidence": [
-      "The crash path is narrowed to a cross-thread Shortcut Guide visibility check during Win-key release.",
-      "The issue is a fully reproducible crash in PowerToys.ShortcutGuide.exe whenever Win+number is pressed while taskbar labels are shown.",
-      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs reads OverlayWindow.AppWindow.IsVisible inside the low-level Win-key-up callback rather than on the UI thread.",
-      "The same file already marshals CloseAnimated back to OverlayWindow.DispatcherQueue, showing the code expects window operations to happen on the UI thread.",
-      "OverlayWindow.xaml.cs owns the show/hide lifecycle through ShowOverlay(), CloseAnimated(), and OnCloseTimerTick(), so a UI-thread visibility flag can replace cross-thread AppWindow property reads."
+      "The reporter gives a four-step repro and says every tested Win+number taskbar shortcut triggers the crash while Shortcut Guide is open.",
+      "The crash produces a user-mode dump and reports exception code 0xC0000005 in PowerToys.ShortcutGuide.exe.",
+      "Current Shortcut Guide activation code shows a dedicated ShowTaskbarIndicators path that displays taskbar indicators while the Windows key remains active.",
+      "TasklistPositions.GetButtons() marshals a native taskbar-button buffer into managed structures during the same taskbar-indicator flow."
     ],
-    "recommended_action": "Approve the UI-thread visibility-state fix and implement it before more crash dumps or user repro rounds are collected.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce the Win+number taskbar-indicator crash on current main and inspect the native taskbar-button ownership and overlay close path under a debugger.",
+    "evaluated_at": "2026-09-09T19:39:53Z",
     "source_updated_at": "2026-08-02T18:41:11Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "This is a concrete Shortcut Guide crash with a narrow module area, but the exact stale-pointer or re-entrancy site still needs maintainer-side debugging."
+  },
+  "issue_context": {
+    "summary": "Pressing any Win+number taskbar shortcut while Shortcut Guide is showing taskbar indicators reliably crashes the Shortcut Guide process with an access violation.",
+    "known_information": [
+      "The issue provides exact reproduction steps and says the crash is fully reproducible.",
+      "The selected taskbar app still activates, which means the Windows shortcut succeeds even though Shortcut Guide crashes afterward.",
+      "The report includes exception code 0xC0000005 and two top-of-stack signatures from dump analysis.",
+      "No assignee, linked fix, or maintainer discussion is visible."
+    ],
+    "inferences": [
+      "The crash is likely inside the taskbar-indicator overlay maintenance path rather than in the actual Windows taskbar activation behavior.",
+      "Because the target app activates successfully, the bug probably happens during or immediately after Shortcut Guide reacts to the taskbar state change."
+    ],
+    "analysis": "This is best represented as reproducible. The public report already contains enough to justify maintainer-side debugger work without asking the reporter for a new generic information package.",
+    "initial_investigation": [
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs has a dedicated ShowTaskbarIndicators activation path that captures the foreground window and immediately updates the taskbar pane.",
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/TasklistPositions.cs marshals a native GetTasklistButtons buffer into managed TasklistButton structs, which is a plausible crash boundary when the underlying taskbar state changes under Win+number.",
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/TaskbarPaneControl.xaml.cs rebuilds visual indicators directly from that native taskbar-button data each time the pane is updated."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49617",
+      "type": "approve_design",
+      "label": "Approve Shortcut Guide Win+number crash investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The crash path is narrow, but the proposed root cause remains low-confidence until a debugger identifies the exact faulting transition.",
+      "issue": {
+        "number": 49617,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-49617",
+      "type": "reproduce",
+      "label": "Reproduce Shortcut Guide Win+number crash",
+      "primary": true,
+      "note": "Drive the exact taskbar-indicator flow under a debugger and capture the faulting frame when the target app activates.",
+      "reproduce": {
+        "module": "Shortcut Guide",
+        "version": "0.100.2 or current main",
+        "prerequisites": [
+          "Use a build where Shortcut Guide can show Win+number taskbar indicators.",
+          "Open enough taskbar-pinned or running apps that the taskbar indicators are visible."
+        ],
+        "steps": [
+          "Open Shortcut Guide.",
+          "Keep it open until the Win+1, Win+2, Win+3, and similar taskbar indicators are displayed above the taskbar icons.",
+          "Press one of the corresponding Win+number shortcuts while the guide is still visible.",
+          "Observe whether the target app activates and whether PowerToys.ShortcutGuide.exe crashes immediately afterward."
+        ],
+        "expected_result": "The taskbar app should activate and Shortcut Guide should close or refresh cleanly without crashing the Shortcut Guide process."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Stabilize Shortcut Guide taskbar-indicator teardown during Win+number activation",
+      "root_cause": "When the taskbar-indicator surface is open, Win+number changes the foreground window and taskbar state while Shortcut Guide is still reading and rendering native taskbar-button data, which likely leaves a stale native buffer or re-entrant close/update path that causes the access violation.",
+      "plan": [
+        "Reproduce the issue under a debugger on current main and capture the faulting frame during Win+number activation.",
+        "Audit the ShowTaskbarIndicators -> UpdateTaskbarPaneLayout -> TasklistPositions.GetButtons flow for stale taskbar-button memory, re-entrant close behavior, or layout refresh after the overlay should already be closing.",
+        "Guard buffer lifetime and skip or cancel taskbar-pane updates once activation closes or invalidates the overlay, then add a regression or manual validation scenario for Win+number while the guide is open."
+      ],
+      "verification": [
+        "Open Shortcut Guide until taskbar indicators are shown, press Win+1 through Win+9, and confirm the selected taskbar app activates without crashing PowerToys.ShortcutGuide.exe.",
+        "Repeat with taskbar indicators opening and closing multiple times to confirm the fix is robust across repeated activations."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The failing path is tightly scoped, but the public crash data is still too shallow to prove whether the fault is stale native memory, re-entrancy, or another taskbar-indicator teardown bug."
+      }
+    }
+  ]
 }

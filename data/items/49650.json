@@ -1,33 +1,119 @@
 {
-  "number": 49650,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triaging",
+  "generated_at": "2026-09-09T19:39:53Z",
+  "evaluated_at": "2026-09-09T19:39:53Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design fix candidate",
-    "detail": "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Queue detailed design",
-    "reason": "The issue is already reproducible enough for code investigation and does not need another upstream information round first."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49650,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-08-04T01:30:09Z",
+  "title": "[Bug] Shortcut Guide crashes or freezes when too many shortcuts are displayed",
+  "url": "https://github.com/microsoft/PowerToys/issues/49650",
+  "author": "re0nyaa",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "The Photoshop scenario is already concrete and comes with a video plus bug-report ZIP, so the next step is a maintainer-side reproduce pass on large Shortcut Guide lists rather than asking the reporter to restate the problem.",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request.",
+    "status": "reproducible",
+    "rationale": "The report names the target app, provides exact steps, and shows the failure on a large shortcut set, which is enough to justify a focused local repro on Shortcut Guide's row-generation and scroll path.",
     "evidence": [
-      "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request."
+      "The issue gives a reproducible Photoshop scenario and links a video of the Shortcut Guide stuttering and closing.",
+      "A PowerToys bug-report ZIP is attached.",
+      "Current ShortcutsPage.RebuildRows() clears and repopulates the flattened Rows collection on the UI thread whenever the page is refreshed.",
+      "ShortcutListItem explicitly exists to let the outer ItemsRepeater virtualize at the row level, which suggests large result-set behavior is already a recognized performance-sensitive area."
     ],
-    "recommended_action": "The issue is already reproducible enough for code investigation and does not need another upstream information round first.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce the Photoshop scenario on current main and inspect whether large shortcut manifests still force too much synchronous row creation or scroll-time work on the UI thread.",
+    "evaluated_at": "2026-09-09T19:39:53Z",
     "source_updated_at": "2026-08-04T01:30:09Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Shortcut Guide fix is plausible because the failing scenario is concrete and sits in a performance-sensitive list-rendering path, but live repro is still needed to confirm the dominant stall or close mechanism."
+  },
+  "issue_context": {
+    "summary": "Shortcut Guide struggles with a high-shortcut-count Photoshop scenario, stuttering during scroll and closing instead of remaining responsive.",
+    "known_information": [
+      "The report targets Adobe Photoshop 2026 (v27.8) and gives a simple three-step repro.",
+      "A video attachment shows the visible failure behavior.",
+      "A public PowerToys diagnostic ZIP is attached.",
+      "No assignee, linked fix, or maintainer discussion is present."
+    ],
+    "inferences": [
+      "The issue is likely tied to scale or list size rather than to one specific shortcut definition, because Photoshop is called out as the large-shortcut example.",
+      "A performance or realization bug inside Shortcut Guide is more likely than a reporter-side environment question because the scenario is already concrete and media-backed."
+    ],
+    "analysis": "This is a good candidate for a reproduce action. The public report is already detailed enough that maintainer-side profiling should be more productive than asking for generic additional evidence.",
+    "initial_investigation": [
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Pages/ShortcutsPage.xaml.cs rebuilds the entire flattened Rows collection whenever the selected app or search query changes.",
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ViewModels/ShortcutListItem.cs explains that row-level virtualization is intentional, which makes large-list behavior a known architectural pressure point worth rechecking against the Photoshop case.",
+      "The current repo also contains cleanup work around reused ItemsRepeater pages, which suggests recent performance or memory fixes may already exist but still need validation against very large shortcut manifests."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49650",
+      "type": "approve_design",
+      "label": "Approve large-list Shortcut Guide investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The scenario is concrete, but live repro is still needed to confirm whether the dominant issue is UI-thread cost, memory, or another manifest interaction.",
+      "issue": {
+        "number": 49650,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-49650",
+      "type": "reproduce",
+      "label": "Reproduce Shortcut Guide stutter on large shortcut lists",
+      "primary": true,
+      "note": "Use Photoshop or another high-shortcut-count app and watch the guide during scroll.",
+      "reproduce": {
+        "module": "Shortcut Guide",
+        "version": "0.100.2 or current main",
+        "prerequisites": [
+          "Install Adobe Photoshop 2026 or another application with a very large Shortcut Guide manifest.",
+          "Ensure Shortcut Guide is enabled."
+        ],
+        "steps": [
+          "Open Adobe Photoshop.",
+          "Press Windows + Shift + / to open Shortcut Guide.",
+          "Scroll through the list of shortcuts and observe responsiveness while the guide is rendering the large result set."
+        ],
+        "expected_result": "Shortcut Guide should stay responsive and remain open while displaying the full shortcut list for the application.",
+        "attachments": [
+          "https://github.com/user-attachments/assets/089e27de-3c40-43cf-9122-7941638a5fd5",
+          "https://github.com/user-attachments/files/30683547/PowerToysReport_2026-08-04-10-16-52.zip"
+        ]
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Prevent large Shortcut Guide result sets from rebuilding synchronously on the UI thread",
+      "root_cause": "The likeliest cause is that very large shortcut manifests still trigger expensive synchronous row rebuilding or realization on the UI thread, so apps like Photoshop can stutter badly and close or become unresponsive while the guide is rendering or scrolling.",
+      "plan": [
+        "Reproduce the issue with Photoshop or another app that exposes a very large shortcut manifest and capture where time is spent during open and scroll.",
+        "Reduce synchronous row-generation pressure by avoiding unnecessary full rebuilds, limiting realized work per frame, or otherwise keeping large shortcut lists responsive.",
+        "Add focused validation for a high-shortcut-count app so large manifests no longer freeze or close the guide."
+      ],
+      "verification": [
+        "Open Shortcut Guide on Photoshop, scroll through the shortcut list, and confirm the guide stays responsive instead of stuttering and closing.",
+        "Compare against a smaller shortcut set to ensure the performance fix does not regress normal Shortcut Guide rendering."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "The UI-thread rebuild path is a credible suspect, but the public report does not yet prove whether the close is caused by pure rendering cost, memory pressure, or another app-specific manifest interaction."
+      }
+    }
+  ]
 }

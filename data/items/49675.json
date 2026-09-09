@@ -1,34 +1,307 @@
 {
-  "number": 49675,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49675,
+  "title": "Power Display - Uninstalled displays are shown",
+  "url": "https://github.com/microsoft/PowerToys/issues/49675",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-09T20:27:00.272Z",
+  "evaluated_at": "2026-09-09T20:27:00.272Z",
   "source_updated_at": "2026-08-05T01:30:29Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "Source review shows the retained-monitor behavior is intentional today, so the issue needs a product/UX fix decision rather than another round of reporter restatement.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The issue gives explicit unplug/uninstall steps and screenshots showing monitors present in Power Display but not in Device Manager.",
+      "MonitorSettingsRebuilder.Rebuild stamps current monitors, keeps missing-but-recent monitors for the retention window, and preserves hidden monitors unconditionally.",
+      "Unit tests explicitly confirm that recently missing monitors stay in the list for 30 days and hidden monitors stay regardless of age.",
+      "That means the confusing display of removed monitors is explained by current product behavior rather than missing evidence from the reporter."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-05T01:30:29Z"
-  }
+    "recommended_action": "Approve the retained-monitor visibility design so Power Display distinguishes retained disconnected displays from live displays and lets maintainers verify or forget them deliberately."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "There is no linked upstream fix yet, but the current behavior and its tradeoff are narrow enough to propose a guarded UX/design change."
+  },
+  "issue_context": {
+    "summary": "Power Display intentionally retains recently missing monitor entries so settings survive rediscovery, but that same retention makes removed or cleanup-deleted monitors appear as if they are still active. The issue is now designable from source and screenshots.",
+    "known_information": [
+      "The issue targets Power Display on PowerToys 0.100.2 and supplies explicit reproduction ideas involving monitor removal or AMD driver cleanup/reinstall.",
+      "The reporter included screenshots showing fewer monitors in Device Manager than in Power Display.",
+      "MonitorSettingsRebuilder currently preserves missing monitor entries whose LastSeenUtc is newer than the retention cutoff and preserves hidden entries regardless of age.",
+      "The associated unit tests confirm that this retention behavior is intentional, not accidental."
+    ],
+    "inferences": [
+      "The product currently optimizes for preserving settings across transient disconnects, but the UI does not clearly distinguish stale retained entries from live monitors.",
+      "A safe fix should preserve short-term rediscovery benefits while avoiding the appearance that deleted monitors are still currently available."
+    ],
+    "analysis": "This issue is implementation-design ready now because the retention writer and the Settings UI reader are both identified in current source. The code already explains why removed monitors keep appearing; the remaining work is to carry connection-state metadata through the retention path and present retained entries as disconnected/forgettable instead of active monitors.",
+    "initial_investigation": [
+      "Reviewed the full live issue body and screenshot evidence showing fewer monitors in Device Manager than in Power Display.",
+      "Inspected src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorSettingsRebuilder.cs and confirmed the 30-day retention rule for recently missing monitors.",
+      "Inspected src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Settings.cs and confirmed SaveMonitorsToSettings serializes the rebuilt retained monitor list back into settings.",
+      "Inspected src/settings-ui/Settings.UI/ViewModels/PowerDisplayViewModel.cs and src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml and confirmed the Settings UI binds all visible DevicePath monitor entries from settings without distinguishing retained-only entries from live ones.",
+      "Inspected src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/MonitorSettingsRebuilderTests.cs and confirmed the retention semantics are intentionally covered by tests."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve stale-monitor visibility design",
+      "note": "Approve a bounded UX/design change for retained but currently missing monitor entries."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce retained removed-monitor entries",
+      "note": "Validate both the user confusion path and the transient-disconnect preservation requirement before implementation.",
+      "reproduce": {
+        "module": "Power Display",
+        "version_requirement": "PowerToys 0.100.2 or a nearby build with monitor retention enabled by default.",
+        "prerequisites": [
+          "A system where a monitor can be unplugged/replugged or logically removed after being discovered once.",
+          "Access to Power Display and Windows Device Manager or Display Settings for comparison."
+        ],
+        "steps": [
+          "Start with a monitor discovered in Power Display and confirm it appears in the current list.",
+          "Disconnect or remove that monitor, then use the existing user flow that removes the device from Windows while leaving PowerToys settings intact.",
+          "Reopen Power Display and compare the shown monitor entries with the currently connected monitors in Windows.",
+          "Repeat with a short transient disconnect to confirm whether settings-preserving retention is still desirable."
+        ],
+        "expected_result": "Removed monitors should not look like normal active displays, while transiently missing monitors should still be recoverable in a clearly marked way."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "97rajika",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [
+    {
+      "title": "Represent retained missing monitors as disconnected entries instead of active monitors",
+      "root_cause": "MonitorSettingsRebuilder intentionally carries forward missing-but-recent monitor records so per-monitor settings survive rediscovery. Because those retained records are surfaced like normal monitor entries, a monitor removed from Windows can still appear in Power Display as if it were currently available.",
+      "plan": [
+        "Track whether a persisted monitor entry came from current discovery or only from retention during the rebuild path.",
+        "Update the Power Display presentation layer so retained-only entries are either hidden from the default active list or clearly grouped/labeled as disconnected/retained.",
+        "Provide an explicit 'forget' or equivalent cleanup path for retained entries when the user knows the monitor is permanently gone, while keeping the short-term reconnect benefit for transient disconnects."
+      ],
+      "verification": [
+        "After disconnecting and removing a monitor, confirm Power Display no longer presents it as a normal active display.",
+        "After a transient disconnect/reconnect, confirm the monitor's settings are still preserved and the entry returns cleanly when the monitor is rediscovered."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The current behavior is clearly explained by source, but the exact UX for hidden versus disconnected versus forgotten monitors still needs maintainer preference."
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "Power Display intentionally preserves MonitorInfo entries for recently missing monitors so per-monitor preferences survive transient disconnects. SaveMonitorsToSettings rebuilds settings.Properties.Monitors through MonitorSettingsRebuilder, but the persisted MonitorInfo model and the Settings UI do not record or honor whether an entry came from current discovery or from retention only. PowerDisplayViewModel therefore binds retained \\\\?\\DISPLAY#... entries into the same visible list as live displays, so a monitor removed from Windows still appears to be currently installed.",
+    "evidence": [
+      "Observed in the issue: Device Manager shows fewer monitors than the Power Display settings page, so the confusion is specifically about UI presentation rather than hardware discovery alone.",
+      "Observed in src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorSettingsRebuilder.cs: Rebuild() stamps currently discovered monitors, keeps missing-but-recent monitors inside the retention window, and preserves hidden monitors regardless of age.",
+      "Observed in src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Settings.cs: SaveMonitorsToSettings() replaces settings.Properties.Monitors with the rebuilt retained list and writes it back to settings.json.",
+      "Observed in src/settings-ui/Settings.UI/ViewModels/PowerDisplayViewModel.cs: the constructor and ReloadMonitorsFromSettings() load all visible DevicePath monitor entries from settings into Monitors.",
+      "Observed in src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml: the page binds ItemsSource directly to ViewModel.Monitors, so retained entries render like ordinary active displays.",
+      "Observed in src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/MonitorSettingsRebuilderTests.cs: the retained-monitor behavior is pinned by tests and is therefore intentional current behavior, not an incidental bug."
+    ],
+    "affected_files": [
+      {
+        "path": "src/settings-ui/Settings.UI.Library/MonitorInfo.cs",
+        "purpose": "Persisted Power Display monitor model shared between the writer and the Settings UI; needs an explicit live-vs-retained state that survives reloads and UI updates.",
+        "symbols": [
+          "MonitorInfo",
+          "MonitorInfo.LastSeenUtc",
+          "MonitorInfo.UpdateFrom"
+        ]
+      },
+      {
+        "path": "src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorSettingsRebuilder.cs",
+        "purpose": "Retention algorithm that decides whether a missing monitor entry is kept or dropped and must mark retained entries as disconnected instead of current.",
+        "symbols": [
+          "MonitorSettingsRebuilder.Rebuild"
+        ]
+      },
+      {
+        "path": "src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Settings.cs",
+        "purpose": "Builds the MonitorInfo list written to settings.json and must seed the new connection-state metadata for discovered monitors before retention runs.",
+        "symbols": [
+          "MainViewModel.SaveMonitorsToSettings",
+          "MainViewModel.CreateMonitorInfo",
+          "MainViewModel.CopyUserFlags"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/ViewModels/PowerDisplayViewModel.cs",
+        "purpose": "Loads persisted monitor entries into Settings UI collections and must separate live monitors from retained disconnected entries plus expose a forget action.",
+        "symbols": [
+          "PowerDisplayViewModel.ReloadMonitorsFromSettings",
+          "PowerDisplayViewModel.FilterLegacyIds",
+          "PowerDisplayViewModel.Monitors"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml",
+        "purpose": "Settings page layout that currently renders one undifferentiated monitor list and must surface disconnected retained entries separately.",
+        "symbols": [
+          "PowerDisplayPage monitor ItemsControl",
+          "PowerDisplay disconnected section (new)"
+        ]
+      },
+      {
+        "path": "src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/MonitorSettingsRebuilderTests.cs",
+        "purpose": "Current retention tests; should pin the new connected-versus-retained metadata and preserve existing retention behavior.",
+        "symbols": [
+          "MonitorSettingsRebuilderTests"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI.UnitTests/ViewModelTests/PowerDisplay.cs",
+        "purpose": "Settings UI view-model tests that can verify disconnected entries are filtered out of the active list and forgotten intentionally.",
+        "symbols": [
+          "ViewModelTests.PowerDisplay"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/settings-ui/Settings.UI.Library/MonitorInfo.cs",
+        "symbols": [
+          "MonitorInfo.IsCurrentlyConnected",
+          "MonitorInfo.UpdateFrom",
+          "MonitorInfo constructor"
+        ],
+        "current_behavior": "MonitorInfo stores LastSeenUtc but has no explicit flag telling the reader whether the entry came from current hardware discovery or was retained from an earlier session. When old settings are reloaded, every DevicePath entry looks equally current to the Settings UI.",
+        "change": "Add a persisted connection-state property such as IsCurrentlyConnected that defaults to true for backward compatibility, copy it inside UpdateFrom(), and expose a small display helper if the XAML needs a disconnected label. Keeping the default true prevents pre-upgrade settings files from hiding every monitor until the next scan rewrites them.",
+        "code_block": "[JsonPropertyName(\"isCurrentlyConnected\")]\npublic bool IsCurrentlyConnected\n{\n    get => _isCurrentlyConnected;\n    set\n    {\n        if (_isCurrentlyConnected != value)\n        {\n            _isCurrentlyConnected = value;\n            OnPropertyChanged();\n            OnPropertyChanged(nameof(IsDisconnectedRetained));\n        }\n    }\n}\n\npublic bool IsDisconnectedRetained => !IsCurrentlyConnected;\n\npublic MonitorInfo()\n{\n    _isCurrentlyConnected = true; // preserve visibility for older JSON that lacks the field\n}",
+        "edge_cases": [
+          "Older settings files will deserialize without the new property; the constructor/default must keep existing monitors visible until the next discovery pass rewrites them.",
+          "Hidden monitors can also be disconnected; the new state must describe connection, not overwrite IsHidden semantics.",
+          "UpdateFrom() must copy the new property or reloads will leave stale UI rows in the wrong section."
+        ],
+        "tests": [
+          "Extend Settings.UI.UnitTests/ViewModelTests/PowerDisplay.cs with a round-trip test proving a disconnected retained monitor stays marked disconnected after ReloadMonitorsFromSettings().",
+          "Add a MonitorInfo.UpdateFrom regression proving IsCurrentlyConnected changes propagate to an existing bound object instance."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorSettingsRebuilder.cs",
+        "symbols": [
+          "MonitorSettingsRebuilder.Rebuild"
+        ],
+        "current_behavior": "Rebuild() decides whether an old monitor entry is kept, but retained entries only differ by LastSeenUtc and user flags. The function does not annotate whether an entry was rediscovered now or merely carried forward by retention.",
+        "change": "Stamp currently discovered entries as connected and any kept retained-only entry as disconnected before returning the merged list. Preserve the existing 30-day retention and hidden-entry rules; the new metadata only explains why the retained item is still present.",
+        "code_block": "foreach (var info in currentlyDiscovered)\n{\n    info.LastSeenUtc = now;\n    info.IsCurrentlyConnected = true;\n    result.Add(info);\n}\n\n...\nif (keep)\n{\n    existingMonitor.IsCurrentlyConnected = false;\n    result.Add(existingMonitor);\n}",
+        "edge_cases": [
+          "A rediscovered monitor that matches a retained entry must become connected again instead of staying marked disconnected.",
+          "Pre-upgrade entries with null LastSeenUtc still need the existing stamp-to-now behavior before the retention cutoff is evaluated.",
+          "Case-insensitive ID matches must continue deduping to one connected entry."
+        ],
+        "tests": [
+          "Extend MonitorSettingsRebuilderTests.Rebuild_KeepsCurrentlyDiscoveredAndStampsTheirLastSeen to assert IsCurrentlyConnected == true.",
+          "Add a retained-monitor test asserting a recent missing entry is preserved with IsCurrentlyConnected == false.",
+          "Add a reconnect round-trip assertion proving a monitor retained while disconnected flips back to connected after rediscovery."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Settings.cs",
+        "symbols": [
+          "MainViewModel.CreateMonitorInfo",
+          "MainViewModel.SaveMonitorsToSettings"
+        ],
+        "current_behavior": "CreateMonitorInfo() serializes newly discovered monitors with LastSeenUtc and capability flags, then SaveMonitorsToSettings() hands the list to MonitorSettingsRebuilder. The write path never seeds an explicit connected/disconnected state for the UI to consume later.",
+        "change": "Initialize newly discovered MonitorInfo objects as connected before the rebuilder merges them with retained entries. Keep ApplyPreservedUserSettings/CopyUserFlags focused on user-controlled options so a rediscovered monitor regains its saved preferences without inheriting a stale disconnected marker.",
+        "code_block": "var monitorInfo = new MonitorInfo\n{\n    Name = vm.Name,\n    Id = vm.Id,\n    ...\n    LastSeenUtc = _clock.UtcNow,\n    IsCurrentlyConnected = true,\n};\n\nmonitors = MonitorSettingsRebuilder.Rebuild(\n    currentlyDiscovered: monitors,\n    existing: retentionInput,\n    clock: _clock,\n    retentionDays: PowerDisplaySettings.MonitorEntryRetentionDays);",
+        "edge_cases": [
+          "A rediscovered monitor must not stay disconnected because CopyUserFlags copied only the user-managed fields.",
+          "Legacy-ID migration must still drop obsolete legacy entries after preferences are copied to the new-format ID.",
+          "The SaveMonitorsToSettings path must remain safe when a monitor ID is empty or duplicated only by case."
+        ],
+        "tests": [
+          "Use the existing MonitorSettingsRebuilderTests reconnect round-trip to verify connected state is restored when a monitor comes back.",
+          "Add a Settings.UI.UnitTests/PowerDisplay.cs regression that simulates ReloadMonitorsFromSettings() after a save and confirms rediscovered monitors remain in the active collection."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/settings-ui/Settings.UI/ViewModels/PowerDisplayViewModel.cs",
+        "symbols": [
+          "PowerDisplayViewModel.ReloadMonitorsFromSettings",
+          "PowerDisplayViewModel.FilterLegacyIds",
+          "PowerDisplayViewModel.Monitors",
+          "ForgetDisconnectedMonitorCommand (new)"
+        ],
+        "current_behavior": "The constructor and ReloadMonitorsFromSettings() filter only by legacy-vs-current ID format. Every visible DevicePath entry from settings becomes part of Monitors, so retained disconnected entries appear identical to active ones.",
+        "change": "Split the loaded settings entries into active connected monitors and disconnected retained monitors. Keep Monitors bound only to connected entries, expose a DisconnectedMonitors collection/count for a secondary section, and add a view-model command or method that removes a retained entry from settings when the user confirms it is permanently gone.",
+        "code_block": "var visible = allFromDisk.Where(m => IsVisibleMonitorId(m.Id)).ToList();\nvar active = visible.Where(m => m.IsCurrentlyConnected).ToList();\nvar disconnected = visible.Where(m => !m.IsCurrentlyConnected).ToList();\n\nMonitors = new ObservableCollection<MonitorInfo>(active);\nDisconnectedMonitors = new ObservableCollection<MonitorInfo>(disconnected);\n\npublic void ForgetDisconnectedMonitor(MonitorInfo monitor)\n{\n    _settings.Properties.Monitors.RemoveAll(m => MonitorIdComparer.Equal(m.Id, monitor.Id));\n    DisconnectedMonitors.Remove(monitor);\n    SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);\n}",
+        "edge_cases": [
+          "Object-identity preservation during reload still matters for bound controls; connected entries already on screen should be updated in place where possible.",
+          "If a disconnected monitor reconnects on the next refresh, it must move from the disconnected collection back into Monitors without duplicate rows.",
+          "Forgetting a retained monitor must not remove a live connected row that shares the same normalized ID."
+        ],
+        "tests": [
+          "Extend Settings.UI.UnitTests/ViewModelTests/PowerDisplay.cs so a retained disconnected entry is absent from Monitors but present in DisconnectedMonitors.",
+          "Add a forget-monitor test proving the selected disconnected entry is removed from both the disconnected collection and _settings.Properties.Monitors while connected entries remain intact."
+        ]
+      },
+      {
+        "order": 5,
+        "file": "src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml",
+        "symbols": [
+          "PowerDisplayPage monitor ItemsControl",
+          "Disconnected displays section (new)"
+        ],
+        "current_behavior": "The page renders a single ItemsControl for ViewModel.Monitors, so any retained entry that reaches that collection looks like a normal active display with the same settings affordances as connected hardware.",
+        "change": "Keep the current monitor list for active hardware, then add a separate secondary section for disconnected retained displays that explains why the entry is still present, shows LastSeenUtc or a human-friendly stale indicator, and offers a Forget action. This preserves the retention feature without implying that Windows still has the monitor installed.",
+        "code_block": "<InfoBar IsOpen=\"{x:Bind ViewModel.HasDisconnectedMonitors}\" Severity=\"Informational\"\n         Message=\"Previously connected displays are retained for 30 days so settings survive reconnects.\" />\n<ItemsControl ItemsSource=\"{x:Bind ViewModel.DisconnectedMonitors}\"\n              Visibility=\"{x:Bind ViewModel.HasDisconnectedMonitors, Converter={StaticResource BoolToVisibilityConverter}}\">\n  <!-- show DisplayName, LastSeenUtc, and a Forget button bound to ForgetDisconnectedMonitorCommand -->\n</ItemsControl>",
+        "edge_cases": [
+          "The disconnected section should disappear entirely when no retained entries exist.",
+          "The new affordance must not crowd the active monitor cards or make dangerous feature toggles appear applicable to disconnected entries.",
+          "Localization strings for the disconnected banner and Forget button need to describe retained settings rather than hardware failure."
+        ],
+        "tests": [
+          "Reuse Settings.UI.UnitTests/ViewModelTests/PowerDisplay.cs to validate HasDisconnectedMonitors/count state that drives the XAML visibility.",
+          "Manually open the Power Display settings page after unplug/remove and confirm active monitors stay in the main list while retained ones move to the disconnected section with a working Forget button."
+        ]
+      }
+    ],
+    "verify": [
+      "Run dotnet test .\\src\\modules\\powerdisplay\\PowerDisplay.Lib.UnitTests\\PowerDisplay.Lib.UnitTests.csproj -c Debug --filter MonitorSettingsRebuilderTests",
+      "Run dotnet test .\\src\\settings-ui\\Settings.UI.UnitTests\\Settings.UI.UnitTests.csproj -c Debug --filter PowerDisplay",
+      "Manually reproduce the issue by discovering a monitor, removing it from Windows, reopening Power Display settings, and confirming the active list no longer presents the removed monitor as current.",
+      "Repeat with a transient disconnect/reconnect and confirm the retained entry either reconnects into the active list with its prior settings or can be forgotten deliberately without affecting other monitors."
+    ],
+    "risks": [
+      "A new persisted connection-state field must stay backward-compatible with existing settings files or previously saved monitors could disappear until the next scan.",
+      "Separating disconnected entries from live ones changes the Settings UI contract and requires careful messaging so users understand retention is preserving preferences, not claiming the hardware is online.",
+      "Forgetting a retained entry must use normalized monitor IDs so a reconnect or case-only ID variation does not delete the wrong monitor settings."
+    ],
+    "alternatives": [
+      "Drop retained entries immediately when a monitor disappears: rejected because the current code and tests intentionally preserve settings across transient disconnects.",
+      "Keep showing retained entries in the main list with only a subtle suffix such as \"(disconnected)\": weaker than a separate section because the current confusion is that removed monitors look active and configurable.",
+      "Shorten the retention window without changing presentation: rejected because even one retained stale row would still look like an installed monitor and the user would have no explicit cleanup path."
+    ]
+  },
+  "full_design": true,
+  "confidence": {
+    "score": 64,
+    "level": "yellow",
+    "rationale": "The source and unit tests make the current behavior explicit; the remaining uncertainty is UX choice, not ownership."
+  },
+  "pending_author": false,
+  "stage": "awaiting_design_approval"
 }

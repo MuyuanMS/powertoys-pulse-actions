@@ -1,43 +1,66 @@
 {
+  "schemaVersion": 5,
   "number": 49480,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaging",
-  "owes": "maintainer",
+  "stage": "triaged",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Clear design candidate",
-    "detail": "Dock monitor selection is captured only at startup; hot-plug or resume display changes require a full restart."
+  "generated_at": "2026-09-09T19:27:57Z",
+  "evaluated_at": "2026-09-09T19:27:57Z",
+  "source_updated_at": "2026-07-29T01:18:54Z",
+  "title": "Command Palette Dock requires PowerToys restart to detect a newly connected monitor",
+  "url": "https://github.com/microsoft/PowerToys/issues/49480",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Current main already contains a Command Palette Dock topology-change fix that matches the hot-plug and resume symptoms in this report.",
+    "evidence": [
+      "The issue describes the Dock failing to appear on a newly connected monitor until PowerToys is restarted.",
+      "Two follow-up comments confirm the same monitor-reconnect and monitor-wake behavior.",
+      "Recent current-main history includes “CmdPal: Fix Command Palette Dock breaking on monitor topology changes” (#49814), which explicitly calls out docking, undocking, Win+P, and empty or missing docks."
+    ],
+    "recommended_action": "Link the handled-by-main Command Palette Dock topology fix instead of creating a new design for the same hot-plug monitor bug.",
+    "evaluated_at": "2026-09-09T19:27:57Z",
+    "source_updated_at": "2026-07-29T01:18:54Z"
   },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Design fix",
-    "reason": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input."
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "The reported monitor-topology bug is already covered by a merged current-main fix for Dock topology changes.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49814"
+    ]
+  },
+  "issue_context": {
+    "summary": "The report says Command Palette Dock only recognizes a newly connected monitor after restarting PowerToys, and current main already contains a Dock topology-change fix that matches that failure mode closely.",
+    "known_information": [
+      "The body gives a precise current-build repro for connecting a monitor after PowerToys startup and seeing Dock fail to appear on the configured display.",
+      "Two commenters independently report the same behavior after dock reconnect or monitor sleep/wake.",
+      "The issue includes a PowerToys diagnostic ZIP and is labeled Product-Command Palette."
+    ],
+    "inferences": [
+      "This is a stale-monitor-topology problem inside Command Palette Dock rather than a Windows display-detection problem, because Windows sees the display and PowerToys begins working again after restart.",
+      "The current-main topology-change fix is likely the intended resolution path for this issue rather than a separate unfixed bug."
+    ],
+    "analysis": "Because the issue has not changed and current main now contains a fix whose scope explicitly matches the report, the lightweight revalidation should treat this as handled-by-fix evidence, not as a request for another design. The maintainer-facing action is to point at the merged fix and verify it against a build newer than 0.100.2.",
+    "initial_investigation": [
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs now caches monitor snapshots and exposes NotifyMonitorsChanged().",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs forwards WM_DISPLAYCHANGE to MonitorService so the monitor list is refreshed even when no Dock window is visible.",
+      "The merged PR #49814 adds retries for stable monitor IDs, debounces topology changes, and documents exactly the empty/missing Dock behavior described in this issue."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "design-49480",
-      "type": "approve_design",
-      "label": "Design fix",
+      "id": "post-comment-49480",
+      "type": "post_comment",
+      "label": "Link dock topology fix",
       "primary": true,
-      "confirm": false,
-      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 49480,
+        "body": "Thanks for the detailed repro and the follow-up confirmations. Current main now has a targeted Dock topology-change fix in #49814 that refreshes monitor IDs on WM_DISPLAYCHANGE, retries transient monitor-ID lookups, and debounces monitor-topology writes. This report was filed against 0.100.2 before that merge, so the next maintainer step is to verify it against a build that includes #49814 and then close it as handled if the repro is gone."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
-  ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-29T01:18:54Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "Dock monitor selection is captured only at startup; hot-plug or resume display changes require a full restart.",
-    "evidence": [
-      "Dock monitor selection is captured only at startup; hot-plug or resume display changes require a full restart.",
-      "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
-    ],
-    "recommended_action": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-29T01:18:54Z"
-  }
+  ]
 }

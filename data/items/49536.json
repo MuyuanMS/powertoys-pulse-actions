@@ -1,48 +1,81 @@
 {
+  "schemaVersion": 5,
   "number": 49536,
   "kind": "issue",
   "track": "fix",
   "stage": "needs_reply",
-  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs more evidence",
-    "detail": "The symptom is not yet localized enough to choose a safe code owner or design path."
+  "generated_at": "2026-09-09T19:27:57Z",
+  "evaluated_at": "2026-09-09T19:27:57Z",
+  "source_updated_at": "2026-07-28T16:04:12Z",
+  "title": "AWAKE  i works randomly,...when it decides",
+  "url": "https://github.com/microsoft/PowerToys/issues/49536",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The Awake report is still too ambiguous about the selected mode and the exact wake/sleep transition to choose a safe code path, even though it clearly claims that Awake is interfering with normal sleep behavior.",
+    "evidence": [
+      "The body says the user selected “Continue using the selected power saving combination” but then describes the system sleeping and later waking unexpectedly.",
+      "No version details beyond 0.100.2, no bug report ZIP, and no timed repro sequence are attached.",
+      "No maintainer reply or linked fix is present."
+    ],
+    "recommended_action": "Ask for the exact Awake mode state, a step-by-step sleep/wake repro, and a fresh /bugreport capture before assuming which Awake state transition is wrong.",
+    "evaluated_at": "2026-09-09T19:27:57Z",
+    "source_updated_at": "2026-07-28T16:04:12Z"
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused diagnostics",
-    "reason": "The missing evidence is specific and cheaper to collect than speculative code investigation."
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current report does not yet separate an Awake state-management bug from an external wake timer or a misunderstanding of which Awake mode was active."
+  },
+  "issue_context": {
+    "summary": "The reporter says Awake is interfering with normal sleep behavior, but the issue text is still ambiguous about whether Awake was in passive mode, another keep-awake mode, or reacting to a later power event when the machine woke unexpectedly.",
+    "known_information": [
+      "The issue is filed against PowerToys 0.100.2 and identifies the module as Awake.",
+      "The specific option named in the report is “Continue using the selected power saving combination”.",
+      "The expected result is suspension according to the system power plan after 5 or 15 minutes, while the actual result is described as a random later wake."
+    ],
+    "inferences": [
+      "The report may involve Awake reapplying a state after a power event, but it could also reflect an external wake source unrelated to Awake.",
+      "Without an exact timeline, triage cannot tell whether the bug is “Awake prevented sleep” or “something woke the system after it slept normally.”"
+    ],
+    "analysis": "The issue is real enough to keep in bug triage, but a fix plan would be premature because the triggering transition is still not pinned down. The next useful evidence is a single clean repro with the visible Awake mode state and a bundled diagnostic capture.",
+    "initial_investigation": [
+      "Current Awake code distinguishes passive, indefinite, timed, and expirable modes and logs power-event reapplication paths in src/modules/Awake/Awake/Core/Manager.cs and Awake.ModuleServices/AwakeService.cs.",
+      "The issue body does not yet say which concrete mode the app still showed after the unexpected wake or whether other wake timers were active."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "A short timed repro that lists the chosen Awake mode, the Windows sleep timeout, and what the machine does from idle to sleep to wake.",
+        "why_needed": "That distinguishes “Awake prevented sleep” from “the machine slept and was later reawakened by another event.”",
+        "how_to_collect": "From a fresh PowerToys launch, list the exact mode selected in Awake, the sleep timeout in Windows, and the observed sleep/wake timeline."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether Awake still shows passive mode or another keep-awake mode after the unexpected wake occurs.",
+        "why_needed": "The visible mode state identifies whether Awake itself thinks it should still be holding the system awake.",
+        "how_to_collect": "After the unexpected wake, open Awake and report the exact mode that is shown in the UI or tray menu."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing the unexpected wake behavior.",
+        "why_needed": "The packaged logs are needed to inspect Awake state transitions and any power-event handling around the repro.",
+        "how_to_collect": "Reproduce the problem and then post a new comment with /bugreport immediately afterward."
+      }
+    ]
   },
   "actions": [
     {
       "id": "request-info-49536",
       "type": "request_info",
-      "label": "Draft request for details",
+      "label": "Request Awake mode and wake evidence",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 49536,
-        "body": "Could you confirm whether this still reproduces on PowerToys 0.100.2 or newer, rewrite the steps as a short numbered sequence from a clean start, and attach a PowerToys bug-report ZIP plus any screenshot or recording that shows the failure?"
+        "body": "Thanks for naming the exact Awake option you used. To separate an Awake state bug from a separate wake source, please provide:\n\n1. Short numbered steps from a fresh PowerToys launch that include the selected Awake mode and your Windows sleep timeout.\n2. Whether Awake still shows passive mode or another keep-awake mode after the unexpected wake happens.\n3. A fresh diagnostic ZIP by reproducing the behavior and then posting a comment with /bugreport immediately afterward.\n\nThat will show whether Awake prevented sleep, reactivated itself later, or whether something else woke the machine after it had already suspended normally."
       },
-      "note": "Draft only; never posted upstream without explicit approval."
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
-  ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-28T16:04:12Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The symptom is not yet localized enough to choose a safe code owner or design path.",
-    "evidence": [
-      "The symptom is not yet localized enough to choose a safe code owner or design path.",
-      "Draft only; never posted upstream without explicit approval."
-    ],
-    "recommended_action": "The missing evidence is specific and cheaper to collect than speculative code investigation.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-28T16:04:12Z"
-  }
+  ]
 }

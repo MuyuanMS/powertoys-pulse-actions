@@ -1,34 +1,103 @@
 {
-  "number": 49539,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
+  "generated_at": "2026-09-09T19:39:53Z",
+  "evaluated_at": "2026-09-09T19:39:53Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-31T23:50:44Z",
+  "number": 49539,
+  "track": "triage",
+  "stage": "triaged",
+  "source_updated_at": "2026-08-04T00:37:41Z",
+  "title": "[General] Handle Windows session end in native module processes",
+  "url": "https://github.com/microsoft/PowerToys/issues/49539",
+  "author": "crutkas",
+  "labels": [
+    "Issue-Bug",
+    "Product-Shortcut Guide",
+    "Product-FancyZones",
+    "Product-Always On Top",
+    "Needs-Triage",
+    "Product-CropAndLock",
+    "Product-Workspaces",
+    "Product-ZoomIt",
+    "Product-General",
+    "Product-Grab And Move",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "This is already a scoped engineering issue: PR #48363 fixed the runner's session-end hang, but several native module processes still own message loops without equivalent WM_QUERYENDSESSION / WM_ENDSESSION handling.",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The issue body already identifies the failure class, candidate modules, and the constraint that stateful modules may need custom teardown, and current source confirms the shared helper exists but has not been rolled out broadly beyond the runner.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The issue explicitly describes native module processes that own windows or message loops and can remain blocked in GetMessage until Windows quiesce timeout during shutdown/sign-out/restart.",
+      "src/common/utils/window.h contains handle_stateless_session_end_message(), a shared helper for stateless WM_QUERYENDSESSION / WM_ENDSESSION handling.",
+      "src/runner/tray_icon.cpp already uses that shared helper, while only a few modules such as Always On Top, FancyZones, and Grab And Move currently show explicit WM_QUERYENDSESSION / WM_ENDSESSION handling in source.",
+      "The only linked upstream fix in the issue timeline is PR #48363, which was scoped to the runner and does not complete the module rollout described by this issue."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-31T23:50:44Z"
-  }
+    "recommended_action": "Approve a follow-up design that inventories the remaining native module processes and applies either the shared stateless helper or module-specific session-end teardown where state must be preserved.",
+    "evaluated_at": "2026-09-09T19:39:53Z",
+    "source_updated_at": "2026-08-04T00:37:41Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The runner fix is merged, but no current upstream fix attempt covers the remaining module rollout tracked by this issue."
+  },
+  "issue_context": {
+    "summary": "The runner's shutdown hang was fixed, but the same Windows session-end failure class still applies to multiple native PowerToys module processes that own their own windows or message loops.",
+    "known_information": [
+      "The issue is written against main after PR #48363 and already names candidate modules such as FancyZones, Always On Top, Keyboard Manager Engine, Workspaces Window Arranger, Crop And Lock, Grab And Move, ZoomIt SelectRectangle, Shortcut Guide, and notifications COM activation.",
+      "The issue explicitly distinguishes stateless processes from stateful ones that need module-specific save/permission behavior.",
+      "PR #48363 is linked in the issue timeline and is merged.",
+      "No newer upstream PR is linked for the broader module rollout."
+    ],
+    "inferences": [
+      "This is not blocked on reporter evidence; it is a bounded follow-up engineering task to apply an already-defined shutdown contract to remaining native processes.",
+      "Modules that already contain custom WM_ENDSESSION code will likely need review rather than blind adoption of the shared helper."
+    ],
+    "analysis": "This is ready for a design/start decision, not a request for more information. The remaining work is to inventory and apply the shutdown contract module by module.",
+    "initial_investigation": [
+      "src/common/utils/window.h documents the shared stateless session-end helper and why it prevents APPLICATION_HANG_QUIESCE timeouts.",
+      "src/runner/tray_icon.cpp consumes that helper today, which confirms PR #48363's runner-focused rollout.",
+      "A targeted code search shows explicit WM_QUERYENDSESSION / WM_ENDSESSION handling in Always On Top, FancyZones, Grab And Move, and ZoomIt, which supports the issue's warning that the remaining module work must be reviewed per process rather than applied blindly."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49539",
+      "type": "approve_design",
+      "label": "Approve module session-end rollout design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "High-confidence follow-up to the runner WM_ENDSESSION fix; the remaining work is per-module rollout and validation.",
+      "issue": {
+        "number": 49539,
+        "repository": "microsoft/PowerToys"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Roll out session-end handling to remaining native module processes",
+      "root_cause": "After the runner's WM_ENDSESSION fix, several native module processes still own top-level or message-only windows and wait in independent message loops without handling session-end messages, so Windows can still force-terminate them after the quiesce timeout.",
+      "plan": [
+        "Inventory every native module process that owns a window or message loop, starting with the candidates named in the issue.",
+        "Apply handle_stateless_session_end_message() to processes that have no unsaved state, and keep custom WM_ENDSESSION behavior where modules must save state or coordinate child-process cleanup.",
+        "Add focused tests or shutdown verification for each migrated module so sign-out/shutdown paths exit promptly without regressing module-specific cleanup."
+      ],
+      "verification": [
+        "On shutdown, sign-out, and restart, migrated modules should unwind promptly instead of timing out in GetMessage.",
+        "APPLICATION_HANG_QUIESCE reports should stop appearing for each migrated module process without losing required state or cleanup behavior."
+      ],
+      "confidence": {
+        "score": 92,
+        "level": "green",
+        "rationale": "The issue itself identifies the exact failure mechanism, and current source confirms both the existing shared helper and the runner-only scope of the merged fix."
+      }
+    }
+  ]
 }

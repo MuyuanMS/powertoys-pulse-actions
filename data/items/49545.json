@@ -1,33 +1,121 @@
 {
-  "number": 49545,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
+  "generated_at": "2026-09-09T19:39:53Z",
+  "evaluated_at": "2026-09-09T19:39:53Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
-  },
-  "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49545,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-07-31T23:47:40Z",
+  "title": "Awake: Hello Windows Facial Recognition Not Working After Screen Turns Off",
+  "url": "https://github.com/microsoft/PowerToys/issues/49545",
+  "author": "github-monkey",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Awake"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "The Awake + Windows Hello failure is specific enough for a maintainer-side reproduce pass: only Awake is enabled, the affected mode is indefinite keep-awake, Windows Hello is enabled, and the public thread already includes a bug-report ZIP.",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "status": "reproducible",
+    "rationale": "The current public report already gives a concrete single-module setup and a consistent failure after the display turns off, so the next step is maintainer-side repro and power-transition tracing rather than another generic reporter request.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "The issue says only Awake is enabled, the machine is on Windows 11 25H2, and Awake is set to keep the system awake indefinitely.",
+      "Windows Hello facial recognition stops working only after the screen turns off and recovers only after a restart or a full sleep/power-cycle reset.",
+      "The issue includes a PowerToys bug-report ZIP and no discussion suggesting the ask is waiting on the reporter.",
+      "Current Awake code uses SetThreadExecutionState with ES_SYSTEM_REQUIRED and optionally ES_DISPLAY_REQUIRED, plus a reapply path after power events."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce the Hello/display-off flow on a Hello-enabled machine and inspect Awake's power-request transition handling before asking the reporter for anything else.",
+    "evaluated_at": "2026-09-09T19:39:53Z",
     "source_updated_at": "2026-07-31T23:47:40Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is plausible because Awake is directly responsible for the power-request state during the failing display-off path, but the exact transition that strands Windows Hello still needs maintainer-side debugging."
+  },
+  "issue_context": {
+    "summary": "With only Awake enabled, Windows Hello facial recognition stops working after the display turns off and does not recover until the device is restarted or fully cycled through sleep/power state reset.",
+    "known_information": [
+      "The issue identifies the module as Awake and supplies Windows 11 25H2 build information.",
+      "The reporter explicitly says only Awake is enabled and that the mode is keep awake indefinitely.",
+      "A public PowerToys bug-report ZIP is attached.",
+      "No assignee, labels beyond Product-Awake, or linked fix attempt are present."
+    ],
+    "inferences": [
+      "Because keyboard and touchpad still work, the machine is not in a full unrecoverable sleep state when the Hello failure occurs.",
+      "The failure is likely tied to display-off and resume behavior while Awake keeps the system out of sleep, not to a generic inability to use Windows Hello at all."
+    ],
+    "analysis": "This is best treated as reproducible. The remaining uncertainty is internal power-transition behavior that maintainers can investigate locally using the existing public report and bug-report ZIP.",
+    "initial_investigation": [
+      "src/modules/Awake/Awake/Core/Manager.cs computes Awake state with ES_SYSTEM_REQUIRED and optionally ES_DISPLAY_REQUIRED, which is the exact layer that can change how the system behaves when the display turns off.",
+      "The same file also has a ReapplyAwakeState() path for power events, so lock/display-off transitions are already recognized as meaningful state boundaries inside Awake.",
+      "Nothing in the public thread suggests a missing repro description; the unknown is the internal wake/display transition, not what the reporter did."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49545",
+      "type": "approve_design",
+      "label": "Approve Awake / Windows Hello investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The report is solid, but the hypothesis remains low-confidence until a maintainer traces the display-off transition locally.",
+      "issue": {
+        "number": 49545,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-49545",
+      "type": "reproduce",
+      "label": "Reproduce Windows Hello failure after Awake display-off",
+      "primary": true,
+      "note": "Use a Hello-enabled Windows 11 machine with only Awake enabled and let the display turn off while Awake is active.",
+      "reproduce": {
+        "module": "Awake",
+        "version": "0.100.2 or current main",
+        "prerequisites": [
+          "Use a Windows 11 machine with Windows Hello face unlock enabled.",
+          "Enable only Awake in PowerToys.",
+          "Set Awake to keep the system awake indefinitely while allowing the display to turn off."
+        ],
+        "steps": [
+          "Activate Awake in indefinite mode.",
+          "Wait until the display turns off naturally.",
+          "Attempt to unlock the machine with Windows Hello facial recognition.",
+          "If Hello fails, verify that keyboard and touchpad still respond and then compare with the same flow after disabling Awake."
+        ],
+        "expected_result": "Windows Hello should continue to unlock the device normally after display-off while Awake is enabled; PowerToys should not require a restart or full sleep cycle to recover face recognition.",
+        "attachments": [
+          "https://github.com/user-attachments/files/30482165/PowerToysReport_2026-07-29-00-42-46.zip"
+        ]
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Verify Awake's keep-awake power request does not strand Windows Hello after display-off",
+      "root_cause": "The current best hypothesis is that Awake's continuous system-required state through display-off and unlock transitions is interacting badly with the Windows Hello resume path, leaving face recognition unavailable until the power state is fully reset.",
+      "plan": [
+        "Reproduce the issue on a Windows Hello-enabled machine with Awake in indefinite mode and the display allowed to turn off.",
+        "Trace Awake's lock/unlock and power-event handling to confirm whether execution-state reapply or cleanup leaves Hello in the bad state.",
+        "If confirmed, add the narrowest transition-aware reset or reapply behavior needed so Hello resumes normally after display-off while Awake is active."
+      ],
+      "verification": [
+        "Enable Awake in the affected mode, let the screen turn off, and confirm Windows Hello still unlocks the device normally afterward.",
+        "Disable Awake and re-run the same scenario to verify the fix is scoped to the problematic Awake transition rather than hiding an unrelated Hello issue."
+      ],
+      "confidence": {
+        "score": 34,
+        "level": "red",
+        "rationale": "The issue is concrete and reproducible, but the public evidence does not yet identify which specific power/display transition causes Windows Hello to stop recovering."
+      }
+    }
+  ]
 }

@@ -12,83 +12,66 @@
   "assignees": [
     "zadjii-msft"
   ],
-  "generated_at": "2026-09-09T10:28:38.042Z",
-  "evaluated_at": "2026-09-09T10:28:38.042Z",
-  "source_updated_at": "2026-09-08T10:43:12Z",
+  "generated_at": "2026-09-09T19:51:48Z",
+  "evaluated_at": "2026-09-09T19:51:48Z",
+  "source_updated_at": "2026-09-09T16:15:02Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue was previously marked fixed by merged PR 49451, which changed CmdPal to temporarily expand the host while confirmation ContentDialogs are shown. The new comment says the problem was observed on v0.101.2492 but does not describe the current failure or establish whether it is the same dialog/clipping path, so a targeted revalidation request is required before proposing duplicate work.",
+    "status": "duplicate_or_handled",
+    "rationale": "The remaining compact-mode dialog problem is already tracked by upstream Command Palette work: the original issue was first covered by PR #49451, and the assignee later stated that open PR #49793 already solves the current case apart from enabling one bool flag.",
     "evidence": [
-      "A collaborator previously commented that the issue was fixed by PR 49451.",
-      "PR 49451 was merged and changed ShellPage, MainWindow, and a dialog-expansion message to prevent confirmation dialogs from being clipped in compact mode.",
-      "The collaborator reported observing the issue again on v0.101.2492 on 2026-09-08.",
-      "The new comment contains no reproduction steps, expected/actual behavior, or indication of which dialog is affected."
+      "A collaborator commented 'Fixed by #49451' on 2026-08-08.",
+      "The same collaborator later reported the problem was observed on v0.101.2492, showing that the original fix did not cover every remaining path.",
+      "On 2026-09-09 the assignee/collaborator stated: 'PR #49793 actually solves this issue already, I just have to switch a bool flag to enable it for this case.'",
+      "PR #49793 explicitly lists #49283 in its closing checklist and includes a flyby fix for compact-window dialog clipping."
     ],
-    "recommended_action": "Ask for the exact current repro flow and whether the affected dialog is the confirmation ContentDialog covered by PR 49451; then revalidate the merged fix before considering a regression design."
+    "recommended_action": "Follow PR #49793 rather than open parallel design work, then revalidate the exact dialog path after that change lands."
   },
   "fix_assessment": {
     "status": "existing_fix",
-    "rationale": "A merged upstream fix directly covers the previously described compact-mode ContentDialog clipping behavior. The new observation may be a regression or a different dialog path, but that cannot be determined from the latest comment.",
+    "rationale": "A concrete upstream fix path already exists for the residual scenario, after the earlier merged fix only partially covered the behavior.",
     "existing_fix_urls": [
-      "https://github.com/microsoft/PowerToys/pull/49451"
+      "https://github.com/microsoft/PowerToys/pull/49451",
+      "https://github.com/microsoft/PowerToys/pull/49793"
     ]
   },
   "issue_context": {
-    "summary": "CmdPal's compact/collapsed layout previously clipped content dialogs. That behavior was addressed by merged PR 49451, but the collaborator now reports seeing the issue on v0.101.2492 without describing the current dialog or reproduction sequence.",
+    "summary": "CmdPal's compact-window dialog clipping was first addressed by merged PR #49451, but the issue later resurfaced on v0.101.2492. The Command Palette owner has now said open PR #49793 already covers the remaining case.",
     "known_information": [
-      "The issue was originally filed against a dev build and concerns Command Palette content dialogs in collapsed mode.",
-      "PR 49451 was merged on 2026-08-08 and temporarily forces the visible card to fill the host window while confirmation dialogs are displayed.",
-      "The merged change touches MainWindow.xaml.cs, ShellPage.xaml.cs, and MaximizeForDialogMessage.cs.",
-      "The latest observation is on v0.101.2492 and was posted by a collaborator on 2026-09-08."
+      "The issue is assigned to the Command Palette owner and concerns content dialogs in collapsed/compact mode.",
+      "The first collaborator comment says the issue was fixed by PR #49451.",
+      "A later collaborator comment reports the issue on v0.101.2492 without reopening a separate scoped bug.",
+      "The newest collaborator comment says PR #49793 already solves this issue and only needs a bool flag switched for this case."
     ],
     "inferences": [
-      "The new report could be a regression in the merged expansion/restoration flow, or it could involve a dialog type not covered by PR 49451.",
-      "The absence of current expected/actual details prevents a code-level regression hypothesis from being selected responsibly."
+      "The current open issue is not unowned; it is already attached to active Command Palette work by the feature owner.",
+      "The most likely remaining work is enabling or wiring an already-implemented dialog-expansion path, not designing a brand-new fix."
     ],
-    "analysis": "Because a concrete merged fix already exists, opening a competing design would risk duplicating handled work. The next maintainer decision is whether the new observation reproduces the exact confirmation-dialog clipping path addressed by PR 49451. A short, issue-specific request for the dialog and steps is sufficient to choose between regression validation and a different ownership path.",
+    "analysis": "This is the clearest example of 'duplicate or handled' in the batch. The feature owner has already identified the active PR that resolves the remaining scenario, so a new design artifact would only duplicate known work. The lightweight dashboard outcome is to point triage at the in-flight PR and keep the issue out of speculative re-investigation.",
     "initial_investigation": [
-      "PR 49451's implementation sends MaximizeForDialogMessage before and after HandleConfirmArgsOnUiThread shows a confirmation dialog.",
-      "MainWindow tracks dialog-full-expand state and restores the last compact-mode request after the dialog closes.",
-      "ShellPage owns confirmation dialog presentation, while MainWindow owns the compact-mode host layout, matching the issue's reported interaction.",
-      "No newer linked fix or duplicate was present in the issue discussion beyond the merged PR reference."
+      "Reviewed the full issue body and all collaborator comments from the live issue state.",
+      "Reviewed the current dashboard artifact to confirm it was stale because it stopped before the 2026-09-09 collaborator update.",
+      "Reviewed PR #49451 and PR #49793 to confirm both are directly relevant to the compact-dialog behavior."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "The exact compact-mode steps on v0.101.2492, including which command/action opened the dialog and what was clipped or rendered outside CmdPal.",
-        "why_needed": "This determines whether the new report is a regression of PR #49451 or a separate dialog path.",
-        "how_to_collect": "Please reproduce on v0.101.2492 and reply with the compact-mode setting, the command/action used, the dialog title or text, and the observed versus expected result."
-      }
-    ]
+    "information_gaps": []
   },
-  "actions": [
-    {
-      "type": "request_info",
-      "label": "Confirm current compact-dialog repro",
-      "note": "Ask for the exact current flow needed to revalidate the merged PR 49451 fix without duplicating it.",
-      "comment": {
-        "body": "Thanks for the update. PR 49451 already changed CmdPal to expand the host while confirmation ContentDialogs are shown, so the new observation on v0.101.2492 may be a regression or a different dialog path. Please reproduce it and provide: 1. how compact/collapsed mode was entered; 2. the command or action that opened the dialog; and 3. the dialog title/text plus what was clipped or unavailable compared with the expected result. This will let us revalidate PR 49451 before opening duplicate fix work."
-      }
-    }
-  ],
+  "actions": [],
   "repository": "microsoft/PowerToys",
   "track": "fix",
-  "created_at": "2026-07-12T11:13:45Z",
-  "updated_at": "2026-09-08T10:43:12Z",
   "author": "jiripolasek",
-  "comments": 2,
+  "comments": 3,
   "live_activity": {
     "issue_body_read": true,
-    "comments_read": 2,
-    "timeline_events_read": 15
+    "comments_read": 3
   },
   "upstream_public_action_taken": false,
   "proposed_fixes": [],
   "design": null,
   "full_design": false,
   "confidence": {
-    "score": 55,
-    "level": "yellow",
-    "rationale": "A merged fix already covers the original dialog-clipping scenario, but the new “Observed on v0.101.2492” comment is too short to tell whether this is that exact regression."
-  }
+    "score": 87,
+    "level": "green",
+    "rationale": "The assignee explicitly said PR #49793 already solves the issue, which is stronger than any new speculative triage path."
+  },
+  "pending_author": false,
+  "stage": "pr_open_upstream"
 }

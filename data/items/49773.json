@@ -1,126 +1,241 @@
 {
-  "number": 49773,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design ready — needs approval",
-    "detail": "The desktop shell is being treated like a normal window, so Always On Top can pin and alpha-adjust Program Manager / WorkerW."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Approve the design and build the fix",
-    "reason": "Approve the shell-window guard design and implement it in Always On Top before adding opacity regressions to the desktop path."
-  },
-  "actions": [],
-  "confidence": "High",
-  "design": {
-    "root_cause": "Always On Top uses the current foreground HWND for both pin/unpin and opacity hotkeys without filtering shell desktop hosts. ProcessCommand only checks game mode and the user exclusion list, and ResolveTransparencyTargetWindow only checks IsPinned(window). When the desktop background (Progman/WorkerW) is foreground, the module pins that shell window and StepWindowTransparency then applies WS_EX_LAYERED alpha directly to it, dimming the desktop and icons.",
+  "number": 49773,
+  "title": "Always On Top can Change Opacity of Program Manager (a.k.a. the desktop background)",
+  "url": "https://github.com/microsoft/PowerToys/issues/49773",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-09T20:27:00.272Z",
+  "evaluated_at": "2026-09-09T20:27:00.272Z",
+  "source_updated_at": "2026-08-08T12:12:51Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue has an exact repro and current Always On Top code already shows why the desktop can be pinned and alpha-adjusted like a normal app window.",
     "evidence": [
-      "The issue repro is exactly: focus the desktop, press the Always On Top activation shortcut, then press the opacity shortcuts; the desktop becomes darker.",
-      "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp routes both hotkey paths to GetForegroundWindow() and never rejects Program Manager / WorkerW before ProcessCommand or StepWindowTransparency.",
-      "ResolveTransparencyTargetWindow returns the pinned window unchanged once IsPinned(window) is true.",
-      "src/common/utils/window.h already provides is_system_window(...) for desktop/taskbar classes including Progman, WorkerW, Shell_TrayWnd, and SysListView32."
+      "The issue's three-step repro focuses the desktop background, triggers Always On Top, then uses the opacity hotkeys.",
+      "AlwaysOnTop::ResolveTransparencyTargetWindow only checks that the window exists and is pinned; it does not reject desktop/shell windows.",
+      "The shared is_system_window helper already knows about Progman, WorkerW, Shell_TrayWnd, Shell_SecondaryTrayWnd, and SysListView32.",
+      "That makes a narrow shell-window guard more appropriate than another round of reporter clarification."
+    ],
+    "recommended_action": "Approve a narrow design that rejects desktop/shell windows from pinning and transparency handling, then verify the desktop-opacity repro no longer changes the wallpaper/icons."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "There is no linked upstream fix yet, and the root cause is narrow and code-backed enough for a lightweight proposed fix."
+  },
+  "issue_context": {
+    "summary": "Always On Top can currently treat the desktop shell host like a normal pinned window, which lets the opacity hotkeys darken Program Manager / WorkerW. The repro and source make this designable now.",
+    "known_information": [
+      "The issue targets Always On Top on PowerToys 0.100.2 and provides a concise desktop-background repro.",
+      "There are no public comments or linked PRs on the issue yet.",
+      "ResolveTransparencyTargetWindow currently returns any pinned HWND without filtering shell classes.",
+      "The repository already includes an is_system_window helper covering desktop/taskbar class names and shell HWNDs."
+    ],
+    "inferences": [
+      "The bug is not in the opacity math itself; it is in treating unsupported shell windows as valid targets for pinning/transparency.",
+      "The safest fix is to refuse those shell windows early rather than trying to repair transparency after the desktop has already been mutated."
+    ],
+    "analysis": "This issue is implementation-design ready now. The repro is crisp, the affected code is localized, and the repository already has a shared shell-window classifier that can be reused to reject desktop/taskbar hosts across the pinning, tracking, and opacity paths. The remaining work is a narrow target-validation change plus regression coverage.",
+    "initial_investigation": [
+      "Reviewed the live issue body and confirmed there are no public follow-up comments or linked fixes.",
+      "Inspected src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp around ProcessCommand, StartTrackingTopmostWindows, ResolveTransparencyTargetWindow, and the transparency hotkey path.",
+      "Inspected src/common/utils/window.h and confirmed is_system_window already identifies Progman, WorkerW, Shell_TrayWnd, Shell_SecondaryTrayWnd, SysListView32, and shell HWNDs.",
+      "Inspected src/modules/AlwaysOnTop/Tests/AlwaysOnTop.UITests/AlwaysOnTopTests.cs and confirmed the existing suite covers ordinary pin/unpin behavior but has no regression for desktop-shell targets."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve shell-window opacity guard",
+      "note": "Approve a bounded Always On Top fix that refuses desktop/taskbar shell windows as pin/transparency targets."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce desktop shell opacity mutation",
+      "note": "Validate the reported Program Manager / WorkerW path before and after the shell-window guard.",
+      "reproduce": {
+        "module": "Always On Top",
+        "version_requirement": "PowerToys 0.100.2 or a nearby build with transparency hotkeys enabled.",
+        "prerequisites": [
+          "Always On Top enabled with a pin shortcut and transparency up/down shortcuts configured.",
+          "A Windows desktop where clicking the wallpaper focuses the desktop shell."
+        ],
+        "steps": [
+          "Click the desktop background so the shell window is the foreground target.",
+          "Trigger the Always On Top activation shortcut.",
+          "Press the opacity up/down shortcuts and observe whether the desktop background/icons darken.",
+          "After adding the shell-window guard, repeat the same steps and confirm the desktop no longer changes while normal app windows still do."
+        ],
+        "expected_result": "Desktop shell windows should be ignored by Always On Top pinning/transparency controls, while regular app windows continue to support opacity changes."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "Naruyoko",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [
+    {
+      "title": "Reject desktop shell windows from Always On Top pinning and transparency",
+      "root_cause": "Always On Top uses the foreground HWND as a candidate pin/transparency target and ResolveTransparencyTargetWindow only verifies that the window is pinned. Because the desktop shell hosts (such as Progman/WorkerW) are not filtered out, the module can pin them and then apply layered-window opacity to the desktop itself.",
+      "plan": [
+        "Add a small shell-window guard that uses the existing is_system_window helper before pinning, tracking, or adjusting transparency on a target HWND.",
+        "Apply the same guard in transparency-target resolution so stale or previously pinned shell windows are ignored for opacity changes.",
+        "Add focused regression coverage and manual verification that normal app windows still support pinning and opacity adjustments while desktop/taskbar shell windows do not."
+      ],
+      "verification": [
+        "Click the desktop and use the pin/opacity shortcuts; the wallpaper/icons should no longer darken or acquire a pinned state.",
+        "Pin a normal app window and confirm opacity up/down still works exactly as before."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The repro maps directly to the current target-selection logic, and the repository already contains the system-window helper needed to gate it."
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "Always On Top uses the foreground HWND as the pinning/transparency target and currently treats any pinned HWND as eligible for opacity changes. ProcessCommand can therefore pin the desktop shell host, and ResolveTransparencyTargetWindow only checks that the window still exists and is pinned. Because desktop/taskbar hosts such as Progman and WorkerW are not rejected even though the shared is_system_window helper already recognizes them, the module can apply layered-window alpha to the desktop itself.",
+    "evidence": [
+      "Observed in the issue: clicking the desktop background, triggering Always On Top, and pressing opacity hotkeys changes the wallpaper/icons instead of doing nothing.",
+      "Observed in src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp: ProcessCommand() pins the foreground window after only exclusion/game-mode checks; there is no shell-window guard before PinTopmostWindow().",
+      "Observed in src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp: ResolveTransparencyTargetWindow() returns any valid pinned window without checking whether it is a shell/desktop host.",
+      "Observed in src/common/utils/window.h: is_system_window() already classifies Progman, WorkerW, SysListView32, Shell_TrayWnd, Shell_SecondaryTrayWnd, GetDesktopWindow(), and GetShellWindow() as system windows.",
+      "Observed in src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp: StartTrackingTopmostWindows() and HandleWinHookEvent() continue to manage pinned HWNDs after selection, so once a shell window is admitted it can keep border/transparency bookkeeping like a normal app window."
     ],
     "affected_files": [
       {
-        "path": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
-        "purpose": "Reject shell desktop/taskbar windows before pinning, tracking, or changing transparency.",
+        "path": "src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp",
+        "purpose": "Owns target selection, pin/unpin commands, startup tracking, and transparency application; must reject unsupported shell targets consistently.",
         "symbols": [
           "AlwaysOnTop::ProcessCommand",
           "AlwaysOnTop::StartTrackingTopmostWindows",
-          "AlwaysOnTop::ResolveTransparencyTargetWindow"
+          "AlwaysOnTop::HandleWinHookEvent",
+          "AlwaysOnTop::ResolveTransparencyTargetWindow",
+          "AlwaysOnTop::StepWindowTransparency"
         ]
       },
       {
-        "path": "src/common/UnitTests-CommonUtils/Window.Tests.cpp",
-        "purpose": "Turn the existing weak system-window tests into deterministic assertions that the helper treats desktop/shell windows as system windows and ordinary windows as non-system windows.",
+        "path": "src/common/utils/window.h",
+        "purpose": "Shared shell-window classifier that already knows the relevant desktop/taskbar HWNDs and class names; should be reused instead of inventing a local blacklist.",
         "symbols": [
-          "WindowTests::IsSystemWindow_DesktopWindow_ReturnsResult",
-          "WindowTests::IsSystemWindow_InvalidHwnd_ReturnsFalse"
+          "is_system_window"
+        ]
+      },
+      {
+        "path": "src/modules/AlwaysOnTop/Tests/AlwaysOnTop.UITests/AlwaysOnTopTests.cs",
+        "purpose": "Existing end-to-end Always On Top test suite that can verify desktop-shell targets are ignored while ordinary app windows still support pinning and opacity hotkeys.",
+        "symbols": [
+          "AlwaysOnTopTests",
+          "desktop-shell target regression (new)"
+        ]
+      },
+      {
+        "path": "src/modules/AlwaysOnTop/Tests/AlwaysOnTop.UITests/DesktopHygiene.cs",
+        "purpose": "UI-test helper that already deals with shell-owned foreground surfaces and can help make a desktop-focus regression deterministic.",
+        "symbols": [
+          "DesktopHygiene.DismissForegroundShellSurface"
         ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
+        "file": "src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp",
         "symbols": [
-          "AlwaysOnTop::ProcessCommand"
+          "AlwaysOnTop::ProcessCommand",
+          "AlwaysOnTop::StartTrackingTopmostWindows",
+          "IsUnsupportedShellTarget helper (new)"
         ],
-        "current_behavior": "Any foreground window that is not user-excluded can be pinned, including Progman/WorkerW and other shell-owned windows.",
-        "change": "Add a small helper that reads the foreground window class name and calls is_system_window(...); early-return from ProcessCommand when the target is the desktop/taskbar/shell host.",
-        "code_block": "static bool IsUnsupportedShellTarget(HWND window)\r\n{\r\n    char className[256] = {};\r\n    GetClassNameA(window, className, sizeof(className));\r\n    return is_system_window(window, className);\r\n}\r\n\r\nvoid AlwaysOnTop::ProcessCommand(HWND window)\r\n{\r\n    if (IsUnsupportedShellTarget(window) || isExcluded(window))\r\n    {\r\n        return;\r\n    }\r\n    ...\r\n}",
+        "current_behavior": "ProcessCommand() decides whether to pin or unpin purely from the foreground window handle, and StartTrackingTopmostWindows() later enumerates visible pinned windows without a shell-specific guard. If the desktop host becomes the foreground window, Always On Top can mark it pinned like a normal app.",
+        "change": "Add a small helper that reads the window class and delegates to is_system_window(). Use it before admitting a new target in ProcessCommand(), and skip or actively clean any tracked shell HWNDs in StartTrackingTopmostWindows() so unsupported desktop/taskbar surfaces never enter normal pin bookkeeping.",
+        "code_block": "static bool IsUnsupportedShellTarget(HWND window)\n{\n    char className[256] = {};\n    GetClassNameA(window, className, ARRAYSIZE(className));\n    return is_system_window(window, className);\n}\n\nvoid AlwaysOnTop::ProcessCommand(HWND window)\n{\n    if (IsUnsupportedShellTarget(window))\n    {\n        CleanupInvalidTrackedWindow(window);\n        return;\n    }\n    ...\n}",
+        "edge_cases": [
+          "If a shell window was pinned before the fix, CleanupInvalidTrackedWindow should remove the pin property, border entry, and cached layered state instead of leaving an unremovable invalid target.",
+          "Explorer top-level windows must not be blocked merely because Explorer.exe owns them; the guard should key off the HWND/class-based shell test, not process name alone.",
+          "Invisible or excluded windows should continue following the existing early-return logic."
+        ],
         "tests": [
-          "Manual desktop-background repro should stop at the pin step.",
-          "Existing ordinary pin/unpin behavior on normal app windows must remain unchanged."
+          "Add an AlwaysOnTop.UITests regression that focuses the desktop shell, invokes the pin hotkey, and asserts no pinned/border state appears.",
+          "Keep the existing PinAndUnpinChangesTopmostStateAndBorder test passing for a normal fixture window."
         ]
       },
       {
         "order": 2,
-        "file": "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp",
+        "file": "src/modules/AlwaysOnTop/AlwaysOnTop/AlwaysOnTop.cpp",
         "symbols": [
           "AlwaysOnTop::ResolveTransparencyTargetWindow",
-          "AlwaysOnTop::StartTrackingTopmostWindows"
+          "AlwaysOnTop::StepWindowTransparency",
+          "AlwaysOnTop::RestoreWindowAlpha"
         ],
-        "current_behavior": "Once a shell window is pinned (or already carries the pinned property), opacity changes and startup recovery can continue to act on it.",
-        "change": "Use the same shell-window guard in ResolveTransparencyTargetWindow and while enumerating startup-tracked pinned windows, so stale shell properties are ignored and transparency never applies to desktop/taskbar surfaces.",
-        "code_block": "HWND AlwaysOnTop::ResolveTransparencyTargetWindow(HWND window)\r\n{\r\n    if (!window || !IsWindow(window) || IsUnsupportedShellTarget(window) || !IsPinned(window))\r\n    {\r\n        return nullptr;\r\n    }\r\n    return window;\r\n}",
+        "current_behavior": "Opacity changes are gated only by IsPinned(window). Once a shell HWND is pinned, StepWindowTransparency() can add WS_EX_LAYERED and adjust alpha on the desktop host exactly like a normal app window.",
+        "change": "Teach ResolveTransparencyTargetWindow() to reject unsupported shell targets even if they still carry the pinned property. If an invalid shell target is encountered, clean its cached layered state and return null so opacity hotkeys become a no-op for desktop/taskbar windows while continuing to work for valid app windows.",
+        "code_block": "HWND AlwaysOnTop::ResolveTransparencyTargetWindow(HWND window)\n{\n    if (!window || !IsWindow(window) || !IsPinned(window))\n    {\n        return nullptr;\n    }\n\n    if (IsUnsupportedShellTarget(window))\n    {\n        CleanupInvalidTrackedWindow(window);\n        return nullptr;\n    }\n\n    return window;\n}",
+        "edge_cases": [
+          "Cleanup must restore any layered-style mutation if the invalid window was previously alpha-adjusted.",
+          "A stale HWND in m_windowOriginalLayeredState or m_topmostWindows should be erased safely even if the underlying shell surface has already changed.",
+          "Normal pinned windows that legitimately use WS_EX_LAYERED must still restore their original alpha/color-key behavior on unpin."
+        ],
         "tests": [
-          "Restart Always On Top after pinning a normal window and verify tracked windows still recover.",
-          "Opacity hotkeys on the desktop should do nothing even if the desktop had been foreground previously."
+          "Add a desktop-shell opacity regression that records the desktop target state before and after opacity hotkeys and asserts no layered-opacity change is applied.",
+          "Keep a positive-control test that pins a normal fixture window and confirms opacity hotkeys still change that window only."
         ]
       },
       {
         "order": 3,
-        "file": "src/common/UnitTests-CommonUtils/Window.Tests.cpp",
+        "file": "src/modules/AlwaysOnTop/Tests/AlwaysOnTop.UITests/AlwaysOnTopTests.cs",
         "symbols": [
-          "WindowTests"
+          "AlwaysOnTopTests",
+          "Desktop shell cannot be pinned test (new)"
         ],
-        "current_behavior": "The existing tests only assert that is_system_window does not crash; they do not lock in true/false behavior that Always On Top can rely on.",
-        "change": "Strengthen the desktop/shell helper tests to assert true for GetDesktopWindow()/GetShellWindow() and false for a normal synthetic top-level test window.",
-        "code_block": "TEST_METHOD(IsSystemWindow_NormalTopLevelWindow_ReturnsFalse)\r\n{\r\n    HWND hwnd = CreateWindowExW(...);\r\n    char className[256] = {};\r\n    GetClassNameA(hwnd, className, sizeof(className));\r\n    Assert::IsFalse(is_system_window(hwnd, className));\r\n}",
+        "current_behavior": "The UI suite validates ordinary windows, virtual desktops, exclusions, and game mode, but it never exercises the desktop as the foreground target. The shell-target regression can therefore ship unnoticed.",
+        "change": "Add a deterministic end-to-end test that dismisses transient shell surfaces, focuses the desktop background, sends the pin and opacity hotkeys, and asserts that Always On Top neither creates a border nor mutates desktop opacity. Follow it with a normal fixture pin/opacity positive control in the same test or neighboring test so the guard does not accidentally disable the feature altogether.",
+        "code_block": "var foreground = WindowControl.GetForegroundWindowInfo();\nDesktopHygiene.DismissForegroundShellSurface(foreground);\nFocusDesktopBackground();\nTriggerAlwaysOnTopHotkey();\nAssertBorderState(expected: false);\nTriggerOpacityDecreaseHotkey();\nAssertDesktopLayeredStateUnchanged();\n\nfixture = TestWindow.Create(\"normal opacity control\");\nTogglePin(expected: true);\nAssertFixtureOpacityCanChange();",
+        "edge_cases": [
+          "The test must cope with ShellExperienceHost notifications or desktop overlays stealing focus before the hotkey is sent.",
+          "Desktop focus can land on Progman or WorkerW depending on shell state; the assertion should tolerate either system-window host.",
+          "The test should clean up safely even if the pre-fix product accidentally pinned the shell during a failing run."
+        ],
         "tests": [
-          "Run UnitTests-CommonUtils window-helper tests.",
-          "Keep existing Always On Top startup/manual verification green."
+          "Run dotnet test against AlwaysOnTop.UITests.csproj with the new desktop-shell regression and the existing AlwaysOnTop suite.",
+          "Manually repeat the user repro after the fix and confirm clicking the desktop then pressing the opacity hotkeys does nothing, while a real application window still supports opacity changes."
         ]
       }
     ],
     "verify": [
-      "Build the Always On Top module and UnitTests-CommonUtils using the repo build scripts.",
-      "Run the strengthened UnitTests-CommonUtils window tests.",
-      "Manual repro: click the desktop background, press the Always On Top activation shortcut, then the opacity up/down shortcuts; confirm nothing about the desktop appearance changes.",
-      "Manual regression: pin a normal app window, adjust opacity up/down, unpin it, and confirm transparency and border behavior still work as before."
+      "Run dotnet test .\\src\\modules\\AlwaysOnTop\\Tests\\AlwaysOnTop.UITests\\AlwaysOnTop.UITests.csproj -c Debug --filter AlwaysOnTop",
+      "Manually reproduce the original report by clicking the desktop background, pressing the Always On Top activation shortcut, and pressing the opacity hotkeys; the desktop should no longer darken or gain pinned behavior.",
+      "Pin a normal application window after the change and confirm the pin/unpin hotkey and opacity hotkeys still work on that window only."
     ],
     "risks": [
-      "Some shell-owned windows share generic classes, so the guard must stay narrowly scoped to windows that really should never be pinned or alpha-adjusted.",
-      "Startup recovery of already-pinned windows must not stop restoring legitimate app windows.",
-      "System menu integration should continue to work for normal windows even after adding shell filtering."
+      "An overly broad shell-window guard could accidentally block legitimate top-level windows owned by Explorer if the implementation keys off process identity instead of HWND/class identity.",
+      "Cleaning up previously pinned invalid HWNDs must restore layered styles correctly or the fix could leave shell surfaces visually altered after the guard triggers.",
+      "Desktop-shell UI tests can be flaky if focus is stolen by shell chrome, so the regression needs deterministic desktop-focus hygiene."
     ],
     "alternatives": [
-      "Blocking only the opacity hotkeys would still let users pin Program Manager and leave an invalid pinned state behind.",
-      "Special-casing only Progman misses WorkerW / taskbar / shell listview hosts that also should not be touched.",
-      "Trying to restore the desktop alpha after the fact is less safe than refusing to mutate shell windows in the first place."
+      "Guard only ResolveTransparencyTargetWindow(): insufficient because the desktop would still be pinnable and tracked as a normal Always On Top target.",
+      "Blacklist only Progman: too narrow because the shell can surface WorkerW or other known shell HWND/class combinations already covered by is_system_window().",
+      "Handle the bug by restoring alpha after the fact without blocking pinning: rejected because the safer contract is that unsupported shell windows should never be accepted as pin/transparency targets at all."
     ]
   },
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-08T12:12:51Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The desktop shell is being treated like a normal window, so Always On Top can pin and alpha-adjust Program Manager / WorkerW.",
-    "evidence": [
-      "The desktop shell is being treated like a normal window, so Always On Top can pin and alpha-adjust Program Manager / WorkerW.",
-      "The issue repro is exactly: focus the desktop, press the Always On Top activation shortcut, then press the opacity shortcuts; the desktop becomes darker.",
-      "src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp routes both hotkey paths to GetForegroundWindow() and never rejects Program Manager / WorkerW before ProcessCommand or StepWindowTransparency.",
-      "ResolveTransparencyTargetWindow returns the pinned window unchanged once IsPinned(window) is true.",
-      "src/common/utils/window.h already provides is_system_window(...) for desktop/taskbar classes including Progman, WorkerW, Shell_TrayWnd, and SysListView32."
-    ],
-    "recommended_action": "Approve the shell-window guard design and implement it in Always On Top before adding opacity regressions to the desktop path.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-08T12:12:51Z"
-  }
+  "full_design": true,
+  "confidence": {
+    "score": 91,
+    "level": "green",
+    "rationale": "The repro is crisp and the code path is already narrow and well-supported by existing helpers."
+  },
+  "pending_author": false,
+  "stage": "awaiting_design_approval"
 }

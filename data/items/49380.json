@@ -1,43 +1,121 @@
 {
-  "number": 49380,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triaging",
+  "generated_at": "2026-09-09T19:39:53Z",
+  "evaluated_at": "2026-09-09T19:39:53Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Clear design candidate",
-    "detail": "Power Display reverses two identical monitor identities, so each brightness slider controls the opposite panel."
+  "number": 49380,
+  "track": "triage",
+  "stage": "needs_reply",
+  "source_updated_at": "2026-08-03T13:29:27Z",
+  "title": "Power Display identifies two identical monitors incorrectly and adjusts the wrong monitor",
+  "url": "https://github.com/microsoft/PowerToys/issues/49380",
+  "author": "TeoVeo",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
+  "comments": 12,
+  "summary": "Power Display is supposed to label monitors by Windows display number, but this identical-monitor report still lacks the diagnostics needed to tell whether the numbering path or the physical DDC pairing is drifting.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report is specific and likely real, but the current public thread still lacks the Power Display diagnostics and cabling/topology details needed to choose between a QueryDisplayConfig numbering bug and a downstream identical-monitor pairing bug.",
+    "evidence": [
+      "The reporter says two identical ASUS monitors are numbered correctly by Windows but appear swapped in Power Display, and changing one brightness slider affects the other physical monitor.",
+      "A maintainer noted that generic monitor enumeration order is not guaranteed to match Windows Display Settings order.",
+      "Current Power Display source now derives MonitorNumber from QueryDisplayConfig path index and labels monitor display names with that Windows number, so the intended product behavior is to match Windows Identify rather than a random enumeration order.",
+      "The issue has many screenshots and workaround ideas, but no bug-report ZIP or monitor-topology details that would identify where the physical monitor pairing diverges."
+    ],
+    "recommended_action": "Request a fresh Power Display bug report plus the exact monitor topology so maintainers can tell whether the problem is in display numbering or in identical external-monitor control pairing.",
+    "evaluated_at": "2026-09-09T19:39:53Z",
+    "source_updated_at": "2026-08-03T13:29:27Z"
   },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Design fix",
-    "reason": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is plausible because current code explicitly intends to carry Windows display numbers through the Power Display UI, but the remaining public evidence is not yet enough to isolate the failing monitor-identity layer."
+  },
+  "issue_context": {
+    "summary": "A dual-monitor ASUS setup shows the two identical displays in the opposite order from Windows Display Settings, and each Power Display brightness slider appears to control the opposite physical monitor.",
+    "known_information": [
+      "The reporter identified both monitors as identical ASUS panels and supplied the Windows 11 build number.",
+      "The issue body states that Windows Identify numbers the displays correctly before Power Display is opened.",
+      "The follow-up comments add many screenshots plus a Twinkle Tray comparison that highlights rename, reorder, and profile features for identical monitors.",
+      "No assignee, linked PR, or bug-report ZIP is visible on the issue."
+    ],
+    "inferences": [
+      "The problem is more likely in monitor identity or control pairing than in brightness-setting itself, because the wrong physical monitor changes when the slider is used.",
+      "The maintainer comment means raw enumeration order alone is not a sufficient ground truth, so the remaining question is whether Power Display's newer Windows-number path is being lost later in the pipeline."
+    ],
+    "analysis": "This should not stay in a vague needs-logs state. The missing evidence is specific: maintainers need one fresh Power Display bundle and the exact monitor topology to choose a safe fix path for identical displays.",
+    "initial_investigation": [
+      "src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DisplayConfigInventory.cs documents that MonitorNumber comes from QueryDisplayConfig path index and is intended to match Windows Display Settings Identify numbers.",
+      "src/settings-ui/Settings.UI.Library/MonitorInfo.cs and src/modules/powerdisplay/PowerDisplay/ViewModels/MonitorViewModel.cs both expose display names that append the Windows monitor number when more than one monitor exists.",
+      "src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorManager.cs sorts discovered monitors by MonitorNumber, which means the remaining likely fault is downstream pairing of identical physical targets rather than a deliberately unordered UI."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh Power Display diagnostic ZIP captured immediately after opening Power Display and moving the wrong monitor's brightness slider.",
+        "why_needed": "The bundle can reveal the active display inventory, stable IDs, monitor numbers, and the exact monitor target that Power Display believes it is controlling during the failing run.",
+        "how_to_collect": "Reproduce the issue, then submit a GitHub comment containing /bugreport immediately afterward."
+      },
+      {
+        "evidence_type": "monitor_topology",
+        "information": "The exact monitor topology: which physical monitor Windows identifies as 1 and 2, what cables/ports or dock each monitor uses, and whether both displays are connected through the same GPU or dock.",
+        "why_needed": "This distinguishes a Windows-numbering issue from a downstream DDC path mismatch between two otherwise identical monitors.",
+        "how_to_collect": "Reply with a short description of the cabling/port layout for each monitor and which physical monitor Windows Identify shows as Display 1 versus Display 2."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "design-49380",
+      "id": "approve-design-49380",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve identical-monitor pairing investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The hypothesis is intentionally low-confidence until Power Display diagnostics and topology data identify which monitor-identity layer is drifting.",
+      "issue": {
+        "number": 49380,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "request-info-49380",
+      "type": "request_info",
+      "label": "Request Power Display bug report and monitor topology",
       "primary": true,
-      "confirm": false,
-      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "issue": 49380,
+        "repository": "microsoft/PowerToys",
+        "body": "Thanks for the detailed Windows Identify comparison and the follow-up screenshots. The current report is strong enough to show that the two identical monitors are getting mixed up, but we still need one precise diagnostic pass to tell whether Power Display is losing the Windows monitor numbering or pairing the wrong physical DDC target after numbering succeeds.\n\n**Needed**\n1. Please reproduce the problem again, open Power Display, move the wrong brightness slider once, and then submit a GitHub comment containing `/bugreport` immediately afterward.\n2. Please describe the exact monitor topology: which physical monitor Windows Identify shows as Display 1 and Display 2, what cable/port or dock each monitor uses, and whether both monitors are connected through the same GPU path.\n\nThis will distinguish a Windows-number mapping problem from an identical-monitor control-pairing problem and tell us where to inspect the Power Display pipeline."
+      }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-03T13:29:27Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "Power Display reverses two identical monitor identities, so each brightness slider controls the opposite panel.",
-    "evidence": [
-      "Power Display reverses two identical monitor identities, so each brightness slider controls the opposite panel.",
-      "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
-    ],
-    "recommended_action": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-03T13:29:27Z"
-  }
+  "proposed_fixes": [
+    {
+      "title": "Keep identical-monitor brightness controls aligned with Windows display numbers",
+      "root_cause": "The most plausible failure is that identical external monitors are still being paired to DDC/CI control targets by unstable handle order somewhere after QueryDisplayConfig assigns stable MonitorNumber values, so the UI label and the physical monitor that receives the command can diverge.",
+      "plan": [
+        "Capture a fresh Power Display diagnostic bundle and the exact cable/GPU/dock topology for both identical monitors.",
+        "Trace each monitor's DevicePath and MonitorNumber through discovery, UI projection, and DDC command routing to find where identical monitors stop preserving the Windows mapping.",
+        "Keep physical-target routing keyed on the stable display identity end-to-end and add a regression scenario for two identical external monitors."
+      ],
+      "verification": [
+        "On a dual-identical-monitor setup, confirm that Power Display labels the same physical monitor numbers as Windows Identify.",
+        "Move slider 1 and slider 2 separately and verify that each slider changes the brightness of the same physical monitor Windows labels with that number."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The report is detailed, but without a bug-report ZIP and monitor-topology data the remaining possibilities still include multiple identity-mapping layers."
+      }
+    }
+  ]
 }

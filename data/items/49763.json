@@ -1,34 +1,281 @@
 {
-  "number": 49763,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49763,
+  "title": "Disable Key Or Shortcut does not disable the first key of the combo for the specified app",
+  "url": "https://github.com/microsoft/PowerToys/issues/49763",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-09T20:27:00.272Z",
+  "evaluated_at": "2026-09-09T20:27:00.272Z",
   "source_updated_at": "2026-08-08T13:46:11Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The issue is specific enough to target code now, and current Keyboard Manager shortcut handling already exposes a plausible failure path for app-specific shortcuts remapped to Disable.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The report gives a focused repro in EVE Online's shortcut-binding UI and shows that the app sees the first key of the disabled two-key combo but not the second.",
+      "KeyboardEventHandlers.cpp explicitly has special handling for shortcut-to-VK_DISABLED remaps and tracks isOriginalActionKeyPressed for that path.",
+      "In the shortcut-invoked state machine, Case 5 reprocesses other key presses and can re-send the original action key/current key path while resetting remap state.",
+      "That combination makes a first-key leak in an app-specific disabled shortcut path plausible without needing another round of generic reporter questions."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-08T13:46:11Z"
-  }
+    "recommended_action": "Approve the app-specific disabled-shortcut swallow design and verify it against a key-binding UI so the first source key no longer leaks while the disabled combo is being captured."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "There is no existing upstream fix linked for this issue, but the affected handler and failure mode are narrow enough for a lightweight design proposal."
+  },
+  "issue_context": {
+    "summary": "An app-specific disabled shortcut is supposed to hide the whole combo from EVE Online, but the first key still leaks into the game's key-binding UI. Keyboard Manager's current shortcut-to-disable state machine already suggests where that leak can happen.",
+    "known_information": [
+      "The issue targets Keyboard Manager on PowerToys 0.100.2 and uses app-specific disable rules for exefile.exe.",
+      "The reporter says any two-button shortcut reproduced the problem and provided screenshots showing the first key appearing by itself in the target app.",
+      "There are no public comments, attachments, or linked PRs on the issue yet.",
+      "Current KeyboardEventHandlers.cpp contains explicit branches for shortcut remaps whose target is VK_DISABLED."
+    ],
+    "inferences": [
+      "The app-specific disable path is probably suppressing the full combo initially, but later state-machine cleanup or reprocessing leaks the original first key into the target app.",
+      "Because the issue already narrows scope to app-specific disable of two-key shortcuts, a maintainer reproduction is more useful than another reporter restatement."
+    ],
+    "analysis": "This issue is implementation-design ready now. The current app-specific disable path is narrow, and the missing behavior is specific: prefix source keys can still escape before a disabled app-specific shortcut is fully resolved, and the generic remap-to-key cleanup path can replay physical keys that should stay swallowed. That is enough to define the state-machine changes and regression coverage, while keeping the confidence yellow until a binding UI reproduction confirms the exact leaking branch.",
+    "initial_investigation": [
+      "Reviewed the full live issue body and screenshots showing the target app records the first key but not the second for an app-specific disabled shortcut.",
+      "Inspected src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp around HandleAppSpecificShortcutRemapEvent, the VK_DISABLED exact-match path, and the Case 5 remap-to-key cleanup logic.",
+      "Inspected src/modules/keyboardmanager/KeyboardManagerEngineLibrary/State.h and State.cpp and confirmed the runtime state only tracks the activated app and post-match flags, not a pending swallowed prefix for app-specific disabled shortcuts.",
+      "Inspected src/modules/keyboardmanager/KeyboardManagerEngineTest/AppSpecificShortcutRemappingTests.cpp and confirmed coverage stops at exact-match suppression; there is no regression for prefix leakage, aborted candidate replay, or extra-key handling after an app-specific disabled shortcut."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve disabled app-shortcut swallow design",
+      "note": "Approve a bounded Keyboard Manager design for app-specific shortcut-to-disable behavior."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce app-specific disabled-combo first-key leak",
+      "note": "Validate the EVE-style key-binding scenario against the proposed state-machine fix.",
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.100.2 or a nearby build with app-specific shortcut remaps enabled.",
+        "prerequisites": [
+          "An app-specific shortcut remap for a target executable (for example exefile.exe) whose target is Disable.",
+          "A target app or harness that visibly captures partial shortcut input while waiting for a key binding."
+        ],
+        "steps": [
+          "Create an app-specific rule that disables a two-key shortcut for the target executable.",
+          "Open the target app's shortcut-binding UI so raw keys are visible if they leak through.",
+          "Press the disabled shortcut and observe whether the first key appears by itself while the combo is being captured.",
+          "After implementing the fix, repeat with multiple modifier/action-key combinations to confirm the full shortcut remains swallowed."
+        ],
+        "expected_result": "The target app should see none of the disabled shortcut, including the first key of the combo."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "PaterFrog",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [
+    {
+      "title": "Keep app-specific shortcut-to-disable remaps swallowed through state-machine cleanup",
+      "root_cause": "Keyboard Manager's shortcut handler treats VK_DISABLED as a special shortcut-to-key target and tracks isOriginalActionKeyPressed, but later cleanup/reprocessing logic can still restore physical shortcut state and re-send the current key path. In an app-specific key-binding UI, that allows the first key of the disabled combo to leak through even though the shortcut was meant to be fully swallowed.",
+      "plan": [
+        "Tighten the shortcut-to-VK_DISABLED path so once an app-specific disabled shortcut is recognized, cleanup logic does not replay the original action key or current key back into the target app until the whole shortcut is released.",
+        "Keep the reset/reprocessing path distinct for disabled shortcuts so it does not reuse the same behavior that is needed for ordinary shortcut-to-key remaps.",
+        "Add a focused regression covering an app-specific two-key disable scenario where the target app must observe no partial key input."
+      ],
+      "verification": [
+        "In a key-binding UI similar to the EVE Online repro, pressing the disabled app-specific combo should surface no first-key partial input.",
+        "Ordinary shortcut-to-key remaps should still be able to release/reprocess correctly when used with additional keys outside the disabled-shortcut scenario."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "The handler area and symptom line up, but the exact leaking branch still needs reproduction against the issue's app-specific binding scenario."
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "HandleAppSpecificShortcutRemapEvent routes matching foreground-process events into the generic shortcut state machine, but the generic VK_DISABLED path only takes over once the full source shortcut is recognized. That means the first source key of an app-specific disabled shortcut can already reach a key-binding UI before the disable is confirmed. After exact match, the same handler still reuses the normal remap-to-key cleanup logic, including Case 5 reinjection of original modifiers/action/current key, even though an app-specific disabled shortcut should stay swallowed instead of replaying source keys. Together, those behaviors explain why the target app can capture the first key but not the second.",
+    "evidence": [
+      "Observed in the issue: for an app-specific disabled two-button shortcut, EVE Online reports the first key (for example SHIFT-) while the second key does not appear.",
+      "Observed in src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp: HandleAppSpecificShortcutRemapEvent only selects the app-specific remap table, then delegates to HandleShortcutRemapEvent for all actual key-state handling.",
+      "Observed in HandleShortcutRemapEvent: the exact-match remapToKey + VK_DISABLED path sets isOriginalActionKeyPressed and releases original modifiers only when the full shortcut action key arrives; there is no pending-prefix suppression state for the earlier source-key presses.",
+      "Observed in HandleShortcutRemapEvent Case 5 for remapToKey: when the target is VK_DISABLED, the handler can restore original modifiers/original action key and resend the current key, which is correct for generic shortcut recovery but not for an app-specific disabled binding that must remain invisible to the target app.",
+      "Observed in src/modules/keyboardmanager/KeyboardManagerEngineTest/AppSpecificShortcutRemappingTests.cpp: there is one exact-match disable test, but no regression covering modifier-first prefix leakage, aborted candidates, or extra-key replay after a disabled app-specific shortcut is recognized."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/State.h",
+        "purpose": "Keyboard Manager runtime state declaration; needs new bookkeeping for a pending or confirmed app-specific disabled-shortcut swallow sequence.",
+        "symbols": [
+          "State",
+          "State::GetActivatedApp",
+          "app-specific disabled shortcut state (new)"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/State.cpp",
+        "purpose": "Implements runtime state transitions and must clear or replay the new pending disabled-shortcut state when app context or mapping state changes.",
+        "symbols": [
+          "State::SetActivatedApp",
+          "State::CheckShortcutRemapInvoked",
+          "pending disabled-shortcut helpers (new)"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+        "purpose": "Core low-level keyboard remap state machine; must suppress app-specific disabled-shortcut prefixes and avoid replaying swallowed keys back into the target app.",
+        "symbols": [
+          "KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent",
+          "KeyboardEventHandlers::HandleShortcutRemapEvent"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/common/RemapShortcut.h",
+        "purpose": "Per-remap runtime flags used by the shortcut engine; may need a small explicit disable-state flag if the implementation stores swallow state on the remap rather than globally in State.",
+        "symbols": [
+          "RemapShortcut",
+          "RemapShortcut.isOriginalActionKeyPressed"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/KeyboardManagerEngineTest/AppSpecificShortcutRemappingTests.cpp",
+        "purpose": "Existing app-specific engine regression suite and the best place to pin no-leak behavior for disabled shortcuts.",
+        "symbols": [
+          "AppSpecificShortcutRemappingTests"
+        ]
+      },
+      {
+        "path": "src/modules/keyboardmanager/Tests/KeyboardManager.UITests/KeyboardManagerRemappingTests.cs",
+        "purpose": "Optional higher-level regression point for an app-specific shortcut scenario that exercises the live hook and a real foreground process.",
+        "symbols": [
+          "KeyboardManagerRemappingTests.AppSpecificShortcutAppliesOnlyToMatchingForegroundProcess",
+          "app-specific disable capture regression (new)"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/State.h",
+        "symbols": [
+          "State app-specific disabled shortcut state (new)",
+          "State::ClearPendingAppSpecificDisable",
+          "State::RecordPendingAppSpecificDisableKey"
+        ],
+        "current_behavior": "State tracks only which app-specific shortcut table is active and whether a matched disable remap saw its original action key. It has no place to remember that the first source key(s) of an app-specific disabled shortcut were intentionally swallowed while waiting to see whether the full shortcut matches.",
+        "change": "Add small runtime bookkeeping for one pending app-specific disabled-shortcut candidate on the serialized hook thread: target app name, source shortcut identity, suppressed source-key order, and whether the full disable match has been confirmed. Provide helpers to record a suppressed prefix, mark the candidate confirmed, replay it when the candidate aborts, and clear it when focus or shortcut state changes.",
+        "code_block": "struct PendingAppSpecificDisable\n{\n    std::wstring app;\n    Shortcut source;\n    std::vector<DWORD> suppressedKeys;\n    bool confirmed = false;\n};\n\nstd::optional<PendingAppSpecificDisable> pendingAppSpecificDisable;\n\nvoid RecordPendingAppSpecificDisableKey(const std::wstring& app, const Shortcut& source, DWORD key);\nvoid ConfirmPendingAppSpecificDisable();\nbool HasPendingAppSpecificDisable() const;\nvoid ClearPendingAppSpecificDisable();",
+        "edge_cases": [
+          "The state must be cleared when the foreground app changes, when app-specific remaps are reloaded, or when a generated KBM event is observed.",
+          "Only one candidate should exist at a time because the low-level hook thread is serialized; replacing it accidentally could leave a prefix key permanently swallowed.",
+          "The state must tolerate both modifier-first shortcuts (Shift+A) and non-modifier-first two-key shortcuts."
+        ],
+        "tests": [
+          "Add engine coverage proving a pending app-specific disabled candidate is cleared when the foreground process changes before the shortcut finishes.",
+          "Add a regression that an aborted candidate does not leave any key state stuck down in MockedInput."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+        "symbols": [
+          "KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent",
+          "KeyboardEventHandlers::HandleShortcutRemapEvent",
+          "app-specific disabled prefix helper (new)"
+        ],
+        "current_behavior": "Before an app-specific disabled shortcut is fully matched, the generic handler allows the first source key to behave normally. The target app can therefore observe the prefix key even though the full shortcut is configured as disabled for that process.",
+        "change": "Teach the app-specific path to detect when the current key sequence is a prefix of a shortcut whose target is VK_DISABLED for the matching foreground app. Swallow those prefix key-down events immediately, record them in the new pending state, and only replay them if the candidate later aborts (for example the user releases the first key without completing the shortcut or presses a different non-matching key). When the full disabled shortcut matches, keep the sequence fully swallowed instead of ever letting the prefix reach the foreground app.",
+        "code_block": "if (activatedApp && IsAppSpecificDisabledShortcutPrefix(reMap, ii, data))\n{\n    state.RecordPendingAppSpecificDisableKey(*activatedApp, matchedShortcut, data->lParam->vkCode);\n    return 1; // swallow prefix so the target app cannot capture it\n}\n\nif (state.HasPendingAppSpecificDisable() && CandidateAborted(ii, data, state))\n{\n    ReplayPendingPrefixToOS(ii, state);\n    state.ClearPendingAppSpecificDisable();\n    return 0;\n}",
+        "edge_cases": [
+          "Do not swallow source-key prefixes for ordinary app-specific shortcut-to-key or shortcut-to-shortcut remaps; the new behavior is only for app-specific VK_DISABLED targets.",
+          "Repeated keydown messages while the first key is held should not emit duplicate pending entries or duplicate replay on abort.",
+          "AltGr and other composite modifier cases already have special handling and must keep their current non-stuck behavior."
+        ],
+        "tests": [
+          "Add AppSpecificShortcutToDisable_ShouldNotLeakFirstModifierBeforeExactMatch using a Shift+A disabled shortcut for the foreground test app and assert MockedInput never reports Shift down to the target state before the full shortcut resolves.",
+          "Add AppSpecificShortcutToDisable_ShouldReplayPrefixIfShortcutNeverCompletes so tapping only the first key still behaves normally once the pending candidate aborts."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+        "symbols": [
+          "HandleShortcutRemapEvent Case 3/Case 5 disable handling",
+          "State::SetActivatedApp",
+          "State::ClearPendingAppSpecificDisable"
+        ],
+        "current_behavior": "Once a disabled shortcut is recognized, later cleanup paths still share the generic remap-to-key recovery logic. In Case 5 this can restore original modifiers, optionally resend the original action key, and forward the current key, which is useful for normal shortcut-to-key remaps but wrong for a swallowed app-specific disabled shortcut.",
+        "change": "Introduce a distinct cleanup branch for confirmed app-specific disabled shortcuts. While the source shortcut remains active, keep suppressing extra key activity that belongs to the capture sequence, clear the activated-app/pending-disable state on release or focus change, and only replay the suppressed prefix when the sequence truly aborted before confirmation. Preserve the existing OS-level shortcut-to-disable recovery behavior so this narrower fix does not change unrelated remaps.",
+        "code_block": "if (activatedApp && isRemapToDisable && state.HasPendingAppSpecificDisable() && state.PendingAppSpecificDisableConfirmed())\n{\n    if (SourceShortcutReleased(ii, data, it->first))\n    {\n        it->second.isShortcutInvoked = false;\n        it->second.modifierKeysInvoked.Reset();\n        it->second.isOriginalActionKeyPressed = false;\n        state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);\n        state.ClearPendingAppSpecificDisable();\n    }\n    return 1; // do not replay the original source keys into the target app\n}",
+        "edge_cases": [
+          "If the foreground app changes mid-sequence, clear the swallow state and avoid replaying stale keys into the new process.",
+          "Releasing the action key before modifiers should not resurrect the first key in the target app.",
+          "The OS-level shortcut-to-disable tests around superset behavior must still pass unchanged."
+        ],
+        "tests": [
+          "Add AppSpecificShortcutToDisable_ShouldNotReplayOriginalActionKey_WhenAnotherKeyIsPressedAfterConfirmation.",
+          "Add AppSpecificShortcutToDisable_ShouldClearActivatedAppAndPendingState_OnReleaseOrForegroundChange.",
+          "Re-run the existing OSLevelShortcutRemappingTests shortcut-disable coverage to prove the app-specific branch did not regress the shared handler."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/keyboardmanager/KeyboardManagerEngineTest/AppSpecificShortcutRemappingTests.cpp",
+        "symbols": [
+          "AppSpecificShortcutRemappingTests",
+          "MockedInput::SetForegroundProcess",
+          "TestHelpers::ResetTestEnv"
+        ],
+        "current_behavior": "The app-specific regression suite proves only that an exact-match disabled shortcut does not leave the combo pressed. It does not verify that the first key stays invisible to the target app or that aborted/extra-key flows preserve expected behavior.",
+        "change": "Expand the suite with focused engine tests that model the issue-reported flows: modifier-first disabled shortcut capture, non-modifier-first capture, candidate abort, extra key after confirmation, and foreground-app change. Use MockedInput keyboard state and the app-specific foreground selection path so the tests stay deterministic and do not require EVE Online itself.",
+        "code_block": "TEST_METHOD(AppSpecificShortcutToDisable_ShouldNotLeakFirstModifierBeforeExactMatch)\n{\n    Shortcut src;\n    src.SetKey(VK_SHIFT);\n    src.SetKey(0x41);\n    testState.AddAppSpecificShortcut(testApp1, src, (DWORD)CommonSharedConstants::VK_DISABLED);\n    mockedInputHandler.SetForegroundProcess(testApp1);\n\n    mockedInputHandler.SendVirtualInput({ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_SHIFT } } });\n    Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_SHIFT));\n\n    mockedInputHandler.SendVirtualInput({ { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x41 } } });\n    Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_SHIFT));\n    Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));\n}",
+        "edge_cases": [
+          "Tests should cover both executable-name-with-extension and extensionless foreground-process lookup because HandleAppSpecificShortcutRemapEvent strips the extension when needed.",
+          "Regression coverage should explicitly prove no stuck key state remains after abort, confirmation, and app-switch scenarios.",
+          "If a UI-level test is added later, keep this engine suite as the deterministic fast guard that does not depend on external apps."
+        ],
+        "tests": [
+          "Add the four new AppSpecificShortcutRemappingTests named above and keep the existing exact-match disable test as the baseline.",
+          "Optionally add a KeyboardManager.UITests app-specific disable scenario that exercises a real foreground process once a suitable binding-capture harness exists."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the engine test project with pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\keyboardmanager\\KeyboardManagerEngineTest\\KeyboardManagerEngineTest.vcxproj",
+      "Run the AppSpecificShortcutRemappingTests suite from Visual Studio Test Explorer or vstest, focusing on the new app-specific disable regressions and the existing OSLevel shortcut-disable regressions.",
+      "If a UI-level regression is added, run dotnet test .\\src\\modules\\keyboardmanager\\Tests\\KeyboardManager.UITests\\KeyboardManager.UITests.csproj -c Debug --filter KeyboardManager.Remapping.AppSpecific",
+      "Manually reproduce with an app-specific disabled shortcut in a key-binding UI (the issue used exefile.exe) and confirm the target UI no longer records the first key, displays no partial value such as SHIFT-, and ordinary non-disabled app-specific shortcuts still behave normally."
+    ],
+    "risks": [
+      "Swallowing shortcut prefixes earlier changes keyboard-hook timing and can break normal typing if the abort/replay path is incomplete.",
+      "The shared handler also serves OS-level shortcut remaps, so the new branch must stay tightly scoped to app-specific VK_DISABLED targets.",
+      "Foreground-process changes mid-sequence are easy to mishandle and could otherwise replay stale keys into the wrong app or leave activatedApp uncleared."
+    ],
+    "alternatives": [
+      "Keep the current prefix leak and only suppress the final action key: rejected because the issue is specifically that the target app captures the first key of the disabled combo.",
+      "Patch only Case 5 replay logic without swallowing prefix keys earlier: insufficient on its own because a key-binding UI can already latch the first key before exact-match disable is recognized.",
+      "Make this EVE-specific or game-specific: rejected because the underlying bug is in generic app-specific disabled-shortcut handling and should be fixed at the shared hook/state-machine level."
+    ]
+  },
+  "full_design": true,
+  "confidence": {
+    "score": 69,
+    "level": "yellow",
+    "rationale": "The issue is well-scoped and the handler has a plausible failure path, but reproduce-first validation is still warranted."
+  },
+  "pending_author": false,
+  "stage": "awaiting_design_approval"
 }

@@ -1,48 +1,92 @@
 {
-  "number": 49670,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path."
+  "number": 49670,
+  "title": "Find My Mouse not working right on Multi-Monitor setup",
+  "url": "https://github.com/microsoft/PowerToys/issues/49670",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-09T19:51:48Z",
+  "evaluated_at": "2026-09-09T19:51:48Z",
+  "source_updated_at": "2026-08-04T20:00:09Z",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report is already specific enough for a maintainer-side reproduction pass: it gives a short non-primary-monitor repro and a concrete mispositioned spotlight symptom.",
+    "evidence": [
+      "The issue gives a four-step repro using default Find My Mouse settings and moving the pointer to the second monitor.",
+      "The actual behavior is precise: the darkened screen effect starts near the cursor but the spotlight circle ends up back on the main monitor instead of the monitor containing the cursor.",
+      "The live issue has no comments asking for clarification, suggesting the first missing step is internal reproduction rather than more author restatement.",
+      "FindMyMouse.cpp covers the entire virtual screen in one overlay window and converts cursor position with ScreenToClient, which is compatible with cross-monitor coordinate/positioning bugs."
+    ],
+    "recommended_action": "Reproduce the spotlight drift on a multi-monitor setup and inspect the virtual-screen coordinate path before choosing a fix."
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused reproduction evidence",
-    "reason": "Current data does not yet isolate a safe code path to change."
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The next bounded step is a maintainer reproduction check; the source suggests where to look, but not enough to lock a specific fix yet."
+  },
+  "issue_context": {
+    "summary": "Find My Mouse reportedly misplaces its spotlight on the primary monitor when activated from a secondary monitor. The public repro is already concise enough for an internal reproduction pass.",
+    "known_information": [
+      "The issue targets Mouse Utilities / Find My Mouse on PowerToys 0.100.2.",
+      "The reporter uses default settings and triggers the utility with the left Ctrl double-tap while the cursor is on the second monitor.",
+      "The actual symptom is not a total failure; the screen darkens but the spotlight circle ends up on the main monitor instead of following the pointer on the second monitor.",
+      "There are no comments, attachments, or linked fixes in the live issue."
+    ],
+    "inferences": [
+      "The utility is probably activating correctly, but using the wrong translated position or wrong root coordinate space for non-primary monitors.",
+      "Because the repro is already tight and monitor-specific, maintainer reproduction is cheaper than sending a generic evidence request back to the reporter."
+    ],
+    "analysis": "This fits the 'reproducible' bucket better than 'needs information'. The issue already names the module, trigger, and user-visible failure. Source review shows a plausible virtual-screen coordinate path to instrument, but lightweight triage should stop at a maintainer reproduction action rather than inventing a full fix design.",
+    "initial_investigation": [
+      "Reviewed the full issue body and confirmed there are no public follow-up comments or linked PRs.",
+      "Inspected FindMyMouse.cpp around StartSonar and OnMouseTimer.",
+      "Confirmed the module creates one virtual-screen-sized overlay window and converts the global cursor position to client coordinates with ScreenToClient before moving the spotlight."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-49670",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 49670,
-        "body": "Could you attach a PowerToys bug-report ZIP, your monitor layout/scaling, and a short recording that shows exactly which monitor and pointer state fails? Please also note whether the issue reproduces after restarting PowerToys and Windows Explorer."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "type": "reproduce",
+      "label": "Reproduce secondary-monitor spotlight drift",
+      "note": "Validate the reported non-primary-monitor positioning failure before selecting a code fix.",
+      "reproduce": {
+        "module": "Find My Mouse",
+        "version_requirement": "PowerToys 0.100.2 or a nearby build with default Find My Mouse settings.",
+        "prerequisites": [
+          "A Windows machine with at least two monitors arranged side-by-side.",
+          "Find My Mouse enabled with the default left-Ctrl-double-tap activation."
+        ],
+        "steps": [
+          "Move the pointer to a secondary monitor and leave it stationary there.",
+          "Trigger Find My Mouse with the configured double-left-Ctrl activation.",
+          "Observe whether the darkened overlay and spotlight center remain on the monitor currently containing the pointer.",
+          "Repeat with different monitor arrangements or scaling if needed to confirm whether the spotlight snaps back toward the primary monitor."
+        ],
+        "expected_result": "The spotlight should stay centered on the actual cursor position even when the cursor is on a non-primary monitor."
+      }
     }
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-04T20:00:09Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-    "evidence": [
-      "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "Current data does not yet isolate a safe code path to change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-04T20:00:09Z"
-  }
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "pmad99",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 61,
+    "level": "yellow",
+    "rationale": "The symptom is concrete and source review points to a plausible coordinate path, but reproduction should come before a fix proposal."
+  },
+  "pending_author": false,
+  "stage": "triage"
 }

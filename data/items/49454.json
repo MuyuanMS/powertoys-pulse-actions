@@ -1,71 +1,133 @@
 {
+  "schemaVersion": 5,
   "number": 49454,
   "kind": "issue",
   "track": "fix",
   "stage": "awaiting_design_approval",
-  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design ready — needs approval",
-    "detail": "The WinUI 3 Quick Accent regression is bounded, reproducible, and already tied to the migrated selector layout. The repository files and verification plan are specific enough for implementation review."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Approve the detailed design",
-    "reason": "Repository files, implementation steps, and verification are specific enough to start the fork-side fix when desired."
-  },
-  "actions": [],
-  "confidence": "High",
-  "design": {
-    "root_cause": "The WinUI 3 Quick Accent selector still expects horizontal overflow, but the migrated list explicitly hides its horizontal scrollbar and the overlay height is hard-coded for a single row of accent cells. When all languages overflow the viewport, users can scroll the hidden list, but the UI never exposes the scrollbar affordance that the WPF version showed.",
+  "generated_at": "2026-09-09T19:57:18Z",
+  "evaluated_at": "2026-09-09T19:57:18Z",
+  "source_updated_at": "2026-07-25T00:35:27Z",
+  "title": "[Quick Accent] Horizontal scrollbar missing when selection list exceeds window width",
+  "url": "https://github.com/microsoft/PowerToys/issues/49454",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The WinUI 3 Quick Accent regression is already bounded by clear repro steps, before/after screenshots, and a code path that still explicitly hides the horizontal scrollbar.",
     "evidence": [
-      "Issue #49454 includes concrete steps, side-by-side screenshots, and an explicit regression note that the WPF version still showed the scrollbar.",
-      "`src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml` sets `ScrollViewer.HorizontalScrollBarVisibility=\"Hidden\"` while keeping horizontal scrolling enabled on `CharactersList`.",
-      "`src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs` sizes the overlay with a fixed `RowHeightDip` and never adds scrollbar height when the accent list overflows.",
-      "`src/modules/poweraccent/PowerAccent.Core/Tools/Calculation.cs` already clamps toolbar width to the display and relies on scrolling once the accent list is wider than the allowed viewport, so overflow is an intended steady state."
+      "The issue body explains that selecting all languages makes the WinUI 3 Quick Accent bar overflow horizontally without showing a scrollbar, while the WPF version did show one.",
+      "Current source in src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml still sets ScrollViewer.HorizontalScrollBarVisibility=\"Hidden\" for CharactersList even though horizontal scroll mode remains enabled.",
+      "Current source in src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs still sizes the overlay with a fixed RowHeightDip baseline, so a restored scrollbar also needs explicit height reservation."
+    ],
+    "recommended_action": "Approve an implementation-grade Quick Accent design that restores overflow-aware horizontal scrolling and reserves scrollbar height only when long lists actually overflow.",
+    "evaluated_at": "2026-09-09T19:57:18Z",
+    "source_updated_at": "2026-07-25T00:35:27Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The current WinUI 3 selector code still contains the exact hidden-scrollbar behavior that matches the report, and no existing public fix attempt already covers this regression."
+  },
+  "issue_context": {
+    "summary": "When Quick Accent runs with the WinUI 3 UI, long character lists can overflow horizontally without showing the scrollbar that the earlier WPF implementation exposed, leaving offscreen items with no visible affordance.",
+    "known_information": [
+      "The issue includes a concrete current-main repro: enable all languages, trigger Quick Accent with E, and use a normal-width display so the list overflows.",
+      "Before/after screenshots in the issue show the expected WPF scrollbar and the missing scrollbar in the WinUI 3 implementation.",
+      "A follow-up comment confirms the regression is in the WinUI 3 Quick Accent path introduced after 0.100.2."
+    ],
+    "inferences": [
+      "This is a bounded WinUI 3 layout regression rather than a character-mapping or keyboard-input bug.",
+      "Restoring the scrollbar likely needs two coordinated UI changes: enabling overflow-aware horizontal scrollbar visibility and reserving scrollbar height when the constrained viewport actually overflows."
+    ],
+    "analysis": "This issue no longer needs another reporter roundtrip. The public repro, screenshots, and current source code converge on one UI regression path: the bar is intentionally allowed to scroll horizontally, but the WinUI 3 selector hides the scrollbar and the host window height assumes only a single content row. That is sufficient for an implementation-grade design with explicit verification and regression coverage.",
+    "initial_investigation": [
+      "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml still hides the horizontal scrollbar on CharactersList while leaving horizontal scrolling enabled.",
+      "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml.cs only reports content width and fixed horizontal chrome, not whether the final constrained viewport needs scrollbar space.",
+      "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs computes width from measured content but fixes height to RowHeightDip plus optional description height, so a visible scrollbar would currently have no reserved vertical space."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49454",
+      "type": "approve_design",
+      "label": "Approve Quick Accent scrollbar design",
+      "primary": true,
+      "confirm": false,
+      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Restore overflow-aware horizontal scrollbar behavior in WinUI 3 Quick Accent",
+      "root_cause": "The WinUI 3 selector still allows horizontal overflow but explicitly hides the scrollbar, and the popup height assumes a single row of content instead of reserving space when overflow makes the scrollbar visible.",
+      "plan": [
+        "Change the selector list to use overflow-aware horizontal scrollbar visibility instead of forcing the scrollbar hidden.",
+        "Teach the selector and host window sizing path to detect constrained horizontal overflow and reserve scrollbar height only when the bar actually needs it.",
+        "Add focused UI regression coverage for long-language overflow and a non-overflow case so the WPF affordance is restored without forcing extra chrome on short lists."
+      ],
+      "verification": [
+        "Enable all Quick Accent languages on a narrower display and confirm the horizontal scrollbar is visible beneath the character list.",
+        "Verify that wide displays and shorter lists still render without an unnecessary scrollbar and that the selected character remains scrolled into view."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The issue provides a clear repro and screenshots, and the current UI code still contains the hidden-scrollbar and fixed-height behaviors needed to explain the regression."
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "Quick Accent's WinUI 3 overlay intentionally supports horizontal scrolling for long accent lists, but the selector ListView forces ScrollViewer.HorizontalScrollBarVisibility to Hidden while MainWindow.SizeAndPosition reserves only the base row height. That removes the visible overflow affordance compared with WPF, and it means simply re-enabling the scrollbar would clip or crowd the bar unless the host window also adds scrollbar height when the constrained viewport overflows.",
+    "evidence": [
+      "Reporter evidence: Issue 49454 contains a reproducible setup (enable all languages, trigger Quick Accent) plus before/after screenshots showing the WPF scrollbar and the missing WinUI 3 scrollbar.",
+      "Code fact: src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml configures CharactersList with ScrollViewer.HorizontalScrollMode=\"Enabled\" but ScrollViewer.HorizontalScrollBarVisibility=\"Hidden\", so overflow is scrollable but not visibly discoverable.",
+      "Code fact: src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml.cs exposes MeasureContentWidthDip() and HorizontalSurfaceOverheadDip, confirming the selector is already measured for overflow-aware width decisions.",
+      "Code fact: src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs calls SizeAndPosition(Selector.MeasureContentWidthDip()) and sets heightDip to RowHeightDip plus optional DescriptionHeightDip only; no branch accounts for horizontal scrollbar height.",
+      "Inference: Because MainWindow already caps width to the active display and later calls Selector.ScrollSelectedIntoView(_selectedIndex), the intended long-list behavior is horizontal scrolling, not truncation or wrapping. The missing scrollbar is therefore a UI regression, not an intentional product-direction change."
     ],
     "affected_files": [
       {
         "path": "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml",
-        "purpose": "Defines the Quick Accent character list and currently suppresses the horizontal scrollbar even when overflow occurs.",
+        "purpose": "Defines the WinUI 3 Quick Accent selector ListView and its scroll behavior.",
         "symbols": [
-          "SelectorControl",
+          "PowerAccent.UI.SelectorControl",
           "CharactersList"
         ]
       },
       {
         "path": "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml.cs",
-        "purpose": "Measures accent-list content width and should expose overflow-aware viewport or scrollbar metrics to the window sizing code.",
+        "purpose": "Measures selector content and is the right place to expose final overflow and scrollbar-size information to the host window.",
         "symbols": [
-          "SelectorControl",
+          "PowerAccent.UI.SelectorControl",
           "MeasureContentWidthDip",
           "HorizontalSurfaceOverheadDip"
         ]
       },
       {
         "path": "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs",
-        "purpose": "Sizes and positions the Quick Accent overlay and currently assumes the selector is always a fixed-height single row.",
+        "purpose": "Sizes and positions the cloaked Quick Accent overlay before it is revealed on screen.",
         "symbols": [
-          "MainWindow",
+          "PowerAccent.UI.MainWindow",
           "PowerAccent_OnChangeDisplay",
-          "SizeAndPosition"
+          "SizeAndPosition",
+          "RowHeightDip",
+          "DescriptionHeightDip",
+          "LayoutRoundingDip"
         ]
       },
       {
-        "path": "src/modules/poweraccent/PowerAccent.Core/Tools/Calculation.cs",
-        "purpose": "Holds the testable toolbar size math and is the right place to add overflow-aware height calculations.",
+        "path": "src/modules/poweraccent/PowerAccent.UITests/PowerAccentEndToEndTests.cs",
+        "purpose": "Owns end-to-end Quick Accent UI regression coverage.",
         "symbols": [
-          "Calculation",
-          "GetToolbarWidth"
+          "PowerAccent.UITests.PowerAccentEndToEndTests"
         ]
       },
       {
-        "path": "src/modules/poweraccent/PowerAccent.Core.UnitTests/CalculationTests.cs",
-        "purpose": "Provides focused regression coverage for toolbar geometry and should gain overflow-height tests.",
+        "path": "src/modules/poweraccent/PowerAccent.UITests/PowerAccentTestHelper.cs",
+        "purpose": "Provides the existing toolbar automation helpers and is the natural home for scrollbar-detection helpers used by the new UI test.",
         "symbols": [
-          "CalculationTests"
+          "PowerAccent.UITests.PowerAccentTestHelper",
+          "RunTriggeredGesture",
+          "AssertToolbarPlacement"
         ]
       }
     ],
@@ -74,96 +136,122 @@
         "order": 1,
         "file": "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml",
         "symbols": [
-          "SelectorControl",
+          "PowerAccent.UI.SelectorControl",
           "CharactersList"
         ],
-        "current_behavior": "The accent list scrolls horizontally, but `CharactersList` forces `ScrollViewer.HorizontalScrollBarVisibility=\"Hidden\"`, so users never see the scrollbar even when content extends beyond the viewport.",
-        "change": "Switch the list to overflow-aware scrollbar visibility and expose whether the realized list currently needs that scrollbar.",
-        "code_block": "<ListView\r\n    x:Name=\"CharactersList\"\r\n    ...\r\n    ScrollViewer.HorizontalScrollBarVisibility=\"Auto\"\r\n    ScrollViewer.HorizontalScrollMode=\"Enabled\"\r\n    ... />",
+        "current_behavior": "CharactersList allows horizontal scrolling but forces ScrollViewer.HorizontalScrollBarVisibility=\"Hidden\", so a long list can extend beyond the visible width and still scroll programmatically with no visible scrollbar.",
+        "change": "Change the list to overflow-aware horizontal scrollbar visibility so WinUI shows the horizontal scrollbar only when the list's extent exceeds the constrained viewport. Keep vertical scrolling disabled and preserve the current horizontal item layout.",
+        "code_block": "<ListView\\n    x:Name=\"CharactersList\"\\n    ...\\n    ScrollViewer.HorizontalScrollBarVisibility=\"Auto\"\\n    ScrollViewer.HorizontalScrollMode=\"Enabled\"\\n    ScrollViewer.VerticalScrollBarVisibility=\"Disabled\"\\n    ScrollViewer.VerticalScrollMode=\"Disabled\" />",
         "edge_cases": [
-          "Do not show the scrollbar when the selected language set fits inside the available width.",
-          "Keep vertical scrolling disabled so the one-row accent bar still behaves like a transient keyboard overlay.",
-          "Retain the existing selected-item behavior and no-animation policy."
+          "Short or wide-toolbar cases must not show an inactive scrollbar or extra reserved space.",
+          "Pointer interaction remains disabled, so the change must not rely on pointer-only behavior to access overflowed content."
         ],
         "tests": [
-          "Manual repro for issue #49454 with “All languages” selected on a narrow display should visibly show a horizontal scrollbar.",
-          "A wide display that does not overflow should still render without a scrollbar."
+          "UI test: overflowing language selection should surface a horizontal scrollbar under QuickAccentCharacterList.",
+          "UI test: a short language selection should still show no scrollbar."
         ]
       },
       {
         "order": 2,
-        "file": "src/modules/poweraccent/PowerAccent.Core/Tools/Calculation.cs",
+        "file": "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml.cs",
         "symbols": [
-          "Calculation",
-          "GetToolbarWidth"
+          "PowerAccent.UI.SelectorControl",
+          "MeasureContentWidthDip",
+          "HorizontalSurfaceOverheadDip",
+          "MeasureHorizontalOverflowDip"
         ],
-        "current_behavior": "Toolbar width is testable, but toolbar height remains implicit in `MainWindow` and cannot describe the extra vertical space a visible horizontal scrollbar needs.",
-        "change": "Introduce a pure helper that returns the overflow-dependent toolbar height (base row + optional description row + optional scrollbar allowance), then cover it in `CalculationTests`.",
-        "code_block": "public static double GetToolbarHeight(\r\n    double rowHeight,\r\n    double descriptionHeight,\r\n    bool showDescription,\r\n    bool showHorizontalScrollbar,\r\n    double scrollbarHeight)\r\n{\r\n    return rowHeight\r\n         + (showDescription ? descriptionHeight : 0)\r\n         + (showHorizontalScrollbar ? scrollbarHeight : 0);\r\n}",
+        "current_behavior": "SelectorControl can measure unconstrained content width and report fixed horizontal chrome, but it cannot tell MainWindow whether the final constrained viewport needs a scrollbar or how much extra vertical space the internal ScrollViewer consumes once the template is realized.",
+        "change": "Add a helper that, after layout, locates CharactersList's inner ScrollViewer, compares its horizontal extent with the viewport, and returns both whether overflow is present and how much scrollbar height to reserve. Return zero cleanly when the visual tree is not realized yet so the cloaked first-pass layout path stays stable.",
+        "code_block": "internal (bool HasHorizontalOverflow, double ScrollBarHeightDip) MeasureHorizontalOverflowDip()\\n{\\n    var scrollViewer = FindCharactersListScrollViewer();\\n    if (scrollViewer is null)\\n    {\\n        return (false, 0);\\n    }\\n\\n    var hasOverflow = scrollViewer.ScrollableWidth > 0;\\n    var reservedHeight = hasOverflow ? scrollViewer.ActualHeight - CharactersList.ActualHeight : 0;\\n    return (hasOverflow, Math.Max(0, reservedHeight));\\n}",
         "edge_cases": [
-          "Treat zero or non-finite scrollbar measurements as “no extra height” to avoid layout exceptions before the list is realized.",
-          "Keep the existing width-clamp behavior unchanged; only the vertical size should grow when overflow is present.",
-          "Cover both description-row and no-description-row combinations in tests."
+          "The first measurement happens while the window is cloaked; the helper must tolerate a null or not-yet-templated ScrollViewer and avoid throwing.",
+          "Scaled displays can yield fractional DIP heights, so the returned value should be rounded up by the caller before final resize."
         ],
         "tests": [
-          "Add data-driven `CalculationTests` cases for no overflow, overflow without description, and overflow with description.",
-          "Retain the existing `GetToolbarWidth` regression coverage unchanged."
+          "UI test helper coverage: the overflow probe should report false for a short list and true for the all-languages list on the UITest display.",
+          "Manual verification: confirm the helper still reports no overflow on wide displays where the content fits."
         ]
       },
       {
         "order": 3,
         "file": "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs",
         "symbols": [
-          "MainWindow",
+          "PowerAccent.UI.MainWindow",
           "PowerAccent_OnChangeDisplay",
-          "SizeAndPosition"
+          "SizeAndPosition",
+          "RowHeightDip",
+          "DescriptionHeightDip",
+          "LayoutRoundingDip"
         ],
-        "current_behavior": "After layout, `MainWindow` measures width and then resizes the overlay with a constant one-row height, so even if the list could surface a scrollbar there is no reserved space for it.",
-        "change": "After `Selector.UpdateLayout()`, read the selector's overflow metrics, compute the overflow-aware height through the new `Calculation` helper, and size the overlay before `Reveal()` so the scrollbar is visible in the first painted frame.",
-        "code_block": "Selector.UpdateLayout();\r\nvar measuredWidth = Selector.MeasureContentWidthDip();\r\nvar overflow = Selector.GetOverflowMetrics();\r\nSizeAndPosition(\r\n    measuredWidth,\r\n    Calculation.GetToolbarHeight(\r\n        RowHeightDip,\r\n        DescriptionHeightDip,\r\n        ViewModel.ShowDescription,\r\n        overflow.HasHorizontalOverflow,\r\n        overflow.HorizontalScrollbarHeightDip));",
+        "current_behavior": "MainWindow sizes width from Selector.MeasureContentWidthDip() and display constraints, but always computes height as RowHeightDip plus optional DescriptionHeightDip. A visible horizontal scrollbar therefore has no dedicated space and would be clipped or crowded.",
+        "change": "Convert the sizing logic to a constrained two-pass layout: compute width exactly as today, size the window once so the viewport exists, ask SelectorControl whether horizontal overflow is present, then add the measured scrollbar height (plus layout rounding when needed) before the final MoveAndResizeOnDisplay that precedes Reveal().",
+        "code_block": "double widthDip = _powerAccent.GetDisplayWidth(...);\\ndouble heightDip = RowHeightDip + (ViewModel.ShowDescription ? DescriptionHeightDip : 0);\\nMoveAndResize(widthDip, heightDip);\\nSelector.UpdateLayout();\\nvar overflow = Selector.MeasureHorizontalOverflowDip();\\nif (overflow.HasHorizontalOverflow)\\n{\\n    heightDip += Math.Ceiling(overflow.ScrollBarHeightDip + LayoutRoundingDip);\\n    MoveAndResize(widthDip, heightDip);\\n}\\nSelector.UpdateLayout();\\nSelector.ScrollSelectedIntoView(_selectedIndex);",
         "edge_cases": [
-          "DPI scaling must continue to round outward so the scrollbar is not clipped on fractional-scale displays.",
-          "The description row still needs to appear below the characters when Unicode descriptions are enabled.",
-          "The overlay should not jump between frames: overflow state must be measured before `Reveal()`."
+          "Do not reserve extra height when widthDip already fits all characters on the active monitor.",
+          "When ShowDescription is true, description height must stack correctly with the scrollbar path instead of replacing it.",
+          "The extra measurement and resize must stay inside the existing generation guard so a hide or resummon cannot reveal stale geometry."
         ],
         "tests": [
-          "Build `PowerAccent.UI` and manually verify the scrollbar appears on the first summon with all languages enabled.",
-          "Regression-check that narrow language sets still center correctly and keep the previous height."
+          "Regression UI test: the overflowing list should reveal both the last row of glyphs and the horizontal scrollbar after the final layout commit.",
+          "Existing toolbar placement tests should continue to pass so the extra height does not break anchoring logic."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/poweraccent/PowerAccent.UITests/PowerAccentEndToEndTests.cs",
+        "symbols": [
+          "PowerAccent.UITests.PowerAccentEndToEndTests",
+          "OverflowingCharacterListShowsHorizontalScrollbar",
+          "ShortCharacterListDoesNotShowHorizontalScrollbar"
+        ],
+        "current_behavior": "PowerAccent end-to-end tests already cover activation, selection, settings reload, and toolbar placement, but they do not assert any behavior for overflow affordances in the WinUI 3 selector.",
+        "change": "Add explicit end-to-end regression tests that configure an overflowing language set and a short language set, trigger Quick Accent in Notepad, and assert the toolbar automation tree exposes a visible horizontal scrollbar only in the overflow case.",
+        "code_block": "[TestMethod]\\n[TestCategory(\"PowerAccent\")]\\npublic void OverflowingCharacterListShowsHorizontalScrollbar()\\n{\\n    ReplaceSettings(this, new Settings(Activation: ActivationKey.Space, InputTimeMs: 200, SelectedLanguage: \"ALL\"));\\n    using var clipboard = PreserveClipboardText();\\n    using var notepad = NotepadFixture.Start(this);\\n\\n    _ = RunTriggeredGesture(this, notepad, Key.E, Key.Space, toolbar =>\\n    {\\n        Assert.IsTrue(HasVisibleHorizontalScrollbar(toolbar), \"Overflowed Quick Accent list should expose a horizontal scrollbar.\");\\n    });\\n}",
+        "edge_cases": [
+          "The UITest environment may have a wider monitor than the reporter. If the all-languages set no longer overflows there, the helper should fail with the measured bounds so the maintainer can pick the smallest reproducible display or a broader language set.",
+          "UI Automation timing can lag the reveal path, so the scrollbar lookup should use the same wait/retry pattern as existing toolbar assertions."
+        ],
+        "tests": [
+          "dotnet test src/modules/poweraccent/PowerAccent.UITests/PowerAccent.UITests.csproj --filter \"FullyQualifiedName~OverflowingCharacterListShowsHorizontalScrollbar\"",
+          "dotnet test src/modules/poweraccent/PowerAccent.UITests/PowerAccent.UITests.csproj --filter \"FullyQualifiedName~ShortCharacterListDoesNotShowHorizontalScrollbar\""
+        ]
+      },
+      {
+        "order": 5,
+        "file": "src/modules/poweraccent/PowerAccent.UITests/PowerAccentTestHelper.cs",
+        "symbols": [
+          "PowerAccent.UITests.PowerAccentTestHelper",
+          "HasVisibleHorizontalScrollbar",
+          "WaitForToolbarScrollbarState"
+        ],
+        "current_behavior": "The helper layer can find QuickAccentCharacterList and assert placement, but it has no reusable way to inspect whether the toolbar's automation tree currently exposes a horizontal scrollbar.",
+        "change": "Add a focused helper that finds the toolbar's list element, searches its descendants for a horizontal ScrollBar control, and waits for the expected visible/hidden state so the new tests stay deterministic.",
+        "code_block": "internal static bool HasVisibleHorizontalScrollbar(Session toolbar)\\n{\\n    var list = toolbar.Find<Element>(By.AccessibilityId(\"QuickAccentCharacterList\"), 5_000);\\n    return WaitForToolbarScrollbarState(list, expectedVisible: true, timeoutMs: 5_000);\\n}",
+        "edge_cases": [
+          "Some WinUI templates create the ScrollBar element only after overflow exists; the helper must treat 'not found' as a valid hidden state rather than an exception.",
+          "If WinUI reports an offscreen scrollbar element, the helper should require both presence and visibility/offscreen=false before declaring success."
+        ],
+        "tests": [
+          "The new overflow and non-overflow UI tests should both use the helper, proving both the visible and absent code paths.",
+          "Existing placement assertions should continue to pass to show the helper addition did not disturb current toolbar automation."
         ]
       }
     ],
     "verify": [
-      "Build the UI project: `pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\poweraccent\\PowerAccent.UI\\PowerAccent.UI.csproj`",
-      "Build and run the geometry tests: `pwsh .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\poweraccent\\PowerAccent.Core.UnitTests\\PowerAccent.Core.UnitTests.csproj`, then run the `CalculationTests` suite with VS Test Explorer or `vstest.console.exe`.",
-      "Launch a Debug PowerToys build, enable Quick Accent, select “All languages”, narrow the available screen width, press `E`, and confirm a horizontal scrollbar is visible beneath the characters.",
-      "Repeat on a wide display and confirm no unnecessary scrollbar appears when the list fits.",
-      "Toggle Unicode descriptions on and confirm the description row still renders below the character list without clipping the scrollbar."
+      "dotnet build src/modules/poweraccent/PowerAccent.UI/PowerAccent.UI.csproj -c Release",
+      "dotnet test src/modules/poweraccent/PowerAccent.UITests/PowerAccent.UITests.csproj --filter \"FullyQualifiedName~OverflowingCharacterListShowsHorizontalScrollbar|FullyQualifiedName~ShortCharacterListDoesNotShowHorizontalScrollbar|FullyQualifiedName~ToolbarPositionSettingIsApplied\"",
+      "Manual repro: enable all Quick Accent languages, trigger Quick Accent with E on a normal-width display, and confirm a horizontal scrollbar appears beneath the character list while offscreen glyphs remain reachable.",
+      "Manual non-regression: switch to a short language set such as SP, trigger Quick Accent again, and confirm no unnecessary scrollbar appears while placement and description behavior remain unchanged."
     ],
     "risks": [
-      "Adding scrollbar height changes the popup footprint and may slightly shift the overlay on very small displays.",
-      "ScrollViewer template differences across Windows App SDK versions could change the realized scrollbar thickness, so the code must tolerate missing or delayed metrics.",
-      "Always-visible scrollbar space would be a visual regression; the fix must stay overflow-aware."
+      "WinUI's internal ListView template can report scrollbar geometry only after layout completes, so the implementation must not assume the ScrollViewer exists before the cloaked show pass has realized the tree.",
+      "Adding scrollbar height changes the final overlay bounds; toolbar placement math must keep the same horizontal anchors and avoid a vertical jump that would make the bar feel unstable.",
+      "Different DPI scales may produce fractional scrollbar heights, so rounding in the final resize path must avoid reintroducing clipping on scaled monitors."
     ],
     "alternatives": [
-      "Widening the popup instead of showing a scrollbar would break the existing width clamp and can push the overlay off-screen on smaller displays.",
-      "Adding fade gradients without a scrollbar would still hide the exact overflow extent that users asked for.",
-      "Paginating accent characters would be a larger UX change than restoring the WPF-era scrollbar behavior."
+      "Rejected: keep the scrollbar hidden and rely only on ScrollIntoView for the selected character. That preserves the regression and still leaves users without any visual cue that more characters exist offscreen.",
+      "Rejected: wrap the accent pills onto multiple rows instead of restoring the horizontal scrollbar. The current sizing and navigation model are explicitly one-row, and multi-row navigation would be a broader behavioral change than the issue requests.",
+      "Rejected: reserve permanent extra height for a scrollbar even when no overflow exists. That would visibly enlarge every Quick Accent popup and diverge from the prior WPF behavior without solving any additional problem."
     ]
-  },
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-25T00:35:27Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The WinUI 3 Quick Accent regression is bounded, reproducible, and already tied to the migrated selector layout. The repository files and verification plan are specific enough for implementation review.",
-    "evidence": [
-      "The WinUI 3 Quick Accent regression is bounded, reproducible, and already tied to the migrated selector layout. The repository files and verification plan are specific enough for implementation review.",
-      "Issue #49454 includes concrete steps, side-by-side screenshots, and an explicit regression note that the WPF version still showed the scrollbar.",
-      "`src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/SelectorControl.xaml` sets `ScrollViewer.HorizontalScrollBarVisibility=\"Hidden\"` while keeping horizontal scrolling enabled on `CharactersList`.",
-      "`src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs` sizes the overlay with a fixed `RowHeightDip` and never adds scrollbar height when the accent list overflows.",
-      "`src/modules/poweraccent/PowerAccent.Core/Tools/Calculation.cs` already clamps toolbar width to the display and relies on scrolling once the accent list is wider than the allowed viewport, so overflow is an intended steady state."
-    ],
-    "recommended_action": "Repository files, implementation steps, and verification are specific enough to start the fork-side fix when desired.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-25T00:35:27Z"
   }
 }

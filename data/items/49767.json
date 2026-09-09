@@ -1,48 +1,104 @@
 {
-  "number": 49767,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
-  },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
-  },
-  "actions": [
-    {
-      "id": "request-info-49767",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 49767,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
-      }
-    }
+  "number": 49767,
+  "title": "powertoys crashed",
+  "url": "https://github.com/microsoft/PowerToys/issues/49767",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-CropAndLock"
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "assignees": [],
+  "generated_at": "2026-09-09T19:51:48Z",
+  "evaluated_at": "2026-09-09T19:51:48Z",
   "source_updated_at": "2026-08-08T13:45:24Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
+    "rationale": "The report says Crop and Lock crashed and mentions OCR.exe, but the current public evidence still does not identify the exact trigger path or crashing component.",
     "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+      "The issue body's repro is only 'double click powertoys' plus the words 'OCR.exe', which does not identify whether the failing path is tray launch, Crop and Lock startup, Thumbnail mode, Reparent mode, or OCR invocation.",
+      "The attached public bug-report bundle I reviewed did not contain a clear Crop and Lock crash signature; the module log only showed logger initialization.",
+      "The reviewed Event Viewer export did not provide a useful crashing module for this issue.",
+      "The available runner evidence mostly showed startup activity and an unrelated scheduled-task error, not a conclusive Crop and Lock failure."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-08T13:45:24Z"
-  }
+    "recommended_action": "Request the exact crash trigger, whether PowerToys or only Crop and Lock exits, and a fresh post-crash bug report before proposing a fix."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A fix would be guesswork until the exact trigger path and crashing component are identified."
+  },
+  "issue_context": {
+    "summary": "Crop and Lock reportedly crashes, possibly involving OCR.exe, but the issue body and reviewed public bundle do not isolate whether the failure happens at tray launch, capture start, OCR invocation, or one specific Crop and Lock mode.",
+    "known_information": [
+      "The issue targets Crop and Lock and includes a public PowerToysReport ZIP.",
+      "The body mentions 'double click powertoys' and 'OCR.exe' but does not explain the exact UI flow or expected behavior.",
+      "There are no public follow-up comments clarifying whether PowerToys exits entirely or only the Crop and Lock path fails.",
+      "The reviewed CropAndLock log only contained logger initialization and did not capture a detailed crash path."
+    ],
+    "inferences": [
+      "The problem may be in a downstream OCR or capture mode path rather than generic PowerToys startup, but the current issue text is too ambiguous to tell.",
+      "A focused request can cheaply separate tray-start behavior from Crop and Lock mode-specific crashes."
+    ],
+    "analysis": "This should remain needs-information. The existing public bundle was worth reviewing because it rules out some generic explanations, but it still leaves too many plausible crash paths. The next step is a targeted follow-up that names the missing trigger details and asks for fresh diagnostics from the actual crash moment.",
+    "initial_investigation": [
+      "Reviewed the full issue body and the attached public PowerToysReport ZIP.",
+      "Inspected the CropAndLock module log from that bundle and found only logger initialization.",
+      "Reviewed the associated runner evidence and did not find a conclusive Crop and Lock crash stack or module-failure entry.",
+      "Reviewed the provided Event Viewer export and found it insufficient to isolate a crash module for this issue."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact action that triggers the crash and whether PowerToys exits entirely or only Crop and Lock/OCR closes.",
+        "why_needed": "The current body names both Crop and Lock and OCR.exe but does not say which user action or process actually fails.",
+        "how_to_collect": "Please tell us the exact click/shortcut sequence that crashes (for example tray icon, Crop and Lock hotkey, Reparent mode, Thumbnail mode, or OCR) and whether PowerToys itself exits or only the capture/OCR window closes."
+      },
+      {
+        "evidence_type": "event_viewer",
+        "information": "A fresh Application Error or .NET Runtime event naming the crashing executable/module, if Windows logged one.",
+        "why_needed": "The currently reviewed evidence does not identify the crashing component.",
+        "how_to_collect": "Right after the crash, please open Event Viewer > Windows Logs > Application and share the newest Error entry related to PowerToys, CropAndLock, or OCR.exe."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic bundle captured immediately after reproducing the crash.",
+        "why_needed": "The reviewed older bundle did not contain the necessary crash-time details.",
+        "how_to_collect": "Right after reproducing the crash, please comment /bugreport on the issue and attach the generated ZIP. If PowerToys exits too quickly to use the UI, please run BugReportTool.exe from the PowerToys install folder and attach the ZIP it creates."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Narrow the Crop and Lock crash trigger",
+      "note": "Ask for the missing crash-path details and fresh diagnostics from the actual failing moment.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49767,
+        "body": "Thanks for the report. I reviewed the attached bundle, but the current issue text still does not tell us whether the failure happens when opening PowerToys, launching Crop and Lock, starting OCR, or using one specific Crop and Lock mode. Could you please provide:\n1. the exact action that crashes (double-click tray icon, use the Crop and Lock hotkey, choose Reparent/Thumbnail, or start OCR);\n2. whether PowerToys exits entirely or only the Crop and Lock / OCR window closes;\n3. the newest Application Error entry from Event Viewer for PowerToys, CropAndLock, or OCR.exe if Windows logged one; and\n4. a fresh diagnostic bundle captured immediately after reproduction by commenting /bugreport on the issue and attaching the ZIP (or by running BugReportTool.exe from the install folder if PowerToys exits too quickly).\nThat will tell us which component is actually crashing."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "GlutamicAcidEY",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 57,
+    "level": "yellow",
+    "rationale": "The reviewed public bundle ruled out some obvious paths, but the issue still does not name a single crash trigger."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

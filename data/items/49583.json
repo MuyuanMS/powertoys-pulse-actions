@@ -1,34 +1,106 @@
 {
+  "schemaVersion": 5,
   "number": 49583,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
+  "stage": "triaging",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-09T19:27:57Z",
+  "evaluated_at": "2026-09-09T19:27:57Z",
   "source_updated_at": "2026-07-31T23:39:53Z",
+  "title": "Multiple Displays not Detected in Fancy Zones",
+  "url": "https://github.com/microsoft/PowerToys/issues/49583",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "status": "reproducible",
+    "rationale": "The report already includes dual-monitor screenshots and a PowerToys bug report ZIP, so maintainers can reproduce and investigate the FancyZones editor monitor-enumeration path without asking the reporter to restate the basics.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The issue includes screenshots showing Windows display settings with two monitors while the FancyZones editor renders only one monitor.",
+      "The report is on PowerToys 0.100.2 and already attaches PowerToysReport_2026-07-30-08-30-49.zip.",
+      "No maintainer comment or linked fix is present yet, so the issue still needs a maintainer-side confirmation pass."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Run a maintainer-side dual-monitor reproduction and then approve a focused design around editor monitor enumeration if the same one-monitor collapse still occurs.",
+    "evaluated_at": "2026-09-09T19:27:57Z",
     "source_updated_at": "2026-07-31T23:39:53Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository change is likely needed in FancyZones editor monitor enumeration or topology refresh, but the exact failing branch still needs maintainer-side confirmation."
+  },
+  "issue_context": {
+    "summary": "The reporter shows a dual-monitor Windows setup where FancyZones editor sees only one display, even though Windows display settings and the attached screenshots show both monitors connected.",
+    "known_information": [
+      "The issue targets FancyZones on PowerToys 0.100.2 from a Microsoft Store install.",
+      "The body contains three screenshots: Windows display settings with dual monitors, the FancyZones editor, and a second view showing only one monitor in the editor.",
+      "A PowerToys diagnostic ZIP is already attached, so the issue is not blocked on first-pass logs.",
+      "The issue is labeled Issue-Bug, Product-FancyZones, and Needs-Triage."
+    ],
+    "inferences": [
+      "Windows itself is detecting both displays, so the likely failure boundary is inside FancyZones monitor discovery or how the editor consumes that data.",
+      "Because the failure appears in the editor surface itself, the issue is reproducible without waiting for more reporter explanation."
+    ],
+    "analysis": "This is a good candidate for a lightweight reproducibility judgment instead of a request for more information: the module, screenshots, and existing ZIP already define the symptom. The remaining uncertainty is in the exact code path, so the next step should be maintainer-side reproduction plus a focused code read, not a generic comment asking for more detail.",
+    "initial_investigation": [
+      "The FancyZones editor view model in src/modules/FancyZones/editor/FancyZonesEditor/ViewModels/MonitorViewModel.cs builds the visible monitor list from App.Overlay.Monitors.",
+      "FancyZones monitor identity parsing in src/modules/FancyZones/FancyZonesLib/MonitorUtils.cpp handles WMI/display IDs, which is a plausible place for a two-monitor setup to collapse if one identity is stale or normalized incorrectly."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-49583",
+      "type": "reproduce",
+      "label": "Reproduce FancyZones dual-monitor collapse",
+      "primary": true,
+      "confirm": false,
+      "reproduce": {
+        "module": "FancyZones",
+        "version": "0.100.2 or newer",
+        "prerequisites": [
+          "A Windows machine with two active displays.",
+          "FancyZones enabled and the editor available."
+        ],
+        "steps": [
+          "Connect two displays and confirm both are visible in Windows Settings > System > Display.",
+          "Open FancyZones editor.",
+          "Compare the monitor preview inside the editor with Windows display settings.",
+          "If only one monitor is shown, capture the editor state and inspect the monitor enumeration path before asking the reporter for more data."
+        ],
+        "expected_result": "Both connected displays should appear as separate monitors inside FancyZones editor.",
+        "attachments": [
+          "https://github.com/user-attachments/assets/7875de28-2ed2-4edc-ad7e-8c0ad0b40d7f",
+          "https://github.com/user-attachments/assets/06ff3181-a1e5-445a-b8fd-555b98ea12ee",
+          "https://github.com/user-attachments/assets/4157c859-7911-4d4d-9fe1-432e71d58b80"
+        ]
+      },
+      "note": "Maintainer-side local repro guidance only; this artifact does not post upstream content."
+    },
+    {
+      "id": "approve-design-49583",
+      "type": "approve_design",
+      "label": "Approve FancyZones monitor-enumeration design",
+      "primary": false,
+      "confirm": false,
+      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Refresh FancyZones editor monitor enumeration against physical monitor IDs",
+      "root_cause": "The editor likely builds its monitor list from a stale or partially normalized topology snapshot, causing one of the connected displays to be dropped before the overlay view model is populated.",
+      "plan": [
+        "Trace the monitor list from FancyZonesLib monitor identity parsing into the editor overlay and view-model creation path.",
+        "Refresh or normalize the editor monitor snapshot when the editor opens so duplicate or transient monitor identities do not collapse two physical displays into one entry.",
+        "Add a targeted dual-monitor regression test or fixture that verifies the editor exposes both connected displays."
+      ],
+      "verification": [
+        "Open FancyZones editor on a two-monitor system matching the issue screenshots and verify that both monitors appear in the editor preview.",
+        "Repeat with the attached issue repro conditions and confirm that layout editing remains available for both displays."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "The screenshots and attached bug report make the symptom concrete, and the FancyZones editor code clearly owns monitor enumeration, but this lightweight pass did not inspect the attached ZIP deeply enough to name the exact failing branch."
+      }
+    }
+  ]
 }

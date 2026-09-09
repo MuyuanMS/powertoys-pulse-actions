@@ -1,48 +1,102 @@
 {
-  "number": 49696,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs more evidence",
-    "detail": "The symptom is not yet localized enough to choose a safe code owner or design path."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused diagnostics",
-    "reason": "The missing evidence is specific and cheaper to collect than speculative code investigation."
-  },
-  "actions": [
-    {
-      "id": "request-info-49696",
-      "type": "request_info",
-      "label": "Draft request for details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 49696,
-        "body": "Could you confirm whether this still reproduces on PowerToys 0.100.2 or newer, rewrite the steps as a short numbered sequence from a clean start, and attach a PowerToys bug-report ZIP plus any screenshot or recording that shows the failure?"
-      },
-      "note": "Draft only; never posted upstream without explicit approval."
-    }
+  "number": 49696,
+  "title": "Samsung LC49G95T Monitor not recognised",
+  "url": "https://github.com/microsoft/PowerToys/issues/49696",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "assignees": [],
+  "generated_at": "2026-09-09T19:51:48Z",
+  "evaluated_at": "2026-09-09T19:51:48Z",
   "source_updated_at": "2026-08-05T16:10:58Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The symptom is not yet localized enough to choose a safe code owner or design path.",
+    "rationale": "'Monitor not recognised' is still too broad to localize to Power Display discovery, DDC/CI capability probing, connection topology, or monitor-side settings.",
     "evidence": [
-      "The symptom is not yet localized enough to choose a safe code owner or design path.",
-      "Draft only; never posted upstream without explicit approval."
+      "The issue says a Samsung LC49G95T is not picked up while a BenQ monitor is, even with increased compatibility enabled.",
+      "There are no public comments, logs, screenshots of the Power Display monitor list, or bug-report ZIP attached to the issue.",
+      "Power Display's maximum compatibility mode can supplement unusable capabilities data with direct probe and cache evidence, but it still depends on what discovery and monitor handles expose at runtime.",
+      "Without topology and diagnostics, the issue cannot be narrowed to a single monitor-identification or DDC path."
     ],
-    "recommended_action": "The missing evidence is specific and cheaper to collect than speculative code investigation.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-05T16:10:58Z"
-  }
+    "recommended_action": "Request exact monitor topology, connection path, monitor-side configuration, and a fresh diagnostic bundle before assigning a code path."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The failure could live in several discovery paths, so a fix proposal would be speculative until the hardware topology and diagnostics are known."
+  },
+  "issue_context": {
+    "summary": "Power Display detects one monitor but not the Samsung LC49G95T. The user already tried increased compatibility mode, but the report still lacks the topology and diagnostics needed to tell whether the failure is discovery, capability probing, or connection-path-specific.",
+    "known_information": [
+      "The issue targets Power Display on PowerToys 0.100.2 and Windows 11.",
+      "The reporter says three monitors are connected, but only the BenQ monitor is picked up by Power Display.",
+      "The Samsung monitor reportedly still does not appear even with increased compatibility enabled.",
+      "There are no public comments or attached diagnostics in the live issue state."
+    ],
+    "inferences": [
+      "The failure might be upstream of DDC feature reads if the monitor never becomes a discoverable Power Display candidate.",
+      "Because compatibility mode was already tried, the missing information is more likely topology/connection/monitor-state evidence than a simple 'please update and retry' answer."
+    ],
+    "analysis": "This is a good needs-information case. The report names the model and says compatibility mode was enabled, which is useful, but still not enough to choose a code owner or safe design. The cheapest next step is a hardware-topology request plus a fresh bug-report bundle from the failing setup.",
+    "initial_investigation": [
+      "Reviewed the live issue body and confirmed there are no comments or linked fixes yet.",
+      "Inspected DdcCiController.cs around maximum compatibility handling and confirmed the feature supplements bad capability reads with direct probe/cache evidence rather than guaranteeing discovery of every monitor.",
+      "Reviewed DdcCiControllerCompatibilityGateTests.cs to confirm the expected behavior of maximum compatibility mode."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "The full monitor topology, including how the Samsung is connected (DP/HDMI/dock/KVM/adaptor), whether DDC/CI is enabled in the monitor OSD, and which GPU/output each display uses.",
+        "why_needed": "Power Display behavior can change across direct GPU connections, docks, KVMs, MST hubs, and monitor-side DDC settings.",
+        "how_to_collect": "Please reply with the connection path for each monitor (for example GPU -> dock -> DP cable -> Samsung), plus whether DDC/CI is enabled in the Samsung monitor's on-screen menu."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the Samsung appears in Windows Display Settings / Device Manager at the time Power Display misses it, and whether reconnecting the cable or toggling increased compatibility changes the result.",
+        "why_needed": "That distinguishes monitor discovery failure from a narrower Power Display capability/read path.",
+        "how_to_collect": "Please confirm whether the Samsung is visible in Windows Display Settings and Device Manager when Power Display misses it, and whether it ever appears after reconnecting the display or toggling increased compatibility."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic bundle captured from the affected machine immediately after reproducing the missing-monitor state.",
+        "why_needed": "Current logs are absent, and a fresh bundle can show what monitor discovery and compatibility paths ran on the failing hardware.",
+        "how_to_collect": "After reproducing the issue, please comment /bugreport on the issue and attach the generated ZIP from that machine."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Capture Samsung monitor topology and diagnostics",
+      "note": "Ask for hardware-specific evidence that distinguishes monitor discovery from DDC capability failures.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49696,
+        "body": "Thanks for the report. Because one monitor is detected and the Samsung is not, we still need to narrow this to either monitor discovery, the connection path, or DDC/CI capability probing. Could you please provide:\n1. the full monitor topology (how each display is connected: GPU/port, dock/KVM/adaptor, and cable type), plus whether DDC/CI is enabled in the Samsung monitor OSD;\n2. whether the Samsung is visible in Windows Display Settings and Device Manager at the same time Power Display misses it;\n3. whether reconnecting the Samsung or toggling increased compatibility changes the result at all; and\n4. a fresh diagnostic bundle captured immediately after reproducing by commenting /bugreport on the issue and attaching the generated ZIP.\nThat will let us tell whether this is a discovery problem or a narrower monitor-capability path."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "jameslashmar",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 60,
+    "level": "yellow",
+    "rationale": "The report has a concrete model and symptom, but not enough hardware context to choose a discovery path."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

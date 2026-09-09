@@ -1,33 +1,82 @@
 {
+  "schemaVersion": 5,
   "number": 49585,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
+  "stage": "needs_reply",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
-  },
-  "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-09T19:27:57Z",
+  "evaluated_at": "2026-09-09T19:27:57Z",
   "source_updated_at": "2026-07-31T23:38:06Z",
+  "title": "Bug that keeps happening, usually concurrent with opening sketchup, which also gets a bug splat",
+  "url": "https://github.com/microsoft/PowerToys/issues/49585",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "rationale": "The attachment shows a PowerLauncher fatal Desktop-composition exception on an old build, but the issue body does not say whether this still reproduces on a current build or what PowerToys surface was active when SketchUp launched.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "The issue body is sparse and only says the crash happens sometimes while opening SketchUp.",
+      "The attached 2026-07-30.txt log shows PowerToys.PowerLauncher 0.79.0.0 crashing with COMException 0x80263001 (Desktop composition is disabled).",
+      "No maintainer follow-up, current-build retest, or PowerToys bug report ZIP is present."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Ask for a current-build reproduction, a fresh /bugreport capture, and confirmation of the exact PowerToys surface that was active during the crash.",
+    "evaluated_at": "2026-09-09T19:27:57Z",
     "source_updated_at": "2026-07-31T23:38:06Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The evidence shows a launcher-side crash path, but it is still too old and under-specified to choose between an already-addressed DWM/theme path and a separate current regression."
+  },
+  "issue_context": {
+    "summary": "The reporter describes an intermittent crash while opening SketchUp, but the only concrete diagnostic evidence is an attached text log from PowerLauncher 0.79.0.0 showing a fatal Desktop-composition exception rather than a SketchUp-specific stack.",
+    "known_information": [
+      "The issue was filed under General against PowerToys 0.79.0.0.",
+      "The attachment 2026-07-30.txt identifies the crashing process as PowerToys.PowerLauncher and records COMException 0x80263001 from DwmExtendFrameIntoClientArea.",
+      "The body names SketchUp as the app usually being opened at the same time and mentions Chrome or Explorer as other possibilities.",
+      "No PowerToys bug report ZIP or narrowed current-build repro is attached."
+    ],
+    "inferences": [
+      "The problem may be a launcher/theme/backdrop path reacting badly to transient DWM state rather than anything SketchUp-specific.",
+      "Because the only hard evidence comes from a 0.79.0 log, the current issue could already have changed shape or disappeared on newer builds."
+    ],
+    "analysis": "This is not a good candidate for a guessed fix plan. The attached log is useful because it identifies PowerLauncher and the DWM exception family, but the issue still lacks the current-build state and the exact user-visible trigger. A focused current-build evidence request is the lowest-cost next step.",
+    "initial_investigation": [
+      "Current source already contains retry logic for recoverable DWM composition failures in src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs, added by “Run: handle DWM issues more gracefully” (#42588).",
+      "The attached crash log still shows an unhandled Desktop-composition exception in an older launcher build, so the lightweight pass cannot conclude that the remaining report is already fixed."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Whether the crash still reproduces on the latest stable PowerToys build.",
+        "why_needed": "A current-build answer determines whether triage should chase a live regression or treat this as an old launcher crash signature.",
+        "how_to_collect": "Update to the latest stable PowerToys build, retry the same SketchUp/open-app scenario, and report whether the crash still happens."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after the crash or immediately after reproducing the same failure.",
+        "why_needed": "The packaged logs are needed to confirm the current crashing module and whether the same DWM/backdrop path is still involved.",
+        "how_to_collect": "Reproduce the problem and then post a new comment with /bugreport immediately afterward. If PowerToys will not reopen, run BugReportTool.exe from the PowerToys installation folder right after reproducing instead."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Which PowerToys surface was open or active when the crash happened, such as Run, Settings, or no visible PowerToys window at all.",
+        "why_needed": "That decides whether triage should inspect the launcher window/theme path or a different UI surface.",
+        "how_to_collect": "Describe what was visible on screen just before the crash and whether SketchUp launch, a theme change, or another action happened at the same time."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-49585",
+      "type": "request_info",
+      "label": "Request current launcher crash evidence",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 49585,
+        "body": "Thanks for attaching the crash text file — it already shows a PowerLauncher Desktop-composition exception. To tell whether this is still a current PowerToys bug and which UI path it is hitting, please provide:\n\n1. Whether the same crash still reproduces on the latest stable PowerToys build.\n2. A fresh diagnostic ZIP by reproducing the crash and then posting a comment with /bugreport immediately afterward. If PowerToys will not reopen, please run BugReportTool.exe from the PowerToys installation folder instead.\n3. What PowerToys surface was open when it happened (for example Run, Settings, or no visible PowerToys window).\n\nThat will separate an old launcher/DWM crash signature from a still-current repro."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }
