@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T15:34:12.4884899+08:00",
+  "generated_at": "2026-09-09T16:01:32.0477596+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 391
   },
   "impact": {
-    "as_of": "2026-09-09T15:34:12.4884899+08:00",
+    "as_of": "2026-09-09T16:01:32.0477596+08:00",
     "issues_helped": 10,
     "prs_iterated": 24,
     "constructive_comments_posted": 3,
@@ -504,7 +504,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_blocked",
+      "stage": "waiting_copilot",
       "owes": "automation",
       "pending_author": false,
       "waiting_since": null,
@@ -1655,11 +1655,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 702,
+        "fork_number": 729,
         "fork_title": "[PR 50271] [Mouse Utilities] Add Auto Hide Cursor",
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50271-v4",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/702"
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/729"
       }
     },
     {
