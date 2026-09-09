@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T13:59:00.4662070+08:00",
+  "generated_at": "2026-09-09T14:28:57.2737084+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 152,
     "open_issues": 12606,
     "community": 11761,
-    "artifacts": 390
+    "artifacts": 391
   },
   "impact": {
-    "as_of": "2026-09-09T13:59:00.4662070+08:00",
+    "as_of": "2026-09-09T14:28:57.2737084+08:00",
     "issues_helped": 10,
     "prs_iterated": 24,
     "constructive_comments_posted": 3,
@@ -198,6 +198,7 @@ window.BOARD_INDEX = {
     49321,
     49291,
     49279,
+    49226,
     49221,
     49077,
     48904,
@@ -5749,13 +5750,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_blocked",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -5770,7 +5771,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 728,
+        "fork_title": "[PR 49226] [MouseWithoutBorders] Add theme-adaptive system tray icon setting",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/49226",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/728"
+      }
     },
     {
       "id": "pr-49225",
