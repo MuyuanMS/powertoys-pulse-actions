@@ -4,11 +4,11 @@
   "number": 49915,
   "kind": "pr",
   "track": "review",
-  "stage": "review_blocked",
-  "owes": "external_reviewer",
+  "stage": "review_ready",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T05:16:02.6368072Z",
-  "evaluated_at": "2026-09-09T05:16:02.6368072Z",
+  "generated_at": "2026-09-09T06:36:41.0522248Z",
+  "evaluated_at": "2026-09-09T06:36:41.0522248Z",
   "source_updated_at": "2026-09-08T16:05:09Z",
   "head_sha": "c194623b992e6458472577ac41c941e97ca0baf6",
   "title": "CmdPal: Shelf (1/n) - Add quick access shelf prototype",
@@ -16,56 +16,154 @@
   "author": "jiripolasek",
   "author_association": "COLLABORATOR",
   "confidence": "high",
-  "summary": "The live upstream head is unchanged and the exact 16-file scope remains mirrored. Five supported fixes are present in the durable review state, the targeted Debug build chain and all 328 CmdPal ViewModels tests pass, and no review threads remain unresolved. A fresh external code review was requested, but no new submitted review was visible in the single permitted immediate check, so the review is checkpointed as blocked.",
+  "summary": "The live upstream head is unchanged and the exact 16-file scope remains reviewed. Five supported current-head fixes are ready for maintainer review. The freshly requested external review completed against the exact final review head with zero new comments, zero review threads remain unresolved, the targeted Debug build chain passes, and all 328 CmdPal ViewModels tests pass.",
   "status": {
-    "glyph": "BLOCKED",
-    "label": "Review blocked - fresh external review pending",
-    "detail": "The current-head fixes and local validation are complete, but the newly requested external review has not yet produced a submitted result. No upstream action is exposed while that result remains pending."
+    "glyph": "ACTION",
+    "label": "Current-head findings drafted",
+    "detail": "Five apply-ready findings remain on upstream head c194623b992e6458472577ac41c941e97ca0baf6. The mandatory review loop is converged and no upstream review or comment was posted."
   },
   "next_action": {
-    "glyph": "WAIT",
-    "label": "Resume from the pending external review",
-    "reason": "On the next permitted pass, inspect the submitted review for the already-validated review head. If it has published findings, address them and resolve every thread; if it has zero published comments, confirm zero unresolved threads and emit the current-head request-changes action."
+    "glyph": "ACTION",
+    "label": "Review and post the drafted request-changes review",
+    "reason": "Recheck the upstream head and conversation immediately before an authorized maintainer publishes the five current-head suggestions."
   },
-  "blockers": [
+  "blockers": [],
+  "proposed_comments": [
     {
-      "code": "external_copilot_review_pending",
-      "detail": "A fresh Copilot review was requested at 2026-09-09T05:11:54.0516454Z. The single immediate post-request check found no newly submitted Copilot review. An empty requested-reviewer response is not treated as proof that review is unavailable.",
-      "remediation": "At the next drain pass, check once for a Copilot review submitted after 2026-09-09T05:11:54.0516454Z against review head 91d6efd2ab4aadb998ab3d14087e9a7b22031df3. Process any published findings on the writable review repository, reply and resolve all threads, rebuild if code changes, and request another review if required."
+      "id": "scope-menu-char-suppression",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Limit menu-character suppression to shelf digits",
+      "confidence": {
+        "score": 99,
+        "rationale": "The unconditional WM_MENUCHAR branch returns MNC_CLOSE for every unmatched mnemonic, while the shelf only needs Alt+0 through Alt+9 chime suppression."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
+      "startLine": 1714,
+      "line": 1720,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Limit menu-character suppression to shelf digits\n\n**Severity:** `medium`\n\nThe unconditional `WM_MENUCHAR` branch closes mnemonic processing for every character, not just the new shelf shortcuts. That can suppress normal Alt-letter access keys elsewhere in the window. Restrict the workaround to the numeric access keys owned by the shelf so other mnemonics continue through normal window processing.\n\n```suggestion\n            // Suppress the system chime for the shelf's Alt+0 through Alt+9 access keys,\n            // while preserving the normal handling of other window mnemonics.\n            case PInvoke.WM_MENUCHAR when (wParam.Value & 0xFFFF) is >= (nuint)'0' and <= (nuint)'9':\n                return (LRESULT)(1 << 16); // MAKELRESULT(0, MNC_CLOSE)\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "refresh-recycled-access-keys",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Refresh access keys when repeater elements are reused",
+      "confidence": {
+        "score": 91,
+        "rationale": "Visible shelf items and indexes are rebuilt as capacity changes, while OneTime bindings do not reliably refresh values on recycled ItemsRepeater elements."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml",
+      "startLine": 486,
+      "line": 500,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Refresh access keys when repeater elements are reused\n\n**Severity:** `medium`\n\nThe visible shelf collection is rebuilt when available capacity changes, and `ItemsRepeater` can reuse an existing element for a different item. With `Mode=OneTime`, the button and tooltip can retain the previous item's digit, exposing a stale shortcut. Keep these bindings live so recycled elements receive the current shortcut.\n\n```suggestion\n                                AccessKey=\"{x:Bind ShortcutDigit, Mode=OneWay}\"\n                                AutomationProperties.Name=\"{x:Bind Command.Title, Mode=OneWay}\"\n                                Click=\"QuickAccessShelfItem_Click\"\n                                Style=\"{StaticResource SubtleButtonStyle}\"\n                                Tag=\"{x:Bind}\"\n                                UseSystemFocusVisuals=\"{StaticResource UseSystemFocusVisuals}\">\n                                <ToolTipService.ToolTip>\n                                    <ToolTip>\n                                        <StackPanel Spacing=\"2\">\n                                            <TextBlock Text=\"{x:Bind Command.Title, Mode=OneWay}\" />\n                                            <TextBlock\n                                                Foreground=\"{ThemeResource TextFillColorSecondaryBrush}\"\n                                                Style=\"{StaticResource CaptionTextBlockStyle}\"\n                                                Text=\"{x:Bind ShortcutDigit, Mode=OneWay, Converter={StaticResource QuickAccessShortcutTextConverter}}\"\n                                                Visibility=\"{x:Bind ShortcutDigit, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}\" />\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "localize-custom-landmark-type",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Provide the custom landmark type for assistive technology",
+      "confidence": {
+        "score": 98,
+        "rationale": "The shelf declares LandmarkType=Custom, and WinUI requires AutomationProperties.LocalizedLandmarkType to describe a custom landmark."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw",
+      "startLine": 418,
+      "line": 420,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Provide the custom landmark type for assistive technology\n\n**Severity:** `medium`\n\nThe shelf is declared as a custom landmark, but its `x:Uid` supplies only an accessible name. Custom landmarks also require a localized landmark type; without it, screen readers cannot announce what kind of region users entered.\n\n```suggestion\n  <data name=\"QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name\" xml:space=\"preserve\">\n    <value>Quick access</value>\n  </data>\n  <data name=\"QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.LocalizedLandmarkType\" xml:space=\"preserve\">\n    <value>Quick access shelf</value>\n  </data>\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "hide-decorative-overflow-icons",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Hide decorative overflow icons from the UI Automation tree",
+      "confidence": {
+        "score": 96,
+        "rationale": "Each MenuFlyoutItem already exposes its command title, while the generated IconBox has no independent accessible name and otherwise remains visible to UI Automation."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "line": 1036,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Hide decorative overflow icons from the UI Automation tree\n\n**Severity:** `medium`\n\nEach overflow menu item already exposes its command title, so the generated icon is decorative. Leaving the `IconBox` in the content accessibility view can create a separate unlabeled UI Automation node beside every command.\n\n```suggestion\n            iconBox.SourceRequested += IconProvider.SourceRequested16;\n            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAccessibilityView(\n                iconBox,\n                Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-filter-alt-down",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Let the focused filter keep its Alt+Down shortcut",
+      "confidence": {
+        "score": 99,
+        "rationale": "The shell preview handler runs before the filter control's handler and consumes Alt+Down whenever collapsed compact mode can expand."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "startLine": 1108,
+      "line": 1120,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Let the focused filter keep its Alt+Down shortcut\n\n**Severity:** `medium`\n\nThis shell-level preview handler runs before the focused filter dropdown receives its existing Alt+Down command. In collapsed compact mode, the shell therefore expands the palette instead of opening the filter. Detect events originating within `FiltersDropDown` before claiming the chord for compact expansion.\n\n```suggestion\n            case VirtualKey.Down when modifiers.OnlyAlt:\n                {\n                    var source = e.OriginalSource as DependencyObject;\n                    while (source is not null && !ReferenceEquals(source, shellPage.FiltersDropDown))\n                    {\n                        source = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(source);\n                    }\n\n                    if (source is not null)\n                    {\n                        goto default;\n                    }\n\n                    if (shellPage.TryExpandCollapsedCompact())\n                    {\n                        e.Handled = true;\n                    }\n                    else\n                    {\n                        // Outside collapsed compact mode, Alt+Down remains available to requested\n                        // command keybindings just like every other unreserved chord.\n                        goto default;\n                    }\n\n                    break;\n                }\n```",
+      "disposition": "proposed"
     }
   ],
-  "proposed_comments": [],
-  "actions": [],
+  "actions": [
+    {
+      "id": "request-changes-review-49915",
+      "type": "request_changes",
+      "label": "Request changes on the current upstream head",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49915,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "c194623b992e6458472577ac41c941e97ca0baf6",
+        "body_prefix": "Thanks for the Shelf work. Before merge, please address the mnemonic scoping, access-key refresh, accessibility metadata, and Alt+Down routing issues below."
+      },
+      "note": "Five apply-ready inline suggestions are pinned to the current upstream head. Require explicit authorization and a final upstream freshness check before publishing."
+    }
+  ],
   "judgment": {
-    "status": "review_blocked",
-    "rationale": "The five current-head findings remain supported and their fixes build and test successfully, but the mandatory fresh external-review result is not yet available. The review cannot be marked ready or expose an upstream request-changes action until that check completes.",
+    "status": "review_drafted",
+    "rationale": "The current upstream head does not include five validated fixes affecting normal window mnemonics, recycled shelf shortcut presentation, screen-reader semantics, overflow menu accessibility, and the existing filter dropdown shortcut. The mandatory external review completed with zero new comments and all review threads are resolved.",
     "evidence": [
       "The upstream PR is open and non-draft at c194623b992e6458472577ac41c941e97ca0baf6.",
       "The upstream and review diffs each contain the same 16 paths with zero scope mismatches.",
       "All reported upstream checks pass, including license/CLA, dependency review, intake, telemetry, and x64/arm64 PowerToys CI.",
       "The x64 Debug essentials, CmdPal UI, CmdPal module-interface, and CmdPal ViewModels test-project builds completed successfully.",
       "Microsoft.CmdPal.UI.ViewModels.UnitTests passed 328 of 328 tests.",
-      "The immediate post-request check found zero unresolved Copilot threads but no newly submitted Copilot review."
+      "The freshly requested external review completed at 2026-09-09T05:17:13Z against the exact final review head with zero new published comments.",
+      "All Copilot review threads are resolved."
     ],
-    "recommended_action": "Keep all upstream actions disabled until the fresh external review has submitted and the convergence conditions are revalidated."
+    "recommended_action": "After explicit maintainer approval and a final upstream freshness check, publish the five suggestions as a request-changes review."
   },
   "phase0": {
     "author_association": "COLLABORATOR",
     "disposition": "Proceed",
     "gates_tripped": [],
-    "who_owes_next": "External review workflow",
+    "who_owes_next": "Maintainer review workflow",
     "note": "Routine community-contributor process nags do not apply. The PR includes a recording and settings image, links issue 49909, has a successful CLA and intake result, has successful x64 and arm64 CI, and has a current-head maintainer approval."
   },
   "workflow": {
-    "phase": "review_blocked",
+    "phase": "review_ready",
     "upstream_head_sha": "c194623b992e6458472577ac41c941e97ca0baf6",
-    "latest_completed_review_at": "2026-09-08T11:12:16Z",
+    "latest_completed_review_at": "2026-09-09T05:17:13Z",
     "latest_completed_review_published_comments": 0,
     "fresh_review_requested_at": "2026-09-09T05:11:54.0516454Z",
-    "fresh_review_submitted": false,
+    "fresh_review_submitted": true,
+    "fresh_review_commit": "91d6efd2ab4aadb998ab3d14087e9a7b22031df3",
     "unresolved_copilot_threads": 0,
-    "copilot_result": "pending_after_single_immediate_check",
-    "resume_action": "inspect_pending_external_review"
+    "copilot_result": "clean_zero_published_comments",
+    "resume_action": "await_maintainer_approval"
   },
   "source_activity": {
     "state": "OPEN",
@@ -87,7 +185,7 @@
     }
   },
   "verification": {
-    "result": "passed_but_external_review_pending",
+    "result": "passed_with_findings",
     "configuration": "x64 Debug",
     "builds": [
       "PowerToys solution restore: passed",
@@ -107,8 +205,8 @@
     ]
   },
   "freshness": {
-    "status": "current_upstream_head_external_review_pending",
-    "evaluated_at": "2026-09-09T05:16:02.6368072Z",
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-09T06:36:41.0522248Z",
     "head_sha": "c194623b992e6458472577ac41c941e97ca0baf6",
     "exact_scope_verified": true
   }
