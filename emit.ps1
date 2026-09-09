@@ -314,21 +314,42 @@ function Test-CurrentOpenBugArtifact {
       [string]$_.confidence.level -in @('yellow', 'red')
     }).Count -gt 0
     if ($hasNonGreenFix -and
-        (@($actions | Where-Object { $_.type -eq 'request_info' }).Count -eq 0 -or
-         @((Get-PropertyValue $context 'information_gaps')).Count -eq 0)) {
+        @($actions | Where-Object { $_.type -in @('request_info', 'reproduce') }).Count -eq 0) {
       return $false
     }
-    if ($hasNonGreenFix) {
+    if ($hasNonGreenFix -and
+        @($actions | Where-Object { $_.type -eq 'request_info' }).Count -gt 0) {
       $requestInfo = @($actions | Where-Object { $_.type -eq 'request_info' }) | Select-Object -First 1
       $commentBody = [string]$requestInfo.comment.body
-      if ($commentBody.Trim().Length -lt 160) {
+      # Keep structurally usable legacy requests visible while the stale queue
+      # migrates weak labels and wording; refreshed artifacts must pass the
+      # stricter validator before publication.
+      if ($commentBody.Trim().Length -lt 160 -or
+          @((Get-PropertyValue $context 'information_gaps')).Count -eq 0) {
         return $false
       }
+      $allowedEvidenceTypes = @(
+        'bugreport_zip', 'repro_steps', 'screenshot_image', 'gif_video',
+        'sample_file', 'event_viewer', 'crash_dump', 'module_trace',
+        'installer_log', 'powertoys_version', 'windows_version',
+        'install_scope', 'settings_permissions', 'configuration_export',
+        'keyboard_layout', 'monitor_topology', 'other_software',
+        'behavior_confirmation'
+      )
       foreach ($gap in @((Get-PropertyValue $context 'information_gaps'))) {
+        $evidenceType = [string](Get-PropertyValue $gap 'evidence_type')
+        # Missing types remain visible during migration; the stale queue selects
+        # them for revalidation and the artifact validator rejects refreshed output.
+        if (-not [string]::IsNullOrWhiteSpace($evidenceType) -and
+            $evidenceType -notin $allowedEvidenceTypes) {
+          return $false
+        }
         if ([string]::IsNullOrWhiteSpace([string]$gap.information) -or
             [string]::IsNullOrWhiteSpace([string]$gap.why_needed) -or
-            ([string]$gap.how_to_collect -match '(?i)/bugreport' -and
-             $commentBody -notmatch '(?i)/bugreport')) {
+            [string]::IsNullOrWhiteSpace([string]$gap.how_to_collect) -or
+            ($evidenceType -eq 'bugreport_zip' -and
+             ([string]$gap.how_to_collect -notmatch '(?i)/bugreport' -or
+              $commentBody -notmatch '(?i)/bugreport'))) {
           return $false
         }
       }

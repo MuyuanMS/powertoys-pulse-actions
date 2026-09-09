@@ -436,8 +436,9 @@ than `source_updated_at`, or whose artifact fails the complete current
 schema-v5 contract receives a lightweight judgment during the run. Contract
 failure includes missing issue context, an invalid fix-assessment status,
 missing proposed fixes, missing confidence, a proposed fix without
-`approve_design`, or a yellow/red fix without matching `request_info` and
-information gaps. Recently generated timestamps never exempt these bugs from
+`approve_design`, or a yellow/red fix without either a reporter-actionable
+`request_info` plus matching information gaps or a concrete maintainer-side
+`reproduce` action. Recently generated timestamps never exempt these bugs from
 re-triage. This pass is deliberately cheaper than `powertoys-issue-to-design`:
 inspect the body, latest comments, labels, assignees, linked PRs/issues, and
 obvious repository ownership signals, then emit one of:
@@ -524,9 +525,19 @@ then request only evidence that would change triage or implementation. Reuse
 established PowerToys collection conventions instead of inventing generic
 instructions:
 
+- follow the evidence taxonomy and comment patterns in the sibling
+  `powertoys-issue-to-design/references/requesting-information.md`;
+- classify every gap with `evidence_type`: `bugreport_zip`, `repro_steps`,
+  `screenshot_image`, `gif_video`, `sample_file`, `event_viewer`,
+  `crash_dump`, `module_trace`, `installer_log`, `powertoys_version`,
+  `windows_version`, `install_scope`, `settings_permissions`,
+  `configuration_export`, `keyboard_layout`, `monitor_topology`,
+  `other_software`, or `behavior_confirmation`;
 - label the action with the evidence being requested, such as
   `Request activation trace` or `Confirm affected shortcut`; never use a
-  generic label such as `Request information`;
+  generic label such as `Request information`, `Request targeted evidence`,
+  `Ask for focused repro details`, `Ask for a narrower repro and fresh
+  diagnostics`, or `Reply with the missing-info request`;
 - make the request itself immediately scannable: state the exact evidence,
   explain which decision it resolves, and give the collection method;
 - when requesting multiple items, use a short numbered or bulleted list rather
@@ -538,11 +549,23 @@ instructions:
 - when a fresh PowerToys diagnostic archive is needed, ask the reporter to
   submit a comment containing `/bugreport`; explain that the generated ZIP
   should be captured immediately after reproducing the problem;
+- if the issue says Settings, the tray icon, or the normal UI cannot open,
+  include the established `BugReportTool.exe` fallback rather than directing
+  the reporter to an inaccessible UI;
+- do not ask for raw PowerToys log files when `/bugreport` packages the needed
+  diagnostics; specialized module logs require an established repository or
+  maintainer collection path;
 - ask for recordings, screenshots, Event Viewer entries, installer logs,
   configuration exports, versions, or numbered reproduction steps only when
   they address a specific recorded gap;
 - if an attachment or prior answer already supplies an item, do not ask for it
   again;
+- do not treat removal of `Needs-Author-Feedback` as proof that the requested
+  evidence arrived; inspect the author reply and attachments, because the
+  policy service may clear the label after any author response;
+- after receiving evidence, quote or summarize what it established and ask
+  only the next discriminating question instead of repeating the original
+  request;
 - do not paste a standard multi-item checklist into unrelated issues.
 
 The editable `request_info` comment and display-only context must agree:
@@ -558,12 +581,16 @@ Copilot agent. Pulse derives that prompt from the issue identity,
 present. Copying the prompt is display-only: it requires no PAT and performs no
 GitHub write.
 
-Every yellow or red proposed fix must additionally include a targeted
-`request_info` action and one or more matching
-`issue_context.information_gaps`. The request asks only for evidence that would
-materially improve or disprove the current plan. A green plan may omit
-`request_info` only when no material uncertainty remains. The display-only
-`proposed_fixes[].confidence` is the canonical score shown by Pulse.
+Every yellow or red proposed fix must expose the next uncertainty-reducing
+action. Use a targeted `request_info` action with matching
+`issue_context.information_gaps` only when the reporter can reasonably supply
+evidence that would materially improve or disprove the plan. When the public
+report is already reproducible and the remaining discriminator requires
+maintainer-side profiling, tracing, or code inspection, emit a concrete
+`reproduce` action instead and do not ask the reporter to perform maintainer
+work. A green plan may omit both only when no material uncertainty remains.
+The display-only `proposed_fixes[].confidence` is the canonical score shown by
+Pulse.
 
 The emitter must apply this complete contract before marking an open bug
 artifact as publishable. A timestamped but partial artifact is not a valid
@@ -839,6 +866,7 @@ Write these machine-readable fields into `data/items/<number>.json`:
     "initial_investigation": ["Focused code/history/duplicate finding."],
     "information_gaps": [
       {
+        "evidence_type": "bugreport_zip",
         "information": "Exact missing evidence",
         "why_needed": "Decision this evidence will resolve",
         "how_to_collect": "Comment /bugreport immediately after reproducing"
