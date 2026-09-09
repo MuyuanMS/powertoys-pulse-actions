@@ -1,48 +1,104 @@
 {
-  "number": 50065,
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
   "kind": "issue",
   "track": "triage",
-  "stage": "design_queued",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
-  "source_updated_at": "2026-08-22T13:47:36Z",
+  "number": 50065,
   "title": "Text extracter unable to copy deg symbol (°)",
   "url": "https://github.com/microsoft/PowerToys/issues/50065",
-  "summary": "The report provides a concrete extraction string containing punctuation, symbols, and the degree character, plus an expected-versus-actual result. The author edited the issue in response to the triage request, and no duplicate or ownership evidence is apparent. A design investigation can now examine OCR recognition and clipboard/text normalization without asserting a root cause.",
-  "status": {
-    "glyph": "🔧",
-    "label": "Design queued",
-    "detail": "Approve a focused Text Extractor design investigation for Unicode and punctuation preservation through OCR output and clipboard transfer."
+  "state": "OPEN",
+  "created_at": "2026-08-22T09:43:09Z",
+  "updated_at": "2026-08-22T13:47:36Z",
+  "author": "Stagnantwater949",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Text Extractor"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "generated_at": "2026-09-09T14:33:50.687Z",
+  "evaluated_at": "2026-09-09T14:33:50.687Z",
+  "source_updated_at": "2026-08-22T13:47:36Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 2,
+    "timeline_events_read": 6
   },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": false,
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report provides a concrete extraction string containing punctuation, symbols, and the degree character, plus an expected-versus-actual result. The author edited the issue in response to the triage request, and no duplicate or ownership evidence is apparent. A design investigation can now examine OCR recognition and clipboard/text normalization without asserting a root cause.",
+    "status": "needs_information",
+    "rationale": "The text-only reproduction says punctuation and the degree symbol are changed after OCR, but the issue does not include the original image, font/rendering context, or the selected OCR language. Focused code review shows PowerToys mostly forwards OCR output directly to the clipboard, so the missing discriminator is the actual source pixels and OCR context, not generic logs.",
     "evidence": [
-      "The reproduction string includes hello!@#$%^&*()hello,1500°C.",
-      "The expected output preserves the symbols and degree character.",
-      "The reported output drops or changes symbols and changes the degree-containing value.",
-      "The author commented that the original issue was updated with the requested details.",
-      "The issue has Needs-Team-Response and Product-Text Extractor labels with no assignee."
+      "The issue supplies the expected string and the observed pasted output, including the degree symbol becoming 0 and punctuation being dropped.",
+      "No screenshot or sample image of the source text is attached.",
+      "src/modules/PowerOCR/PowerOCR/Helpers/OcrExtensions.cs primarily joins OCR words with spacing logic and does not explicitly normalize ° into 0 or strip punctuation.",
+      "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs copies the recognized text to the clipboard with Clipboard.SetText(grabbedText)."
     ],
-    "recommended_action": "Approve a focused Text Extractor design investigation for Unicode and punctuation preservation through OCR output and clipboard transfer.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Request the exact source image and OCR-language context so the maintainer can separate OCR-engine misrecognition from a PowerToys post-processing bug.",
+    "evaluated_at": "2026-09-09T14:33:50.687Z",
     "source_updated_at": "2026-08-22T13:47:36Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A code fix may exist, but the current report does not distinguish between upstream OCR recognition errors and a PowerToys text post-processing bug because the original source image and OCR-language context are missing."
+  },
+  "issue_context": {
+    "summary": "Text Extractor produces the wrong output for a sample string containing punctuation and the degree symbol, but the original source image and OCR context are missing.",
+    "known_information": [
+      "The report includes an expected string and an observed pasted result.",
+      "The issue is labeled Product-Text Extractor and Needs-Team-Response with no assignee.",
+      "The author edited the issue after the automated triage request."
+    ],
+    "inferences": [
+      "The wrong result could come from OCR recognition itself, from the chosen OCR language, or from how PowerToys recombines recognized words.",
+      "The current code does not show an obvious direct replacement that would always turn ° into 0, so source pixels matter."
+    ],
+    "analysis": "The next useful step is to ask for the source image/text sample and OCR-language context, not a generic bug report ZIP, because the core ambiguity is in recognition input rather than logging.",
+    "initial_investigation": [
+      "Read the complete issue body, the automated triage comment, the author follow-up, labels, and timeline.",
+      "Inspected src/modules/PowerOCR/PowerOCR/Helpers/OcrExtensions.cs and OCROverlay.xaml.cs to see whether PowerToys explicitly rewrites punctuation or the degree symbol before copying text.",
+      "Found no linked duplicate or fix PR that already owns this exact symbol-recognition failure."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "sample_file",
+        "information": "The smallest shareable image, screenshot, or document snippet that contains the exact failing text.",
+        "why_needed": "Text Extractor behavior depends on the actual rendered pixels, font, size, and contrast, not only on the intended text string.",
+        "how_to_collect": "Upload the smallest non-sensitive sample image or document snippet through the GitHub web UI."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The OCR language selected when the failure occurs and whether changing OCR language changes the result.",
+        "why_needed": "Different OCR languages can change symbol and numeric recognition substantially.",
+        "how_to_collect": "Retest once, note the selected OCR language, and say whether another language changes the pasted result."
+      },
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A screenshot of the original text before extraction and, if possible, the pasted wrong output next to it.",
+        "why_needed": "The maintainer needs to see the original glyph shapes and how far the recognized output drifted.",
+        "how_to_collect": "Capture a side-by-side screenshot and upload it through the GitHub web UI."
+      }
+    ]
+  },
+  "design": null,
   "actions": [
     {
-      "id": "approve-design-50065",
-      "type": "approve_design",
-      "label": "Design fix",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Approve a focused design investigation for this recent issue.",
-      "issue": {
+      "type": "request_info",
+      "label": "Request OCR source sample",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
         "number": 50065,
-        "repository": "microsoft/PowerToys"
-      }
+        "body": "Thanks for spelling out both the expected text and the pasted wrong output. The remaining ambiguity is that Text Extractor works from rendered pixels, so the maintainer still needs the actual source image and OCR-language context before deciding whether this is OCR-engine misrecognition or a PowerToys post-processing bug.\n\n**Needed**\n1. Please upload the smallest shareable image, screenshot, or document snippet that contains the exact failing text.\n2. Please say which OCR language was selected when the failure happened and whether changing to another OCR language changes the result.\n3. If possible, please upload a side-by-side screenshot showing the original text and the pasted wrong output.\n\nThis will distinguish a recognition-input problem from a PowerToys text recombination bug."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

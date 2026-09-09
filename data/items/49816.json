@@ -1,48 +1,108 @@
 {
-  "number": 49816,
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
   "kind": "issue",
   "track": "triage",
   "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
-  "source_updated_at": "2026-08-20T22:06:44Z",
+  "number": 49816,
   "title": "Mouse without borders is instable",
   "url": "https://github.com/microsoft/PowerToys/issues/49816",
-  "summary": "The original report is too sparse to identify one defect, while the follow-up adds several distinct disconnect, reload, tray, and shortcut symptoms across two computers. The attached reports are useful, but the issue needs a structured reproduction matrix before design work can be safely scoped.",
-  "status": {
-    "glyph": "❓",
-    "label": "needs information",
-    "detail": "Request a structured two-machine reproduction with exact Mouse Without Borders settings, network topology, timestamps, connection state on both endpoints, and which recovery actions succeed or fail."
+  "state": "OPEN",
+  "created_at": "2026-08-10T22:44:52Z",
+  "updated_at": "2026-08-20T22:06:44Z",
+  "author": "Klaus-Pilsl",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "generated_at": "2026-09-09T14:33:50.687Z",
+  "evaluated_at": "2026-09-09T14:33:50.687Z",
+  "source_updated_at": "2026-08-20T22:06:44Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 1,
+    "timeline_events_read": 2
   },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": false,
   "judgment": {
     "status": "needs_information",
-    "rationale": "The original report is too sparse to identify one defect, while the follow-up adds several distinct disconnect, reload, tray, and shortcut symptoms across two computers. The attached reports are useful, but the issue needs a structured reproduction matrix before design work can be safely scoped.",
+    "rationale": "The follow-up adds important evidence, but it actually describes several Mouse Without Borders failures at once: spontaneous disconnects, asymmetric reconnect state, ineffective tray reload behavior, and a non-working reload shortcut. Focused code review confirms that reconnects and disconnected state are tracked separately, so the maintainer needs one structured two-machine failure trace instead of a blended symptom list.",
     "evidence": [
-      "The original report only states that the mouse eventually stops moving to the other computer.",
-      "The follow-up describes spontaneous disconnects, failure to reconnect, asymmetric connection indicators, ineffective tray reload behavior, and a non-working reload shortcut.",
-      "The follow-up covers Windows 11 25H2 and Windows 10 22H2 with PowerToys 0.100.2 on both machines.",
-      "Bug reports for both computers are attached.",
-      "The issue has no assignee and no linked fix visible in the discussion."
+      "The original report says the mouse eventually stops moving to the other computer.",
+      "The follow-up adds multiple additional symptoms across two machines, including spontaneous disconnects, failure to reconnect, asymmetric indicators, an ineffective tray command, and a non-working reload shortcut.",
+      "Two bug report ZIPs are attached, one for each machine.",
+      "src/modules/MouseWithoutBorders/App/Core/CommandEventHandler.cs::Reconnect only requests a reconnect attempt, while MachinePool tracks disconnected state separately via timestamps and socket exceptions."
     ],
-    "recommended_action": "Request a structured two-machine reproduction with exact Mouse Without Borders settings, network topology, timestamps, connection state on both endpoints, and which recovery actions succeed or fail.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Request one structured two-machine reproduction matrix and fresh paired diagnostics from the same failure so the maintainer can isolate the first broken reconnect path.",
+    "evaluated_at": "2026-09-09T14:33:50.687Z",
     "source_updated_at": "2026-08-20T22:06:44Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A fix path is not yet selectable because the issue currently bundles several network/reconnect/tray behaviors that may belong to different Mouse Without Borders defects."
+  },
+  "issue_context": {
+    "summary": "Mouse Without Borders stops crossing to the other PC and the follow-up broadens the report into several reconnect, tray, and shortcut symptoms across two machines.",
+    "known_information": [
+      "Both machines are on PowerToys 0.100.2, one on Windows 11 25H2 and one on Windows 10 22H2.",
+      "The reporter says firewall rules were added and PowerToys was reinstalled on both machines.",
+      "Two bug report ZIPs are already attached."
+    ],
+    "inferences": [
+      "The reconnect/tray/shortcut behaviors may diverge after the first connection drop rather than sharing one immediate root cause.",
+      "A structured failure trace from both endpoints is needed to identify whether the first break is socket reconnect, state propagation, or UI command handling."
+    ],
+    "analysis": "This should not be treated as “just ask for logs” because logs from two machines already exist. The missing piece is a synchronized two-machine failure matrix that tells the maintainer which symptom happened first and what each endpoint believed at that time.",
+    "initial_investigation": [
+      "Read the full issue body, the long follow-up comment, both bug-report references, labels, and timeline.",
+      "Inspected src/modules/MouseWithoutBorders/App/Core/CommandEventHandler.cs::Reconnect and App/Class/MachinePool.cs to confirm that reconnect requests and disconnected state tracking are separate code paths.",
+      "Kept the issue in needs-information because the current thread still mixes multiple potentially independent failures into one narrative."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "One structured two-machine reproduction covering the first symptom that appears and the exact recovery attempts after that.",
+        "why_needed": "The maintainer needs to know which failure happens first before investigating reconnect or UI commands.",
+        "how_to_collect": "Choose one occurrence, record the exact timeline on both machines, and list which recovery actions were attempted in order."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "What each machine shows at the same failure moment, including which side still sees highlight/sign-of-life and which tray or shortcut actions change state.",
+        "why_needed": "Asymmetric state is a key discriminator for whether the fault is connectivity, state propagation, or UI command handling.",
+        "how_to_collect": "At the next failure, capture what each endpoint shows before trying reconnection steps."
+      },
+      {
+        "evidence_type": "other_software",
+        "information": "Any VPN, endpoint security, or network-management software active on either machine during the disconnects.",
+        "why_needed": "Cross-machine reconnect behavior can be affected by software that changes socket or discovery behavior even when the general network appears healthy.",
+        "how_to_collect": "List any VPN, security, or network-management software that was active on either PC during the issue."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh paired PowerToys diagnostic ZIPs from both machines captured after the same reproduced failure.",
+        "why_needed": "The maintainer needs synchronized logs from the same failure window, not only prior attachments from a possibly different state.",
+        "how_to_collect": "Immediately after the same failure on both PCs, add a comment containing /bugreport from each machine and attach both generated ZIPs."
+      }
+    ]
+  },
+  "design": null,
   "actions": [
     {
-      "id": "request_info-49816",
       "type": "request_info",
-      "label": "Request information",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
+      "label": "Request two-machine MWB trace",
       "comment": {
-        "issue": 49816,
+        "target": "issue",
         "repository": "microsoft/PowerToys",
-        "body": "Please provide a structured reproduction for both computers: the exact PowerToys version, Windows version/build, Mouse Without Borders device names and connection settings, network topology, and whether both machines are on the same subnet. For one failure, record the approximate UTC/local time, which computer had the keyboard and mouse, the connection indicators shown on each computer, and whether the failure followed sleep, network changes, locking, or restarting PowerToys. Please also test the tray reload command and reload shortcut separately, noting the exact result of each, and attach fresh bug reports from both machines generated immediately after the same failure."
-      }
+        "number": 49816,
+        "body": "Thanks for the detailed follow-up and for attaching bug reports from both PCs. The remaining blocker is that the thread now describes several Mouse Without Borders failures at once—disconnects, reconnect failures, asymmetric indicators, ineffective tray reload, and a non-working reload shortcut—so the maintainer still needs one synchronized two-machine failure trace.\n\n**Needed**\n1. Please choose one occurrence and write a short timeline for both machines showing the first symptom that appears and the exact recovery attempts after that.\n2. Please say what each machine shows at the same failure moment, including which side still sees highlight/sign-of-life and whether the tray reload command or reload shortcut changes anything.\n3. Please list any VPN, endpoint security, or network-management software active on either machine during the disconnects.\n4. Immediately after reproducing the same failure on both PCs, please add a comment containing `/bugreport` from each machine and attach both generated ZIPs.\n\nThis will identify whether the first break is connectivity, reconnect state propagation, or the UI command path."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

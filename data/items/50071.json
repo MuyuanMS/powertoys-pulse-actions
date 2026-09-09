@@ -1,46 +1,124 @@
 {
-  "schemaVersion": 3,
-  "number": 50071,
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2026-08-23T07:50:14Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50071",
+  "number": 50071,
   "title": "[Keyboard Manager] KM Editor Language stuck in Italian While PowerToys is in English.",
+  "url": "https://github.com/microsoft/PowerToys/issues/50071",
+  "state": "OPEN",
+  "created_at": "2026-08-23T07:45:41Z",
+  "updated_at": "2026-08-23T07:50:14Z",
   "author": "AlainCh2",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Keyboard Manager"
   ],
+  "assignees": [],
   "comments": 1,
-  "confidence": "Medium-high",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable design candidate",
-    "detail": "The issue has a concrete bug report for Keyboard Manager with reproduction evidence and enough diagnostic context for deeper design investigation."
+  "generated_at": "2026-09-09T14:33:50.687Z",
+  "evaluated_at": "2026-09-09T14:33:50.687Z",
+  "source_updated_at": "2026-08-23T07:50:14Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 1,
+    "timeline_events_read": 3
   },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Queue full design investigation",
-    "reason": "Queue this issue for a full fork-side design investigation before exposing an approve-design action."
-  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true,
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue has a concrete bug report for Keyboard Manager with reproduction evidence and enough diagnostic context for deeper design investigation.",
+    "rationale": "The screenshots and issue text show a real Keyboard Manager editor localization mismatch, and the editor startup path is a separate WinUI app that never applies a PowerToys language override before creating the window. That is enough for a bounded design pass, though the exact Windows language preference ordering should be reproduced once locally.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Product-Keyboard Manager",
-      "Candidate sources: created_week, updated_week",
-      "Issue body includes reproduction steps and a bug-report ZIP or equivalent diagnostic evidence."
+      "The reporter says the Keyboard Manager editor UI appears in Italian while PowerToys is in English, with region set to Italy and English as the main language.",
+      "The issue includes two screenshots and a bug report ZIP reference, even though the archive was rejected by automated triage.",
+      "src/modules/keyboardmanager/KeyboardManagerEditorUI/KeyboardManagerEditorXAML/App.xaml.cs constructs the standalone editor app and immediately initializes the window without any language override or shared PowerToys-language handoff.",
+      "MainWindow.xaml.cs hardens title/theme setup for the separate editor window but likewise does not synchronize a PowerToys UI language preference before content is created."
     ],
-    "recommended_action": "Queue this issue for a full fork-side design investigation before exposing an approve-design action.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Approve a focused Keyboard Manager editor language-sync design and confirm the exact Windows language preference ordering in a maintainer-side reproduce pass.",
+    "evaluated_at": "2026-09-09T14:33:50.687Z",
     "source_updated_at": "2026-08-23T07:50:14Z"
   },
-  "actions": []
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository change is plausible in the Keyboard Manager editor startup path, but the exact language-preference ordering should be confirmed once before implementation is approved.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Apply the same PowerToys UI language preference to the standalone Keyboard Manager editor process",
+      "root_cause": "The Keyboard Manager editor launches as its own WinUI 3 process and currently relies on default OS resource selection instead of explicitly applying the PowerToys UI language preference, allowing Italian resources to win on the reporter's system even though PowerToys is otherwise shown in English.",
+      "plan": [
+        "Identify how the main PowerToys language preference is stored or exposed to helper windows and editor processes.",
+        "Initialize the Keyboard Manager editor application with that language before XAML resources are materialized, rather than accepting the default Windows preference order.",
+        "Add a regression covering a system with multiple installed languages where PowerToys language is English but an Italian pack or region is also present."
+      ],
+      "verification": [
+        "The Keyboard Manager editor should display English strings when the main PowerToys UI is configured for English on the same machine.",
+        "Changing region or installing Italian should not override an explicit PowerToys language preference for the editor window.",
+        "Other editor behaviors such as theme, top border workaround, and hooks should remain unchanged."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The separate editor startup path clearly lacks any language synchronization, but a local reproduce pass should still confirm the precise Windows language-selection order involved."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The standalone Keyboard Manager editor window appears in Italian even though the rest of PowerToys is in English on the same machine.",
+    "known_information": [
+      "The report is from PowerToys 0.101.2323 Beta on Windows 10 22H2.",
+      "The reporter states the main language is English while the region is Italy.",
+      "Two screenshots show the localization mismatch and the issue also references a bug-report ZIP."
+    ],
+    "inferences": [
+      "The mismatch is more likely in the standalone editor process initialization than in a single mislocalized string, because the editor is its own WinUI 3 app.",
+      "An OS-language-preference fallback is likely overriding the desired PowerToys language because no explicit editor-language handoff is visible in startup."
+    ],
+    "analysis": "The report is already concrete enough for a local reproduce action; asking the reporter for more logs would not be the highest-value next step.",
+    "initial_investigation": [
+      "Read the complete issue body, screenshots, automated triage comment, labels, and timeline.",
+      "Inspected src/modules/keyboardmanager/KeyboardManagerEditorUI/KeyboardManagerEditorXAML/App.xaml.cs and MainWindow.xaml.cs and found no explicit language synchronization with the main PowerToys UI before window creation.",
+      "Kept the hypothesis qualified because the exact Windows language preference list from the reporter's machine is not visible in the issue."
+    ],
+    "information_gaps": []
+  },
+  "design": null,
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce KM editor language fallback",
+      "reproduce": {
+        "title": "Confirm editor-language selection when PowerToys is English but Italian language resources are present",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.101.2323 or current main with Keyboard Manager editor enabled",
+        "prerequisites": [
+          "A test machine with English selected for PowerToys UI and Italian language resources or region configuration also present",
+          "Keyboard Manager editor launchable from the main PowerToys window"
+        ],
+        "setup": [
+          "Open the main PowerToys window and confirm it is displaying in English.",
+          "Then launch the Keyboard Manager editor from the same session."
+        ],
+        "steps": [
+          "Observe the initial language of editor navigation, buttons, and dialogs.",
+          "Compare the editor language against the main PowerToys UI without changing any keyboard mappings.",
+          "Inspect the effective Windows preferred-language ordering and whether the editor process receives any explicit language override.",
+          "Repeat after changing only the PowerToys language preference, if that preference exists independently from the OS language list."
+        ],
+        "expected_result": "The standalone Keyboard Manager editor should honor the same visible PowerToys UI language rather than falling back to another installed Windows language such as Italian."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve KM editor language-sync fix design",
+      "note": "Keep the work bounded to the standalone editor startup and resource-language selection path."
+    }
+  ]
 }

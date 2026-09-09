@@ -1,48 +1,124 @@
 {
-  "number": 50062,
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
   "kind": "issue",
   "track": "triage",
   "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
-  "source_updated_at": "2026-08-22T02:58:34Z",
+  "number": 50062,
   "title": "Light switch refuses to turn dark when it's time",
   "url": "https://github.com/microsoft/PowerToys/issues/50062",
-  "summary": "The author supplied a basic trigger description but not the configured schedule, time zone, Light Switch mode, whether Windows theme settings change, or what the attached diagnostics show. Related open Light Switch reports exist, but the available evidence does not establish that this issue is the same as any one of them.",
-  "status": {
-    "glyph": "❓",
-    "label": "needs information",
-    "detail": "Request the schedule and theme configuration plus a timestamped reproduction and diagnostic context."
+  "state": "OPEN",
+  "created_at": "2026-08-22T02:33:16Z",
+  "updated_at": "2026-08-22T02:58:34Z",
+  "author": "zhizhongpu",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-LightSwitch"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "generated_at": "2026-09-09T14:33:50.687Z",
+  "evaluated_at": "2026-09-09T14:33:50.687Z",
+  "source_updated_at": "2026-08-22T02:58:34Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 2,
+    "timeline_events_read": 6
   },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": false,
+  "linked_work": [
+    {
+      "type": "issue",
+      "ref": "#48946",
+      "url": "https://github.com/microsoft/PowerToys/issues/48946",
+      "relevance": "Related Light Switch scheduling report; similar area but not enough to collapse this issue without the missing configuration details."
+    },
+    {
+      "type": "issue",
+      "ref": "#47566",
+      "url": "https://github.com/microsoft/PowerToys/issues/47566",
+      "relevance": "Older Light Switch behavior report referenced as related context in prior triage."
+    }
+  ],
   "judgment": {
     "status": "needs_information",
-    "rationale": "The author supplied a basic trigger description but not the configured schedule, time zone, Light Switch mode, whether Windows theme settings change, or what the attached diagnostics show. Related open Light Switch reports exist, but the available evidence does not establish that this issue is the same as any one of them.",
+    "rationale": "The issue says Light Switch stays light when it should turn dark, but it still does not include the configured schedule mode, times, time zone, or the machine state around the transition. Focused code review shows the scheduler depends on those exact values at startup and on each evaluation, so the missing discriminator is configuration and timing context rather than a generic request for more logs.",
     "evidence": [
-      "The body says scheduled switching remains light instead of becoming dark on PowerToys 0.100.2.",
-      "The only follow-up says: \"turn on laptop. wait for it's time.\"",
-      "The issue includes a screenshot and a PowerToys report ZIP.",
-      "Related open reports include #48946 and #47566, but their titles describe different or broader Light Switch behaviors.",
-      "The issue has Needs-Team-Response and Product-LightSwitch labels with no assignee."
+      "The body includes a screenshot, says the theme stays light instead of turning dark, and references a bug report ZIP.",
+      "The only follow-up is “turn on laptop. wait for it's time.”",
+      "src/modules/lightswitch/LightSwitchService/LightSwitchStateManager.cpp computes effective light/dark minutes from the selected schedule mode and reevaluates theme state at startup and on each tick.",
+      "No issue comment states the configured Light Switch mode, schedule times, or whether the machine was awake, locked, or resuming when the missed transition happened."
     ],
-    "recommended_action": "Request the schedule and theme configuration plus a timestamped reproduction and diagnostic context.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Request the Light Switch schedule configuration, machine-state timing, and a fresh diagnostic ZIP captured after the missed transition.",
+    "evaluated_at": "2026-09-09T14:33:50.687Z",
     "source_updated_at": "2026-08-22T02:58:34Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A code fix cannot be chosen yet because the report does not identify which schedule mode or transition path failed, and those paths differ materially in the Light Switch service."
+  },
+  "issue_context": {
+    "summary": "Light Switch reportedly stays in light theme when it should switch to dark mode, but the issue does not yet identify the schedule mode or the machine state at the missed transition.",
+    "known_information": [
+      "The affected version is PowerToys 0.100.2.",
+      "The issue includes a screenshot and a bug report ZIP reference.",
+      "The reporter says the machine is running in English and PowerToys is elevated."
+    ],
+    "inferences": [
+      "The bug could be in fixed-hours scheduling, startup/resume evaluation, or another schedule mode entirely because the issue never states which mode is configured.",
+      "The missed transition may depend on boot, lock, sleep, or wake timing, not just the target hour itself."
+    ],
+    "analysis": "The missing evidence is narrowly defined: the actual Light Switch configuration and the machine state at the missed transition. That is more useful than a generic request for logs.",
+    "initial_investigation": [
+      "Read the full issue body, the automated triage comment, the reporter follow-up, labels, attachment references, and timeline.",
+      "Inspected src/modules/lightswitch/LightSwitchService/LightSwitchStateManager.cpp and confirmed the scheduling logic depends on exact mode, light/dark times, and startup/tick evaluation state.",
+      "Checked prior related Light Switch references and did not treat them as proof that this issue is the same failure."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "configuration_export",
+        "information": "The exact Light Switch schedule mode, configured light time, dark time, time zone, and whether Light Switch is enabled at startup.",
+        "why_needed": "Different Light Switch modes take different code paths, so the maintainer needs the real configuration before investigating the scheduler.",
+        "how_to_collect": "Reply with the settings values or screenshots of the Light Switch configuration page."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "The machine state around the missed switch, including whether it was awake, locked, asleep, or just resumed.",
+        "why_needed": "The startup and boundary-crossing logic differs when the machine is resuming versus already awake.",
+        "how_to_collect": "Describe the exact sequence leading to the missed switch, including whether the laptop was resumed near the scheduled time."
+      },
+      {
+        "evidence_type": "windows_version",
+        "information": "The Windows edition and build from winver.",
+        "why_needed": "Theme-setting behavior can depend on OS build and is not fully stated in the issue body.",
+        "how_to_collect": "Run winver and include the full edition/build text in the reply."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured shortly after the missed switch.",
+        "why_needed": "The current logs are needed to see Light Switch state and theme transitions around the failure time.",
+        "how_to_collect": "Immediately after the next missed switch, add a comment containing /bugreport so the generated ZIP captures the current logs."
+      }
+    ]
+  },
+  "design": null,
   "actions": [
     {
-      "id": "request_info-50062",
       "type": "request_info",
-      "label": "Request Light Switch diagnostics",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
+      "label": "Request Light Switch schedule details",
       "comment": {
-        "issue": 50062,
+        "target": "issue",
         "repository": "microsoft/PowerToys",
-        "body": "Please provide the Light Switch configuration and a more precise reproduction:\n\n- The scheduled dark-theme time, light-theme time, time zone, and whether the schedule is based on fixed times or another mode.\n- Whether Light Switch is enabled at startup and whether PowerToys is running elevated.\n- The Windows version and current Windows Settings theme state before and after the scheduled time.\n- The exact local date and time when the switch was expected, and whether the laptop was awake, asleep, or locked at that time.\n- Whether manually pressing the Light Switch controls changes the theme successfully.\n- A fresh bug report ZIP captured shortly after the scheduled switch fails.\n\nPlease also confirm whether this is distinct from related Light Switch reports such as #48946 or #47566."
-      }
+        "number": 50062,
+        "body": "Thanks for confirming that the theme stays light instead of switching to dark. The remaining blocker is that the issue still does not say which Light Switch mode is configured or what state the laptop was in when the scheduled transition was missed.\n\n**Needed**\n1. Please provide the exact Light Switch schedule mode, configured light time, dark time, time zone, and whether Light Switch is enabled at startup.\n2. Please describe the machine state around the missed switch, including whether it was awake, locked, asleep, or just resumed.\n3. Please include the full Windows edition/build from `winver`.\n4. Immediately after the next missed switch, please add a comment containing `/bugreport` so the generated ZIP captures the current logs.\n\nThis will distinguish a fixed-hours scheduling defect from a startup/resume or configuration-specific transition problem."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

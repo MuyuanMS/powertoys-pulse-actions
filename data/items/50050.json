@@ -1,48 +1,118 @@
 {
-  "number": 50050,
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
   "kind": "issue",
   "track": "triage",
   "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-28T07:52:27.6743783Z",
-  "evaluated_at": "2026-08-28T07:52:27.6743783Z",
-  "source_updated_at": "2026-08-21T10:22:54Z",
+  "number": 50050,
   "title": "Logger cannot be initialized",
   "url": "https://github.com/microsoft/PowerToys/issues/50050",
-  "summary": "The recurring logger initialization popup is a valid symptom, but the trigger is intermittent and the diagnostic archive was rejected. The author reports that it may occur while opening a file and disappears when PowerToys is not running, which is not enough to identify affected components or a reproducible path.",
-  "status": {
-    "glyph": "❓",
-    "label": "needs information",
-    "detail": "Request a valid diagnostic archive and a controlled reproduction identifying the triggering PowerToys component or file operation."
+  "state": "OPEN",
+  "created_at": "2026-08-21T09:42:13Z",
+  "updated_at": "2026-08-21T10:22:54Z",
+  "author": "BartHNL",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "generated_at": "2026-09-09T14:33:50.687Z",
+  "evaluated_at": "2026-09-09T14:33:50.687Z",
+  "source_updated_at": "2026-08-21T10:22:54Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 2,
+    "timeline_events_read": 6
   },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": false,
+  "linked_work": [
+    {
+      "type": "issue",
+      "ref": "#27104",
+      "url": "https://github.com/microsoft/PowerToys/issues/27104",
+      "relevance": "Earlier logger-initialization popup discussion mentioned by the reporter, but not enough to declare the same current cause."
+    }
+  ],
   "judgment": {
     "status": "needs_information",
-    "rationale": "The recurring logger initialization popup is a valid symptom, but the trigger is intermittent and the diagnostic archive was rejected. The author reports that it may occur while opening a file and disappears when PowerToys is not running, which is not enough to identify affected components or a reproducible path.",
+    "rationale": "The popup text identifies the failure as a logger-initialization error, and repository inspection shows that message only appears when spdlog sink creation throws. But the report still does not identify which module was starting, what file operation or path triggered it, or provide a valid current diagnostic ZIP.",
     "evidence": [
-      "The body reports recurring \"Logger cannot be initialized\" popups on PowerToys 0.100.2 from the Microsoft Store.",
-      "The issue includes a screenshot and a diagnostic ZIP, but automated triage reports the archive was rejected because of an oversized entry.",
-      "The author says the issue can be absent for hours, then recur, and possibly occurs when opening a file.",
-      "The author says the problem stops when PowerToys is not running.",
-      "Related issue #27104 is closed with Resolution-Can't Repro, but no public evidence establishes that it is the same current failure."
+      "The issue includes a screenshot of the “Logger cannot be initialized” popup and says the problem disappears when PowerToys is not running.",
+      "The reporter says the popup can appear after hours and may be triggered when opening a file, but is not sure.",
+      "The automated triage comment says the attached archive was rejected.",
+      "src/common/logger/logger.cpp shows the popup is displayed only when logger initialization throws while creating the logging sink."
     ],
-    "recommended_action": "Request a valid diagnostic archive and a controlled reproduction identifying the triggering PowerToys component or file operation.",
-    "evaluated_at": "2026-08-28T07:52:27.6743783Z",
+    "recommended_action": "Request a time-correlated popup sequence, module context, and a fresh diagnostic ZIP so the failing logger path can be identified.",
+    "evaluated_at": "2026-09-09T14:33:50.687Z",
     "source_updated_at": "2026-08-21T10:22:54Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The popup proves a logger-initialization failure exists, but without the module and time-correlated logs the maintainer cannot determine which logger path or filesystem condition to fix."
+  },
+  "issue_context": {
+    "summary": "PowerToys intermittently shows a “Logger cannot be initialized” popup, but the report does not yet identify which module or operation triggers it.",
+    "known_information": [
+      "The issue is on PowerToys 0.100.2 from the Microsoft Store on a Dutch Windows 11 system.",
+      "The problem persists after reinstalling and stops when PowerToys is not running.",
+      "The attached screenshot shows the exact popup text."
+    ],
+    "inferences": [
+      "Because the popup is emitted from the shared logger library, the failing path could belong to any module that initializes logging rather than one specific feature.",
+      "An intermittent file lock, path, or permissions problem remains plausible because sink creation is what throws before the popup is shown."
+    ],
+    "analysis": "The request should focus on identifying the triggering module and timestamp, because that is what turns a general popup into a debuggable logger path.",
+    "initial_investigation": [
+      "Read the complete issue, the reporter follow-up, screenshot and bug-report references, labels, and timeline.",
+      "Inspected src/common/logger/logger.cpp and confirmed the popup is shown only when sink creation throws during Logger::init.",
+      "Did not assume the older related issue cited by the reporter proves the same present-day root cause."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "One current reproduction sequence or the nearest triggering action before the popup appears.",
+        "why_needed": "The maintainer needs the best available trigger to identify which PowerToys module is initializing its logger at that moment.",
+        "how_to_collect": "When the popup appears again, record what you were doing immediately before it, even if the sequence is only approximate."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Which PowerToys utilities were enabled and whether the popup coincided with opening a specific file type, app, or utility.",
+        "why_needed": "This narrows the failing logger path to a smaller set of modules.",
+        "how_to_collect": "List the enabled utilities and any file/app action that happened within a few seconds of the popup."
+      },
+      {
+        "evidence_type": "event_viewer",
+        "information": "Any matching Windows Event Viewer entry at the same timestamp.",
+        "why_needed": "A matching OS event could confirm a filesystem or process-access failure at the time the logger initialization threw.",
+        "how_to_collect": "After another popup, check Application events around the same local time and copy any matching error entry."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after the popup.",
+        "why_needed": "The previous archive was rejected, so the maintainer still lacks current PowerToys logs from the failure window.",
+        "how_to_collect": "Immediately after the popup appears, add a comment containing /bugreport so the generated ZIP captures the current logs."
+      }
+    ]
+  },
+  "design": null,
   "actions": [
     {
-      "id": "request_info-50050",
       "type": "request_info",
-      "label": "Request logger diagnostics",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
+      "label": "Request logger popup timeline",
       "comment": {
-        "issue": 50050,
+        "target": "issue",
         "repository": "microsoft/PowerToys",
-        "body": "Please provide a newly generated, valid PowerToys bug report ZIP captured immediately after the popup appears. Also record:\n\n- The exact local date and time of one or more occurrences.\n- Which PowerToys utilities are enabled and whether the popup appears while opening a file, browsing folders, or using a specific utility.\n- The file type, application, and action being performed when the popup appears, if applicable.\n- Whether the popup occurs in a clean session after disabling individual PowerToys utilities, and which utility was last disabled before the behavior stopped.\n- Whether the issue reproduces with PowerToys started normally versus as administrator.\n- The complete error text from the popup and any Windows Event Viewer or PowerToys log entries from the same timestamp.\n\nPlease confirm whether the issue still reproduces on the latest stable PowerToys release."
-      }
+        "number": 50050,
+        "body": "Thanks for the screenshot and the confirmation that the popup goes away when PowerToys is not running. The remaining blocker is that the issue still does not show which PowerToys module was starting or what operation happened right before the logger-initialization popup appeared.\n\n**Needed**\n1. Please record what you were doing immediately before the popup appeared, even if the trigger is only approximate.\n2. Please list which PowerToys utilities were enabled and whether the popup coincided with opening a specific file, app, or utility.\n3. If Windows Event Viewer shows an Application error at the same timestamp, please copy it.\n4. Immediately after the next popup, please add a comment containing `/bugreport` so the generated ZIP captures the current logs.\n\nThis will identify which logger path is failing instead of treating the popup as an undifferentiated general symptom."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ]
 }

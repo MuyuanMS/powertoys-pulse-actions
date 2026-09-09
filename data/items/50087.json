@@ -1,18 +1,18 @@
 {
-  "schemaVersion": 4,
-  "number": 50087,
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "agent",
+  "stage": "design_queued",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T07:45:16.646Z",
-  "evaluated_at": "2026-08-31T07:45:16.646Z",
-  "source_updated_at": "2026-08-24T09:50:08Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50087",
+  "number": 50087,
   "title": "[Installer] Per-user upgrades plan related bundles twice and leave broken uninstall entries",
+  "url": "https://github.com/microsoft/PowerToys/issues/50087",
+  "state": "OPEN",
+  "created_at": "2026-08-24T09:44:29Z",
+  "updated_at": "2026-08-24T09:50:08Z",
   "author": "LegendaryBlair",
-  "authorAssociation": "CONTRIBUTOR",
   "labels": [
     "Issue-Bug",
     "Needs-Author-Feedback",
@@ -21,56 +21,90 @@
   ],
   "assignees": [],
   "comments": 2,
-  "confidence": "High",
-  "status": {
-    "glyph": "🛠️",
-    "label": "Installer mitigation design queued",
-    "detail": "The duplicate Burn plan is supported by deterministic logs, an exact WiX issue, and a feasible BAFunctions seam, but mitigation still needs design review."
+  "generated_at": "2026-09-09T14:33:50.687Z",
+  "evaluated_at": "2026-09-09T14:33:50.687Z",
+  "source_updated_at": "2026-08-24T09:50:08Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 2,
+    "timeline_events_read": 4
   },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Develop Burn deduplication design",
-    "reason": "Specify plan-lifetime identity tracking, callback behavior, rollback, and tests before approval."
-  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true,
+  "linked_work": [
+    {
+      "type": "issue",
+      "ref": "wixtoolset/issues#7675",
+      "url": "https://github.com/wixtoolset/issues/issues/7675",
+      "relevance": "External engine bug matching the duplicate related-bundle detection and plan sequence described in the PowerToys report."
+    }
+  ],
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report includes deterministic logs, exact engine ownership, current dependency versions, and a product-side mitigation point. A generic ZIP would not change the design decision.",
+    "rationale": "The reporter provided deterministic Burn logs, the exact external WiX engine issue, and a PowerToys-specific mitigation seam in SilentFilesInUseBAFunctions. That is already enough to approve a bounded design without asking the reporter for generic diagnostics.",
     "evidence": [
-      "Burn logs show the same per-user bundle detected and planned twice; the first uninstall removes cache and the second fails with 0x80070003.",
-      "wixtoolset/issues#7675 describes the same HKCU registry-view duplication and remains open, assigned to robmen.",
-      "PowerToys currently references WiX 5.0.2.",
-      "SilentFilesInUseBAFunctions overrides OnPlanBegin but has no OnPlanRelatedBundle deduplication."
+      "The issue body shows the same per-user bundle detected twice, then planned twice, then the second uninstall fails with 0x80070003 after the first removed the cached executable.",
+      "The report ties the behavior to wixtoolset/issues#7675, where HKCU per-user related bundles are surfaced twice because Burn scans both 32-bit and 64-bit registry views.",
+      "Directory.Packages.props and installer/PowerToysSetupVNext/PowerToysBootstrapperVNext.wixproj confirm that PowerToys currently builds the bootstrapper with WiX 5.0.2.",
+      "installer/PowerToysSetupVNext/SilentFilesInUseBA/SilentFilesInUseBAFunctions.cpp already overrides OnPlanBegin, giving PowerToys a product-side BAFunctions seam for per-plan deduplication."
     ],
-    "recommended_action": "Develop and adversary-review a mitigation that deduplicates repeated per-user bundle IDs during planning while preserving first occurrence, rollback, dependency-provider, and per-machine behavior.",
-    "evaluated_at": "2026-08-31T07:45:16.646Z",
+    "recommended_action": "Approve a bounded BAFunctions mitigation that suppresses duplicate per-user related-bundle plan entries while preserving the first occurrence and rollback behavior.",
+    "evaluated_at": "2026-09-09T14:33:50.687Z",
     "source_updated_at": "2026-08-24T09:50:08Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository-local mitigation is applicable in the PowerToys BAFunctions layer even while the upstream WiX engine defect remains open.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Deduplicate repeated per-user related-bundle plan entries in SilentFilesInUseBAFunctions",
+      "root_cause": "WiX 5.0.2 can surface the same HKCU per-user related bundle twice during planning, so PowerToys needs to suppress only the second occurrence before Burn tries to uninstall the same cached bundle twice.",
+      "plan": [
+        "Add a per-plan case-insensitive set of related bundle IDs to CSilentFilesInUseBAFunctions.",
+        "Clear the set in OnPlanBegin and override OnPlanRelatedBundle to preserve the first requested state while forcing BOOTSTRAPPER_REQUEST_STATE_NONE for later duplicate occurrences.",
+        "Log duplicate suppression and validate per-user upgrade plus rollback behavior without changing ARP or dependency cleanup ownership."
+      ],
+      "verification": [
+        "In a per-user upgrade, exactly one uninstall should be requested and executed for the old bundle.",
+        "The upgrade should no longer emit the second 0x80070003 CreateProcessW failure or leave a stale Installed Apps entry pointing to a removed cached EXE.",
+        "Per-machine upgrade behavior and rollback should remain unchanged."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The logs, external engine bug, and available PowerToys BAFunctions seam line up cleanly, leaving only implementation validation around callback ordering and rollback."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Per-user upgrades plan the same related WiX bundle twice, so the second uninstall runs after its cached executable was removed and leaves broken Installed Apps entries.",
+    "summary": "Per-user PowerToys upgrades can plan the same related bundle twice, causing the second uninstall to fail after the first already removed the cached bundle executable.",
     "known_information": [
-      "The issue provides exact detection, planning, uninstall, cache-removal, and failure log evidence.",
-      "The external WiX issue matches the duplicate HKCU scan and is open.",
-      "PowerToys uses the affected WiX 5.0.2 toolset.",
-      "PowerToys ships a BAFunctions DLL with a plan-begin extension point."
+      "The issue body includes deterministic Burn detection, planning, uninstall, cache-removal, and failure log snippets.",
+      "The report identifies the matching external WiX engine issue and documents why HKCU per-user bundles are affected.",
+      "PowerToys uses WiX 5.0.2 and ships a BAFunctions DLL that already participates in planning callbacks."
     ],
     "inferences": [
-      "A case-insensitive per-plan set keyed by bundle code is plausible, but callback ordering and rollback require verification.",
-      "Post-install registry cleanup is riskier than preventing the duplicate plan entry."
+      "Suppressing the second related-bundle plan entry in BAFunctions is lower risk than ad-hoc registry cleanup after the installer succeeds.",
+      "The highest remaining risk is not root-cause uncertainty but ensuring the product-side mitigation does not disturb rollback or legitimate first-occurrence handling."
     ],
-    "analysis": "The bot's generic ZIP request is not decision-changing because retained Burn logs identify the engine behavior. The next work is rigorous design and tests around the existing BAFunctions seam.",
+    "analysis": "A fresh reporter ZIP would not change the design decision because the retained Burn logs already identify the engine behavior and the precise mitigation seam.",
     "initial_investigation": [
-      "Verified the external WiX issue body, state, assignee, and matching sequence.",
-      "Confirmed WiX 5.0.2 in Directory.Packages.props.",
-      "Inspected SilentFilesInUseBAFunctions.cpp and found no related-bundle override.",
-      "Found no PowerToys fix PR linked to #50087."
+      "Read the full issue body, the maintainer follow-up, labels, and timeline state.",
+      "Confirmed the WiX 5.0.2 package references in Directory.Packages.props and PowerToysBootstrapperVNext.wixproj.",
+      "Inspected installer/PowerToysSetupVNext/SilentFilesInUseBA/SilentFilesInUseBAFunctions.cpp and confirmed it currently has no OnPlanRelatedBundle deduplication.",
+      "Checked for a linked PowerToys fix PR and found none."
     ],
-    "information_gaps": [
-      {
-        "information": "Validated callback ordering and rollback behavior when suppressing the second OnPlanRelatedBundle occurrence.",
-        "why_needed": "The mitigation must not suppress a legitimate operation or break restoration.",
-        "how_to_collect": "Use two increasing per-user bundles and forced-failure rollback cases during full design validation."
-      }
-    ]
+    "information_gaps": []
   },
-  "actions": []
+  "design": null,
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve per-user bundle dedupe fix design",
+      "note": "Keep the work bounded to BAFunctions related-bundle planning while the upstream WiX engine issue remains open."
+    }
+  ]
 }
