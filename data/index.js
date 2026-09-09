@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T11:09:33.5639217+08:00",
+  "generated_at": "2026-09-09T11:46:43.2040199+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,9 +91,9 @@ window.BOARD_INDEX = {
     "artifacts": 390
   },
   "impact": {
-    "as_of": "2026-09-09T11:09:33.5639217+08:00",
+    "as_of": "2026-09-09T11:46:43.2040199+08:00",
     "issues_helped": 10,
-    "prs_iterated": 26,
+    "prs_iterated": 24,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
@@ -594,7 +594,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -609,7 +609,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 724,
+        "fork_title": "[PR 50469] CmdPal: Prioritize initialization of visible and selected list items",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50469",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/724"
+      }
     },
     {
       "id": "pr-50463",
@@ -2252,18 +2260,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
-      "owes": "maintainer",
+      "stage": "review_blocked",
+      "owes": "automation",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve",
-        "label": "Approve clean review"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3234,11 +3239,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 413,
+        "fork_number": 725,
         "fork_title": "[PR 50020] Add plain text fallback support to peek",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50020-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/413"
+        "fork_branch": "pr-iterate/50020-v3",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/725"
       }
     },
     {
@@ -6324,15 +6329,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 352,
-        "fork_title": "[PR 48627] Add Keyboard Manager text replacements",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/48627-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/352"
-      }
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-48524",
