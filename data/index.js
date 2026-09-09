@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T09:54:17.4517466+08:00",
+  "generated_at": "2026-09-09T10:41:44.7062639+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 153,
-    "open_issues": 12604,
-    "community": 11759,
+    "open_issues": 12606,
+    "community": 11761,
     "artifacts": 388
   },
   "impact": {
-    "as_of": "2026-09-09T09:54:17.4517466+08:00",
+    "as_of": "2026-09-09T10:41:44.7062639+08:00",
     "issues_helped": 10,
     "prs_iterated": 26,
     "constructive_comments_posted": 3,
@@ -506,7 +506,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -521,7 +521,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 720,
+        "fork_title": "[PR 50472] [Peek] Fix title bar button being focused on start up, and fix scrolling and interaction in interactive previewers",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50472",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/720"
+      }
     },
     {
       "id": "pr-50470",
@@ -541,7 +549,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -551,12 +559,20 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-08T21:53:35Z",
-      "updated_at": "2026-09-08T22:17:26Z",
+      "updated_at": "2026-09-09T01:00:54Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 723,
+        "fork_title": "[PR 50470] [UITests][Workspaces] Add UI tests",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50470-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/723"
+      }
     },
     {
       "id": "pr-50469",
@@ -2137,8 +2153,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_blocked",
+      "owes": "automation",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3813,11 +3829,11 @@ window.BOARD_INDEX = {
       "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
-        "fork_number": 564,
+        "fork_number": 721,
         "fork_title": "[PR 49933] CmdPal: Shelf (4/n) - Setup standard keyboard shortcuts and context menu for shelf items",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49933",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/564"
+        "fork_branch": "pr-iterate/49933-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/721"
       }
     },
     {
@@ -43598,6 +43614,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50473",
+      "kind": "issue",
+      "number": 50473,
+      "url": "https://github.com/microsoft/PowerToys/issues/50473",
+      "title": "New utility that saves command prompt history across sessions similar to PowerShell",
+      "author": "mwilsontx",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Author-Feedback"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-09T02:02:41Z",
+      "updated_at": "2026-09-09T02:29:54Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-32268",
       "kind": "issue",
       "number": 32268,
@@ -44194,6 +44241,38 @@ window.BOARD_INDEX = {
       "created_at": "2026-05-01T13:34:56Z",
       "updated_at": "2026-05-12T12:53:32Z",
       "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-50474",
+      "kind": "issue",
+      "number": 50474,
+      "url": "https://github.com/microsoft/PowerToys/issues/50474",
+      "title": "My computer stopped working",
+      "author": "anhductrantrong2k-cloud",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Resolution-Duplicate"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-09T02:16:39Z",
+      "updated_at": "2026-09-09T02:30:36Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -48141,8 +48220,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-08T16:44:50Z",
-      "comments": 48,
+      "updated_at": "2026-09-09T02:23:09Z",
+      "comments": 50,
       "priority": null
     },
     {
