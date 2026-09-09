@@ -1,19 +1,21 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "id": "pr-50081",
   "number": 50081,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-27T09:57:41.6320297Z",
-  "evaluated_at": "2026-09-01T06:30:08Z",
-  "source_updated_at": "2026-09-01T06:30:08Z",
-  "url": "https://github.com/microsoft/PowerToys/pull/50081",
+  "generated_at": "2026-09-09T18:37:27.0268481Z",
+  "evaluated_at": "2026-09-09T18:37:27.0268481Z",
+  "source_updated_at": "2026-09-05T00:24:33Z",
+  "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
+  "fork_head_sha": "087c7fb7fe57e0274cc6b158d519bf202db0d47e",
   "title": "[AdvancedPaste] Add \"Paste as .jpg file\" action with configurable JPEG quality",
+  "url": "https://github.com/microsoft/PowerToys/pull/50081",
   "author": "OrionFOTL",
-  "authorAssociation": "NONE",
+  "author_association": "NONE",
   "isCommunity": true,
   "isMine": false,
   "state": "OPEN",
@@ -21,119 +23,212 @@
   "labels": [
     "Ready for review"
   ],
-  "confidence": "High",
-  "processVerdict": "proceed",
-  "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
-  "summary": "Community PR 50081 clears routine process gates and has a focused, validated Advanced Paste JPEG implementation. Existing fork PR 440 was resumed; valid unsupported-pixel-format handling was fixed on fork head 087c7fb7f, required x64 Debug builds and targeted tests passed, and no upstream writes were made.",
+  "confidence": "high",
+  "summary": "The current upstream head still needs five review findings from the converged fork diff: JPEG encoding must normalize unsupported and transparent bitmaps, the new format ID must preserve existing persisted values, the JPEG shortcut should stay hidden when disabled, upgraded settings must keep hotkey IDs aligned, and the new persisted quality setting needs compatibility coverage. The earlier telemetry/process follow-up is resolved by the author's 2026-09-05 reply and the existing DATA_AND_PRIVACY entry.",
   "status": {
-    "glyph": "📝",
-    "label": "Review ready — one telemetry follow-up drafted",
-    "detail": "Upstream head is unchanged. Draft is pinned to the live head and awaits maintainer approval."
+    "glyph": "ACTION",
+    "label": "Current-head findings drafted",
+    "detail": "The upstream head remains a877c02e63252545404b69398e4521867a1d7a29. No Copilot review request is outstanding, the converged fork review is clean, and five current-head comments are ready for an authorized maintainer decision."
   },
   "next_action": {
-    "glyph": "📝",
-    "label": "Review the drafted telemetry follow-up",
-    "reason": "The automated telemetry check asks for DATA_AND_PRIVACY.md documentation and completion of the telemetry process before merge."
-  },
-  "needs_revalidation": false,
-  "fork": {
-    "owner": "MuyuanMS",
-    "head_sha": "087c7fb7fe57e0274cc6b158d519bf202db0d47e",
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/440",
-    "branch": "pr-iterate/50081-v2",
-    "pr": 440,
-    "repo": "MuyuanMS/PowerToys"
-  },
-  "phase0": {
-    "bar": "community contributor: full Phase 0",
-    "verdict": "proceed",
-    "author_association": "NONE",
-    "summary": "CLA, screenshots, linked issue, validation steps, atomic scope, and successful visible checks are present. External-fork Azure build pending is not treated as a failure.",
-    "processAsks": [
-      "Complete the telemetry-process follow-up requested by the automated check."
-    ],
-    "author": "OrionFOTL",
-    "disposition": "Proceed"
+    "glyph": "ACTION",
+    "label": "Review and post the drafted request-changes review",
+    "reason": "Recheck the live upstream head and conversation immediately before publishing the five drafted current-head comments."
   },
   "proposed_comments": [
     {
-      "kind": "companion",
-      "id": "telemetry-process-follow-up",
-      "title": "Complete the telemetry-process follow-up",
+      "id": "normalize-jpeg-input-before-encoding",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Normalize unsupported and transparent bitmaps before JPEG encoding",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current implementation passes the clipboard bitmap directly to the JPEG encoder, which does not accept every pixel format and cannot preserve alpha correctly."
+      },
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs",
+      "line": 97,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Normalize unsupported and transparent bitmaps before JPEG encoding\n\n**Severity:** `high`\n\n`BitmapEncoder.SetSoftwareBitmap()` only accepts `Rgba16`, `Rgba8`, or `Bgra8`, and JPEG drops alpha instead of compositing it. A valid grayscale clipboard image can therefore fail here, and transparent PNG/icon content can produce black or dark fringes in the generated `.jpg`. Convert unsupported source formats to a supported opaque bitmap and flatten alpha onto a defined background before encoding; please add grayscale and transparent-image regression coverage alongside it.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-stable-paste-format-values",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Preserve the existing persisted PasteFormats values",
+      "confidence": {
+        "score": 99,
+        "rationale": "These enum values already flow into Advanced Paste telemetry and persisted payloads, so inserting JPEG here renumbers existing meanings."
+      },
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
+      "line": 94,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve the existing persisted PasteFormats values\n\n**Severity:** `high`\n\n`PasteFormats` is already emitted through the Advanced Paste telemetry and persisted shortcut payloads. Inserting `PasteAsJpgFile` here renumbers `PasteAsHtmlFile`, both transcode formats, and the query/custom entries, so existing dashboards and saved IDs will be interpreted as different actions after upgrade. Keep the established numeric values stable and give the new JPEG format its own explicit ID instead of shifting the existing members.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "hide-disabled-jpeg-shortcut",
+      "kind": "inline",
       "severity": "medium",
-      "body": "### Complete the telemetry-process follow-up\r\n\r\n**Severity:** `medium`\r\n\r\nThe PR adds telemetry for the new Advanced Paste action, and the automated telemetry check asks for the event to be documented in `DATA_AND_PRIVACY.md` and for the telemetry process to be followed with the designated owner. Please complete those steps (or confirm they are already handled) before merge so the new event remains documented and reviewed.",
+      "title": "Skip the JPEG shortcut when its toggle is off",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current code appends the JPEG shortcut whenever the parent Paste as file group is visible, even if the JPEG child action itself is disabled."
+      },
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs",
+      "startLine": 62,
+      "line": 62,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Skip the JPEG shortcut when its toggle is off\n\n**Severity:** `medium`\n\nThis appends the JPEG shortcut whenever the parent **Paste as file** group is shown, even if the JPEG action itself is disabled. Advanced Paste only exposes the action when both the group and the child toggle are enabled, so Shortcut Guide can currently advertise a shortcut that does nothing.\n\n```suggestion\n                    if (advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsJpgFile.IsShown)\n                    {\n                        content.Append(HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsJpgFile.Shortcut, SettingsResourceLoader.GetString(\"AdvancedPaste/ModuleTitle\"), SettingsResourceLoader.GetString(\"PasteAsJpgFile/Header\")));\n                    }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-legacy-hotkey-ordering",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Keep legacy hotkey IDs aligned until settings are resaved",
+      "confidence": {
+        "score": 97,
+        "rationale": "Deserialized settings will materialize the new JPEG subaction, but the native runner still enumerates only keys physically present in older JSON until the user saves again."
+      },
+      "path": "src/settings-ui/Settings.UI.Library/AdvancedPastePasteAsFileAction.cs",
+      "line": 64,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep legacy hotkey IDs aligned until settings are resaved\n\n**Severity:** `high`\n\n`SubActions` now inserts JPEG before the existing HTML/transcode entries, but upgraded users will still have older raw settings files that do not contain a `paste-as-jpg-file` property yet. The settings side materializes the missing child from its initializer, while the native runner enumerates only the keys physically present in the legacy JSON. That shifts the runtime hotkey IDs until the user opens settings and saves again, so conflict UI and shortcut labels can point at the wrong action. Preserve the existing sequence for legacy files by adding an explicit migration or a native placeholder when the JPEG field is absent.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "cover-jpeg-quality-setting-compatibility",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Add compatibility coverage for the new persisted quality setting",
       "confidence": {
         "score": 94,
-        "rationale": "The upstream automated telemetry check explicitly identifies this PR as adding or modifying telemetry and names the required documentation and follow-up process."
+        "rationale": "The PR adds a new persisted paste-as-jpg-quality setting, but the current diff does not validate missing-field defaults or non-default round-trips."
       },
+      "path": "src/settings-ui/Settings.UI.Library/AdvancedPasteProperties.cs",
+      "line": 114,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Add compatibility coverage for the new persisted quality setting\n\n**Severity:** `medium`\n\nThis introduces a new persisted `paste-as-jpg-quality` field, but there is no settings serialization coverage proving that older Advanced Paste settings still load the default correctly or that a non-default value round-trips. Please add focused `Settings.UI.UnitTests` coverage for both cases so upgrades cannot silently regress the new setting.",
       "disposition": "proposed"
     }
   ],
   "actions": [
     {
-      "confirm": true,
+      "id": "request-changes-review-50081",
+      "type": "request_changes",
+      "label": "Request changes on the current upstream head",
       "primary": true,
-      "type": "post_review",
-      "id": "post-review-50081",
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Five drafted current-head comments are pinned to the live upstream head. Require explicit authorization and a final freshness check before publishing.",
       "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50081,
+        "event": "REQUEST_CHANGES",
         "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
-        "body_prefix": "Thanks for the Advanced Paste JPEG action and the clear validation details. One telemetry-process follow-up remains before merge: please complete the repository telemetry documentation/process requested by the automated check.",
-        "pr": 50081,
-        "event": "COMMENT"
-      },
-      "label": "Post general review notes",
-      "note": "Draft only. General review notes — no inline suggestions. The request is pinned to the current upstream head and requires explicit maintainer approval plus a final freshness check before publishing."
+        "body_prefix": "Thanks for adding Paste as .jpg file. Before merge, please address the JPEG encoding edge cases, the upgrade-compatibility issues, and the missing persistence coverage below."
+      }
     }
   ],
-  "reviewData": {
-    "schemaVersion": 2,
-    "generatedAt": "2026-08-27T09:56:21.1781055Z",
-    "prs": [
-      {
-        "assoc": "NONE",
-        "testInstructions": [
-          "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-          "Open Advanced Paste settings and enable the Paste as .jpg file action; set JPEG quality and save.",
-          "Copy a large image, invoke Advanced Paste, paste as JPG, and verify a .jpg file is produced with the configured quality.",
-          "Repeat with a transparent image and confirm transparent pixels are flattened to white; exercise the normal PNG action to ensure it remains unchanged."
-        ],
-        "draft": false,
-        "loop": 7,
-        "phase": "ready",
-        "headSha": "a877c02e63252545404b69398e4521867a1d7a29",
-        "waitingOn": "maintainer",
-        "author": "OrionFOTL",
-        "number": 50081,
-        "disposition": "Comment",
-        "firstTimer": false,
-        "phase0Note": "Community-authored PR clears the routine process gates: CLA, screenshots, linked issue, validation steps, focused scope, and successful visible checks are present. The only drafted follow-up is the existing telemetry-process reminder.",
-        "publicPayload": {
-          "items": [
-            {
-              "kind": "companion",
-              "id": "telemetry-process-follow-up",
-              "title": "Complete the telemetry-process follow-up",
-              "severity": "medium",
-              "body": "### Complete the telemetry-process follow-up\r\n\r\n**Severity:** `medium`\r\n\r\nThe PR adds telemetry for the new Advanced Paste action, and the automated telemetry check asks for the event to be documented in `DATA_AND_PRIVACY.md` and for the telemetry process to be followed with the designated owner. Please complete those steps (or confirm they are already handled) before merge so the new event remains documented and reviewed.",
-              "confidence": {
-                "score": 94,
-                "rationale": "The upstream automated telemetry check explicitly identifies this PR as adding or modifying telemetry and names the required documentation and follow-up process."
-              }
-            }
-          ],
-          "contextBody": "Thanks for the Advanced Paste JPEG action and the clear validation details. One telemetry-process follow-up remains before merge: please complete the repository telemetry documentation/process requested by the automated check."
-        },
-        "snapshot": {
-          "reviewCommentCount": 0,
-          "issueCommentCount": 3,
-          "reviewCount": 0,
-          "updatedAt": "2026-08-23T16:43:10Z"
-        },
-        "title": "[AdvancedPaste] Add \"Paste as .jpg file\" action with configurable JPEG quality",
-        "url": "https://github.com/microsoft/PowerToys/pull/50081"
-      }
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "The upstream code head is unchanged, so this run resumed the converged fork review instead of requesting another Copilot pass. The live upstream PR still lacks the accepted fork-side fixes for JPEG encoding correctness, Shortcut Guide visibility, settings/hotkey upgrade compatibility, and persisted-setting coverage. The earlier telemetry/process follow-up is resolved by the author's 2026-09-05 reply together with the existing DATA_AND_PRIVACY entry for Microsoft.PowerToys.AdvancedPaste_Settings.",
+    "evidence": [
+      "Live upstream head remains a877c02e63252545404b69398e4521867a1d7a29 and the PR is still open.",
+      "Get-ReviewResumeState found fork branch pr-iterate/50081-v2, fork PR 440, no local waiting request, and zero unresolved Copilot threads.",
+      "The fork PR has eight Copilot reviews; the latest submitted at 2026-08-27T09:56:55Z reported zero new published comments, and the latest review post-dates the latest fork commit at 2026-08-27T09:53:28Z.",
+      "Fork review requests are currently empty, so no Copilot review request is outstanding to duplicate.",
+      "The converged fork diff against the upstream head contains the accepted fixes in TransformHelpers.cs, PasteFormats.cs, PowerToysShortcutsPopulator.cs, AdvancedPastePasteAsFileAction.cs, and a focused Settings.UI.UnitTests addition for JPEG-quality persistence.",
+      "Upstream detect-telemetry-events, license/cla, and pr-intake checks are green.",
+      "The only upstream maintainer review on this head was the telemetry follow-up posted at 2026-09-01T06:30:06Z, and the author replied at 2026-09-05T00:24:33Z that no new telemetry event was added and DATA_AND_PRIVACY already remains current."
     ],
-    "repository": "microsoft/PowerToys",
-    "phase": "ready"
+    "recommended_action": "After a final live freshness check and explicit maintainer approval, publish the five current-head comments as a request-changes review.",
+    "evaluated_at": "2026-09-09T18:37:27.0268481Z",
+    "source_updated_at": "2026-09-05T00:24:33Z"
+  },
+  "phase0": {
+    "author": "OrionFOTL",
+    "author_association": "NONE",
+    "bar": "full community-contributor process review",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "next_actor": "maintainer review workflow",
+    "note": "CLA, screenshots, linked issue 44002, and manual validation steps are present. detect-telemetry-events, license/cla, and pr-intake all pass. The earlier telemetry follow-up no longer supports a new author ask because the author responded on 2026-09-05 that no new telemetry event was added, and DATA_AND_PRIVACY already documents Microsoft.PowerToys.AdvancedPaste_Settings."
+  },
+  "existing_upstream_feedback": {
+    "review_posted_at": "2026-09-01T06:30:06Z",
+    "review_state": "COMMENTED",
+    "review_summary": "Telemetry-process follow-up only.",
+    "author_replied_at": "2026-09-05T00:24:33Z",
+    "author_reply_resolves_prior_process_ask": true
+  },
+  "fork_pr": {
+    "number": 440,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/440",
+    "state": "OPEN",
+    "head_sha": "087c7fb7fe57e0274cc6b158d519bf202db0d47e"
+  },
+  "fork_branch": "pr-iterate/50081-v2",
+  "workflow": {
+    "phase": "review_ready",
+    "review_round": 8,
+    "latest_copilot_review_at": "2026-08-27T09:56:55Z",
+    "latest_copilot_published_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "clean_zero_published_comments",
+    "outstanding_copilot_request": false,
+    "checkpoint_at": "2026-09-09T18:37:27.0268481Z"
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "upstream_updated_at": "2026-09-05T00:24:33Z",
+    "upstream_head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
+    "changed_file_count": 17,
+    "additions": 172,
+    "deletions": 4,
+    "issue_comment_count": 4,
+    "review_count": 1,
+    "review_comment_count": 0,
+    "reported_checks": {
+      "total": 3,
+      "successful": 3,
+      "failing": 0,
+      "pending": 0,
+      "summary": "detect-telemetry-events, license/cla, and pr-intake pass. The usual Azure build is not reported for this external-fork PR."
+    }
+  },
+  "validation": {
+    "upstream_head_matches": true,
+    "context_revalidation": "passed",
+    "reused_code_review_evidence": "The upstream code head did not change after the converged fork review, so this run reused the prior clean Copilot loop and code-review diff, then revalidated only the newer upstream discussion and check state.",
+    "fork_diff": {
+      "upstream_changed_files": 17,
+      "fork_changed_files": 18,
+      "extra_review_only_files": [
+        "src/settings-ui/Settings.UI.UnitTests/ModelsTests/AdvancedPasteSettingsTests.cs"
+      ]
+    },
+    "builds": [
+      "Durable prior validation for this same upstream head recorded the required x64 Debug builds as passed.",
+      "A fresh targeted rebuild attempt in this session stalled on a shared vcpkg registry lock and was stopped; that shared-machine contention is nonterminal and did not change the current-head review result."
+    ],
+    "tests": [
+      "The converged fork diff adds JPEG transform regression coverage and Advanced Paste settings compatibility coverage.",
+      "Durable prior validation for this same upstream head recorded targeted tests as passed; this context-only revalidation did not rerun them because the code head is unchanged."
+    ],
+    "result": "passed_with_findings"
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-09T18:37:27.0268481Z",
+    "upstream_head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
+    "fork_head_sha": "087c7fb7fe57e0274cc6b158d519bf202db0d47e"
   }
 }
