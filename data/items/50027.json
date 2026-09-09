@@ -1,19 +1,20 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "id": "pr-50027",
   "number": 50027,
   "kind": "pr",
   "track": "review",
   "stage": "review_ready",
-  "owes": "none",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-20T09:51:41Z",
-  "evaluated_at": "2026-08-20T09:51:41Z",
-  "source_updated_at": "2026-08-20T08:28:21Z",
-  "url": "https://github.com/microsoft/PowerToys/pull/50027",
+  "generated_at": "2026-09-09T18:49:31.1495932Z",
+  "evaluated_at": "2026-09-09T18:49:31.1495932Z",
+  "source_updated_at": "2026-08-24T06:53:45Z",
+  "head_sha": "595de8d162df8bc0d06571b22838bfe29ac64e89",
   "title": "Fix WinUI title-bar startup crash in CJK environments",
+  "url": "https://github.com/microsoft/PowerToys/pull/50027",
   "author": "MuyuanMS",
-  "authorAssociation": "MEMBER",
+  "author_association": "MEMBER",
   "isCommunity": false,
   "isMine": true,
   "state": "OPEN",
@@ -21,137 +22,109 @@
   "labels": [
     "Ready for review"
   ],
-  "confidence": "High",
-  "processVerdict": "proceed",
-  "head_sha": "595de8d162df8bc0d06571b22838bfe29ac64e89",
-  "summary": "Review is ready with no upstream comment needed. The PR is member-authored, so routine Phase 0 process asks are skipped. The fresh automated code review for the mirrored diff reviewed all 6 changed files and generated zero published comments; unresolved review threads are zero. Visible upstream CI checks are green, and targeted x64 Debug builds for runner/settings plus the changed WinUI app projects succeeded.",
+  "confidence": "high",
+  "summary": "The fork Copilot review for the current head is still clean, but later linked-issue analysis invalidates the earlier approval: the fallback-only title seeding does not address the ANSI WinUI title round-trip problem for non-ASCII titles, so the current upstream head still needs a defensive fix before merge.",
   "status": {
-    "glyph": "✅",
-    "label": "Review ready — clean",
-    "detail": "Fresh automated review at 2026-08-20T09:25:52Z reviewed 6 of 6 changed files and generated zero published comments. Unresolved review threads are zero, all visible upstream checks are successful, and targeted x64 Debug local builds passed."
+    "glyph": "ACTION",
+    "label": "Current-head finding drafted",
+    "detail": "The upstream head remains 595de8d162df8bc0d06571b22838bfe29ac64e89. No Copilot review request is outstanding, the prior fork review is clean, and one current-head blocking comment is ready for an authorized maintainer decision."
   },
-  "next_action": "Approve the current review after rechecking that the upstream head is unchanged.",
-  "needs_revalidation": false,
-  "source": {
-    "repository": "microsoft/PowerToys",
-    "headRefOid": "595de8d162df8bc0d06571b22838bfe29ac64e89",
-    "baseRefOid": "ddc536c69668837470439ecce68b7ce1b2094175",
-    "headRefName": "fix/environment-variables-titlebar-startup-v2",
-    "baseRefName": "main",
-    "updatedAt": "2026-08-20T08:28:21Z"
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Review and post the drafted request-changes comment",
+    "reason": "The old clean approval is no longer safe after the corrected root-cause evidence on issue 49880. Recheck the live upstream head and discussion before publishing the drafted current-head comment."
   },
-  "refresh": {
-    "generatedAt": "2026-08-20T09:51:41Z",
-    "checkedAt": "2026-08-20T09:51:41Z",
-    "sourceUpdatedAt": "2026-08-20T08:28:21Z",
-    "sourceHeadRefOid": "595de8d162df8bc0d06571b22838bfe29ac64e89",
-    "latestCommitAt": "2026-08-20T07:54:15Z",
-    "latestIssueCommentAt": null,
-    "latestReviewCommentAt": null,
-    "latestReviewAt": null,
-    "fresh": true
-  },
-  "signalCounts": {
-    "issueComments": 0,
-    "reviewComments": 0,
-    "reviews": 0,
-    "commits": 2,
-    "changedFiles": 6,
-    "unresolvedThreads": 0
+  "proposed_comments": [
+    {
+      "id": "avoid-restoring-multibyte-native-title",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Don't restore the multi-byte native title without a round-trip guard",
+      "confidence": {
+        "score": 97,
+        "rationale": "The linked issue now includes live evidence that these WinUI windows can still round-trip multi-byte titles through an ANSI class, and the current code still restores those titles to the native window after title-bar setup."
+      },
+      "path": "src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariablesXAML/MainWindow.xaml.cs",
+      "line": 50,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Don't restore the multi-byte native title without a round-trip guard\n\n**Severity:** `high`\n\nSeeding an ASCII fallback before `SetTitleBar()` closes the empty-title race, but the later issue 49880 investigation shows the affected WinUI desktop windows are ANSI (`IsWindowUnicode == FALSE`) in the non-elevated path. Reassigning the localized or administrator title back to the native window here can still truncate the first CJK character on normal launches, and the elevated path can still hit the WinUI fail-fast when the UTF-16 title length changes across the deferred read-back. Please keep the native window title on a safe fallback until WinUI finishes consuming it, or add an explicit round-trip or length guard before restoring the localized title. The same pattern appears in the other updated windows in this PR.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-review-50027",
+      "type": "request_changes",
+      "label": "Request changes on the current upstream head",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "One drafted current-head comment is pinned to the live upstream head. Require explicit authorization and a final freshness check before publishing.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50027,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "595de8d162df8bc0d06571b22838bfe29ac64e89",
+        "body_prefix": "Thanks for the title-bar hardening pass. The linked issue now has stronger root-cause evidence showing the native-title reassignment is still unsafe for the affected CJK path, so please address the issue below before merge."
+      }
+    }
+  ],
+  "judgment": {
+    "status": "review_drafted",
+    "rationale": "This run resumed the existing clean fork review instead of requesting Copilot again because the fork head and upstream head are unchanged and no review request is pending. However, the linked issue later added a corrected root-cause analysis showing that the current fallback-only workaround does not fully protect the affected WinUI title path for multi-byte titles, so the earlier clean approval is invalidated.",
+    "evidence": [
+      "Live upstream head remains 595de8d162df8bc0d06571b22838bfe29ac64e89 and the PR is still open.",
+      "Get-ReviewResumeState found fork branch pr-iterate/50027, fork PR 421, zero unresolved Copilot threads, and no local local checkout to resume.",
+      "Fork PR 421 has one Copilot review submitted at 2026-08-20T09:25:52Z with zero published comments, and GraphQL reviewRequests returned none, so no outstanding Copilot request exists to duplicate.",
+      "The linked issue 49880 was later updated on 2026-08-21 with a corrected analysis showing ANSI WinUI title round-tripping truncates multi-byte titles and can still fail-fast in the elevated path.",
+      "The current head still restores the localized or administrator title back to the native window in the six changed WinUI windows, including Environment Variables at MainWindow.xaml.cs:50-51.",
+      "All visible upstream checks remain green: dependency-review, pr-intake, detect-telemetry-events, PowerToys CI, Command Palette Toolkit SDK build, arm64 Release, x64 Release, and license/cla."
+    ],
+    "recommended_action": "After a final live freshness check and explicit maintainer approval, publish the drafted current-head request-changes review.",
+    "evaluated_at": "2026-09-09T18:49:31.1495932Z",
+    "source_updated_at": "2026-08-24T06:53:45Z"
   },
   "phase0": {
-    "verdict": "proceed",
-    "disposition": "Proceed",
     "author": "MuyuanMS",
     "author_association": "MEMBER",
     "bar": "member/collaborator Phase 0: skip routine process nags",
-    "owes_after_post": "none",
-    "processAsks": [],
-    "summary": "No Phase 0 blocker is present. The PR is authored by a repository member, is open and non-draft, has CLA and all visible CI checks successful, and has no process request outstanding.",
-    "gateEvidence": {
-      "P1_cla": {
-        "status": "pass",
-        "evidence": "license/cla completed successfully."
-      },
-      "P2_demo": {
-        "status": "skipped_member",
-        "evidence": "Routine demo requests are skipped for member-authored PRs; the PR documents affected CJK runtime validation as pending."
-      },
-      "P3_author_validation": {
-        "status": "skipped_member",
-        "evidence": "Routine self-validation asks are skipped for member-authored PRs."
-      },
-      "P4_ci": {
-        "status": "pass",
-        "evidence": "dependency-review, pr-intake, telemetry, PowerToys CI, Command Palette Toolkit SDK build, arm64 Release, x64 Release, and license/cla checks are successful."
-      },
-      "P5_provenance": {
-        "status": "pass",
-        "evidence": "No provenance or originality concern was identified."
-      },
-      "P6_duplicate": {
-        "status": "pass",
-        "evidence": "The PR is a focused fix for the linked WinUI title-bar startup crash issue."
-      },
-      "P7_scope": {
-        "status": "pass",
-        "evidence": "The diff is limited to six affected title-bar window startup paths."
-      },
-      "P8_draft": {
-        "status": "pass",
-        "evidence": "The PR is open and non-draft."
-      },
-      "P9_template": {
-        "status": "pass",
-        "evidence": "The PR description includes summary, change list, rationale, validation, and author-validation checklist."
-      }
-    }
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "next_actor": "maintainer review workflow",
+    "note": "The PR remains open, non-draft, linked to issue 49880, and all visible checks pass. Routine process requests are skipped for member-authored PRs; the current concern is code correctness, not process."
   },
-  "freshness": {
-    "headRefOid": "595de8d162df8bc0d06571b22838bfe29ac64e89",
-    "baseRefOid": "ddc536c69668837470439ecce68b7ce1b2094175",
-    "updatedAt": "2026-08-20T08:28:21Z",
-    "latestCommitAt": "2026-08-20T07:54:15Z",
-    "latestCommentAt": null,
-    "latestReviewAt": null,
-    "latestReviewCommentAt": null,
-    "lastMeaningfulEventAt": "2026-08-20T08:28:21Z",
-    "lastMeaningfulEvent": "Ready for review label/check activity followed the final head commit.",
-    "headCommitCount": 2,
-    "changedFileCount": 6,
-    "unresolvedReviewThreadCount": 0,
-    "mergeable": true,
-    "mergeableState": "BLOCKED",
-    "checkSummary": "8 visible checks successful, 0 failed, 0 pending.",
-    "fresh": true,
-    "checkedAt": "2026-08-20T09:51:41Z"
+  "workflow": {
+    "phase": "review_ready",
+    "copilot_review_count": 1,
+    "latest_copilot_review_at": "2026-08-20T09:25:52Z",
+    "latest_copilot_published_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "outstanding_copilot_request": false,
+    "context_revalidation": "completed_with_new_finding",
+    "checkpoint_at": "2026-09-09T18:49:31.1495932Z"
   },
   "source_activity": {
-    "captured_at": "2026-08-20T09:51:41Z",
     "state": "OPEN",
     "draft": false,
-    "mergeable": true,
-    "mergeable_state": "BLOCKED",
-    "upstream_updated_at": "2026-08-20T08:28:21Z",
+    "upstream_updated_at": "2026-08-24T06:53:45Z",
     "upstream_head_sha": "595de8d162df8bc0d06571b22838bfe29ac64e89",
-    "upstream_base_sha": "ddc536c69668837470439ecce68b7ce1b2094175",
-    "commit_count": 2,
     "changed_file_count": 6,
     "additions": 30,
     "deletions": 12,
-    "issue_comment_count": 0,
-    "latest_issue_comment_at": null,
+    "issue_comment_count": 3,
     "review_count": 0,
-    "latest_review_at": null,
     "review_comment_count": 0,
-    "latest_review_comment_at": null,
-    "unresolved_review_thread_count": 0,
+    "linked_issue": {
+      "number": 49880,
+      "updated_at": "2026-08-22T14:30:45Z",
+      "note": "Latest linked-issue discussion supersedes the earlier empty-title explanation and is the reason this refresh no longer treats the PR as approval-ready."
+    },
     "checks": {
       "total": 8,
       "successful": 8,
       "failed": 0,
       "pending": 0,
-      "skipped": 0,
       "names": [
         "dependency-review",
         "pr-intake",
@@ -164,141 +137,19 @@
       ]
     }
   },
-  "proposed_comments": [],
-  "actions": [
-    {
-      "id": "approve-review-50027",
-      "type": "approve",
-      "label": "Approve",
-      "primary": true,
-      "note": "The current-head review found no comments. This is a maintainer decision only; no upstream approval is submitted automatically."
-    }
-  ],
-  "safe_actions": [
-    {
-      "id": "recheck-50027",
-      "upstream_write": false,
-      "approval_required": false
-    },
-    {
-      "id": "hold-review-50027",
-      "upstream_write": false,
-      "approval_required": false
-    }
-  ],
   "verification": {
-    "result": "passed",
-    "configuration": "x64 Debug",
-    "builds": [
-      {
-        "name": "PowerToys solution restore",
-        "result": "passed",
-        "detail": "tools\\\\build\\\\build-essentials.cmd restore completed successfully."
-      },
-      {
-        "name": "PowerToys runner",
-        "result": "passed",
-        "detail": "tools\\\\build\\\\build-essentials.cmd built src\\\\runner\\\\runner.vcxproj successfully."
-      },
-      {
-        "name": "Settings UI",
-        "result": "passed",
-        "detail": "tools\\\\build\\\\build-essentials.cmd built src\\\\settings-ui\\\\Settings.UI\\\\PowerToys.Settings.csproj successfully."
-      },
-      {
-        "name": "Environment Variables app",
-        "result": "passed",
-        "detail": "tools\\\\build\\\\build.cmd from src\\\\modules\\\\EnvironmentVariables\\\\EnvironmentVariables succeeded."
-      },
-      {
-        "name": "File Locksmith app",
-        "result": "passed",
-        "detail": "tools\\\\build\\\\build.cmd from src\\\\modules\\\\FileLocksmith\\\\FileLocksmithUI succeeded."
-      },
-      {
-        "name": "Hosts app",
-        "result": "passed",
-        "detail": "tools\\\\build\\\\build.cmd from src\\\\modules\\\\Hosts\\\\Hosts succeeded."
-      },
-      {
-        "name": "Shortcut Guide app",
-        "result": "passed",
-        "detail": "tools\\\\build\\\\build.cmd from src\\\\modules\\\\ShortcutGuide\\\\ShortcutGuide.Ui succeeded."
-      },
-      {
-        "name": "Registry Preview app",
-        "result": "passed",
-        "detail": "tools\\\\build\\\\build.cmd from src\\\\modules\\\\registrypreview\\\\RegistryPreview succeeded."
-      }
+    "result": "passed_with_findings",
+    "prior_validation": "The previous same-head review recorded successful targeted x64 Debug builds for runner, Settings UI, Environment Variables, File Locksmith, Hosts, Shortcut Guide, and Registry Preview.",
+    "current_validation": [
+      "Re-read the current PR conversation, linked issue 49880, fork review state, and current visible check status.",
+      "Confirmed the current head is unchanged, the fork PR has no outstanding Copilot request, and unresolved Copilot threads remain zero.",
+      "Compared the corrected linked-issue root-cause evidence with the current head's native-title reassignment pattern across the six changed windows."
     ],
-    "tests": [],
-    "artifacts": [
-      "x64\\\\Debug\\\\PowerToys.exe",
-      "x64\\\\Debug\\\\WinUI3Apps\\\\PowerToys.EnvironmentVariables.exe",
-      "x64\\\\Debug\\\\WinUI3Apps\\\\PowerToys.FileLocksmithUI.exe",
-      "x64\\\\Debug\\\\WinUI3Apps\\\\PowerToys.Hosts.exe",
-      "x64\\\\Debug\\\\WinUI3Apps\\\\PowerToys.ShortcutGuide.exe",
-      "x64\\\\Debug\\\\WinUI3Apps\\\\PowerToys.RegistryPreview.exe"
-    ],
-    "latest_targeted_validation": "Targeted x64 Debug build output exists for the runner, Settings UI, and each changed WinUI app project."
+    "tests": []
   },
-  "test_instructions": [
-    "Launch the already-built x64 Debug PowerToys executable and exercise the affected title-bar windows in a CJK Windows display-language or app-language environment.",
-    "Open Environment Variables, File Locksmith, Hosts File Editor, Shortcut Guide, Registry Preview, and the Settings shortcut-conflict dialog; verify each opens without the Microsoft.UI.Windowing.dll startup crash and shows a non-empty title.",
-    "Repeat under elevated and non-elevated runner states where applicable, including Environment Variables administrator-launch settings, and close/reopen each window several times."
-  ],
-  "upstream_pr": {
-    "number": 50027,
-    "url": "https://github.com/microsoft/PowerToys/pull/50027",
-    "state": "OPEN",
-    "draft": false,
-    "updated_at": "2026-08-20T08:28:21Z",
-    "head_sha": "595de8d162df8bc0d06571b22838bfe29ac64e89",
-    "base_ref": "main",
-    "base_sha": "ddc536c69668837470439ecce68b7ce1b2094175"
-  },
-  "copilot_review": {
-    "rounds": 1,
-    "latest_submitted_at": "2026-08-20T09:25:52Z",
-    "latest_new_comments": 0,
-    "unresolved_threads": 0,
-    "published_comment_count": 0,
-    "reviewed_files": 6,
-    "changed_files": 6
-  },
-  "blockers": [],
-  "reviewData": {
-    "schemaVersion": 2,
-    "repository": "microsoft/PowerToys",
-    "generatedAt": "2026-08-20T09:51:41Z",
-    "phase": "ready",
-    "prs": [
-      {
-        "number": 50027,
-        "url": "https://github.com/microsoft/PowerToys/pull/50027",
-        "title": "Fix WinUI title-bar startup crash in CJK environments",
-        "author": "MuyuanMS",
-        "phase": "ready",
-        "loop": 1,
-        "waitingOn": "",
-        "assoc": "MEMBER",
-        "firstTimer": false,
-        "draft": false,
-        "headSha": "595de8d162df8bc0d06571b22838bfe29ac64e89",
-        "snapshot": {
-          "updatedAt": "2026-08-20T08:28:21Z",
-          "issueCommentCount": 0,
-          "reviewCommentCount": 0,
-          "reviewCount": 0
-        },
-        "disposition": "No comment",
-        "phase0Note": "Member-authored PR; routine Phase 0 process asks skipped. CLA and all visible CI checks are green, and no author-facing process blocker was found.",
-        "publicPayload": {
-          "contextBody": "",
-          "items": []
-        },
-        "testInstructions": "Run the already-built x64 Debug PowerToys executable and open Environment Variables, File Locksmith, Hosts, Shortcut Guide, Registry Preview, and the Settings shortcut-conflict dialog in affected CJK language environments; verify each opens repeatedly without a startup crash and shows a non-empty title."
-      }
-    ]
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-09T18:49:31.1495932Z",
+    "upstream_head_sha": "595de8d162df8bc0d06571b22838bfe29ac64e89"
   }
 }
