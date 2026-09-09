@@ -18,6 +18,26 @@ if (-not (Test-Path $indexPath) -or -not (Test-Path $itemsPath)) {
 
 $index = Get-Content $indexPath -Raw | ConvertFrom-Json
 $queue = [System.Collections.Generic.List[object]]::new()
+$allowedEvidenceTypes = @(
+  'bugreport_zip',
+  'repro_steps',
+  'screenshot_image',
+  'gif_video',
+  'sample_file',
+  'event_viewer',
+  'crash_dump',
+  'module_trace',
+  'installer_log',
+  'powertoys_version',
+  'windows_version',
+  'install_scope',
+  'settings_permissions',
+  'configuration_export',
+  'keyboard_layout',
+  'monitor_topology',
+  'other_software',
+  'behavior_confirmation'
+)
 
 foreach ($row in @($index.items | Where-Object {
   $_.kind -eq 'issue' -and
@@ -61,15 +81,47 @@ foreach ($row in @($index.items | Where-Object {
     if ($requestInfo) {
       $commentBody = [string]$requestInfo.comment.body
       $informationGaps = @($artifact.issue_context.information_gaps)
-      if ([string]$requestInfo.label -match '^(?i:request|ask for) (more )?information$') {
+      $genericLabels = @(
+        'request information',
+        'request more information',
+        'request targeted evidence',
+        'ask for focused repro details',
+        'ask for a narrower repro and fresh diagnostics',
+        'reply with the missing-info request',
+        'draft request for details'
+      )
+      if ([string]::IsNullOrWhiteSpace([string]$requestInfo.label) -or
+          $genericLabels -contains ([string]$requestInfo.label).Trim().ToLowerInvariant()) {
         $reasons.Add('request_info label does not name the requested evidence')
       }
       if ($commentBody -notmatch '(?i)\b(please|could you|can you|would you|share|provide|confirm|capture|attach|run|reproduce)\b') {
         $reasons.Add('request_info comment has no direct request')
       }
+      if ($commentBody -match '(?i)\b(?:PowerToys\s+)?(?:diagnostic|bug[- ]report)\s+(?:archive|report|zip)|\bPowerToys\s+logs?\b' -and
+          $commentBody -notmatch '(?i)/bugreport') {
+        $reasons.Add('PowerToys diagnostic request does not use /bugreport')
+      }
       if ($informationGaps.Count -gt 1 -and
           $commentBody -notmatch '(?m)^\s*(?:[-*]|\d+[.)])\s+\S') {
         $reasons.Add('request_info comment does not list multiple requested items clearly')
+      }
+      if ($informationGaps.Count -eq 0) {
+        $reasons.Add('request_info missing information gaps')
+      }
+      foreach ($gap in $informationGaps) {
+        if ([string]$gap.evidence_type -notin $allowedEvidenceTypes) {
+          $reasons.Add('information gap missing supported evidence_type')
+        }
+        if ([string]::IsNullOrWhiteSpace([string]$gap.information) -or
+            [string]::IsNullOrWhiteSpace([string]$gap.why_needed) -or
+            [string]::IsNullOrWhiteSpace([string]$gap.how_to_collect)) {
+          $reasons.Add('incomplete information gap')
+        }
+        if ([string]$gap.evidence_type -eq 'bugreport_zip' -and
+            ([string]$gap.how_to_collect -notmatch '(?i)/bugreport' -or
+             $commentBody -notmatch '(?i)/bugreport')) {
+          $reasons.Add('request_info comment omits required /bugreport command')
+        }
       }
     }
     if ($fixStatus -eq 'proposed') {
@@ -102,27 +154,17 @@ foreach ($row in @($index.items | Where-Object {
         }
       }
       if ($nonGreen.Count -gt 0 -and
-          @($actions | Where-Object { $_.type -eq 'request_info' }).Count -eq 0) {
-        $reasons.Add('yellow/red fix missing request_info')
+          @($actions | Where-Object { $_.type -in @('request_info', 'reproduce') }).Count -eq 0) {
+        $reasons.Add('yellow/red fix missing uncertainty-reducing action')
       }
-      if ($nonGreen.Count -gt 0 -and
+      if ($nonGreen.Count -gt 0 -and $requestInfo -and
           @($artifact.issue_context.information_gaps).Count -eq 0) {
-        $reasons.Add('yellow/red fix missing information gaps')
+        $reasons.Add('request_info missing information gaps')
       }
-      if ($nonGreen.Count -gt 0) {
+      if ($nonGreen.Count -gt 0 -and $requestInfo) {
         $commentBody = [string]$requestInfo.comment.body
         if ($commentBody.Trim().Length -lt 160) {
           $reasons.Add('request_info comment is too generic')
-        }
-        foreach ($gap in @($artifact.issue_context.information_gaps)) {
-          if ([string]::IsNullOrWhiteSpace([string]$gap.information) -or
-              [string]::IsNullOrWhiteSpace([string]$gap.why_needed)) {
-            $reasons.Add('incomplete information gap')
-          }
-          if ([string]$gap.how_to_collect -match '(?i)/bugreport' -and
-              $commentBody -notmatch '(?i)/bugreport') {
-            $reasons.Add('request_info comment omits required /bugreport command')
-          }
         }
       }
     }

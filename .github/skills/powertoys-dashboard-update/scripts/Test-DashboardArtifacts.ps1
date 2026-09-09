@@ -87,8 +87,17 @@ function Test-ClearRequestInfo {
 
   $label = [string]$Action.label
   $commentBody = [string]$Action.comment.body
+  $genericLabels = @(
+    'request information',
+    'request more information',
+    'request targeted evidence',
+    'ask for focused repro details',
+    'ask for a narrower repro and fresh diagnostics',
+    'reply with the missing-info request',
+    'draft request for details'
+  )
   if ([string]::IsNullOrWhiteSpace($label) -or
-      $label.Trim() -match '^(?i:request|ask for) (more )?information$') {
+      $genericLabels -contains $label.Trim().ToLowerInvariant()) {
     $script:errors.Add("$Prefix request_info label must name the specific evidence being requested")
   }
   if ($commentBody -notmatch '(?i)\b(please|could you|can you|would you|share|provide|confirm|capture|attach|run|reproduce)\b') {
@@ -97,6 +106,10 @@ function Test-ClearRequestInfo {
   if (@($InformationGaps).Count -gt 1 -and
       $commentBody -notmatch '(?m)^\s*(?:[-*]|\d+[.)])\s+\S') {
     $script:errors.Add("$Prefix request_info comment must list multiple requested items as bullets or numbered questions")
+  }
+  if ($commentBody -match '(?i)\b(?:PowerToys\s+)?(?:diagnostic|bug[- ]report)\s+(?:archive|report|zip)|\bPowerToys\s+logs?\b' -and
+      $commentBody -notmatch '(?i)/bugreport') {
+    $script:errors.Add("$Prefix request_info must use /bugreport when asking for PowerToys diagnostics")
   }
 }
 
@@ -291,12 +304,17 @@ foreach ($path in @($paths)) {
     $nonGreenFixes = @($proposedFixes | Where-Object {
       [string]$_.confidence.level -in @('yellow', 'red')
     })
-    if ($nonGreenFixes.Count -gt 0 -and -not $requestInfoAction) {
-      $errors.Add("$prefix yellow/red proposed fix requires a request_info action")
-    }
+    $reproduceAction = @($artifact.actions | Where-Object {
+      $_.type -eq 'reproduce'
+    }) | Select-Object -First 1
     if ($nonGreenFixes.Count -gt 0 -and
+        -not $requestInfoAction -and
+        -not $reproduceAction) {
+      $errors.Add("$prefix yellow/red proposed fix requires request_info or reproduce")
+    }
+    if ($nonGreenFixes.Count -gt 0 -and $requestInfoAction -and
         @($artifact.issue_context.information_gaps).Count -eq 0) {
-      $errors.Add("$prefix yellow/red proposed fix requires issue_context.information_gaps")
+      $errors.Add("$prefix request_info action requires issue_context.information_gaps")
     }
   }
 
@@ -331,12 +349,37 @@ foreach ($path in @($paths)) {
       $errors.Add("$prefix request_info action requires issue_context.information_gaps")
     }
     Test-ClearRequestInfo $requestInfoAction $informationGaps $prefix
+    $allowedEvidenceTypes = @(
+      'bugreport_zip',
+      'repro_steps',
+      'screenshot_image',
+      'gif_video',
+      'sample_file',
+      'event_viewer',
+      'crash_dump',
+      'module_trace',
+      'installer_log',
+      'powertoys_version',
+      'windows_version',
+      'install_scope',
+      'settings_permissions',
+      'configuration_export',
+      'keyboard_layout',
+      'monitor_topology',
+      'other_software',
+      'behavior_confirmation'
+    )
     foreach ($gap in $informationGaps) {
+      if ([string]$gap.evidence_type -notin $allowedEvidenceTypes) {
+        $errors.Add("$prefix issue_context.information_gaps[].evidence_type is missing or unsupported")
+      }
       Require-Text $gap.information 'issue_context.information_gaps[].information' $prefix
       Require-Text $gap.why_needed 'issue_context.information_gaps[].why_needed' $prefix
-      if ([string]$gap.how_to_collect -match '(?i)/bugreport' -and
-          $commentBody -notmatch '(?i)/bugreport') {
-        $errors.Add("$prefix request_info comment must use /bugreport because its collection guidance requires it")
+      Require-Text $gap.how_to_collect 'issue_context.information_gaps[].how_to_collect' $prefix
+      if ([string]$gap.evidence_type -eq 'bugreport_zip' -and
+          ([string]$gap.how_to_collect -notmatch '(?i)/bugreport' -or
+           $commentBody -notmatch '(?i)/bugreport')) {
+        $errors.Add("$prefix bugreport_zip evidence must instruct the reporter to comment /bugreport")
       }
     }
   }
