@@ -4,150 +4,193 @@
   "number": 49431,
   "kind": "pr",
   "track": "review",
-  "stage": "review_blocked",
-  "owes": "author",
+  "stage": "request_changes",
+  "owes": "maintainer",
   "pending_author": false,
+  "generated_at": "2026-09-09T08:21:24.7613525Z",
+  "evaluated_at": "2026-09-09T08:21:24.7613525Z",
+  "source_updated_at": "2026-09-09T06:44:07Z",
+  "head_sha": "3c040f0a2ca67e1838d7db9e866926722fea56f1",
   "title": "[PowerOCR] migrate PowerOCR to Windows App SDK",
   "url": "https://github.com/microsoft/PowerToys/pull/49431",
+  "repository": "microsoft/PowerToys",
   "author": "moooyo",
   "authorAssociation": "MEMBER",
   "isCommunity": false,
-  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
   "confidence": "High",
-  "processVerdict": "proceed",
-  "summary": "The current upstream head was mirrored to the durable fork review branch. The latest Copilot review on the final fork head returned zero new inline comments and unresolved Copilot threads are zero. The review cannot be marked ready because the required repository x64 Debug PowerOCR build chain was not completed before the bounded cutoff.",
+  "summary": "The current upstream head completed the fork review loop with zero fresh inline comments and zero unresolved Copilot threads. Targeted x64 Debug builds passed for PowerOCR, its UI tests, module interface, and core unit tests; all 82 core tests passed. Six current-head implementation concerns remain ready for maintainer review.",
   "status": {
-    "glyph": "⏸️",
-    "label": "Review blocked — build evidence incomplete",
-    "detail": "Copilot convergence is clean for the final fork head, but the required x64 Debug repository build was not completed before the cutoff. The latest Copilot review also requests final human validation across supported Windows configurations."
+    "glyph": "ACTION",
+    "label": "Current-head request-changes review ready",
+    "detail": "Review is pinned to upstream head 3c040f0a2ca67e1838d7db9e866926722fea56f1. Fresh Copilot convergence, targeted PowerOCR builds, and 82 focused tests passed."
   },
-  "next_action": "Run the repository x64 Debug PowerOCR build chain under the shared build lock, then complete the documented human validation and re-evaluate the current upstream head before posting any upstream action.",
-  "needs_revalidation": true,
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Request the six current-head fixes",
+    "reason": "After explicit maintainer authorization and a final freshness check, post the six validated implementation findings."
+  },
+  "phase0": {
+    "verdict": "proceed",
+    "disposition": "Proceed",
+    "author": "moooyo",
+    "author_association": "MEMBER",
+    "bar": "repository member; routine community-contributor process asks skipped",
+    "who_owes_next": "Maintainer review decision",
+    "gates_tripped": [],
+    "processAsks": [],
+    "summary": "The pull request is open and non-draft. Dependency review, intake, telemetry, PowerToys CI, and CLA checks pass on the current head."
+  },
+  "judgment": {
+    "status": "review_findings",
+    "rationale": "The converged review identified correctness and resilience gaps in table extraction, NativeAOT WinRT collection access, clipboard contention handling, WinUI style inheritance, partial-construction cleanup, and installation verification.",
+    "evidence": [
+      "The live upstream head is 3c040f0a2ca67e1838d7db9e866926722fea56f1 and source activity was evaluated through 2026-09-09T06:44:07Z.",
+      "A fresh Copilot review submitted at 2026-09-09T08:13:45Z on the final fork head produced zero published inline comments.",
+      "Zero unresolved Copilot threads remain.",
+      "Targeted x64 Debug builds passed for PowerOCR, PowerOCR.UITests, PowerOCRModuleInterface, and PowerOCR.Core.UnitTests.",
+      "PowerOCR.Core.UnitTests passed 82 of 82 tests."
+    ],
+    "recommended_action": "Request the six implementation fixes after explicit approval and a final current-head freshness check.",
+    "evaluated_at": "2026-09-09T08:21:24.7613525Z",
+    "source_updated_at": "2026-09-09T06:44:07Z"
+  },
   "proposed_comments": [
     {
-      "id": "human-validation-49431-current-head",
-      "severity": "note",
-      "path": null,
-      "line": null,
-      "body": "Please complete and document final human validation of the NativeAOT UI, native input, multi-monitor, lifecycle, and installer behavior across the supported Windows configurations before merge.",
-      "confidence": 86
+      "id": "table-mode-word-bounds",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Segment table output using OCR word bounds",
+      "confidence": {
+        "score": 92,
+        "rationale": "Line-only segmentation cannot preserve multiple detected columns when the OCR engine returns them within one line."
+      },
+      "body": "### Segment table output using OCR word bounds\n\n**Severity:** `high`\n\nTable extraction currently relies on OCR line boundaries. A row containing multiple columns within one OCR line can therefore collapse into a single cell instead of producing tab-separated columns. Please derive table cells from the OCR word bounds, retain their spatial ordering, and add focused coverage for a multi-column row represented by one OCR line.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "nativeaot-winrt-vector-enumeration",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Avoid NativeAOT-unsafe WinRT vector enumeration",
+      "confidence": {
+        "score": 91,
+        "rationale": "Indexed WinRT collection access avoids iterator activation paths that can fail in the NativeAOT application."
+      },
+      "body": "### Avoid NativeAOT-unsafe WinRT vector enumeration\n\n**Severity:** `high`\n\nThe OCR and language paths enumerate WinRT vectors through iterator-based APIs that are unsafe in this NativeAOT application and can fail during activation or recognition. Please switch these paths to indexed access over the WinRT collection and cover both OCR result traversal and language selection.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "clipboard-busy-retry",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Retry the initial clipboard write when the clipboard is busy",
+      "confidence": {
+        "score": 90,
+        "rationale": "The flush path handles transient clipboard contention, while the initial SetContent path can still lose a capture on the same error."
+      },
+      "body": "### Retry the initial clipboard write when the clipboard is busy\n\n**Severity:** `medium`\n\nThe clipboard flush path retries transient `CannotOpenClipboard` failures, but the initial `SetContent` operation does not. A short-lived clipboard owner can therefore drop the OCR capture before the retry logic is reached. Please apply the same bounded retry behavior to the initial write and add a focused contention test.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "winui-style-inheritance",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Base local control styles on the WinUI defaults",
+      "confidence": {
+        "score": 88,
+        "rationale": "Replacing rather than inheriting the default styles can omit built-in keyboard, pointer, disabled, and accessibility visual states."
+      },
+      "body": "### Base local control styles on the WinUI defaults\n\n**Severity:** `medium`\n\nThe local button and toggle styles replace the WinUI defaults instead of inheriting from them. That can discard built-in keyboard, pointer, disabled, and accessibility state behavior. Please base these styles on the corresponding default WinUI styles and override only the properties required by the overlay.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "teardown-cleanup",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Clean up partially created overlay resources on failure",
+      "confidence": {
+        "score": 89,
+        "rationale": "Constructor and shutdown failures can leave an overlay or native-event cancellation source alive beyond its intended lifetime."
+      },
+      "body": "### Clean up partially created overlay resources on failure\n\n**Severity:** `medium`\n\nThe constructor and shutdown failure paths do not consistently close a partially created overlay or dispose the native-event cancellation source. Please make cleanup unconditional and idempotent so failed initialization and partial shutdown cannot retain windows, event listeners, or cancellation resources.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "installation-verifier-required-binaries",
+      "kind": "companion",
+      "severity": "low",
+      "title": "Verify every required PowerOCR binary",
+      "confidence": {
+        "score": 94,
+        "rationale": "Checking only the PRI file allows an incomplete installation to pass even when required executables or libraries are absent."
+      },
+      "body": "### Verify every required PowerOCR binary\n\n**Severity:** `low`\n\nThe installation verifier currently fails for a missing PRI file but can still pass when required PowerOCR WinUI 3 executables or libraries are absent. Please include the complete required binary set in the verification so partial packaging failures are detected.",
+      "in_diff": false,
+      "disposition": "proposed"
     }
   ],
   "actions": [
     {
-      "id": "request-changes-49431-validation",
+      "id": "request-changes-49431-current-head",
       "type": "request_changes",
-      "label": "Request final validation",
+      "label": "Request changes with six general review notes",
       "primary": true,
-      "note": "Draft only. The maintainer should request the supported human-validation evidence after the required x64 Debug build completes."
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Draft only. Recheck the upstream head, checks, comments, reviews, and thread state immediately before publication.",
+      "review": {
+        "pr": 49431,
+        "pullRequest": 49431,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "3c040f0a2ca67e1838d7db9e866926722fea56f1",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "The Windows App SDK migration is converged under automated review and the targeted PowerOCR build and test suite pass. Six implementation concerns remain around table extraction, NativeAOT collection access, clipboard contention, control styles, resource cleanup, and installation verification."
+      }
     }
   ],
-  "phase0": {
-    "author": "moooyo",
-    "author_association": "MEMBER",
-    "bar": "maintainer/member process bar; community-contributor process nags skipped",
-    "disposition": "Proceed",
-    "gates_tripped": [],
-    "who_owes_next": "author",
-    "note": "No new author-owing process gate was identified. The current Copilot note requests final human validation for the broad migration."
-  },
-  "source_activity": {
-    "upstream_repo": "microsoft/PowerToys",
-    "state": "OPEN",
-    "draft": false,
-    "head_sha": "3cfb99ace8e5e4207d16da9e5adeccaf8c2fe9cc",
-    "source_updated_at": "2026-09-08T09:14:42Z",
-    "pr_updated_at": "2026-09-08T08:27:57Z",
-    "changed_files": 97,
-    "activity_assessment": "Current upstream head remains 3cfb99ace8e5e4207d16da9e5adeccaf8c2fe9cc. No upstream mutation was performed."
-  },
-  "fork_pr": {
-    "number": 699,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/699",
-    "state": "OPEN"
-  },
-  "fork_branch": "pr-iterate/49431-v2-current",
-  "fork_head_sha": "8952a2ad3356b1a09a885fd39b3cba09d72f4227",
-  "workflow": {
-    "phase": "review_blocked",
-    "checkpoint_at": "2026-09-08T09:18:25Z",
-    "fork_pr": 699,
-    "fork_branch": "pr-iterate/49431-v2-current",
-    "fork_reviewed_head_sha": "8952a2ad3356b1a09a885fd39b3cba09d72f4227",
-    "latest_copilot_review_at": "2026-09-08T09:17:21Z",
-    "copilot_final": "fresh review returned zero new inline comments; general human-validation note only",
-    "unresolved_copilot_threads": 0,
-    "fork_diff_matches_upstream_scope": true
-  },
   "validation": {
-    "upstream_head_matches": true,
-    "fork_diff_matches_upstream_scope": true,
-    "configuration": "x64 Debug",
-    "result": "blocked",
+    "status": "passed",
+    "configuration": "x64/Debug",
     "builds": [
-      "PowerOCR.Core",
+      "PowerOCR",
+      "PowerOCR.UITests",
+      "PowerOCRModuleInterface",
       "PowerOCR.Core.UnitTests"
     ],
-    "tests": [
-      {
-        "suite": "PowerOCR.Core.UnitTests",
-        "result": "passed",
-        "count": 63
-      }
-    ],
-    "runner": "PowerToys.exe and complete PowerOCR x64 Debug chain not revalidated for the final fork head",
-    "module_interface": "not revalidated for the final fork head",
-    "blocker": {
-      "detail": "The required repository build script chain was not completed before the 2026-09-08T09:16:49Z cutoff. A direct dotnet invocation is not accepted as the final build and previously failed to load the repository C++/architecture environment.",
-      "remediation": "Run the repository build script for the x64 Debug PowerOCR chain under the shared build lock, then record PowerToys.exe, PowerOCR, UI-test, and module-interface outputs."
-    }
-  },
-  "judgment": {
-    "status": "review_blocked",
-    "rationale": "Copilot review convergence is clean at the final fork head, but required x64 Debug build evidence and final human validation are incomplete.",
-    "evidence": [
-      "Latest Copilot review submitted at 2026-09-08T09:17:21Z for fork head 8952a2ad3356b1a09a885fd39b3cba09d72f4227.",
-      "Latest review produced zero new inline comments.",
-      "Unresolved Copilot thread count is zero.",
-      "PowerOCR.Core unit tests passed 63/63.",
-      "The bounded cutoff 2026-09-08T09:16:49Z passed before the required repository x64 Debug build could be completed."
-    ],
-    "recommended_action": "Do not mark review ready or post an upstream approval. Complete the required repository build and human validation, then revalidate freshness."
-  },
-  "context_revalidation": {
-    "evaluated_at": "2026-09-08T09:18:25Z",
-    "live_source_updated_at": "2026-09-08T09:14:42Z",
-    "live_head_sha": "3cfb99ace8e5e4207d16da9e5adeccaf8c2fe9cc",
-    "result": "blocked_on_validation",
-    "upstream_writes_performed": false
-  },
-  "build": {
-    "shared_lock": "not acquired after cutoff",
-    "required_chain": "repository x64 Debug PowerOCR build script",
-    "status": "not_completed",
-    "sanitized_evidence": "PowerOCR.Core and PowerOCR.Core.UnitTests built; 63 Core tests passed. Full repository x64 Debug chain remains unverified for final fork head."
-  },
-  "upstream_safety": {
-    "public_actions_taken": false,
-    "detail": "No upstream comments, reviews, approvals, labels, or other mutations were made."
-  },
-  "blockers": [
-    {
-      "kind": "required_x64_debug_build_not_completed",
-      "detail": "The required repository x64 Debug PowerOCR build chain was not completed before the bounded cutoff.",
-      "remediation": "Run the repository build script under the shared build lock and capture successful PowerOCR, UI-test, module-interface, and PowerToys.exe outputs."
+    "tests": {
+      "status": "passed",
+      "total": 82,
+      "passed": 82,
+      "failed": 0
     },
-    {
-      "kind": "final_human_validation_pending",
-      "detail": "The latest Copilot review requests final human validation of NativeAOT UI, native input, multi-monitor, lifecycle, and installer behavior.",
-      "remediation": "Complete and document supported Windows configuration validation, then revalidate the live upstream head before any upstream review action."
-    }
-  ],
-  "generated_at": "2026-09-08T09:18:25Z",
-  "evaluated_at": "2026-09-08T09:18:25Z",
-  "source_updated_at": "2026-09-08T09:14:42Z",
-  "head_sha": "3cfb99ace8e5e4207d16da9e5adeccaf8c2fe9cc",
-  "state": "OPEN",
-  "draft": false,
-  "labels": []
+    "outputs": [
+      "PowerToys.exe",
+      "PowerToys.PowerOCR.exe",
+      "PowerToys.PowerOCR.dll",
+      "PowerToys.PowerOCR.Core.dll",
+      "PowerToys.PowerOCRModuleInterface.dll",
+      "PowerOCR.UITests.dll",
+      "PowerToys.PowerOCR.Core.UnitTests.dll"
+    ],
+    "notes": [
+      "The targeted changed-project build and test chain passed.",
+      "A broader runner rebuild later encountered unrelated temporary disk exhaustion after the changed PowerOCR projects had already succeeded."
+    ]
+  },
+  "freshness": {
+    "checkpoint_at": "2026-09-09T08:21:24.7613525Z",
+    "live_upstream_head": "3c040f0a2ca67e1838d7db9e866926722fea56f1",
+    "live_source_updated_at": "2026-09-09T06:44:07Z",
+    "head_matches_reviewed_upstream": true
+  },
+  "blockers": [],
+  "upstream_writes": false,
+  "dashboard_modified": false
 }
