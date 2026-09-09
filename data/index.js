@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-10T04:37:10.2833887+08:00",
+  "generated_at": "2026-09-10T04:42:48.5981174+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 519
   },
   "impact": {
-    "as_of": "2026-09-10T04:37:10.2833887+08:00",
+    "as_of": "2026-09-10T04:42:48.5981174+08:00",
     "issues_helped": 10,
     "prs_iterated": 23,
     "constructive_comments_posted": 3,
@@ -5632,18 +5632,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_author",
+      "stage": "waiting_copilot",
       "owes": "author",
-      "pending_author": false,
-      "waiting_since": null,
+      "pending_author": true,
+      "waiting_since": "08/29/2026 02:51:59",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post the drafted requests as REQUEST_CHANGES"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Product-Command Palette",
