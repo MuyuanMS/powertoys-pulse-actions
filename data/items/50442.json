@@ -1,106 +1,89 @@
 {
   "schemaVersion": 5,
-  "kind": "issue",
   "number": 50442,
-  "title": "PowerToys bug report, as per software prompt",
-  "url": "https://github.com/microsoft/PowerToys/issues/50442",
-  "generated_at": "2026-09-08T02:51:49.9453166Z",
-  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_author_information",
+  "generated_at": "2026-09-09T10:18:51.551Z",
+  "evaluated_at": "2026-09-09T10:18:51.551Z",
   "source_updated_at": "2026-09-07T14:51:11Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50442",
+  "title": "PowerToys bug report, as per software's prompt \"PowerToys Run ran into an issue. Something went wrong. Please file a bug in the PowerToys GitHub reposi...\"",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "The stack trace is useful, but the version mismatch means the safest next step is one fresh current-state diagnostic."
+  },
+  "confidence": {
+    "score": 79,
+    "level": "yellow",
+    "rationale": "The stack trace gives a real lead, but the report still needs live install-state confirmation."
+  },
+  "linked_work": [],
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report contains a concrete FileNotFoundException for Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16.0 during PowerToys Run telemetry cleanup, but its version fields conflict (0.101.2362 versus attached 0.100.2.0). This supports a packaging/dependency investigation with a targeted fresh report.",
-    "recommended_action": "Confirm the installed build and package contents, then fix or validate deployment of the TraceEvent dependency used by ETWTrace.",
+    "status": "needs_information",
+    "rationale": "The issue provides a useful FileNotFoundException for Microsoft.Diagnostics.Tracing.TraceEvent inside PowerToys Run ETWTrace.Dispose, but the issue form and pasted exception text disagree on the installed PowerToys version.",
     "evidence": [
-      {
-        "fact": "The exception names Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16.0 and occurs in ETWTrace.Stop/Dispose during PowerLauncher shutdown.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50442"
-      },
-      {
-        "fact": "The source ETWTrace class directly constructs and disposes TraceEventSession from Microsoft.Diagnostics.Tracing.TraceEvent.",
-        "source": "https://github.com/microsoft/PowerToys/blob/main/src/common/ManagedTelemetry/Telemetry/EtwTrace.cs"
-      },
-      {
-        "fact": "The issue body reports WinGet installation but contradictory product versions, so the failing package cannot yet be identified with confidence.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50442"
-      }
-    ]
+      "The exception text shows TraceEvent missing during ETWTrace.Stop/Dispose.",
+      "Local PowerLauncher code instantiates ETWTrace and references the ManagedTelemetry project that carries the TraceEvent package reference.",
+      "The issue form says 0.101.2362.0 while the pasted exception text says 0.100.2.0."
+    ],
+    "recommended_action": "Request one fresh bug report plus exact current version confirmation before choosing between packaging, deployment, or defensive telemetry fallback work.",
+    "evaluated_at": "2026-09-09T10:18:51.551Z",
+    "source_updated_at": "2026-09-07T14:51:11Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The missing assembly is concrete, but the contradictory version metadata prevents choosing between stale installation, packaging omission, or upgrade residue."
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix may be needed, but the current report still needs one live-state confirmation to choose safely between missing-package and mixed-update causes.",
+    "existing_fix_urls": []
   },
-  "proposed_fixes": [
-    {
-      "title": "Repair TraceEvent deployment and cleanup diagnostics",
-      "root_cause": "The deployed PowerLauncher binary references Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16.0, but the assembly is absent or not loadable in the reported installation.",
-      "plan": [
-        "Reproduce with the exact stable WinGet package and compare package contents to the ETWTrace assembly reference.",
-        "Fix the packaging/build dependency closure or, if packaging is correct, make cleanup report the dependency failure without masking the original application lifecycle.",
-        "Add an upgrade-path check for stale or incomplete dependency layouts."
-      ],
-      "verification": [
-        "A clean install and upgrade install both load ETWTrace and shut down without the FileNotFoundException.",
-        "The published package contains the expected dependency next to the consuming binaries.",
-        "PowerToys Run startup and shutdown remain functional when telemetry recording is disabled."
-      ],
-      "confidence": {
-        "score": 64,
-        "level": "yellow",
-        "rationale": "The exception and consuming source are clear, but package/version ambiguity lowers confidence in the exact remediation."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "PowerToys Run showed an error notification after an update because the TraceEvent assembly was unavailable while ETWTrace cleanup ran.",
+    "summary": "PowerToys Run reported a missing TraceEvent assembly after update, but the issue currently mixes two different PowerToys versions and does not yet prove whether the install is partially updated or missing a packaged dependency.",
     "known_information": [
-      "The issue reports WinGet installation and Windows build 26200.",
-      "The body says 0.101.2362.0 while the diagnostic text says 0.100.2.0.",
-      "The referenced assembly is a direct dependency of the repository ETWTrace implementation."
+      "The attached exception originates in ETWTrace.Stop/Dispose inside PowerToys Run.",
+      "Local source shows TraceEvent is brought in through the PowerLauncher.Telemetry -> ManagedTelemetry project chain.",
+      "The issue form says 0.101.2362.0 while the pasted exception text says 0.100.2.0."
     ],
     "inferences": [
-      "A package or upgrade-layout problem is more likely than a PowerToys Run query failure.",
-      "The exception may be surfaced during shutdown/cleanup rather than the original startup fault."
+      "The failure may be a mixed-version or incomplete-update state rather than a pure code-path bug in ETWTrace itself.",
+      "A defensive code change is plausible, but it would be premature to pick it without confirming the live installation state."
     ],
-    "analysis": "Reconcile the actual installed version and inspect whether the published package contains the exact TraceEvent assembly expected by the deployed PowerToys binaries.",
+    "analysis": "The issue already contains a useful stack trace. The specific missing pieces are the exact current version/build and a fresh diagnostic captured from the current installation immediately after reproduction.",
     "initial_investigation": [
-      "src/common/ManagedTelemetry/Telemetry/EtwTrace.cs",
-      "src/modules/launcher/PowerLauncher",
-      "src/common/ManagedTelemetry"
+      "Reviewed the issue body and pasted exception text.",
+      "Reviewed local PowerToys Run startup/disposal code and the project-reference chain into ManagedTelemetry.",
+      "Confirmed TraceEvent is still referenced from ManagedTelemetry.csproj."
     ],
     "information_gaps": [
       {
-        "information": "The exact installed PowerToys version and whether Microsoft.Diagnostics.Tracing.TraceEvent.dll exists beside the failing binaries.",
-        "why_needed": "The conflicting versions make it unsafe to attribute the failure to the current package or to an older upgrade residue.",
-        "how_to_collect": "Reproduce on the current stable WinGet package, record the About version, and run /bugreport immediately after the notification."
+        "evidence_type": "powertoys_version",
+        "information": "The exact PowerToys version shown in About or the installed package immediately after the failure.",
+        "why_needed": "The report currently shows both 0.101.2362.0 and 0.100.2.0, which changes whether the likely cause is packaging or partial update state.",
+        "how_to_collect": "Reply with the exact version text shown in PowerToys About or the installed package metadata after reproducing the error."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing the Run error on the current install.",
+        "why_needed": "The current-state logs should show which PowerToys Run binaries and telemetry assemblies were present after the update.",
+        "how_to_collect": "Reproduce once, then add a comment containing /bugreport immediately afterward. If the normal UI cannot open, run BugReportTool.exe from the PowerToys installation directory and attach the generated ZIP."
       }
     ]
   },
   "actions": [
     {
+      "id": "request-info-50442",
       "type": "request_info",
-      "label": "Request targeted evidence",
-      "note": "Resolve the contradictory version/package evidence before changing dependency or cleanup behavior.",
+      "label": "Request Run update-state bug report",
+      "confirm": true,
       "comment": {
-        "body": "The exception is specific: ETWTrace cleanup cannot load Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16.0. However, the issue body says 0.101.2362.0 while the attached diagnostic text says 0.100.2.0, so we cannot tell whether this is a current-package omission or stale files from an upgrade. Please confirm the version shown in PowerToys About, reproduce on the current WinGet package if possible, and run /bugreport immediately after the error. Do not upload private installation directories; the version and fresh report are sufficient."
-      }
-    },
-    {
-      "type": "approve_design",
-      "label": "Approve focused fix design",
-      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
-      "design": {
-        "scope": "Validate and correct TraceEvent dependency packaging for the deployed PowerLauncher/ManagedTelemetry binaries, with cleanup behavior kept safe if the dependency is unavailable.",
-        "files": [
-          "src/common/ManagedTelemetry/Telemetry/EtwTrace.cs",
-          "src/common/ManagedTelemetry",
-          "installer packaging project containing ManagedTelemetry dependencies"
-        ],
-        "acceptance_criteria": [
-          "The current WinGet package contains the exact TraceEvent assembly required by the deployed binaries.",
-          "Upgrade from the preceding stable version does not leave a missing dependency.",
-          "Telemetry cleanup does not surface an unhandled notification when telemetry recording is disabled or unavailable."
-        ]
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50442,
+        "body": "Thanks for attaching the exception text — the missing \"Microsoft.Diagnostics.Tracing.TraceEvent\" assembly is a useful clue. Please provide:\n\n1. The exact PowerToys version currently shown in About or in the installed package after the failure, because the issue form says \"0.101.2362.0\" while the exception text shows \"0.100.2.0\".\n2. A fresh PowerToys diagnostic ZIP captured immediately after reproducing the Run error on the current install: reproduce the issue once more and add a comment containing \"/bugreport\" immediately afterward. If the normal UI cannot open, run \"BugReportTool.exe\" from the PowerToys installation directory and attach the generated ZIP."
       }
     }
   ]

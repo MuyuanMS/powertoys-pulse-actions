@@ -3,63 +3,68 @@
   "number": 50297,
   "kind": "issue",
   "track": "fix",
-  "stage": "not_actionable",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
-  "source_updated_at": "2026-09-01T19:14:48Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50297",
   "title": "Command Pallet Multiple Displays",
-  "author": "xtremewaianae",
+  "url": "https://github.com/microsoft/PowerToys/issues/50297",
+  "generated_at": "2026-09-09T10:33:13.5242917Z",
+  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
+  "source_updated_at": "2026-09-01T19:14:48Z",
+  "summary": "The Command Palette monitor-order complaint appears covered by newer multi-monitor and topology-stability work in current CmdPal code.",
+  "next_action": "Draft a comment pointing the reporter to the newer Command Palette monitor-topology fixes and ask for a retest on a current build if the problem remains.",
+  "confidence": {
+    "score": 86,
+    "level": "green",
+    "rationale": "The issue was filed on an older build, while current CmdPal code now uses stable monitor IDs, friendly display names, and explicit topology-change handling."
+  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
+  "linked_work": [],
+  "comment_count": 0,
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "The report identifies a display-numbering expectation, not a demonstrated failure to open Command Palette on the configured primary display. Windows display labels are not a stable cross-API identity.",
+    "status": "duplicate_or_handled",
+    "rationale": "Current merged Command Palette monitor-topology work appears to cover the reported “laptop becomes display 3” symptom on dock/undock.",
     "evidence": [
-      "The reporter says Windows labels the laptop display as 1 while Command Palette settings show it as 3.",
-      "The report does not say that Command Palette cannot be configured or opens on the wrong physical display.",
-      "MonitorInfo::GetMonitors enumerates monitors and sorts them by geometry rather than Windows display-label ordinal."
+      "The issue is on PowerToys 0.100.2 and describes the laptop changing to display 3 after connecting additional monitors.",
+      "CmdPal Dock multi-monitor support landed in PR #46915 and introduced monitor-specific identities.",
+      "PR #49814 explicitly fixes dock/undock and monitor-topology instability by using stable monitor IDs and friendlier display identity handling."
     ],
-    "recommended_action": "Explain that display ordinals are presentation identifiers and request a separate report only if the selected physical monitor is not honored.",
-    "evaluated_at": "2026-09-08T02:27:54Z",
-    "source_updated_at": "2026-09-01T19:14:48Z"
+    "recommended_action": "Point the reporter to the newer CmdPal monitor-topology fixes and ask for a retest on a current build before opening new design work."
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "No functional Command Palette failure is established; changing UI numbering alone could imply a Windows identity guarantee the implementation cannot safely make."
+    "status": "existing_fix",
+    "rationale": "Current merged Command Palette monitor-topology work appears to cover the unstable numbering/selection path reported here.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/46915",
+      "https://github.com/microsoft/PowerToys/pull/49814"
+    ]
   },
   "issue_context": {
-    "summary": "Command Palette's monitor ordinal differs from Windows Settings' display number after a multi-monitor dock is connected.",
+    "summary": "The reporter wants Command Palette to stay associated with the laptop’s primary display after docking, but the older build they used surfaced different display numbering than Windows.",
     "known_information": [
-      "The laptop display remains Windows display 1.",
-      "Command Palette displays it as 3.",
-      "The report includes a screenshot and no discussion."
+      "The report is against PowerToys 0.100.2 from Microsoft Store.",
+      "The laptop display is primary in Windows Display Settings, but Command Palette settings showed it as display 3 after docking.",
+      "A screenshot and bug-report ZIP were attached."
     ],
     "inferences": [
-      "The mismatch is likely caused by distinct enumeration and sorting conventions, not a changed primary-display selection."
+      "This is likely a monitor-identity/topology-stability bug rather than a simple UI text mismatch, because the wrong display identity also affects where Command Palette moves.",
+      "The current CmdPal monitor-service and topology-reconciliation work looks intended to solve this class of dock/undock confusion."
     ],
-    "analysis": "A number mismatch is insufficient to justify a code change without a physical-display placement failure. The current monitor utility's geometric ordering explains why an ordinal should not be treated as Windows Settings' label.",
+    "analysis": "The issue predates the latest multi-monitor/topology hardening in CmdPal. Existing merged work is a better first answer than starting a second independent design track.",
     "initial_investigation": [
-      "Read the complete issue and empty discussion.",
-      "Inspected src/common/Display/monitors.cpp enumeration and sorting behavior.",
-      "Searched for a direct live duplicate involving Command Palette monitor ordering and found none."
+      "Current MonitorService in src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs builds friendly display names and stable device IDs instead of relying on raw ordinal labels alone.",
+      "PR #49814 specifically mentions dock/undock and Win+P topology changes causing empty/misconfigured dock state, then fixes stable-ID recovery and debounce behavior.",
+      "No linked PR or active assignee was found on this issue itself."
     ],
     "information_gaps": []
   },
   "actions": [
     {
-      "id": "explain-monitor-identity-50297",
       "type": "post_comment",
-      "label": "Explain display numbering behavior",
-      "primary": true,
-      "confirm": true,
+      "label": "Point to Command Palette monitor-topology fixes",
       "comment": {
-        "body": "Thanks for the screenshot. The numbers shown by Command Palette are not guaranteed to match Windows Settings display labels because monitor APIs can enumerate and order the same physical displays differently. The important behavior is whether the configured physical display is honored. If Command Palette opens on a different physical monitor than the one selected in its settings, please provide those exact steps and the current build version; that would be a separate functional issue."
+        "body": "This looks likely covered by the newer Command Palette multi-monitor and topology-stability work in PR #46915 and PR #49814. Those changes move CmdPal toward stable monitor identities and friendlier display naming, specifically for dock/undock and changing monitor topologies. Because this report was filed on 0.100.2, I would first ask for a retest on a current build before opening a separate design track; if the laptop still remaps to the wrong display, a fresh screenshot on the newer build would be the next discriminator."
       }
     }
   ]

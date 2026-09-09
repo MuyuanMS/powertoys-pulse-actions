@@ -1,166 +1,283 @@
 {
   "schemaVersion": 5,
-  "kind": "issue",
   "number": 50239,
+  "kind": "issue",
+  "track": "fix",
   "title": "Shortcut Conflict shown when there's no documented conflict.",
   "url": "https://github.com/microsoft/PowerToys/issues/50239",
-  "state": "open",
+  "generated_at": "2026-09-09T10:33:13.5242917Z",
+  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
+  "source_updated_at": "2026-09-03T02:28:22Z",
+  "summary": "PowerToys reports a system shortcut conflict for Color Picker Win+Shift+C even though the shortcut still works; the runner is conflating RegisterHotKey conflicts with low-level-hook hotkeys.",
+  "next_action": "This issue was selected as the single full implementation-grade design for the batch; the artifact contains a converged hook-aware conflict-detection design.",
+  "confidence": {
+    "score": 88,
+    "level": "green",
+    "rationale": "The current code paths directly explain how a low-level-hook module can work while the RegisterHotKey-based detector still labels it as a system conflict."
+  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-General"
   ],
   "assignees": [],
-  "generated_at": "2026-09-08T02:40:00Z",
-  "evaluated_at": "2026-09-08T02:40:00Z",
-  "source_updated_at": "2026-09-03T02:28:22Z",
+  "linked_work": [
+    {
+      "relation": "cross_referenced",
+      "kind": "issue",
+      "number": 50402,
+      "state": "open",
+      "title": "A conflict shortcut key of unknown origin in PowerToys shortcut conflict window",
+      "url": "https://github.com/microsoft/PowerToys/issues/50402",
+      "created_at": "2026-09-05T08:23:09Z"
+    },
+    {
+      "relation": "cross_referenced",
+      "kind": "issue",
+      "number": 50415,
+      "state": "closed",
+      "title": "[Dedupe Digest] 2026-09-06",
+      "url": "https://github.com/microsoft/PowerToys/issues/50415",
+      "created_at": "2026-09-06T08:16:15Z"
+    },
+    {
+      "relation": "cross_referenced",
+      "kind": "issue",
+      "number": 50437,
+      "state": "closed",
+      "title": "[Dedupe Digest] 2026-09-07",
+      "url": "https://github.com/microsoft/PowerToys/issues/50437",
+      "created_at": "2026-09-07T08:21:21Z"
+    },
+    {
+      "relation": "cross_referenced",
+      "kind": "issue",
+      "number": 50457,
+      "state": "closed",
+      "title": "[Dedupe Digest] 2026-09-08",
+      "url": "https://github.com/microsoft/PowerToys/issues/50457",
+      "created_at": "2026-09-08T08:19:26Z"
+    },
+    {
+      "relation": "cross_referenced",
+      "kind": "issue",
+      "number": 50478,
+      "state": "open",
+      "title": "[Dedupe Digest] 2026-09-09",
+      "url": "https://github.com/microsoft/PowerToys/issues/50478",
+      "created_at": "2026-09-09T08:19:04Z"
+    }
+  ],
+  "comment_count": 4,
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The detector has a confirmed generic system-conflict fallback and the reported shortcut is functional on Windows 11, but the exact OS heuristic needs tracing.",
+    "rationale": "The issue has a current, repo-local design path: make system-conflict detection aware of whether a module uses the low-level keyboard hook or RegisterHotKey.",
     "evidence": [
-      "Reporter reproduced on current stable Windows 11.",
-      "Win+Shift+C activates Color Picker without functional conflict.",
-      "Detector source falls back to HasConflictWithSystemHotkey and can synthesize a System entry.",
-      "Related #50402 indicates broader unknown-origin conflict work."
+      "The reporter sees a system shortcut conflict for Win+Shift+C, yet Color Picker still opens and works.",
+      "Color Picker exposes its activation shortcut through get_hotkeys() in src/modules/colorPicker/ColorPicker/dllmain.cpp, which PowertoyModule wires to CentralizedKeyboardHook::SetHotkeyAction in src/runner/powertoy_module.cpp.",
+      "HotkeyConflictManager::HasConflictWithSystemHotkey() in src/runner/hotkey_conflict_detector.cpp uses RegisterHotKey(nullptr, ...) as its system-conflict probe.",
+      "Issue 50402 reports another unexplained shortcut-conflict entry in the same PowerToys surface, suggesting the problem is broader than a single key."
     ],
-    "recommended_action": "Approve an OS-aware detector design after tracing the system-hotkey heuristic."
+    "recommended_action": "Approve the hook-aware conflict-detection design below and implement it in the runner so low-level-hook modules stop surfacing false system conflicts."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No concrete fix attempt was found for #50239; related #50402 is separate live work."
+    "rationale": "No current fix attempt or merged PR addresses the mismatch between low-level-hook hotkeys and RegisterHotKey-based system-conflict detection.",
+    "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "PowerToys reports a system shortcut conflict for Color Picker Win+Shift+C on Windows 11 even though the linked shortcut list has no matching active shortcut and activation works. The detector's fallback path is the key triage lead.",
+    "summary": "The report is a false-positive shortcut-conflict bug: Color Picker Win+Shift+C still works, but PowerToys labels it as a system conflict and links to Windows shortcut documentation that does not list that chord.",
     "known_information": [
-      "Issue is open and labeled Product-General.",
-      "Reporter confirmed behavior on 0.101.2362 and Windows 11 build 26200.",
-      "Win+Shift+C still activates Color Picker.",
-      "hotkey_conflict_detector.cpp checks maps then calls HasConflictWithSystemHotkey; GetAllConflicts can synthesize a System entry.",
-      "Related #50402 is open."
+      "The issue was filed against PowerToys 0.101.2362 stable on Windows 11 build 26200.",
+      "The configured shortcut is Win+Shift+C for Color Picker.",
+      "The shortcut still functions to open Color Picker; the bug is the conflict warning itself.",
+      "A second thread, Issue 50402, describes another unexplained shortcut-conflict entry in the same UI."
     ],
     "inferences": [
-      "The warning may be a stale Windows-version heuristic or fallback classification rather than a functional conflict.",
-      "This may be broader than Color Picker."
+      "The warning is likely generated from a generic conflict heuristic rather than from the actual activation path used by Color Picker.",
+      "Because the shortcut still works, the current system-conflict classification is more likely overstating a RegisterHotKey-only reservation than identifying a real activation blocker for this module."
     ],
-    "analysis": "The report is reproducible and detector source has an explicit generic fallback. A focused design should identify the system-hotkey table/heuristic and gate deprecated shortcuts by OS/version.",
+    "analysis": "The critical clue is that Color Picker is not activated through RegisterHotKey. It uses the centralized low-level keyboard hook, so the hotkey detector’s RegisterHotKey probe can report a conflict that does not actually block the feature. That is exactly the symptom the reporter sees.",
     "initial_investigation": [
-      "Inspected HasConflict and GetAllConflicts.",
-      "Read full discussion and current-version confirmation.",
-      "Checked related #50402."
+      "PowertoyModule::update_hotkeys() routes get_hotkeys() modules into CentralizedKeyboardHook::SetHotkeyAction in src/runner/powertoy_module.cpp.",
+      "Color Picker defines its activation shortcut through get_hotkeys() in src/modules/colorPicker/ColorPicker/dllmain.cpp.",
+      "HotkeyConflictManager::HasConflictWithSystemHotkey() in src/runner/hotkey_conflict_detector.cpp decides system conflicts by probing RegisterHotKey(nullptr, ...).",
+      "The dashboard consumes sysConflictHotkeyMap as real system conflicts, so a probe mismatch becomes a visible false-positive card."
     ],
-    "information_gaps": [
-      {
-        "information": "The detector's system-hotkey result for Win+Shift+C on Windows 11 and Windows 10",
-        "why_needed": "Separates stale OS mapping from key normalization or fallback behavior",
-        "how_to_collect": "Capture a focused detector/debug trace with OS build for Win+Shift+C on both versions"
-      }
-    ]
+    "information_gaps": []
   },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve hook-aware shortcut conflict fix",
+      "note": "This issue was selected as the batch’s single full implementation-grade design and is ready for implementation if approved."
+    }
+  ],
   "proposed_fixes": [
     {
-      "title": "Make system shortcut conflict detection OS-aware and evidence-based",
-      "root_cause": "After registered maps miss, the detector can classify a shortcut as System through a heuristic/fallback that may treat deprecated Win+Shift+C as active on Windows 11.",
+      "title": "Make system hotkey conflict detection registration-aware",
+      "root_cause": "The runner currently treats RegisterHotKey failure as a definitive system conflict for every PowerToys hotkey, even when that module actually activates through the centralized low-level keyboard hook rather than RegisterHotKey. That makes hook-driven shortcuts like Color Picker show a false system conflict while they continue to work.",
       "plan": [
-        "Locate and document the system-hotkey table/heuristic.",
-        "Represent availability by Windows version or remove inactive mappings.",
-        "Do not synthesize a System conflict without positive evidence.",
-        "Add detector tests for Win+Shift+C and genuine system conflicts."
+        "Track whether each module hotkey came from get_hotkeys() (low-level hook path) or GetHotkeyEx() (RegisterHotKey path).",
+        "Use documented reserved-shortcut checks for both paths, but only use the RegisterHotKey probe for modules whose real activation path depends on RegisterHotKey.",
+        "Keep active dashboard/system-conflict output tied to true blocking conflicts, and add regression tests for low-level-hook hotkeys like Color Picker."
       ],
       "verification": [
-        "Set Color Picker to Win+Shift+C on Windows 11 and verify no indicator.",
-        "Verify activation still works.",
-        "Verify known active conflicts still report."
+        "Set Color Picker to Win+Shift+C on Windows 11 and verify the shortcut still works without an active system conflict card.",
+        "Verify a RegisterHotKey-based module still reports a system conflict when the OS truly blocks registration.",
+        "Verify in-app conflict detection between two PowerToys modules still works unchanged."
       ],
       "confidence": {
-        "score": 72,
-        "level": "yellow",
-        "rationale": "The fallback is confirmed, but the exact system-hotkey heuristic and OS matrix need tracing."
+        "score": 88,
+        "level": "green",
+        "rationale": "The mismatch is directly visible in current code: active module hotkeys can be low-level-hook based while the detector still relies on RegisterHotKey semantics."
       }
     }
   ],
   "design": {
-    "root_cause": "The detector can synthesize a System conflict after registered maps miss, and a historical shortcut rule may be applied on Windows 11 without current evidence.",
+    "root_cause": "System-conflict detection is not aware of the module hotkey transport. For get_hotkeys()-based modules, PowerToys uses the centralized low-level keyboard hook, but HotkeyConflictManager still calls RegisterHotKey to decide whether the shortcut is a system conflict. A RegisterHotKey failure therefore becomes a visible conflict even when the real module path still works.",
     "evidence": [
-      "hotkey_conflict_detector.cpp checks sys/in-app maps before HasConflictWithSystemHotkey.",
-      "GetAllConflicts creates a System fallback when maps miss.",
-      "Win+Shift+C works for Color Picker and is absent from the linked current list.",
-      "Related #50402 tracks unknown-origin conflicts."
+      "Observed: Color Picker registers its shortcut through get_hotkeys() in src/modules/colorPicker/ColorPicker/dllmain.cpp and does not use GetHotkeyEx().",
+      "Observed: PowertoyModule::update_hotkeys() wires get_hotkeys() entries to CentralizedKeyboardHook::SetHotkeyAction in src/runner/powertoy_module.cpp.",
+      "Observed: HotkeyConflictManager::HasConflictWithSystemHotkey() in src/runner/hotkey_conflict_detector.cpp calls RegisterHotKey(nullptr, hotkeyId, modifiers, hotkey.key) and treats ERROR_HOTKEY_ALREADY_REGISTERED as a system conflict.",
+      "Observed: DashboardViewModel renders runner-provided sysConflictHotkeyMap entries as active shortcut conflicts.",
+      "Inferred: Win+Shift+C is reaching a RegisterHotKey-only reservation/legacy overlap on Windows 11, but that reservation does not block Color Picker’s hook-driven activation path."
     ],
     "affected_files": [
       {
+        "path": "src/runner/hotkey_conflict_detector.h",
+        "purpose": "Add hotkey-registration metadata so conflict evaluation can distinguish low-level-hook hotkeys from RegisterHotKey-based hotkeys.",
+        "symbols": [
+          "HotkeyConflictDetector::HotkeyConflictManager",
+          "HotkeyConflictDetector::HotkeyConflictInfo"
+        ]
+      },
+      {
         "path": "src/runner/hotkey_conflict_detector.cpp",
-        "purpose": "Classifies system and in-app conflicts",
+        "purpose": "Implement registration-aware system-conflict checks and keep active conflict maps limited to true blocking conflicts.",
         "symbols": [
           "HotkeyConflictManager::HasConflict",
-          "HotkeyConflictManager::GetAllConflicts",
-          "HasConflictWithSystemHotkey"
+          "HotkeyConflictManager::AddHotkey",
+          "HotkeyConflictManager::HasConflictWithSystemHotkey"
         ]
       },
       {
-        "path": "src/runner/hotkey_conflict_detector.h",
-        "purpose": "Detector contract and types",
+        "path": "src/runner/powertoy_module.cpp",
+        "purpose": "Pass the correct hotkey-registration kind from get_hotkeys() versus GetHotkeyEx() call sites.",
         "symbols": [
-          "HotkeyConflictManager",
-          "HotkeyConflictType"
+          "PowertoyModule::update_hotkeys",
+          "PowertoyModule::UpdateHotkeyEx"
         ]
       },
       {
-        "path": "src/settings-ui/Settings.UI/Helpers/HotkeyConflictIgnoreHelper.cs",
-        "purpose": "UI-side suppression behavior to validate",
+        "path": "src/runner/UnitTests/HotkeyConflictTests.cpp",
+        "purpose": "Add regression coverage for low-level-hook false positives and preserve RegisterHotKey-based conflict behavior.",
         "symbols": [
-          "HotkeyConflictIgnoreHelper"
+          "RunnerUnitTests::HotkeyConflictTests"
         ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/runner/hotkey_conflict_detector.cpp",
+        "file": "src/runner/hotkey_conflict_detector.h",
         "symbols": [
-          "HasConflict",
-          "GetAllConflicts",
-          "HasConflictWithSystemHotkey"
+          "HotkeyConflictManager",
+          "HotkeyConflictInfo"
         ],
-        "current_behavior": "Unknown unmapped shortcuts can become System conflicts through heuristic/fallback.",
-        "change": "Require positive evidence and apply OS-version-aware mappings; return no conflict for inactive deprecated mappings.",
-        "code_block": "if (systemHotkeyTable.Contains(osBuild, hotkey)) return SystemConflict; return NoConflict;",
+        "current_behavior": "Conflict records only track the hotkey, module name, and hotkey ID; the detector has no way to tell whether the module uses the centralized low-level hook or RegisterHotKey.",
+        "change": "Add an explicit registration-kind enum (for example LowLevelHook vs RegisterHotKey) to the hotkey conflict model and thread it through the AddHotkey / HasConflict pipeline.",
+        "code_block": "enum class HotkeyRegistrationKind { LowLevelHook, RegisterHotKey };\n\nstruct HotkeyConflictInfo {\n    Hotkey hotkey;\n    std::wstring moduleName;\n    int hotkeyID = 0;\n    HotkeyRegistrationKind registrationKind = HotkeyRegistrationKind::LowLevelHook;\n};\n\nbool AddHotkey(const Hotkey& hotkey, const wchar_t* moduleName, int hotkeyID, bool isEnabled, HotkeyRegistrationKind registrationKind);",
         "edge_cases": [
-          "Windows 10 historical shortcuts",
-          "Future Windows changes",
-          "Locale normalization",
-          "Preserve real RegisterHotKey conflicts"
+          "Disabled-module hotkeys kept in disabledHotkeys must preserve the registration kind so re-enable does not change behavior.",
+          "Hash/equality helpers must include registrationKind only if conflict records from different transports should remain distinct in sets."
         ],
         "tests": [
-          "OS-version unit tests",
-          "Positive system conflict tests",
-          "Dashboard conflict-indicator UI test"
+          "Unit-test that AddHotkey stores and rehydrates registrationKind through disable/enable transitions."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/runner/powertoy_module.cpp",
+        "symbols": [
+          "PowertoyModule::update_hotkeys",
+          "PowertoyModule::UpdateHotkeyEx"
+        ],
+        "current_behavior": "Both low-level-hook get_hotkeys() entries and GetHotkeyEx() entries call HotkeyConflictManager::AddHotkey without telling the manager which transport they actually use.",
+        "change": "Pass LowLevelHook from update_hotkeys() and RegisterHotKey from UpdateHotkeyEx() so the detector can evaluate system conflicts against the same activation model the module really uses.",
+        "code_block": "hkmng.AddHotkey(hotkeys[i], pt_module->get_key(), static_cast<int>(i), pt_module->is_enabled(), HotkeyRegistrationKind::LowLevelHook);\n\nHotkeyConflictDetector::Hotkey hookHotkey = ShortcutToHotkey({ hotkey.modifiersMask, hotkey.vkCode });\nhkmng.AddHotkey(hookHotkey, pt_module->get_key(), 0, pt_module->is_enabled(), HotkeyRegistrationKind::RegisterHotKey);",
+        "edge_cases": [
+          "Modules that expose both styles over time during settings changes must clear and rebuild the old records to avoid stale conflict state.",
+          "No behavior change should occur for in-app conflict detection across modules sharing the same shortcut."
+        ],
+        "tests": [
+          "Add a runner unit or fake integration test that exercises both call paths and confirms they produce different registration kinds."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/runner/hotkey_conflict_detector.cpp",
+        "symbols": [
+          "HotkeyConflictManager::HasConflict",
+          "HotkeyConflictManager::AddHotkey",
+          "HotkeyConflictManager::HasConflictWithSystemHotkey"
+        ],
+        "current_behavior": "Every hotkey uses the same RegisterHotKey-based system-conflict probe, so low-level-hook modules inherit false-positive system conflicts from a different transport model.",
+        "change": "Split system-conflict evaluation into (a) a small explicit reserved-shortcut check that applies to all modules, and (b) the existing RegisterHotKey probe that only applies to RegisterHotKey-based modules. Do not populate sysConflictHotkeyMap for low-level-hook modules solely because the RegisterHotKey probe failed.",
+        "code_block": "static bool MatchesKnownWindowsReservedHotkey(const Hotkey& hotkey);\n\nbool HotkeyConflictManager::HasSystemConflict(const Hotkey& hotkey, HotkeyRegistrationKind kind)\n{\n    if (MatchesKnownWindowsReservedHotkey(hotkey))\n    {\n        return true;\n    }\n\n    return kind == HotkeyRegistrationKind::RegisterHotKey && WouldFailRegisterHotKey(hotkey);\n}\n\n// In AddHotkey / HasConflict:\nif (HasSystemConflict(hotkey, registrationKind)) { ... }",
+        "edge_cases": [
+          "Keep the existing in-app conflict ordering so two PowerToys modules sharing a hotkey still surface as in-app conflicts first.",
+          "Seed MatchesKnownWindowsReservedHotkey with only clearly reserved/sensitive chords to avoid introducing a different false-positive class.",
+          "If the dashboard later needs a softer “possible overlap” concept for low-level-hook shortcuts, add it as a new non-actionable metadata field rather than reusing SystemConflict."
+        ],
+        "tests": [
+          "Regression: a low-level-hook hotkey with a mocked RegisterHotKey failure does not land in sysConflictHotkeyMap.",
+          "Regression: a RegisterHotKey-based hotkey with the same mocked failure still lands in sysConflictHotkeyMap.",
+          "Regression: explicit reserved shortcuts remain blocked for both transports."
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/runner/UnitTests/HotkeyConflictTests.cpp",
+        "symbols": [
+          "HotkeyConflictTests"
+        ],
+        "current_behavior": "The unit tests only cover a basic in-app conflict case and do not pin the low-level-hook versus RegisterHotKey distinction.",
+        "change": "Add deterministic tests around the new registration-kind split, plus a dashboard-facing regression that models Color Picker-like low-level-hook behavior.",
+        "code_block": "TEST_METHOD(LowLevelHookHotkey_DoesNotSurfaceRegisterHotKeyFalsePositive)\n{\n    // Arrange: stub WouldFailRegisterHotKey(...) => true\n    // Act: AddHotkey(..., HotkeyRegistrationKind::LowLevelHook)\n    // Assert: HasConflict == NoConflict and sys conflicts stay empty\n}\n\nTEST_METHOD(RegisterHotKeyHotkey_StillSurfacesTrueSystemConflict) { ... }",
+        "edge_cases": [
+          "Tests should not depend on real OS hotkey availability; inject or abstract the RegisterHotKey probe so unit results stay stable on CI.",
+          "Cover module disable/re-enable so stored registration kinds do not regress after state changes."
+        ],
+        "tests": [
+          "Runner unit tests for low-level-hook false positives, RegisterHotKey true conflicts, and preserved in-app conflicts."
         ]
       }
     ],
     "verify": [
-      "Build Runner and Settings UI.",
-      "Run focused hotkey conflict tests.",
-      "Manually set Color Picker to Win+Shift+C on Windows 11."
+      "Open PowerToys Settings, assign Color Picker to Win+Shift+C on Windows 11, and verify Color Picker still opens while the dashboard shows no active system conflict.",
+      "Assign two PowerToys modules the same shortcut and verify the dashboard still shows an in-app conflict.",
+      "Use or simulate a RegisterHotKey-based module with a truly blocked shortcut and verify the system-conflict card still appears.",
+      "Run the runner hotkey conflict unit tests covering the new registration-kind logic."
     ],
     "risks": [
-      "Windows shortcut knowledge can become stale.",
-      "Removing fallback warnings may hide unknown conflicts."
+      "A too-small reserved-shortcut list could hide warnings for genuinely sensitive OS shortcuts on low-level-hook modules.",
+      "A too-large reserved-shortcut list would recreate false positives under a different name; the list must stay intentionally conservative and documented.",
+      "Disabled/re-enabled modules must preserve registration-kind metadata or conflicts may appear to flicker after settings changes."
     ],
     "alternatives": [
-      "Change only help link; rejected because indicator remains false-positive."
+      "Keep the current RegisterHotKey probe but rename the UI copy. Rejected because the issue is not only wording; the dashboard is surfacing a false active conflict for a working shortcut.",
+      "Drop all system-conflict detection for low-level-hook modules. Rejected because PowerToys still needs a place to block clearly reserved/sensitive Windows chords.",
+      "Move all modules to RegisterHotKey. Rejected because many existing modules intentionally rely on the centralized low-level hook and would lose current behavior."
     ]
   },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Design fix"
-    },
-    {
-      "type": "request_info",
-      "label": "Trace Win+Shift+C system mapping",
-      "comment": {
-        "body": "The detector checks registered maps and then falls back to HasConflictWithSystemHotkey, while the issue confirms Win+Shift+C activates Color Picker on Windows 11. Please capture the detector's result for Win+Shift+C on Windows 11 and Windows 10, including OS build. This distinguishes a stale mapping from an overly broad fallback without hiding genuine conflicts."
-      }
-    }
-  ]
+  "design_review": {
+    "rounds": 2,
+    "signoff": "No blocking objections after separating low-level-hook activation from RegisterHotKey-only conflict probing.",
+    "non_blocking_notes": [
+      "If the product wants to keep softer overlap hints for low-level-hook shortcuts, add a new non-actionable metadata concept later instead of overloading SystemConflict.",
+      "Any reserved-shortcut list should be documented beside the runner logic to avoid drift with the Settings UI tooltip text."
+    ]
+  },
+  "selected_for_full_design": true
 }

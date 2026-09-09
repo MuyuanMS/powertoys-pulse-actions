@@ -1,48 +1,136 @@
 {
-  "number": 49635,
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
+  "number": 49635,
+  "title": "Peek shortcut \"Space\" intermittently fails in File Explorer.",
+  "url": "https://github.com/microsoft/PowerToys/issues/49635",
+  "state": "OPEN",
+  "created_at": "2026-08-03T08:56:50Z",
+  "updated_at": "2026-09-09T07:43:51Z",
+  "author": "tianyixin",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-09-09T10:28:38.042Z",
+  "evaluated_at": "2026-09-09T10:28:38.042Z",
+  "source_updated_at": "2026-09-09T07:43:51Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0,
+    "timeline_events_read": 4
   },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true,
+  "confidence": {
+    "score": 64,
+    "level": "yellow",
+    "rationale": "The symptom pattern strongly implicates the single-space foreground-eligibility cache, but the exact Explorer window-handle transition still needs focused validation."
   },
-  "actions": [
+  "linked_work": [
     {
-      "id": "request-info-49635",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 49635,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
+      "type": "commit",
+      "ref": "#48293",
+      "relevance": "Recent Peek keyboard-hook change that introduced more complex hotkey handling around focus state."
+    },
+    {
+      "type": "commit",
+      "ref": "#44995",
+      "relevance": "Earlier Space-key suppression fix during Explorer rename; useful contrast because the current failure is the opposite direction."
+    }
+  ],
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The default Space shortcut intermittently fails only in File Explorer, not on the Desktop, and immediately recovers after foreground changes such as minimize/restore or switching apps. That pattern aligns with the current single-space activation path in peek/dllmain.cpp, which relies on a cached foreground-eligibility bit updated by a debounced foreground hook instead of recomputing synchronously when the hotkey fires.",
+    "evidence": [
+      "The issue says Space fails intermittently in File Explorer, but Desktop activation works normally and Ctrl+Space eliminates the problem.",
+      "A new +1 confirms the same behavior on Windows 10 22H2.",
+      "peek/dllmain.cpp special-cases the single-Space hotkey and, when the foreground hook is active, trusts the cached g_foregroundEligible value rather than recomputing eligibility on each press.",
+      "Minimize/restore, app switching, or opening Command Palette all create foreground transitions that would refresh that cached eligibility value."
+    ],
+    "recommended_action": "Keep this as an actionable but design-deferred Peek hotkey regression and run one focused maintainer repro/trace before implementation is approved."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The likely fix is confined to the Peek hotkey/foreground eligibility path and does not require additional reporter logs before maintainer-side reproduction.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make single-Space Peek activation recompute Explorer eligibility instead of trusting stale cache state",
+      "root_cause": "The default single-Space activation path can block itself when the cached foreground eligibility bit falls out of sync with File Explorer’s current top-level window or tab-host state.",
+      "plan": [
+        "When the single-Space path sees cached ineligibility, perform a synchronous foreground/explorer recheck before dropping the hotkey.",
+        "Log and tighten the cases where Explorer foreground windows are missed because the ShellWindows HWND or active-tab HWND changed.",
+        "Keep the existing typing/rename suppression behavior, but do not require an unrelated foreground transition to recover single-Space activation."
+      ],
+      "verification": [
+        "On File Explorer, repeatedly invoke Peek with Space on a selected file and confirm activation no longer intermittently fails.",
+        "Confirm Desktop activation still works and typing/rename suppression from the older Space fix is preserved.",
+        "Confirm custom shortcuts such as Ctrl+Space remain unaffected."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The cached-eligibility path cleanly matches the observed recovery triggers, but a focused trace should still confirm the missed Explorer state."
       }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-03T08:56:50Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-    "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+  "issue_context": {
+    "summary": "Peek’s default single-Space hotkey intermittently fails in File Explorer but not on the Desktop, and it starts working again after a foreground change or when the shortcut is changed to Ctrl+Space.",
+    "known_information": [
+      "The issue includes clear File Explorer reproduction steps and notes that Desktop activation still works.",
+      "Minimizing and restoring File Explorer, switching to another app and back, or opening Command Palette temporarily restores the Space shortcut.",
+      "Changing the shortcut from Space to Ctrl+Space removes the problem.",
+      "A second user confirmed the same issue on Windows 10 22H2."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-03T08:56:50Z"
-  }
+    "inferences": [
+      "The problem is specific to the single-Space activation path rather than general Peek preview creation.",
+      "Foreground eligibility or Explorer window detection is likely getting stale until another app-focus transition forces a refresh."
+    ],
+    "analysis": "The report is already reproducible enough to justify a targeted maintainer reproduce action instead of a generic request for logs.",
+    "initial_investigation": [
+      "Reviewed the complete issue body, the new +1 comment, and current labels.",
+      "Inspected src/modules/peek/peek/dllmain.cpp, FileExplorerHelper.cs, and the related Peek startup flow in App.xaml.cs.",
+      "Checked recent Peek history, including #48293 and the older Space-while-renaming fix #44995, to isolate the regression area."
+    ],
+    "information_gaps": []
+  },
+  "design": null,
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce intermittent Peek Space activation in Explorer",
+      "reproduce": {
+        "title": "Verify single-Space activation recovers only after a foreground transition",
+        "module": "Peek",
+        "version_requirement": "PowerToys 0.100.2 or current main with Space as the Peek shortcut",
+        "prerequisites": [
+          "Peek enabled with the default Space shortcut",
+          "A File Explorer window with one selectable file and no inline rename or search box focus"
+        ],
+        "setup": [
+          "Start from Desktop and confirm Space activates Peek there.",
+          "Move to File Explorer and select a file in the main list view."
+        ],
+        "steps": [
+          "Press Space repeatedly in File Explorer until Peek fails to open.",
+          "Without changing the selection, minimize and restore Explorer or switch to another app and back.",
+          "Press Space again and observe whether activation resumes immediately.",
+          "Change the shortcut to Ctrl+Space and confirm the same file now opens reliably."
+        ],
+        "expected_result": "The current regression shows recovery only after a foreground transition; the intended result is reliable single-Space activation in File Explorer without requiring focus tricks."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve Peek Space-eligibility fix design",
+      "note": "Keeps the work bounded to the single-Space eligibility and Explorer foreground-detection path."
+    }
+  ]
 }

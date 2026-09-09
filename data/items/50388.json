@@ -2,199 +2,73 @@
   "schemaVersion": 5,
   "number": 50388,
   "kind": "issue",
-  "title": "CmdPal: Some UI messages handled by MainWindow are not marshaled to the dispatcher thread",
+  "track": "fix",
+  "stage": "owned_elsewhere",
+  "generated_at": "2026-09-09T10:18:14.162Z",
+  "evaluated_at": "2026-09-09T10:18:14.162Z",
+  "source_updated_at": "2026-09-04T18:05:50Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50388",
-  "state": "open",
+  "title": "CmdPal: Some UI messages handled by MainWindow are not marshaled to the dispatcher thread",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Command Palette"
   ],
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
-  "source_updated_at": "2026-09-04T18:05:50Z",
+  "assignees": [
+    "jiripolasek"
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "A linked maintainer-owned draft PR already targets the same dispatcher-marshaling bug."
+  },
+  "confidence": {
+    "score": 96,
+    "level": "green",
+    "rationale": "The linked draft PR title matches the issue exactly and the same maintainer is assigned."
+  },
+  "linked_work": [
+    {
+      "kind": "pull_request",
+      "number": 50392,
+      "title": "CmdPal: Marshal handling of UI messages in MainWindow to the dispatcher queue",
+      "state": "OPEN",
+      "url": "https://github.com/microsoft/PowerToys/pull/50392",
+      "relation": "active_fix"
+    }
+  ],
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report identifies a concrete UI-thread consistency defect and current code shows mixed dispatcher handling, but exact sender/order constraints remain to be confirmed.",
+    "status": "duplicate_or_handled",
+    "rationale": "Issue 50388 is already covered by a linked maintainer-owned draft PR for the same dispatcher-queue bug.",
     "evidence": [
-      "Issue is assigned to a Command Palette maintainer and targets MainWindow message handling.",
-      "MainWindow.xaml.cs contains multiple message receivers and UI/HWND mutations.",
-      "Program activation redirection requires preserving synchronous completion."
+      "The issue is assigned to jiripolasek.",
+      "The timeline links draft PR #50392 with matching scope."
     ],
-    "recommended_action": "Approve the dispatcher-boundary design after collecting the affected-message sender/thread trace."
+    "recommended_action": "Treat the issue as handled by the linked draft PR.",
+    "evaluated_at": "2026-09-09T10:18:14.162Z",
+    "source_updated_at": "2026-09-04T18:05:50Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "A repository change is applicable, but the exact dispatcher and completion strategy needs a focused trace."
+    "status": "existing_fix",
+    "rationale": "Draft PR #50392 is the current concrete fix attempt for this bug.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50392"
+    ]
   },
-  "proposed_fixes": [
-    {
-      "title": "Make MainWindow messenger UI mutations consistently dispatcher-bound",
-      "root_cause": "MainWindow receives messages that can originate outside the UI thread, but the current receiver implementations do not apply one consistent UI/HWND affinity rule.",
-      "plan": [
-        "Inventory every MainWindow IRecipient<T>.Receive implementation and classify UI, HWND, and shared-state mutations.",
-        "Move UI-affine work behind private dispatcher-thread handlers while preserving synchronous activation completion.",
-        "Add focused tests or seams for message dispatch and manually exercise summon, dock, dismiss, drag, and quit flows."
-      ],
-      "verification": [
-        "Build the Command Palette UI project in the supported Visual Studio configuration.",
-        "Deliver affected messages from a non-UI sender and verify UI/HWND access occurs on MainWindow.DispatcherQueue.",
-        "Redirect a second-instance activation and verify the payload is processed once before the sender exits."
-      ],
-      "confidence": {
-        "score": 79,
-        "level": "yellow",
-        "rationale": "The mixed receiver implementations are visible in current code, but sender-thread and ordering constraints need confirmation."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "A Command Palette maintainer reports that MainWindow handles related UI/window messages inconsistently: some receivers marshal to the dispatcher while others touch window state directly.",
+    "summary": "The issue already has a current draft PR for the same Command Palette UI-thread marshaling problem.",
     "known_information": [
-      "Issue is on main and is assigned to a Command Palette maintainer.",
-      "The report specifically concerns UI/window messages handled by MainWindow.",
-      "Current MainWindow.xaml.cs contains multiple IRecipient<T>.Receive implementations and mixed dispatcher usage.",
-      "Program activation redirection has a synchronous completion path that must be preserved."
+      "The issue is assigned to jiripolasek.",
+      "PR #50392 is still open and draft."
     ],
     "inferences": [
-      "Some direct receivers may run from a non-UI messenger sender, but the issue does not identify every sender thread.",
-      "A blanket asynchronous dispatch could change activation or dismissal ordering."
+      "Remaining work is review and completion of the linked PR, not re-triage."
     ],
-    "analysis": "The code evidence supports a focused dispatcher-boundary design, but the exact safe change depends on sender-thread and synchronous-ordering facts.",
+    "analysis": "This should be treated as handled elsewhere in the correction pass.",
     "initial_investigation": [
-      "MainWindow.xaml.cs is the owning file for messenger receivers, HWND access, and show/hide state.",
-      "Program.cs and App.xaml.cs establish redirected activation and initial window creation constraints.",
-      "The prior duplicate/issue search found no stronger duplicate; this is a targeted implementation-quality bug."
+      "Reviewed the issue timeline and PR state.",
+      "Checked the local MainWindow dispatcher-handling area only to confirm the PR scope."
     ],
-    "information_gaps": [
-      {
-        "information": "Thread and ordering behavior for each affected message receiver.",
-        "why_needed": "Distinguishes safe TryEnqueue changes from changes that require a completion mechanism.",
-        "how_to_collect": "Run a dev build with message names and managed/native thread IDs logged at send and receive."
-      }
-    ]
+    "information_gaps": []
   },
-  "actions": [
-    {
-      "type": "request_info",
-      "label": "Request CmdPal message-thread trace",
-      "note": "Confirm the sender and ordering constraints before changing dispatcher behavior.",
-      "comment": {
-        "body": "The report identifies a real consistency problem: some MainWindow UI/window messages are dispatcher-marshaled while others are handled directly. Please provide a short trace or code-level confirmation for the affected messages (for example ShowWindowMessage, ShowPaletteAtMessage, HideWindowMessage, QuitMessage, and DismissMessage): which thread sends each message, and whether the sender requires synchronous completion before returning. This evidence determines whether each receiver can safely enqueue work or needs a completion signal; it can be collected from a local dev build with thread IDs and the existing messenger logging."
-      }
-    },
-    {
-      "type": "approve_design",
-      "label": "Design fix: marshal CmdPal window messages",
-      "note": "Approve a fork-side design after confirming the sender/thread ordering constraints.",
-      "design_prompt": "Inspect MainWindow messenger receivers and make UI/HWND mutations consistently dispatcher-bound without breaking synchronous activation completion."
-    }
-  ],
-  "design": {
-    "root_cause": "MainWindow receives messages that can originate outside the UI thread, but the current receiver implementations do not apply one consistent UI/HWND affinity rule.",
-    "evidence": [
-      "Current MainWindow.xaml.cs contains messenger receivers for show, hide, dismiss, quit, dock, and related UI state.",
-      "Existing dispatcher-bound receivers demonstrate that UI affinity is already an established pattern in this component.",
-      "Program.OnActivated/RedirectActivationTo impose a synchronous activation contract."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
-        "purpose": "Owns Command Palette window state, messenger registration, show/hide behavior, and HWND access.",
-        "symbols": [
-          "MainWindow.Receive(ShowWindowMessage)",
-          "MainWindow.Receive(ShowPaletteAtMessage)",
-          "MainWindow.Receive(HideWindowMessage)",
-          "MainWindow.Receive(QuitMessage)",
-          "MainWindow.Receive(DismissMessage)",
-          "MainWindow.ShowHwnd"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Program.cs",
-        "purpose": "Redirects activation to an existing instance and defines synchronous completion behavior.",
-        "symbols": [
-          "Program.OnActivated",
-          "Program.RedirectActivationTo"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
-        "purpose": "Creates MainWindow and hands initial activation to it.",
-        "symbols": [
-          "App.OnLaunched",
-          "App.ConfigureServices"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
-        "symbols": [
-          "MainWindow.Receive(*)",
-          "MainWindow.ShowHwnd"
-        ],
-        "current_behavior": "Receivers mix direct UI/HWND operations with dispatcher-enqueued work.",
-        "change": "Classify each receiver by thread affinity and extract UI-only private handlers; receivers should enqueue only work that is safe to defer.",
-        "code_block": "foreach (receiver in MainWindowReceivers) { classify(receiver); receiver => DispatcherQueue.TryEnqueue(() => HandleOnUiThread(receiver)); }",
-        "edge_cases": [
-          "Do not defer state whose sender requires synchronous acknowledgement.",
-          "Preserve existing message ordering for show/dismiss/quit."
-        ],
-        "tests": [
-          "Add dispatcher-boundary tests for each affected message.",
-          "Verify HWND operations run only on the UI thread."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Program.cs",
-        "symbols": [
-          "Program.OnActivated",
-          "Program.RedirectActivationTo"
-        ],
-        "current_behavior": "Redirected activation depends on the target instance completing message handling before the source exits.",
-        "change": "Keep the synchronous contract; use an explicit completion signal if dispatch becomes asynchronous.",
-        "code_block": "var completion = new TaskCompletionSource(); messenger.Send(message); await completion.Task; return;",
-        "edge_cases": [
-          "Avoid fire-and-forget activation loss.",
-          "Handle a closed target window and cancellation."
-        ],
-        "tests": [
-          "Exercise second-instance activation and payload delivery exactly once."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
-        "symbols": [
-          "App.OnLaunched"
-        ],
-        "current_behavior": "Initial launch creates the window on the UI thread and begins activation handling.",
-        "change": "Verify the same dispatcher policy applies to initial and redirected activation paths.",
-        "code_block": "CreateWindowOnUiThread(); await mainWindow.HandleActivationAsync(args);",
-        "edge_cases": [
-          "Do not introduce startup deadlocks.",
-          "Do not duplicate activation payloads."
-        ],
-        "tests": [
-          "Launch normally and through a redirected activation."
-        ]
-      }
-    ],
-    "verify": [
-      "Build the Command Palette UI project.",
-      "Run dispatcher-boundary tests or a dev diagnostic build.",
-      "Manually summon, dock, drag, dismiss, quit, and repeat the sequence."
-    ],
-    "risks": [
-      "Changing dispatch timing can affect focus, visibility, and shutdown ordering.",
-      "Incorrect completion handling could lose redirected activation payloads or deadlock startup."
-    ],
-    "alternatives": [
-      "Leaving direct receivers unchanged is unsafe for UI/HWND access from worker threads.",
-      "Making every receiver fire-and-forget is rejected because activation has a synchronous contract."
-    ]
-  }
+  "actions": []
 }

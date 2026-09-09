@@ -1,165 +1,71 @@
 {
   "schemaVersion": 5,
-  "generated_at": "2026-09-08T03:00:24Z",
-  "evaluated_at": "2026-09-08T03:00:24Z",
+  "number": 50339,
+  "kind": "issue",
+  "track": "fix",
+  "title": "Workspaces incorrectly moves main chrome window instead of PWA app",
+  "url": "https://github.com/microsoft/PowerToys/issues/50339",
+  "generated_at": "2026-09-09T10:33:13.5242917Z",
+  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
   "source_updated_at": "2026-09-02T16:49:44Z",
-  "repository": "microsoft/PowerToys",
-  "item": {
-    "type": "issue",
-    "number": 50339,
-    "title": "Workspaces incorrectly moves main chrome window instead of PWA app",
-    "url": "https://github.com/microsoft/PowerToys/issues/50339",
-    "state": "OPEN",
-    "created_at": "2026-09-02T16:49:44Z",
-    "updated_at": "2026-09-02T16:49:44Z",
-    "author": "KKhanhH",
-    "labels": [
-      "Issue-Bug",
-      "Needs-Triage"
-    ],
-    "assignees": []
+  "summary": "This Workspaces report was filed on 0.99.1, and current merged PWA-recognition work appears to cover the “plain Chrome window moved instead of PWA” failure mode.",
+  "next_action": "Draft a comment pointing to the newer Workspaces PWA matching fixes and ask for a retest on a current build if the symptom remains.",
+  "confidence": {
+    "score": 82,
+    "level": "yellow",
+    "rationale": "The current code and merged history explicitly strengthen Chrome/Edge PWA identification, but the artifact should still present this as likely-covered rather than absolutely proven."
   },
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 0,
-    "timeline_events_read": 2,
-    "activity_sources": [
-      "https://github.com/microsoft/PowerToys/issues/50339",
-      "https://github.com/microsoft/PowerToys/issues/50339#issuecomment-stream"
-    ]
-  },
-  "upstream_public_action_taken": false,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "linked_work": [],
+  "comment_count": 0,
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "Workspaces moves an existing Chrome window when it should move or launch a Chrome PWA. The arranger matching code accepts a normal browser window when path/name matches and PWA IDs are empty or unresolved, fitting the symptom.",
+    "status": "duplicate_or_handled",
+    "rationale": "Current Workspaces PWA-recognition changes appear to address the window-matching ambiguity described in this older-build report.",
     "evidence": [
-      "Workspace contains Google Chat/Calendar/Gmail PWAs; a normal Chrome window is moved instead.",
-      "origin/main WindowArranger::GetNearestWindow compares app name/path and pwaAppId after best-effort PWA detection.",
-      "Merged PR #35913 implemented PWA recognition/launching, confirming ownership area."
+      "The issue was filed against PowerToys 0.99.1 and describes a normal Chrome window being moved as if it were a saved PWA entry.",
+      "Current Workspaces matching logic in WindowArranger.cpp compares both app identity and pwaAppId before reusing an existing window.",
+      "Merged follow-up PRs #36217 and #39971 both focused specifically on PWA recognition and PWA launch handling."
     ],
-    "recommended_action": "Approve a Workspaces PWA matching fix that requires positive PWA identity before matching browser-backed PWA entries to existing browser windows."
+    "recommended_action": "Point the reporter to the newer Workspaces PWA fixes and ask for a retest on a current build before starting a fresh design."
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No current fix was found; the matching predicate has an obvious browser/PWA false-positive boundary."
+    "status": "existing_fix",
+    "rationale": "Current merged PWA follow-up and launch work appears to cover the PWA-identification path reported here.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/36217",
+      "https://github.com/microsoft/PowerToys/pull/39971"
+    ]
   },
-  "proposed_fixes": [
-    {
-      "title": "Require PWA identity when moving existing browser-backed workspace apps",
-      "root_cause": "Existing-window matching can fall back to chrome.exe path/name when PWA app id detection is empty, allowing a normal Chrome window to satisfy a saved PWA entry.",
-      "plan": [
-        "For saved browser PWA entries, require non-empty detected appData.pwaAppId equality.",
-        "Do not let app.path == appData.installPath match a normal Chrome window for a PWA entry.",
-        "Log unresolved PWA identity and launch the missing PWA instead of moving unrelated Chrome.",
-        "Add tests for normal Chrome vs saved PWA."
-      ],
-      "verification": [
-        "Activate workspace with Gmail/Calendar/Chat PWAs and normal Chrome open; normal Chrome must not move.",
-        "Already-open matching PWAs still move."
-      ],
-      "confidence": {
-        "score": 77,
-        "level": "yellow",
-        "rationale": "Predicate matches symptom; sanitized workspace JSON would confirm empty/stale PWA id."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "Workspaces can treat a normal Chrome window as one of the saved Google PWA windows when activating a workspace.",
+    "summary": "The report says Workspaces confused a saved Chrome-hosted PWA with a normal Chrome window and moved the wrong window during workspace activation.",
     "known_information": [
-      "Two-monitor setup with Google PWAs.",
-      "Two PWAs already launched and a normal Chrome window sits on the target monitor.",
-      "Remaining PWA launches on top of the moved Chrome window."
+      "The issue is on PowerToys 0.99.1, much older than the current main branch.",
+      "The saved workspace contains Google Chat, Calendar, and Gmail PWA windows hosted in Chrome.",
+      "When the workspace is activated, a plain Chrome window on the target monitor is moved and the remaining PWA opens on top of it."
     ],
     "inferences": [
-      "Saved or detected PWA identity may be empty/stale, causing path fallback to match chrome.exe."
+      "The bug is in Workspaces window matching rather than in monitor positioning alone, because the wrong already-open Chrome-hosted window is reused.",
+      "Later PWA follow-up work likely covered this by using explicit PWA identity rather than plain chrome.exe path matching."
     ],
-    "analysis": "Browser PWAs share the Chrome process path, so PWA workspace entries need stronger identity matching than normal apps.",
+    "analysis": "The issue looks like an older-build instance of Workspaces’ PWA identity ambiguity. Current code and PR history show targeted work in exactly that area, so the right correction is to treat it as likely-covered existing work first.",
     "initial_investigation": [
-      "Read live activity through 2026-09-02T16:49:44Z; no comments beyond labels.",
-      "Checked origin/main WorkspacesWindowArranger and SnapshotUtils PWA flow at 5abd20e355998a865075a06676bebfc1d9925be4.",
-      "Public PR search surfaced merged PWA recognition PR #35913."
+      "WindowArranger.cpp now extracts Chrome/Edge PWA identity and requires pwaAppId equality when matching an already-open window to a saved workspace entry.",
+      "WorkspacesLib/PwaHelper.cpp contains explicit Chrome and Edge PWA app-ID extraction logic.",
+      "PR #36217 and PR #39971 are both directly about Workspaces PWA follow-up and launch correctness."
     ],
-    "information_gaps": [
-      {
-        "information": "Sanitized Workspaces project JSON for the affected PWA entries, especially name/path/pwaAppId.",
-        "why_needed": "Confirms whether the false match is caused by missing, stale, or mismatched PWA identity.",
-        "how_to_collect": "Comment /bugreport after reproducing, or paste affected Workspaces entries with personal URLs/titles removed."
-      }
-    ]
-  },
-  "design": {
-    "root_cause": "Path/name fallback lets normal Chrome match a PWA workspace entry when PWA id is missing.",
-    "evidence": [
-      "Issue scenario and GetNearestWindow predicate."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/Workspaces/WorkspacesWindowArranger/WindowArranger.cpp",
-        "purpose": "Moves existing matching windows",
-        "symbols": [
-          "WindowArranger::GetNearestWindow"
-        ]
-      },
-      {
-        "path": "src/modules/Workspaces/WorkspacesSnapshotTool/SnapshotUtils.cpp",
-        "purpose": "Captures PWA identity",
-        "symbols": [
-          "SnapshotUtils::GetApps"
-        ]
-      },
-      {
-        "path": "src/modules/Workspaces/WorkspacesLib/PwaHelper.h",
-        "purpose": "Edge/Chrome PWA id lookup",
-        "symbols": [
-          "PwaHelper"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/Workspaces/WorkspacesWindowArranger/WindowArranger.cpp",
-        "symbols": [
-          "GetNearestWindow"
-        ],
-        "current_behavior": "Matches by app name or install path and pwaAppId equality, including both empty.",
-        "change": "For saved PWA entries, require current non-empty pwaAppId equality before match.",
-        "code_block": "if (savedPwa) { if (appData.pwaAppId.empty() || app.pwaAppId != appData.pwaAppId) continue; } else if (!(nameOrPathMatch)) continue;",
-        "edge_cases": [
-          "Older workspaces with missing PWA ids may need recapture/migration.",
-          "Normal browser workspace entries should still match."
-        ],
-        "tests": [
-          "Unit-test normal Chrome not matching saved Gmail PWA."
-        ]
-      }
-    ],
-    "verify": [
-      "Manual two-monitor PWA workspace regression."
-    ],
-    "risks": [
-      "Old PWA workspaces may launch duplicates until recaptured."
-    ],
-    "alternatives": [
-      "Keep path fallback rejected because it causes wrong-window moves."
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "approve_design",
-      "label": "Design fix",
-      "requires_confirmation": true
-    },
-    {
-      "type": "request_info",
-      "label": "Request Workspaces PWA identity data",
-      "requires_confirmation": true,
+      "type": "post_comment",
+      "label": "Point to Workspaces PWA matching fixes",
       "comment": {
-        "body": "This looks like Workspaces is matching normal `chrome.exe` by browser path instead of requiring the saved PWA identity. Please provide a fresh `/bugreport` after reproducing, or paste the affected Workspaces app entries with personal URLs/titles removed. The important fields are saved app name, path, and `pwaAppId`."
+        "body": "This looks likely covered by the newer Workspaces PWA work in PR #36217 and PR #39971. Current Workspaces matching logic now carries explicit PWA identity instead of treating every Chrome-hosted window as the same generic chrome.exe target. Because this report was filed on 0.99.1, I would first ask for a retest on a current build before opening a new design track; if a plain Chrome window is still reused instead of the saved PWA, the next useful artifact would be a fresh workspace export from the newer build."
       }
     }
-  ],
-  "number": 50339,
-  "kind": "issue"
+  ]
 }

@@ -1,103 +1,128 @@
 {
   "schemaVersion": 5,
-  "kind": "issue",
   "number": 50439,
-  "title": "Settings restore crashes and leaves settings unusable",
-  "url": "https://github.com/microsoft/PowerToys/issues/50439",
-  "generated_at": "2026-09-08T02:51:49.9453166Z",
-  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage",
+  "generated_at": "2026-09-09T10:18:51.551Z",
+  "evaluated_at": "2026-09-09T10:18:51.551Z",
   "source_updated_at": "2026-09-07T13:40:31Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50439",
+  "title": "Restore (backup) Button Crashes Application",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Product-Settings",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "design_decision": {
+    "status": "deferred",
+    "reason": "The issue has a plausible fix surface and good diagnostics, but this bounded pass keeps only lightweight design coverage here."
+  },
+  "confidence": {
+    "score": 68,
+    "level": "yellow",
+    "rationale": "The malformed-JSON restore trail strongly points at restore/merge validation, but the exact incompatible file pattern still needs maintainer-side reproduction."
+  },
+  "linked_work": [
+    {
+      "kind": "issue",
+      "number": 23379,
+      "title": "Backup & Restore - restore not restoring, browse to backup location crashes PowerToys Settings window",
+      "state": "CLOSED",
+      "url": "https://github.com/microsoft/PowerToys/issues/23379",
+      "relation": "related_history"
+    }
+  ],
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report and diagnostic analysis identify malformed JSON across several module settings during restore. RestoreSettings parses, normalizes, compares, and merges module files under an outer generic catch; this is a concrete robustness gap, although the exact malformed input and desired recovery policy are not yet pinned down.",
-    "recommended_action": "Define per-file validation and a non-destructive restore policy for malformed module settings, then test mixed valid/invalid backups.",
+    "rationale": "The report gives a concrete restore boundary and the earlier diagnostic summary found malformed JSON errors across multiple modules during restoration. Local restore code writes merged settings and then restarts the app without validating each module result.",
     "evidence": [
-      {
-        "fact": "Automated diagnostic analysis reported malformed JSON in several module settings during restoration and the author reports a crash/unusable settings window.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50439"
-      },
-      {
-        "fact": "SettingsBackupAndRestoreUtils.RestoreSettings enumerates backup files, parses export metadata, compares normalized JSON, and merges or overwrites settings under a broad outer error path.",
-        "source": "https://github.com/microsoft/PowerToys/blob/main/src/settings-ui/Settings.UI.Library/SettingsBackupAndRestoreUtils.cs"
-      },
-      {
-        "fact": "No public fix PR was identified for the reported restore failure.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50439"
-      }
-    ]
+      "The issue says the crash happens when current settings differ from the latest backup and Restore is clicked.",
+      "The diagnostic summary points to malformed JSON parsing errors during restoration across several modules.",
+      "RestoreSettings writes merged or overwritten settings files and then restarts Settings after any successful update set."
+    ],
+    "recommended_action": "Keep a lightweight restore-validation design and use a maintainer-side reproduce action instead of asking the reporter for generic extra logs.",
+    "evaluated_at": "2026-09-09T10:18:51.551Z",
+    "source_updated_at": "2026-09-07T13:40:31Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The malformed-input handling boundary is identifiable, but the recovery policy and exact offending files need confirmation before implementation."
+    "rationale": "No linked fix covers restore-path validation or rollback for divergent backup/current settings.",
+    "existing_fix_urls": []
   },
+  "issue_context": {
+    "summary": "Restoring settings from backup can crash the Settings experience when the current configuration differs from the newest backup, and the diagnostic trail points to malformed module JSON during restoration.",
+    "known_information": [
+      "The issue already includes a concrete restore sequence and screenshots.",
+      "The diagnostic summary points to malformed JSON errors during restoration across multiple modules.",
+      "Current restore code writes files and then immediately restarts Settings after any successful update set."
+    ],
+    "inferences": [
+      "The failure is likely in backup-restore merge or validation rather than in window chrome alone.",
+      "A more defensive restore path should report or roll back per-file failures instead of restarting into partially restored data."
+    ],
+    "analysis": "This report is already good enough for maintainer-side verification; a reproduce action is more useful than a second generic evidence request.",
+    "initial_investigation": [
+      "Reviewed the issue body and diagnostic summary.",
+      "Reviewed local restore code in SettingsBackupAndRestoreUtils.RestoreSettings, GetExportVersion, and JsonMergeHelper.Merge.",
+      "Checked historical issue #23379 as related backup/restore crash history."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50439",
+      "type": "approve_design",
+      "label": "Approve backup-restore validation design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "This pass preserves the restore-validation hypothesis but defers full implementation-grade design work."
+    },
+    {
+      "id": "reproduce-50439",
+      "type": "reproduce",
+      "label": "Reproduce backup restore with divergent settings",
+      "note": "The public report and diagnostic summary are already strong enough for a maintainer-side reproduction.",
+      "reproduce": {
+        "title": "Verify restore behavior when backup and current settings diverge",
+        "module": "Settings / Backup & Restore",
+        "version_requirement": "PowerToys 0.101.2453 or equivalent current main build",
+        "prerequisites": [
+          "PowerToys Settings can open",
+          "A writable backup directory"
+        ],
+        "setup": [
+          "Create a fresh settings backup.",
+          "Change one or more module settings so the current state differs from the newest backup."
+        ],
+        "steps": [
+          "Open Settings > General > Back up and restore.",
+          "Click Restore while the latest backup differs from the current settings.",
+          "Watch the UI transition and the affected settings files on disk."
+        ],
+        "expected_result": "Restore should either succeed cleanly or surface a precise file-level validation error; it should not crash back to the home screen or leave the window in a broken drag state."
+      }
+    }
+  ],
   "proposed_fixes": [
     {
-      "title": "Make settings restore resilient to malformed module JSON",
-      "root_cause": "RestoreSettings can abort while parsing or merging malformed module files, and its broad catch does not establish a safe transactional outcome.",
+      "title": "Validate restore payloads before restarting Settings",
+      "root_cause": "RestoreSettings can leave malformed or incompatible module JSON on disk after merge/overwrite, then restarts into partially restored state instead of surfacing a per-file restore failure.",
       "plan": [
-        "Validate backup metadata and each module JSON before applying any changes.",
-        "Apply the agreed skip-and-report or all-or-nothing policy without partially overwriting settings.",
-        "Surface a public-safe module-level failure summary and preserve the original settings on fatal restore failure."
+        "Validate each restored file after merge/overwrite and stop before restart if any file is malformed or schema-incompatible.",
+        "Report the exact failing file instead of treating the whole restore as successful.",
+        "Prefer explicit overwrite paths for modules already known not to merge cleanly and add regression cases using divergent current/backup settings."
       ],
       "verification": [
-        "A backup containing one malformed module does not crash Settings.",
-        "Valid modules restore and invalid modules are reported according to the chosen policy.",
-        "A failed restore leaves a byte-equivalent or semantically equivalent pre-restore configuration."
+        "Create a backup, diverge current settings, click Restore, and confirm the flow either completes cleanly or reports the exact file-level failure without crashing the Settings window."
       ],
       "confidence": {
         "score": 68,
         "level": "yellow",
-        "rationale": "The code boundary and failure class are concrete, but the intended recovery policy remains open."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "Restoring a settings backup can crash and leave the Settings experience unusable when module JSON is malformed.",
-    "known_information": [
-      "The issue includes a diagnostic report and automated analysis.",
-      "The restore implementation parses and merges module JSON and returns a generic backup error from its outer catch.",
-      "The failure spans multiple module settings according to the diagnostic analysis."
-    ],
-    "inferences": [
-      "A single malformed file may abort an otherwise recoverable restore.",
-      "The user may need per-file reporting and preservation of the pre-restore settings state."
-    ],
-    "analysis": "Audit every parse/merge boundary and make restore transactional at the file or backup level.",
-    "initial_investigation": [
-      "src/settings-ui/Settings.UI.Library/SettingsBackupAndRestoreUtils.cs",
-      "src/settings-ui/Settings.UI.Library"
-    ],
-    "information_gaps": [
-      {
-        "information": "The backup version, exact malformed module files, and whether the expected behavior is skip-and-report or reject-and-rollback.",
-        "why_needed": "Those details determine the safe recovery contract and prevent silently dropping user settings.",
-        "how_to_collect": "Reproduce with a copy of the backup, run /bugreport after the failure, and identify the affected module names without sharing private setting values."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "type": "request_info",
-      "label": "Request targeted evidence",
-      "note": "Pin down the restore recovery contract and offending file set.",
-      "comment": {
-        "body": "The diagnostic analysis already points to malformed JSON in multiple module settings, so a generic request for more logs would not help. Please identify the backup/export version and the module names that fail, and confirm whether the desired behavior is to skip invalid module files while restoring valid ones or to reject the entire backup and leave existing settings untouched. Reproduce once and run /bugreport immediately after the Settings window becomes unusable; do not include private setting values."
-      }
-    },
-    {
-      "type": "approve_design",
-      "label": "Approve focused fix design",
-      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
-      "design": {
-        "scope": "Make settings restore validate each module file before merge and preserve a recoverable pre-restore state.",
-        "files": [
-          "src/settings-ui/Settings.UI.Library/SettingsBackupAndRestoreUtils.cs"
-        ],
-        "acceptance_criteria": [
-          "Malformed module JSON produces a clear per-file error without crashing Settings.",
-          "Valid module settings are restored according to the agreed skip-or-rollback policy.",
-          "A failed restore leaves the previous settings intact and the Settings UI usable."
-        ]
+        "rationale": "The restore path and malformed-JSON evidence are strong, but a maintainer-side repro is still needed to pin the exact file patterns."
       }
     }
   ]

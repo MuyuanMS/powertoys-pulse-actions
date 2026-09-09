@@ -2,15 +2,15 @@
   "schemaVersion": 5,
   "kind": "issue",
   "number": 50436,
-  "title": "Mouse Jump preview is cut off after WinUI migration",
+  "title": "[Mouse Jump] - Settings preview thumbnail too small",
   "url": "https://github.com/microsoft/PowerToys/issues/50436",
-  "generated_at": "2026-09-08T02:51:49.9453166Z",
-  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
-  "source_updated_at": "2026-09-07T08:22:18Z",
+  "generated_at": "2026-09-09T10:28:38.042Z",
+  "evaluated_at": "2026-09-09T10:28:38.042Z",
+  "source_updated_at": "2026-09-09T08:48:58Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue is tied to the v0.101 WinUI migration and the external FancyMouse PR #96 explicitly describes a LayoutHelper maximum-size change as fixing the downstream PowerToys issue. That is strong implementation evidence, but there is no upstream PowerToys fix yet, so it remains an actionable design rather than an existing upstream fix.",
-    "recommended_action": "Port the proven maximum-size preview-layout change into the PowerToys Mouse Jump settings preview and validate at the reported window sizes.",
+    "rationale": "The current Mouse Jump preview path still hard-codes a 283px settings-card content height, while the reporter has now posted a WIP screenshot showing the corrected layout from an external public fix. No upstream PowerToys PR covers it yet, so the issue remains an actionable design rather than an existing fix.",
+    "recommended_action": "Approve a focused design that sizes the preview from the available settings-card bounds instead of a fixed 283px image region.",
     "evidence": [
       {
         "fact": "The issue reports a Mouse Jump settings preview clipped after the WinUI migration.",
@@ -23,6 +23,10 @@
       {
         "fact": "The external public PR explicitly says its optional maximum-size LayoutHelper change fixes PowerToys issue 50436.",
         "source": "https://github.com/mikeclayton/FancyMouse/pull/96"
+      },
+      {
+        "fact": "The latest comment shows a corrected thumbnail and the timeline cross-references mikeclayton/FancyMouse#96 as the public implementation precedent.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50436#issuecomment-5582244831"
       }
     ]
   },
@@ -56,13 +60,14 @@
     "known_information": [
       "The issue is a UI regression associated with the v0.101 migration.",
       "MouseUtilsViewModel_MouseJump uses fixed settings-card and content heights for preview generation.",
-      "FancyMouse PR #96 publicly describes the matching maximum-size fix."
+      "FancyMouse PR #96 publicly describes the matching maximum-size fix.",
+      "The latest public comment shows a corrected thumbnail and indicates the reporter is already prototyping the fix externally."
     ],
     "inferences": [
       "The fixed preview dimensions can exceed the available settings card and crop the rendered bitmap.",
       "Passing an available maximum size through the layout helper should preserve the preview within the card."
     ],
-    "analysis": "Adapt the proven layout contract to the PowerToys settings preview and test narrow and large settings-window layouts.",
+    "analysis": "This is a code-local layout regression, not a diagnostic or ownership problem. The next maintainer decision is whether to approve the bounded layout fix and port the public precedent into PowerToys.",
     "initial_investigation": [
       "src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel_MouseJump.cs",
       "src/settings-ui/Settings.UI/SettingsXAML/Panels/MouseJumpPanel.xaml"
@@ -72,20 +77,44 @@
   "actions": [
     {
       "type": "approve_design",
-      "label": "Approve focused fix design",
-      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
-      "design": {
-        "scope": "Use an available maximum preview size when calculating Mouse Jump preview layout, based on the public FancyMouse PR #96 approach.",
-        "files": [
-          "src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel_MouseJump.cs",
-          "src/settings-ui/Settings.UI/SettingsXAML/Panels/MouseJumpPanel.xaml"
-        ],
-        "acceptance_criteria": [
-          "The entire Mouse Jump preview is visible after the WinUI migration.",
-          "The preview scales within narrow and wide settings cards without cropping.",
-          "Existing Mouse Jump controls and bitmap rendering remain functional."
-        ]
-      }
+      "label": "Approve Mouse Jump preview sizing design",
+      "note": "Localized settings-preview fix; no upstream action is taken automatically."
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "state": "OPEN",
+  "created_at": "2026-09-07T08:16:03Z",
+  "updated_at": "2026-09-09T08:48:58Z",
+  "author": "mikeclayton",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Mouse Utilities"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 2,
+    "timeline_events_read": 12
+  },
+  "upstream_public_action_taken": false,
+  "design": null,
+  "full_design": false,
+  "design_deferred": true,
+  "confidence": {
+    "score": 89,
+    "level": "green",
+    "rationale": "The regression, owning files, and external proof-of-fix are all visible from current source and the new WIP screenshot."
+  },
+  "linked_work": [
+    {
+      "type": "external_pr",
+      "ref": "mikeclayton/FancyMouse#96",
+      "url": "https://github.com/mikeclayton/FancyMouse/pull/96",
+      "relevance": "Public fix precedent referenced from the issue timeline."
     }
   ]
 }

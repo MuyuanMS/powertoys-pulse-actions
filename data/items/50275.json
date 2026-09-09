@@ -3,70 +3,85 @@
   "number": 50275,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_information",
-  "owes": "author",
-  "pending_author": false,
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
-  "source_updated_at": "2026-09-01T09:20:22Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50275",
   "title": "Monitor not showing",
-  "author": "thany",
+  "url": "https://github.com/microsoft/PowerToys/issues/50275",
+  "generated_at": "2026-09-09T10:33:13.5242917Z",
+  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
+  "source_updated_at": "2026-09-01T09:20:22Z",
+  "summary": "One monitor is missing from Power Display, but the current report still does not separate unsupported topology/connection from hidden-monitor filtering or monitor discovery failure.",
+  "next_action": "Request the topology and Power Display-specific diagnostics that distinguish why the LG monitor is absent.",
+  "confidence": {
+    "score": 44,
+    "level": "red",
+    "rationale": "The VCP dump proves some monitor communication exists, but the report still does not identify whether Power Display discovered and hid the monitor, or failed to enumerate it at all."
+  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
+  "linked_work": [],
+  "comment_count": 1,
   "judgment": {
     "status": "needs_information",
-    "rationale": "The supplied VCP capability list establishes that the monitor responds to DDC/CI queries, but it does not establish why Power Display excludes it from enumeration or whether Windows reports it through the required display path.",
+    "rationale": "The report is missing the specific monitor topology and Power Display diagnostics needed to tell whether this is a connection/DDC limitation, a hidden-monitor preference, or an enumeration bug.",
     "evidence": [
-      "The reporter says an LG HDR 4K monitor does not appear despite Hide monitor being unticked.",
-      "The follow-up supplies a VCP capability list including brightness and input-source controls.",
-      "Power Display receives RefreshMonitors actions; common display enumeration uses EnumDisplayMonitors and monitor device data.",
-      "No diagnostic ZIP, connection topology, Power Display version, or monitor-report output is attached."
+      "The reporter attached a screenshot and later pasted a VCP capabilities dump for the LG monitor.",
+      "The issue does not explain the physical connection path, whether DDC/CI is enabled, or whether the monitor ever appeared in Power Display.",
+      "Power Display filters hidden monitors out of the visible list in src/modules/powerdisplay/PowerDisplay/ViewModels/MainViewModel.Monitors.cs."
     ],
-    "recommended_action": "Request a focused current-build monitor enumeration report and connection topology instead of a generic broad log request.",
-    "evaluated_at": "2026-09-08T02:27:54Z",
-    "source_updated_at": "2026-09-01T09:20:22Z"
+    "recommended_action": "Ask for monitor-topology details, a screenshot of the current Power Display surface, and a fresh bug report after opening the module."
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "VCP support alone does not identify the missing discovery/filtering boundary, so a PowerToys code change would be speculative."
+    "rationale": "A repo-side fix is not scoped until the team can distinguish a monitor-discovery bug from configuration or hardware visibility constraints.",
+    "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "A monitor with documented DDC/CI VCP capabilities is absent from Power Display's monitor list without an explanatory status.",
+    "summary": "Power Display does not show one LG external monitor, even though the reporter can provide a VCP capabilities listing from that display.",
     "known_information": [
-      "The monitor is described as LG HDR 4K.",
-      "The reporter supplied a detailed public VCP capability listing.",
-      "The issue is on 0.101.2362.0 and has no diagnostic archive."
+      "The report is against PowerToys 0.101.2362.0 on Windows 11.",
+      "The missing display appears to be an external LG HDR 4K monitor.",
+      "The discussion includes a VCP capabilities dump showing brightness, contrast, input source, power mode, and several manufacturer-specific VCP codes.",
+      "No bug report ZIP is attached."
     ],
     "inferences": [
-      "The failure may be at display enumeration, physical-monitor association, capability probing, or a deliberate eligibility filter."
+      "Some DDC/CI communication appears to exist, so the problem may be in discovery/filtering rather than absolute lack of monitor control support.",
+      "Without the physical connection chain and Power Display surface state, it is still possible the monitor is filtered out by settings or by an unsupported topology path."
     ],
-    "analysis": "The existing capability listing is useful and should not be requested again. A monitor-specific enumeration report and physical connection details would identify which discovery boundary needs investigation.",
+    "analysis": "The report already contains useful monitor-specific data. The missing discriminator is whether Power Display discovered the monitor and hid it, or failed earlier during discovery.",
     "initial_investigation": [
-      "Read the full issue and follow-up capability list.",
-      "Inspected Power Display refresh entry points and common display monitor enumeration.",
-      "Searched live PowerToys issues for a directly matching LG HDR 4K Power Display report; no direct duplicate was found."
+      "Power Display builds the visible monitor list from DiscoverMonitorsAsync() and then filters out persisted hidden monitor IDs in MainViewModel.UpdateMonitorList().",
+      "Current repo history shows recent monitor-detection work, but no directly linked fix for this exact LG-monitor symptom was found in the issue thread.",
+      "There is no assignee or linked PR on this issue yet."
     ],
     "information_gaps": [
       {
-        "information": "A fresh PowerToys monitor report, the monitor's connection type/dock or adapter path, and whether Windows Settings detects it as an active display.",
-        "why_needed": "These facts distinguish missing Windows enumeration from DDC/CI probing or a Power Display eligibility decision.",
-        "how_to_collect": "Immediately after opening Power Display and confirming the monitor is missing, submit a comment containing /bugreport, then state the cable, adapter/dock, and whether the display is visible in Windows Settings."
+        "evidence_type": "monitor_topology",
+        "information": "The exact monitor topology and connection path for the missing LG display, including HDMI/DisplayPort/USB-C, dock/KVM use, and whether DDC/CI is enabled in the monitor OSD.",
+        "why_needed": "This distinguishes a Power Display discovery/filtering bug from a connection path that prevents Windows/DDC enumeration.",
+        "how_to_collect": "Please list how each monitor is connected and whether DDC/CI is enabled on the affected LG display."
+      },
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A screenshot of the current Power Display window showing every monitor card that does appear.",
+        "why_needed": "It shows whether the monitor is absent entirely or present under an unexpected identity/state.",
+        "how_to_collect": "Open Power Display, capture the full window, and upload the screenshot through the GitHub issue web UI."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after opening Power Display with the monitor missing.",
+        "why_needed": "The PowerToys logs are needed to see what the module discovered and whether the monitor was filtered or rejected.",
+        "how_to_collect": "Please open Power Display, reproduce the missing-monitor state, and then add a comment containing `/bugreport` immediately afterward."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-monitor-report-50275",
       "type": "request_info",
-      "label": "Request monitor enumeration report",
-      "primary": true,
-      "confirm": true,
+      "label": "Provide monitor topology and Power Display diagnostics",
       "comment": {
-        "body": "Thank you for the VCP capability list; it confirms the monitor responds to DDC/CI, so please do not repeat that output. To identify whether Power Display is missing the monitor during Windows enumeration, physical-monitor association, or capability filtering, please reproduce the missing entry on the current build and submit a comment containing /bugreport immediately afterward. Please also state the cable and any dock/adapter path, plus whether Windows Settings shows the monitor as active."
+        "body": "Thanks for sharing the VCP capabilities dump — that is already useful because it shows the LG display can answer at least some monitor-control queries.\n\n**Needed**\n1. Please describe the exact monitor topology for the missing LG display: connection type (HDMI / DisplayPort / USB-C), any dock or KVM in the path, and whether **DDC/CI** is enabled in the monitor’s on-screen menu.\n2. Please upload a screenshot of the full **Power Display** window showing the monitors that do appear.\n3. Please open Power Display in the failing state and then add a comment containing `/bugreport` immediately afterward.\n\nThis will distinguish a Power Display discovery/filtering bug from a connection or monitor-capability limitation."
       }
     }
   ]

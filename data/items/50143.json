@@ -1,10 +1,20 @@
 {
   "schemaVersion": 5,
-  "kind": "issue",
   "number": 50143,
+  "kind": "issue",
+  "track": "fix",
   "title": "BSOD triggered when AlwaysOnTop module is enabled, especially around display sleep/reconfiguration",
   "url": "https://github.com/microsoft/PowerToys/issues/50143",
-  "state": "open",
+  "generated_at": "2026-09-09T10:33:13.5242917Z",
+  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
+  "source_updated_at": "2026-09-03T17:00:41Z",
+  "summary": "Always On Top has a credible BSOD report tied to display sleep/reconfiguration, and the public evidence is strong enough for a maintainer reproduction pass.",
+  "next_action": "Run the maintainer-side reproduction plan on a multi-monitor DisplayPort setup before committing to a code-fix design.",
+  "confidence": {
+    "score": 68,
+    "level": "yellow",
+    "rationale": "The crash signature and repro narrative are detailed, but the PowerToys-side failing mechanism is still inferred rather than confirmed."
+  },
   "labels": [
     "Issue-Bug",
     "Product-Always On Top",
@@ -12,58 +22,73 @@
     "Needs-Team-Response"
   ],
   "assignees": [],
-  "generated_at": "2026-09-08T02:40:00Z",
-  "evaluated_at": "2026-09-08T02:40:00Z",
-  "source_updated_at": "2026-09-03T17:00:41Z",
+  "linked_work": [],
+  "comment_count": 2,
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The report is credible and high impact, but focused public code review cannot establish the exact PowerToys call path behind the win32k recursion.",
+    "status": "reproducible",
+    "rationale": "The issue already contains enough public detail to justify a focused reproduction attempt without asking the reporter for more generic logs.",
     "evidence": [
-      "Three matching 0x7F/8 win32k recursion signatures are reported.",
-      "Disabling Always On Top stopped recurrence in the described scenarios.",
-      "AlwaysOnTop.cpp owns WinEvent hooks, tracked topmost windows, and WindowBorder instances.",
-      "The latest timeline includes a new report ZIP and a Needs-Team-Response label.",
-      "No confirmed fix or duplicate was found."
+      "The issue gives numbered reproduction steps around sleep, lock, and monitor power transitions.",
+      "The crash dumps reportedly share the same 0x7F double-fault signature in win32kbase!vUnreferencePdevWorker.",
+      "Disabling Always On Top stopped the crashes under the same display-cycling conditions.",
+      "A fresh PowerToys diagnostic ZIP was added after the first automated triage request."
     ],
-    "recommended_action": "Request a readable current diagnostic correlation before approving a kernel-sensitive fix design."
+    "recommended_action": "Reproduce with Always On Top enabled on a multi-monitor system and inspect the module’s event/border handling around display teardown before drafting a repo-side fix."
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A confirmed PowerToys fix is not yet applicable because the failing call path is unproven; the next action is targeted evidence collection."
+    "rationale": "A repository change is plausible, but the current evidence is best used to reproduce and isolate the crash path first; the exact PowerToys-side fix is not yet scoped safely.",
+    "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "The reporter supplied three matching 0x7F double-fault signatures during repeated display power/reconfiguration events and says disabling Always On Top stopped the crashes. Public source shows WinEvent hooks, topmost-window tracking, and border windows, but does not prove which interaction reaches the win32k recursion.",
+    "summary": "The reporter tied repeated BSODs during display sleep and monitor reconfiguration to Always On Top being enabled, with consistent crash signatures and a fresh follow-up bug report.",
     "known_information": [
-      "Issue is open with Product-Always On Top and Needs-Team-Response.",
-      "The report describes sleep, monitor power-cycle, and lock/display-timeout triggers.",
-      "The report identifies recursive win32kbase PDEV dereferencing.",
-      "A new report ZIP was attached on 2026-09-03 after the earlier archive was rejected.",
-      "AlwaysOnTop.cpp subscribes to location/move/foreground/destroy events and tracks WindowBorder instances."
+      "PowerToys 0.100.2 is installed from GitHub on Windows 11 build 26100.",
+      "The system uses a two-monitor DisplayPort setup and crashes during repeated display sleep/wake or monitor power-cycle transitions.",
+      "The crash analysis points to recursive win32k PDEV teardown exhausting the kernel stack.",
+      "Disabling Always On Top stopped the crashes while other modules remained enabled."
     ],
     "inferences": [
-      "Always On Top may provoke a win32k teardown/reconfiguration race through tracked windows or borders, but the exact failing call path is unconfirmed.",
-      "A code fix should not be designed from the bugcheck signature alone."
+      "The failure is likely tied to how Always On Top reacts to window/display events during topology churn, but the exact callback or window-state operation is not proven from public evidence alone.",
+      "This looks reproducible enough for a maintainer to investigate locally without another reporter round-trip."
     ],
-    "analysis": "The evidence is strong at symptom level, yet the focused source/history review cannot identify a confirmed PowerToys root cause. Request targeted dump/report correlation before a kernel-sensitive design.",
+    "analysis": "The issue already clears the bar for a maintainer reproduction pass. The remaining uncertainty is technical and maintainer-side, not something the reporter can cheaply answer with another generic request.",
     "initial_investigation": [
-      "Inspected AlwaysOnTop.cpp WinEvent subscriptions, tracked windows, and WindowBorder ownership.",
-      "Read the full timeline and noted the new ZIP and team-response label.",
-      "Found no existing upstream fix PR or confirmed duplicate."
+      "Always On Top subscribes to WinEvent callbacks for location, minimize, move/size, foreground, focus, and destroy events in src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.cpp.",
+      "The module maintains topmost-window and border state but does not have an explicit display-topology transition handler in that code path.",
+      "No linked PR or existing ownership was found on the issue itself."
     ],
-    "information_gaps": [
-      {
-        "information": "Readable crash dump/report correlating the active Always On Top state and owned border/topmost windows at failure",
-        "why_needed": "Distinguishes a PowerToys operation from a display-driver/window-manager fault",
-        "how_to_collect": "Reproduce on latest stable and submit a fresh /bugreport immediately after the next occurrence, retaining the matching dump if available"
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request Always On Top crash correlation",
-      "comment": {
-        "body": "The report gives three matching 0x7F/8 win32k recursion signatures and says disabling Always On Top stopped recurrence. Focused source review confirms that Always On Top owns WinEvent hooks and WindowBorder tracking, but not which operation reaches the failing kernel path. Please reproduce on the latest stable release and submit a fresh /bugreport immediately after the next occurrence, retaining the matching dump if available. The needed evidence is crash-time Always On Top/module state and stack correlation, not a generic log bundle."
+      "type": "reproduce",
+      "label": "Reproduce Always On Top display-sleep crash",
+      "note": "The report already has a credible crash signature and can move to maintainer-side verification.",
+      "reproduce": {
+        "title": "Exercise Always On Top during monitor topology changes",
+        "module": "Always On Top",
+        "version_requirement": "PowerToys 0.100.2 or newer with Always On Top enabled",
+        "prerequisites": [
+          "Windows desktop with at least two monitors, preferably DisplayPort-connected",
+          "Always On Top enabled; no specific pinned window required"
+        ],
+        "setup": [
+          "Use a profile where Always On Top is enabled and FancyZones is disabled, matching the reporter as closely as practical.",
+          "Keep crash dump capture enabled if available."
+        ],
+        "steps": [
+          "Enable Always On Top and leave the module running in the background.",
+          "Repeatedly cycle through display sleep/wake, Win+L with display timeout, or power one monitor off while the other remains on.",
+          "Observe whether the machine bugchecks with the same 0x7F / win32kbase!vUnreferencePdevWorker signature."
+        ],
+        "expected_result": "Display topology changes should not crash the system; if a crash occurs, it should preserve the same kernel stack signature reported in the issue.",
+        "attachments": [
+          {
+            "label": "Reporter bug report ZIP",
+            "url": "https://github.com/user-attachments/files/31800731/PowerToysReport_2026-08-21-12-52-27.zip"
+          }
+        ]
       }
     }
   ]

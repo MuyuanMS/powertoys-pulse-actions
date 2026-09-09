@@ -1,108 +1,83 @@
 {
   "schemaVersion": 5,
-  "kind": "issue",
   "number": 50445,
-  "title": "[Peek] Images do not size to fill the entire client area",
-  "url": "https://github.com/microsoft/PowerToys/issues/50445",
-  "generated_at": "2026-09-08T02:51:49.9453166Z",
-  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
+  "kind": "issue",
+  "track": "fix",
+  "stage": "owned_elsewhere",
+  "generated_at": "2026-09-09T10:18:51.551Z",
+  "evaluated_at": "2026-09-09T10:18:51.551Z",
   "source_updated_at": "2026-09-07T18:30:27Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "Multiple dimensions and DPI scales reproduce consistent seams between the image and window chrome. The code path directly calculates a scaled requested size, clamps it, adds title-bar height, and centers the window, making this a focused fix candidate.",
-    "recommended_action": "Approve a shared Peek client-area sizing design, then validate both seam removal and the related centering examples from #50447.",
-    "evidence": [
-      {
-        "fact": "The report provides six image-size/display-scale examples with repeatable bottom or side gaps.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50445"
-      },
-      {
-        "fact": "MainWindow.FilePreviewer_PreviewSizeChanged performs scaling, monitor clamping, title-bar accounting, and CenterOnMonitor.",
-        "source": "https://github.com/microsoft/PowerToys/blob/main/src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs"
-      },
-      {
-        "fact": "ImagePreviewer derives maximum image size from image dimensions and ScalingFactor.",
-        "source": "https://github.com/microsoft/PowerToys/blob/main/src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs"
-      }
-    ]
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The symptom and affected code path are concrete, but no local fix has yet been validated across the reported DPI and aspect-ratio matrix."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Normalize Peek image-to-client sizing and centering",
-      "root_cause": "The current path appears to mix scaled preview dimensions with window chrome/client dimensions, producing dimension-dependent gaps and offsets.",
-      "plan": [
-        "Define one explicit unit contract for preview size, client size, and title-bar contribution.",
-        "Remove duplicate or inconsistent DPI/title-bar adjustments in FilePreviewer_PreviewSizeChanged and its size event inputs.",
-        "Keep monitor-bound clamping and center the final window rectangle after the client size is finalized."
-      ],
-      "verification": [
-        "Automated or manual matrix coverage reproduces the six examples from #50445 at 125% and 175%.",
-        "The #50447 small-image navigation video no longer changes centering based on image dimensions.",
-        "Window minimum-size and monitor-bound behavior remain intact."
-      ],
-      "confidence": {
-        "score": 80,
-        "level": "yellow",
-        "rationale": "The symptom maps directly to a small, identifiable Peek sizing path, but the intended native-versus-fit rule still needs confirmation."
-      }
-    }
+  "url": "https://github.com/microsoft/PowerToys/issues/50445",
+  "title": "[Peek] Images do not size to fill the entire client area",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Peek"
   ],
-  "issue_context": {
-    "summary": "Peek image previews leave repeatable gaps at the client-area edges across portrait, landscape, square, and very wide/tall images at 125% and 175% scaling.",
-    "known_information": [
-      "The issue is open, assigned to daverayment, and labeled Issue-Bug, Needs-Triage, Product-Peek.",
-      "No diagnostic ZIP was attached; the report includes detailed dimensions, scales, and screenshots.",
-      "The same implementation path is implicated in #50447 centering offsets."
-    ],
-    "inferences": [
-      "The likely defect is a mismatch among image pixel dimensions, DIPs, client-area dimensions, and title-bar accounting.",
-      "The existing TODO in the Peek sizing flow acknowledges portrait-image edge-to-edge problems."
-    ],
-    "analysis": "Normalize the sizing contract at the preview/window boundary and verify it with the exact reported matrix.",
-    "initial_investigation": [
-      "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
-      "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml",
-      "src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs",
-      "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs"
-    ],
-    "information_gaps": [
-      {
-        "information": "A maintainer-confirmed expected sizing rule for images smaller than, equal to, or larger than the available client area.",
-        "why_needed": "The screenshots show the defect but do not fully define whether native pixels or a fit-to-client rule wins in every case.",
-        "how_to_collect": "Confirm the intended behavior in a follow-up comment, especially for portrait images and images smaller than the monitor client area."
-      }
-    ]
+  "assignees": [
+    "daverayment"
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "This Peek sizing defect is already being driven by the same collaborator who owns the broader scaled-display Peek sizing work in Issue 50244."
   },
-  "actions": [
+  "confidence": {
+    "score": 90,
+    "level": "green",
+    "rationale": "The issue is filed and assigned by the same collaborator who already owns the related scaled-display Peek sizing tracker."
+  },
+  "linked_work": [
     {
-      "type": "request_info",
-      "label": "Request targeted evidence",
-      "note": "Resolve the remaining sizing-contract ambiguity.",
-      "comment": {
-        "body": "The report already supplies a strong matrix of image dimensions and 125%/175% display scales. Before implementation, please confirm the intended rule for images smaller than the available client area, including portrait images: should the preview preserve native pixels, fit the client area, or use a bounded hybrid rule? This distinction is needed to avoid removing seams by changing behavior that is intentionally native-sized."
-      }
+      "kind": "issue",
+      "number": 50244,
+      "title": "[Peek] Image previews are not sized to native pixel dimensions on scaled displays",
+      "state": "OPEN",
+      "url": "https://github.com/microsoft/PowerToys/issues/50244",
+      "relation": "active_related_issue"
     },
     {
-      "type": "approve_design",
-      "label": "Approve focused fix design",
-      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
-      "design": {
-        "scope": "Correct the Peek preview/window size contract so the image occupies the intended client area without double-applying DPI or title-bar dimensions.",
-        "files": [
-          "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
-          "src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs",
-          "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs"
-        ],
-        "acceptance_criteria": [
-          "No reported image dimension leaves a seam at the client edge.",
-          "The 4K/175% centering examples from #50447 remain centered after navigation.",
-          "Portrait, landscape, square, and very wide/tall images pass at 125% and 175% scaling."
-        ]
-      }
+      "kind": "issue",
+      "number": 50447,
+      "title": "[Peek] Images not centered on display",
+      "state": "OPEN",
+      "url": "https://github.com/microsoft/PowerToys/issues/50447",
+      "relation": "paired_issue"
     }
-  ]
+  ],
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The bug is valid and source-backed, but it is already in the same ownership stream as Issue 50244 and paired Issue 50447.",
+    "evidence": [
+      "The issue is assigned to daverayment, who also filed it.",
+      "Related Issue #50244 is still open and assigned to the same collaborator for scaled-display Peek sizing work.",
+      "Local Peek UI code already carries a TODO about portrait images not fitting edge-to-edge."
+    ],
+    "recommended_action": "Treat the issue as handled by the active connected Peek sizing work instead of creating a competing design.",
+    "evaluated_at": "2026-09-09T10:18:51.551Z",
+    "source_updated_at": "2026-09-07T18:30:27Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix is applicable in principle, but this bounded pass should not emit a competing design while the assigned collaborator is already driving the connected work.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "Issue 50445 describes edge-to-edge image sizing gaps in Peek on scaled displays, but it sits inside the same active sizing/centering workstream already owned by the reporting collaborator.",
+    "known_information": [
+      "The issue is on current main and assigned to daverayment.",
+      "Related Issue 50244 already tracks scaled-display image sizing in Peek.",
+      "Local Peek UI code explicitly notes that portrait images do not perfectly fit edge-to-edge."
+    ],
+    "inferences": [
+      "The underlying fix surface likely overlaps the same sizing and centering math as the other open Peek scaled-display issues."
+    ],
+    "analysis": "This is best treated as duplicate_or_handled for the correction pass because ownership is already clear and active.",
+    "initial_investigation": [
+      "Reviewed the full issue body and cross-reference to Issue 50447.",
+      "Reviewed local Peek sizing and centering code.",
+      "Checked the state and assignment of related Issue 50244."
+    ],
+    "information_gaps": []
+  },
+  "actions": []
 }

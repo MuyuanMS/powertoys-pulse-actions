@@ -1,101 +1,117 @@
 {
   "schemaVersion": 5,
-  "number": 50465,
+  "repository": "microsoft/PowerToys",
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-08T17:20:00Z",
-  "evaluated_at": "2026-09-08T17:20:00Z",
-  "source_updated_at": "2026-09-08T15:40:04Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50465",
+  "number": 50465,
   "title": "[Advanced Paste] - Media transcoding truncates filenames with multiple periods",
-  "author": "zadjii-msft",
+  "url": "https://github.com/microsoft/PowerToys/issues/50465",
+  "state": "OPEN",
+  "created_at": "2026-09-08T15:40:04Z",
+  "updated_at": "2026-09-08T15:40:04Z",
+  "author": "carmatos",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-09-09T10:28:38.042Z",
+  "evaluated_at": "2026-09-09T10:28:38.042Z",
+  "source_updated_at": "2026-09-08T15:40:04Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0,
+    "timeline_events_read": 3
+  },
+  "upstream_public_action_taken": false,
+  "full_design": true,
+  "confidence": {
+    "score": 96,
+    "level": "green",
+    "rationale": "The filename loss is directly explained by the current output-path code and needs no additional reporter evidence."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is directly reproducible from the filename construction in Advanced Paste. The code first removes the final source extension, then passes the remaining dotted basename to Path.ChangeExtension, which treats the last basename segment as another extension and removes it.",
+    "rationale": "The issue’s reproduction maps exactly onto a localized bug in Advanced Paste transcoding: the code strips one extension with Path.GetFileNameWithoutExtension and then strips the remaining suffix again by passing the already-trimmed base name through Path.ChangeExtension. That makes this a strong candidate for a full implementation-grade design.",
     "evidence": [
-      "The issue reports that transcoding some.video.mov produces some.mp4 instead of some.video.mp4, and the same behavior occurs for audio.",
-      "TranscodeHelpers.TranscodeMediaAsync computes inputFileNameWithoutExtension with Path.GetFileNameWithoutExtension, producing some.video for some.video.mov.",
-      "The same method then calls Path.ChangeExtension(outputFileName, extension), which changes the .video suffix and produces some.mp4.",
-      "The existing transcode integration tests validate media output but do not cover a source filename containing multiple periods."
+      "The issue reproduces with filenames like some.video.mov and some.audio.wav and reports outputs some.mp4 and some.mp3.",
+      "TranscodeHelpers.TranscodeMediaAsync sets inputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(inputFile.Path), which yields “some.video” for some.video.mov.",
+      "The next line builds outputFilePath with Path.ChangeExtension(outputFileName, extension), which treats “.video” as an extension and truncates the remaining segment again."
     ],
-    "recommended_action": "Approve the focused filename-construction fix and add a regression test for multi-period media filenames.",
-    "evaluated_at": "2026-09-08T17:20:00Z",
-    "source_updated_at": "2026-09-08T15:40:04Z",
-    "full_design_candidate": true
+    "recommended_action": "Approve the full design to preserve multi-dot base names when Advanced Paste writes transcoded output files."
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt is linked from the issue. The failing expression and expected replacement are localized and directly explain the reported output."
+    "rationale": "No existing fix attempt is linked, and the defect is directly localizable to current Advanced Paste output-name construction.",
+    "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Append the target extension to the already-stripped source basename",
-      "root_cause": "Path.ChangeExtension is applied after Path.GetFileNameWithoutExtension. For a basename that still contains periods, Path.ChangeExtension removes the final basename segment as though it were an extension.",
+      "title": "Preserve every base-name segment when building transcoded output filenames",
+      "root_cause": "Advanced Paste strips the original extension once and then calls Path.ChangeExtension on the already-trimmed base name, which interprets the remaining final segment as another extension and drops it.",
       "plan": [
-        "In TranscodeHelpers.TranscodeMediaAsync, keep the existing single removal of the source media extension.",
-        "Construct the output filename by concatenating the normalized target extension to outputFileName instead of calling Path.ChangeExtension a second time.",
-        "Extend transcode integration coverage with audio and video inputs whose basenames contain multiple periods, including the same-extension _1 collision case."
+        "Build the output leaf name from inputFile.Name, not Path.ChangeExtension on an already-processed stem.",
+        "Append the target extension directly and keep the existing _1 collision behavior only for same-extension transcodes.",
+        "Add automated coverage for multi-dot filenames and same-extension collision naming."
       ],
       "verification": [
-        "Transcode some.video.mov to MP4 and confirm the output is some.video.mp4.",
-        "Transcode some.audio.wav to MP3 and confirm the output is some.audio.mp3.",
-        "Transcode an input already using the target extension and confirm the output keeps the complete basename and adds _1 before the extension.",
-        "Run the AdvancedPaste transcode integration tests."
+        "some.video.mov -> some.video.mp4",
+        "some.audio.wav -> some.audio.mp3",
+        "some.video.mp4 transcoded to mp4 still uses a non-clobbering name such as some.video_1.mp4"
       ],
       "confidence": {
         "score": 96,
         "level": "green",
-        "rationale": "The two consecutive extension transformations deterministically produce the reported filename, and the fix is a localized replacement with no unresolved diagnostic dependency."
+        "rationale": "The current code deterministically produces the truncation described by the issue."
       }
     }
   ],
   "issue_context": {
-    "summary": "Advanced Paste media transcoding drops the last dotted segment of a filename basename, so some.video.mov becomes some.mp4 rather than some.video.mp4.",
+    "summary": "Advanced Paste’s media transcoding path drops everything after the first period in the base filename because it strips the output stem twice.",
     "known_information": [
-      "The reporter uses PowerToys 0.100.2 stable installed by auto-update.",
-      "The behavior affects both MP3 and MP4 transcoding.",
-      "The report includes complete reproduction steps and explicit expected and actual filenames.",
-      "The relevant code is in src/modules/AdvancedPaste/AdvancedPaste/Helpers/TranscodeHelpers.cs."
+      "The issue is open, unassigned, and labeled Issue-Bug / Needs-Triage.",
+      "The report gives a deterministic reproduction using filenames like some.video.mov and some.audio.wav.",
+      "No comments, attachments, or competing fix work are present."
     ],
     "inferences": [
-      "The same defect affects any source basename containing at least one period before the real media extension.",
-      "Files already using the target extension need the existing _1 collision behavior preserved."
+      "This is a deterministic filename-construction bug, not a codec or shell-integration problem."
     ],
-    "analysis": "The report and source agree exactly. GetFileNameWithoutExtension correctly removes .mov from some.video.mov, leaving some.video. Passing that value to ChangeExtension incorrectly treats .video as an extension and removes it. Appending the already-normalized target extension preserves the complete basename while retaining the existing collision suffix logic.",
+    "analysis": "This is one of the two best actionable bugs in the batch for a full design: single owning method, obvious expected behavior, and straightforward regression coverage.",
     "initial_investigation": [
-      "Read the complete issue body, labels, and live timeline; no existing fix or duplicate is linked.",
-      "Located TranscodeHelpers.TranscodeMediaAsync and traced outputFileName from Path.GetFileNameWithoutExtension through Path.ChangeExtension.",
-      "Reviewed TranscodeHelperIntegrationTests and confirmed that current coverage does not assert multi-period output names."
+      "Reviewed the complete issue body and current labels.",
+      "Inspected src/modules/AdvancedPaste/AdvancedPaste/Helpers/TranscodeHelpers.cs and the existing transcode integration tests.",
+      "Checked file history for TranscodeHelpers.cs and confirmed the bug descends from the original transcode implementation."
     ],
     "information_gaps": []
   },
   "design": {
-    "root_cause": "TranscodeHelpers.TranscodeMediaAsync strips the source extension and then calls Path.ChangeExtension on the remaining basename. Path.ChangeExtension interprets the final dotted basename segment as an extension, causing data loss.",
+    "root_cause": "TranscodeHelpers.TranscodeMediaAsync constructs output filenames by first stripping the original file extension with Path.GetFileNameWithoutExtension and then calling Path.ChangeExtension on that partially processed base name. For multi-dot names, the second call drops the remaining suffix segment (for example some.video -> some.mp4).",
     "evidence": [
-      "src/modules/AdvancedPaste/AdvancedPaste/Helpers/TranscodeHelpers.cs lines 40 and 52-53 implement the two-step transformation.",
-      "The transformation maps some.video.mov to some.video and then to some.mp4, exactly matching the report."
+      "Issue reproduction: some.video.mov produces some.mp4 instead of some.video.mp4.",
+      "Current code at TranscodeHelpers.cs lines 40-53 computes inputFileNameWithoutExtension from the full input path and then passes outputFileName through Path.ChangeExtension.",
+      "Path.ChangeExtension on the already-trimmed string treats the remaining trailing segment as an extension, which exactly explains the truncation."
     ],
     "affected_files": [
       {
         "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/TranscodeHelpers.cs",
-        "purpose": "Construct the transcoded output filename and path.",
+        "purpose": "Owns the transcoded output file-name and output-path construction.",
         "symbols": [
           "TranscodeHelpers.TranscodeMediaAsync"
         ]
       },
       {
-        "path": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests/ServicesTests/TranscodeHelperIntegrationTests.cs",
-        "purpose": "Verify transcode output files and media properties.",
+        "path": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests/ServicesTests/TranscodeHelpersTests.cs",
+        "purpose": "Add deterministic filename-shape regression tests without requiring external media test assets.",
         "symbols": [
-          "TranscodeHelperIntegrationTests"
+          "TranscodeHelpersTests.BuildOutputFileName_PreservesMultiDotStem"
+        ]
+      },
+      {
+        "path": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests/ServicesTests/TranscodeHelperIntegrationTests.cs",
+        "purpose": "Optional integration assertion that the emitted StorageFile name matches the deterministic helper behavior during real transcoding.",
+        "symbols": [
+          "TranscodeHelperIntegrationTests.RunTestTransformFileAsync"
         ]
       }
     ],
@@ -106,60 +122,71 @@
         "symbols": [
           "TranscodeHelpers.TranscodeMediaAsync"
         ],
-        "current_behavior": "The method removes the source extension, conditionally adds _1, and then calls Path.ChangeExtension on the dotted basename.",
-        "change": "Build the final filename as outputFileName plus the normalized extension and combine that filename with the output directory. Preserve the existing case-insensitive same-extension check and _1 suffix.",
-        "code_block": "var outputFileName = sameExtension ? inputFileNameWithoutExtension + \"_1\" : inputFileNameWithoutExtension;\nvar outputFilePath = Path.Combine(outputFolder.FullName, outputFileName + extension);",
+        "current_behavior": "The method derives inputFileNameWithoutExtension with Path.GetFileNameWithoutExtension(inputFile.Path), optionally adds _1, and then calls Path.ChangeExtension(outputFileName, extension) before creating the output file.",
+        "change": "Extract deterministic output-leaf-name construction that operates on inputFile.Name, preserves every base-name segment before the original extension, and appends the target extension directly instead of routing the already-trimmed stem through Path.ChangeExtension.",
+        "code_block": "var inputLeafName = inputFile.Name;\\nvar inputStem = Path.GetFileNameWithoutExtension(inputLeafName);\\nvar outputLeafName = StringComparer.OrdinalIgnoreCase.Equals(Path.GetExtension(inputLeafName), extension) ? $\"{inputStem}_1{extension}\" : $\"{inputStem}{extension}\";\\nvar outputFilePath = Path.Combine(outputFolder.FullName, outputLeafName);",
         "edge_cases": [
-          "Basenames containing multiple periods.",
-          "Inputs already using the requested target extension.",
-          "Uppercase source extensions compared case-insensitively.",
-          "Extension values must continue to include a leading period."
+          "Keep same-extension collision naming by inserting _1 before the final target extension.",
+          "Use inputFile.Name rather than inputFile.Path for name math so directory segments never participate in extension stripping."
         ],
         "tests": [
-          "Assert some.video.mov produces some.video.mp4.",
-          "Assert some.audio.wav produces some.audio.mp3.",
-          "Assert some.video.mp4 produces some.video_1.mp4."
+          "Deterministic helper/unit test for multi-dot stems and same-extension naming.",
+          "Real transcode integration check that outputFile.Name matches the helper result."
         ]
       },
       {
         "order": 2,
-        "file": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests/ServicesTests/TranscodeHelperIntegrationTests.cs",
+        "file": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests/ServicesTests/TranscodeHelpersTests.cs",
         "symbols": [
-          "TranscodeHelperIntegrationTests"
+          "TranscodeHelpersTests.BuildOutputFileName_PreservesMultiDotStem"
         ],
-        "current_behavior": "Integration coverage checks output media properties but does not protect the output basename.",
-        "change": "Add or parameterize test data with multi-period source names and assert the exact StorageFile.Name before copying the result.",
-        "code_block": "Assert.AreEqual(expectedOutputName, outputFile.Name);",
+        "current_behavior": "There is no focused automated test that locks the transcode output filename logic independently of the media transcoder runtime.",
+        "change": "Add a small unit-test surface (or extract an internal helper) so naming can be verified with pure filename inputs such as some.video.mov and some.audio.wav.",
+        "code_block": "[DataRow(\"some.video.mov\", \".mp4\", \"some.video.mp4\")]\\n[DataRow(\"some.audio.wav\", \".mp3\", \"some.audio.mp3\")]\\n[DataRow(\"some.video.mp4\", \".mp4\", \"some.video_1.mp4\")]",
         "edge_cases": [
-          "Audio and video target formats.",
-          "Same-extension collision suffix."
+          "Verify case-insensitive same-extension handling.",
+          "Cover filenames with only one dot to keep previous behavior unchanged."
         ],
         "tests": [
-          "Run the focused integration test for MP3 and MP4 transcodes."
+          "Three deterministic filename cases from the issue and the same-extension collision case."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/AdvancedPaste/AdvancedPaste.UnitTests/ServicesTests/TranscodeHelperIntegrationTests.cs",
+        "symbols": [
+          "TranscodeHelperIntegrationTests.RunTestTransformFileAsync"
+        ],
+        "current_behavior": "The integration test validates media properties but does not assert the emitted output filename shape.",
+        "change": "When the optional transcode test assets exist, assert that the output StorageFile name matches the new deterministic helper so multi-dot filenames are covered end-to-end.",
+        "code_block": "Assert.AreEqual(expectedOutputFileName, outputFile.Name);",
+        "edge_cases": [
+          "Keep the existing Assert.Inconclusive behavior when local media asset folders are absent."
+        ],
+        "tests": [
+          "End-to-end mp3 and mp4 transcode name assertions for representative multi-dot assets when the optional test folder is present."
         ]
       }
     ],
     "verify": [
-      "Build the Advanced Paste project in the supported x64 Debug configuration.",
-      "Run TranscodeHelperIntegrationTests with prepared audio and video fixtures.",
-      "Manually copy a multi-period media file, invoke each Advanced Paste transcode action, and verify the complete basename is preserved."
+      "Run the deterministic Advanced Paste unit tests covering multi-dot stems.",
+      "Run the existing transcode integration tests when local media assets are available.",
+      "Manually transcode representative files such as some.video.mov and some.audio.wav and confirm output names preserve the full stem."
     ],
     "risks": [
-      "Low blast radius: the change affects only temporary output filename construction.",
-      "The target extension must remain normalized with a leading period; existing callers already satisfy this."
+      "If the same-extension collision case is handled incorrectly, output files could overwrite or duplicate unexpected names.",
+      "Touching filename construction in only one branch could make mp3 and mp4 behavior diverge."
     ],
     "alternatives": [
-      "Calling Path.ChangeExtension directly on the original input path would also preserve dotted basenames, but would mix source-directory path semantics with the temporary output directory and make the existing collision suffix less clear."
+      "Keep Path.ChangeExtension and try to escape multi-dot stems. Rejected because the problem is using ChangeExtension on an already processed stem at all.",
+      "Always append the target extension to the full original filename. Rejected because it would produce names like some.video.mov.mp4 instead of replacing the original extension."
     ]
   },
   "actions": [
     {
-      "id": "approve-advanced-paste-filename-design-50465",
       "type": "approve_design",
-      "label": "Design multi-period transcode filename fix",
-      "primary": true,
-      "confirm": true,
-      "note": "Approve a fork-side implementation and focused regression coverage."
+      "label": "Approve multi-dot transcode filename fix",
+      "note": "This is a small, well-bounded Advanced Paste bug with implementation-ready design detail."
     }
   ]
 }

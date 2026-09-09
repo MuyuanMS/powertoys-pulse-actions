@@ -3,71 +3,112 @@
   "number": 50306,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_information",
-  "owes": "author",
-  "pending_author": false,
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
-  "source_updated_at": "2026-09-02T02:17:27Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50306",
   "title": "quick accent inserts `」` as `「` in the wechat desktop app",
-  "author": "brauljo",
+  "url": "https://github.com/microsoft/PowerToys/issues/50306",
+  "generated_at": "2026-09-09T10:33:13.5242917Z",
+  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
+  "source_updated_at": "2026-09-02T02:17:27Z",
+  "summary": "Quick Accent inserts the mirrored bracket in WeChat Desktop; the current insertion path uses raw Unicode SendInput with no IME-specific composition handling.",
+  "next_action": "Request the specific IME/layout comparison needed to decide whether the fix belongs in Quick Accent’s insertion path or in a WeChat-specific composition workaround.",
+  "confidence": {
+    "score": 54,
+    "level": "yellow",
+    "rationale": "The Unicode injection path is a plausible match, but the active IME/layout behavior still needs one discriminator from the reporter."
+  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
+  "linked_work": [],
+  "comment_count": 0,
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The report contains an exact character mismatch and a diagnostic attachment, but not the Quick Accent activation gesture, selected language/layout, WeChat version, or a control application result needed to isolate an app-specific text-input transformation.",
+    "status": "actionable_design",
+    "rationale": "There is a plausible repo-side fix path in Quick Accent, but it should stay as lightweight coverage until the input-method details confirm the correct branch.",
     "evidence": [
-      "The reporter says selecting or typing 」 through Quick Accent produces 「 only in WeChat Desktop.",
-      "A public bug-report ZIP is attached.",
-      "Power Accent uses a low-level keyboard listener and supports excluding foreground applications.",
-      "There are no follow-up comments or linked fix attempts."
+      "The report is app-specific: selecting `」` through Quick Accent yields `「` in WeChat Desktop.",
+      "Quick Accent inserts characters by sending BACKSPACE followed by KEYEVENTF_UNICODE input in src/modules/poweraccent/PowerAccent.Core/Tools/WindowsFunctions.cs.",
+      "Recent Quick Accent hardening in PR #48572 improved injection hygiene and reset behavior, but did not add an IME-specific composition path."
     ],
-    "recommended_action": "Request the exact gesture and an app comparison that can identify whether the issue is in Quick Accent output or WeChat input handling.",
-    "evaluated_at": "2026-09-08T02:27:54Z",
-    "source_updated_at": "2026-09-02T02:17:27Z"
+    "recommended_action": "Keep a lightweight IME-aware fix candidate ready, but first ask for the exact IME/layout comparison that will distinguish a Quick Accent bug from WeChat-specific punctuation conversion."
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "No code fix can be responsibly targeted until the selection path, keyboard layout, and application-specific scope are confirmed."
+    "status": "proposed",
+    "rationale": "A Quick Accent insertion-path change is plausible, but the exact trigger still depends on how WeChat and the active IME interpret the injected Unicode sequence.",
+    "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "Quick Accent appears to produce the opening corner bracket instead of the requested closing bracket when the destination application is WeChat Desktop.",
+    "summary": "The report is narrowly scoped: Quick Accent chooses the correct-looking bracket in its UI, but WeChat Desktop receives the mirrored character instead.",
     "known_information": [
-      "The issue identifies Quick Accent, WeChat Desktop, and the two distinct Unicode characters.",
-      "The report is from PowerToys 0.100.2 and includes a public diagnostic archive.",
-      "No discussion supplies activation, language, or comparison details."
+      "The issue was filed against PowerToys 0.100.2 using auto-update.",
+      "The failure is specific to WeChat Desktop in the current report.",
+      "A PowerToys diagnostic ZIP was attached, but no discussion clarifies which IME/layout was active."
     ],
     "inferences": [
-      "The destination application or active input method may be transforming the text, but Quick Accent emission is not ruled out."
+      "The failure likely lives in the final text-insertion path rather than in Quick Accent’s candidate list, because the wrong character appears only after commit.",
+      "An active IME composition or app-specific punctuation conversion is a more likely cause than broken character mapping data."
     ],
-    "analysis": "An exact character pair is valuable, but the report has no discriminator between an output-selection defect and an application/IME compatibility path. A small application comparison is more relevant than requesting another generic log.",
+    "analysis": "The repo already shows where Quick Accent synthesizes backspace and Unicode key events. The remaining uncertainty is whether WeChat is reacting to that generic insertion path or to a specific IME state.",
     "initial_investigation": [
-      "Read the full issue body and discussion.",
-      "Inspected src/modules/PowerAccent/PowerAccentKeyboardService/KeyboardListener.cpp and its keyboard-hook/excluded-app boundary.",
-      "Searched live issue titles for a directly matching WeChat bracket report; no direct duplicate was found."
+      "Quick Accent’s insertion path is implemented in src/modules/poweraccent/PowerAccent.Core/Tools/WindowsFunctions.cs using SendInput with KEYEVENTF_UNICODE.",
+      "PR #48572 hardened injected-input tagging and reset behavior but did not add an IME-aware composition step.",
+      "No linked duplicate or active owner was present on the issue."
     ],
     "information_gaps": [
       {
-        "information": "The Quick Accent activation and selection steps, active Windows keyboard layout/IME, WeChat Desktop version, and results in Notepad plus one other application.",
-        "why_needed": "These observations identify whether the incorrect character is selected by PowerToys or changed only by the destination application's input path.",
-        "how_to_collect": "Record the exact key sequence and selected candidate, then paste or enter the same candidate in WeChat Desktop, Notepad, and one additional application without changing the active input language."
+        "evidence_type": "keyboard_layout",
+        "information": "The exact keyboard layout and IME active when `」` was selected in WeChat.",
+        "why_needed": "This determines whether the bug depends on a specific composition engine or is a generic Quick Accent punctuation regression.",
+        "how_to_collect": "Please name the active Windows keyboard layout / IME when reproducing the issue."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the same Quick Accent choice inserts the wrong character in a plain editor such as Notepad, or only in WeChat Desktop.",
+        "why_needed": "This separates a PowerToys-wide insertion bug from a WeChat-specific input handling path.",
+        "how_to_collect": "Please try the same Quick Accent selection in Notepad and report whether the result is still wrong there."
+      },
+      {
+        "evidence_type": "gif_video",
+        "information": "A short recording of the Quick Accent selection and the resulting inserted character in WeChat.",
+        "why_needed": "It verifies the chosen candidate and the exact app-side result without relying on text description alone.",
+        "how_to_collect": "Please record the selection sequence, hide any sensitive conversations, and upload the clip through the GitHub issue web UI."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-ime-comparison-50306",
+      "type": "approve_design",
+      "label": "Approve IME-aware Quick Accent investigation",
+      "note": "Deferred from full design in this bounded batch; the artifact keeps a lightweight fix path ready."
+    },
+    {
       "type": "request_info",
-      "label": "Request Quick Accent app comparison",
-      "primary": true,
-      "confirm": true,
+      "label": "Confirm WeChat IME and comparison app",
       "comment": {
-        "body": "Thank you for identifying the exact bracket pair and attaching a report. To determine whether Quick Accent selects the wrong character or WeChat changes it through its input path, please provide the exact activation and selection keys, active Windows keyboard layout/IME, and WeChat Desktop version. Please also repeat the same selection in Notepad and one other application, without changing the input language, and share which applications produce 」 versus 「."
+        "body": "Thanks — this is already narrow enough to investigate the insertion path. To decide whether the fix belongs in Quick Accent itself or in an app/IME-specific workaround, please provide:\n\n**Needed**\n1. Please confirm the exact Windows keyboard layout / IME that is active when you choose `」` in WeChat Desktop.\n2. Please try the same Quick Accent selection in a plain editor such as **Notepad** and say whether it still inserts `「`, or whether the problem happens only in WeChat.\n3. Please upload a short screen recording of the selection and resulting character (with any sensitive chat content hidden).\n\nThis will distinguish a general Quick Accent insertion bug from WeChat-specific punctuation conversion."
       }
     }
-  ]
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Normalize IME state before Quick Accent commits punctuation",
+      "root_cause": "Quick Accent currently replaces the typed character with BACKSPACE and then injects raw Unicode code units. If WeChat still has an active IME composition for that punctuation slot, the app can reinterpret the insertion and emit the mirrored bracket instead of the requested one.",
+      "plan": [
+        "Reproduce the issue with the reporter’s exact keyboard layout / IME and compare WeChat against a plain editor such as Notepad.",
+        "If the IME-composition branch is confirmed, commit or cancel the active composition before sending the replacement Unicode sequence, or add a focused fallback insertion path for punctuation-only inserts.",
+        "Add regression coverage around punctuation injection so the selected character is committed exactly as shown in the Quick Accent toolbar."
+      ],
+      "verification": [
+        "Use Quick Accent to pick `」` in WeChat Desktop and verify the inserted character is `」`, not `「`.",
+        "Verify the change does not regress Quick Accent insertion in a plain editor such as Notepad."
+      ],
+      "confidence": {
+        "score": 54,
+        "level": "yellow",
+        "rationale": "The SendInput path is the strongest current match, but the missing IME/layout details still matter for choosing the exact fix."
+      }
+    }
+  ],
+  "deferred_design": true,
+  "deferred_reason": "The batch used its single full-design slot on Issue 50239; this issue keeps lightweight fix coverage only."
 }

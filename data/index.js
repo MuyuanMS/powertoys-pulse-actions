@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T18:54:18.8079204+08:00",
+  "generated_at": "2026-09-09T19:06:52.4108837+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 154,
     "open_issues": 12610,
     "community": 11766,
-    "artifacts": 388
+    "artifacts": 392
   },
   "impact": {
-    "as_of": "2026-09-09T18:54:18.8079204+08:00",
+    "as_of": "2026-09-09T19:06:52.4108837+08:00",
     "issues_helped": 10,
     "prs_iterated": 24,
     "constructive_comments_posted": 3,
@@ -228,6 +228,8 @@ window.BOARD_INDEX = {
     33109,
     3442,
     50214,
+    50477,
+    50476,
     50471,
     50465,
     50454,
@@ -237,6 +239,7 @@ window.BOARD_INDEX = {
     50440,
     50439,
     50438,
+    50436,
     50424,
     50422,
     50420,
@@ -331,6 +334,7 @@ window.BOARD_INDEX = {
     12845,
     49787,
     49684,
+    49635,
     49604,
     31962,
     50295,
@@ -2600,8 +2604,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_blocked",
-      "owes": "automation",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -19323,8 +19327,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "reproduce",
+        "label": "Reproduce Always On Top display-sleep crash"
       },
       "labels": [
         "Issue-Bug",
@@ -44321,16 +44325,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
+      "track": "fix",
       "stage": null,
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
@@ -44353,16 +44360,19 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
+      "track": "fix",
       "stage": null,
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
@@ -44525,8 +44535,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
+        "type": "post_comment",
+        "label": "Point to PR #50472"
       },
       "labels": [
         "Issue-Bug",
@@ -44971,13 +44981,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
+      "track": "fix",
       "stage": null,
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "tracked",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -45008,7 +45018,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "waiting_on_author",
+      "stage": "needs_information",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/08/2026 04:08:44",
@@ -45016,7 +45026,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
@@ -45147,10 +45160,7 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_comment",
-        "label": "Link related Peek issue"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
@@ -45208,7 +45218,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "owned_elsewhere",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -45216,10 +45226,7 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -45389,8 +45396,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -45417,7 +45424,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "design_ready",
+      "stage": "awaiting_author_information",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -45490,11 +45497,14 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -46028,7 +46038,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "fix",
-      "stage": "triage",
+      "stage": "awaiting_author_information",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -46036,7 +46046,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_info",
+        "label": "Reply with suggested comments"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -46448,10 +46461,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "awaiting_author_information",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "09/06/2026 02:25:02",
+      "waiting_since": "09/05/2026 08:23:09",
       "has_artifact": true,
       "agent_status": "fix",
       "issue_type": "bug",
@@ -46838,7 +46851,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "owned_elsewhere",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -46846,10 +46859,7 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -47037,7 +47047,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "triage",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -47306,13 +47316,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
+      "track": "fix",
       "stage": "awaiting_author_information",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/04/2026 05:14:21",
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -47375,7 +47385,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "triage",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -47487,7 +47497,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "triage",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/03/2026 21:55:24",
@@ -47529,13 +47539,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
+      "track": "fix",
       "stage": "awaiting_author_information",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/03/2026 20:09:40",
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -47632,13 +47642,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
+      "track": "fix",
       "stage": "awaiting_author_information",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/03/2026 18:57:59",
       "has_artifact": true,
-      "agent_status": "triage",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -47776,8 +47786,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Point to existing theme-crash tracker"
       },
       "labels": [
         "Issue-Bug",
@@ -47909,7 +47919,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "awaiting_author_information",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -49651,7 +49661,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": {
         "type": "post_comment",
-        "label": "Explain display numbering behavior"
+        "label": "Point to Command Palette monitor-topology fixes"
       },
       "labels": [
         "Issue-Bug",
@@ -49779,7 +49789,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "awaiting_author_information",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/04/2026 22:53:56",
@@ -50533,8 +50543,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Point to active random-exit tracker"
       },
       "labels": [
         "Issue-Bug",
@@ -51501,8 +51511,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -52078,8 +52088,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Point to installer deadlock tracker"
       },
       "labels": [
         "Issue-Bug",
@@ -68499,11 +68509,14 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve_design",
+        "label": "Start fixing"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
@@ -74097,8 +74110,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Point to active random-exit tracker"
       },
       "labels": [
         "Issue-Bug",
@@ -78399,13 +78412,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
+      "track": "fix",
       "stage": null,
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "tracked",
+      "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -218592,7 +218605,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage",
+      "stage": "awaiting_author_information",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -291825,7 +291838,10 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Point to PR #50273"
+      },
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -311450,7 +311466,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "reproducible",
+      "stage": "owned_elsewhere",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -311458,10 +311474,7 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_comment",
-        "label": "Record partial installer fix"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Area-Setup/Install",
@@ -365549,8 +365562,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -385460,8 +385473,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "reproduce",
+        "label": "Reproduce Alt+` global failure"
       },
       "labels": [
         "Issue-Bug",
@@ -387722,8 +387735,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Point to Workspaces PWA matching fixes"
       },
       "labels": [
         "Issue-Bug",
@@ -416957,8 +416970,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",

@@ -4,99 +4,132 @@
   "number": 50440,
   "title": "The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)",
   "url": "https://github.com/microsoft/PowerToys/issues/50440",
-  "state": "open",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-LightSwitch"
-  ],
-  "assignees": [],
-  "generated_at": "2026-09-08T15:10:00Z",
-  "evaluated_at": "2026-09-08T15:10:00Z",
+  "generated_at": "2026-09-09T10:28:38.042Z",
+  "evaluated_at": "2026-09-09T10:28:38.042Z",
   "source_updated_at": "2026-09-08T14:31:55Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report describes a recurring loss of an enabled Light Switch state, and the supplied diagnostic triage found no crash signature. The repository has a dedicated Light Switch settings loader and file watcher, so a settings reload, persistence, or initialization boundary is a plausible code-fix area, but the exact transition that clears the setting is not confirmed.",
+    "rationale": "The report is reproducible enough to justify a focused persistence/startup investigation, but the supplied diagnostic analysis found no exception signature and does not distinguish settings write loss from module startup reconciliation.",
+    "recommended_action": "Collect one targeted reproduction with before/after general settings evidence, then validate the LightSwitch state transition through settings persistence and Runner startup.",
     "evidence": [
-      "The reporter uses PowerToys 0.101.2362 stable on Windows build 26200 with a per-user installation and supplied a PowerToys diagnostic ZIP.",
-      "The reporter clarified that the feature disables every few days rather than only immediately after an upgrade.",
-      "The existing automated triage comment reports no matching error or crash signatures and characterizes the problem as a possible silent state-persistence or module-initialization issue.",
-      "LightSwitchSettings loads persisted schedule and theme-target values, watches the settings file, debounces changes, and reloads state asynchronously."
-    ],
-    "recommended_action": "Run a focused Light Switch state-transition investigation with a fresh diagnostic archive captured immediately after the next spontaneous disable, then implement and test the confirmed persistence or reload fix.",
-    "full_design_candidate": true
+      {
+        "fact": "The reporter says LightSwitch can turn itself off on stable 0.101.2362 without user action and supplied a diagnostic report.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50440"
+      },
+      {
+        "fact": "Automated analysis found no matching crash or error signature, so a silent state or initialization path remains possible rather than proven.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50440#issuecomment-5571883843"
+      },
+      {
+        "fact": "The current code reads and writes GeneralSettingsConfig.Enabled.LightSwitch in the LightSwitch settings view model; Runner applies enabled module settings during startup.",
+        "source": "https://github.com/microsoft/PowerToys/tree/main/src/settings-ui/Settings.UI/ViewModels"
+      }
+    ]
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No open or merged fix attempt was found for this issue. A repository change is applicable, but the failing state transition still needs to be distinguished between external settings overwrite, debounced reload, and module initialization."
+    "rationale": "No complete fix is present. The most supportable next step is instrumentation and persistence validation around the existing LightSwitch setting flow."
   },
   "proposed_fixes": [
     {
-      "title": "Preserve Light Switch enablement across spontaneous settings reloads",
-      "root_cause": "Hypothesis: a settings-file rewrite or module reload can replace or reinitialize Light Switch state without preserving the user's enabled configuration; the current loader and asynchronous file-watcher path are the most relevant code boundaries.",
+      "title": "Trace and harden LightSwitch enabled-state persistence",
+      "root_cause": "The symptom is consistent with an unconfirmed divergence between the persisted GeneralSettingsConfig.Enabled.LightSwitch value and the Runner/module state.",
       "plan": [
-        "Trace the Light Switch enablement and schedule/theme-target values from Settings UI persistence through LightSwitchSettings::LoadSettings and module initialization.",
-        "Capture the exact settings-file and lifecycle transition that occurs when the feature disables, then guard reload or initialization so unchanged persisted enablement is not reset.",
-        "Add regression coverage for debounced settings reload, restart, and an external settings update while Light Switch is enabled."
+        "Add narrowly scoped diagnostic logging around LightSwitch enabled-state reads, writes, and Runner application, excluding private settings values beyond the boolean state.",
+        "Reproduce across a settings refresh, Runner restart, and update-adjacent startup to identify the first transition to false.",
+        "Fix the identified write or initialization path and preserve the existing explicit user-disable behavior."
       ],
       "verification": [
-        "Reproduce the issue over the reported multi-day interval or with the identified triggering transition and confirm Light Switch remains enabled.",
-        "Run the focused Light Switch settings unit tests and verify that a settings reload preserves the persisted enablement and theme-target values."
+        "Unit or integration coverage proves a true enabled value survives serialization, reload, and Runner startup.",
+        "A regression reproduction no longer disables LightSwitch without an explicit user action.",
+        "A clean startup still honors an intentionally disabled LightSwitch."
       ],
       "confidence": {
-        "score": 62,
+        "score": 58,
         "level": "yellow",
-        "rationale": "The recurring symptom, silent diagnostic result, and dedicated asynchronous settings reload path align with a plausible state-reset defect, but no trace yet identifies which transition actually clears the setting."
+        "rationale": "The code path is identifiable, but the supplied evidence does not yet identify the failing transition."
       }
     }
   ],
   "issue_context": {
-    "summary": "Light Switch intermittently turns itself off in stable 0.101.2362 after running for several days. The report includes a diagnostic archive and the author has clarified that the behavior is not tied to upgrading, but the archive and public discussion do not identify the state transition that disables the feature.",
+    "summary": "LightSwitch is reported to become disabled spontaneously on a non-elevated per-user stable installation.",
     "known_information": [
-      "The affected module is Light Switch.",
-      "The reporter expects the feature to remain enabled after enabling it.",
-      "The reporter has observed the feature disable itself twice since the last installation, approximately every two or three days.",
-      "The issue includes a PowerToys diagnostic ZIP captured on 2026-09-07.",
-      "Automated triage found no matching error or crash signatures in its analyzed diagnostic subset.",
-      "The issue has Issue-Bug, Needs-Triage, and Product-LightSwitch labels and no assignee."
+      "Version 0.101.2362, GitHub installation, Windows build 26200, per-user and non-elevated.",
+      "The issue includes a diagnostic report and a subsequent author comment offering help.",
+      "No public code change or linked PR was identified as fixing this behavior.",
+      "The reporter clarified that the failure happens every few days rather than during upgrades."
     ],
     "inferences": [
-      "The symptom may be caused by silent settings persistence, a settings-file reload, or module initialization rather than an exception-driven crash.",
-      "Because the failure is intermittent and not upgrade-triggered, a periodic lifecycle or external settings-write boundary is more likely than a one-time installer migration, but this is unconfirmed."
+      "The missing error signature suggests a silent settings persistence or startup reconciliation path.",
+      "The exact transition may occur during a settings write, Runner restart, update, or module initialization."
     ],
-    "analysis": "The public evidence supports investigating the Light Switch settings and reload path instead of treating this as a generic crash report. The code's debounced file watcher and LoadSettings method provide concrete ownership signals, while the absence of a captured trigger means a full implementation design would otherwise risk fixing the wrong transition. A fresh archive immediately after reproduction and a precise trigger classification are the smallest additional evidence that can separate competing hypotheses.",
+    "analysis": "Compare the persisted enabled state before and after the observed disablement and trace whether the Runner or Settings UI writes the changed value.",
     "initial_investigation": [
-      "Reviewed LightSwitchSettings.cpp: it loads schedule, latitude/longitude, time offsets, and changeSystem/changeApps values under a mutex; a debounced file watcher calls LoadSettings asynchronously after settings-file changes.",
-      "Reviewed recent Light Switch history, including the July 2026 stable profile ID change and earlier settings/refactor work; no linked fix for this issue was identified.",
-      "Searched related Light Switch issues; existing results concern scheduling, theme behavior, profiles, and feature requests rather than this intermittent disable symptom.",
-      "Reviewed the complete issue body and five comments, including the maintainer question about upgrade correlation and the reporter's answer that the failure occurs every few days."
+      "src/settings-ui/Settings.UI/ViewModels/LightSwitchViewModel.cs",
+      "src/settings-ui/Settings.UI/SettingsXAML/Views/LightSwitchPage.xaml.cs",
+      "src/runner/settings_window.cpp",
+      "src/runner/main.cpp"
     ],
     "information_gaps": [
       {
-        "information": "A fresh PowerToys diagnostic archive captured immediately after Light Switch disables itself, plus the exact local time of the transition.",
-        "why_needed": "This can correlate the spontaneous disable with a settings-file write, restart, sleep/resume, scheduled mode transition, or module error and distinguish the competing root-cause hypotheses.",
-        "how_to_collect": "Please reproduce the problem and submit a comment containing /bugreport immediately after the feature turns off; include the approximate timestamp and whether the PC resumed from sleep or PowerToys restarted."
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after LightSwitch is found disabled again.",
+        "why_needed": "The next recurrence needs current logs around the exact moment the running module or settings state changed.",
+        "how_to_collect": "As soon as the feature is found disabled again, add a comment containing /bugreport before re-enabling it."
       },
       {
-        "information": "Whether only Light Switch becomes disabled, or whether other PowerToys modules also lose their enabled state at the same time.",
-        "why_needed": "A single-module symptom points to Light Switch persistence or initialization, while multiple modules would implicate shared settings storage or an installer/update process.",
-        "how_to_collect": "After the next occurrence, record the enabled/disabled state of the other PowerToys modules before changing any settings."
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether PowerToys restarted, updated, resumed from sleep, or was simply running normally between the last known-good and disabled states.",
+        "why_needed": "This separates a write/persistence problem from a startup or resume application problem.",
+        "how_to_collect": "Reply with the approximate time the setting last worked and whether restart, update, sleep/resume, or sign-in occurred before it turned off."
+      },
+      {
+        "evidence_type": "configuration_export",
+        "information": "Whether the persisted LightSwitch enabled value itself changed to false when the bug occurred.",
+        "why_needed": "This distinguishes a bad saved state from a live-state divergence.",
+        "how_to_collect": "If safe to inspect locally, compare the LightSwitch enabled value before re-enabling it and describe only whether it was true or false."
       }
     ]
   },
   "actions": [
     {
       "type": "request_info",
-      "label": "Request Light Switch activation trace",
-      "note": "Ask for only the evidence needed to identify the intermittent state transition.",
+      "label": "Request LightSwitch disablement trace",
       "comment": {
-        "body": "Thanks for confirming that Light Switch turns off every few days rather than only after an upgrade, and for providing the first diagnostic report. The current report does not show what event clears the setting. Please provide the next occurrence as follows:\n\n1. Immediately after Light Switch turns off, submit a comment containing /bugreport and include the approximate time it happened; please also note whether the PC had resumed from sleep or PowerToys had restarted.\n2. Confirm whether any other PowerToys modules lost their enabled state at the same time.\n\nThis will let us distinguish a Light Switch settings reload from a shared settings or lifecycle problem."
+        "body": "Thanks for confirming that this happens every few days and not only during upgrades. The remaining question is whether LightSwitch is actually being saved as disabled, or whether the running module is only interpreting it as disabled after a restart or resume path.\n\n**Needed**\n1. Please add a comment containing `/bugreport` immediately after you notice LightSwitch turned off, before you re-enable it.\n2. Please include the approximate time of the event and confirm whether PowerToys had restarted, updated, resumed from sleep, or had simply been running normally since the last known-good state.\n3. If it is safe to inspect locally, please confirm whether the saved LightSwitch enabled value itself had become `false` before you turned it back on.\n\nThis will distinguish a bad persisted setting from a startup or resume path that is reading the saved state incorrectly."
       }
     },
     {
       "type": "approve_design",
-      "label": "Design Light Switch state persistence fix",
-      "note": "Approve a fork-side investigation and implementation focused on the settings reload and initialization boundaries after the targeted evidence is available."
+      "label": "Approve LightSwitch persistence investigation design",
+      "note": "Keeps the proposed fix bounded to the GeneralSettings/Runner enabled-state path."
     }
-  ]
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "state": "OPEN",
+  "created_at": "2026-09-07T13:58:22Z",
+  "updated_at": "2026-09-08T14:31:55Z",
+  "author": "FrankLiWright",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-LightSwitch"
+  ],
+  "assignees": [],
+  "comments": 5,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 5,
+    "timeline_events_read": 14
+  },
+  "upstream_public_action_taken": false,
+  "design": null,
+  "full_design": false,
+  "design_deferred": true,
+  "confidence": {
+    "score": 58,
+    "level": "yellow",
+    "rationale": "The persistence/startup path is clear, but the public evidence still does not identify whether the false state is written or only observed later."
+  }
 }

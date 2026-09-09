@@ -2,192 +2,108 @@
   "schemaVersion": 5,
   "number": 50351,
   "kind": "issue",
-  "title": "Keyboard Manager shortcuts cannot override Windows shortcuts",
-  "url": "https://github.com/microsoft/PowerToys/issues/50351",
-  "state": "open",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Product-Keyboard Manager"
-  ],
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
+  "track": "fix",
+  "stage": "awaiting_author_information",
+  "generated_at": "2026-09-09T10:17:36.337Z",
+  "evaluated_at": "2026-09-09T10:17:36.337Z",
   "source_updated_at": "2026-09-04T04:54:56Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50351",
+  "title": "Keyboard Manager shortcuts cannot override Windows shortcuts",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is reproducible and current code/test seams are identifiable, but no evidence selects matching, suppression, or injection as the root cause.",
+    "status": "needs_information",
+    "rationale": "The public reproduction proves a shell-hotkey conflict but cannot distinguish hook matching, suppression timing, injection failure, elevation, or settings state.",
     "evidence": [
-      "Exact Win+Arrow mappings and observed Snap behavior are supplied.",
-      "Windows build 26200.9168 is supplied.",
-      "Current code routes OS-level remapping through HandleOSLevelShortcutRemapEvent.",
-      "Related historical issues are linked, but do not establish this exact failure."
+      "Win+Left and Win+Right mappings are reported to invoke Windows Snap.",
+      "Keyboard Manager already has a low-level hook and shortcut-to-key suppression path.",
+      "The reporter links older shortcut-remapping issues, but those concern intermittent failures rather than this immediate Win+Arrow conflict.",
+      "No diagnostic archive or hook/injection trace is supplied."
     ],
-    "recommended_action": "Request the targeted remap trace and approve the instrumentation-first design."
+    "recommended_action": "Request a fresh diagnostic and a focused comparison matrix before approving a code design.",
+    "evaluated_at": "2026-09-09T10:17:36.337Z",
+    "source_updated_at": "2026-09-04T04:54:56Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "The current Keyboard Manager path should suppress a matched OS-level shortcut and inject the replacement, but the report does not distinguish matching failure, suppression failure, or replacement injection failure."
+    "rationale": "A product fix may apply, but the failing boundary is not proven; retain a red provisional investigation plan rather than inventing a root cause.",
+    "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Instrument Win+Arrow suppression and replacement",
-      "root_cause": "The current Keyboard Manager path should suppress a matched OS-level shortcut and inject the replacement, but the report does not distinguish matching failure, suppression failure, or replacement injection failure.",
+      "title": "Instrument and isolate Win+Arrow remapping before changing suppression",
+      "root_cause": "Provisional: the shell may receive Win+Arrow because the low-level hook misses or suppresses the physical event too late, or because replacement input fails; current evidence cannot choose among these.",
       "plan": [
-        "Trace hook initialization, shortcut matching, suppression return values, and SendInput for Win+Left and Win+Right.",
-        "Compare the configured mappings with Snap enabled/disabled and with a non-shell shortcut.",
-        "Only after the trace identifies the failing boundary, make a narrowly scoped suppression/injection correction."
+        "Capture hook initialization, settings load, match detection, modifier restoration, SendInput result, and suppression return for Win+Arrow.",
+        "Compare normal and elevated PowerToys, Snap enabled/disabled, and a non-shell Win shortcut.",
+        "Only after the trace identifies the boundary, add a narrowly scoped suppression or deferred injection fix and matching tests."
       ],
       "verification": [
-        "Run the exact Win+Left -> Home and Win+Right -> End mappings on Windows 11 26200.9168.",
-        "Confirm whether the shell receives the original event and whether Home/End injection succeeds.",
-        "Run existing OS-level shortcut remapping tests and add coverage for the discovered branch."
+        "The diagnostic matrix identifies whether matching, suppression, or injection is failing before implementation begins."
       ],
       "confidence": {
         "score": 46,
         "level": "red",
-        "rationale": "The hook and OS-level remap functions are confirmed, but the report has no trace or bug report and several failure mechanisms remain plausible."
+        "rationale": "The current code suggests several plausible mechanisms and the issue lacks the evidence needed to select one."
       }
     }
   ],
   "issue_context": {
-    "summary": "Keyboard Manager mappings for Win+Left and Win+Right do not prevent Windows Snap; the shell action wins instead of Home/End.",
+    "summary": "Keyboard Manager mappings for Win+Arrow do not prevent Windows Snap, but the report lacks the trace needed to identify where the remap path fails.",
     "known_information": [
-      "Stable and Preview versions are both reported affected.",
-      "The mappings are Win+Left -> Home and Win+Right -> End.",
-      "Windows 11 build 26200.9168 is reported.",
-      "No bug report ZIP is attached.",
-      "The issue links older shortcut-remap reports #17344, #35730, and #17596; #17596 remains open but describes a broader intermittent shortcut failure.",
-      "Current code routes OS-level remapping through HandleOSLevelShortcutRemapEvent and has dedicated OS-level remapping tests."
+      "The report uses Win+Left to Home and Win+Right to End.",
+      "The actual result is Windows Snap left/right.",
+      "The affected versions include stable and preview builds on Windows 11.",
+      "The reporter linked issues 17344, 35730, and 17596; their reports concern shortcuts failing after use rather than immediate Win+Arrow handling."
     ],
     "inferences": [
-      "The original Win event may not be suppressed, or replacement injection may fail after a successful match.",
-      "Windows Snap handling may expose a timing or modifier-state race."
+      "The defect may be specific to shell-reserved Win+Arrow handling rather than all shortcut-to-key mappings.",
+      "A deferred injection design is only one possible fix and must not be implemented without a trace."
     ],
-    "analysis": "A short trace can distinguish the three plausible boundaries cheaply; a speculative code change would risk breaking other OS-level remaps.",
+    "analysis": "Local code contains a nominal suppression path and existing tests, so changing it blindly could regress other mappings. A fresh bug report plus a small controlled matrix can distinguish hook installation, shortcut matching, physical suppression, and SendInput failure.",
     "initial_investigation": [
-      "Search found related historical reports, but no current issue proves the same Win+Arrow-specific mechanism.",
-      "KeyboardManager.cpp calls HandleOSLevelShortcutRemapEvent.",
-      "OSLevelShortcutRemappingTests.cpp provides a focused existing test seam."
+      "Inspected KeyboardManager::HookProc, HandleKeyboardHookEvent, KeyboardEventHandlers::HandleShortcutRemapEvent, Shortcut modifier checks, and OS-level remapping tests.",
+      "Reviewed linked issues 17344, 35730, and 17596; they are not established duplicates because their reported failure occurs after use rather than on the first Win+Arrow press."
     ],
     "information_gaps": [
       {
-        "information": "Whether Keyboard Manager matches the configured shortcut, suppresses the original Win+Arrow event, and injects Home/End.",
-        "why_needed": "Selects matching vs suppression vs injection as the implementation target.",
-        "how_to_collect": "Run a diagnostic build with Keyboard Manager trace logging, or submit `/bugreport` immediately after reproducing with the mapping active."
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic archive captured immediately after reproducing the Win+Arrow remap failure.",
+        "why_needed": "The logs can show whether the hook initialized, the remap matched, or input injection failed.",
+        "how_to_collect": "Reproduce the Win+Arrow failure once, then add a comment containing /bugreport immediately afterward."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Results for normal versus elevated PowerToys, Windows Snap enabled versus disabled, and a control remap such as Win+A.",
+        "why_needed": "This separates shell-reserved shortcut behavior from a broader remap failure.",
+        "how_to_collect": "Reply with a short comparison covering normal and elevated PowerToys, Snap enabled and disabled, and whether a control remap such as Win+A works."
       }
     ]
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request Win+Arrow remap trace",
-      "note": "Ask only for evidence that distinguishes match, suppression, and injection failure.",
-      "comment": {
-        "body": "The mapping details and Windows build are useful, and the linked historical reports show this is a known Keyboard Manager area. The remaining decision is whether the original Win+Arrow reaches Windows Snap because the shortcut is not matched, because suppression returns too late/false, or because Home/End injection fails. Please reproduce with the two mappings active and submit a fresh report using `/bugreport` immediately afterward; if possible, include whether Snap still occurs with Snap layouts temporarily disabled and whether a non-shell shortcut remap works."
-      }
+      "type": "approve_design",
+      "label": "Approve Keyboard Manager investigation design"
     },
     {
-      "type": "approve_design",
-      "label": "Design fix: isolate Win+Arrow remap failure",
-      "note": "Approve a fork-side investigation that instruments the existing hook and OS-level remap path before changing suppression.",
-      "design_prompt": "Trace Keyboard Manager matching, suppression, and replacement injection for Win+Arrow mappings, then implement only the confirmed failing branch."
+      "type": "request_info",
+      "label": "Request focused Keyboard Manager diagnostics",
+      "comment": {
+        "body": "The Win+Arrow reproduction and mappings are useful, but the current code already has a hook, suppression path, and injection path, so the next step is to identify which boundary is failing. Please provide:\n\n1. A fresh PowerToys diagnostic archive: reproduce the Win+Arrow remap failure once, then add a comment containing \"/bugreport\" immediately afterward.\n2. A short comparison of normal versus elevated PowerToys, Windows Snap enabled versus disabled, and a control remap such as Win+A, including whether each case works or still triggers the Windows shortcut."
+      }
     }
   ],
-  "design": {
-    "root_cause": "The current Keyboard Manager path should suppress a matched OS-level shortcut and inject the replacement, but the report does not distinguish matching failure, suppression failure, or replacement injection failure.",
-    "evidence": [
-      "KeyboardManager.cpp routes OS-level shortcut events to HandleOSLevelShortcutRemapEvent.",
-      "KeyboardEventHandlers.cpp contains the global shortcut matching and replacement path.",
-      "OSLevelShortcutRemappingTests.cpp provides existing test infrastructure for this behavior."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp",
-        "purpose": "Installs the hook and routes matched events.",
-        "symbols": [
-          "KeyboardManager::HookProc",
-          "KeyboardManager::HandleKeyboardHookEvent"
-        ]
-      },
-      {
-        "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
-        "purpose": "Matches OS-level shortcuts, suppresses input, and injects replacements.",
-        "symbols": [
-          "HandleOSLevelShortcutRemapEvent",
-          "HandleShortcutRemapEvent"
-        ]
-      },
-      {
-        "path": "src/modules/keyboardmanager/KeyboardManagerEngineTest/OSLevelShortcutRemappingTests.cpp",
-        "purpose": "Tests OS-level shortcut remapping and suppression behavior.",
-        "symbols": [
-          "OS-level shortcut remapping tests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
-        "symbols": [
-          "HandleOSLevelShortcutRemapEvent"
-        ],
-        "current_behavior": "The runtime result of matching, suppression, and replacement injection is not exposed in the issue evidence.",
-        "change": "Add narrowly scoped trace points for matched mapping, modifier state, SendInput result, and the hook return value.",
-        "code_block": "Trace(match, original, replacement); auto injected = SendInput(...); Trace(injected); return suppress ? 1 : 0;",
-        "edge_cases": [
-          "Avoid logging sensitive keystrokes beyond the configured mapping.",
-          "Keep the hook hot path low overhead."
-        ],
-        "tests": [
-          "Exercise Win+Arrow and a non-shell shortcut."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp",
-        "symbols": [
-          "KeyboardManager::HandleKeyboardHookEvent"
-        ],
-        "current_behavior": "The hook routes the event but the report cannot show whether the original event was suppressed.",
-        "change": "Use the trace to verify the hook return contract and correct only the confirmed return path.",
-        "code_block": "if (remapMatched) { injectReplacement(); return SUPPRESS; } return PASS_THROUGH;",
-        "edge_cases": [
-          "Preserve single-key precedence and injected-event flags."
-        ],
-        "tests": [
-          "Run existing hook tests and regression mappings."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/keyboardmanager/KeyboardManagerEngineTest/OSLevelShortcutRemappingTests.cpp",
-        "symbols": [
-          "OS-level shortcut remapping tests"
-        ],
-        "current_behavior": "Existing tests cover related mappings but not necessarily Win+Arrow shell interception.",
-        "change": "Add a focused regression for Win+Left/Right to Home/End after the failing branch is known.",
-        "code_block": "TEST(WinArrowMapping) { expect(originalSuppressed); expect(replacementInjected); }",
-        "edge_cases": [
-          "Represent left/right modifiers and key-up ordering."
-        ],
-        "tests": [
-          "Run the focused test and the Keyboard Manager suite."
-        ]
-      }
-    ],
-    "verify": [
-      "Build and run the Keyboard Manager engine tests.",
-      "Reproduce on Windows 11 build 26200.9168 with Snap enabled.",
-      "Confirm no regression for non-shell and app-specific mappings."
-    ],
-    "risks": [
-      "Hook timing and modifier-state changes can affect many remaps.",
-      "Instrumentation must not materially slow the low-level hook."
-    ],
-    "alternatives": [
-      "Changing suppression without evidence is rejected.",
-      "Disabling Windows Snap is not a fix for Keyboard Manager remapping."
-    ]
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "design_decision": {
+    "status": "deferred",
+    "reason": "Keep only lightweight red-confidence fix coverage until hook diagnostics arrive."
+  },
+  "confidence": {
+    "score": 46,
+    "level": "red",
+    "rationale": "The current code suggests several plausible mechanisms and the issue lacks the evidence needed to select one."
   }
 }

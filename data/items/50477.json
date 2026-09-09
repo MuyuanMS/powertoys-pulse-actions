@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 5,
+  "repository": "microsoft/PowerToys",
+  "kind": "issue",
+  "track": "fix",
+  "number": 50477,
+  "title": "Dock keeps sliding out repeatedly when I move the mouse across screen edge and to another monitor",
+  "url": "https://github.com/microsoft/PowerToys/issues/50477",
+  "state": "OPEN",
+  "created_at": "2026-09-09T07:49:04Z",
+  "updated_at": "2026-09-09T07:49:04Z",
+  "author": "untitled500",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "generated_at": "2026-09-09T10:28:38.042Z",
+  "evaluated_at": "2026-09-09T10:28:38.042Z",
+  "source_updated_at": "2026-09-09T07:49:04Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0,
+    "timeline_events_read": 2
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true,
+  "confidence": {
+    "score": 62,
+    "level": "yellow",
+    "rationale": "The auto-hide loop and monitor-label mismatch both map to concrete Dock code, but the stacked-monitor edge transition still needs maintainer-side reproduction."
+  },
+  "linked_work": [
+    {
+      "type": "issue",
+      "ref": "#48466",
+      "url": "https://github.com/microsoft/PowerToys/issues/48466",
+      "relevance": "Related secondary-monitor Dock positioning issue; distinct from the auto-hide loop."
+    }
+  ],
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report provides full stacked-monitor steps, screenshots, and a video, and the current Dock implementation exposes two matching problem areas: reveal/collapse logic that only keeps the dock open while the pointer remains over the actual dock window, and monitor labels derived from raw DISPLAYn names that can disagree with Windows display numbering.",
+    "evidence": [
+      "The issue reproduces on v0.101.2632 Stable with a secondary monitor stacked above the main monitor and Auto-hide Dock enabled.",
+      "DockWindow.xaml.cs reveals the hidden dock when the cursor touches a 1px edge margin, but CanCollapseAutoHideDock only blocks collapse while the cursor is still over the dock window itself.",
+      "PollCursorForReveal can immediately re-trigger while the cursor still rides the monitor edge after collapse, matching the repeated slide-out behavior.",
+      "MonitorService.FormatDisplayName falls back from raw \\\\.\\\\DISPLAYn names to labels like “Display 2”, which can disagree with Windows display numbering even when primary detection is correct."
+    ],
+    "recommended_action": "Approve a design-deferred fix plan and run a focused maintainer reproduction so the auto-hide corridor and display-label adjustments can be verified together."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository-local fix is applicable in DockWindow.xaml.cs and MonitorService.cs, but the combined interaction should be reproduced once before implementation is approved.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Stabilize Dock auto-hide across monitor-edge transitions and stop surfacing misleading DISPLAYn labels",
+      "root_cause": "Auto-hide collapses as soon as the cursor leaves the revealed dock window, even when the pointer is intentionally crossing the same screen edge into an adjacent monitor; meanwhile settings labels reuse raw DISPLAYn fallback names that do not always match Windows display numbering.",
+      "plan": [
+        "Broaden the auto-hide keep-open condition from “cursor still over the dock window” to “cursor is still inside the reveal corridor on the active dock edge or over dock UI”.",
+        "Prevent immediate reveal/collapse ping-pong when the cursor remains on the active edge after a collapse timer fires.",
+        "Prefer friendly names plus a primary badge instead of presenting raw DISPLAYn ordinals as if they were Windows monitor numbers."
+      ],
+      "verification": [
+        "With vertically stacked monitors and Auto-hide enabled, moving the cursor from the main monitor to the upper monitor should reveal the dock once and keep it stable until the pointer retreats from the edge corridor.",
+        "The Dock settings page should no longer imply that Windows monitor numbering changed just because the raw device name was DISPLAY2."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The code matches the symptoms, but one focused maintainer reproduction should verify the edge corridor behavior before implementation starts."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Command Palette Dock repeatedly slides in and out when the cursor crosses a vertically stacked monitor boundary with Auto-hide enabled, and the settings page also shows a misleading “Display 2 (Primary)” label.",
+    "known_information": [
+      "The issue includes numbered reproduction steps, two screenshots, and a video of the repeated slide-out behavior.",
+      "The affected build is v0.101.2632 Stable from the Microsoft Store.",
+      "No comments, linked fix PRs, or assignees are present yet."
+    ],
+    "inferences": [
+      "The repeated reveal/collapse loop is likely caused by an overly narrow “cursor still counts as on the dock” condition rather than a generic monitor-detection failure.",
+      "The “Display 2 (Primary)” text likely reflects raw GDI naming, not a broken primary-monitor flag."
+    ],
+    "analysis": "This is already reproducible from the public report, so a maintainer-side reproduce action is more useful than asking the reporter for generic logs.",
+    "initial_investigation": [
+      "Reviewed the complete issue body, labels, screenshots, and attached video.",
+      "Inspected src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs, src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs, and Dock multi-monitor tests.",
+      "Compared related open issues #48466, #49480, and #49086 to avoid collapsing distinct second-monitor bugs into this edge-transition report."
+    ],
+    "information_gaps": []
+  },
+  "design": null,
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce stacked-monitor Dock auto-hide loop",
+      "reproduce": {
+        "title": "Verify Dock auto-hide while crossing a vertical monitor boundary",
+        "module": "Command Palette Dock",
+        "version_requirement": "PowerToys v0.101.2632 Stable or current main",
+        "prerequisites": [
+          "Two monitors in Extend mode with the secondary monitor stacked directly above the primary monitor",
+          "Dock Auto-hide enabled on the top edge"
+        ],
+        "setup": [
+          "Open the Dock settings page and note the per-monitor labels shown there."
+        ],
+        "steps": [
+          "Place the cursor just below the top edge of the primary monitor and move upward until the Dock reveals.",
+          "Continue moving upward onto the secondary monitor without retreating downward.",
+          "Observe whether the Dock disappears and immediately re-reveals in a loop while the cursor stays near the shared edge.",
+          "Compare the monitor labels in Dock settings with Windows Display settings."
+        ],
+        "expected_result": "The Dock should reveal once and remain stable while the cursor intentionally transitions across the configured edge, and the settings page should not imply an incorrect primary-monitor numbering assignment."
+      }
+    },
+    {
+      "type": "approve_design",
+      "label": "Approve Dock edge-transition fix design",
+      "note": "Design stays bounded to Dock auto-hide hit-testing and monitor label presentation."
+    }
+  ]
+}

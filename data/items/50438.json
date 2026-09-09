@@ -1,106 +1,99 @@
 {
   "schemaVersion": 5,
-  "kind": "issue",
   "number": 50438,
-  "title": "Mouse Without Borders fails to resynchronize after minutes",
-  "url": "https://github.com/microsoft/PowerToys/issues/50438",
-  "generated_at": "2026-09-08T02:51:49.9453166Z",
-  "evaluated_at": "2026-09-08T02:51:49.9453166Z",
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_author_information",
+  "generated_at": "2026-09-09T10:18:14.162Z",
+  "evaluated_at": "2026-09-09T10:18:14.162Z",
   "source_updated_at": "2026-09-07T10:00:32Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The symptom is clear: resynchronization fails until restart, but the attached diagnostic archive was invalid, so socket error and machine-state evidence are missing. The reconnect and power/network event paths are identifiable, making this a red-confidence investigation rather than a ready implementation.",
-    "recommended_action": "Obtain a valid post-reproduction diagnostic report and correlate socket reopen, network availability, and machine-pool state before changing reconnect behavior.",
-    "evidence": [
-      {
-        "fact": "The reporter says Mouse Without Borders stops resynchronizing after several minutes and only restart repairs it.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50438"
-      },
-      {
-        "fact": "The submitted diagnostic archive could not be analyzed as valid evidence.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50438"
-      },
-      {
-        "fact": "InitAndCleanup schedules socket reopening on network availability and power-mode events, coordinated with Common.Sk and SocketStuff.",
-        "source": "https://github.com/microsoft/PowerToys/tree/main/src/modules/MouseWithoutBorders/App/Core"
-      }
-    ]
+  "url": "https://github.com/microsoft/PowerToys/issues/50438",
+  "title": "Mouse Withotu Borders desync",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Two-machine Mouse Without Borders desync is too under-specified to scope a fix without targeted environment evidence."
   },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "Reconnect/state recovery is a valid design target, but there is no usable trace showing whether the failure is socket, peer, authentication, or stale machine-state."
+  "confidence": {
+    "score": 86,
+    "level": "green",
+    "rationale": "The report is real enough to keep, but the next bounded step is still evidence gathering."
   },
-  "proposed_fixes": [
+  "linked_work": [
     {
-      "title": "Make Mouse Without Borders recovery reset stale transport state",
-      "root_cause": "The restart-only recovery symptom is consistent with a stale socket or connection state surviving the existing reopen triggers, but the failing state is not yet identified.",
-      "plan": [
-        "Correlate socket read/write failures, network availability events, and machine-pool state transitions.",
-        "Reset or recreate only the stale transport state after a confirmed recoverable failure.",
-        "Add bounded retry/backoff and a diagnostic event that identifies why synchronization was reset."
-      ],
-      "verification": [
-        "The captured failure recovers without restarting PowerToys.",
-        "Repeated network interruption and resume tests do not leave a stale synchronized/unsynchronized state.",
-        "Intentional disconnect and peer authentication remain stable."
-      ],
-      "confidence": {
-        "score": 42,
-        "level": "red",
-        "rationale": "The symptom strongly suggests recovery-state handling, but the invalid diagnostics leave the exact state machine failure unknown."
-      }
+      "kind": "issue",
+      "number": 49147,
+      "title": "Mouse Without Borders: failed clipboard transfer permanently kills the clipboard listener; later copies desync the main channel and drop the whole connection",
+      "state": "OPEN",
+      "url": "https://github.com/microsoft/PowerToys/issues/49147",
+      "relation": "related_issue"
     }
   ],
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The issue proves recurring two-machine desync, but it still does not identify which side disconnects first or whether clipboard/file transfer is the trigger.",
+    "evidence": [
+      "The reporter says the session desynchronizes again after a few minutes.",
+      "Admin mode and service mode were already tried.",
+      "Related open issue #49147 ties clipboard transfer to later MWB desync."
+    ],
+    "recommended_action": "Ask for the exact two-machine setup, trigger, and a fresh desync-time bug report.",
+    "evaluated_at": "2026-09-09T10:18:14.162Z",
+    "source_updated_at": "2026-09-07T10:00:32Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix may apply, but the public report does not yet identify the failing channel.",
+    "existing_fix_urls": []
+  },
   "issue_context": {
-    "summary": "Mouse Without Borders loses synchronization after running for minutes and recovers only after restart.",
+    "summary": "Mouse Without Borders loses sync between two PCs after a few minutes, and restarting PowerToys only temporarily restores the connection.",
     "known_information": [
-      "The issue provides a clear duration-dependent symptom.",
-      "A diagnostic archive was attached but is invalid for analysis.",
-      "The repository has explicit network/power-triggered socket reopening paths."
+      "The issue is on PowerToys 0.101.2362.",
+      "Admin mode and service mode were both tried.",
+      "The earlier uploaded ZIP could not be analyzed automatically."
     ],
     "inferences": [
-      "A stale socket or machine-pool state may survive a recoverable network failure.",
-      "The restart workaround suggests recovery state is not fully reset."
+      "The defect is likely in connection maintenance or a dependent channel rather than in a single toggle state.",
+      "Clipboard or file transfer may be a useful discriminator because of related issue #49147."
     ],
-    "analysis": "Capture a valid report at the first failed sync and compare socket lifecycle events with peer connectivity and state resets.",
+    "analysis": "Because MWB needs two physical machines, the smallest useful next step is a targeted reporter evidence request rather than a speculative network fix.",
     "initial_investigation": [
-      "src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs",
-      "src/modules/MouseWithoutBorders/App/Core",
-      "src/modules/MouseWithoutBorders/App"
+      "Reviewed the full issue body and automated triage comment.",
+      "Reviewed local MWB reconnect and disconnect logging paths.",
+      "Checked issue #49147 as related history."
     ],
     "information_gaps": [
       {
-        "information": "The first failure timestamp, affected peer count, whether both machines remain connected, and socket reopen/error events.",
-        "why_needed": "Without this evidence a reconnect change could mask authentication or peer-state problems.",
-        "how_to_collect": "Reproduce until synchronization fails, run /bugreport on both sides if possible, and record the first failure time and whether restarting only one side recovers it."
+        "evidence_type": "behavior_confirmation",
+        "information": "Which machine loses control first and whether clipboard/file transfer or another specific action triggers the desync.",
+        "why_needed": "This separates a general reconnect failure from a side-channel trigger already seen in related issues.",
+        "how_to_collect": "Reply with a short numbered description of what each machine was doing just before the desync and which direction of control stopped first."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh bug report from the machine where desync appears first, and the paired machine too if practical.",
+        "why_needed": "The logs need to capture the live disconnect and reconnect attempt.",
+        "how_to_collect": "Reproduce once and add a comment containing /bugreport immediately afterward on the affected machine; if possible collect one from the paired machine too."
       }
     ]
   },
   "actions": [
     {
+      "id": "request-info-50438",
       "type": "request_info",
-      "label": "Request targeted evidence",
-      "note": "Replace the invalid archive with a time-correlated report and isolate the recovery boundary.",
+      "label": "Request two-machine desync diagnostics",
+      "confirm": true,
       "comment": {
-        "body": "The symptom is actionable, but the previously attached diagnostic archive was invalid, so there is no socket or peer-state evidence to distinguish a stale connection from a machine-pool/authentication problem. Please reproduce until synchronization first fails, record the approximate time and whether one or both machines are affected, then run /bugreport immediately on the affected side (and the peer if possible). Please state whether restarting only one side restores sync; this is the key recovery discriminator."
-      }
-    },
-    {
-      "type": "approve_design",
-      "label": "Approve focused fix design",
-      "note": "The proposed design is specific enough for fork-side implementation after maintainer approval.",
-      "design": {
-        "scope": "Trace and reset the Mouse Without Borders reconnect state at the first recoverable transport failure without disrupting intentional disconnects.",
-        "files": [
-          "src/modules/MouseWithoutBorders/App/Core/InitAndCleanup.cs",
-          "src/modules/MouseWithoutBorders/App/Core/SocketStuff.cs",
-          "src/modules/MouseWithoutBorders/App/Core/Common.cs"
-        ],
-        "acceptance_criteria": [
-          "A transient network/socket failure restores synchronization without process restart.",
-          "The first failure produces a bounded, actionable diagnostic event.",
-          "Peer authentication and intentional disconnect behavior are unchanged."
-        ]
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50438,
+        "body": "Thanks for confirming that the Mouse Without Borders session desynchronizes again after only a few minutes even when you try admin mode and service mode. Please provide:\n\n1. Which machine loses control first, whether the break follows a clipboard or file transfer or another specific action, and what each machine was doing just before the desync.\n2. A fresh bug report from the machine where the desync appears first: reproduce the problem once and add a comment containing \"/bugreport\" immediately afterward on that machine. If practical, collect one from the paired machine too."
       }
     }
   ]

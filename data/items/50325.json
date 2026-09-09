@@ -1,109 +1,119 @@
 {
   "schemaVersion": 5,
-  "generated_at": "2026-09-08T03:00:24Z",
-  "evaluated_at": "2026-09-08T03:00:24Z",
+  "number": 50325,
+  "kind": "issue",
+  "track": "fix",
+  "title": "There is no \"save as\" dialogua when using Zoomit screen recording",
+  "url": "https://github.com/microsoft/PowerToys/issues/50325",
+  "generated_at": "2026-09-09T10:33:13.5242917Z",
+  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
   "source_updated_at": "2026-09-02T12:02:45Z",
-  "repository": "microsoft/PowerToys",
-  "item": {
-    "type": "issue",
-    "number": 50325,
-    "title": "There is no \"save as\" dialogua when using Zoomit screen recording",
-    "url": "https://github.com/microsoft/PowerToys/issues/50325",
-    "state": "OPEN",
-    "created_at": "2026-09-02T12:02:45Z",
-    "updated_at": "2026-09-02T12:02:45Z",
-    "author": "Stimux",
-    "labels": [
-      "Issue-Bug",
-      "Needs-Triage"
-    ],
-    "assignees": []
+  "summary": "ZoomIt recording ends with no Save As dialog or file; current code has a silent zero-frame return path that matches that user experience.",
+  "next_action": "Keep the lightweight design candidate deferred and use the maintainer reproduction plan to confirm whether the session is ending with zero captured frames.",
+  "confidence": {
+    "score": 74,
+    "level": "yellow",
+    "rationale": "The code already contains a silent no-video-frames branch that directly explains the missing Save As dialog, even though the upstream reason for zero frames may vary by environment."
   },
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 0,
-    "timeline_events_read": 2,
-    "activity_sources": [
-      "https://github.com/microsoft/PowerToys/issues/50325",
-      "https://github.com/microsoft/PowerToys/issues/50325#issuecomment-stream"
-    ],
-    "attachments_analyzed": [
-      {
-        "url": "https://github.com/user-attachments/files/31736805/PowerToysReport_2026-09-02-14-38-30.zip",
-        "public_summary": "Downloaded for triage; ZoomIt log had initialization/settings reload events but no recording failure, save-dialog, or no-frame diagnostic line in inspected module log."
-      }
-    ]
-  },
-  "upstream_public_action_taken": false,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "linked_work": [],
+  "comment_count": 0,
   "judgment": {
-    "status": "reproducible",
-    "rationale": "The report has concrete screen-recording steps and a public bug report, but logs do not show whether StopRecording reached save/trim, capture produced zero frames, or policy blocked the dialog.",
+    "status": "actionable_design",
+    "rationale": "There is a concrete repo-side improvement path in ZoomIt’s recording workflow, even before the exact capture-environment cause is known.",
     "evidence": [
-      "Ctrl+5 starts recording and shows yellow frame; second Ctrl+5 removes it with no Save As and no MP4 found.",
-      "Reporter notes non-admin company PC and possible new policy.",
-      "ZoomIt code toggles StartRecordingAsync/StopRecording, has no-frame warning, and uses save/trim dialogs.",
-      "Diagnostic ZIP module log lacks decisive recording error lines."
+      "The reporter sees the yellow recording frame appear, then disappear on the second Ctrl+5 press, with no Save As dialog and no file saved.",
+      "In src/modules/ZoomIt/ZoomIt/Zoomit.cpp, the MP4 path deletes the temporary file and returns silently when HasCapturedVideoFrames() is false after recording completes.",
+      "ZoomIt already has a WM_USER_RECORDING_NO_FRAMES warning path, but the explicit zero-frame early return bypasses that user-facing message."
     ],
-    "recommended_action": "Run maintainer reproduction on v0.101.2362+ and collect fresh trace if reproduced."
+    "recommended_action": "Treat the silent zero-frame branch as the current fix target and reproduce the issue on a constrained environment before expanding to a deeper capture-pipeline design."
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A code fix is plausible, but current evidence does not distinguish capture failure, dialog suppression, path persistence, or endpoint policy."
+    "status": "proposed",
+    "rationale": "A focused code change can eliminate the silent-failure behavior by routing zero-frame exits through an explicit warning/logging path.",
+    "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "ZoomIt screen recording starts visibly but stopping dismisses the border without showing Save As or leaving an MP4.",
+    "summary": "The core user-visible failure is not just that recording does not save; it is that ZoomIt provides no Save As dialog and no explanation after recording is stopped.",
     "known_information": [
-      "PowerToys v0.101.2362, Store install, ZoomIt, non-elevated.",
-      "Yellow recording frame appears on ultrawide display.",
-      "Issue started after ZoomIt temporarily stopped starting; updating restored other behavior.",
-      "A public diagnostic ZIP is attached."
+      "The report is against PowerToys 0.101.2362 from Microsoft Store.",
+      "Ctrl+5 starts recording and shows the yellow frame; pressing Ctrl+5 again ends that visual state, but no Save As dialog appears and no MP4 is found.",
+      "The reporter notes this is on a company PC and wonders whether policy may be involved.",
+      "A PowerToys diagnostic ZIP was attached."
     ],
     "inferences": [
-      "The hotkey path partly works; failure is likely after recording start or during stop/save flow.",
-      "Company policy could affect capture/save UI but is unconfirmed."
+      "The capture session may be ending before the first frame arrives, which would bypass the save dialog even though the UI briefly showed a recording border.",
+      "Corporate graphics-capture policy or environment differences could be the upstream trigger, but the silent exit is still a repo-local UX/diagnostic gap."
     ],
-    "analysis": "Treat as reproducible-first: multiple ZoomIt branches can stop with no saved file, and current logs do not identify the branch.",
+    "analysis": "The current code already contains a branch that silently deletes the temp recording and returns when zero frames were captured. That makes this a useful lightweight design candidate even before the exact environment cause is confirmed.",
     "initial_investigation": [
-      "Read live activity through 2026-09-02T12:02:45Z.",
-      "Downloaded/inspected public ZoomIt diagnostic summary.",
-      "Checked origin/main ZoomIt recording and save-dialog paths at 5abd20e355998a865075a06676bebfc1d9925be4."
+      "ZoomIt recording/save flow is implemented in src/modules/ZoomIt/ZoomIt/Zoomit.cpp and VideoRecordingSession.cpp.",
+      "The MP4 and GIF paths both contain explicit “no frames captured” early returns before the Save As dialog.",
+      "Earlier ZoomIt work in PR #49553 focused on trim/save reliability, but this thread’s symptom happens even earlier in the flow."
     ],
-    "information_gaps": [
-      {
-        "information": "Fresh recording-stop trace showing no-frame/capture failure, save dialog COM failure, or successful recording path.",
-        "why_needed": "Identifies exact branch to fix and separates endpoint policy from PowerToys defect.",
-        "how_to_collect": "Reproduce once, stop recording, then comment /bugreport immediately afterward."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "reproduce",
-      "label": "Reproduce ZoomIt issue",
-      "reproduce": {
-        "module": "ZoomIt",
-        "steps": [
-          "Install PowerToys 0.101.2362 or newer with ZoomIt enabled.",
-          "Set recording format to MP4 and leave PowerToys non-elevated.",
-          "Press Ctrl+5 and confirm the recording border appears.",
-          "Wait at least five seconds, press Ctrl+5 again, and observe save/trim UI.",
-          "Check Videos, Temp, and configured recording folder for an MP4."
-        ],
-        "expected_result": "Stopping recording should show save/trim flow or produce an MP4, not silently remove the border with no file.",
-        "setup_requirements": [
-          "If possible, test first on an ultrawide display and then a standard monitor."
-        ]
-      }
+      "type": "approve_design",
+      "label": "Approve zero-frame recording design",
+      "note": "Deferred from full design in this bounded batch; the artifact keeps a lightweight fix path ready."
     },
     {
-      "type": "request_info",
-      "label": "Request ZoomIt recording trace",
-      "requires_confirmation": true,
-      "comment": {
-        "body": "Thanks for attaching the report. It confirms ZoomIt is enabled, but the ZoomIt log does not show the decisive recording-stop branch. Please reproduce once more and then comment `/bugreport` immediately afterward so we can see whether recording produced no frames, the save dialog failed, or company policy blocked capture/save UI."
+      "type": "reproduce",
+      "label": "Reproduce missing Save As path",
+      "note": "The remaining uncertainty is environment-specific and maintainer-side; the current code already suggests a zero-frame recording branch.",
+      "reproduce": {
+        "title": "Exercise ZoomIt recording until the save workflow should appear",
+        "module": "ZoomIt",
+        "version_requirement": "PowerToys 0.101.2362 or newer with ZoomIt screen recording enabled",
+        "prerequisites": [
+          "Windows desktop session with ZoomIt enabled",
+          "A display environment as close as possible to the reporter, ideally including any corporate policy constraints if reproducible"
+        ],
+        "setup": [
+          "Configure Ctrl+5 screen recording with default MP4 output.",
+          "If possible, test both a normal desktop and an environment with restricted capture or graphics virtualization."
+        ],
+        "steps": [
+          "Press Ctrl+5 to start screen recording and verify the yellow frame appears.",
+          "Press Ctrl+5 again to stop recording after a short capture interval.",
+          "Observe whether Save As appears, whether a warning is shown, and whether any recording file is created."
+        ],
+        "expected_result": "Successful recordings should open the Save As / trim workflow. If no frames were captured, ZoomIt should show a clear warning instead of silently doing nothing.",
+        "attachments": [
+          {
+            "label": "Reporter bug report ZIP",
+            "url": "https://github.com/user-attachments/files/31736805/PowerToysReport_2026-09-02-14-38-30.zip"
+          }
+        ]
       }
     }
   ],
-  "number": 50325,
-  "kind": "issue"
+  "proposed_fixes": [
+    {
+      "title": "Surface zero-frame recording failures instead of silently returning",
+      "root_cause": "ZoomIt’s post-recording flow currently deletes the temporary recording and returns without any Save As dialog or warning when the session ends before a video frame is captured. That produces exactly the “yellow frame disappears, nothing saved, no dialog” experience reported here.",
+      "plan": [
+        "Extract the zero-frame cleanup into a shared helper used by both GIF and MP4 recording paths.",
+        "On zero-frame exit, post the existing WM_USER_RECORDING_NO_FRAMES warning or a more specific message before returning so the user learns why Save As never opened.",
+        "Log whether the session ended due to no captured frames, capture-start failure, or a blocked graphics-capture environment, and keep the normal Save As path unchanged for successful recordings."
+      ],
+      "verification": [
+        "Reproduce a zero-frame recording environment and verify ZoomIt shows an explanatory warning instead of silently disappearing.",
+        "Verify successful recordings still reach the Save As / trim workflow and save normally."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The silent return path is directly present in current code and closely matches the symptom, although the reason no frames were captured may still be environmental."
+      }
+    }
+  ],
+  "deferred_design": true,
+  "deferred_reason": "The batch used its single full-design slot on Issue 50239; this issue keeps lightweight fix coverage only."
 }

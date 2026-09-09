@@ -3,69 +3,95 @@
   "number": 50221,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_information",
-  "generated_at": "2026-09-04T03:00:00Z",
-  "evaluated_at": "2026-09-04T03:00:00Z",
-  "source_updated_at": "2026-08-31T22:16:21Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50221",
   "title": "Botched install caused installer to stop because it thinks it is installed.",
+  "url": "https://github.com/microsoft/PowerToys/issues/50221",
+  "generated_at": "2026-09-09T10:33:13.5242917Z",
+  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
+  "source_updated_at": "2026-08-31T22:16:21Z",
+  "summary": "The installer reports 0x81f40001 after a broken uninstall, but the evidence now overlaps the active cross-scope installer deadlock tracker.",
+  "next_action": "Draft a duplicate-handling comment that points the reporter to the active installer deadlock thread and known workaround history.",
+  "confidence": {
+    "score": 90,
+    "level": "green",
+    "rationale": "The error string, current installer conditions, and open tracker all line up with the same cross-scope detection family."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "linked_work": [
+    {
+      "relation": "cross_referenced",
+      "kind": "issue",
+      "number": 50234,
+      "state": "closed",
+      "title": "[Dedupe Digest] 2026-08-29",
+      "url": "https://github.com/microsoft/PowerToys/issues/50234",
+      "created_at": "2026-08-29T08:15:26Z"
+    },
+    {
+      "relation": "cross_referenced",
+      "kind": "issue",
+      "number": 50247,
+      "state": "closed",
+      "title": "[Dedupe Digest] 2026-08-30",
+      "url": "https://github.com/microsoft/PowerToys/issues/50247",
+      "created_at": "2026-08-30T08:16:02Z"
+    },
+    {
+      "relation": "cross_referenced",
+      "kind": "issue",
+      "number": 50263,
+      "state": "closed",
+      "title": "[Dedupe Digest] 2026-08-31",
+      "url": "https://github.com/microsoft/PowerToys/issues/50263",
+      "created_at": "2026-08-31T08:21:29Z"
+    }
+  ],
+  "comment_count": 2,
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The failure matches an existing fork-side installer condition fix and related upstream reports; no competing design should be created.",
+    "rationale": "The failure matches the open installer deadlock tracked in Issue 43774 and the closely related Issue 47250 workaround discussion.",
     "evidence": [
-      "The installer reports 0x81f40001 after a botched uninstall.",
-      "The issue discussion identifies stale files/registration and inability to reproduce elsewhere.",
-      "Fork commit bc74079a3 changes both cross-scope conditions to allow maintenance when WixBundleInstalled is true."
+      "The reporter quotes installer error 0x81f40001 saying PowerToys is already installed for all users.",
+      "Issue 47250 documented the same cross-scope uninstall/repair block and tied it to PowerToysSetupVNext conditions.",
+      "The current installer source in installer/PowerToysSetupVNext/PowerToys.wxs still contains the cross-scope guard without the WixBundleInstalled escape on the first condition."
     ],
-    "recommended_action": "Verify the existing fork fix against the stale-registration scenario and request installer evidence only if the fix does not cover it."
+    "recommended_action": "Route this issue to the canonical installer deadlock tracker instead of creating a separate design thread here."
   },
   "fix_assessment": {
-    "status": "existing_fix",
-    "rationale": "An active fork fix changes the relevant PowerToysSetupVNext cross-scope conditions; do not invent a competing plan.",
-    "existing_fix_urls": [
-      "https://github.com/MuyuanMS/PowerToys/commit/bc74079a3"
-    ]
-  },
-  "fork_issue": {
-    "number": 644,
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/644"
+    "status": "not_applicable",
+    "rationale": "The product bug is already tracked elsewhere; a duplicate fix plan here would split the history and workaround guidance.",
+    "existing_fix_urls": []
   },
   "issue_context": {
-    "summary": "A botched uninstall leaves installer registration that blocks reinstall with 0x81f40001 even though the application is absent.",
+    "summary": "The reporter wants to reinstall after a botched uninstall, but the installer still claims PowerToys is already installed for all users.",
     "known_information": [
-      "The reporter cannot install any version after a failed uninstall.",
-      "The user supplied the exact error and says files remain.",
-      "Related reports identify the same stale-installation state.",
-      "The fork contains a condition-level fix."
+      "The issue is against PowerToys 0.100.2-x64 installed from GitHub.",
+      "The reporter cannot currently reinstall any version and explicitly asked whether there is a registry or cleanup route.",
+      "The issue still carries Needs-Author-Feedback, but the underlying installer family already has active tracking elsewhere."
     ],
     "inferences": [
-      "Stale per-user/per-machine product registration is likely being treated as a blocking installation.",
-      "Allowing maintenance for an installed bundle may make cleanup reachable."
+      "This is likely the same cross-scope installer state deadlock rather than a brand-new install surface.",
+      "The most useful maintainer action is dedupe/navigation, not another generic request for steps the reporter cannot recreate."
     ],
-    "analysis": "Because a concrete fork fix already covers the likely bootstrapper gate, the correct workflow is validation of that fix rather than a duplicate design.",
+    "analysis": "Because the reporter mainly needs the known fix/workaround path and the underlying bug family is already open elsewhere, the artifact should steer maintainers to consolidate rather than restart diagnosis from scratch.",
     "initial_investigation": [
-      "Inspected PowerToysSetupVNext PowerToys.wxs and Product.wxs detection/condition paths and checked related issue history.",
-      "Confirmed no safe basis for broad registry cleanup."
+      "Issue 43774 is still open for this installer deadlock family.",
+      "Issue 47250 includes a detailed root-cause explanation and workaround discussion for the same 0x81f40001 condition.",
+      "installer/PowerToysSetupVNext/PowerToys.wxs still shows the cross-scope condition that can block uninstall/repair paths."
     ],
-    "information_gaps": [
-      {
-        "information": "Installer log or exact detected product scope/version.",
-        "why_needed": "Confirms whether the existing cross-scope condition is the path hit by this report.",
-        "how_to_collect": "Run the installer with verbose logging on the affected machine and attach only the relevant public log excerpt."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-50221",
-      "type": "request_info",
-      "label": "Request installer detection evidence",
-      "primary": true,
-      "confirm": true,
+      "type": "post_comment",
+      "label": "Point to installer deadlock tracker",
       "comment": {
-        "target": "issue",
-        "number": 50221,
-        "body": "The 0x81f40001 symptom and remaining files match a known stale-installation path, and a fork-side installer condition fix already covers maintenance for an installed bundle. To confirm it applies to your machine, please share the installer log's detected PowerToys product scope/version and the exact step where the condition fails. Do not remove unrelated registry entries."
+        "body": "Thanks for the extra detail. This appears to match the active installer deadlock family tracked in Issue 43774, with closely related workaround history in Issue 47250: the bundle detects the opposite install scope and then blocks uninstall or reinstall with error 0x81f40001. I would route this thread there instead of starting a separate fix path here, so the workaround steps and eventual installer fix stay consolidated in one place."
       }
     }
   ]

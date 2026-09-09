@@ -2,69 +2,95 @@
   "schemaVersion": 5,
   "number": 50371,
   "kind": "issue",
-  "title": "Settings not synced between elevated and non-levated runs; configs reset after restart / update",
-  "url": "https://github.com/microsoft/PowerToys/issues/50371",
-  "state": "open",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage",
-    "Needs-Team-Response",
-    "Product-General"
-  ],
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
+  "track": "fix",
+  "stage": "awaiting_author_information",
+  "generated_at": "2026-09-09T10:17:36.337Z",
+  "evaluated_at": "2026-09-09T10:17:36.337Z",
   "source_updated_at": "2026-09-04T05:14:21Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50371",
+  "title": "Settings not synced between elevated and non-levated runs; configs reset after restart / update",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The sequence is actionable, but the exact configuration paths and timing of the reset are needed before selecting a safe shared-settings change.",
+    "rationale": "The newly attached diagnostic confirms that both elevated and non-elevated PowerToys sessions occurred, but it captures only one final configuration snapshot. It cannot establish whether elevation used another Windows account, whether settings actually moved or reset, or which write/read operation caused the reported change.",
     "evidence": [
-      "Repeatable privilege-switch sequence is supplied.",
-      "Multiple modules are named as affected.",
-      "A fresh report ZIP was attached in follow-up activity.",
-      "Related #47238 is open but covers a different administrator-startup symptom."
+      "The reporter supplied a PowerToys diagnostic archive after the triage request.",
+      "The archive's final settings.json has is_elevated and run_elevated set to true.",
+      "The runner log records a non-elevated start before later configuration dispatch, while the archive does not contain a before/after pair of settings snapshots.",
+      "Open issue 47238 documents a related standard-user UAC scenario where another administrator account's profile can be used and run_elevated must be distinguished from is_elevated."
     ],
-    "recommended_action": "Request paired config-path/timestamp evidence and distinguish same-version restart from update migration."
+    "recommended_action": "Request the elevation-account detail and a controlled before/after reproduction that distinguishes settings reset from switching Windows user profiles.",
+    "evaluated_at": "2026-09-09T10:17:36.337Z",
+    "source_updated_at": "2026-09-04T05:14:21Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "No implementation-grade fix is selected until the configuration identity and reset boundary are confirmed."
+    "rationale": "A repository change cannot be responsibly scoped until the report identifies whether this is a cross-profile expectation, an incorrect elevation setting, or a specific settings persistence failure.",
+    "existing_fix_urls": []
   },
-  "proposed_fixes": [],
   "issue_context": {
-    "summary": "The report says settings differ between non-elevated and elevated runs and may reset after restart or update; a fresh report was attached after the first triage pass.",
+    "summary": "The report describes module settings appearing different after PowerToys is restarted elevated and sometimes appearing reset after a restart or update. A diagnostic archive is now attached, but it records only the final elevated configuration.",
     "known_information": [
-      "PowerToys 0.101.2362 is reported.",
-      "The user gives a repeatable privilege-switch sequence involving Settings, FancyZones, Keyboard Manager, and PowerToys Run.",
-      "The issue says admin and non-admin runs use different configuration files.",
-      "A fresh diagnostic ZIP was attached in a follow-up comment.",
-      "Open #47238 concerns administrator startup behavior, but is not the same settings-synchronization report."
+      "The reporter used PowerToys 0.101.2362 installed from GitHub.",
+      "The report names FancyZones, Keyboard Manager, and PowerToys Run as examples of settings that appear different.",
+      "The archive's settings.json records is_elevated=true and run_elevated=true.",
+      "The archive's runner log contains a non-elevated runner start before later settings activity.",
+      "No assignee or linked implementation is present on the issue."
     ],
     "inferences": [
-      "Separate per-user/elevation configuration locations are plausible, but the public report does not identify the exact paths or which module writes last.",
-      "The restart/update reset may be a second symptom of the same identity/path split or a separate migration issue."
+      "If the UAC prompt used a different administrator Windows account, different per-user settings would be expected and would not by itself show a synchronization defect.",
+      "If the same Windows account was used, a paired reproduction is needed to distinguish a persistence failure from a change to the elevation preference."
     ],
-    "analysis": "The report justifies targeted evidence collection before a design: identify the actual config paths and file timestamps under both tokens, then separate privilege switching from update migration.",
+    "analysis": "The attached archive resolves the previous missing-diagnostic gap, but it does not preserve the settings state immediately before and after the transition. Changing the runner's elevation or settings-path behavior without that boundary would risk conflating two Windows user profiles or changing the intended run_elevated behavior.",
     "initial_investigation": [
-      "The issue is not a duplicate of #47238 based on current titles: #47238 focuses on always-start-as-admin, while #50371 focuses on settings divergence.",
-      "Current PowerToys elevation code and Settings module paths should be inspected together during implementation.",
-      "The diagnostic attachment is newer than the original automated triage comment."
+      "Reviewed the diagnostic archive's settings.json, runner log, update state, and installer logs.",
+      "Reviewed src/runner/main.cpp, where startup reads run_elevated and chooses elevated or non-elevated restart behavior.",
+      "Reviewed src/runner/settings_window.cpp, which documents that elevated modules and non-elevated Settings can read different user directories.",
+      "Reviewed related open issue 47238, including its report that run_elevated remaining true can cause repeated UAC elevation for a standard Windows account."
     ],
     "information_gaps": [
       {
-        "information": "The exact settings file paths and module/file timestamps observed in non-elevated versus elevated runs.",
-        "why_needed": "Determines whether the root cause is per-user path separation, permissions, or update migration.",
-        "how_to_collect": "Capture both runs with `/bugreport` after changing one distinctive setting in each mode; include the affected module and whether the files differ by path or contents."
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the UAC prompt was approved with the same Windows account that originally configured PowerToys, or with a different administrator account.",
+        "why_needed": "This separates expected per-user profile differences from a true one-user settings persistence failure.",
+        "how_to_collect": "Reply whether the same Windows account or a different administrator account was used; no account names are needed."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "A controlled before-and-after comparison for one visible non-default setting, plus the values of is_elevated and run_elevated before and after Restart as administrator and one reboot.",
+        "why_needed": "This identifies the exact transition where the configuration diverges and provides an acceptance case for any eventual fix.",
+        "how_to_collect": "Using the same Windows account, choose one visible non-default setting and record that setting plus is_elevated and run_elevated before and after Restart as administrator and one reboot."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP only if that controlled comparison shows the setting changes unexpectedly.",
+        "why_needed": "A fresh archive is only needed once the failing transition is pinned to a specific before-and-after comparison.",
+        "how_to_collect": "If the setting changes unexpectedly, reproduce that failing transition once more and add a comment containing /bugreport immediately afterward."
       }
     ]
   },
   "actions": [
     {
       "type": "request_info",
-      "label": "Request elevated/non-elevated config paths",
-      "note": "Ask for evidence that separates path identity from update migration.",
+      "label": "Request elevation and settings-transition evidence",
       "comment": {
-        "body": "The report already provides a useful sequence across non-admin and administrator launches and confirms that settings differ or reset; the follow-up also adds a fresh PowerToys report. To identify the fix boundary, please change one distinctive setting (for example a Keyboard Manager shortcut) in non-elevated mode, then capture the effective settings path and file timestamp in both modes and submit `/bugreport` immediately after switching back. Please also state whether the reset occurs only after an update or already after a same-version restart. This distinguishes per-user/config-path separation from migration or permission failure."
+        "body": "Thanks for attaching the diagnostic archive. It shows both non-elevated and elevated PowerToys activity, but it still does not tell whether a different Windows account was used for the UAC prompt or exactly when one setting changed. Please provide:\n\n1. Whether the UAC prompt used the same Windows account that originally configured PowerToys or a different administrator account; no account names are needed.\n2. Using that same Windows account, one controlled before-and-after comparison for a visible non-default setting, plus \"is_elevated\" and \"run_elevated\", before and after Restart as administrator and one reboot.\n3. A fresh PowerToys diagnostic ZIP only if that comparison shows the setting changing unexpectedly: if it does, reproduce that failing transition once more and add a comment containing \"/bugreport\" immediately afterward."
       }
     }
-  ]
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-General"
+  ],
+  "assignees": [],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Needs a precise same-account before/after comparison before design."
+  },
+  "confidence": {
+    "score": 85,
+    "level": "green",
+    "rationale": "Judgment confidence."
+  }
 }
