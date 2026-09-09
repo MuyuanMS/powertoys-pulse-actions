@@ -1,210 +1,136 @@
 {
   "schemaVersion": 5,
-  "number": 49932,
   "kind": "pr",
   "track": "review",
+  "number": 49932,
+  "title": "CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
+  "url": "https://github.com/microsoft/PowerToys/pull/49932",
+  "generated_at": "2026-09-09T05:29:16.3946679Z",
+  "evaluated_at": "2026-09-09T05:29:16.3946679Z",
+  "source_updated_at": "2026-09-08T16:05:46Z",
   "stage": "review_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-08T11:09:36Z",
-  "evaluated_at": "2026-09-08T11:09:36Z",
-  "source_updated_at": "2026-09-08T09:43:01Z",
   "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
-  "title": "CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
-  "url": "https://github.com/microsoft/PowerToys/pull/49932",
-  "author": "jiripolasek",
-  "authorAssociation": "COLLABORATOR",
-  "state": "OPEN",
-  "draft": false,
-  "confidence": "High",
-  "summary": "The rebased current upstream head retains four actionable drag-and-drop correctness issues: resource-map entries are lost, copy-only external drags can advertise Move, directory bookmarks are excluded from filesystem drag packages, and persisted pins displayed in the recent-first section are incorrectly treated as pinnable.",
+  "summary": "The live 14-file stacked scope is current, all process checks pass, and the external review loop converged on a validated fix set. Four supported current-head findings remain in the upstream patch, including a potentially destructive external move negotiation, so a request-changes review is drafted.",
   "status": {
-    "glyph": "ACTION",
-    "label": "Review ready - four requests drafted",
-    "detail": "The upstream head is current and CI is green. The updated fixes build and test successfully, and the freshly requested automated review returned zero published comments with zero unresolved review threads."
+    "glyph": "READY",
+    "label": "Review ready — four correctness findings drafted",
+    "detail": "The current-head payload is supported by a zero-comment final Copilot review, zero unresolved threads, successful Debug x64 builds, and 588 passing focused assemblies."
   },
   "next_action": {
-    "glyph": "ACTION",
-    "label": "Approve, edit, or hold the drafted request-changes review",
-    "reason": "The review is pinned to upstream head 1f551a7d72083bcf7b5681c9501154291b6870d5. Recheck that head and the upstream activity snapshot immediately before any authorized publication."
+    "glyph": "REVIEW",
+    "label": "Review the drafted request-changes action",
+    "reason": "Publishing the current-head findings remains an explicit maintainer decision and requires a final upstream freshness check."
   },
-  "phase0": {
-    "author": "jiripolasek",
-    "author_association": "COLLABORATOR",
-    "bar": "collaborator-authored; routine community process nags skipped",
-    "disposition": "Proceed",
-    "gates_tripped": [],
-    "who_owes_next": "Maintainer review workflow",
-    "note": "The focused stacked Shelf change links issue 49928 and includes a recording. CLA, dependency review, intake, telemetry, Azure x64 and arm64 builds, SDK, and reported checks pass. The new head is open and non-draft; prior approval was invalidated by the rebase, so GitHub currently reports review required."
-  },
-  "judgment": {
-    "status": "review_findings",
-    "rationale": "The new upstream series is patch-equivalent to the previously reviewed feature commits after rebasing onto a newer base, so the four confirmed correctness issues remain present at the new head. The corresponding fixes were replayed on the current head and passed fresh automated review, Debug builds, and targeted tests.",
-    "evidence": [
-      "The live upstream head is 1f551a7d72083bcf7b5681c9501154291b6870d5 with base b299a74e74026dd0c953953aac12f748259d4f2e.",
-      "Range comparison shows the second feature commit is patch-equivalent and the first differs only where the newer base already added surrounding ShellPage imports and focus handling.",
-      "DataPackageTransfer reconstructs properties and formats but does not preserve DataPackage resource-map entries.",
-      "ShellPage adds Move to every shelf drag, including external packages whose requested operation is Copy.",
-      "BookmarkListItem accepts file-like classifications and File.Exists but excludes CommandKind.Directory and Directory.Exists.",
-      "QuickAccessShelfViewModel derives CanPin from section membership even though recent-first resolution can display a persisted pin in the recent section.",
-      "PowerToys essentials and all affected CmdPal projects built successfully in x64 Debug.",
-      "CmdPal UI ViewModels tests passed 361 of 361; CmdPal Bookmarks tests passed 227 of 227.",
-      "The freshest automated review examined the updated final code and generated zero published comments; zero automated-review threads remain unresolved.",
-      "No upstream review, comment, approval, label, close, or other mutation was made."
-    ],
-    "recommended_action": "Request changes for the four current-head findings after the required final upstream freshness check.",
-    "evaluated_at": "2026-09-08T11:09:36Z",
-    "source_updated_at": "2026-09-08T09:43:01Z"
-  },
+  "blockers": [],
+  "actions": [
+    {
+      "id": "request-changes-49932",
+      "type": "request_changes",
+      "label": "Request four drag-and-drop correctness fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49932,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
+        "body_prefix": "Thanks for the comprehensive shelf drag-and-drop implementation and test coverage. I found four correctness gaps in the current head that should be addressed before merge."
+      },
+      "note": "Do not post without explicit approval and a final upstream freshness check."
+    }
+  ],
   "proposed_comments": [
     {
-      "id": "preserve-drag-resource-map",
+      "id": "preserve-external-drag-operation",
       "kind": "companion",
       "severity": "high",
-      "confidence": {
-        "score": 98,
-        "rationale": "DataPackage.ResourceMap is separate from AvailableFormats and Properties, and the changed transfer helper never copies it."
-      },
-      "title": "Preserve resource-map entries during package transfer",
-      "body": "### Preserve resource-map entries during package transfer\n\n**Severity:** `high`\n\n`DataPackageTransfer.Copy` reconstructs the package from properties and available formats, but it never reads or copies `DataPackageView.GetResourceMapAsync()` entries. Resource-backed formats can therefore lose their referenced streams when the package is forwarded through the shelf. Prepare the source resource map while the package is available and copy those entries into the destination before registering deferred format providers.",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
-      "start_line": 12,
-      "line": 39,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed"
-    },
-    {
-      "id": "negotiate-drag-operation-safely",
-      "kind": "companion",
-      "severity": "high",
-      "confidence": {
-        "score": 97,
-        "rationale": "The current AllowedOperations expression adds Move to data-backed drags even when the source requested Copy, allowing an external target to negotiate a destructive operation."
-      },
-      "title": "Do not advertise Move for copy-only external drags",
-      "body": "### Do not advertise Move for copy-only external drags\n\n**Severity:** `high`\n\nThe `AllowedOperations` expression unconditionally adds `Move`, while a data-backed external drag can have `RequestedOperation == Copy`. This lets an external drop target negotiate a move even though the source did not authorize one. Preserve the operation requested by external data packages, use `Move` only for shelf-only drags, and have the internal shelf targets accept the source's negotiated operation while performing the shelf action.",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
-      "start_line": 1054,
-      "line": 1061,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed"
-    },
-    {
-      "id": "include-directory-bookmark-drag-package",
-      "kind": "inline",
-      "severity": "medium",
+      "title": "Do not advertise destructive moves for external payloads",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Do not advertise destructive moves for external payloads\n\n**Severity:** `high`\n\n`QuickAccessShelfItem_DragStarting` unconditionally adds `Move` to `AllowedOperations`, even when an extension's data package requests `Copy`. An external target such as Explorer can therefore negotiate a move and relocate a bookmarked file instead of copying it. Preserve the package's requested operation for data-backed drags, use `Move` only for shelf-only items, and make the internal shelf targets accept a preferred operation from the source's allowed set while still performing the pin, remove, or reorder action.",
       "confidence": {
         "score": 99,
-        "rationale": "CommandKind.Directory is supported and the helper handles StorageFolder, but this filter deterministically excludes directories."
-      },
-      "title": "Include directory bookmarks in filesystem drags",
-      "body": "### Include directory bookmarks in filesystem drags\n\n**Severity:** `medium`\n\nThe local path filter accepts file-like classifications and `File.Exists` only. `CommandKind.Directory` is supported by the classifier and the data-package helper can represent folders, but directory bookmarks therefore get no drag data package. Include directory classifications and validate them with `Directory.Exists` so folder bookmarks can be dragged as storage items.\n\n```suggestion\n        var localFilePath =\n            classification.Kind is CommandKind.FileExecutable or CommandKind.FileDocument or CommandKind.Shortcut or CommandKind.InternetShortcut or CommandKind.Directory &&\n            (File.Exists(classification.Target) || Directory.Exists(classification.Target))\n                ? classification.Target\n                : null;\n```",
+        "rationale": "The current head directly ORs Move into every drag source at ShellPage.xaml.cs lines 1057-1060. The validated implementation preserves the requested operation, selects a compatible internal operation, builds successfully, and passed the focused tests."
+      }
+    },
+    {
+      "id": "preserve-data-package-resource-map",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Preserve resource maps when cloning drag data",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Preserve resource maps when cloning drag data\n\n**Severity:** `medium`\n\n`DataPackageTransfer.Copy` reconstructs properties and advertised formats but never transfers `DataPackage.ResourceMap`. Payloads such as HTML with embedded images consequently lose their resource mappings when dragged through CmdPal. Capture the resource map while the original package is available, copy it into the destination package, and precompute it for drag callbacks that cannot wait asynchronously.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The WinRT resource map is separate from AvailableFormats and Properties, and the current copy routine never reads it. The validated implementation and regression tests preserve the map without blocking non-deferrable drag callbacks."
+      }
+    },
+    {
+      "id": "enable-directory-bookmark-drag",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Include directory bookmarks in drag data",
       "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkListItem.cs",
       "start_line": 124,
       "line": 128,
       "side": "RIGHT",
       "in_diff": true,
-      "disposition": "proposed"
+      "disposition": "proposed",
+      "body": "### Include directory bookmarks in drag data\n\n**Severity:** `medium`\n\nThe classification filter accepts only file-like kinds and then requires `File.Exists`, so a bookmark classified as `CommandKind.Directory` never receives a data package and cannot be dragged to Explorer. The shared helper already supports `StorageFolder`; include directories and validate them with `Directory.Exists`.\n\n```suggestion\n        var localFilePath =\n            classification.Kind is CommandKind.FileExecutable or CommandKind.FileDocument or CommandKind.Shortcut or CommandKind.InternetShortcut or CommandKind.Directory &&\n            (File.Exists(classification.Target) || Directory.Exists(classification.Target))\n                ? classification.Target\n                : null;\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current filter excludes CommandKind.Directory even though the downstream helper handles folders. The exact replacement compiled and the new directory-bookmark regression test passed."
+      }
     },
     {
       "id": "separate-persisted-pin-state",
       "kind": "companion",
       "severity": "medium",
+      "title": "Track persisted pin state independently from shelf section",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Track persisted pin state independently from shelf section\n\n**Severity:** `medium`\n\nWith recent items placed before pinned items, a command that is both recent and persisted as pinned can be rendered in the recent section. The current `canPin = !item.IsPinned` check treats that section membership as persistence state, exposes an invalid pin target, and also makes reorder eligibility inconsistent even though `TryPinItem` later rejects the operation. Track whether the command exists in the persisted pin set separately from the section's `IsPinned` value, and use that persisted state for pin and reorder eligibility.",
       "confidence": {
         "score": 98,
-        "rationale": "Recent-first resolution intentionally lets the recent section own duplicate display items, so item.IsPinned cannot reliably represent whether the command remains persisted in the pin list."
-      },
-      "title": "Separate persisted pin ownership from shelf-section membership",
-      "body": "### Separate persisted pin ownership from shelf-section membership\n\n**Severity:** `medium`\n\nWith recent commands shown first, a command that is both recent and persisted as pinned is displayed in the recent section, so `item.IsPinned` is false even though the settings still contain the pin. Computing `CanPin` from that section flag exposes a pin target that `TryPinItem` must reject, while the same flag is also used to decide reorder eligibility. Track persisted pin ownership separately: use it to compute `CanPin` and reorder eligibility, while keeping section membership only for remove-from-section behavior.",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfViewModel.cs",
-      "start_line": 325,
-      "line": 335,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed"
+        "rationale": "The resolver intentionally permits a persisted pin to be represented by the recent section, while the current code derives CanPin solely from item.IsPinned. The separate persisted-state implementation compiled and its regression coverage passed."
+      }
     }
   ],
-  "actions": [
-    {
-      "id": "post-review-49932",
-      "type": "post_review",
-      "label": "Post four inline request-changes comments",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "recommended_decision": "request_changes",
-      "review": {
-        "event": "COMMENT",
-        "pr": 49932,
-        "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5"
-      },
-      "note": "Approval-gated request-changes draft containing four inline comments. Refresh the upstream head, checks, comments, reviews, and threads before any authorized publication."
-    }
-  ],
-  "workflow": {
-    "phase": "review_ready",
-    "latest_automated_review_at": "2026-09-08T10:59:27Z",
-    "latest_automated_review_published_comments": 0,
-    "unresolved_automated_review_threads": 0,
-    "automated_review_result": "current_review_code_clean"
-  },
-  "verification": {
-    "result": "passed_with_findings",
-    "configuration": "x64 Debug",
-    "builds": [
-      "PowerToys essentials",
-      "PowerToys Runner",
-      "PowerToys Settings",
-      "CmdPal UI",
-      "CmdPal UI ViewModels unit-test project",
-      "CmdPal Bookmarks unit-test project",
-      "CmdPal Indexer extension"
-    ],
-    "tests": [
-      "CmdPal UI ViewModels unit-test assembly: 361 passed, 0 failed, 0 skipped",
-      "CmdPal Bookmarks unit-test assembly: 227 passed, 0 failed, 0 skipped",
-      "Persisted recent-section pin regression coverage passed",
-      "Directory bookmark drag-package regression coverage passed",
-      "Shelf resource-map preservation coverage passed"
-    ],
-    "summary": "The affected Debug projects built successfully and all targeted test assemblies passed on the updated current-head review."
+  "phase0": {
+    "author": "jiripolasek",
+    "author_association": "COLLABORATOR",
+    "bar": "Collaborator process nags skipped except genuine blockers",
+    "disposition": "Proceed",
+    "who_owes_next": "Maintainer",
+    "gates_tripped": [],
+    "note": "The PR is open and non-draft, links issue 49928, includes a user-visible recording, has successful CLA, dependency, intake, telemetry, x64, and arm64 checks, and has a current maintainer approval. Earlier cancelled intake and telemetry runs were superseded by successful runs."
   },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
+    "mergeable_state": "CLEAN",
+    "review_decision": "APPROVED",
     "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
     "base_sha": "b299a74e74026dd0c953953aac12f748259d4f2e",
-    "updated_at": "2026-09-08T09:43:01Z",
     "changed_file_count": 14,
-    "commit_count": 2,
     "issue_comment_count": 1,
-    "review_comment_count": 6,
-    "review_count": 8,
-    "unresolved_review_thread_count": 0,
-    "review_decision": "REVIEW_REQUIRED",
+    "review_count": 9,
     "reported_checks": {
-      "total": 13,
-      "successful": 11,
       "failing": 0,
-      "cancelled": 2,
       "pending": 0,
-      "cla": "success",
-      "azure_builds": "success"
+      "note": "All current required checks are successful; earlier cancelled duplicate workflow runs are not current failures."
     }
   },
   "freshness": {
-    "evaluated_at": "2026-09-08T11:09:36Z",
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-09T05:29:16.3946679Z",
     "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
-    "head_updated_at": "2026-09-08T09:43:01Z",
-    "status": "fresh"
+    "source_updated_at": "2026-09-08T16:05:46Z"
   },
-  "upstream_pr": {
-    "number": 49932,
-    "url": "https://github.com/microsoft/PowerToys/pull/49932",
-    "state": "OPEN",
-    "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
-    "updated_at": "2026-09-08T09:43:01Z"
-  }
+  "upstream_writes": [],
+  "dashboard_modified": false
 }

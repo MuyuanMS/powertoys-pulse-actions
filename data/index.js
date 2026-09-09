@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T13:35:57.2227768+08:00",
+  "generated_at": "2026-09-09T13:47:45.1116723+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 390
   },
   "impact": {
-    "as_of": "2026-09-09T13:35:57.2227768+08:00",
+    "as_of": "2026-09-09T13:47:45.1116723+08:00",
     "issues_helped": 10,
     "prs_iterated": 24,
     "constructive_comments_posted": 3,
@@ -3855,8 +3855,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 4,
       "primary_action": {
-        "type": "post_review",
-        "label": "Post four inline request-changes comments"
+        "type": "request_changes",
+        "label": "Request four drag-and-drop correctness fixes"
       },
       "labels": [
         "Product-Command Palette",
@@ -5102,18 +5102,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "request_changes",
-      "owes": "maintainer",
+      "stage": "review_blocked",
+      "owes": "external",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with one general review note"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Area-Localization",
         "Product-Keyboard Manager",
