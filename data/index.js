@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T10:53:57.3014439+08:00",
+  "generated_at": "2026-09-09T11:05:58.4139834+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 153,
     "open_issues": 12606,
     "community": 11761,
-    "artifacts": 388
+    "artifacts": 389
   },
   "impact": {
-    "as_of": "2026-09-09T10:53:57.3014439+08:00",
+    "as_of": "2026-09-09T11:05:58.4139834+08:00",
     "issues_helped": 10,
     "prs_iterated": 26,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50472,
     50463,
     50444,
     50414,
@@ -500,13 +501,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_blocked",
+      "owes": "automation",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1349,15 +1350,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_blocked",
-      "owes": "automation",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post two inline findings"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"

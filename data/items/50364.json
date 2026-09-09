@@ -1,35 +1,81 @@
 {
   "schemaVersion": 5,
   "kind": "pr",
+  "track": "review",
   "number": 50364,
   "title": "CmdPal: Add display hints to dock items",
   "url": "https://github.com/microsoft/PowerToys/pull/50364",
-  "generated_at": "2026-09-08T13:36:45.7403363Z",
-  "evaluated_at": "2026-09-08T13:36:45.7403363Z",
-  "source_updated_at": "2026-09-08T11:31:39Z",
-  "stage": "review_blocked",
-  "owes": "automation",
+  "generated_at": "2026-09-09T02:50:35.7569166Z",
+  "evaluated_at": "2026-09-09T02:50:35.7569166Z",
+  "source_updated_at": "2026-09-08T23:18:14Z",
+  "stage": "review_ready",
+  "owes": "maintainer",
   "pending_author": false,
   "head_sha": "3b63b657b8328faf8410e4e7c062369d92b4b3c6",
-  "summary": "Phase 0 was revalidated for the collaborator-authored PR and found no process action. The live-head fork review was repaired to the exact 27-file PR scope, retained fixes were revalidated by targeted CmdPal builds, and two current scoped Copilot findings were fixed. A post-fix Copilot review was requested but did not complete before the review-work stop deadline.",
+  "summary": "The durable review was resumed and revalidated at the unchanged upstream head after a newer maintainer approval. The existing post-fix Copilot review is current for the reviewed fork head and has zero published comments; every review thread is resolved. Fresh x64 Debug builds and PR-specific unit tests passed. Two current-head inline findings are drafted for maintainer approval; nothing was written to microsoft/PowerToys.",
   "status": {
-    "glyph": "BLOCKED",
-    "label": "Review blocked",
-    "detail": "Fresh Copilot convergence could not be verified before the deadline."
+    "glyph": "READY",
+    "label": "Review ready — two findings drafted",
+    "detail": "Current-head payload validation passed against GitHub with two apply-ready inline suggestions."
   },
   "next_action": {
-    "glyph": "BLOCKED",
-    "label": "Resume final Copilot convergence",
-    "reason": "Wait for the requested post-fix Copilot review, process and resolve any published findings, then request again until a fresh review has zero published inline comments and zero unresolved Copilot threads."
+    "glyph": "REVIEW",
+    "label": "Review the drafted COMMENT action",
+    "reason": "The two scoped fixes are validated, but publishing anything to microsoft/PowerToys remains an explicit maintainer decision."
   },
-  "blockers": [
+  "blockers": [],
+  "actions": [
     {
-      "detail": "The post-fix Copilot review request was made before the 2026-09-08T13:35:50Z stop-work deadline, but it had not submitted by that deadline; therefore zero-comment convergence cannot honestly be claimed.",
-      "remediation": "Resume from the existing review state, inspect the requested review when it arrives, resolve every resulting Copilot thread, and obtain a freshly requested zero-comment review before changing the stage to review_ready."
+      "id": "post-review-50364",
+      "type": "post_review",
+      "label": "Post two inline findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50364,
+        "event": "COMMENT",
+        "head_sha": "3b63b657b8328faf8410e4e7c062369d92b4b3c6",
+        "body_prefix": "Thanks for the thorough implementation and test coverage. I found two small correctness hardening opportunities in the current head."
+      },
+      "note": "Do not post without explicit approval and a final upstream freshness check."
     }
   ],
-  "actions": [],
-  "proposed_comments": [],
+  "proposed_comments": [
+    {
+      "id": "register-concrete-label-constraint-type",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Register the dependency property's concrete type",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockItemControl.LabelWidth.cs",
+      "start_line": 17,
+      "line": 18,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Register the dependency property's concrete type\n\n**Severity:** `medium`\n\nThe CLR wrapper exposes `DockLabelWidthConstraints?`, but the dependency property is registered as `object`. That permits an invalid value to enter through XAML or `SetValue` and defers the failure to the wrapper cast. Registering the concrete type makes WinUI enforce the same contract as the property wrapper.\n\n```suggestion\n    public static readonly DependencyProperty LabelWidthConstraintsProperty =\n        DependencyProperty.Register(nameof(LabelWidthConstraints), typeof(DockLabelWidthConstraints), typeof(DockItemControl), new PropertyMetadata(null, OnLabelWidthConstraintsChanged));\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "The type mismatch is directly visible in the current diff, and the replacement compiled successfully in the converged review branch."
+      }
+    },
+    {
+      "id": "return-copy-of-dock-bands",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Do not expose the provider's mutable backing array",
+      "path": "src/modules/cmdpal/ext/SamplePagesExtension/SamplePagesCommandsProvider.cs",
+      "start_line": null,
+      "line": 38,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Do not expose the provider's mutable backing array\n\n**Severity:** `medium`\n\n`GetDockBands()` returns the private `_bands` array directly, so a caller can replace its entries and mutate the provider's future results. Returning a shallow copy preserves the intended stable provider state while keeping the same `ICommandItem[]` API.\n\n```suggestion\n        return [.. _bands];\n```",
+      "confidence": {
+        "score": 91,
+        "rationale": "Arrays are mutable and the current method returns the private instance directly; the defensive-copy replacement compiled successfully in the converged review branch."
+      }
+    }
+  ],
   "phase0": {
     "author": "jiripolasek",
     "author_association": "COLLABORATOR",
@@ -40,29 +86,80 @@
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "mergeable_state": "blocked",
+    "mergeable_state": "clean",
+    "review_decision": "APPROVED",
     "head_sha": "3b63b657b8328faf8410e4e7c062369d92b4b3c6",
     "base_sha": "071c25e115e8097117e26f6fcfe9901301307f7a",
     "changed_file_count": 27,
+    "newer_activity": "Maintainer approval submitted at 2026-09-08T23:18:14Z; no newer commit or review thread.",
     "reported_checks": {
       "failing": 0,
       "pending": 0
     }
   },
   "freshness": {
-    "status": "current_head_reviewed_pending_final_convergence",
-    "evaluated_at": "2026-09-08T13:36:45.7403363Z",
-    "head_sha": "3b63b657b8328faf8410e4e7c062369d92b4b3c6"
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-09T02:50:35.7569166Z",
+    "head_sha": "3b63b657b8328faf8410e4e7c062369d92b4b3c6",
+    "review_payload_validation": "passed"
+  },
+  "copilot_review": {
+    "status": "fresh_zero_published_comments",
+    "submitted_at": "2026-09-08T13:37:56Z",
+    "reviewed_commit": "95e366877cc246a81ebc6beb8d8393a8defab15a",
+    "published_comments": 0,
+    "suppressed_comments": 2,
+    "suppressed_disposition": "Ignored under policy because both are low-severity documentation numbering observations.",
+    "unresolved_copilot_threads": 0,
+    "unresolved_all_threads": 0
   },
   "verification": {
-    "result": "partial",
+    "result": "passed_with_unrelated_full_suite_failures",
     "configuration": "x64 Debug",
-    "checks": [
-      "Phase 0 revalidated: collaborator author, PR description includes a screenshot, and all reported checks are successful.",
-      "Targeted local builds succeeded for build essentials, Microsoft.CmdPal.UI, Microsoft.CommandPalette.Extensions.Toolkit, and Microsoft.CmdPal.Ext.PerformanceMonitor.",
-      "The first fresh review was discarded as invalid after detecting a stale fork base; the retained fork review was corrected to the exact 27-file upstream scope.",
-      "Two valid scoped Copilot findings were fixed and their threads resolved.",
-      "The requested post-fix Copilot review had not completed by the stop-work deadline."
-    ]
-  }
+    "builds": [
+      "PowerToys solution restore",
+      "Runner and Settings via build-essentials.cmd",
+      "Microsoft.CmdPal.UI",
+      "Microsoft.CommandPalette.Extensions.Toolkit",
+      "Microsoft.CmdPal.Ext.PerformanceMonitor",
+      "CmdPalModuleInterface",
+      "SamplePagesExtension",
+      "Microsoft.CmdPal.UI.ViewModels.UnitTests",
+      "Microsoft.CommandPalette.Extensions.Toolkit.UnitTests",
+      "Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests"
+    ],
+    "tests": [
+      {
+        "scope": "PR-specific Microsoft.CmdPal.UI.ViewModels tests",
+        "passed": 71,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "scope": "PR-specific CommandPalette.Extensions.Toolkit tests",
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "scope": "PR-specific Performance Monitor tests",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "scope": "Complete three-assembly run",
+        "passed": 1111,
+        "failed": 6,
+        "skipped": 1,
+        "note": "The six failures are pre-existing locale-sensitive FuzzyMatcherComparisonTests for Chinese transliteration; none of those tests or the fuzzy-matching code is changed by this PR."
+      }
+    ],
+    "exe_path": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+    "exe_exists": true
+  },
+  "review_work_writes": [
+    "Replied to and resolved seven fork-only spell-check false-positive threads; all review threads are now resolved."
+  ],
+  "upstream_writes": []
 }
