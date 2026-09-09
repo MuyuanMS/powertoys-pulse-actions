@@ -1,33 +1,214 @@
 {
+  "schemaVersion": 5,
   "number": 33242,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-10-15T19:24:33Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "generated_at": "2026-09-09T00:42:00Z",
+  "evaluated_at": "2026-09-09T00:42:00Z",
+  "source_updated_at": "2026-09-08T23:45:00Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/33242",
+  "title": "Text Extractor not working",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Needs-Team-Response",
+    "Product-Text Extractor"
+  ],
+  "assignees": [],
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "A second reporter confirms that capture starts but recognition produces no result. Their OCR directory contains only a language resource file, which is consistent with an incomplete Windows OCR capability, while Text Extractor currently assumes OcrEngine creation and recognition succeed and provides no actionable recovery path when the platform OCR installation is unusable.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The original reporter reproduced the failure with PowerToys 0.81.1 and supplied a bug report.",
+      "The original system reported en-US and ru-RU OCR capabilities as Installed.",
+      "A new reporter on 2026-09-08 reports the same capture-with-no-result behavior and only C:\\Windows\\OCR\\en-us\\MsOcrRes.orp under the requested OCR directory.",
+      "ImageMethods.GetOCRLanguage checks whether recognizer languages are enumerated, but ImageMethods.GetRegionsFromImage assumes TryCreateFromLanguage returns a usable engine and that RecognizeAsync succeeds."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-10-15T19:24:33Z"
-  }
+    "recommended_action": "Approve defensive OCR-engine validation and an actionable repair message, while requesting a fresh diagnostic archive and capability listing from the new reporter to confirm the platform installation state.",
+    "evaluated_at": "2026-09-09T00:42:00Z",
+    "source_updated_at": "2026-09-08T23:45:00Z",
+    "full_design_candidate": true
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The underlying OCR component may require Windows repair, but PowerToys can detect engine creation or recognition failure and explain the exact corrective action instead of silently producing no text."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Detect unavailable Windows OCR engines and surface repair guidance",
+      "root_cause": "Text Extractor trusts the Windows OCR capability enumeration and does not guard OcrEngine creation or recognition. An incomplete or corrupted capability can therefore reach the capture path but fail before usable text is returned without a clear user-facing diagnosis.",
+      "plan": [
+        "Centralize OCR engine creation behind a helper that returns an explicit failure when no recognizer is available or TryCreateFromLanguage returns null.",
+        "Catch the platform exceptions raised while creating the decoder or recognizing the bitmap and map them to a localized Text Extractor error state.",
+        "Tell the user which OCR language is selected and direct them to repair or reinstall the corresponding Windows OCR language capability.",
+        "Add focused tests for no languages, null engine, and recognition failure, plus a UI test that verifies an actionable error is shown."
+      ],
+      "verification": [
+        "Run Text Extractor with a valid OCR capability and confirm extraction remains unchanged.",
+        "Simulate no available recognizer and confirm an actionable error is displayed.",
+        "Simulate engine creation or recognition failure and confirm the process remains responsive and identifies the selected language.",
+        "Repair the affected Windows OCR capability and confirm extraction succeeds afterward."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The reported OCR directory strongly suggests a damaged platform capability and the unguarded code explains the missing feedback, but a current diagnostic archive and capability output are needed to distinguish null engine creation from a later recognition failure."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Text Extractor opens its capture surface but returns no recognized text on systems where the Windows OCR capability appears incomplete.",
+    "known_information": [
+      "The original report was on PowerToys 0.81.1 after resetting Windows.",
+      "The original reporter had en-US and ru-RU OCR capabilities listed as Installed.",
+      "The original reporter supplied a 2024 PowerToys bug report archive.",
+      "The new reporter sees only C:\\Windows\\OCR\\en-us\\MsOcrRes.orp in the requested OCR directory and still reproduces on the latest preview."
+    ],
+    "inferences": [
+      "The Windows OCR capability may be registered but missing runtime payload required by OcrEngine.",
+      "PowerToys may be failing during engine creation or recognition after the capture overlay has already completed."
+    ],
+    "analysis": "The new comment invalidates the old handled/owned classification and supplies useful platform evidence. PowerOCR enumerates Windows.Media.Ocr languages and then calls TryCreateFromLanguage and RecognizeAsync without an explicit null or platform-failure path. Even when Windows repair is the ultimate remedy, PowerToys should avoid a silent result and provide a precise diagnosis.",
+    "initial_investigation": [
+      "Read the full issue timeline, including the original bug report request, OCR capability output, and the new reporter response.",
+      "Inspected PowerOCR OCROverlay.xaml.cs and Helpers/ImageMethods.cs.",
+      "Confirmed that the language list is checked but engine creation and recognition are not represented as recoverable user-facing failures."
+    ],
+    "information_gaps": [
+      {
+        "information": "A fresh PowerToys diagnostic archive captured immediately after reproducing on the current build",
+        "why_needed": "This identifies whether Text Extractor logs engine creation, decoder, or recognition failure on the current implementation.",
+        "how_to_collect": "Reproduce the problem and then submit a comment containing /bugreport"
+      },
+      {
+        "information": "The current Get-WindowsCapability OCR output and complete C:\\Windows\\OCR tree",
+        "why_needed": "This confirms whether Windows reports a language capability as installed while its runtime files are incomplete.",
+        "how_to_collect": "Run Get-WindowsCapability -Online | Where-Object { $_.Name -Like 'Language.OCR*' } and tree /F C:\\Windows\\OCR in PowerShell"
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "The Text Extractor recognition path assumes that an enumerated OCR language yields a valid engine and successful recognition. A broken Windows OCR capability can violate that assumption, leaving the user with no extracted text and no repair guidance.",
+    "evidence": [
+      "PowerOCR/Helpers/ImageMethods.cs calls OcrEngine.TryCreateFromLanguage and immediately calls RecognizeAsync.",
+      "The new reporter's OCR directory contains only a language resource file despite the feature launching."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/PowerOCR/PowerOCR/Helpers/ImageMethods.cs",
+        "purpose": "Creates the OCR engine and performs bitmap recognition.",
+        "symbols": [
+          "ImageMethods.GetOCRLanguage",
+          "ImageMethods.GetRegionsFromImage"
+        ]
+      },
+      {
+        "path": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs",
+        "purpose": "Owns capture UI state and can present recognition failures.",
+        "symbols": [
+          "OCROverlay"
+        ]
+      },
+      {
+        "path": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
+        "purpose": "Provides Text Extractor end-to-end UI coverage.",
+        "symbols": [
+          "PowerOCRTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/PowerOCR/PowerOCR/Helpers/ImageMethods.cs",
+        "symbols": [
+          "ImageMethods.GetRegionsFromImage"
+        ],
+        "current_behavior": "The method assumes TryCreateFromLanguage returns a valid OcrEngine and that RecognizeAsync completes successfully.",
+        "change": "Return a typed recognition result that distinguishes success, unavailable language/engine, and platform recognition failure. Check the engine before use and catch only the expected platform/decoder exceptions so unexpected defects still surface.",
+        "code_block": "var engine = OcrEngine.TryCreateFromLanguage(selectedLanguage);\nif (engine is null)\n{\n    return OcrAttempt.Unavailable(selectedLanguage.LanguageTag);\n}\n\ntry\n{\n    return OcrAttempt.Success(await engine.RecognizeAsync(softwareBitmap));\n}\ncatch (Exception ex) when (IsPlatformOcrFailure(ex))\n{\n    return OcrAttempt.Failed(selectedLanguage.LanguageTag, ex.HResult);\n}",
+        "edge_cases": [
+          "No OCR languages are enumerated.",
+          "The preferred language is unavailable but another recognizer exists.",
+          "Engine creation returns null.",
+          "Bitmap decoding or recognition throws a platform exception."
+        ],
+        "tests": [
+          "Unit-test no-language, null-engine, success, and expected platform-failure results using an injectable OCR adapter."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs",
+        "symbols": [
+          "OCROverlay"
+        ],
+        "current_behavior": "Recognition failure can end the interaction without actionable feedback.",
+        "change": "Consume the typed OCR result and show a localized error that names the selected language and directs the user to repair or reinstall the Windows OCR language capability.",
+        "code_block": "if (!attempt.Succeeded)\n{\n    ShowOcrCapabilityError(attempt.LanguageTag, attempt.ErrorCode);\n    return;\n}",
+        "edge_cases": [
+          "The overlay must close or remain usable consistently after an error.",
+          "Do not expose stack traces or sensitive diagnostic details.",
+          "Keep keyboard and clipboard behavior unchanged on success."
+        ],
+        "tests": [
+          "Verify that an unavailable engine displays repair guidance and does not copy an empty result."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
+        "symbols": [
+          "PowerOCRTests"
+        ],
+        "current_behavior": "UI coverage exercises successful extraction but not an unavailable Windows OCR engine.",
+        "change": "Add a test seam or controlled failure mode and assert that Text Extractor surfaces the localized capability-repair message.",
+        "code_block": "Assert.IsTrue(errorText.Contains(expectedLanguageTag));",
+        "edge_cases": [
+          "Test machines with different installed OCR languages.",
+          "Avoid modifying the host Windows capability during the test."
+        ],
+        "tests": [
+          "Run the focused PowerOCR UI test set."
+        ]
+      }
+    ],
+    "verify": [
+      "Build PowerOCR in the supported x64 Debug configuration.",
+      "Run the focused PowerOCR tests.",
+      "Verify successful extraction with a healthy en-US OCR capability.",
+      "Use an injected unavailable-engine result to verify the repair message and non-crashing behavior."
+    ],
+    "risks": [
+      "Overly broad exception handling could hide unrelated defects; limit handling to known OCR and bitmap platform failures.",
+      "The Windows repair steps vary by OS build and must remain localized and supportable."
+    ],
+    "alternatives": [
+      "Treating the issue solely as Windows corruption would leave PowerToys' current silent failure unchanged.",
+      "Checking for individual files under C:\\Windows\\OCR is brittle; OcrEngine creation is the authoritative runtime capability probe."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-text-extractor-ocr-failure-design-33242",
+      "type": "approve_design",
+      "label": "Design OCR capability failure handling",
+      "primary": true,
+      "confirm": true,
+      "note": "Approve a fork-side implementation of defensive OCR validation and recovery guidance."
+    },
+    {
+      "id": "request-current-ocr-diagnostics-33242",
+      "type": "request_info",
+      "label": "Request current OCR diagnostics",
+      "primary": false,
+      "confirm": true,
+      "comment": {
+        "body": "Thanks for confirming that the capture opens but no text is returned, and for checking `C:\\Windows\\OCR`. The single `MsOcrRes.orp` file suggests the Windows OCR capability may be registered incompletely, but we need to identify whether the current failure occurs during engine creation or recognition.\n\nPlease provide:\n1. A fresh diagnostic ZIP: reproduce the problem, then submit a comment containing `/bugreport` immediately afterward.\n2. The output of `Get-WindowsCapability -Online | Where-Object { $_.Name -Like 'Language.OCR*' }` in PowerShell.\n3. The complete output of `tree /F C:\\Windows\\OCR`.\n\nThese results will distinguish a damaged Windows language capability from a PowerToys recognition-path failure."
+      }
+    }
+  ]
 }

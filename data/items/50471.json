@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 5,
+  "number": 50471,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-09T00:42:00Z",
+  "evaluated_at": "2026-09-09T00:42:00Z",
+  "source_updated_at": "2026-09-08T23:16:54Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50471",
+  "title": "[Peek] Arrow keys navigate between files instead of scrolling or changing caret",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Peek"
+  ],
+  "assignees": [
+    "daverayment"
+  ],
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The regression is directly explained by the low-level keyboard hook added in PR 48293. When Peek is foreground and multiple items are available, the hook unconditionally intercepts unmodified arrow keys before the focused preview control can use them for scrolling, caret movement, or archive navigation.",
+    "evidence": [
+      "The issue provides complete reproduction steps across Markdown, text, HTML, PDF, and ZIP previews.",
+      "PR 48293 added arrow-key handling to Peek's WH_KEYBOARD_LL callback.",
+      "MainWindow.LowLevelKeyboardHookCallback maps Left/Up to previous-item navigation and Right/Down to next-item navigation whenever DisplayItemCount is greater than one.",
+      "The hook returns a nonzero result when queued, swallowing the key before WebView2 or a shell preview handler receives it."
+    ],
+    "recommended_action": "Approve a focused change that limits the global hook to close shortcuts and restores arrow handling to the focused preview control unless explicit file-navigation intent is available.",
+    "evaluated_at": "2026-09-09T00:42:00Z",
+    "source_updated_at": "2026-09-08T23:16:54Z",
+    "full_design_candidate": true
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt exists. The regression and interception point are localized to the keyboard hook introduced by PR 48293."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Stop the low-level hook from consuming preview arrow input",
+      "root_cause": "Peek's foreground low-level keyboard hook treats every unmodified arrow key as file navigation when multiple files are available, regardless of whether WebView2, a text viewer, PDF viewer, or archive control currently owns keyboard focus.",
+      "plan": [
+        "Restrict the low-level hook to shortcuts that must escape child-process focus, namely Ctrl+W and Escape.",
+        "Route previous/next file navigation through the existing XAML or window command path where normal focus/input routing can decide whether an arrow is unhandled.",
+        "If arrow navigation must remain in the hook, gate it behind an explicit navigation mode or a reliable focused-control capability check and pass the key through otherwise.",
+        "Add UI coverage for scrolling/caret/archive interaction and for file navigation when the preview surface does not consume the arrow."
+      ],
+      "verification": [
+        "Open Markdown, text, HTML, and PDF previews and confirm arrow keys scroll or move the caret after focusing content.",
+        "Open a ZIP preview and confirm arrows operate its folder/file UI.",
+        "Confirm Ctrl+W and Escape still close Peek when WebView2 or a shell preview handler has focus.",
+        "Confirm previous/next file navigation remains available through its intended command path."
+      ],
+      "confidence": {
+        "score": 97,
+        "level": "green",
+        "rationale": "The hook's unconditional arrow branches exactly match the regression, and the issue identifies the introducing PR."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "After the low-level keyboard hook was added to Peek, unmodified arrow keys are swallowed for file navigation instead of reaching focused preview content.",
+    "known_information": [
+      "The issue reproduces on PowerToys 0.102 current main.",
+      "Markdown, text, HTML, PDF, and ZIP previews are affected.",
+      "The regression began with PR 48293.",
+      "The report has sufficient reproduction steps and does not require a diagnostic archive."
+    ],
+    "inferences": [
+      "Any focused preview component that relies on arrow keys can be affected when more than one item is in Peek's navigation list.",
+      "Ctrl+W and Escape still require cross-process handling, but arrows do not need to be globally swallowed."
+    ],
+    "analysis": "The low-level hook executes before child preview controls receive keyboard input. Its only arrow-key condition is that no modifier is held and DisplayItemCount exceeds one. It then queues previous/next navigation and returns 1, which prevents the focused content from scrolling or changing selection. Separating close shortcuts from content-sensitive arrows removes the regression without undoing the original Ctrl+W/Escape fix.",
+    "initial_investigation": [
+      "Read the complete issue and automated triage comment.",
+      "Reviewed PR 48293's commit rationale and changed files.",
+      "Inspected MainWindow.LowLevelKeyboardHookCallback and confirmed all four arrows are globally intercepted."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "MainWindow.LowLevelKeyboardHookCallback intercepts unmodified arrow keys whenever Peek is foreground and has multiple display items. Because WH_KEYBOARD_LL runs before focused WebView2 and shell preview controls, returning 1 prevents those controls from receiving arrows.",
+    "evidence": [
+      "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs contains explicit VK_LEFT, VK_UP, VK_RIGHT, and VK_DOWN branches.",
+      "Each branch queues AttemptPreviousNavigation or AttemptNextNavigation and marks the key handled."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "purpose": "Installs and processes the foreground low-level keyboard hook.",
+        "symbols": [
+          "MainWindow.LowLevelKeyboardHookCallback"
+        ]
+      },
+      {
+        "path": "src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs",
+        "purpose": "Exercises keyboard navigation and focused preview behavior.",
+        "symbols": [
+          "PeekFilePreviewTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs",
+        "symbols": [
+          "MainWindow.LowLevelKeyboardHookCallback"
+        ],
+        "current_behavior": "The hook fast-path includes all arrow keys and consumes them for previous/next navigation whenever DisplayItemCount is greater than one.",
+        "change": "Remove unmodified arrow keys from the global hook's handled set, retaining only Ctrl+W and Escape. Let the normal XAML/content routing process arrows so focused preview controls receive them.",
+        "code_block": "if (hookStruct.vkCode != VK_W && hookStruct.vkCode != VK_ESCAPE)\n{\n    return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);\n}\n\n// Keep only Ctrl+W and Escape handling in the global hook.",
+        "edge_cases": [
+          "WebView2 focus must still allow Ctrl+W and Escape to close Peek.",
+          "Shell preview handlers must receive arrows.",
+          "Delete confirmation dialogs must keep their existing pass-through behavior.",
+          "Window snapping and modified-arrow shortcuts must remain unaffected."
+        ],
+        "tests": [
+          "Verify arrow input reaches focused text, browser, PDF, and archive content.",
+          "Verify Ctrl+W and Escape still close Peek with child content focused."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs",
+        "symbols": [
+          "PeekFilePreviewTests"
+        ],
+        "current_behavior": "Tests cover using arrow keys to navigate files but do not assert that focused preview content can consume arrows.",
+        "change": "Add focused-content scenarios and move file-navigation assertions to the intended command or unfocused-window path.",
+        "code_block": "FocusPreviewContent();\nKeyboardHelper.SendKeys(Key.Down);\nAssertPreviewContentMoved();\nAssertCurrentFileUnchanged();",
+        "edge_cases": [
+          "Multiple files must be present so the old interception condition would have triggered.",
+          "Cover both WebView2-backed and native preview surfaces."
+        ],
+        "tests": [
+          "Run the focused Peek UI test suite for keyboard input and file navigation."
+        ]
+      }
+    ],
+    "verify": [
+      "Build Peek in x64 Debug.",
+      "Run PeekFilePreviewTests covering keyboard navigation.",
+      "Manually focus Markdown/text/HTML/PDF content and confirm arrows scroll or move the caret.",
+      "Manually focus a ZIP preview and confirm arrows operate its item tree.",
+      "Confirm Ctrl+W and Escape close Peek from each focused preview type."
+    ],
+    "risks": [
+      "Removing hook-based arrows may change how users navigate files while preview content has focus; retain a documented non-conflicting navigation command.",
+      "Focus behavior differs among WebView2 and shell preview handlers, so both require coverage."
+    ],
+    "alternatives": [
+      "Detecting individual child HWND classes in the low-level callback is fragile across preview handlers.",
+      "Requiring a modifier for global file navigation could preserve a shortcut, but should be a deliberate UX decision rather than implicit interception."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-peek-arrow-routing-design-50471",
+      "type": "approve_design",
+      "label": "Design Peek arrow routing fix",
+      "primary": true,
+      "confirm": true,
+      "note": "Approve a fork-side implementation that preserves close shortcuts while restoring focused preview input."
+    }
+  ]
+}
