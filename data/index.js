@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T13:03:30.4284128+08:00",
+  "generated_at": "2026-09-09T13:21:42.5732271+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 391
   },
   "impact": {
-    "as_of": "2026-09-09T13:03:30.4284128+08:00",
+    "as_of": "2026-09-09T13:21:42.5732271+08:00",
     "issues_helped": 10,
     "prs_iterated": 24,
     "constructive_comments_posted": 3,
@@ -3896,18 +3896,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "request_changes",
-      "owes": "author",
+      "stage": "review_blocked",
+      "owes": "author_and_review_workflow",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 7,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with 7 current-head review items"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Product-Command Palette"
@@ -3944,18 +3941,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
-      "owes": "maintainer",
+      "stage": "review_blocked",
+      "owes": "external_reviewer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 5,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes on the current upstream head"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -5137,11 +5131,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 692,
+        "fork_number": 727,
         "fork_title": "[PR 49427] Add DSC v3 profile resource to deploy key and shortcut remappings",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49427-v9",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/692"
+        "fork_branch": "pr-iterate/49427-v10",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/727"
       }
     },
     {
