@@ -3,289 +3,113 @@
   "number": 50215,
   "kind": "issue",
   "track": "fix",
-  "generated_at": "2026-09-04T07:14:14Z",
-  "evaluated_at": "2026-09-04T07:14:14Z",
+  "stage": "triage",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-28T20:16:04Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50215",
   "title": "[Text Extractor] Captures mirrored screen area (X-axis inversion) when Windows display language is Arabic (RTL)",
-  "author": "yahyaabohashemstu",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0,
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "confidence": "Medium-high",
-  "summary": "Text Extractor likely mixes RTL-mirrored WPF overlay coordinates with left-to-right physical screen capture coordinates, causing right-side selections to capture the left side.",
-  "fork": {
-    "issue": 585,
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/585"
-  },
-  "mirror": {
-    "kind": "issue",
-    "fork_number": 585,
-    "fork_title": "[Issue 50215] [Text Extractor] Captures mirrored screen area (X-axis inversion) when Windows display language is Arabic (RTL)",
-    "fork_state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/585"
-  },
-  "status": {
-    "glyph": "🎯",
-    "label": "Design ready - needs approval",
-    "detail": "The RTL coordinate-normalization design converged after one adversary pass and is stored in the fork mirror."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Approve the Text Extractor RTL design",
-    "reason": "Exact overlay/capture files, helper boundaries, tests, and risks are captured."
-  },
-  "actions": [
-    {
-      "id": "design-50215",
-      "type": "approve_design",
-      "label": "Design fix",
-      "primary": true,
-      "confirm": false,
-      "requiresApproval": true,
-      "fork": {
-        "repository": "MuyuanMS/PowerToys",
-        "issue": 585,
-        "url": "https://github.com/MuyuanMS/PowerToys/issues/585"
-      },
-      "note": "Dashboard-only approval gate. No upstream comment or PR is posted by this artifact update."
-    },
-    {
-      "id": "request-info-50215-rtl-selection-geometry",
-      "type": "request_info",
-      "label": "Request controlled RTL selection geometry",
-      "primary": false,
-      "confirm": true,
-      "requiresApproval": true,
-      "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 50215,
-        "body": "The RTL capture design targets the boundary between the overlay selection coordinates and physical screen capture. To rule out a double X correction, please reproduce with Arabic display language using distinct left and right sentinel text at 100% and non-100% DPI, and share the selected rectangle before capture plus whether the issue occurs on a secondary monitor."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ],
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report gives deterministic RTL selection steps, an attached diagnostic archive, and a symptom that maps directly to the overlay-to-physical-capture coordinate boundary.",
+    "rationale": "The reporter supplied exact RTL steps plus a bugreport ZIP that confirms Arabic is the preferred Text Extractor language, and the current overlay converts logical selection coordinates to screen pixels separately from the capture path.",
     "evidence": [
-      "Arabic Windows display language plus right-side selection captures the opposite left-side screen area.",
-      "A diagnostic ZIP was attached and extracted; no PowerOCR exception explains the symptom as a crash path.",
-      "OCROverlay.xaml does not pin FlowDirection to LeftToRight.",
-      "OCROverlay.xaml.cs builds a physical Rectangle from WPF mouse/canvas coordinates.",
-      "ImageMethods.GetRegionAsBitmap passes that Rectangle directly to Graphics.CopyFromScreen as an offset from the monitor origin."
+      "The report says selecting text on the right side of the screen captures OCR from the mirrored left side when Windows is Arabic/RTL.",
+      "The attached bugreport settings show PreferredLanguage set to Arabic.",
+      "OCROverlay.xaml.cs builds regionScaled from overlay coordinates and ImageMethods.GetRegionAsBitmap later offsets that region against the physical screen rectangle."
     ],
-    "recommended_action": "Approve the fork-side implementation design that pins/normalizes overlay coordinates before screen capture and adds RTL selection validation.",
-    "evaluated_at": "2026-09-04T07:14:14Z",
+    "recommended_action": "Approve a design pass that normalizes overlay selection coordinates to physical screen coordinates and validate it with an Arabic-display repro.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-28T20:16:04Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No concrete upstream or fork implementation exists. The reported RTL-only mirror symptom maps to a focused overlay-coordinate normalization change, with manual RTL validation still required to rule out double correction.",
+    "rationale": "No existing linked fix covers RTL coordinate normalization for Text Extractor capture rectangles.",
     "existing_fix_urls": []
   },
+  "issue_context": {
+    "summary": "Text Extractor highlights the correct RTL selection visually but appears to hand a mirrored X coordinate into the physical screen-capture step, so OCR receives pixels from the opposite side of the screen.",
+    "known_information": [
+      "The report contains deterministic steps and names Arabic Windows display language as the trigger.",
+      "The bugreport ZIP confirms the preferred Text Extractor language is Arabic.",
+      "The attached Text Extractor logs show normal startup rather than a crash."
+    ],
+    "inferences": [
+      "The failure is likely in coordinate conversion, not OCR language recognition itself.",
+      "The existing RTL text-reordering code in ImageMethods should stay separate from any fix."
+    ],
+    "analysis": "This is actionable because the owning code path is short and the bugreport confirms an RTL environment. The paired next step is a reproduce action, not another reporter ask.",
+    "initial_investigation": [
+      "Reviewed the issue body and attached bugreport ZIP.",
+      "Read TextExtractor/settings.json from the ZIP and confirmed Arabic is the preferred language.",
+      "Reviewed OCROverlay.xaml.cs and ImageMethods.cs to trace overlay coordinates into screen capture."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve design for Issue 50215",
+      "confirm": true,
+      "comment": {
+        "body": "Approve a focused Text Extractor RTL coordinate-normalization design pass for Issue 50215."
+      }
+    },
+    {
+      "id": "rp50215",
+      "type": "reproduce",
+      "label": "Reproduce Arabic RTL capture inversion",
+      "note": "Validate overlay-to-screen coordinate conversion under RTL display language.",
+      "reproduce": {
+        "module": "Text Extractor",
+        "version": "Preview v0.101.2373.0 or newer current main build",
+        "prerequisites": [
+          "Set Windows display language to Arabic or another RTL language.",
+          "Enable Text Extractor and keep its activation shortcut available."
+        ],
+        "steps": [
+          "Open Text Extractor in the RTL environment.",
+          "Drag a capture rectangle over text positioned on the right side of the screen.",
+          "Confirm whether the highlighted region and the OCR-captured pixels refer to the same on-screen location."
+        ],
+        "expected_result": "The OCR capture should come from the same right-side region that the overlay highlights, with no mirrored X-axis inversion.",
+        "attachments": [
+          "https://github.com/user-attachments/files/31568390/PowerToysReport_2026-08-28-23-15-05.zip"
+        ]
+      }
+    }
+  ],
   "proposed_fixes": [
     {
-      "title": "Normalize Text Extractor selection coordinates before screen capture",
-      "root_cause": "WPF overlay selection coordinates are converted directly into left-to-right physical CopyFromScreen offsets even when an Arabic session mirrors the overlay coordinate space, so the selected right-side region can map to the opposite side.",
+      "title": "Normalize Text Extractor selection rectangles before physical screen capture",
+      "root_cause": "Text Extractor appears to draw the overlay selection in a UI context influenced by RTL layout while the actual screen capture uses physical left-to-right screen coordinates. The selected rectangle therefore needs to be normalized into physical monitor coordinates before ImageMethods copies pixels from the screen.",
       "plan": [
-        "Pin the capture overlay and selection canvas to LeftToRight without changing OCR language or localized text behavior.",
-        "Centralize DIP-to-physical selection conversion in OCROverlay.xaml.cs, conditionally normalizing RTL X coordinates, clamping to the monitor bounds, and avoiding double correction when the layout pin is sufficient.",
-        "Keep ImageMethods screen capture physical-only, add bounds protection, and extend selection coverage with an Arabic RTL sentinel-region regression or an explicitly manual-gated equivalent."
+        "Trace the overlay selection rectangle from OCROverlay to ImageMethods.GetRegionAsBitmap and define one canonical physical-coordinate representation.",
+        "Normalize the left/top calculation for RTL environments before the region is passed into screen capture.",
+        "Keep OCR text-order handling separate from capture-rectangle handling."
       ],
       "verification": [
-        "With Windows display language set to Arabic, place distinct sentinel text on both sides of the screen, select the right-side region, and confirm Text Extractor copies the right sentinel rather than the left.",
-        "Repeat at 100% and non-100% DPI and, when available, on a secondary monitor."
+        "Reproduce on an Arabic Windows display language and confirm the OCR region captures the same right-side pixels the overlay highlights.",
+        "Re-run an LTR capture to confirm the standard path does not regress."
       ],
       "confidence": {
         "score": 68,
         "level": "yellow",
-        "rationale": "The symptom, missing FlowDirection contract, and direct CopyFromScreen boundary align strongly, but the exact WPF mirroring behavior and whether the XAML pin alone fixes it require RTL reproduction."
+        "rationale": "The repro is concrete and the owning coordinate-conversion path is narrow, but the exact RTL boundary still needs validation."
       }
     }
   ],
-  "issue_context": {
-    "summary": "Text Extractor selection and captured bitmap disagree horizontally when Windows uses an Arabic right-to-left display language: selecting text on the right captures the corresponding left-side area.",
-    "known_information": [
-      "The issue reproduces on Windows 11 with Arabic display language.",
-      "The reporter used Preview 0.101.2373.0 from Microsoft Store and attached a PowerToys diagnostic ZIP.",
-      "The selected right-side region is mirrored to the left during capture.",
-      "No assignee, linked fix, duplicate, or follow-up discussion exists."
-    ],
-    "inferences": [
-      "An inherited RTL WPF layout/input transform probably mirrors the overlay coordinate space while Graphics.CopyFromScreen remains left-to-right physical pixels.",
-      "The fix should target coordinate normalization, not OCR language or text-order processing."
-    ],
-    "analysis": "The issue is reproducible enough for a design. Code inspection identified a single boundary where visual WPF coordinates become physical CopyFromScreen offsets without an explicit LTR/RTL contract.",
-    "initial_investigation": [
-      "Read the complete issue body, labels, assignees, timeline, and attached diagnostic archive reference.",
-      "Extracted the diagnostic archive and found PowerOCR/Text Extractor installed with no PowerOCR exception log explaining the symptom.",
-      "Inspected OCROverlay.xaml, OCROverlay.xaml.cs, ImageMethods.cs, OcrExtensions.cs references, and PowerOCR UI tests.",
-      "Searched duplicates for Text Extractor Arabic/RTL mirrored capture and found no active duplicate beyond this issue.",
-      "Created fork mirror issue for the converged design after confirming no existing [Issue 50215] fork issue existed."
-    ],
-    "information_gaps": [
-      {
-        "information": "A controlled RTL reproduction after pinning the overlay direction, including the pre-normalization selection rectangle",
-        "why_needed": "This confirms whether WPF is actually mirroring the selection coordinates and prevents applying both a layout fix and an unnecessary X inversion.",
-        "how_to_collect": "Run the right-side sentinel-text reproduction under Arabic display language at two DPI scales and record the selected rectangle before screen capture."
-      }
-    ]
+  "design_decision": {
+    "status": "queued",
+    "reason": "Actionable design retained without full expansion."
   },
-  "design": {
-    "root_cause": "Text Extractor uses WPF overlay coordinates from MouseEventArgs.GetPosition and Canvas.GetLeft as if they are already left-to-right physical screen offsets. In an Arabic/right-to-left shell session, WPF can mirror the overlay visual/input coordinate space while Graphics.CopyFromScreen remains absolute left-to-right physical pixels, so a right-side visual selection is passed to the capture API as a left-side physical region.",
-    "evidence": [
-      "Reporter selected a right-side region under Arabic display language and captured text from the opposite side.",
-      "OCROverlay.xaml lacks an explicit LeftToRight FlowDirection on the capture surface.",
-      "OCROverlay.xaml.cs scales Canvas.GetLeft(selectBorder), Canvas.GetTop(selectBorder), Width, and Height into regionScaled without checking FlowDirection.",
-      "ImageMethods.GetRegionAsBitmap adds selectedRegion.Left/Top to screenRectangle.Left/Top and captures via CopyFromScreen.",
-      "Extracted diagnostics did not show a PowerOCR exception, making a deterministic coordinate defect more plausible than a crash or OCR failure."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml",
-        "purpose": "Capture overlay visual tree and inherited layout direction.",
-        "symbols": [
-          "Window PowerOCR.OCROverlay",
-          "RegionClickCanvas"
-        ]
-      },
-      {
-        "path": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs",
-        "purpose": "Mouse drag selection and conversion to capture rectangle.",
-        "symbols": [
-          "RegionClickCanvas_MouseDown",
-          "RegionClickCanvas_MouseMove",
-          "RegionClickCanvas_MouseUp",
-          "screenRectangle",
-          "dpiScale"
-        ]
-      },
-      {
-        "path": "src/modules/PowerOCR/PowerOCR/Helpers/ImageMethods.cs",
-        "purpose": "Physical screen capture and OCR input bitmap generation.",
-        "symbols": [
-          "GetRegionAsBitmap",
-          "GetClickedWord",
-          "GetWindowBoundsImage"
-        ]
-      },
-      {
-        "path": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
-        "purpose": "Text Extractor UI activation and selection regression coverage.",
-        "symbols": [
-          "PowerOCRTests.TextSelectionAndClipboardTest",
-          "PerformSeleniumDrag"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml",
-        "symbols": [
-          "PowerOCR.OCROverlay",
-          "RegionClickCanvas"
-        ],
-        "current_behavior": "The transparent capture overlay can inherit RTL FlowDirection from the current UI culture/display language.",
-        "change": "Pin the capture surface to LeftToRight so visual selection and physical screen capture share the same origin while keeping OCR language and localized menu text independent.",
-        "code_block": "<Window\n    x:Class=\"PowerOCR.OCROverlay\"\n    FlowDirection=\"LeftToRight\"\n    ...>\n    <Canvas x:Name=\"RegionClickCanvas\" FlowDirection=\"LeftToRight\" ...>",
-        "edge_cases": [
-          "Do not change OCR selected language or RTL text post-processing.",
-          "Check the top toolbar/menu still renders acceptably in RTL languages."
-        ],
-        "tests": [
-          "Launch Text Extractor under Arabic UI culture and verify right-side drag draws and captures the right-side region."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs",
-        "symbols": [
-          "RegionClickCanvas_MouseUp",
-          "CreatePhysicalSelectionRectangle"
-        ],
-        "current_behavior": "Mouse-up code multiplies WPF canvas coordinates by DPI and assumes the result is a physical LTR offset.",
-        "change": "Extract a helper that converts a visual DIP selection Rect to a clamped physical selection Rectangle; if a remaining RTL FlowDirection is detected, normalize X as screen width minus the visual right/left before capture. Use it for drag, Shift-move, and clicked-word paths.",
-        "code_block": "private Rectangle CreatePhysicalSelectionRectangle(Rect selectionDip)\n{\n    Matrix t = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;\n    double left = selectionDip.Left * t.M11;\n    double right = selectionDip.Right * t.M11;\n    if (RegionClickCanvas.FlowDirection == FlowDirection.RightToLeft || FlowDirection == FlowDirection.RightToLeft)\n    {\n        (left, right) = (screenRectangle.Width - right, screenRectangle.Width - left);\n    }\n    return Rectangle.FromLTRB((int)Math.Round(left), (int)Math.Round(selectionDip.Top * t.M22), (int)Math.Round(right), (int)Math.Round(selectionDip.Bottom * t.M22));\n}",
-        "edge_cases": [
-          "Clamp negative and overflow values to the overlay bounds.",
-          "Preserve the existing small-region clicked-word behavior.",
-          "Avoid double-correcting: verify whether the XAML FlowDirection pin alone already prevents RTL mirroring before enabling conditional inversion."
-        ],
-        "tests": [
-          "Add helper-level tests for LTR, RTL, high-DPI, and negative monitor-origin cases if the helper can be made internal/static.",
-          "Run the UI selection regression in an Arabic Windows session."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/PowerOCR/PowerOCR/Helpers/ImageMethods.cs",
-        "symbols": [
-          "GetRegionAsBitmap",
-          "GetClickedWord"
-        ],
-        "current_behavior": "The capture helper assumes selectedRegion is valid physical pixels and captures without bounding it to the monitor rectangle.",
-        "change": "Keep the helper physical-only, but clamp/intersect selectedRegion to the current screen rectangle dimensions before bitmap allocation and CopyFromScreen so bad conversion cannot capture the wrong monitor area or throw late.",
-        "code_block": "selectedRegion.Intersect(new Rectangle(0, 0, screenRectangle.Width, screenRectangle.Height));\nif (selectedRegion.Width <= 0 || selectedRegion.Height <= 0)\n{\n    return new Bitmap(1, 1);\n}\ng.CopyFromScreen(screenRectangle.Left + selectedRegion.Left, screenRectangle.Top + selectedRegion.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);",
-        "edge_cases": [
-          "Do not reverse bitmaps or OCR output for RTL languages.",
-          "Keep PadImage behavior for tiny captures."
-        ],
-        "tests": [
-          "Confirm the same physical rectangle reaches GetRegionAsBitmap for LTR and RTL visual drags.",
-          "Repeat capture on a secondary monitor if available."
-        ]
-      },
-      {
-        "order": 4,
-        "file": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
-        "symbols": [
-          "PowerOCRTests.TextSelectionAndClipboardTest",
-          "PerformSeleniumDrag"
-        ],
-        "current_behavior": "Existing tests activate Text Extractor and perform generic selection but do not validate RTL coordinate mirroring.",
-        "change": "Add a focused RTL/manual-gated regression that displays distinct left and right sentinel text, selects the right region in an Arabic UI session, and asserts the clipboard contains the right sentinel and not the left sentinel.",
-        "code_block": "CultureInfo.CurrentUICulture = new CultureInfo(\"ar-SA\");\nSendKeys(Key.Win, Key.Shift, Key.T);\nPerformSeleniumDrag(rightStartX, y, rightEndX, y2);\nStringAssert.Contains(GetClipboardTextSafely(), \"RIGHT_SENTINEL\");\nStringAssert.DoesNotContain(GetClipboardTextSafely(), \"LEFT_SENTINEL\");",
-        "edge_cases": [
-          "If OS display language cannot be changed by automation, keep a manual RTL validation checklist until the test lab can supply that environment.",
-          "Run at 100 percent and non-100 percent DPI to cover transform scaling."
-        ],
-        "tests": [
-          "Build PowerOCR.UITests and run the focused RTL selection test in an Arabic Windows session.",
-          "Keep existing DetectTextExtractor and TextSelectionAndClipboard tests passing."
-        ]
-      }
-    ],
-    "verify": [
-      "pwsh -NoProfile -File .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\PowerOCR\\PowerOCR\\PowerOCR.csproj",
-      "pwsh -NoProfile -File .\\tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\PowerOCR\\PowerOCR-UITests\\PowerOCR.UITests.csproj",
-      "Manual E2E with Windows display language set to Arabic: place distinct text on left and right sides, select the right-side region, and confirm clipboard contains the right-side text.",
-      "Repeat at 100 percent DPI, non-100 percent DPI, and on a secondary monitor if available."
-    ],
-    "risks": [
-      "Forcing LTR on the overlay can change toolbar/menu placement in RTL UI, but the capture surface needs physical pixel semantics.",
-      "If WPF event coordinates become unmirrored after FlowDirection is pinned, an additional inversion helper must not double-correct.",
-      "Clamping invalid rectangles can mask conversion mistakes unless tests assert the pre-clamp geometry."
-    ],
-    "alternatives": [
-      "Reversing OCR text was rejected because the wrong screen region is captured before OCR.",
-      "Changing OCR language selection was rejected because language selection does not control screen coordinates.",
-      "Requesting more reporter logs was rejected because the report and code already identify a local coordinate-boundary design path."
-    ],
-    "adversary": {
-      "rounds": 1,
-      "verdict": "No blocking objections",
-      "non_blocking_notes": [
-        "Verify the XAML FlowDirection pin first to avoid double-correcting with manual X inversion."
-      ]
-    }
+  "confidence": {
+    "score": 68,
+    "level": "yellow",
+    "rationale": "RTL repro is concrete and the coordinate path is narrow, but the normalization boundary still needs validation."
   }
 }

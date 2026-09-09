@@ -4,161 +4,60 @@
   "number": 50149,
   "title": "SHIFT(hold) + NUMBER not working to switch between Fancy zones personal layouts",
   "url": "https://github.com/microsoft/PowerToys/issues/50149",
-  "state": "open",
+  "generated_at": "2026-09-09T15:05:28.412Z",
+  "evaluated_at": "2026-09-09T15:05:28.412Z",
+  "source_updated_at": "2026-09-03T12:58:14Z",
   "labels": [
     "Issue-Bug",
-    "Needs-Triage",
-    "Product-FancyZones"
+    "Product-FancyZones",
+    "Needs-Triage"
   ],
   "assignees": [],
-  "generated_at": "2026-09-08T02:40:00Z",
-  "evaluated_at": "2026-09-08T02:40:00Z",
-  "source_updated_at": "2026-09-03T12:58:14Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "Current code and recent test history identify the exact modifier gate behind the regression, but product intent for restoring the legacy shortcut must be confirmed.",
-    "evidence": [
-      "Multiple users reproduce loss of Shift+number in 0.101.2362.",
-      "FancyZones.cpp requires Win+Ctrl+Alt+digit while dragging.",
-      "Recent history added active-drag quick-layout coverage and Shift-state hardening.",
-      "Reporter separated older placement issues from this regression."
-    ],
-    "recommended_action": "Confirm shortcut ownership, then approve a guarded compatibility design."
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No open or merged fix attempt was found for issue #50149."
-  },
-  "issue_context": {
-    "summary": "FancyZones quick layout switching by Shift+number while dragging regressed in 0.101.2362. Current code explicitly requires Win+Ctrl+Alt+digit during dragging, while users describe the prior Shift+number/non-primary-button flow.",
-    "known_information": [
-      "Issue is open and labeled Product-FancyZones.",
-      "Reporter and commenters reproduce the regression in 0.101.2362.",
-      "Current FancyZones.cpp requires Win+Ctrl+Alt+digit while dragging.",
-      "Recent commit d68980a added active-drag quick-layout tests and fixed swallowed Shift state.",
-      "Two other placement reports were explicitly separated by the reporter."
-    ],
-    "inferences": [
-      "The new modifier requirement likely replaced or bypassed the former interaction.",
-      "Restoration must avoid reintroducing the old 'steals number keys' bug."
-    ],
-    "analysis": "The regression is reproducible and the branch contains the exact gating logic. The design should restore compatibility only with robust drag-state and key-consumption rules.",
-    "initial_investigation": [
-      "Inspected FancyZones.cpp OnKeyDown and ApplyQuickLayout.",
-      "Read d68980a history and its active-drag tests.",
-      "Read all issue comments."
-    ],
-    "information_gaps": [
-      {
-        "information": "Whether Shift+number remains the supported product shortcut",
-        "why_needed": "Determines compatibility fix versus intentional new behavior",
-        "how_to_collect": "Confirm current shortcut contract and test both configured mouse-button modes"
-      }
-    ]
-  },
-  "proposed_fixes": [
+  "attachments": [],
+  "linked_refs": [],
+  "actions": [
     {
-      "title": "Restore safe Shift+number quick-layout switching during drag",
-      "root_cause": "Current code accepts only Win+Ctrl+Alt+digit while dragging, so the prior Shift+number path is not dispatched.",
-      "plan": [
-        "Confirm supported shortcut contract.",
-        "Add a guarded Shift+digit path only for a valid active drag and configured layout.",
-        "Update drag/Shift state before swallowing input.",
-        "Extend UI tests for primary/non-primary activation and stuck-drag recovery."
-      ],
-      "verification": [
-        "Drag a window and switch with Shift+1/2.",
-        "Verify Win+Ctrl+Alt+digit remains functional.",
-        "Verify bare Shift+number outside valid drag reaches the foreground app."
-      ],
-      "confidence": {
-        "score": 74,
-        "level": "yellow",
-        "rationale": "The gating logic and regression are clear, but product intent for the legacy shortcut needs confirmation."
+      "type": "post_comment",
+      "label": "Explain current FancyZones quick-switch chord",
+      "note": "Draft a maintainer scope note explaining the supported quick-layout-switch gesture.",
+      "comment": {
+        "body": "I re-checked the current FancyZones implementation, and the behavior you are seeing matches the supported input model today: **quick layout switching during drag now requires Win+Ctrl+Alt+digit**. The old Shift+digit flow was intentionally removed because it could steal number-key input from applications while FancyZones was tracking a drag. The current source and UI tests both codify the Win+Ctrl+Alt+digit chord, so I would treat this as product-direction feedback about restoring the old gesture rather than as a new regression fix."
       }
     }
   ],
-  "design": {
-    "root_cause": "FancyZones requires Win+Ctrl+Alt+digit while dragging; Shift+digit is not accepted by OnKeyDown.",
-    "evidence": [
-      "FancyZones.cpp lines 715-743 require Win+Ctrl+Alt while dragging.",
-      "Multiple users reproduce loss of Shift+number.",
-      "Recent commit d68980a hardened active-drag Shift state."
+  "issue_context": {
+    "summary": "FancyZones no longer supports Shift+digit quick layout switching while a drag is active; the supported chord is Win+Ctrl+Alt+digit to avoid stealing number input from apps.",
+    "known_information": [
+      "The reporter says the old Shift+number drag flow worked before v0.101.2362.0 and that Win+Alt+Ctrl+number still works now.",
+      "Multiple commenters confirm the same behavior on the latest update.",
+      "FancyZones.cpp contains explicit logic that only changes layouts when Win+Ctrl+Alt+digit is pressed, both while dragging and while not dragging.",
+      "The .Next UI test for quick layout switching states that the historical digit-only wording is obsolete."
     ],
-    "affected_files": [
-      {
-        "path": "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
-        "purpose": "Keyboard hook and quick-layout dispatch",
-        "symbols": [
-          "FancyZones::OnKeyDown",
-          "FancyZones::ApplyQuickLayout"
-        ]
-      },
-      {
-        "path": "src/modules/fancyzones/FancyZones.UITests.Next",
-        "purpose": "Active-drag quick-layout regression coverage",
-        "symbols": [
-          "quick-layout switching during active window drag"
-        ]
-      },
-      {
-        "path": "src/modules/fancyzones/FancyZonesLib/DraggingState.cpp",
-        "purpose": "Drag validity used to guard keyboard ownership",
-        "symbols": [
-          "DraggingState::IsDragging",
-          "DraggingState::UpdateDraggingState"
-        ]
-      }
+    "inferences": [
+      "The missing Shift+digit behavior is currently a deliberate compatibility trade-off, not a silent code-path break.",
+      "Reintroducing the old gesture would require a product decision about whether stealing number keys during drag is acceptable again."
     ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
-        "symbols": [
-          "FancyZones::OnKeyDown"
-        ],
-        "current_behavior": "Only Win+Ctrl+Alt+digit is accepted during dragging.",
-        "change": "Add documented, guarded Shift+digit compatibility only for a real drag and configured layout while preserving explicit-chord behavior.",
-        "code_block": "bool legacyQuickLayout = dragging && shift && digitPressed != -1 && IsValidDragSession(); if (legacyQuickLayout || explicitChord) PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, digitPressed);",
-        "edge_cases": [
-          "Stuck drag state",
-          "NumPad digits",
-          "Shift used for zone activation",
-          "Do not swallow outside valid drag"
-        ],
-        "tests": [
-          "Active-drag Shift+digit UI test",
-          "Non-primary activation test",
-          "Foreground keystroke preservation",
-          "Explicit-chord regression"
-        ]
-      }
+    "analysis": "Because current source and tests codify the new chord, this is not actionable bug-fix work for the dashboard. The right maintainer action is a scope note, not an implementation design.",
+    "initial_investigation": [
+      "Reviewed FancyZones.cpp quick-layout-switch handling around ApplyQuickLayout and drag-state checks.",
+      "Reviewed FancyZones.UITests.Next/LayoutApplyHotKeyTests.cs, which now tests Win+Ctrl+Alt+digit during drag and calls the older checklist wording obsolete.",
+      "Checked recent FancyZones history and found input-state hardening work in the same area."
     ],
-    "verify": [
-      "Build FancyZones and focused UI tests.",
-      "Run active-drag quick-layout tests.",
-      "Manually verify both activation-button modes."
-    ],
-    "risks": [
-      "Low-level keyboard ownership can affect typing during drag.",
-      "Legacy behavior may conflict with newer documented shortcut."
-    ],
-    "alternatives": [
-      "Keep only Win+Ctrl+Alt; rejected because it regresses established workflow.",
-      "Change documentation only; rejected because code does not accept Shift+digit."
-    ]
+    "information_gaps": []
   },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Design fix"
-    },
-    {
-      "type": "request_info",
-      "label": "Confirm supported layout shortcut",
-      "comment": {
-        "body": "Current FancyZones accepts Win+Ctrl+Alt+digit while dragging, while the report and multiple follow-ups confirm Shift+number worked before 0.101.2362. Please confirm whether Shift+number remains supported for both primary and non-primary mouse activation. This determines whether to restore compatibility or document the newer chord as intentional."
-      }
-    }
-  ]
+  "judgment": {
+    "status": "not_actionable",
+    "rationale": "Current FancyZones code and UI tests show that digit-only layout switching while dragging was deliberately retired; the supported quick-layout chord during drag is now Win+Ctrl+Alt+digit.",
+    "evidence": [
+      "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp now requires `win && ctrl && alt && digitPressed != -1` even while dragging.",
+      "The adjacent code comment says this requirement prevents accidental layout switches when drag state is stuck and number keys would otherwise be stolen from applications.",
+      "src/modules/fancyzones/FancyZones.UITests.Next/LayoutApplyHotKeyTests.cs explicitly documents that the old “digit only” wording is obsolete and tests Win+Ctrl+Alt+digit during drag.",
+      "Recent history includes commit b5069b154 (`[FancyZones] Re-seed Shift state at drag start`) in the same area, reinforcing that this input model has been intentionally reworked."
+    ],
+    "recommended_action": "Post a scope clarification that Shift+digit during drag is no longer the supported gesture and that the issue should be handled as product-direction feedback if the old behavior is desired back."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The reported behavior matches an intentional input-model change rather than an accidental regression that already has a narrowly scoped code fix."
+  }
 }

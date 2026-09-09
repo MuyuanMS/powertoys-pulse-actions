@@ -1,94 +1,95 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50154,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-02T07:20:00Z",
-  "evaluated_at": "2026-09-02T07:20:00Z",
+  "stage": "awaiting_author_information",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-27T06:19:22Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50154",
   "title": "Windows Hopper keyboard shortcut does not work in Rider.",
-  "author": "snarum",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Window Hopper"
   ],
   "assignees": [],
-  "comments": 1,
-  "confidence": "Medium",
-  "summary": "Window Hopper shows no thumbnails for multiple JetBrains Rider windows on 0.101.2362 while working in other applications, but process/elevation details and logs are missing.",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs Rider process diagnostics",
-    "detail": "The Rider-only reproduction is clear, but process grouping, elevation, and window eligibility need one focused diagnostic capture."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request Rider process diagnostics",
-    "reason": "Capture Window Hopper logs and Rider process/elevation topology from the failed invocation."
-  },
   "judgment": {
     "status": "needs_information",
-    "rationale": "This is a plausible 0.101 Window Hopper issue, but Window Hopper groups eligible windows by resolved process image, and the report does not establish Rider process topology, elevation, or eligibility failures.",
+    "rationale": "The issue clearly says Window Hopper fails only in Rider, but current code filters to Alt-Tab-eligible top-level windows for the foreground process, so a small amount of Rider-specific window/elevation evidence is still needed.",
     "evidence": [
-      "PowerToys 0.101.2362 Window Hopper works in other applications but shows no thumbnails for multiple Rider windows.",
-      "The author tried multiple shortcuts, with the latest Shift+Ctrl+Alt+Page Down.",
-      "AltWindowCycle enumerates Alt-Tab-eligible windows and selects those with the same resolved foreground process image.",
-      "No diagnostic ZIP, Rider version, process topology, or elevation state was supplied."
+      "The reporter says the hotkey works in other apps and fails only in Rider.",
+      "AltWindowCycle.cpp only includes windows that are visible, not cloaked, and are the Alt-Tab representative for their ownership chain.",
+      "No recording, Rider version, or elevation details are attached."
     ],
-    "recommended_action": "Request /bugreport immediately after a failed Rider invocation plus Rider version, elevation, and whether windows share one rider64.exe process.",
-    "evaluated_at": "2026-09-02T07:20:00Z",
+    "recommended_action": "Ask for a short Rider-specific recording and configuration details that map directly to Window Hopper eligibility logic.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-27T06:19:22Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "There is not yet enough Rider-specific evidence to choose between eligibility filtering, elevation isolation, and shortcut interception.",
+    "existing_fix_urls": []
+  },
   "issue_context": {
-    "summary": "Window Hopper produces no thumbnails when invoked from JetBrains Rider despite working in other applications and with multiple shortcut choices.",
+    "summary": "Window Hopper fails only for Rider windows, and the current implementation selects Alt-Tab-eligible top-level windows from the foreground process, so the remaining gap is what kind of Rider windows are present when the shortcut is pressed.",
     "known_information": [
-      "The reproduction uses multiple Rider windows and PowerToys 0.101.2362 stable.",
-      "The failure is scoped to Rider.",
-      "The Needs-Author-Feedback label was removed after automated triage, leaving the issue for maintainer response.",
-      "No archive is attached."
+      "The user has multiple Rider windows and the hotkey works in other apps.",
+      "The report does not include Rider version, window layout, elevation state, or a recording.",
+      "Window Hopper groups candidates by the real foreground process image path."
     ],
     "inferences": [
-      "Rider may present project windows through unusual process, owner, or elevation relationships, but this is unconfirmed."
+      "Rider may be exposing owned/tool windows that fail the Alt-Tab eligibility check, or it may be intercepting the hotkey first.",
+      "A short recording and exact Rider configuration would materially narrow those possibilities."
     ],
-    "analysis": "The code path depends on process identity and Alt-Tab eligibility. One fresh log capture and Task Manager observation decide whether maintainers need a Rider grouping rule, eligibility fix, or elevation guidance.",
+    "analysis": "A generic bugreport request would be wasteful. The actionable gap is precise Rider window behavior compared with AltWindowCycle eligibility rules.",
     "initial_investigation": [
-      "src/modules/AltWindowCycle/AltWindowCycle.cpp enumerates windows, checks Alt-Tab eligibility, and records RealProcessImagePath only for eligible windows.",
-      "src/modules/AltWindowCycle/AltWindowCycleLogic.h::SelectCycleWindows selects windows whose process key matches the foreground process key.",
-      "Forced second pass on 2026-09-02 re-read the full live body, automated triage comment, labels, empty assignee list, and timeline; no Rider-specific duplicate, cross-reference, or linked fix appeared."
+      "Reviewed the issue body.",
+      "Reviewed AltWindowCycle.cpp QueryWindowEligibility and GetAppWindows."
     ],
     "information_gaps": [
       {
-        "information": "A fresh diagnostic archive captured immediately after Window Hopper fails in Rider.",
-        "why_needed": "Logs can show enumeration, process resolution, or initialization failures.",
-        "how_to_collect": "Invoke Window Hopper in Rider, then add a comment containing /bugreport and upload the ZIP."
+        "evidence_type": "gif_video",
+        "information": "A short recording showing multiple Rider windows, the Window Hopper shortcut press, and the absence of thumbnails.",
+        "why_needed": "It confirms whether the overlay never appears or appears without candidates.",
+        "how_to_collect": "Please capture a short screen recording focused on the shortcut press with at least two Rider windows visible and upload it through the GitHub web UI."
       },
       {
-        "information": "Rider version, Rider/PowerToys elevation, and whether windows use one or multiple rider64.exe processes.",
-        "why_needed": "These facts determine process grouping and privilege ownership.",
-        "how_to_collect": "Report versions/elevation and inspect Rider processes in Task Manager Details."
+        "evidence_type": "other_software",
+        "information": "The exact Rider version/build, whether Rider is running elevated, and whether any Rider keymap is bound to the same shortcut.",
+        "why_needed": "That distinguishes candidate filtering from app-level hotkey interception or elevation isolation.",
+        "how_to_collect": "Please reply with the Rider version/build, whether Rider runs elevated, and whether the same key combination is assigned inside Rider or another JetBrains tool."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the two Rider items are separate top-level windows or only tabs/panels inside one Rider window.",
+        "why_needed": "Window Hopper cycles windows, not internal tabs, so this changes the expected candidate set.",
+        "how_to_collect": "Please confirm whether the affected Rider items are separate Windows taskbar windows or only tabs/panels inside one Rider window."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-info-50154",
+      "id": "ri50154",
       "type": "request_info",
-      "label": "Request Rider process diagnostics",
-      "primary": true,
+      "label": "Request Rider repro recording",
       "confirm": true,
       "comment": {
         "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50154,
-        "body": "Thanks for the clear Rider-only reproduction on PowerToys 0.101.2362 and confirmation that several shortcut choices work in other apps. Please invoke Window Hopper while a Rider window is foreground, then add a comment containing /bugreport immediately afterward. Also state the exact Rider version, whether Rider or PowerToys is elevated, and whether the open Rider windows belong to one Rider process or separate rider64.exe processes (Task Manager Details is sufficient). Those facts determine whether the failure is window eligibility, process grouping, or privilege-related."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+        "body": "Thanks for narrowing this to Rider only. Window Hopper currently cycles Alt-Tab-eligible top-level windows from the foreground process, so the next useful evidence is very specific:\n\n1. Please upload a short recording showing at least two Rider windows, the Window Hopper shortcut press, and the fact that no thumbnails appear.\n2. Please reply with the exact Rider version/build, whether Rider is running elevated, and whether Rider or another JetBrains tool is bound to the same shortcut.\n3. Please confirm whether the affected Rider items are separate taskbar windows or only tabs/panels inside one Rider window.\n\nThose details will tell us whether Rider windows are being filtered out or the hotkey is intercepted before Window Hopper can cycle them."
+      }
     }
-  ]
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Rider-specific window evidence is still missing."
+  },
+  "confidence": {
+    "score": 46,
+    "level": "red",
+    "rationale": "Owning eligibility code is narrow, but Rider window shape is still unknown."
+  }
 }

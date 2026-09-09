@@ -1,18 +1,14 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50113,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-31T09:58:05Z",
-  "evaluated_at": "2026-08-31T09:58:05Z",
+  "stage": "triage",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-25T18:03:42Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50113",
   "title": "Visual issues with Window Hopper",
-  "author": "DorsalAxe",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Author-Feedback",
@@ -21,57 +17,73 @@
     "Product-Window Hopper"
   ],
   "assignees": [],
-  "comments": 1,
-  "confidence": "Medium-high",
-  "summary": "Window Hopper reportedly has dark-theme, rounded-corner, and portrait-thumbnail visual defects on 0.101.2362, but no screenshot/recording has been supplied and the existing author-feedback request is still unanswered.",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "Source already contains intended dark-theme, rounded clipping, and aspect-aware paths, so visual evidence is needed to locate the discrepancy."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for visual reproduction evidence",
-    "reason": "The existing triage request has no author reply."
-  },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The report may describe real 0.101 Window Hopper visual issues, but source already contains code for theme selection, rounded clipping, and aspect-aware cropping, and the unanswered visual evidence request is needed to identify whether the release is missing those paths or a different rendering path is failing.",
+    "status": "reproducible",
+    "rationale": "The issue lists three always-visible Window Hopper defects with concrete expectations, and the owning overlay theme and thumbnail-layout code is already narrow.",
     "evidence": [
-      "The report lists three always-present visual problems on PowerToys 0.101.2362 but attaches no screenshot or recording.",
-      "The issue has Needs-Author-Feedback and the existing bot comment requests concrete reproduction steps.",
-      "AltWindowCycle.cpp reads AppsUseLightTheme for overlay tinting.",
-      "AltWindowCycle.cpp and AltWindowCycleLogic.h implement rounded preview clipping and CoverSource aspect cropping."
+      "The report says the background stays white in dark mode.",
+      "It says live previews spill outside rounded borders.",
+      "It says tall windows are cropped into landscape cards."
     ],
-    "recommended_action": "Wait for the requested visual reproduction evidence before choosing a code path.",
-    "evaluated_at": "2026-08-31T09:58:05Z",
+    "recommended_action": "Run a maintainer-side repro against the current overlay theme and preview layout paths.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-25T18:03:42Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The issue is repro-ready, but this fast pass stops short of selecting one rendering fix for all three visuals.",
+    "existing_fix_urls": []
+  },
   "issue_context": {
-    "summary": "Window Hopper reportedly stays white in dark mode, lets preview pixels escape rounded borders, and crops portrait windows into landscape thumbnails.",
+    "summary": "Window Hopper is reported to have three visual defects: wrong dark-mode background, unclipped rounded corners, and bad portrait-window cropping.",
     "known_information": [
-      "The report gives expected and actual behavior and Windows 11 context.",
-      "The reporter states PowerToys is running as admin and installed from GitHub.",
-      "No screenshot, recording, display scale, monitor arrangement, or exact activation context is supplied.",
-      "Current source contains intended implementations for all three visual areas."
+      "PowerToys 0.101.2362.",
+      "Always-present visual symptom set.",
+      "No reporter logs are needed to begin local validation."
     ],
     "inferences": [
-      "The released behavior may depend on OS build, scaling, monitor geometry, or a path bypassing the intended rendering code."
+      "The defect likely lives in overlay painting and preview cropping.",
+      "A current-main repro is the best next discriminator."
     ],
-    "analysis": "Because source already expresses the desired behavior, visual evidence is required to locate the mismatch rather than create a speculative design. The existing author-feedback request should stand.",
+    "analysis": "AltWindowCycle.cpp paints the cards/backdrop and AltWindowCycleLogic.h computes preview cropping, so the issue is ready for a maintainer-side reproduce action.",
     "initial_investigation": [
-      "src/modules/AltWindowCycle/AltWindowCycle.cpp reads HKCU Personalize AppsUseLightTheme and applies dark/light acrylic tint constants.",
-      "src/modules/AltWindowCycle/AltWindowCycle.cpp draws rounded card/preview regions around DWM thumbnails.",
-      "src/modules/AltWindowCycle/AltWindowCycleLogic.h::CoverSource crops wide/tall source rectangles to destination aspect ratio and has unit test coverage.",
-      "Targeted duplicate search found no separate Window Hopper visual duplicate or linked fix."
+      "Reviewed AltWindowCycle.cpp for theme and preview painting.",
+      "Reviewed AltWindowCycleLogic.h PreviewRect and CoverSource."
     ],
-    "information_gaps": [
-      {
-        "information": "Screenshot or short recording of all three defects with display context.",
-        "why_needed": "Identifies the failing rendering path and whether the issues occur on the same monitor and scale.",
-        "how_to_collect": "Reply to the existing author-feedback request with Window Hopper open, Windows app theme, monitor scaling, and portrait/landscape source windows visible."
-      }
-    ]
+    "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "rp50113",
+      "type": "reproduce",
+      "label": "Reproduce Window Hopper visual defects",
+      "note": "Validate theme, rounded clipping, and portrait crop behavior.",
+      "reproduce": {
+        "module": "Window Hopper",
+        "version": "PowerToys 0.101.2362 or newer current main build",
+        "prerequisites": [
+          "Enable Window Hopper.",
+          "Set Windows to dark mode.",
+          "Open one wide window and one portrait-shaped window."
+        ],
+        "steps": [
+          "Invoke Window Hopper so the thumbnail overlay appears.",
+          "Verify whether the overlay background follows dark mode.",
+          "Inspect whether the live preview escapes the rounded card border.",
+          "Cycle to a tall window and verify whether the preview is still forced into a landscape crop."
+        ],
+        "expected_result": "The overlay should follow dark mode, keep thumbnails inside rounded cards, and preserve portrait-window aspect behavior.",
+        "attachments": []
+      }
+    }
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Reproduce stage retained."
+  },
+  "confidence": {
+    "score": 84,
+    "level": "yellow",
+    "rationale": "Symptoms and owning code are both clear."
+  }
 }

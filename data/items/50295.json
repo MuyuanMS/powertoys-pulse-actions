@@ -1,81 +1,76 @@
 {
   "schemaVersion": 5,
-  "generated_at": "2026-09-08T03:00:24Z",
-  "evaluated_at": "2026-09-08T03:00:24Z",
+  "kind": "issue",
+  "number": 50295,
+  "title": "Mouse without borders says keys dont match, when it does",
+  "url": "https://github.com/microsoft/PowerToys/issues/50295",
+  "generated_at": "2026-09-09T15:05:28.412Z",
+  "evaluated_at": "2026-09-09T15:05:28.412Z",
   "source_updated_at": "2026-09-02T13:26:49Z",
-  "repository": "microsoft/PowerToys",
-  "item": {
-    "type": "issue",
-    "number": 50295,
-    "title": "Mouse without borders says keys dont match, when it does",
-    "url": "https://github.com/microsoft/PowerToys/issues/50295",
-    "state": "OPEN",
-    "created_at": "2026-09-01T18:45:28Z",
-    "updated_at": "2026-09-02T13:26:49Z",
-    "author": "Jebarson",
-    "labels": [
-      "Issue-Bug",
-      "Needs-Triage"
-    ],
-    "assignees": []
-  },
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 1,
-    "timeline_events_read": 3,
-    "activity_sources": [
-      "https://github.com/microsoft/PowerToys/issues/50295",
-      "https://github.com/microsoft/PowerToys/issues/50295#issuecomment-stream"
-    ]
-  },
-  "upstream_public_action_taken": false,
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "Mouse Without Borders InvalidKey occurs while machines are on mismatched PowerToys versions and one commenter fixed a similar failure by updating/reinstalling, so same-version evidence is needed before a code fix.",
-    "evidence": [
-      "Reporter has one device on 0.101.2362.0 and another on 0.100.0.0 after restoring backup from the older machine.",
-      "Status dump includes InvalidKey.",
-      "Another user with version mismatch reported it worked after installing/updating."
-    ],
-    "recommended_action": "Ask the reporter to align both machines to the same current build, regenerate/copy the key, and provide paired diagnostics only if it still fails."
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Current evidence points first to version/config mismatch or stale restored state, not a confirmed code defect."
-  },
-  "issue_context": {
-    "summary": "Mouse Without Borders reports keys do not match while devices are on different PowerToys versions and one was restored from another machine backup.",
-    "known_information": [
-      "Versions are 0.101.2362.0 and 0.100.0.0.",
-      "Reporter copied/pasted the key but still saw mismatch.",
-      "Status dump shows InvalidKey."
-    ],
-    "inferences": [
-      "Protocol/config changes or stale restored identity material may explain the mismatch."
-    ],
-    "analysis": "The next useful evidence is a same-version repro with regenerated keys.",
-    "initial_investigation": [
-      "Read live activity through 2026-09-02T13:26:49Z.",
-      "Similar search found no stronger duplicate/fix beyond this issue."
-    ],
-    "information_gaps": [
-      {
-        "information": "Whether InvalidKey persists after both machines run the same current build and keys are regenerated.",
-        "why_needed": "Separates expected mismatch/stale config from current Mouse Without Borders validation bug.",
-        "how_to_collect": "Update both machines, regenerate/copy key, retry, then comment /bugreport from both machines if it still fails."
-      }
-    ]
-  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "attachments": [],
+  "linked_refs": [],
   "actions": [
     {
       "type": "request_info",
-      "label": "Confirm same-version Mouse Without Borders repro",
-      "requires_confirmation": true,
+      "label": "Confirm MWB versions and clean re-pair",
+      "note": "Ask for the clean same-version re-pair result that will separate stale state from a current InvalidKey bug.",
       "comment": {
-        "body": "The current report shows the two machines are on different PowerToys versions (`0.100.0.0` and `0.101.2362.0`) and one was restored from backup. Please update both machines to the same latest PowerToys build, regenerate/copy the Mouse Without Borders key again, and retry. If it still reports `InvalidKey`, add `/bugreport` from both machines right after the failed connection attempt."
+        "body": "Thanks for including the Mouse Without Borders state dump — it does show the connection reaching an **InvalidKey** state. Before we treat this as a new handshake bug, please help narrow out two big variables from the current report:\n\n1. **Same-version check** — Please update both machines to the **same PowerToys version** and tell us the exact version shown in About on each machine.\n2. **Fresh pairing check** — Please try the pairing again **without restoring the old backup state**, generate a **new security key**, and confirm whether the InvalidKey message still appears.\n\nRight now the repro mixes two different PowerToys versions plus restored pairing state from the older machine, so those two answers are the fastest way to tell whether this is stale state or a current protocol problem."
       }
     }
   ],
-  "number": 50295,
-  "kind": "issue"
+  "issue_context": {
+    "summary": "Mouse Without Borders rejects the pairing key as invalid, but the report currently mixes different PowerToys versions and a restored backup from the older machine.",
+    "known_information": [
+      "The issue machine is on 0.101.2362.0 and the second machine is explicitly said to be on 0.100.0.0.",
+      "The pasted state dump includes `BrainBot ... : InvalidKey`.",
+      "The pairing attempt reused state restored from the older machine backup.",
+      "A commenter reports that reinstalling/updating resolved a similar mixed-version connection problem."
+    ],
+    "inferences": [
+      "The current failure could be stale pairing state or version skew rather than a new handshake regression.",
+      "Until the reporter retries with both machines on the same build and a fresh key, the InvalidKey state is not specific enough to design a fix around."
+    ],
+    "analysis": "This needs one focused follow-up, not implementation work. The fastest discriminator is to eliminate mixed-version and reused-backup state.",
+    "initial_investigation": [
+      "Re-read the entire issue body, including the pasted MWB status dump.",
+      "Confirmed that App/Class/SocketStuff.cs uses `InvalidKey` as an explicit handshake state.",
+      "Noted that the only follow-up comment describes recovery after reinstall/update, which supports normalizing versions first."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "The exact current PowerToys version on each machine after updating both systems.",
+        "why_needed": "The present report mixes 0.101.2362.0 and 0.100.0.0, so the team needs one same-version result before treating this as a protocol bug.",
+        "how_to_collect": "Please update both machines to the same PowerToys release and report the exact version shown in About on each machine."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether pairing still fails after deleting the restored pairing state and generating a brand new security key.",
+        "why_needed": "That distinguishes stale restored state from a live handshake problem in the current build.",
+        "how_to_collect": "Please re-pair from scratch without restoring the old backup state, generate a new security key, and confirm whether the InvalidKey message still appears."
+      }
+    ]
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The issue includes one machine dump showing `InvalidKey` while the paired machines are on different PowerToys versions and the pairing was restored from backup, so the report still needs a clean same-version re-pair result before it can be treated as a product bug.",
+    "evidence": [
+      "The issue body says one machine is on 0.101.2362.0 and the other is on 0.100.0.0.",
+      "The embedded diagnostic text includes `SocketStatus.InvalidKey` for the remote endpoint.",
+      "The author restored a backup from the older machine before re-pairing.",
+      "A follow-up commenter reports a similar cross-version connection failure that was resolved after reinstall/update.",
+      "Mouse Without Borders source defines a dedicated InvalidKey socket state in App/Class/SocketStuff.cs."
+    ],
+    "recommended_action": "Ask the reporter to normalize versions and re-pair with a freshly generated key before deeper debugging."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current evidence is dominated by cross-version and restored-backup variables, so there is not yet a clean code-fix target."
+  }
 }

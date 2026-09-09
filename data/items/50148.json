@@ -1,178 +1,68 @@
 {
   "schemaVersion": 5,
-  "generated_at": "2026-09-08T02:59:27Z",
-  "evaluated_at": "2026-09-08T02:59:27Z",
+  "kind": "issue",
+  "number": 50148,
+  "title": "[Shortcut Guide] Default \"Hold Windows key\" behavior interferes with Win+V and Win+H",
+  "url": "https://github.com/microsoft/PowerToys/issues/50148",
+  "generated_at": "2026-09-09T15:05:28.412Z",
+  "evaluated_at": "2026-09-09T15:05:28.412Z",
   "source_updated_at": "2026-09-02T14:34:48Z",
-  "repository": "microsoft/PowerToys",
-  "item": {
-    "type": "issue",
-    "number": 50148,
-    "title": "[Shortcut Guide] Default \"Hold Windows key\" behavior interferes with Win+V and Win+H",
-    "url": "https://github.com/microsoft/PowerToys/issues/50148",
-    "state": "OPEN",
-    "created_at": "2026-08-26T18:48:02Z",
-    "updated_at": "2026-09-02T14:34:48Z",
-    "author": "MichaelGHUser",
-    "labels": [
-      "Issue-Bug",
-      "Product-Shortcut Guide",
-      "Needs-Triage",
-      "Status-Reproducible"
-    ],
-    "assignees": [
-      "noraa-junker"
-    ]
-  },
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 3,
-    "timeline_events_read": 9,
-    "activity_sources": [
-      "https://github.com/microsoft/PowerToys/issues/50148",
-      "https://github.com/microsoft/PowerToys/issues/50148#issuecomment-stream"
-    ]
-  },
-  "upstream_public_action_taken": false,
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue is marked reproducible and explains Shortcut Guide hold activation foregrounding over Windows shell shortcuts/hold gestures; PowerToys can mitigate by suppressing hold UI during Win-key chords even if shell flyouts close by Windows design.",
-    "evidence": [
-      "Reporter reproduces with default Hold Windows key; disabling it avoids the issue.",
-      "Maintainer marked Status-Reproducible and noted shell flyouts close when Shortcut Guide foreground closes.",
-      "A later comment adds the Windows 11 hold-Win pointer feature conflict."
-    ],
-    "recommended_action": "Approve a Shortcut Guide hold-trigger policy fix and confirm whether the default hold gesture should remain enabled."
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "Reproducible and likely mitigable in PowerToys, but default UX policy needs maintainer confirmation."
-  },
-  "proposed_fixes": [
+  "labels": [
+    "Issue-Bug",
+    "Product-Shortcut Guide",
+    "Needs-Triage",
+    "Status-Reproducible"
+  ],
+  "assignees": [
+    "noraa-junker"
+  ],
+  "attachments": [],
+  "linked_refs": [],
+  "actions": [
     {
-      "title": "Suppress Shortcut Guide hold UI during Windows-key chords",
-      "root_cause": "Shortcut Guide treats prolonged Win-key hold as activation even while the user is completing a built-in Win shortcut or OS hold gesture.",
-      "plan": [
-        "Track each Win-key-down cycle.",
-        "Cancel hold activation after any non-modifier key in the cycle.",
-        "Consider making hold-Win opt-in or requiring an extra modifier if OS hold gestures remain conflicted.",
-        "Add Win+V, Win+H, and hold-Win pointer regression tests."
-      ],
-      "verification": [
-        "Win+V and Win+H remain usable when held past threshold.",
-        "Plain Win-only hold still opens Shortcut Guide if enabled."
-      ],
-      "confidence": {
-        "score": 71,
-        "level": "yellow",
-        "rationale": "Focus mechanism is known, but product policy determines exact UX fix."
+      "type": "post_comment",
+      "label": "Explain Windows-key-hold scope limitation",
+      "note": "Draft a maintainer scope comment for the Windows-key-hold limitation.",
+      "comment": {
+        "body": "I re-checked the current Shortcut Guide activation flow, and this looks like a limitation of the **Hold Windows key** feature rather than a narrow module bug. When that hold timer expires, Shortcut Guide intentionally surfaces a foreground overlay. Windows surfaces such as Clipboard History, Voice Typing, and the new Find My Mouse Pointer also rely on Windows-key-hold behavior, so they can be dismissed once the Shortcut Guide overlay takes focus and then closes. I would answer this as product-scope feedback on the bare-Windows-key trigger model, not as a small corrective bug fix."
       }
     }
   ],
   "issue_context": {
-    "summary": "Shortcut Guide default Windows-key hold activation interferes with Windows shell shortcuts and hold gestures.",
+    "summary": "Shortcut Guide’s optional “Hold Windows key” activation conflicts with Windows hold-based shells because the overlay is intentionally foregrounded after the hold threshold expires.",
     "known_information": [
-      "Reporter provided numbered Win+V/Win+H repro on Windows 11 25H2 with PowerToys 0.101.2362.",
-      "Disabling Hold Windows key avoids the bug.",
-      "Issue is assigned and Status-Reproducible."
+      "The report covers Win+V, Win+H, and a follow-up comment adds Windows 11 Find My Mouse Pointer.",
+      "The issue is already marked Status-Reproducible and assigned.",
+      "ShortcutGuideModuleInterface/dllmain.cpp requests special runner handling for a held Windows key.",
+      "ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs explicitly brings the overlay to the foreground and activates it.",
+      "The centralized runner hook only tracks a held Windows key; it does not turn these OS gestures into separate module-specific signals after the hold overlay has already appeared."
     ],
     "inferences": [
-      "Suppressing hold UI for Win-key chords is safer than trying to keep shell flyouts alive."
+      "Once Shortcut Guide wins the foreground after a Windows-key hold, Windows shell surfaces that expect to remain active across modifier release can be dismissed when that overlay closes.",
+      "The clean fix is not a small bug patch inside Clipboard History or Voice Typing interaction; it is a higher-level decision about whether bare Windows-key hold should remain a Shortcut Guide trigger at all."
     ],
-    "analysis": "Shortcut Guide should not foreground its UI for key sequences that are OS shortcuts.",
+    "analysis": "This is not well-scoped bug-fix work for the dashboard. The current source and comments both point to a limitation of the activation model rather than to a narrowly isolated code defect.",
     "initial_investigation": [
-      "Read live activity through 2026-09-02T14:34:48Z.",
-      "Reviewed duplicate suggestions #15874 and #49990 from triage comment.",
-      "Focused source search identified ShortcutGuide hold/Win-key area for full implementation pass."
+      "Reviewed ShortcutGuideActivationPolicy.cs, ShortcutGuideModuleInterface/dllmain.cpp, and OverlayWindow.xaml.cs.",
+      "Confirmed the overlay is intentionally signaled from a dedicated Windows-key hold event and then moved to the foreground.",
+      "Re-read the maintainer comment explaining why Windows shell surfaces close when the Shortcut Guide overlay closes."
     ],
-    "information_gaps": [
-      {
-        "information": "Maintainer/product decision on whether hold-Windows-key should remain default or become opt-in/extra-modifier.",
-        "why_needed": "Determines targeted suppression vs setting/default change.",
-        "how_to_collect": "Maintainer comment confirming desired Shortcut Guide default behavior."
-      }
-    ]
+    "information_gaps": []
   },
-  "design": {
-    "root_cause": "Hold activation is not cancelled after a Win-key chord begins.",
+  "judgment": {
+    "status": "not_actionable",
+    "rationale": "Current Shortcut Guide behavior is tied to the product choice of stealing a bare Windows-key hold and surfacing a foreground overlay; that overlay necessarily conflicts with other Windows hold gestures once it takes focus.",
     "evidence": [
-      "Reproducible report and maintainer focus explanation."
+      "ShortcutGuideActivationPolicy only shows the overlay for `WindowsKeyHold` when the configured Windows-key action is enabled.",
+      "ShortcutGuideModuleInterface/dllmain.cpp asks the centralized runner hook to track the pressed Windows key and signal a dedicated hold event after the configured timeout.",
+      "OverlayWindow.xaml.cs explicitly brings the overlay to the foreground and activates it.",
+      "A maintainer already noted in the issue that Clipboard History and Voice Typing close when the foreground window (Shortcut Guide) closes.",
+      "The second commenter confirms the same conflict pattern with Windows 11 Find My Mouse Pointer, another Windows-key hold surface."
     ],
-    "affected_files": [
-      {
-        "path": "src/modules/ShortcutGuide",
-        "purpose": "Shortcut Guide hotkey/hold activation and UI foregrounding",
-        "symbols": [
-          "hold activation pipeline"
-        ]
-      },
-      {
-        "path": "src/settings-ui/Settings.UI",
-        "purpose": "Shortcut Guide hold setting UI",
-        "symbols": [
-          "Shortcut Guide settings"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/ShortcutGuide",
-        "symbols": [
-          "hold activation handler"
-        ],
-        "current_behavior": "Win-key hold can activate while invoking Win+V/Win+H.",
-        "change": "Cancel hold activation for the current Win-key cycle once a non-modifier key is pressed.",
-        "code_block": "onWinDown pending=true; onNonModifier while pending suppress=true; onHoldTimer if !suppress showGuide(); onWinUp reset;",
-        "edge_cases": [
-          "Win+Shift+/ Shortcut Guide activation still works.",
-          "Win-only hold still works when enabled."
-        ],
-        "tests": [
-          "State-machine tests for Win-only, Win+V, Win+H, and Shortcut Guide activation chord."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/settings-ui/Settings.UI",
-        "symbols": [
-          "Shortcut Guide settings"
-        ],
-        "current_behavior": "Hold Windows key is a default behavior.",
-        "change": "If approved, update wording/default/migration for hold behavior.",
-        "code_block": "if holdWinKeyEnabled show conflict guidance or opt-in state;",
-        "edge_cases": [
-          "Do not silently change existing user settings without migration decision."
-        ],
-        "tests": [
-          "Settings serialization smoke test."
-        ]
-      }
-    ],
-    "verify": [
-      "Manual Win+V, Win+H, hold-Win pointer tests."
-    ],
-    "risks": [
-      "Over-suppression could make Shortcut Guide less responsive."
-    ],
-    "alternatives": [
-      "Documentation-only workaround rejected because default breaks common shortcuts."
-    ]
+    "recommended_action": "Treat this as a product-scope limitation of the Windows-key-hold activation model and respond with that scope note instead of filing a narrow bug-fix design."
   },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Design fix",
-      "requires_confirmation": true
-    },
-    {
-      "type": "request_info",
-      "label": "Confirm Shortcut Guide hold policy",
-      "requires_confirmation": true,
-      "comment": {
-        "body": "This is reproducible and the current workaround is disabling Shortcut Guide **Hold Windows key**. Could a maintainer confirm whether PowerToys should suppress hold-triggered Shortcut Guide whenever another key is pressed in the same Win-key chord (Win+V, Win+H), or whether the hold behavior should become opt-in / require an extra modifier?"
-      }
-    }
-  ],
-  "number": 50148,
-  "kind": "issue"
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "Within the current design, Shortcut Guide intentionally owns a bare Win-key hold and foregrounds an overlay; avoiding every OS hold-gesture conflict would require a product-level trigger-model change rather than a small bug fix."
+  }
 }

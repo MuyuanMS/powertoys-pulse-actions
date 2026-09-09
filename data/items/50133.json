@@ -1,70 +1,85 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50133,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-02T07:20:00Z",
-  "evaluated_at": "2026-09-02T07:20:00Z",
+  "stage": "triage",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-26T09:24:41Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50133",
   "title": "Ghost PowerToys Run window when using Win+, while PowerToys Run is open",
-  "author": "ReginaldTang",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0,
-  "confidence": "High",
-  "summary": "PowerToys Run leaves a visible ghost surface after Win+Comma while open; the report has concise steps and a recording.",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design investigation queued",
-    "detail": "The issue has concise steps and a recording; no maintainer action is defensible until the Run hide/deactivation path is reproduced and designed."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Continue Run ghost-window design",
-    "reason": "Investigate Win+Comma desktop-peek deactivation, hide animation, and stale visual state without requesting duplicate generic diagnostics first."
-  },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The two-step reproduction and recording are sufficient to investigate PowerToys Run deactivation/hide behavior; no comments or linked work changed that routing.",
+    "status": "reproducible",
+    "rationale": "The issue already provides a two-step trigger and a screenshot, and PowerToys Run has an explicit HideWhenDeactivated path that can be validated locally first.",
     "evidence": [
-      "Steps are: open PowerToys Run, then press Win+Comma.",
-      "The reporter compares expected behavior to Command Palette closing and says Win+D does not apply.",
-      "The issue includes a video attachment showing the ghost window.",
-      "PowerLauncher MainWindow handles Deactivated and calls MainViewModel.Hide when HideWhenDeactivated is enabled."
+      "The trigger is: open PowerToys Run, then press Win+,.",
+      "The issue includes a screenshot of the stale ghost window.",
+      "MainWindow.xaml.cs hides the launcher on deactivation when HideWhenDeactivated is enabled."
     ],
-    "recommended_action": "Continue a focused design investigation of Win+Comma shell deactivation, hide/animation completion, compositor state, and Run visibility transitions.",
-    "evaluated_at": "2026-09-02T07:20:00Z",
+    "recommended_action": "Run a maintainer-side repro against the launcher deactivation path.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-26T09:24:41Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The symptom is repro-ready, but this fast pass stops short of choosing one launcher fix.",
+    "existing_fix_urls": []
+  },
   "issue_context": {
-    "summary": "PowerToys Run leaves a visible ghost surface after Win+Comma while open; the report has concise steps and a recording.",
+    "summary": "Pressing Win+, while PowerToys Run is already open leaves a ghost launcher window instead of cleanly dismissing the surface.",
     "known_information": [
-      "The report was captured on PowerToys 0.100.2 from the Microsoft Store.",
-      "The reproduction is two steps: open PowerToys Run and press Win+Comma.",
-      "The reporter says Win+D does not produce the same comparison behavior and Command Palette closes as expected.",
-      "A video attachment demonstrates the ghost surface.",
-      "There are no comments, assignees, cross-references, or closing PRs on the issue."
+      "PowerToys Run 0.100.2 from the Microsoft Store.",
+      "Win+D does not reproduce the same behavior.",
+      "A screenshot attachment is already present."
     ],
     "inferences": [
-      "The Win+Comma desktop-peek transition may exercise a deactivation/composition path that differs from Win+D.",
-      "The ghost may be stale visual/compositor state or an incomplete hide animation rather than an active Run window."
+      "The bug likely involves launcher deactivation/hide rather than the query pipeline.",
+      "The trigger is concise enough that maintainer-side reproduction is more useful than another log request."
     ],
-    "analysis": "The behavior is specific enough for design reproduction and source tracing. A request-info action would ask for broad diagnostics even though the issue already supplies the trigger and visual evidence.",
+    "analysis": "The artifact keeps this in a reproduce state because the two-step trigger already points to a narrow, local validation path.",
     "initial_investigation": [
-      "Forced 2026-09-02 pass read the complete issue body, labels, empty assignee list, and timeline links; there are no issue comments or linked work.",
-      "Read src/modules/launcher/PowerLauncher/MainWindow.xaml.cs: OnDeactivated calls _viewModel.Hide when HideWhenDeactivated is enabled.",
-      "Read src/modules/launcher/PowerLauncher/ViewModel/MainViewModel.cs: Hide toggles Wox when the main window is not collapsed, and PowerToysRunSettings defaults HideWhenDeactivated to true.",
-      "Forced second pass on 2026-09-02 re-read the complete report, labels, empty assignee list, and timeline; no duplicate or linked fix was found, so the recording and concise reproduction remain sufficient for design investigation."
+      "Reviewed the issue body and screenshot reference.",
+      "Reviewed PowerLauncher/MainWindow.xaml.cs and confirmed the HideWhenDeactivated path."
     ],
     "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "rp50133",
+      "type": "reproduce",
+      "label": "Reproduce ghost PowerToys Run window",
+      "note": "Validate launcher deactivation when Win+, opens Settings while Run is visible.",
+      "reproduce": {
+        "module": "PowerToys Run",
+        "version": "PowerToys 0.100.2 or newer current main build",
+        "prerequisites": [
+          "Enable PowerToys Run with hide-on-deactivate behavior."
+        ],
+        "steps": [
+          "Open PowerToys Run.",
+          "Press Win+, while the launcher window is still visible.",
+          "Observe whether Settings opens and a ghost launcher window remains instead of the Run surface dismissing cleanly."
+        ],
+        "expected_result": "The launcher should fully dismiss when Win+, shifts focus to Settings.",
+        "attachments": [
+          "https://github.com/user-attachments/assets/6104b167-cc9a-4e71-b624-9ac5be75d02b"
+        ]
+      }
+    }
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Reproduce stage retained."
+  },
+  "confidence": {
+    "score": 81,
+    "level": "yellow",
+    "rationale": "Trigger is concise and owning path is narrow."
+  }
 }

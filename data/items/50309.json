@@ -1,72 +1,59 @@
 {
   "schemaVersion": 5,
-  "number": 50309,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_information",
-  "owes": "author",
-  "pending_author": false,
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
-  "source_updated_at": "2026-09-02T02:44:23Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50309",
+  "number": 50309,
   "title": "Grab And Move should work with TouchScreen & Stylus",
-  "author": "JimR-15",
+  "url": "https://github.com/microsoft/PowerToys/issues/50309",
+  "generated_at": "2026-09-09T15:05:28.412Z",
+  "evaluated_at": "2026-09-09T15:05:28.412Z",
+  "source_updated_at": "2026-09-02T02:44:23Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The request describes a desired input modality but does not establish whether Windows emits a compatible pointer sequence, whether the configured modifier is observed during touch/stylus drag, or whether this is intended feature expansion rather than a regression.",
-    "evidence": [
-      "The report says Win/Alt plus mouse drags windows, but the same gesture with touch or stylus does nothing.",
-      "Grab And Move currently installs a WH_MOUSE_LL hook and MouseProc handles WM_LBUTTONDOWN, WM_MOUSEMOVE, and WM_LBUTTONUP.",
-      "No comments, diagnostic archive, configuration details, or build version beyond 0.100.2 were provided."
+  "attachments": [],
+  "linked_refs": [],
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Clarify touch and stylus support scope",
+      "note": "Draft a maintainer scope note for touch/stylus support.",
+      "comment": {
+        "body": "I re-checked the current Grab and Move implementation, and it is explicitly built around **modifier + mouse drag** input. The module description and the current source both target mouse-button interactions; there is no touchscreen or stylus pointer path in the existing implementation. I would answer this as feature-scope feedback rather than a regression bug, because supporting touch/stylus drag would require new pointer-input handling instead of fixing a broken already-supported path."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Grab and Move currently supports modifier + mouse-button drags; touch and stylus interactions are not part of the implemented input path.",
+    "known_information": [
+      "The reporter wants Grab and Move to react to Win/Alt plus touchscreen or stylus drag on a 2-in-1 device.",
+      "The current module description only promises Alt+Drag with left/right mouse buttons.",
+      "The module installs low-level keyboard and mouse hooks and contains no pointer-type or stylus logic."
     ],
-    "recommended_action": "Request a focused current-build comparison of mouse, touch, and pen input before designing a pointer-input implementation.",
-    "evaluated_at": "2026-09-08T02:27:54Z",
-    "source_updated_at": "2026-09-02T02:44:23Z"
+    "inferences": [
+      "The issue is asking for broader input-device support than the current feature scope, not describing a break in an already-supported touch path."
+    ],
+    "analysis": "This should not become bug-fix design work in the dashboard batch. The implementation surface would be new pointer-input handling and likely product UX decisions.",
+    "initial_investigation": [
+      "Reviewed GrabAndMoveModuleInterface/dllmain.cpp and GrabAndMove/main.cpp.",
+      "Confirmed the module currently hooks mouse and keyboard input only.",
+      "Did not find touchscreen/stylus-specific code in the Grab and Move module tree."
+    ],
+    "information_gaps": []
+  },
+  "judgment": {
+    "status": "not_actionable",
+    "rationale": "The current Grab and Move implementation is explicitly mouse-driven; touch and stylus input would require new pointer-input support rather than fixing a regression in the existing Alt+Drag/Win+Drag mouse path.",
+    "evidence": [
+      "GrabAndMoveModuleInterface/dllmain.cpp describes the feature as `Move and resize windows with Alt+Drag (left button to move, right button to resize)`.",
+      "GrabAndMove/main.cpp installs low-level keyboard and mouse hooks, not WM_POINTER or stylus-specific processing.",
+      "A repository search did not find touchscreen, stylus, or pointer-type handling in the Grab and Move module."
+    ],
+    "recommended_action": "Respond that the current module only supports mouse-based drag interactions and that touchscreen/stylus support would be feature work, not a scoped bug fix."
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "The existing low-level mouse-hook implementation does not establish whether a PowerToys bug or unsupported pointer modality is being reported."
-  },
-  "issue_context": {
-    "summary": "A touchscreen laptop user expects Grab And Move's modifier-plus-mouse gesture to move windows when performed with touch or a stylus.",
-    "known_information": [
-      "Mouse activation works for the reporter.",
-      "Touch and stylus activation do not move a window.",
-      "Grab And Move presently processes low-level mouse button and movement messages."
-    ],
-    "inferences": [
-      "Supporting touch and pen may require a distinct pointer-input path rather than a small change to mouse-hook handling."
-    ],
-    "analysis": "The reported behavior is plausible from the current input boundary, but the missing current-build and input-observation evidence determines whether this should be triaged as a feature request, regression, or pointer-routing defect.",
-    "initial_investigation": [
-      "Read the complete issue and its empty discussion.",
-      "Inspected src/modules/GrabAndMove/GrabAndMove/main.cpp; MouseProc is driven by WH_MOUSE_LL mouse messages.",
-      "Searched live PowerToys issues for a matching touch/stylus Grab And Move report and found no direct duplicate."
-    ],
-    "information_gaps": [
-      {
-        "information": "A current-build comparison showing whether Win/Alt is recognized and whether a mouse, finger, and pen each generate the expected drag behavior.",
-        "why_needed": "It distinguishes unsupported pointer input from a modifier-state or regression defect.",
-        "how_to_collect": "On the latest PowerToys build, record a short screen capture while repeating the same title-bar drag with mouse, finger, and pen; include the configured activation modifier and Windows pen/touch settings."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "id": "request-pointer-trace-50309",
-      "type": "request_info",
-      "label": "Request touch and pen comparison",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "body": "Thank you for the clear mouse-versus-touch comparison. Grab And Move currently receives low-level mouse drag messages, so we need to distinguish unsupported touch/pen routing from a modifier-state regression. Please test the latest PowerToys build and provide a short recording repeating the same title-bar drag with a mouse, finger, and stylus, along with the selected Grab And Move modifier and relevant Windows pen/touch settings. This will determine whether a pointer-input implementation is appropriate."
-      }
-    }
-  ]
+    "rationale": "The requested behavior is outside the currently implemented input surface and would require new feature work."
+  }
 }

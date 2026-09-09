@@ -1,10 +1,12 @@
 {
   "schemaVersion": 5,
-  "number": 50379,
   "kind": "issue",
+  "number": 50379,
   "title": "PowerToys does not start automatically on boot",
   "url": "https://github.com/microsoft/PowerToys/issues/50379",
-  "state": "open",
+  "generated_at": "2026-09-09T15:05:28.412Z",
+  "evaluated_at": "2026-09-09T15:05:28.412Z",
+  "source_updated_at": "2026-09-04T12:43:58Z",
   "labels": [
     "Issue-Bug",
     "Needs-Author-Feedback",
@@ -12,60 +14,77 @@
     "Needs-Team-Response",
     "Product-General"
   ],
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
-  "source_updated_at": "2026-09-04T12:43:58Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The reproduction is clear and current related work exists, but the rejected diagnostics do not reveal whether startup registration or process launch fails.",
-    "evidence": [
-      "Run-at-startup reproduction is supplied.",
-      "Windows 11 25H2/system installation/admin context are supplied.",
-      "Author supplied report archives, but automated triage rejected them as oversized.",
-      "Open #48567 is a current related startup issue; closed #43395 is historical evidence only."
-    ],
-    "recommended_action": "Request Task Scheduler result and a fresh bounded report before deduplicating or designing a fix."
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The correct fix owner and failure boundary are not established from the current public evidence."
-  },
-  "proposed_fixes": [],
-  "issue_context": {
-    "summary": "A Windows 11 25H2 user reports that Run at startup is enabled but PowerToys does not start after reboot; multiple report ZIP attachments were supplied, while automated triage rejected the archive as oversized.",
-    "known_information": [
-      "PowerToys 0.101.2362 Stable is reported from GitHub installation.",
-      "Windows 11 25H2, system installation, running as administrator, and Simplified Chinese are specified.",
-      "The reproduction enables General > Run at startup and restarts the PC.",
-      "The reporter supplied multiple PowerToysReport ZIP links and later said the report was added.",
-      "Open related issue #48567 is titled Run at Startup; #43395 is closed and describes a similar login-autostart failure."
-    ],
-    "inferences": [
-      "The failure may involve the startup task, elevated/system install identity, or a localized/25H2 task-registration boundary.",
-      "The current public record does not show whether the scheduled task exists, runs, or exits immediately."
-    ],
-    "analysis": "The symptom is reproducible and related work exists, but task state and a usable diagnostic are needed before choosing between duplicate routing and a startup-registration fix.",
-    "initial_investigation": [
-      "Current issue activity includes author-provided reports after automated triage.",
-      "Search found open #48567 as a stronger current startup tracker than closed #43395.",
-      "No code change should be duplicated until #48567 and task registration state are compared."
-    ],
-    "information_gaps": [
-      {
-        "information": "Startup-task state after enabling Run at startup: task name, run-as identity, last-run result, and whether PowerToys starts then exits.",
-        "why_needed": "Distinguishes registration, privilege, localization, and process-start failure.",
-        "how_to_collect": "After reboot, inspect Task Scheduler and submit `/bugreport` immediately; include the task Last Run Result and whether the PowerToys process briefly appears."
-      }
-    ]
-  },
+  "assignees": [],
+  "attachments": [
+    "https://github.com/user-attachments/files/31835497/PowerToysReport_2026-09-04-20-36-28.zip",
+    "https://github.com/user-attachments/files/31835512/PowerToysReport_2026-09-04-20-36-28.zip",
+    "https://github.com/user-attachments/files/31834957/PowerToysReport_2026-09-04-20-19-15.zip"
+  ],
+  "linked_refs": [],
   "actions": [
     {
       "type": "request_info",
-      "label": "Request startup task result",
-      "note": "Ask for the exact scheduled-task outcome and a usable report.",
+      "label": "Request autorun task diagnostics",
+      "note": "Ask for the minimum install/elevation evidence needed to separate stale scheduled-task state from a current autorun regression.",
       "comment": {
-        "body": "The report supplies a clear reproduction and the important environment details (0.101.2362, Windows 11 25H2, system installation, administrator run, Simplified Chinese). Because the submitted archives were rejected as oversized, please enable Run at startup, reboot once, and immediately submit `/bugreport`; also report whether the PowerToys process appears briefly and provide the Task Scheduler entry’s Last Run Result and Run As identity. This distinguishes a missing task registration from a task that starts and exits or cannot cross the elevation boundary, and it will show whether the open related tracker #48567 is the correct owner."
+        "body": "Thanks for attaching the follow-up bug report ZIPs. I re-checked them, and they do show PowerToys configured with **Run at startup** enabled. However, the refreshed diagnostics still look mixed: the runner log inside the report is identifying itself as **v0.100.2** while the issue says **0.101.2362**, and the same bundle also contains installer logs for both versions. Before we decide whether this is a current autorun-code bug or a stale scheduled-task/install-state problem, please provide the following:\n\n1. **Install scope confirmation** — Please confirm whether you currently have only one PowerToys installation left (system vs per-user), or whether an older copy might still be present.\n2. **Elevated vs non-elevated result** — Please disable **Run as administrator**, reboot once, and confirm whether PowerToys auto-starts in that non-elevated mode.\n3. **Fresh current-version diagnostics** — Please reproduce the failed auto-start once, then immediately comment `/bugreport` **before manually launching PowerToys**. If the normal UI cannot open at that point, please run `BugReportTool.exe` from the current PowerToys install folder right after reproducing.\n\nThose three answers will tell us whether the problem is in the current autorun task path or in stale install/task state left behind by the upgrade."
       }
     }
-  ]
+  ],
+  "issue_context": {
+    "summary": "PowerToys does not auto-start after reboot even though Run at startup is enabled, but the attached diagnostics show a potentially mixed install state with elevated autorun still tied to a v0.100.2 runner.",
+    "known_information": [
+      "The report says PowerToys 0.101.2362 stable, system install, Simplified Chinese, and running as admin.",
+      "The reporter supplied additional bug report ZIPs after the initial automated request.",
+      "The downloaded ZIP contains runner logs that record `startup=true`, `run_elevated=true`, and `powertoys_version` still set to `v0.100.2`.",
+      "The same ZIP contains multiple installer/bootstrapper logs for 0.100.2 and 0.101.2362 on the same day.",
+      "src/runner/general_settings.cpp recreates the autorun task through create_auto_start_task_for_this_user(run_as_elevated) when startup is enabled.",
+      "src/runner/auto_start_helper.cpp builds a per-user scheduled task named `Autorun for <user>` and sets the run level based on `runElevated`."
+    ],
+    "inferences": [
+      "The attached report may not represent a single clean failed-logon state; it looks consistent with an upgraded or duplicated installation that still launches an older elevated runner.",
+      "If the scheduled task still points at an older install or mismatched run level, the symptom could appear without a new source regression in the current autorun code."
+    ],
+    "analysis": "A maintainer should not jump straight to a code design yet. The current evidence is strong enough to ask a focused follow-up: reproduce once on the current install, capture a fresh diagnostics bundle immediately after the failed sign-in attempt, and clarify whether the bug is specific to elevated autorun or mixed installs.",
+    "initial_investigation": [
+      "Downloaded the latest bug report ZIP and confirmed the runner log reports `powertoys_version\":\"v0.100.2\"` despite the issue saying 0.101.2362.",
+      "Confirmed the report contains both 0.100.2 and 0.101.2362 installer/bootstrapper logs, which suggests a recent install-state transition.",
+      "Reviewed src/runner/general_settings.cpp and src/runner/auto_start_helper.cpp to confirm that autorun behavior changes materially when `run_elevated` is true."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "install_scope",
+        "information": "Whether only one PowerToys installation remains and whether the failing autorun task is supposed to launch the system install or an older user install.",
+        "why_needed": "The current diagnostics still show a v0.100.2 elevated runner while the issue says 0.101.2362, so install scope must be clarified before attributing the failure to current autorun code.",
+        "how_to_collect": "Please confirm whether you currently have only one PowerToys install (system vs per-user) and whether the issue reproduces after removing any older copy."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether autorun fails only when Run as administrator is enabled, or also when PowerToys is configured to start non-elevated.",
+        "why_needed": "The scheduled-task path differs between elevated and non-elevated autorun, so this answer separates task-permission problems from general startup failures.",
+        "how_to_collect": "Please test once with Run as administrator disabled, reboot, and confirm whether PowerToys starts automatically in that non-elevated mode."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh current-version diagnostic bundle captured immediately after one failed sign-in autorun attempt and before manually launching PowerToys.",
+        "why_needed": "The attached report appears to mix versions and install logs; a fresh capture is needed to see the exact scheduled-task/runner state that exists at the failed boot.",
+        "how_to_collect": "Please reproduce the autorun failure once, then immediately comment `/bugreport` before manually starting PowerToys. If Settings or the tray cannot open, run `BugReportTool.exe` from the current PowerToys installation folder right after reproducing."
+      }
+    ]
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The refreshed evidence shows an autorun problem, but the attached diagnostics mix a current 0.101.2362 install with runner logs that still report v0.100.2 and `run_elevated=true`, so the failure could be a stale scheduled-task/install-state problem rather than a fresh code regression.",
+    "evidence": [
+      "The issue now contains multiple bug report ZIP attachments and says the system install is running as admin.",
+      "The downloaded report contains runner-log_2026-09-04.log entries with `startup=true`, `run_elevated=true`, and `powertoys_version\":\"v0.100.2\"`.",
+      "The same ZIP also includes 0.101.2362 installer logs, implying an upgrade or mixed-install transition around the failure.",
+      "src/runner/general_settings.cpp recreates the per-user autorun scheduled task differently for elevated and non-elevated startup modes, so install/elevation state matters directly to repro quality."
+    ],
+    "recommended_action": "Ask for one clean current-version autorun repro plus the install/elevation clarifications needed to distinguish a stale scheduled-task state from a reproducible runner bug."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A code fix is plausible, but the current evidence does not cleanly isolate whether the failing path is current autorun logic, stale scheduled-task registration, or mixed install/elevation state."
+  }
 }

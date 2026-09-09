@@ -1,101 +1,207 @@
 {
   "schemaVersion": 5,
-  "number": 50304,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triaged",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-08T02:27:54Z",
-  "evaluated_at": "2026-09-08T02:27:54Z",
-  "source_updated_at": "2026-09-01T22:38:52Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50304",
+  "number": 50304,
   "title": "FancyZones Issue with msedge.exe Apps",
-  "author": "JStockCo",
+  "url": "https://github.com/microsoft/PowerToys/issues/50304",
+  "generated_at": "2026-09-09T15:05:28.412Z",
+  "evaluated_at": "2026-09-09T15:05:28.412Z",
+  "source_updated_at": "2026-09-01T22:38:52Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report's PWA collision matches the current FancyZones app-zone history key: AppZoneHistory stores history by get_process_path_waiting_uwp(window), which collapses Edge PWAs using the same executable.",
-    "evidence": [
-      "The reporter observes distinct Edge PWAs being restored to the last zone of another PWA.",
-      "AppZoneHistory::SetAppLastZones and GetAppLastZoneIndexSet use the process path as the history-map key.",
-      "The report identifies plausible distinct Windows app identities: PWA app ID or AUMID.",
-      "There are no comments, assignee, linked PR, or matching live duplicate."
-    ],
-    "recommended_action": "Approve a fork-side design to obtain and persist a stable per-window application identity with safe process-path fallback, while collecting a sample of affected PWA identities.",
-    "evaluated_at": "2026-09-08T02:27:54Z",
-    "source_updated_at": "2026-09-01T22:38:52Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The current process-path key directly explains the collision, but the stable Windows identity and fallback behavior must be verified across Edge PWA launch forms."
-  },
-  "proposed_fixes": [
+  "attachments": [],
+  "linked_refs": [],
+  "actions": [
     {
-      "title": "Key FancyZones PWA history by stable application identity",
-      "root_cause": "App-zone history uses the executable path, so all PWAs hosted by msedge.exe share one history record.",
-      "plan": [
-        "Add a helper that obtains a stable PWA/AUMID identity for a window when Windows exposes one.",
-        "Use that identity as the app-zone history key, retaining normalized process path as fallback.",
-        "Migrate or safely coexist with existing path-keyed history and add collision regression coverage."
-      ],
-      "verification": [
-        "Zone two distinct Edge PWAs on one monitor and verify each restores to its own last zone.",
-        "Verify ordinary desktop applications and PWAs without an exposed identity retain current behavior."
-      ],
-      "confidence": {
-        "score": 77,
-        "level": "yellow",
-        "rationale": "The process-path collision is confirmed in source and matches the symptom, but the correct Windows identity API and fallback semantics need a live PWA sample."
-      }
+      "type": "approve_design",
+      "label": "Approve per-app FancyZones history design",
+      "note": "Approve a full implementation design that separates app-zone history for shared-host apps such as Edge PWAs."
     }
   ],
   "issue_context": {
-    "summary": "FancyZones records all Edge-hosted PWAs under a shared executable identity, causing one PWA to inherit another PWA's last zone.",
+    "summary": "FancyZones remembers last zones by executable path, so every Edge PWA hosted by msedge.exe is treated as the same app when zones are restored.",
     "known_information": [
-      "The reporter uses multiple Edge PWAs and reports cross-PWA zone restoration.",
-      "Current AppZoneHistory keys stored history by process path.",
-      "No diagnostic archive or affected PWA identities were supplied."
+      "The issue describes multiple PWAs sharing msedge.exe or msedge_proxy.exe and reopening in the wrong prior zone.",
+      "AppZoneHistory::SetAppLastZones stores history under the string returned by get_process_path_waiting_uwp(window).",
+      "AppZoneHistory::GetZoneHistory later retrieves by that same app-path key.",
+      "The serialized history schema in AppZoneHistory.h currently only defines `app-path` as the app identity field.",
+      "Workspaces already contains public code for retrieving a window AppUserModelId through SHGetPropertyStoreForWindow / PKEY_AppUserModel_ID."
     ],
     "inferences": [
-      "AUMID or a PWA-specific app identity could separate these windows if consistently available."
+      "Any hosted-app model where multiple logical apps share one executable path can collide in FancyZones zone history, not just Edge PWAs.",
+      "AUMID or a similar per-window app identity is the natural discriminator because the current repo already uses it elsewhere for launch/restore logic."
     ],
-    "analysis": "The source confirms the collision mechanism. The remaining uncertainty is limited to selecting a durable Windows identity that works for Edge PWA variants and does not destabilize existing history.",
+    "analysis": "This is good design work for the batch. The failure mechanism is straightforward, the affected persistence layer is localized, and the repo already has one app-identity implementation pattern that FancyZones can reuse or extract.",
     "initial_investigation": [
-      "Read the full issue and empty discussion.",
-      "Inspected src/modules/FancyZones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp.",
-      "Searched live issue titles for matching FancyZones/Edge PWA zone-history reports and found no direct duplicate."
+      "Reviewed src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp and confirmed process-path-only storage and lookup.",
+      "Reviewed AppZoneHistory.h and confirmed the persisted schema only exposes `app-path` today.",
+      "Reviewed src/modules/Workspaces/WorkspacesLib/WindowUtils.cpp and confirmed the repo already reads AppUserModelId from a window/property store.",
+      "Reviewed AppZoneHistory unit tests and identified the existing parse/lookup coverage that should be extended for richer app identities."
     ],
-    "information_gaps": [
-      {
-        "information": "The affected Edge version and the AUMID or command-line/app identity for two PWAs that reproduce the collision.",
-        "why_needed": "It validates that a proposed identity is stable and distinct before changing persisted history keys.",
-        "how_to_collect": "On the affected machine, identify two PWAs that collide and provide their Edge version plus publicly shareable app identity details from Windows/Edge; do not include unrelated profile data."
-      }
-    ]
+    "information_gaps": []
   },
-  "actions": [
+  "stage": "awaiting_design_approval",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "FancyZones currently keys last-zone history by process path, so distinct Edge PWAs that all run under msedge.exe collide into one shared zone-history bucket.",
+    "evidence": [
+      "AppZoneHistory.cpp calls get_process_path_waiting_uwp(window) and uses that returned path as the map key for m_history.",
+      "GetZoneHistory looks up the same app-path key later when restoring zones.",
+      "The issue explains that Edge PWAs share msedge.exe/msedge_proxy.exe while remaining logically distinct apps, which matches the current storage key collision.",
+      "The repo already contains AppUserModelId helpers in Workspaces/WorkspacesLib/WindowUtils.cpp, showing there is an existing code pattern for a window-specific app identity."
+    ],
+    "recommended_action": "Approve a design that augments FancyZones app-zone history with a window/app identity stronger than raw process path for Edge PWAs and similar shared-host apps."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "There is no linked fix attempt yet, but the ownership path, persisted data format, and likely identity source are all narrow and code-backed."
+  },
+  "proposed_fixes": [
     {
-      "id": "approve-design-50304",
-      "type": "approve_design",
-      "label": "Approve PWA history-key design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Starts only a fork-side design workflow; no upstream write occurs automatically."
-    },
-    {
-      "id": "request-pwa-identity-50304",
-      "type": "request_info",
-      "label": "Request affected PWA identities",
-      "confirm": true,
-      "comment": {
-        "body": "Thank you for identifying that distinct Edge PWAs share the same executable host. FancyZones currently records last-zone history by process path, so we are evaluating a PWA-specific identity with a safe fallback. Please provide the Edge version and publicly shareable identity details for two PWAs that reproduce the collision (for example, their AUMID or app identity), and confirm whether each has a distinct taskbar entry. This will validate the persisted-key design without collecting unrelated profile data."
+      "title": "Key FancyZones app-zone history by executable path plus app identity",
+      "root_cause": "FancyZones persists and restores zone history using only the process path returned by get_process_path_waiting_uwp(window). For Edge PWAs, many distinct apps share the same host executable, so the last opened PWA overwrites the saved zone history for the others.",
+      "plan": [
+        "Add a stable app-identity helper that can read an AppUserModelId from the target window and combine it with the executable path when available.",
+        "Teach AppZoneHistory to serialize and deserialize that richer identity while still reading legacy app-path-only entries.",
+        "Prefer the richer identity for restore and update paths so different PWAs hosted by msedge.exe stop colliding."
+      ],
+      "verification": [
+        "Launch two different Edge PWAs, zone them separately, close both, and verify each relaunches to its own last zone instead of the most recently zoned PWA location.",
+        "Confirm ordinary single-identity desktop apps still reuse their existing app-path history entries."
+      ],
+      "confidence": {
+        "score": 88,
+        "level": "green",
+        "rationale": "The collision is directly explained by the current map key and the issue supplies the exact shared-host scenario that breaks it."
       }
     }
-  ]
+  ],
+  "design": {
+    "root_cause": "FancyZones persists app-zone history under a single `app-path` string produced from the target window’s process path. Distinct Edge PWAs all resolve to the same host executable (`msedge.exe`/`msedge_proxy.exe`), so one PWA overwrites the saved zone history for another and later restores read the wrong entry.",
+    "evidence": [
+      "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp:324-359 calls get_process_path_waiting_uwp(window) and inserts/updates m_history[processPath].",
+      "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp:452-490 looks up the same appPath key in GetZoneHistory when restoring zone placement.",
+      "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.h only persists one app identity field today: `app-path`.",
+      "src/modules/Workspaces/WorkspacesLib/WindowUtils.cpp already contains a working `GetAUMIDFromWindow` implementation using SHGetPropertyStoreForWindow and PKEY_AppUserModel_ID.",
+      "Issue 50304 provides the precise shared-host scenario: multiple Edge PWAs all hosted by msedge.exe but expected to reopen in distinct zones."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.h",
+        "purpose": "Defines the persisted app-zone history schema and the in-memory map contract.",
+        "symbols": [
+          "NonLocalizable::AppZoneHistoryIds",
+          "AppZoneHistory::TAppZoneHistoryMap"
+        ]
+      },
+      {
+        "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
+        "purpose": "Loads, saves, sets, removes, and looks up app-zone history entries.",
+        "symbols": [
+          "JsonUtils::AppZoneHistoryJSON",
+          "AppZoneHistory::SetAppLastZones",
+          "AppZoneHistory::GetZoneHistory",
+          "AppZoneHistory::RemoveAppLastZone"
+        ]
+      },
+      {
+        "path": "src/common/utils/process_path.h",
+        "purpose": "Current shared helper surface for deriving a window process path; likely place to add a richer app identity helper if FancyZones should not depend on Workspaces.",
+        "symbols": [
+          "get_process_path_waiting_uwp"
+        ]
+      },
+      {
+        "path": "src/modules/Workspaces/WorkspacesLib/WindowUtils.cpp",
+        "purpose": "Existing repository implementation pattern for obtaining an AppUserModelId from a window.",
+        "symbols": [
+          "Utils::GetAUMIDFromWindow",
+          "Utils::GetAUMIDFromProcessId"
+        ]
+      },
+      {
+        "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/AppZoneHistoryTests.Spec.cpp",
+        "purpose": "Existing serialization and lookup tests that should cover richer app identities and legacy fallback.",
+        "symbols": [
+          "AppZoneHistoryUnitTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/common/utils/process_path.h",
+        "symbols": [
+          "get_process_path_waiting_uwp",
+          "new app-identity helper"
+        ],
+        "current_behavior": "FancyZones can cheaply derive only a process path for a window, so shared-host applications collapse into one identity.",
+        "change": "Add a helper that returns a richer app identity: the process path plus an optional AppUserModelId read from the window/property store or process package metadata when present.",
+        "code_block": "struct window_app_identity\n{\n    std::wstring processPath;\n    std::wstring appUserModelId;\n};\n\ninline window_app_identity get_window_app_identity(HWND window)\n{\n    auto processPath = get_process_path_waiting_uwp(window);\n    auto aumid = try_get_window_aumid(window); // SHGetPropertyStoreForWindow / PKEY_AppUserModel_ID\n    return { processPath, aumid };\n}",
+        "edge_cases": [
+          "Return an empty AUMID for classic Win32 apps so their identity remains process-path-only.",
+          "Do not block indefinitely on packaged/UWP windows; preserve the existing retry behavior from get_process_path_waiting_uwp."
+        ],
+        "tests": [
+          "Add a helper-level test or mock coverage that verifies an empty AUMID falls back to process-path-only identity."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.h",
+        "symbols": [
+          "NonLocalizable::AppZoneHistoryIds",
+          "AppZoneHistory::TAppZoneHistoryMap"
+        ],
+        "current_behavior": "The persisted schema and map key expose only `app-path`, so different logical apps sharing one executable cannot be separated.",
+        "change": "Extend the schema with an optional app-identity field (for example `app-user-model-id`) and define a normalized composite in-memory key that uses process path plus AUMID when available.",
+        "code_block": "namespace AppZoneHistoryIds\n{\n    const static wchar_t* AppPathID = L\"app-path\";\n    const static wchar_t* AppUserModelIdID = L\"app-user-model-id\";\n}\n\nusing TAppZoneHistoryMap = std::unordered_map<std::wstring /*normalized identity*/, std::vector<AppZoneHistoryData>>;",
+        "edge_cases": [
+          "Keep backward compatibility with existing app-zone-history.json files that only contain app-path.",
+          "Avoid changing unrelated consumers that only need the persisted file path name."
+        ],
+        "tests": [
+          "Add parse coverage for both legacy app-path-only entries and new path-plus-AUMID entries."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
+        "symbols": [
+          "JsonUtils::AppZoneHistoryJSON",
+          "AppZoneHistory::SetAppLastZones",
+          "AppZoneHistory::GetZoneHistory",
+          "AppZoneHistory::RemoveAppLastZone"
+        ],
+        "current_behavior": "Set, lookup, and removal all key into m_history using only processPath.",
+        "change": "Build a normalized key from `{processPath, appUserModelId}` when available, save both fields to JSON, and make lookup prefer the richer key while still falling back to legacy process-path entries if no richer entry exists.",
+        "code_block": "auto identity = get_window_app_identity(window);\nauto key = normalize_app_history_key(identity.processPath, identity.appUserModelId);\n...\nauto history = m_history.find(key);\n...\njson.SetNamedValue(AppPathID, json::value(identity.processPath));\nif (!identity.appUserModelId.empty())\n{\n    json.SetNamedValue(AppUserModelIdID, json::value(identity.appUserModelId));\n}",
+        "edge_cases": [
+          "If an old history entry exists for msedge.exe without AUMID, do not lose it abruptly; migrate on next write after a richer identity is observed.",
+          "If SHGetPropertyStoreForWindow does not return an AUMID for a particular host window, fall back cleanly to processPath so classic apps remain unchanged."
+        ],
+        "tests": [
+          "Add a regression test that writes two app-zone-history entries with the same process path but different AUMIDs and verifies they restore separately.",
+          "Add a fallback test proving a legacy process-path-only entry is still returned when no richer identity exists."
+        ]
+      }
+    ],
+    "verify": [
+      "Build FancyZones and run the existing AppZoneHistory unit tests after adding path-plus-AUMID coverage.",
+      "Install two Edge PWAs, assign each to a different zone, close them, and relaunch them individually to verify each one reopens in its own saved zone.",
+      "Retest a normal Win32 app and a UWP-hosted app to confirm existing path-only restore behavior still works when no AUMID is available."
+    ],
+    "risks": [
+      "Changing the persisted history key format can strand or misread existing app-zone-history.json entries if legacy fallback is not preserved.",
+      "Window AUMID discovery can fail for some host windows; the implementation must degrade to process-path behavior instead of dropping history.",
+      "Using a richer identity only for some apps can create duplicates if normalization between old and new keys is inconsistent."
+    ],
+    "alternatives": [
+      "Keep keying only by process path and special-case msedge.exe with command-line parsing; rejected because it would be brittle and still miss other shared-host app models.",
+      "Key by window title; rejected because titles are user-visible, localized, and unstable across sessions."
+    ]
+  }
 }

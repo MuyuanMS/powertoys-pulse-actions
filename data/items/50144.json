@@ -1,73 +1,88 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50144,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "agent",
-  "pending_author": false,
-  "generated_at": "2026-09-02T07:20:00Z",
-  "evaluated_at": "2026-09-02T07:20:00Z",
+  "stage": "awaiting_author_information",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-26T15:24:16Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50144",
   "title": "Render svg preview images in File Explorer is too slow",
-  "author": "sebasav182",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0,
-  "confidence": "Medium",
-  "status": {
-    "glyph": "🛠️",
-    "label": "Performance design investigation queued",
-    "detail": "The report has a clear 50+ SVG workload and screenshot, but no maintainer action is defensible until profiling separates process startup, rendering, and Explorer scheduling costs."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Continue SVG thumbnail performance design",
-    "reason": "Develop profiled design evidence before exposing an approve_design action."
-  },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The workload and latency are clear enough for design work, and source inspection identifies the synchronous per-thumbnail external-renderer path as the first area to profile.",
+    "status": "needs_information",
+    "rationale": "The report clearly says first-load SVG thumbnails are too slow, but it does not provide representative SVGs or a current-build confirmation, and SVG complexity heavily affects whether the main cost is WebView2 startup, file complexity, or both.",
     "evidence": [
-      "The reporter says the first visit to a directory with at least 50 SVG files renders thumbnails one by one at about 4-5 seconds each.",
-      "The issue has no comments, assignees, or linked fix as of the forced rerun.",
-      "SvgThumbnailProvider::GetThumbnail writes each stream to a temporary SVG, launches PowerToys.SvgThumbnailProvider.exe, waits with WaitForSingleObject(INFINITE), then loads a temporary BMP."
+      "The report says 50+ SVG thumbnails render one by one at 4-5 seconds each on first folder open.",
+      "SvgThumbnailProvider.cs creates a fresh WebView2 instance, waits for navigation, captures a preview, and blocks synchronously for each thumbnail request.",
+      "No sample SVGs or current-version confirmation are attached."
     ],
-    "recommended_action": "Continue a profiled implementation-grade design covering process reuse or in-process rendering, timeout/cancellation, Explorer concurrency, cache behavior, and representative SVG throughput tests.",
-    "evaluated_at": "2026-09-02T07:20:00Z",
+    "recommended_action": "Ask for representative SVG samples and current-version confirmation before selecting a fix path.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-26T15:24:16Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A thumbnail-pipeline fix is plausible, but sample files are needed before choosing between cold-start caching and SVG-complexity work.",
+    "existing_fix_urls": []
+  },
   "issue_context": {
-    "summary": "SVG thumbnail generation is extremely slow for a folder of many files, and the provider pays a synchronous external-process and temporary-file handoff for each thumbnail.",
+    "summary": "Opening a folder with many SVG files is reported to generate thumbnails one by one at several seconds each, but the thread does not include sample files or a current-build confirmation.",
     "known_information": [
-      "The author supplied version 0.100.2, Windows 11 25H2, workload size, observed latency, and a screenshot.",
-      "The delay occurs on the first directory visit while thumbnails are generated.",
-      "The native shell thumbnail provider synchronously waits for a managed renderer process for each request.",
-      "No comments, assignees, cross-references, or closing PRs are attached to the issue."
+      "The issue targets File Explorer thumbnail preview on PowerToys 0.100.2.",
+      "A screenshot attachment shows the scenario is about many SVG thumbnails in one folder.",
+      "Current SvgThumbnailProvider spins up WebView2 per thumbnail request."
     ],
     "inferences": [
-      "Per-request process startup and temporary-file handoff may be a major cost, but profiling is needed before calling that the root cause.",
-      "Explorer scheduling and cache behavior may also contribute, so unbounded parallel rendering would be risky without design validation."
+      "Cold-start WebView2 cost is likely part of the symptom.",
+      "Representative SVGs are still needed to estimate how much file complexity contributes."
     ],
-    "analysis": "This is actionable for design investigation, not for an immediate maintainer action. The artifact should not expose an approve_design action until there is measured evidence and a concrete implementation plan.",
+    "analysis": "This issue is not blocked on generic logs; it needs concrete sample files and current-version confirmation.",
     "initial_investigation": [
-      "Forced 2026-09-02 pass read the complete issue body, current labels, empty assignee list, and timeline links; there are no issue comments or linked work.",
-      "Read src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProvider.cpp: GetThumbnail creates a temporary SVG, ShellExecuteEx launches PowerToys.SvgThumbnailProvider.exe, waits indefinitely, and reads the generated BMP.",
-      "Confirmed this pass found a plausible cost center but no profiler data, duplicate, assignee, or existing fix PR.",
-      "Forced second pass on 2026-09-02 re-read the full report, labels, empty assignee list, and timeline and checked provider-file history; no newer performance fix or duplicate changes the need for measured investigation."
+      "Reviewed the issue body and attachment reference.",
+      "Reviewed src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.cs and confirmed the provider spins up WebView2 per thumbnail and waits synchronously for capture completion."
     ],
     "information_gaps": [
       {
-        "why_needed": "The design must target the dominant cost and avoid unsafe speculative parallelism in a shell extension.",
-        "information": "A representative profile on current stable/main separating process startup, rendering, disk handoff, cache hit/miss, and Explorer request scheduling time.",
-        "how_to_collect": "Use provider logging/profiling with a representative 50-file SVG directory during full design investigation."
+        "evidence_type": "sample_file",
+        "information": "Two or three representative SVG files from the slow folder, or a synthetic equivalent that reproduces the delay.",
+        "why_needed": "The file content determines whether the bottleneck is mostly WebView2 startup or SVG render complexity.",
+        "how_to_collect": "Please upload 2-3 non-sensitive SVG files through the GitHub web UI, or share a synthetic SVG set with the same characteristics that reproduces the slowdown."
+      },
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Whether the same folder still reproduces the slowdown on the latest stable PowerToys build.",
+        "why_needed": "The issue was filed on 0.100.2, and a current-build confirmation may rule out already-shipped improvements.",
+        "how_to_collect": "Please update to the latest stable release if possible and confirm whether the same folder still renders thumbnails at the same speed."
       }
     ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "ri50144",
+      "type": "request_info",
+      "label": "Request representative SVG samples",
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50144,
+        "body": "Thanks for quantifying the slowdown as 4-5 seconds per SVG on the first folder open. To choose the right thumbnail-pipeline fix, please provide:\n\n1. Two or three representative SVG files from the slow folder, or a synthetic equivalent that reproduces the same delay. Please upload them through the GitHub web UI.\n2. Please confirm whether the same folder still shows the slowdown on the latest stable PowerToys build.\n\nThe sample files will tell us whether the main cost is WebView2 startup, SVG complexity, or both."
+      }
+    }
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Representative SVG inputs are still missing."
+  },
+  "confidence": {
+    "score": 49,
+    "level": "red",
+    "rationale": "Code path is clear, but the missing SVG samples leave the bottleneck ambiguous."
+  }
 }

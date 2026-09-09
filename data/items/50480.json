@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 5,
+  "id": "pr-50480",
+  "number": 50480,
+  "kind": "pr",
+  "track": "review",
+  "stage": "review_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-09T14:47:03.613Z",
+  "evaluated_at": "2026-09-09T14:47:03.613Z",
+  "source_updated_at": "2026-09-09T10:08:07Z",
+  "head_sha": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
+  "title": "feat(mwb): improve handling of unexpected settings-sync callers",
+  "url": "https://github.com/microsoft/PowerToys/pull/50480",
+  "repository": "microsoft/PowerToys",
+  "author": "yeelam-gordon",
+  "authorAssociation": "MEMBER",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Product-Mouse Without Borders",
+    "Ready for review"
+  ],
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "summary": "Fresh resume state for PR 50480 did not exist, so this drain mirrored the PR to fork branch pr-iterate/50480, built the current-source MWB/settings projects in the review local checkout, processed every Copilot thread to convergence, and ended on a fresh zero-new-comment Copilot review for fork head 6666dde08f4b2c9481868c71b75e57218efa4e7e. The current upstream head c431c370bb9ebd8fd260874c8e716b73e35bf17f is still unchanged and review_ready, with a request-changes draft prepared for four validated follow-up fixes: cached offline revocation, tighter rejection/error throttling, accepted-only peer verification caching, and deterministic certificate-fixture validity windows.",
+  "status": {
+    "glyph": "READY",
+    "label": "Review ready — four follow-up fixes drafted",
+    "detail": "Fork PR 733 received a fresh Copilot review at 2026-09-09T14:37:34Z for exact fork head 6666dde08f4b2c9481868c71b75e57218efa4e7e with zero new published comments. All Copilot threads are resolved, the review local checkout is clean, upstream CI/CLA remain green on c431c370bb9ebd8fd260874c8e716b73e35bf17f, and targeted MWB/settings build-and-test validation passed on the fork review branch."
+  },
+  "next_action": {
+    "glyph": "REVIEW",
+    "label": "Review the drafted request-changes action",
+    "reason": "Publishing these current-head findings to microsoft/PowerToys still requires an explicit approval decision and one more live freshness check at post time."
+  },
+  "blockers": [],
+  "actions": [
+    {
+      "id": "request-changes-50480",
+      "type": "request_changes",
+      "label": "Request four MWB IPC follow-up fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50480,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
+        "body_prefix": "Thanks for hardening the Mouse Without Borders Settings IPC path. I validated the current head and found four follow-up fixes that should land before merge."
+      },
+      "note": "Do not post without explicit approval and a final upstream freshness check."
+    }
+  ],
+  "proposed_comments": [
+    {
+      "id": "enforce-cached-offline-revocation",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Honor cached revocation when verifying the peer signer",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Honor cached revocation when verifying the peer signer\n\n**Severity:** `high`\n\nThe new peer verifier currently disables revocation in the custom signer chain, so a binary signed with the same PowerToys leaf would still pass after that certificate or key is revoked. Please mirror the existing native verifier here: use cached/offline revocation, reject known revocation, and tolerate only the expected unknown/offline revocation states so the check stays network-free without trusting a revoked signer.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The upstream file still sets X509RevocationMode.NoCheck, while the converged fork branch switches to cached offline revocation and the refreshed Copilot loop plus targeted tests stay green."
+      }
+    },
+    {
+      "id": "throttle-settings-ipc-retry-logs",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Throttle the repeated IPC rejection and retry log paths",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Throttle the repeated IPC rejection and retry log paths\n\n**Severity:** `medium`\n\nRejected or squatted pipe connections can currently reconnect in a tight loop and emit a log entry on every attempt. Please keep the retry/backoff behavior, but rate-limit both the rejected-client log and the exception retry log by time so an unexpected same-user caller cannot drive sustained CPU churn and unbounded log growth.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current review branch adds a 250 ms backoff plus strict time-based throttling for both rejection and exception paths, and the final fresh Copilot review no longer raises the resource-growth issue."
+      }
+    },
+    {
+      "id": "cache-only-accepted-peer-processes",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Cache only accepted peer verification results by process instance",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Cache only accepted peer verification results by process instance\n\n**Severity:** `medium`\n\nThe current implementation rebuilds signer trust on every reconnect, but an unbounded cache of rejected callers would let short-lived unexpected processes accumulate state for the lifetime of MWB. Cache the verified peer verdict by PID plus process creation time for the expected Settings/MWB pair, and retain only accepted entries so reconnects stay cheap without turning rejected callers into a memory-growth vector.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The converged fork branch proves that accepted-only PID+creation-time caching addresses both repeated signature work and cache growth, and Copilot accepted the change on the final zero-comment pass."
+      }
+    },
+    {
+      "id": "bind-child-cert-validity-to-issuer",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Keep generated certificate fixtures inside the issuer validity window",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "### Keep generated certificate fixtures inside the issuer validity window\n\n**Severity:** `medium`\n\nThe new certificate-building helpers derive child certificates from `DateTimeOffset.UtcNow.AddDays(7)`. Near a second boundary, that can make the child `notAfter` slightly later than the issuer's `NotAfter`, which turns the new revocation-chain test into a flaky failure. Bind each child certificate's validity window to the issuing certificate instead of recomputing it from the current clock.",
+      "confidence": {
+        "score": 99,
+        "rationale": "This failure reproduced directly during targeted validation on the current head, and the converged fork branch fixed it by deriving each child notAfter from the issuer certificate before the rerun passed 23 of 23 settings IPC tests."
+      }
+    }
+  ],
+  "phase0": {
+    "author": "yeelam-gordon",
+    "author_association": "MEMBER",
+    "bar": "member-authored PR; routine community process nags skipped",
+    "disposition": "Proceed",
+    "owes": "maintainer review workflow",
+    "gates_tripped": [],
+    "note": "This is a member-authored MWB IPC hardening PR. CLA and all current required checks are green, the description already documents automated coverage plus the remaining manual gap, and the only intake note is the non-blocking reminder to add a closing issue reference.",
+    "evidence": [
+      "authorAssociation is MEMBER.",
+      "Upstream labels remain Product-Mouse Without Borders and Ready for review.",
+      "PowerToys CI x64/arm64, dependency review, PR intake, telemetry, and CLA are all successful on the live head.",
+      "The PR body already records focused automated tests, private two-process named-pipe checks, and a manual unsigned Debug tryout while explicitly noting that two-machine and service-mode scenarios were not exercised."
+    ]
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "upstream_updated_at": "2026-09-09T10:08:07Z",
+    "upstream_head_sha": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
+    "changed_file_count": 8,
+    "additions": 1980,
+    "deletions": 9,
+    "issue_comment_count": 1,
+    "review_count": 0,
+    "review_comment_count": 0,
+    "unresolved_review_thread_count": 0,
+    "review_decision": "REVIEW_REQUIRED",
+    "merge_state": "BLOCKED",
+    "labels": [
+      "Product-Mouse Without Borders",
+      "Ready for review"
+    ],
+    "reported_checks": {
+      "status": "passed",
+      "failed": 0,
+      "pending": 0,
+      "passed": [
+        "PowerToys CI",
+        "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
+        "PowerToys CI (Build arm64 Build Release_arm64)",
+        "PowerToys CI (Build arm64 Resolve affected UI test projects)",
+        "PowerToys CI (Build x64 Build Release_x64)",
+        "PowerToys CI (Build x64 Resolve affected UI test projects)",
+        "dependency-review",
+        "pr-intake",
+        "detect-telemetry-events",
+        "license/cla"
+      ],
+      "summary": "Current-head PowerToys CI x64 and arm64 builds, dependency review, PR intake, telemetry detection, and CLA are successful."
+    }
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-09T14:47:03.613Z",
+    "head_sha": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
+    "source_updated_at": "2026-09-09T10:08:07Z",
+    "exact_scope_verified": true,
+    "fork_review_commit": "6666dde08f4b2c9481868c71b75e57218efa4e7e",
+    "fork_review_completed_at": "2026-09-09T14:37:34Z"
+  },
+  "workflow": {
+    "phase": "converged_draft_ready",
+    "resume_action": "fresh-mirror",
+    "reviewed_upstream_head": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
+    "fork_pr": 733,
+    "fork_branch": "pr-iterate/50480",
+    "final_fork_head": "6666dde08f4b2c9481868c71b75e57218efa4e7e",
+    "unresolved_copilot_threads": 0,
+    "fresh_copilot_result": {
+      "status": "zero_new_comments",
+      "latest_review_submitted_at": "2026-09-09T14:37:34Z",
+      "latest_review_commit": "6666dde08f4b2c9481868c71b75e57218efa4e7e",
+      "published_comments": 0
+    },
+    "review_findings": {
+      "total": 7,
+      "fixed": 6,
+      "answered_without_code_change": 1,
+      "answered_note": "The first transient-disposed-stream concern was reproduced locally and answered on the fork without a code change; subsequent rounds produced the accepted fixes captured in the converged net diff."
+    },
+    "fork_writes": [
+      "Created fork PR 733 from pr-iterate/50480 after mirroring the upstream branch.",
+      "Pushed review-fix commit 89b750734fa55d9dff91d35681831c7330cc1972 (Harden MWB IPC review fixes).",
+      "Pushed review-fix commit 6666dde08f4b2c9481868c71b75e57218efa4e7e (Refine MWB IPC review fixes).",
+      "Replied to every Copilot thread on the fork PR and resolved all six published Copilot threads.",
+      "Requested successive Copilot reviews until the latest fresh review on the final fork head returned zero new comments."
+    ],
+    "upstream_writes": []
+  },
+  "validation": {
+    "status": "passed",
+    "configuration": "Debug x64",
+    "builds": [
+      {
+        "name": "Settings.UI.Library.csproj",
+        "result": "passed",
+        "detail": "Built the current-source review branch with MSBuild /p:BuildProjectReferences=false after seeding unchanged dependency outputs from C:\\PowerToys into the review local checkout."
+      },
+      {
+        "name": "MouseWithoutBorders.csproj",
+        "result": "passed",
+        "detail": "Built the current-source MWB app project from the review local checkout against unchanged seeded dependency outputs."
+      },
+      {
+        "name": "PowerToys.Settings.csproj",
+        "result": "passed",
+        "detail": "Built the current-source Settings project from the review local checkout against unchanged seeded dependency outputs."
+      },
+      {
+        "name": "MouseWithoutBorders.UnitTests.csproj",
+        "result": "passed"
+      },
+      {
+        "name": "Settings.UI.UnitTests.csproj",
+        "result": "passed"
+      }
+    ],
+    "tests": [
+      {
+        "name": "MouseWithoutBorders IPC identity + reconnect targeted tests",
+        "result": "passed",
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "name": "Settings UI IPC security + signer targeted tests",
+        "result": "passed",
+        "passed": 23,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "outputs": {
+      "mouseWithoutBordersDll": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.MouseWithoutBorders.dll",
+      "settingsDll": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\PowerToys.Settings.dll",
+      "settingsLibDll": "<PowerToysCheckout>\\src\\settings-ui\\Settings.UI.Library\\bin\\x64\\Debug\\net10.0-windows10.0.26100.0\\win-x64\\PowerToys.Settings.UI.Lib.dll",
+      "mouseWithoutBordersUnitTestDll": "<PowerToysCheckout>\\src\\modules\\MouseWithoutBorders\\MouseWithoutBorders.UnitTests\\bin\\x64\\Debug\\net10.0-windows10.0.26100.0\\win-x64\\MouseWithoutBorders.UnitTests.dll",
+      "settingsUnitTestDll": "<PowerToysCheckout>\\Debug\\x64\\tests\\SettingsTests\\net10.0-windows10.0.26100.0\\Settings.UI.UnitTests.dll"
+    },
+    "diff_check": "passed",
+    "notes": [
+      "An initial build-essentials attempt was interrupted by a shared vcpkg registry lock and an inherited blank GIT_CONFIG_VALUE_2 environment variable. The final validation therefore rebuilt the changed current-source projects directly with MSBuild after clearing the inherited git config environment and seeding unchanged dependency outputs from C:\\PowerToys.",
+      "The targeted settings IPC test pass exposed a deterministic child-certificate validity bug on the current upstream head; the converged fork fixes corrected both intermediate and leaf helper validity windows before the rerun passed.",
+      "git diff --check passed and the review local checkout remained clean after the final rerereview request."
+    ]
+  },
+  "checks": {
+    "status": "passed",
+    "failed": 0,
+    "pending": 0,
+    "passed": [
+      "PowerToys CI",
+      "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
+      "PowerToys CI (Build arm64 Build Release_arm64)",
+      "PowerToys CI (Build arm64 Resolve affected UI test projects)",
+      "PowerToys CI (Build x64 Build Release_x64)",
+      "PowerToys CI (Build x64 Resolve affected UI test projects)",
+      "dependency-review",
+      "pr-intake",
+      "detect-telemetry-events",
+      "license/cla"
+    ]
+  },
+  "upstream_writes": [],
+  "dashboard_modified": false
+}

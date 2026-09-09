@@ -1,71 +1,89 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50130,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-02T07:20:00Z",
-  "evaluated_at": "2026-09-02T07:20:00Z",
+  "stage": "owned_elsewhere",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-26T09:09:04Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50130",
   "title": "FancyZones exclude by pressing shift during drag no longer working",
-  "author": "Chrisch-Tea",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Product-FancyZones",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 1,
-  "confidence": "High",
-  "summary": "A recent FancyZones input-hook change appears to have regressed zone exclusion when Shift is pressed after a drag begins.",
-  "status": {
-    "glyph": "🛠️",
-    "label": "Regression design ready",
-    "detail": "The report distinguishes pre-held Shift from mid-drag Shift and source shows the consumed bare-Shift path updates DraggingState directly."
-  },
-  "next_action": {
-    "glyph": "🧭",
-    "label": "Design and test Shift state fix",
-    "reason": "Validate key state propagation through the drag lifecycle and cover the mid-drag exclusion regression."
-  },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The reproduction is precise, the reporter says the previous build worked, and the source path around consumed Shift during WindowMouseSnap is narrow enough for focused design.",
+    "status": "duplicate_or_handled",
+    "rationale": "Current main already contains a direct fix for the first Shift-triggered FancyZones update path, and git history ties that change to PR #49985.",
     "evidence": [
-      "On 0.101.2362.0, pressing Shift during a Notepad drag no longer excludes the window from zoning when hold-shift-to-enable-zones is disabled.",
-      "Pre-held Shift still works, which narrows the defect to a mid-drag state transition.",
-      "FancyZones::OnKeyDown consumes bare Shift while m_windowMouseSnapper exists and calls DraggingState.SetShiftState(true).",
-      "DraggingState::SetShiftState updates m_shift and invokes the key-update callback that recomputes drag state."
+      "The report says Shift is pressed after the drag has already started.",
+      "WindowMouseSnap.cpp now switches snapping mode before highlight calculation so the first Shift-triggered update is not lost.",
+      "git log -L on WindowMouseSnap.cpp traces that change to PR #49985."
     ],
-    "recommended_action": "Continue focused regression design and tests for Shift press/release propagation during active move-size drag.",
-    "evaluated_at": "2026-09-02T07:20:00Z",
+    "recommended_action": "Point the reporter to the existing fix instead of starting duplicate design work.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-26T09:09:04Z"
   },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "An existing upstream fix already targets the reporter’s exact first-Shift-during-drag failure mode.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49985",
+      "https://github.com/microsoft/PowerToys/commit/d68980a81bb8de144bdec998a114e948bf68c563"
+    ]
+  },
   "issue_context": {
-    "summary": "FancyZones no longer honors exclusion when Shift is introduced mid-drag, while pre-held Shift remains correct.",
+    "summary": "The open issue matches a FancyZones bug already fixed on main: the first Shift press during an active drag could be discarded before zone highlighting updated.",
     "known_information": [
-      "Hold Shift to activate zones is disabled, so Shift should suppress zoning.",
-      "The reporter used Notepad on Windows 11 build 26200.9106, German Windows, system installation, user/autostart.",
-      "Pre-held Shift works; pressing Shift after the drag starts fails.",
-      "The issue was not present in the previous build according to the reporter.",
-      "There are no assignees, duplicates, or linked fixes on the issue."
+      "The problem happens only when Shift is pressed mid-drag.",
+      "The reporter says it worked in the previous build.",
+      "Current main contains a comment in WindowMouseSnap.cpp describing exactly this lost first Shift-triggered update."
     ],
     "inferences": [
-      "The consumed key path may update press state but not all drag/end paths may observe the updated state at drop time.",
-      "A release-state or callback-ordering gap remains possible and should be tested rather than assumed."
+      "The issue likely targets a released build that predates the main-branch fix.",
+      "A maintainer follow-up should reference the existing fix rather than reopen design work."
     ],
-    "analysis": "The report already supplies the decision-changing timing distinction. Source confirms a special mid-drag Shift path, so a targeted design and UI test plan is appropriate.",
+    "analysis": "This is handled work, not a fresh design candidate. The live source and file history are specific enough to publish it as already covered by existing code.",
     "initial_investigation": [
-      "Forced 2026-09-02 pass read the complete issue body, one triage comment, labels, empty assignee list, and timeline links; no linked work appeared.",
-      "Read src/modules/fancyzones/FancyZonesLib/FancyZones.cpp around the bare-Shift suppression path during WindowMouseSnap.",
-      "Read src/modules/fancyzones/FancyZonesLib/DraggingState.cpp: SetShiftState updates m_shift and triggers the key-update callback used to recompute dragging state.",
-      "Forced second pass on 2026-09-02 re-read the full report, automated triage comment, labels, empty assignee list, and timeline and checked current FancyZones history; no linked fix or duplicate supersedes this precise mid-drag regression."
+      "Reviewed the issue body and FancyZones behavior description.",
+      "Reviewed WindowMouseSnap.cpp and DraggingState.cpp.",
+      "Used git log -L to trace the first-Shift-triggered update fix to PR #49985."
     ],
     "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "pc50130",
+      "type": "post_comment",
+      "label": "Explain upcoming FancyZones fix",
+      "note": "References the existing fix instead of starting duplicate design work.",
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50130,
+        "body": "Thanks for the precise repro. Current main already contains a FancyZones fix for the first Shift-triggered update during an active drag, tracked in PR #49985. The change moves snapping-mode activation earlier so the first Shift press is not discarded. A maintainer follow-up should point to that existing fix and ask the reporter to verify it in the next build that includes PR #49985."
+      }
+    }
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Handled by existing upstream work."
+  },
+  "confidence": {
+    "score": 90,
+    "level": "green",
+    "rationale": "Source and history match the exact failure mode."
+  },
+  "linked_work": [
+    {
+      "type": "pull_request",
+      "number": 49985,
+      "url": "https://github.com/microsoft/PowerToys/pull/49985",
+      "status": "merged"
+    }
+  ]
 }

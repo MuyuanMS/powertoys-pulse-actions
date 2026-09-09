@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 5,
+  "kind": "issue",
+  "number": 50483,
+  "title": "CmdPal: Failing event handler blocks extension updates",
+  "url": "https://github.com/microsoft/PowerToys/issues/50483",
+  "generated_at": "2026-09-09T15:05:28.412Z",
+  "evaluated_at": "2026-09-09T15:05:28.412Z",
+  "source_updated_at": "2026-09-09T12:12:53Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [
+    "jiripolasek"
+  ],
+  "attachments": [],
+  "linked_refs": [
+    {
+      "type": "issue",
+      "number": 50485,
+      "title": "CmdPal: Prevent failing event handlers from blocking updates",
+      "url": "https://github.com/microsoft/PowerToys/pull/50485"
+    }
+  ],
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Link active CmdPal fix PR",
+      "note": "Draft a maintainer note that points the issue to the active upstream PR.",
+      "comment": {
+        "body": "This report already has active upstream engineering coverage in PR 50485 (`CmdPal: Prevent failing event handlers from blocking updates`). The proposed change matches the failing path described here: it isolates each notification subscriber so one extension-side failure does not block later list or dock listeners, and it removes disconnected RPC handlers from the invocation list. I would avoid parallel design work and track this issue against that PR instead."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Command Palette extension can stay responsive while later list or dock updates go stale if one notification subscriber throws and blocks the rest of the dispatch fan-out.",
+    "known_information": [
+      "The issue was opened from main/dev-build context and is already assigned to jiripolasek.",
+      "A same-day linked PR, 50485, says it handles per-subscriber failures separately and removes disconnected RPC handlers.",
+      "The current SDK still calls PropChanged and ItemsChanged through shared delegates in src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/BaseObservable.cs, ContentPage.cs, and CommandProvider.cs."
+    ],
+    "inferences": [
+      "The stale-list/stale-dock symptom is most consistent with one failing subscriber aborting the shared event invocation chain before later listeners run.",
+      "Because an upstream PR already targets that exact dispatch path, additional dashboard design work would likely duplicate live owner work."
+    ],
+    "analysis": "This is handled rather than missing-triage work. The current code shape matches the report, but the active upstream PR already captures the intended remediation: isolate per-subscriber failures and prune dead handlers so later subscribers still receive update notifications.",
+    "initial_investigation": [
+      "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/BaseObservable.cs invokes PropChanged directly inside a try/catch, which hides failures but does not isolate individual subscribers.",
+      "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/ContentPage.cs and CommandProvider.cs do the same for ItemsChanged.",
+      "PR 50485 is open at https://github.com/microsoft/PowerToys/pull/50485 with a title and summary that explicitly match this issue."
+    ],
+    "information_gaps": []
+  },
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The issue already has an active upstream fix attempt: PR 50485 explicitly closes this report and targets the failing-notification path in the Command Palette extension SDK.",
+    "evidence": [
+      "Issue 50483 is assigned to jiripolasek and cross-references PR 50485.",
+      "PR 50485 says it dispatches property and item notifications independently per subscriber so one failure does not block later listeners.",
+      "The current SDK raises PropChanged and ItemsChanged directly from shared delegates in BaseObservable.cs, ContentPage.cs, and CommandProvider.cs, matching the reported failure mode where one bad handler can block later subscribers."
+    ],
+    "recommended_action": "Point maintainers to PR 50485 instead of opening parallel design work."
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "A public upstream pull request is already open for the exact failing notification-dispatch path.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50485"
+    ]
+  }
+}

@@ -1,18 +1,14 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50146,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-02T07:20:00Z",
-  "evaluated_at": "2026-09-02T07:20:00Z",
+  "stage": "triage",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-26T18:35:03Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50146",
   "title": "PowerToys often absent from system tray first thing in the morning",
-  "author": "meta-ed",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
@@ -20,50 +16,76 @@
     "Product-General"
   ],
   "assignees": [],
-  "comments": 2,
-  "confidence": "Medium-high",
-  "summary": "The overnight runner disappearance is repeatable, includes a diagnostic archive and environment details, and has moved to Needs-Team-Response.",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design investigation queued",
-    "detail": "The report contains a bounded overnight-idle scenario and diagnostics sufficient for deeper runner-lifetime investigation without another generic information request."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Queue a runner-lifetime design investigation that correlates the actual exit time across runner, module, event-log, update, and scheduled-task evidence before selecting a fix.",
-    "reason": "The report contains a bounded overnight-idle scenario and diagnostics sufficient for deeper runner-lifetime investigation without another generic information request."
-  },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report contains a bounded overnight-idle scenario and diagnostics sufficient for deeper runner-lifetime investigation without another generic information request.",
+    "status": "reproducible",
+    "rationale": "The issue includes a bugreport ZIP, a concrete overnight-idle scenario, and logs showing an elevated runner restart plus a captured runner-exit observation in module logs.",
     "evidence": [
-      "The runner, tray icon, and modules such as FancyZones are absent after leaving the logged-in computer idle overnight.",
-      "The reporter ruled out a system reboot and supplied OS, installation, elevation, power-plan, and diagnostic information.",
-      "Automated analysis cited recurring ITaskFolder errors, but the reporter clarified that those dates did not match the latest occurrence."
+      "The reporter says PowerToys is often absent from the tray in the morning after an overnight idle period with no reboot.",
+      "The attached bugreport contains runner-log_2026-08-26.log showing an elevated restart sequence.",
+      "FancyZones logs in the same bugreport include “PowerToys runner exited.”"
     ],
-    "recommended_action": "Queue a runner-lifetime design investigation that correlates the actual exit time across runner, module, event-log, update, and scheduled-task evidence before selecting a fix.",
-    "evaluated_at": "2026-09-02T07:20:00Z",
+    "recommended_action": "Run a maintainer-side overnight repro focused on silent runner exit while elevated.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-26T18:35:03Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report is actionable for local reproduction, but the current evidence is not yet specific enough for one lifecycle fix.",
+    "existing_fix_urls": []
+  },
   "issue_context": {
-    "summary": "The overnight runner disappearance is repeatable, includes a diagnostic archive and environment details, and has moved to Needs-Team-Response.",
+    "summary": "PowerToys sometimes disappears from the tray overnight on an elevated system install, and the attached bugreport already shows at least one runner-exit observation in module logs.",
     "known_information": [
-      "The issue occurs while the computer remains logged in and idle overnight.",
-      "PowerToys runs system-wide and elevated on Windows 11 25H2.",
-      "The latest recurrence occurred overnight August 25–26, later than the ITaskFolder entries highlighted by automation."
+      "The machine stays logged in overnight and the reporter verified there was no reboot.",
+      "PowerToys is configured to run elevated and show the tray icon.",
+      "The attached bugreport contains runner logs and module logs from the affected environment."
     ],
     "inferences": [
-      "The cited scheduled-task errors may be unrelated background noise because their timestamps do not match the latest failure.",
-      "An overnight power, session, update, or process-lifetime transition remains plausible but unconfirmed."
+      "The overnight failure is likely a lifecycle or restart-path issue in the elevated runner.",
+      "A controlled overnight repro with current logs is more useful than another generic reporter request."
     ],
-    "analysis": "The issue is actionable for investigation, but the existing automated correlation must not be promoted to root cause. The first design step is to establish the actual termination path and timestamp from the supplied evidence.",
+    "analysis": "The issue is best represented as reproducible. The evidence is strong enough for a maintainer-run long-duration scenario, but still too broad for an honest fix plan.",
     "initial_investigation": [
-      "src/runner/auto_start_helper.cpp contains the ITaskFolder access paths mentioned by the diagnostic summary.",
-      "The author's clarification weakens a direct causal link between those errors and the latest disappearance.",
-      "No assignee, duplicate resolution, or linked fix appears in the live timeline.",
-      "Forced second pass on 2026-09-02 re-read the full report, both comments, labels, empty assignee list, and timeline, then rechecked recent runner history including the autorun-task permission change in #48739; it does not establish a cause for this overnight disappearance."
+      "Reviewed the issue body and bugreport ZIP.",
+      "Reviewed runner-log_2026-08-26.log and confirmed an elevated restart sequence.",
+      "Reviewed FancyZones logs and confirmed a captured “PowerToys runner exited” event."
     ],
     "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "rp50146",
+      "type": "reproduce",
+      "label": "Reproduce overnight tray disappearance",
+      "note": "Exercise the elevated runner lifecycle under an overnight idle scenario.",
+      "reproduce": {
+        "module": "Runner / elevated lifecycle",
+        "version": "PowerToys 0.101.2262 or newer current main build",
+        "prerequisites": [
+          "System installation with PowerToys configured to run elevated at startup.",
+          "Tray icon enabled and FancyZones enabled so module health is obvious.",
+          "Leave the machine logged in and idle overnight without rebooting."
+        ],
+        "steps": [
+          "Start PowerToys elevated and verify the tray icon is present.",
+          "Leave the machine logged in and idle overnight.",
+          "In the morning, verify whether the tray icon and FancyZones are still active.",
+          "If PowerToys has disappeared, immediately collect current runner and module logs and compare them with the attached runner-exit evidence."
+        ],
+        "expected_result": "The tray icon and modules should remain available after the overnight idle period without a silent runner exit.",
+        "attachments": [
+          "https://github.com/user-attachments/files/31479975/PowerToysReport_2026-08-26-11-20-13.zip"
+        ]
+      }
+    }
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Next best step is controlled reproduction."
+  },
+  "confidence": {
+    "score": 73,
+    "level": "yellow",
+    "rationale": "Scenario and attached logs are concrete, but the terminating component is still not isolated."
+  }
 }

@@ -1,74 +1,207 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50138,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-02T07:20:00Z",
-  "evaluated_at": "2026-09-02T07:20:00Z",
+  "stage": "awaiting_design_approval",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-26T13:47:30Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50138",
   "title": "PowerToys Monaco Preview Handler displays UTF-16LE .reg files with NUL characters",
-  "author": "Jordi-PAPA",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Product-File Explorer",
     "Needs-Triage"
   ],
-  "comments": 2,
-  "confidence": "High",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable encoding defect",
-    "detail": "The reporter supplied a sample, workaround, and latest-version confirmation; source shows a decoded-text-to-original-encoding transport seam that needs design validation."
-  },
-  "next_action": {
-    "glyph": "🧭",
-    "label": "Complete encoding design",
-    "reason": "Specify the Monaco payload encoding contract and regression tests before approval."
-  },
+  "assignees": [],
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is reproducible on the latest stable version and source inspection identifies a focused encoding boundary suitable for implementation-grade design.",
+    "rationale": "The reporter supplied a minimal UTF-16LE .reg repro, confirmed the bug on 0.101.2362.0, and current Monaco preview code re-encodes decoded text with the original file encoding before handing it to HTML that always decodes the base64 bytes as UTF-8-style text.",
     "evidence": [
-      "The attached UTF-16LE .reg sample displays visible NUL markers in Monaco but displays correctly through the built-in Windows text preview handler.",
-      "The reporter manually updated to 0.101.2362.0 and confirmed the issue still reproduces.",
-      "MonacoPreviewHandlerControl decodes through CharsetDetector and StreamReader, then base64-encodes encodingToUse.GetBytes(fileContent); src/Monaco/index.html decodes PT_CODE as UTF-8-like percent-encoded bytes."
+      "Minimal.reg visibly contains UTF-16LE NUL bytes between characters.",
+      "The reporter confirmed the issue still reproduces on 0.101.2362.0.",
+      "MonacoPreviewHandlerControl.cs uses encodingToUse.GetBytes(fileContent).",
+      "src/Monaco/index.html decodes [[PT_CODE]] with decodeURIComponent(atob(...))."
     ],
-    "recommended_action": "Develop an implementation-grade design that normalizes the decoded text for Monaco transport and adds UTF-16LE/UTF-16BE/UTF-8 regression coverage.",
-    "evaluated_at": "2026-09-02T07:20:00Z",
+    "recommended_action": "Approve the UTF-8 normalization design and add a UTF-16LE regression test.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-26T13:47:30Z"
   },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the Monaco preview encoding mismatch between the C# producer and JavaScript bootstrapper.",
+    "existing_fix_urls": []
+  },
   "issue_context": {
-    "summary": "Monaco correctly receives a UTF-16LE Registry file but renders each zero byte as a visible NUL marker instead of normal decoded text.",
+    "summary": "Monaco Preview Handler successfully reads the UTF-16LE file into managed text, but then re-serializes that text back into UTF-16LE bytes even though the Monaco HTML bootstrap always decodes the payload as UTF-8-style text.",
     "known_information": [
-      "The issue includes a minimal UTF-16LE .reg reproduction archive and a workaround archive removing HKCU Monaco preview-handler overrides.",
-      "UTF-8 content renders correctly, and disabling Monaco lets the built-in Windows preview handler render the UTF-16LE file correctly.",
-      "The reporter confirmed the defect on PowerToys 0.101.2362.0 after manually updating.",
-      "There are no assignees, linked fixes, or comments after the latest-version confirmation."
+      "A minimal UTF-16LE .reg repro ZIP is attached.",
+      "The built-in Windows text preview handler renders the same file correctly.",
+      "The reporter manually updated to 0.101.2362.0 and confirmed the issue still reproduces there."
     ],
     "inferences": [
-      "The WebView payload likely expects UTF-8 byte semantics or decoded character text while receiving UTF-16LE bytes, which would explain alternating visible NUL markers.",
-      "Encoding detection may be succeeding; the defect may occur after decoding when the text is re-encoded for PT_CODE."
+      "The bug is in Monaco’s preview transport layer, not in Registry Editor or the Windows preview pane.",
+      "Any UTF-16 text path using the same bootstrap is at risk, not only .reg files."
     ],
-    "analysis": "The reporter closed the version and reproduction gaps. The source path gives a concrete hypothesis, so fast triage should route design work rather than ask for another diagnostic archive.",
+    "analysis": "This is the clearest implementation-grade design candidate in the batch because the attachment, managed preview control, and JavaScript bootstrapper all show the same mismatch.",
     "initial_investigation": [
-      "Forced 2026-09-02 pass read the complete issue body, both comments, labels, empty assignee list, and timeline links; no linked work appeared.",
-      "Read src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandlerControl.cs around CharsetDetector.DetectFromFile, StreamReader decoding, and Convert.ToBase64String(encodingToUse.GetBytes(fileContent)).",
-      "Read src/Monaco/index.html, where [[PT_CODE]] is decoded with atob plus decodeURIComponent over percent-encoded bytes.",
-      "Forced second pass on 2026-09-02 re-read the complete report, both comments, labels, empty assignee list, and timeline and checked Monaco handler history, including the prior UTF-8 BOM fix #39381; no linked fix addresses UTF-16 payload transport."
+      "Reviewed the issue body, reporter follow-up, and both attached ZIP files.",
+      "Confirmed the repro attachment contains UTF-16LE NUL bytes and the workaround ZIP only restores the built-in Windows text preview handler.",
+      "Reviewed MonacoPreviewHandlerControl.cs and src/Monaco/index.html end to end."
     ],
-    "information_gaps": [
-      {
-        "why_needed": "It determines whether the handler should always encode UTF-8 bytes, escape decoded Unicode text differently, or adjust the page decoder.",
-        "information": "The exact JavaScript decoding contract for the PT_CODE payload after decoded .NET text is injected.",
-        "how_to_collect": "Trace the Monaco index template payload decode and add round-trip tests for UTF-8, UTF-16LE with BOM, and UTF-16BE."
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve design for Issue 50138",
+      "confirm": true,
+      "comment": {
+        "body": "Approve the UTF-8 normalization design for Monaco Preview Handler issue 50138."
       }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Normalize Monaco preview text to UTF-8 before injecting into index.html",
+      "root_cause": "The preview control decodes UTF-16LE .reg files into a .NET string, then turns that string back into UTF-16LE bytes and embeds them into HTML that always interprets the base64 payload as UTF-8-style text.",
+      "plan": [
+        "Keep detected encoding only for reading the source file into a .NET string.",
+        "Serialize the resulting text to UTF-8 bytes when populating [[PT_CODE]], or teach the browser bootstrap to decode an explicit matching encoding.",
+        "Add a regression test for a UTF-16LE .reg preview."
+      ],
+      "verification": [
+        "Preview the attached UTF-16LE Minimal.reg file and confirm Monaco shows plain text without red NUL squares.",
+        "Preview a UTF-8 version of the same file and confirm current behavior stays intact."
+      ],
+      "confidence": {
+        "score": 92,
+        "level": "green",
+        "rationale": "The attachment, current source, and Monaco HTML bootstrap path all line up on one encoding mismatch."
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "MonacoPreviewHandlerControl reads the file with the detected encoding, but then serializes the resulting .NET string back into the original encoding when building [[PT_CODE]]. src/Monaco/index.html always decodes the base64 payload as UTF-8-style text, so UTF-16LE files surface their interleaved NUL bytes in the browser preview.",
+    "evidence": [
+      "[Observed] MonacoPreviewHandlerControl.cs sets _base64FileCode = Convert.ToBase64String(encodingToUse.GetBytes(fileContent)).",
+      "[Observed] src/Monaco/index.html decodes [[PT_CODE]] with decodeURIComponent(atob(base64code)...).",
+      "[Observed] The attached Minimal.reg file is UTF-16LE and contains NUL bytes between characters.",
+      "[Observed] The reporter confirmed the bug on 0.101.2362.0 and the built-in Windows preview handler renders the same file correctly."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandlerControl.cs",
+        "purpose": "Reads the source file and serializes it into the HTML bootstrap payload.",
+        "symbols": [
+          "MonacoPreviewHandlerControl.InitializeIndexFileAndSelectedFile"
+        ]
+      },
+      {
+        "path": "src/Monaco/index.html",
+        "purpose": "Bootstraps Monaco and decodes the injected base64 payload into editor text.",
+        "symbols": [
+          "base64code bootstrap script",
+          "code decode block"
+        ]
+      },
+      {
+        "path": "src/modules/previewpane/PreviewPane.UITests/FileExplorerAddonsTests.cs",
+        "purpose": "Natural location for a UTF-16LE Monaco preview regression test.",
+        "symbols": [
+          "MonacoPreviewShowsSyntaxHighlightedSource"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandlerControl.cs",
+        "symbols": [
+          "MonacoPreviewHandlerControl.InitializeIndexFileAndSelectedFile"
+        ],
+        "current_behavior": "The method reads the file into a managed string, then base64-encodes encodingToUse.GetBytes(fileContent).",
+        "change": "Keep the detected encoding only for reading the file. Serialize the already-decoded text to UTF-8 bytes before populating [[PT_CODE]], or pass explicit encoding metadata so producer and consumer agree.",
+        "code_block": "var fileContent = fileReader.ReadToEnd();\nvar payloadBytes = Encoding.UTF8.GetBytes(fileContent);\n_base64FileCode = Convert.ToBase64String(payloadBytes);",
+        "edge_cases": [
+          "Do not break UTF-8 files that already preview correctly.",
+          "Keep formatter output on the same normalized text path.",
+          "Preserve large-file handling and current settings flags."
+        ],
+        "tests": [
+          "Preview a UTF-16LE .reg fixture and assert the rendered header has no NUL placeholders.",
+          "Preview an existing UTF-8 source fixture and confirm unchanged rendering."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/Monaco/index.html",
+        "symbols": [
+          "base64code bootstrap script",
+          "code decode block"
+        ],
+        "current_behavior": "The browser bootstrap always converts the base64 payload with decodeURIComponent(atob(...)), which assumes UTF-8-style bytes.",
+        "change": "Either keep the bootstrap as-is and rely on UTF-8 producer bytes, or replace the decode block with an explicit TextDecoder-based path that documents the canonical payload encoding.",
+        "code_block": "var bytes = Uint8Array.from(atob(base64code), c => c.charCodeAt(0));\nvar code = new TextDecoder(\"utf-8\").decode(bytes);",
+        "edge_cases": [
+          "Do not regress large-file navigation.",
+          "Keep compatibility with the WebView2 runtime used by preview handlers."
+        ],
+        "tests": [
+          "Confirm the Monaco page still renders UTF-8 fixtures correctly.",
+          "Verify the UTF-16LE .reg fixture no longer renders NUL boxes."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/previewpane/PreviewPane.UITests/FileExplorerAddonsTests.cs",
+        "symbols": [
+          "MonacoPreviewShowsSyntaxHighlightedSource"
+        ],
+        "current_behavior": "UI coverage validates Monaco preview in general, but no regression test covers UTF-16LE text passed through the Monaco bootstrap.",
+        "change": "Add a UTF-16LE .reg fixture and extend Monaco preview coverage so the test asserts readable registry-header text instead of NUL-separated output.",
+        "code_block": "Open Explorer on the UTF-16LE fixture folder;\nselect the .reg file;\nassert the preview contains \"Windows Registry Editor Version 5.00\" without placeholder glyphs.",
+        "edge_cases": [
+          "Keep the fixture small and deterministic.",
+          "Prefer an assertion that still exercises the full preview bootstrap path."
+        ],
+        "tests": [
+          "Run the targeted Monaco preview UI test with the new UTF-16LE fixture.",
+          "Keep the existing Monaco syntax-highlight test green."
+        ]
+      }
+    ],
+    "verify": [
+      "Build PowerToys with the existing tools\\build\\build.cmd workflow so the Monaco preview handler and PreviewPane.UITests project are rebuilt together.",
+      "Run the targeted PreviewPane.UITests Monaco coverage with vstest.console.exe after locating the built PreviewPane.UITests.dll.",
+      "In Explorer, preview the attached UTF-16LE Minimal.reg file and confirm the Monaco preview shows readable text with no NUL squares.",
+      "Preview a UTF-8 file and confirm existing Monaco behavior is unchanged."
+    ],
+    "risks": [
+      "Changing the producer/consumer encoding contract could regress other non-UTF-8 files if only one side is updated.",
+      "A fixture-only test that does not exercise the HTML bootstrap would miss this failure mode."
+    ],
+    "alternatives": [
+      "Keeping producer bytes in the original encoding and teaching index.html to decode multiple formats adds unnecessary complexity for a path that already holds normalized managed text.",
+      "Switching .reg files back to the built-in Windows handler avoids the symptom but does not fix Monaco preview for other UTF-16 text files."
     ]
   },
-  "actions": [],
-  "assignees": []
+  "design_decision": {
+    "status": "selected",
+    "reason": "Exactly one issue was expanded to a full implementation-grade design in this batch."
+  },
+  "confidence": {
+    "score": 92,
+    "level": "green",
+    "rationale": "Repro attachment and source point at one concrete encoding mismatch."
+  },
+  "adversarial_review": {
+    "rounds": 1,
+    "conclusion": "No blocking objection: the producer emits UTF-16LE bytes while the browser bootstrap decodes UTF-8-style bytes.",
+    "non_blocking_notes": [
+      "Prefer canonical UTF-8 transport.",
+      "Keep the regression test end to end."
+    ]
+  }
 }

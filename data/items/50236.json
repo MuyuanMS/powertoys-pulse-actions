@@ -1,23 +1,12 @@
 {
   "schemaVersion": 5,
-  "number": 50236,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_information",
-  "owes": "maintainer",
-  "pending_author": false,
-  "fork": {
-    "issue": 627,
-    "state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/627"
-  },
-  "generated_at": "2026-09-04T07:14:14Z",
-  "evaluated_at": "2026-09-04T07:14:14Z",
-  "source_updated_at": "2026-08-29T14:06:50Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50236",
+  "number": 50236,
   "title": "PowerToys运行时ALT键松发BUG问题：Alt 物理按下不触发，物理松开立刻触发按下与松开",
-  "author": "x123ly",
-  "authorAssociation": "NONE",
+  "url": "https://github.com/microsoft/PowerToys/issues/50236",
+  "generated_at": "2026-09-09T15:05:28.412Z",
+  "evaluated_at": "2026-09-09T15:05:28.412Z",
+  "source_updated_at": "2026-08-29T14:06:50Z",
   "labels": [
     "Issue-Bug",
     "Needs-Author-Feedback",
@@ -25,214 +14,50 @@
     "Product-Grab And Move"
   ],
   "assignees": [],
-  "comments": 1,
-  "confidence": "Low",
-  "summary": "Grab and Move intentionally delays Alt keydown while its Alt-absorption option is enabled; the report lacks the foreground and input-transition evidence needed to identify why shortcuts fail.",
-  "status": {
-    "glyph": "🧪",
-    "label": "Reproduce before designing a fix",
-    "detail": "The reported delayed event is consistent with the enabled Alt-absorption setting, but the separate shortcut failure has no confirmed hook-state branch."
-  },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Reproduce locally",
-    "reason": "Toggle the shown Alt-absorption setting and capture the exact Alt, mouse, and focus sequence before changing the keyboard hook."
-  },
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "No linked pull request, assignment, duplicate designation, or fork implementation covers this report. The screenshot confirms the Alt-absorption setting is enabled, and current code intentionally swallows Alt keydown and replays it later; that explains the observed delayed event but not the reported shortcut failure. No diagnostic archive, foreground application, window mode, or event sequence identifies a defective state transition.",
-    "evidence": [
-      "The reporter identifies Grab and Move enablement as the condition that correlates with the symptom and reports that disabling it removes the problem.",
-      "The attached image shows the setting that blocks Alt from interacting with a window menu after drag or resize enabled.",
-      "The issue has one automated triage comment, no assignee, no linked pull request, and no diagnostic archive.",
-      "src/modules/GrabAndMove/GrabAndMove/main.cpp:KeyboardProc saves and swallows Alt keydown when g_shouldAbsorbAlt is enabled, then replays the modifier through ReplayAbsorbedModifier on another key or Alt keyup.",
-      "Related Issue 50248 reports key-up-only trigger-key behavior and includes diagnostics; Issue 49037 reports separate Alt interception conflicts, but neither proves the transition in this report."
-    ],
-    "recommended_action": "Use the display-only reproduction plan to distinguish expected configured absorption from a shortcut-breaking transition. Do not propose a source change until that sequence is captured.",
-    "evaluated_at": "2026-09-04T07:14:14Z",
-    "source_updated_at": "2026-08-29T14:06:50Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No existing implementation is linked or found in the fork. The only defensible proposed work is a reproduce-first investigation that identifies the exact hook-state transition before an implementation fix is designed.",
-    "existing_fix_urls": []
-  },
-  "proposed_fixes": [
+  "attachments": [
+    "https://github.com/user-attachments/assets/cf4a5faa-e345-4332-bb3a-60cc3a27e228\""
+  ],
+  "linked_refs": [],
+  "actions": [
     {
-      "title": "Establish the failing Grab and Move hook transition before changing code",
-      "root_cause": "Unconfirmed. The visible delayed Alt keydown is an intended consequence of the enabled g_shouldAbsorbAlt path. The shortcut failure could instead require a stale absorbed-modifier state, a pending mouse interaction, a foreground transition, or application-specific input handling; the report does not distinguish them.",
-      "plan": [
-        "Reproduce with Grab and Move enabled on a current build, comparing the pictured Alt-absorption option enabled and disabled while recording delivered keyboard events and Alt+Tab and Alt+Esc behavior.",
-        "Capture the foreground executable, window mode, configured activation modifier, and exact Alt, mouse, and focus-transition sequence at the occurrence.",
-        "Capture a PowerToys diagnostic report immediately after reproduction and map the confirmed sequence to KeyboardProc, ReplayAbsorbedModifier, pending interaction state, and foreground-reset handling.",
-        "Only after the trace identifies a faulty branch, create a narrow source-change design and regression test for that exact sequence."
-      ],
-      "verification": [
-        "Run the recorded sequence with Alt absorption enabled and disabled; establish whether delayed Alt delivery is expected configuration behavior or coincides with failed shortcuts.",
-        "For any later fix, verify delivered keydown precedes keyup and Alt+Tab and Alt+Esc work without regressing Grab and Move drag, resize, modifier-click, or disabled-absorption behavior."
-      ],
-      "confidence": {
-        "score": 42,
-        "level": "red",
-        "rationale": "The relevant hook and intentional delayed-delivery mechanism are directly observed, but no occurrence-specific evidence selects the branch that causes the claimed shortcut failure."
+      "type": "post_comment",
+      "label": "Mark duplicate of Grab And Move stuck modifier report",
+      "note": "Draft a maintainer duplicate note pointing to the canonical stuck-modifier issue.",
+      "comment": {
+        "body": "I re-checked this report against issue 50248, and the core symptom set matches: Grab and Move leaves Alt/Win modifier state desynchronized so shortcuts fail and keyboard testing sees the modifier behave as if only release is reaching the system. This issue adds useful repro color (FancyZones enabled, preview timing, Chinese description), but it still points to the same stuck-modifier family. I would keep the implementation investigation consolidated under issue 50248 rather than splitting the fix across two parallel reports."
       }
     }
   ],
   "issue_context": {
-    "summary": "The report describes a physical Alt key whose delivered keydown is delayed until release while Grab and Move and FancyZones are enabled, breaking Alt shortcuts in a timing-dependent scenario.",
+    "summary": "The Chinese report describes an Alt key that only “releases” into the system after physical release, which matches the same Grab and Move stuck-modifier family already described in issue 50248.",
     "known_information": [
-      "The report names PowerToys 0.101.2211.0 Preview installed from Microsoft Store.",
-      "Grab and Move is the reported enablement-dependent feature; FancyZones was also enabled.",
-      "The attached screenshot shows the Alt-absorption setting enabled.",
-      "The issue contains one automated triage comment, no assignee, no linked pull request, and no diagnostic archive.",
-      "The current Grab and Move hook deliberately stores and suppresses an Alt keydown under g_shouldAbsorbAlt, then injects the delayed keydown through ReplayAbsorbedModifier.",
-      "Issue 50248 and Issue 49037 are open related reports, but neither is a linked or confirmed duplicate of this exact occurrence."
+      "The report explicitly ties the symptom to Grab and Move and notes that uninstalling PowerToys removes the problem.",
+      "It mentions FancyZones and Grab And Move both being enabled, and shows a keyboard-test screenshot.",
+      "The key symptom matches 50248: Alt-based shortcuts fail and keyboard testing sees an unusable keydown/keyup sequence."
     ],
     "inferences": [
-      "The delayed keydown visible in a keyboard tester may be configured behavior rather than proof of a race.",
-      "A stale hook-owned modifier state or foreground interaction may explain the shortcut failure, but application input handling remains an unexcluded alternative.",
-      "The FancyZones co-enabled observation is not sufficient to implicate FancyZones without a reproducible inter-module sequence."
+      "The two reports are likely different reproductions of the same absorbed-modifier/state-sync bug family rather than separate product defects."
     ],
-    "analysis": "An implementation-grade design would be speculative. The report's screenshot and current source agree that Grab and Move can intentionally delay Alt delivery. The claimed loss of Alt+Tab and Alt+Esc would normally require the hook's non-Alt-key replay path or another state transition to fail, but the issue does not record that path. The related diagnostic archive for Issue 50248 establishes a separate trigger-key investigation, not this report's foreground context or configuration.",
+    "analysis": "This is better handled as duplicate coverage. Keeping the design work on one canonical stuck-modifier issue avoids splitting evidence and implementation planning.",
     "initial_investigation": [
-      "Read the live upstream issue body, comment, labels, assignees, timeline, and attached screenshot.",
-      "Downloaded and inspected the screenshot; it shows the Alt absorption option enabled.",
-      "Downloaded and inspected the related Issue 50248 diagnostic archive, including GrabAndMove settings and logs; it uses Win as the activation modifier and does not provide a trace for this report's Alt scenario.",
-      "Inspected src/modules/GrabAndMove/GrabAndMove/main.cpp, including KeyboardProc, ReplayAbsorbedModifier, pending click handling, modifier replay, and foreground-state reset.",
-      "Searched current upstream related issue and pull-request traces, local history, and MuyuanMS/PowerToys issue and pull-request traces; no concrete existing fix or Issue 50236 mirror was found."
+      "Re-read the entire issue body and the attached screenshot reference.",
+      "Compared the symptom set against issue 50248 and found the same core modifier failure pattern.",
+      "Used the current Grab And Move source to confirm both issues point into the same absorbed-modifier state machine."
     ],
-    "information_gaps": [
-      {
-        "information": "A reproducible input and focus sequence, including whether Alt is combined with mouse input or a window switch.",
-        "why_needed": "It selects between the hook's normal non-Alt-key replay, pending interaction handling, and foreground-reset paths.",
-        "how_to_collect": "Use the reproduce plan to record the order of Alt, mouse buttons, other keys, and foreground changes immediately before failure."
-      },
-      {
-        "information": "The affected executable and window mode, plus whether the symptom remains after disabling the Alt-absorption option.",
-        "why_needed": "It separates expected configured behavior from fullscreen, focus, or application-specific input handling.",
-        "how_to_collect": "Record the application name and window mode; repeat the same sequence with the option enabled and disabled."
-      },
-      {
-        "information": "A diagnostic report captured immediately after a successful reproduction.",
-        "why_needed": "It provides the active module configuration and runtime context needed to correlate the failing sequence with the hook state machine.",
-        "how_to_collect": "Immediately after reproducing, add a comment containing `/bugreport`."
-      }
-    ]
+    "information_gaps": []
   },
-  "design": {
-    "status": "needs_information",
-    "converged": false,
-    "root_cause": "Unconfirmed. Current evidence proves intentional configured Alt-keydown absorption, not the transition that causes the reported shortcut failure.",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "This issue describes the same stuck-Alt/keyup-only Grab and Move failure pattern as issue 50248, just with more emphasis on FancyZones being enabled and on preview-build timing.",
     "evidence": [
-      {
-        "kind": "observed",
-        "detail": "The attached screenshot enables the Alt-absorption option."
-      },
-      {
-        "kind": "observed",
-        "detail": "KeyboardProc swallows Alt keydown under g_shouldAbsorbAlt and ReplayAbsorbedModifier later injects the saved event."
-      },
-      {
-        "kind": "inferred",
-        "detail": "A defective stale-state or focus-transition path is possible but not established."
-      }
+      "Issue 50236 says physical Alt down does not register, keydown and keyup appear together on release, and Alt+Tab/Alt+Esc fail.",
+      "Issue 50248 reports the same keyboard-tester observation (keyup without usable keydown) and the same loss of Alt/Win shortcuts while Grab and Move is active.",
+      "Both reports localize the symptom to Grab and Move and describe it as timing- or foreground-sensitive rather than a permanent boot-time failure."
     ],
-    "affected_files": [
-      {
-        "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
-        "role": "Owns the low-level keyboard hook and modifier absorption/replay state.",
-        "symbols": [
-          "KeyboardProc",
-          "ReplayAbsorbedModifier",
-          "g_shouldAbsorbAlt",
-          "g_altAbsorbed",
-          "g_pendingModifierReplayed"
-        ]
-      }
-    ],
-    "implementation_steps": [],
-    "verify": [
-      "First reproduce and capture the missing transition evidence.",
-      "Do not change source until an observed failing branch produces the shortcut loss.",
-      "A later fix must preserve normal Grab and Move drag, resize, and modifier-click behavior."
-    ],
-    "risks": [
-      "Prematurely disabling absorption can regress the documented modifier-plus-mouse feature.",
-      "Incorrect replay changes can create duplicate or mismatched synthetic keyboard events."
-    ],
-    "alternatives": [
-      {
-        "option": "Treat delayed Alt delivery as the defect and remove absorption.",
-        "decision": "Rejected because the enabled setting and current implementation intentionally produce deferred delivery."
-      }
-    ],
-    "adversary": {
-      "rounds": 0,
-      "sign_off": "Not converged. A design cannot pass independent review until evidence identifies the branch that loses shortcut behavior.",
-      "blocking_objections": [
-        "The observed delayed Alt keydown is compatible with documented configured behavior.",
-        "No application, window mode, or input/focus sequence ties the shortcut failure to a specific hook-state transition."
-      ],
-      "non_blocking_notes": []
-    }
+    "recommended_action": "Mark this as duplicate coverage under the newer stuck-modifier report and keep future design/fix work consolidated there."
   },
-  "actions": [
-    {
-      "id": "approve-design-50236",
-      "type": "approve_design",
-      "label": "Approve evidence-gated Grab and Move design",
-      "primary": false,
-      "confirm": true,
-      "requiresApproval": true,
-      "fork": {
-        "repository": "MuyuanMS/PowerToys",
-        "issue": 627,
-        "url": "https://github.com/MuyuanMS/PowerToys/issues/627"
-      },
-      "note": "Approval preserves the reproduce-first gate; no keyboard-hook change proceeds without the failing transition."
-    },
-    {
-      "id": "reproduce-50236-alt-hook",
-      "type": "reproduce",
-      "label": "Reproduce locally",
-      "primary": true,
-      "note": "Display-only plan; no GitHub write.",
-      "reproduce": {
-        "title": "Distinguish Alt absorption from a shortcut failure",
-        "module": "Grab and Move",
-        "version_requirement": "Current PowerToys build",
-        "prerequisites": [
-          "Grab and Move enabled",
-          "A keyboard event tester and a switchable foreground application",
-          "Ability to toggle the Alt-absorption option shown in the report"
-        ],
-        "setup": [
-          "Record the current Grab and Move activation modifier and Alt-absorption setting.",
-          "Open the target application in its reported window mode and a keyboard event tester."
-        ],
-        "steps": [
-          "With Alt absorption enabled, hold and release Alt alone, then try Alt+Tab and Alt+Esc while recording delivered events.",
-          "Repeat the same sequence with Alt absorption disabled.",
-          "If failure is timing-dependent, repeat while recording mouse buttons, focus changes, foreground application, and window mode."
-        ],
-        "expected_result": "The run identifies whether delayed Alt delivery is expected configuration behavior and, if shortcuts fail, captures the exact transition needed for a later hook-state design.",
-        "setup_prompt": "Prepare a current PowerToys build with Grab and Move enabled, a keyboard event tester, and one target application whose window mode can be changed."
-      }
-    },
-    {
-      "id": "request-info-50236-alt-transition",
-      "type": "request_info",
-      "label": "Request the Alt input and focus transition",
-      "primary": false,
-      "confirm": true,
-      "requiresApproval": true,
-      "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 50236,
-        "body": "The shown Alt absorption option intentionally delays Alt keydown, but the shortcut failure needs a specific hook transition before a code change is safe. Please provide the affected application and window mode, the exact order of Alt, mouse buttons, other keys, and focus changes, and whether the same sequence fails with Alt absorption disabled. After a successful reproduction, add a comment containing `/bugreport` immediately."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
-  ]
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The right next step is to consolidate investigation under the better-tracked stuck-modifier issue instead of splitting design work across two near-identical reports."
+  }
 }

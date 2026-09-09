@@ -1,89 +1,94 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 50115,
   "kind": "issue",
-  "track": "triage",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-31T07:42:36Z",
-  "evaluated_at": "2026-08-31T07:42:36Z",
+  "track": "fix",
+  "stage": "awaiting_author_information",
+  "generated_at": "2026-09-09T15:05:16.279Z",
+  "evaluated_at": "2026-09-09T15:05:16.279Z",
   "source_updated_at": "2026-08-25T15:39:39Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50115",
   "title": "Administrator mode will not run",
-  "author": "redicanjoe-lgtm",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
-  "comments": 1,
-  "confidence": "High",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs elevation failure evidence",
-    "detail": "The report does not identify the Preview build, elevation command, UAC result, or startup logs."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused elevation details",
-    "reason": "Distinguish a failed runner elevation restart from a settings-only or Store-package expectation."
-  },
+  "assignees": [],
   "judgment": {
     "status": "needs_information",
-    "rationale": "The affected area is clear, but the report lacks the exact version and observable elevation path needed to choose between runner startup, UAC, packaging, and Mouse Without Borders behavior.",
+    "rationale": "The reporter never said which elevation path failed or what happened after the attempt, and the runner, settings UI, and restart-elevation paths are separate flows.",
     "evidence": [
-      "The reporter uses a Microsoft Store Preview build and wants administrator mode for Mouse Without Borders.",
-      "No exact build number, UAC behavior, error message, or diagnostic archive is supplied.",
-      "Current PowerToys has separate Restart as administrator and Always run as administrator paths implemented through runner elevation restart logic."
+      "The body does not say whether the reporter used tray menu, settings button, or an executable shortcut.",
+      "It does not say whether a UAC prompt appeared.",
+      "Runner code handles restart_elevation through dedicated paths in main.cpp, restart_elevated.cpp, and settings_window.cpp."
     ],
-    "recommended_action": "Ask for the exact build, attempted elevation path, observed UAC/error behavior, and a fresh diagnostic ZIP captured after failure.",
-    "evaluated_at": "2026-08-31T07:42:36Z",
+    "recommended_action": "Ask for the exact elevation attempt, a bugreport, and a screenshot of the failing UI if one exists.",
+    "evaluated_at": "2026-09-09T15:05:16.279Z",
     "source_updated_at": "2026-08-25T15:39:39Z"
   },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A fix may be needed, but the failing entry point is still ambiguous.",
+    "existing_fix_urls": []
+  },
   "issue_context": {
-    "summary": "A Microsoft Store Preview installation cannot be restarted in administrator mode, blocking the reporter's intended Mouse Without Borders configuration.",
+    "summary": "The issue says PowerToys preview will not run as admin for Mouse Without Borders settings, but it does not identify which elevation flow is failing.",
     "known_information": [
-      "The installation source is Microsoft Store and the channel is described only as Preview.",
-      "The reporter says every attempt to open PowerToys as administrator fails.",
-      "PowerToys exposes both one-time and persistent elevation settings through the runner."
+      "Microsoft Store preview build.",
+      "The user needs admin mode to change Mouse Without Borders settings.",
+      "No screenshot or bugreport ZIP is attached."
     ],
     "inferences": [
-      "The failure could occur before UAC, during runner restart, or after restart when the process falls back to non-elevated mode.",
-      "Mouse Without Borders may be the motivation rather than the component causing the elevation failure."
+      "The problem may be in the restart-as-admin flow rather than in Mouse Without Borders itself.",
+      "Without the exact trigger, the report is too ambiguous for a concrete fix plan."
     ],
-    "analysis": "A generic design would be speculative because several distinct elevation paths produce the same user-level description. The requested evidence is limited to fields that separate those paths.",
+    "analysis": "The smallest useful follow-up is to ask how elevation was attempted and to capture a bugreport from the failed restart sequence.",
     "initial_investigation": [
-      "Inspected GeneralViewModel elevation commands and runner restart_elevated and startup logic.",
-      "Confirmed the issue has no follow-up beyond automated triage and no linked fix or duplicate."
+      "Reviewed runner restart-elevation handling in src/runner/main.cpp and restart_elevated.cpp.",
+      "Reviewed settings_window.cpp and Settings.UI elevation actions to confirm there are multiple user-visible entry points."
     ],
     "information_gaps": [
       {
-        "information": "Exact PowerToys Preview version and the specific elevation control used",
-        "why_needed": "This establishes the code version and whether the failure is in one-time restart or persistent startup elevation.",
-        "how_to_collect": "Copy the version from PowerToys Settings and name the exact button or toggle used."
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact way PowerToys was asked to run as admin and what happened afterward.",
+        "why_needed": "That identifies which elevation path failed.",
+        "how_to_collect": "Please reply with the exact click path or shortcut you used and whether a UAC prompt appeared or PowerToys briefly restarted."
       },
       {
-        "information": "UAC prompt, visible error, and fresh runner startup diagnostics immediately after the failed attempt",
-        "why_needed": "This distinguishes launch denial, restart-loop fallback, and post-launch failure.",
-        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport so the generated ZIP captures the relevant startup logs."
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic ZIP captured immediately after the failed elevation attempt.",
+        "why_needed": "The logs can show whether restart_elevation was scheduled and whether the relaunched process failed.",
+        "how_to_collect": "Please attempt the elevation flow once more and then add a comment containing /bugreport immediately afterward. If Settings or the tray cannot open, run BugReportTool.exe and attach the ZIP."
+      },
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A screenshot of the surface where the elevation attempt fails, if there is a prompt or missing admin option.",
+        "why_needed": "That distinguishes a missing command from a restart loop or settings-only failure.",
+        "how_to_collect": "Please upload a screenshot through the GitHub web UI showing the tray menu, Settings page, or error dialog involved in the failed admin attempt."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-info-50115",
+      "id": "ri50115",
       "type": "request_info",
-      "label": "Ask for elevation failure evidence",
-      "primary": true,
+      "label": "Request elevation restart trace",
       "confirm": true,
-      "requiresApproval": true,
       "comment": {
         "target": "issue",
+        "repository": "microsoft/PowerToys",
         "number": 50115,
-        "body": "Thanks—the report establishes that a Microsoft Store Preview install will not enter administrator mode for your Mouse Without Borders setup. Please share the exact PowerToys version, whether you used **Restart PowerToys as administrator** or **Always run as administrator**, and what happens at the UAC prompt or afterward, including any visible error. Immediately after one failed attempt, add a comment containing `/bugreport` so the generated ZIP captures the runner restart and elevation logs."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+        "body": "Thanks for calling out that you need admin mode specifically to change Mouse Without Borders settings. To narrow the failing elevation path, please provide:\n\n1. The exact way you tried to run PowerToys as admin (for example: tray menu, Settings restart button, Start menu shortcut, or the executable directly) and what happened after that, including whether a UAC prompt appeared.\n2. A fresh PowerToys diagnostic ZIP captured immediately after the failed attempt: try the same flow once more and then add a comment containing /bugreport right away. If Settings or the tray cannot open, run BugReportTool.exe from the PowerToys installation directory and attach the generated ZIP.\n3. If there is an error prompt or missing admin option, please upload a screenshot of that exact UI surface.\n\nThese details will separate a runner restart issue from a settings-only problem."
+      }
     }
-  ]
+  ],
+  "design_decision": {
+    "status": "not_applicable",
+    "reason": "Exact elevation path still unknown."
+  },
+  "confidence": {
+    "score": 43,
+    "level": "red",
+    "rationale": "Scenario is clear; trigger path is not."
+  }
 }
