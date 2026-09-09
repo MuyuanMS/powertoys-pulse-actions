@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T16:50:16.0550559+08:00",
+  "generated_at": "2026-09-09T17:51:32.8870515+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 152,
-    "open_issues": 12606,
-    "community": 11761,
-    "artifacts": 391
+    "open_issues": 12609,
+    "community": 11764,
+    "artifacts": 389
   },
   "impact": {
-    "as_of": "2026-09-09T16:50:16.0550559+08:00",
+    "as_of": "2026-09-09T17:51:32.8870515+08:00",
     "issues_helped": 10,
     "prs_iterated": 24,
     "constructive_comments_posted": 3,
@@ -238,7 +238,6 @@ window.BOARD_INDEX = {
     50440,
     50439,
     50438,
-    50436,
     50424,
     50422,
     50420,
@@ -443,7 +442,6 @@ window.BOARD_INDEX = {
     2686,
     2151,
     50256,
-    37143,
     50340,
     36878,
     50339,
@@ -757,7 +755,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-08T05:22:47Z",
-      "updated_at": "2026-09-08T05:44:44Z",
+      "updated_at": "2026-09-09T07:25:00Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1655,11 +1653,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 729,
+        "fork_number": 730,
         "fork_title": "[PR 50271] [Mouse Utilities] Add Auto Hide Cursor",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50271-v4",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/729"
+        "fork_branch": "pr-iterate/50271-v5",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/730"
       }
     },
     {
@@ -2215,8 +2213,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_blocked",
-      "owes": "automation",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -4382,10 +4380,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_author",
-      "owes": "author",
-      "pending_author": true,
-      "waiting_since": "08/17/2026 07:53:36",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -30307,6 +30305,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-35195",
+      "kind": "issue",
+      "number": 35195,
+      "url": "https://github.com/microsoft/PowerToys/issues/35195",
+      "title": "Brouwser tabs in workspace utility",
+      "author": "CeelB-2055440",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Needs-Triage",
+        "Product-Workspaces"
+      ],
+      "assignees": [],
+      "created_at": "2024-10-02T09:11:15Z",
+      "updated_at": "2026-04-18T11:46:39Z",
+      "comments": 3,
+      "priority": null
+    },
+    {
       "id": "issue-34508",
       "kind": "issue",
       "number": 34508,
@@ -40238,6 +40269,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-32957",
+      "kind": "issue",
+      "number": 32957,
+      "url": "https://github.com/microsoft/PowerToys/issues/32957",
+      "title": "Feature Request: Exception List to \"Move newly created windows to their actve monitor\"",
+      "author": "jcf-junior",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "feature",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Idea-Enhancement",
+        "Product-FancyZones",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2024-05-21T22:27:17Z",
+      "updated_at": "2026-04-19T14:23:51Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-15675",
       "kind": "issue",
       "number": 15675,
@@ -44103,13 +44167,44 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-48240",
+      "id": "issue-50478",
       "kind": "issue",
-      "number": 48240,
-      "url": "https://github.com/microsoft/PowerToys/issues/48240",
-      "title": "PowreToys Run bir sorunla karşılaştı",
-      "author": "Dalmizrak",
-      "state": "closed",
+      "number": 50478,
+      "url": "https://github.com/microsoft/PowerToys/issues/50478",
+      "title": "[Dedupe Digest] 2026-09-09",
+      "author": "app/github-actions",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "dedupe-digest"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-09T08:19:02Z",
+      "updated_at": "2026-09-09T08:19:03Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-50477",
+      "kind": "issue",
+      "number": 50477,
+      "url": "https://github.com/microsoft/PowerToys/issues/50477",
+      "title": "Dock keeps sliding out repeatedly when I move the mouse across screen edge and to another monitor",
+      "author": "untitled500",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -44126,23 +44221,22 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Resolution-Duplicate",
-        "Product-PowerToys Run"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-06-01T06:48:29Z",
-      "updated_at": "2026-06-01T10:11:29Z",
-      "comments": 2,
+      "created_at": "2026-09-09T07:49:04Z",
+      "updated_at": "2026-09-09T07:49:04Z",
+      "comments": 0,
       "priority": null
     },
     {
-      "id": "issue-32957",
+      "id": "issue-50476",
       "kind": "issue",
-      "number": 32957,
-      "url": "https://github.com/microsoft/PowerToys/issues/32957",
-      "title": "Feature Request: Exception List to \"Move newly created windows to their actve monitor\"",
-      "author": "jcf-junior",
-      "state": "closed",
+      "number": 50476,
+      "url": "https://github.com/microsoft/PowerToys/issues/50476",
+      "title": "DSC App resource does not immediately apply Keyboard Manager enabled state and documentation input structure appears inconsistent",
+      "author": "ShimYama",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -44154,18 +44248,17 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Product-FancyZones",
+        "Issue-Bug",
         "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2024-05-21T22:27:17Z",
-      "updated_at": "2026-04-19T14:23:51Z",
-      "comments": 2,
+      "created_at": "2026-09-09T07:45:26Z",
+      "updated_at": "2026-09-09T07:45:26Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -45289,24 +45382,21 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Author-Feedback",
         "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Mouse Utilities"
       ],
       "assignees": [],
       "created_at": "2026-09-07T08:16:03Z",
-      "updated_at": "2026-09-07T08:22:18Z",
-      "comments": 1,
+      "updated_at": "2026-09-09T08:48:58Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -48178,8 +48268,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-09T02:23:09Z",
-      "comments": 50,
+      "updated_at": "2026-09-09T07:55:24Z",
+      "comments": 52,
       "priority": null
     },
     {
@@ -68312,8 +68402,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-03T08:56:50Z",
-      "updated_at": "2026-08-03T08:56:50Z",
-      "comments": 0,
+      "updated_at": "2026-09-09T07:43:51Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -71615,8 +71705,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-27T20:45:31Z",
-      "updated_at": "2026-07-29T06:49:43Z",
-      "comments": 0,
+      "updated_at": "2026-09-09T09:27:36Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -89816,8 +89906,8 @@ window.BOARD_INDEX = {
       "number": 50457,
       "url": "https://github.com/microsoft/PowerToys/issues/50457",
       "title": "[Dedupe Digest] 2026-09-08",
-      "author": "app/github-actions",
-      "state": "open",
+      "author": "github-actions[bot]",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -89835,10 +89925,12 @@ window.BOARD_INDEX = {
       "labels": [
         "dedupe-digest"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-09-08T08:19:24Z",
-      "updated_at": "2026-09-08T08:19:25Z",
-      "comments": 0,
+      "updated_at": "2026-09-09T08:19:05Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -380963,14 +381055,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -380979,8 +381068,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2025-01-29T14:49:30Z",
-      "updated_at": "2026-08-31T18:19:00Z",
-      "comments": 13,
+      "updated_at": "2026-09-09T09:30:07Z",
+      "comments": 14,
       "priority": null,
       "mirror": {
         "kind": "issue",
@@ -421618,12 +421707,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-35195",
+      "id": "issue-48240",
       "kind": "issue",
-      "number": 35195,
-      "url": "https://github.com/microsoft/PowerToys/issues/35195",
-      "title": "Brouwser tabs in workspace utility",
-      "author": "CeelB-2055440",
+      "number": 48240,
+      "url": "https://github.com/microsoft/PowerToys/issues/48240",
+      "title": "PowreToys Run bir sorunla karşılaştı",
+      "author": "Dalmizrak",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -421636,18 +421725,18 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "feature",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Idea-Enhancement",
-        "Needs-Triage",
-        "Product-Workspaces"
+        "Issue-Bug",
+        "Resolution-Duplicate",
+        "Product-PowerToys Run"
       ],
       "assignees": [],
-      "created_at": "2024-10-02T09:11:15Z",
-      "updated_at": "2026-04-18T11:46:39Z",
-      "comments": 3,
+      "created_at": "2026-06-01T06:48:29Z",
+      "updated_at": "2026-06-01T10:11:29Z",
+      "comments": 2,
       "priority": null
     },
     {
