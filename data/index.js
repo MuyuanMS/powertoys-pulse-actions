@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T18:30:17.3039709+08:00",
+  "generated_at": "2026-09-09T18:54:18.8079204+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 152,
-    "open_issues": 12609,
-    "community": 11764,
-    "artifacts": 389
+    "open_prs": 154,
+    "open_issues": 12610,
+    "community": 11766,
+    "artifacts": 388
   },
   "impact": {
-    "as_of": "2026-09-09T18:30:17.3039709+08:00",
+    "as_of": "2026-09-09T18:54:18.8079204+08:00",
     "issues_helped": 10,
     "prs_iterated": 24,
     "constructive_comments_posted": 3,
@@ -229,7 +229,6 @@ window.BOARD_INDEX = {
     3442,
     50214,
     50471,
-    50468,
     50465,
     50454,
     50451,
@@ -489,6 +488,76 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-50480",
+      "kind": "pr",
+      "number": 50480,
+      "url": "https://github.com/microsoft/PowerToys/pull/50480",
+      "title": "feat(mwb): improve handling of unexpected settings-sync callers",
+      "author": "yeelam-gordon",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Mouse Without Borders",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-09T09:57:23Z",
+      "updated_at": "2026-09-09T10:08:07Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
+      "id": "pr-50479",
+      "kind": "pr",
+      "number": 50479,
+      "url": "https://github.com/microsoft/PowerToys/pull/50479",
+      "title": "[Shortcut Guide] Restore keyboard tab order and accessible focus to shortcut items",
+      "author": "mangokingTW",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Shortcut Guide",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-09T09:42:13Z",
+      "updated_at": "2026-09-09T09:42:37Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-50472",
       "kind": "pr",
@@ -2624,8 +2693,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_blocked",
-      "owes": "agent",
+      "stage": "waiting_copilot",
+      "owes": "automation",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -4396,12 +4465,15 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback"
+        "Needs-Triage",
+        "Needs-Team-Response",
+        "Product-Keyboard Manager",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-08-07T19:10:39Z",
-      "updated_at": "2026-08-17T07:53:36Z",
-      "comments": 3,
+      "updated_at": "2026-09-09T09:42:22Z",
+      "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -30906,6 +30978,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-32962",
+      "kind": "issue",
+      "number": 32962,
+      "url": "https://github.com/microsoft/PowerToys/issues/32962",
+      "title": "File Locksmith doesn't detect locked folders",
+      "author": "Camios",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-File Locksmith"
+      ],
+      "assignees": [],
+      "created_at": "2024-05-22T01:58:27Z",
+      "updated_at": "2026-04-18T11:17:27Z",
+      "comments": 15,
+      "priority": null
+    },
+    {
       "id": "issue-32275",
       "kind": "issue",
       "number": 32275,
@@ -44140,13 +44245,13 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-32962",
+      "id": "issue-50481",
       "kind": "issue",
-      "number": 32962,
-      "url": "https://github.com/microsoft/PowerToys/issues/32962",
-      "title": "File Locksmith doesn't detect locked folders",
-      "author": "Camios",
-      "state": "closed",
+      "number": 50481,
+      "url": "https://github.com/microsoft/PowerToys/issues/50481",
+      "title": "Powertoysbugreport",
+      "author": "doicchi822-ux",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -44163,13 +44268,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Needs-Author-Feedback",
         "Needs-Triage",
-        "Product-File Locksmith"
+        "Product-General"
       ],
       "assignees": [],
-      "created_at": "2024-05-22T01:58:27Z",
-      "updated_at": "2026-04-18T11:17:27Z",
-      "comments": 15,
+      "created_at": "2026-09-09T10:19:16Z",
+      "updated_at": "2026-09-09T10:27:43Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -44450,24 +44556,20 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_comment",
-        "label": "Close non-reproducible old-version report"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage",
-        "Needs-Team-Response",
-        "Product-General"
+        "Needs-Author-Feedback",
+        "Product-PowerToys Run"
       ],
       "assignees": [],
       "created_at": "2026-09-08T16:41:51Z",
-      "updated_at": "2026-09-08T17:20:48Z",
-      "comments": 2,
+      "updated_at": "2026-09-09T10:32:59Z",
+      "comments": 3,
       "priority": null
     },
     {
