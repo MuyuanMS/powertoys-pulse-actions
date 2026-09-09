@@ -81,17 +81,19 @@ $ranked = @(
     @($queueResult.stale_prs) |
         Sort-Object `
             @{ Expression = {
-                if ([string]$_.artifact_stage -eq 'review_in_progress') { 0 } else { 1 }
-            } }, `
-            @{ Expression = {
                 if (@($_.reasons) -contains 'new_commits_since_proposed_review') { 0 }
-                elseif (@($_.reasons) -contains 'new_commits_since_artifact_head') { 1 }
+                elseif (@($_.reasons) -contains 'new_commits_since_artifact_head') { 0 }
+                elseif ([string]$_.artifact_stage -eq 'review_in_progress') { 1 }
                 elseif (@($_.reasons) -contains 'missing_artifact') { 2 }
+                elseif (@($_.reasons) -contains 'new_activity_after_author_wait') { 3 }
+                elseif (@($_.reasons) -contains 'new_activity_after_blocker') { 3 }
+                elseif (@($_.reasons) -contains 'missing_current_review_action') { 3 }
+                elseif (@($_.reasons) -contains 'new_discussion_on_reviewed_head') { 4 }
                 else { 3 }
             } }, `
             @{ Expression = {
                 if ($_.updated_at) { [datetime]$_.updated_at } else { [datetime]::MinValue }
-            } }, `
+            }; Descending = $true }, `
             number
 )
 
