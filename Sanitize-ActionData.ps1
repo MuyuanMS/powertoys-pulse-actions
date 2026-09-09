@@ -125,7 +125,7 @@ $encoding = [System.Text.UTF8Encoding]::new($false)
 $count = 0
 foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
   $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json
-  if ($artifact.PSObject.Properties['actions']) {
+  if ($artifact.PSObject.Properties.Name -contains 'actions') {
     $artifact.actions = @(Get-PublicActions $artifact)
   }
   $publicArtifact = Convert-PublicValue $artifact

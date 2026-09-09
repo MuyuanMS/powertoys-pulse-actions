@@ -1,33 +1,109 @@
 {
-  "number": 49421,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
-  },
-  "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49421,
+  "title": "mouse touchpad issue",
+  "url": "https://github.com/microsoft/PowerToys/issues/49421",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-09T21:38:22Z",
+  "evaluated_at": "2026-09-09T21:38:22Z",
   "source_updated_at": "2026-07-20T18:16:45Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "rationale": "The reporter already attached a bug-report ZIP and says reinstall resolved the issue once, but the current thread still does not say exactly when Mouse Without Borders makes the local touchpad laggy or partially unresponsive, so there is no stable trigger to investigate yet.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "The issue says the laptop touchpad becomes laggy or partly unresponsive only after Mouse Without Borders is turned on, but it does not say whether that happens during cross-machine switching, while idle, or only after a longer session.",
+      "The reporter already attached a PowerToysReport ZIP and says uninstalling/reinstalling PowerToys resolved the problem once.",
+      "Mouse Without Borders keeps global input hooks active and has topology-sensitive behaviors such as Easy Mouse and `Move mouse relatively` that can change how pointer movement is handled.",
+      "There are no comments or linked fixes that narrow the problem beyond the vague local touchpad symptom."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-20T18:16:45Z"
-  }
+    "recommended_action": "Request the shortest reproducing sequence, a short recording of the failing touchpad area, and the Mouse Without Borders topology/settings that were active."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix is plausible, but the current report does not yet identify whether this is a switching/topology path, a persistent local hook issue, or a temporary driver interaction."
+  },
+  "issue_context": {
+    "summary": "Mouse Without Borders reportedly makes the local laptop touchpad feel laggy or partly dead, but the issue never says exactly when the touchpad breaks. The reporter already supplied a bug-report ZIP, so the next missing evidence is the concrete trigger, topology, and visible behavior.",
+    "known_information": [
+      "The issue targets Mouse Without Borders on PowerToys 0.100.2, running elevated, on Windows 11 build 26200.",
+      "A PowerToysReport ZIP is attached.",
+      "The reporter says uninstalling and reinstalling PowerToys resolved the issue once.",
+      "No public comments or linked pull requests are present."
+    ],
+    "inferences": [
+      "The symptom may depend on a particular switching/topology state or an MWB input-hook interaction, not a universal touchpad failure.",
+      "Because reinstall helped once, the issue may involve module state/configuration or a temporary driver/hook interaction rather than permanent hardware damage."
+    ],
+    "analysis": "A second generic log request would duplicate what the reporter already attached. The cheapest next step is to ask for the exact moment the touchpad degrades, a short recording of the visible lag/dead zone, and the MWB topology/settings that were active when it happened.",
+    "initial_investigation": [
+      "Reviewed the issue body and noted the attached PowerToysReport ZIP plus the statement that reinstall temporarily resolved the issue.",
+      "Inspected `src/modules/MouseWithoutBorders/App/Core/Event.cs` and confirmed MWB continuously processes local mouse events and cross-machine switching through its input-hook path.",
+      "Inspected `src/modules/MouseWithoutBorders/App/Core/MachineStuff.cs` and the `Move mouse relatively` option wiring to confirm MWB behavior depends on machine/monitor topology and selected movement mode."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "The shortest numbered sequence that makes the touchpad become laggy or leaves part of it unresponsive.",
+        "why_needed": "The current report never says whether the trigger is cross-machine switching, idle time, or a specific MWB action.",
+        "how_to_collect": "Please reply with the shortest numbered steps that trigger the touchpad problem, including whether it happens after switching to another machine, after switching back, or even without crossing between machines."
+      },
+      {
+        "evidence_type": "gif_video",
+        "information": "A short recording showing the local touchpad lag or the area that stops responding.",
+        "why_needed": "The visible behavior is currently described only in broad words, so a recording would clarify whether the pointer stalls, jumps, or stops in a specific region.",
+        "how_to_collect": "Please upload a short recording through the GitHub web UI that shows the touchpad lag or the part of the touchpad/screen that stops responding, with sensitive content hidden."
+      },
+      {
+        "evidence_type": "monitor_topology",
+        "information": "The Mouse Without Borders machine/monitor layout in use, including how many PCs and monitors were connected when the issue happened.",
+        "why_needed": "MWB behavior depends on cross-machine topology and monitor arrangement, so that context changes the likely switching path.",
+        "how_to_collect": "Please describe how many PCs and monitors were connected in Mouse Without Borders when this happened, and whether any monitors were offset or using different scaling/resolutions."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether simply turning Mouse Without Borders off or exiting PowerToys restores the touchpad, or whether only a reinstall fixes it.",
+        "why_needed": "That separates a live hook/state problem from a deeper system-level side effect that survives process exit.",
+        "how_to_collect": "If it happens again, please confirm whether turning Mouse Without Borders off or exiting PowerToys restores the touchpad immediately, or whether only a full reinstall resolves it."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Share touchpad repro video and MWB topology",
+      "note": "Ask for the concrete trigger and visible behavior instead of another generic diagnostic bundle.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49421,
+        "body": "Thanks for attaching a PowerToys report and for noting that reinstalling resolved it once.\n\n**Needed**\n1. Please reply with the shortest numbered steps that trigger the touchpad problem, including whether it happens after switching to another machine, after switching back, or even without crossing between machines.\n2. Please upload a short recording that shows the local touchpad lag or the part of the touchpad/screen that stops responding.\n3. Please describe your Mouse Without Borders setup when this happens: how many PCs and monitors are connected, and whether any monitors are offset or using different scaling/resolutions.\n4. If it happens again, please confirm whether simply turning **Mouse Without Borders off** or exiting **PowerToys** restores the touchpad immediately, or whether only a reinstall fixes it.\n\nThis will separate a switching/topology bug from a broader local input-hook or driver interaction."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "Prasannakumar-ind",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 61,
+    "level": "yellow",
+    "rationale": "The issue is probably real, but the current thread still lacks a stable trigger and visible symptom detail."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

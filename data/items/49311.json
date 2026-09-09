@@ -1,33 +1,95 @@
 {
-  "number": 49311,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "dropped",
+  "generated_at": "2026-09-09T21:44:47Z",
+  "evaluated_at": "2026-09-09T21:44:47Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🧭",
-    "label": "UX gap, not a current bug",
-    "detail": "The reporter agreed the new Shortcut Guide already solves the identification problem; the remaining discussion is about product-direction UX tradeoffs."
-  },
-  "next_action": {
-    "glyph": "🛑",
-    "label": "No bug-design work needed",
-    "reason": "The thread is about a better shortcut-discovery experience, not a concrete broken code path."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49311,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-07-16T15:05:25Z",
+  "title": "Shortcuts widget(?) must use a properly descriptive field for its label.",
+  "url": "https://github.com/microsoft/PowerToys/issues/49311",
+  "author": "axa88",
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "summary": "The Settings dashboard shortcut widget still reuses generic labels such as \"Activation shortcut\" and \"Activation\", and current source shows those labels are populated from shared field headers that lose module context.",
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "The reporter agreed the new Shortcut Guide already solves the identification problem; the remaining discussion is about product-direction UX tradeoffs.",
+    "status": "actionable_design",
+    "rationale": "The report already shows the ambiguous widget output, and current Settings source confirms that the dashboard shortcut list is built from generic resource labels that do not identify the owning module or action clearly enough.",
     "evidence": [
-      "The reporter agreed the new Shortcut Guide already solves the identification problem; the remaining discussion is about product-direction UX tradeoffs."
+      "The issue body shows the dashboard widget listing entries like \"Activation shortcut\" and \"Activation\" without enough context to tell what feature they belong to.",
+      "src/settings-ui/Settings.UI/ViewModels/DashboardViewModel.cs builds Always On Top rows with resourceLoader.GetString(\"AlwaysOnTop_ActivationShortcut/Header\"), which resolves to the generic text \"Activation shortcut\".",
+      "The same view model builds activation-method rows such as Find My Mouse and PowerAccent with resourceLoader.GetString(\"Dashboard_Activation\"), which resolves to the generic text \"Activation\".",
+      "src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml renders each dashboard shortcut row from its Label and Shortcut or Activation fields only, so generic labels remain ambiguous in the UI."
     ],
-    "recommended_action": "The thread is about a better shortcut-discovery experience, not a concrete broken code path.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a focused dashboard-label fix that makes every shortcut row self-describing even when viewed out of settings-page context.",
+    "evaluated_at": "2026-09-09T21:44:47Z",
     "source_updated_at": "2026-07-16T15:05:25Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt is visible, and the current dashboard shortcut builders already expose a narrow, code-level labeling problem."
+  },
+  "issue_context": {
+    "summary": "The shortcut overview card on the Settings dashboard surfaces shortcuts out of their original settings-page context, but many rows still use generic field labels such as \"Activation shortcut\" or \"Activation\".",
+    "known_information": [
+      "The reporter provided screenshots showing ambiguous dashboard rows and used Always On Top as a concrete example.",
+      "A maintainer comment suggested the new Shortcut Guide could cover the same discovery need, but no maintainer decision or linked fix is present in the thread.",
+      "The reporter replied that the new Shortcut Guide helps identify shortcuts but does not yet serve the same quick-access purpose as the dashboard widget.",
+      "The issue is currently labeled Product-Settings rather than being closed as duplicate or out-of-scope."
+    ],
+    "inferences": [
+      "Even if Shortcut Guide becomes the preferred long-term experience, the current dashboard widget still has a concrete usability bug while it remains in the product.",
+      "The defect is not in hotkey storage; it is in how dashboard rows are labeled once shortcuts are summarized into a standalone overview."
+    ],
+    "analysis": "This is ready for a small design/start decision. The report and current source already identify the ambiguity and show that the widget is pulling generic field names into a UI that requires module-specific context.",
+    "initial_investigation": [
+      "src/settings-ui/Settings.UI/ViewModels/DashboardViewModel.cs uses AlwaysOnTop_ActivationShortcut/Header for the shortcut label, and the corresponding resource value in Strings/en-us/Resources.resw is the generic text \"Activation shortcut\".",
+      "The same view model uses Dashboard_Activation for activation-method rows such as Find My Mouse and PowerAccent, and that resource resolves to the generic text \"Activation\".",
+      "src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml displays those labels directly in the shortcut overview card, so the ambiguity is preserved instead of being supplemented with module names."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49311",
+      "type": "approve_design",
+      "label": "Approve dashboard shortcut-label fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "High-confidence Settings dashboard usability bug: the widget is reusing generic settings-page field headers in a context where they need module identity.",
+      "issue": {
+        "number": 49311,
+        "repository": "microsoft/PowerToys"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Make dashboard shortcut rows self-describing",
+      "root_cause": "The dashboard shortcut widget reuses generic settings-page field labels such as \"Activation shortcut\" and \"Activation\" after removing the surrounding module page context, so the rendered rows no longer identify which PowerToy or action the shortcut belongs to.",
+      "plan": [
+        "Audit every DashboardModuleShortcutItem and DashboardModuleActivationItem builder that currently pulls a generic field header into the dashboard summary.",
+        "Replace those generic labels with module-specific text or compose the module name and action into a dashboard-specific label so each row remains understandable on its own.",
+        "Verify the shortcut overview card against representative modules such as Always On Top, Find My Mouse, and PowerAccent so no row renders as a bare generic \"Activation\" label."
+      ],
+      "verification": [
+        "Open the Settings dashboard shortcut overview and confirm that each row clearly identifies the owning module and action without needing surrounding page context.",
+        "Check modules that currently use generic activation labels to ensure the widget no longer shows ambiguous standalone entries such as \"Activation\" or \"Activation shortcut\"."
+      ],
+      "confidence": {
+        "score": 95,
+        "level": "green",
+        "rationale": "The screenshots and the current dashboard view-model/resource wiring line up directly: the ambiguous widget output is explained by concrete generic labels in the exact rendering path."
+      }
+    }
+  ]
 }

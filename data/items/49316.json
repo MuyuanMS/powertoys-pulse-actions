@@ -1,48 +1,81 @@
 {
+  "schemaVersion": 5,
   "number": 49316,
   "kind": "issue",
   "track": "fix",
   "stage": "needs_reply",
-  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs more evidence",
-    "detail": "The symptom is not yet localized enough to choose a safe code owner or design path."
+  "generated_at": "2026-09-09T21:22:58Z",
+  "evaluated_at": "2026-09-09T21:22:58Z",
+  "source_updated_at": "2026-07-14T18:22:04Z",
+  "title": "Missing Templates in New+ Context Menu",
+  "url": "https://github.com/microsoft/PowerToys/issues/49316",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report identifies a real New+ menu gap, but it still does not say which templates are missing or whether they are being skipped because of folder structure or file attributes.",
+    "evidence": [
+      "The issue says only some templates appear in the New+ context menu even after toggling the feature, changing the template location, and restarting File Explorer.",
+      "Current source in src/modules/NewPlus/NewShellExtensionContextMenu/template_folder.cpp rescans only the immediate contents of the configured template folder.",
+      "Current source in src/modules/NewPlus/NewShellExtensionContextMenu/helpers_variables.h excludes hidden and system items from the visible template list."
+    ],
+    "recommended_action": "Ask for the exact missing template names, their location/attributes, and a sample missing template so maintainers can distinguish an unsupported folder layout from a New+ enumeration bug.",
+    "evaluated_at": "2026-09-09T21:22:58Z",
+    "source_updated_at": "2026-07-14T18:22:04Z"
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused diagnostics",
-    "reason": "The missing evidence is specific and cheaper to collect than speculative code investigation."
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix may be needed, but the current public report is not specific enough to choose between New+ template enumeration, hidden-item filtering, or template-folder layout handling."
+  },
+  "issue_context": {
+    "summary": "The reporter says New+ shows only some templates from the configured template location, even after changing the location and restarting Explorer.",
+    "known_information": [
+      "The issue is filed against PowerToys 0.100.2 after an auto-update.",
+      "The problem occurs in the New+ context menu rather than while creating the copied file itself.",
+      "The reporter already tried toggling New+, changing the template location, and restarting File Explorer."
+    ],
+    "inferences": [
+      "The failure is likely in how New+ enumerates visible templates, not in template copy or rename behavior after selection.",
+      "The missing items may share a trait such as being nested, hidden, system-marked, or of a specific file type, but the current report does not identify that trait yet."
+    ],
+    "analysis": "This is specific enough to avoid a generic request for logs, because the current source already shows two concrete visibility boundaries: only top-level entries are scanned, and hidden/system items are excluded. The missing detail is which of the reporter’s templates fall into those buckets, so the best next step is a targeted evidence request about the missing template files and folder layout.",
+    "initial_investigation": [
+      "src/modules/NewPlus/NewShellExtensionContextMenu/template_folder.cpp builds the menu from std::filesystem::directory_iterator(template_folder_path), which only enumerates immediate children of the configured template folder.",
+      "src/modules/NewPlus/NewShellExtensionContextMenu/helpers_variables.h returns true from exclude_item() for hidden or system files, so those entries are intentionally skipped."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "screenshot_image",
+        "information": "A screenshot of the configured New+ template location in settings and the corresponding folder contents in Explorer.",
+        "why_needed": "This shows whether the missing templates are direct children of the configured folder or live somewhere New+ does not enumerate.",
+        "how_to_collect": "Open the New+ settings page to show the configured template folder, then open that folder in Explorer and capture a screenshot of the visible contents."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact filenames and file types of one or two templates that should appear but do not, including whether they are files, folders, hidden, or system-marked.",
+        "why_needed": "This distinguishes a New+ filtering rule from a broader failure to read the template folder.",
+        "how_to_collect": "Reply with the names/extensions of the missing templates and note whether any of them are marked Hidden or System in file properties."
+      },
+      {
+        "evidence_type": "sample_file",
+        "information": "A small sample of one missing template file, or confirmation that the missing item is a folder template rather than a file template.",
+        "why_needed": "A concrete sample lets maintainers test whether a specific extension or template shape is being filtered out.",
+        "how_to_collect": "Attach one non-sensitive missing template file through GitHub, or state that the missing item is a folder template and not a file."
+      }
+    ]
   },
   "actions": [
     {
       "id": "request-info-49316",
       "type": "request_info",
-      "label": "Draft request for details",
+      "label": "Clarify missing New+ templates",
       "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
         "number": 49316,
-        "body": "Could you confirm whether this still reproduces on PowerToys 0.100.2 or newer, rewrite the steps as a short numbered sequence from a clean start, and attach a PowerToys bug-report ZIP plus any screenshot or recording that shows the failure?"
+        "body": "Thanks for already confirming that toggling New+, changing the template location, and restarting Explorer did not help. To narrow this to the right New+ enumeration path, please provide:\n\n1. A screenshot of the configured New+ template folder in settings and the contents of that folder in Explorer.\n2. The exact filenames/extensions of one or two templates that should appear but do not, including whether they are files, folders, or marked Hidden/System.\n3. If possible, attach one small missing template file, or confirm that the missing item is a folder template instead.\n\nThat will tell us whether New+ is skipping a specific template shape or whether the configured folder layout itself is outside the current scan path."
       },
-      "note": "Draft only; never posted upstream without explicit approval."
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
-  ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-14T18:22:04Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The symptom is not yet localized enough to choose a safe code owner or design path.",
-    "evidence": [
-      "The symptom is not yet localized enough to choose a safe code owner or design path.",
-      "Draft only; never posted upstream without explicit approval."
-    ],
-    "recommended_action": "The missing evidence is specific and cheaper to collect than speculative code investigation.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-14T18:22:04Z"
-  }
+  ]
 }

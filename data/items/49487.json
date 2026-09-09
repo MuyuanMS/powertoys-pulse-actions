@@ -1,48 +1,96 @@
 {
-  "number": 49487,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
-  },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
-  },
-  "actions": [
-    {
-      "id": "request-info-49487",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 49487,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
-      }
-    }
+  "number": 49487,
+  "title": "Cannot uninstall",
+  "url": "https://github.com/microsoft/PowerToys/issues/49487",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "assignees": [],
+  "generated_at": "2026-09-09T21:38:22Z",
+  "evaluated_at": "2026-09-09T21:38:22Z",
   "source_updated_at": "2026-07-25T00:34:11Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
+    "rationale": "The pasted uninstall log already narrows this to the per-user MSI uninstall step, but it stops at the outer Burn layer and does not include the inner MSI evidence needed to tell whether the cached package is corrupt, missing, or failing later inside the MSI.",
     "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+      "The issue body includes a detailed Burn uninstall log for PowerToys 0.99.1 ending with `Failed to uninstall MSI package`, `Failed to configure per-user MSI package`, and HRESULT `0x80070654` while uninstalling `PowerToysUserSetup_0.99.1_x64.msi`.",
+      "That same log shows Burn successfully detected the cached per-user package and generated a second inner MSI log file path, but that MSI log was not included in the issue.",
+      "There are no follow-up comments, linked fixes, or attached bug-report ZIPs that expose the actual MSI failure branch.",
+      "Focused source review of `installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp` confirms the uninstall path continues through MSI-level cleanup work, so the outer Burn summary alone is not enough to select a safe PowerToys code fix."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-25T00:34:11Z"
-  }
+    "recommended_action": "Request the inner MSI uninstall log and confirmation of the cached MSI package state before proposing installer changes."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix may exist, but the current public evidence does not yet distinguish MSI cache corruption from a later MSI/custom-action failure path."
+  },
+  "issue_context": {
+    "summary": "The reporter already supplied a valuable Burn uninstall log for the per-user 0.99.1 package, but it only shows that the uninstall failed inside the MSI layer with 0x80070654. The next useful evidence is the inner MSI log and the cached package state, not a generic bug-report request.",
+    "known_information": [
+      "The report is on PowerToys 0.99.1 installed through the auto-update user setup flow.",
+      "Burn detected `PowerToysUserSetup_0.99.1_x64.msi` as present and planned an uninstall for that package.",
+      "The failing lines are `Failed to uninstall MSI package`, `Failed to configure per-user MSI package`, and `Failed to execute MSI package` with HRESULT `0x80070654`.",
+      "The issue has no comments, linked pull requests, or attached bug-report ZIP."
+    ],
+    "inferences": [
+      "The failure is probably below the outer bundle UI layer and may be caused by the cached MSI itself or by MSI-internal uninstall work rather than by a generic PowerToys settings/runtime problem.",
+      "Because the issue already includes a meaningful bundle log, the smallest remaining gap is MSI-transaction evidence, not a broad restatement of the problem."
+    ],
+    "analysis": "This issue has enough evidence to avoid a generic logs request, but not enough to choose a code path. The Burn log tells us exactly where triage is blocked: inside the MSI uninstall. Asking for the inner MSI log and the state of the cached package is the narrowest next step that can separate a damaged cached installer from an MSI-level PowerToys uninstall defect.",
+    "initial_investigation": [
+      "Reviewed the full issue body and extracted the Burn log sequence showing detection of the cached user MSI and failure during its uninstall execution.",
+      "Confirmed there are no public comments or linked fixes that refine the failing branch.",
+      "Inspected `installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp` and confirmed the product's uninstall work continues through MSI-level logic, which makes the missing inner MSI log the next decisive evidence."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "installer_log",
+        "information": "The inner MSI uninstall log referenced by the Burn output for `PowerToysUserSetup_0.99.1_x64.msi`.",
+        "why_needed": "The outer Burn log only reports the final 0x80070654 failure; the MSI log is needed to identify the exact uninstall step that failed.",
+        "how_to_collect": "Please attach the `..._PowerToysUserSetup_0.99.1_x64.msi.log` file referenced in the pasted Burn output from `%LOCALAPPDATA%\\Temp`. If it is gone, rerun the uninstall once so that MSI log is regenerated, then attach it."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the cached MSI package named in the Burn log still exists and can be opened, or whether Windows reports it missing/corrupt.",
+        "why_needed": "That distinguishes a broken Package Cache entry from a deeper MSI uninstall defect.",
+        "how_to_collect": "Please check the MSI file named in the Burn log inside the Package Cache and confirm whether it still exists and opens normally, or whether Windows reports it missing or corrupt."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Attach MSI uninstall log",
+      "note": "Ask for the inner MSI evidence already referenced by the Burn log.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49487,
+        "body": "Thanks for pasting the uninstall log — it already shows that the Burn bundle detects the cached per-user PowerToys MSI and then Windows Installer returns `0x80070654` while uninstalling `PowerToysUserSetup_0.99.1_x64.msi`.\n\n**Needed**\n1. Please attach the inner MSI log that the same output points to: the `..._PowerToysUserSetup_0.99.1_x64.msi.log` file in `%LOCALAPPDATA%\\Temp`. If it is no longer there, please rerun uninstall once so that MSI log is regenerated, then attach it.\n2. Please confirm whether the MSI file named in the Burn log still exists in the Package Cache and can be opened normally, or whether Windows reports it missing/corrupt.\n\nThis will distinguish a broken cached MSI package from a later PowerToys-specific uninstall step."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "jd90125-web",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 66,
+    "level": "yellow",
+    "rationale": "The Burn log already narrows the failure to MSI uninstall, but the missing inner MSI log still blocks a reliable root-cause choice."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

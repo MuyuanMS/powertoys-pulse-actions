@@ -1,33 +1,102 @@
 {
+  "schemaVersion": 5,
   "number": 49264,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "triaging",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-09T21:22:58Z",
+  "evaluated_at": "2026-09-09T21:22:58Z",
   "source_updated_at": "2026-07-10T23:47:38Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "CmdPal: Palette opened from Dock has an offset",
+  "url": "https://github.com/microsoft/PowerToys/issues/49264",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The palette-offset report is already bounded by a screenshot, a direct Dock repro, and current code that still applies a hardcoded padding offset after computing the launch anchor.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue includes a screenshot showing the Command Palette window separated from the dock item that opened it.",
+      "Current source in src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs still sets paddingDips = 8 and then shifts the launch position away from the dock before sending ShowPaletteAtMessage.",
+      "The issue is scoped to a dev build and a very specific visual geometry symptom rather than a broad Dock failure."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Approve a focused Dock anchoring design, after maintainer-side repro, that removes or conditions the hardcoded gap between the dock trigger and the launched palette.",
+    "evaluated_at": "2026-09-09T21:22:58Z",
     "source_updated_at": "2026-07-10T23:47:38Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A small repository change in Dock launch anchoring is likely enough, but maintainer-side repro should confirm whether the full 8-DIP offset is always incorrect or only wrong for certain dock positions."
+  },
+  "issue_context": {
+    "summary": "A collaborator reports that the Command Palette window opens with a visible gap from the dock item that launched it, especially from the center dock band.",
+    "known_information": [
+      "The issue is filed against a dev build on main, not a stale released build.",
+      "The screenshot shows a consistent visual gap rather than a random placement failure.",
+      "The issue specifically expects the palette to align with the dock item that opened it."
+    ],
+    "inferences": [
+      "This is a small geometry bug in Dock-to-palette anchoring rather than a monitor-topology or focus-management issue.",
+      "The hardcoded offset in DockWindow is more likely than not the user-visible gap, but maintainers should confirm whether any shadow-padding behavior also depends on that value."
+    ],
+    "analysis": "This is one of the stronger lightweight actionable-design cases in the batch. The issue is narrow, the screenshot is concrete, and the current code still contains a hardcoded launch offset applied immediately before the palette is shown. That is enough to propose a focused fix direction while still pairing it with a reproduce action because the precise acceptable gap may depend on palette shadow/card geometry.",
+    "initial_investigation": [
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindow.xaml.cs computes the dock-side anchor and then applies paddingDips = 8 before sending ShowPaletteAtMessage.",
+      "git blame shows the 8-DIP offset originates from the original Dock implementation rather than a later targeted fix for this issue, so the current geometry still matches the reported symptom."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-49264",
+      "type": "reproduce",
+      "label": "Reproduce Dock palette launch offset",
+      "primary": true,
+      "confirm": false,
+      "reproduce": {
+        "module": "Command Palette",
+        "version": "main or newer than 0.100.2",
+        "prerequisites": [
+          "Enable Command Palette Dock.",
+          "Place at least one clickable band in the center dock area."
+        ],
+        "steps": [
+          "Open the dock and click an item that launches the main Command Palette window.",
+          "Observe the first opened palette position relative to the clicked dock item.",
+          "Repeat from another dock side if available to see whether the visible gap is tied to one side or is universal."
+        ],
+        "expected_result": "The visible Command Palette card should align with the dock trigger instead of opening with an extra detached gap.",
+        "attachments": [
+          "https://github.com/user-attachments/assets/695261c3-c7f8-4d33-8d1d-e8a258bce587"
+        ]
+      },
+      "note": "Maintainer-side local repro guidance only; this artifact does not post upstream content."
+    },
+    {
+      "id": "approve-design-49264",
+      "type": "approve_design",
+      "label": "Approve Dock palette alignment design",
+      "primary": false,
+      "confirm": false,
+      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Anchor the palette to the dock trigger instead of always adding an 8-DIP gap",
+      "root_cause": "DockWindow.RequestShowPaletteOnUiThread computes the correct anchor side and then unconditionally pushes the launched palette 8 DIPs away from the dock, which produces the visible gap shown in the issue.",
+      "plan": [
+        "Trace how the dock click position becomes screenPosPixels and separate shadow/card padding concerns from the actual anchor point used to launch the palette.",
+        "Remove or condition the hardcoded 8-DIP offset so the palette aligns with the dock item or visible dock edge instead of appearing detached.",
+        "Add a focused Dock launch regression check for center-band and side-dock placements so the geometry change does not break multi-position anchoring."
+      ],
+      "verification": [
+        "Open the palette from a center dock band and confirm the visible card aligns with the triggering dock item instead of floating below or beside it.",
+        "Repeat from top, bottom, left, and right dock positions and confirm the palette still opens on the correct side without clipping."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The screenshot and current hardcoded padding make the likely cause strong, but a quick maintainer-side repro should confirm whether any shadow-spacing requirement still justifies a smaller conditional offset."
+      }
+    }
+  ]
 }

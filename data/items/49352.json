@@ -1,34 +1,97 @@
 {
-  "number": 49352,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triaged",
+  "generated_at": "2026-09-09T21:44:47Z",
+  "evaluated_at": "2026-09-09T21:44:47Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🔁",
-    "label": "Handled elsewhere / already owned",
-    "detail": "The issue already has an assignee and should not get duplicate agent work."
-  },
-  "next_action": {
-    "glyph": "🔁",
-    "label": "Track existing ownership",
-    "reason": "Linked work or existing ownership signals already cover the next step."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49352,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-07-16T11:47:26Z",
+  "title": "New editor in keyboard manager doesn't distinguish properly between \"duplicate\" keys on a keyboard",
+  "url": "https://github.com/microsoft/PowerToys/issues/49352",
+  "author": "sonix1977nl",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [
+    "niels9001"
+  ],
+  "comments": 0,
+  "summary": "The new Keyboard Manager editor collapses physically distinct keys that share the same display text, and current key-mapping code round-trips several new-editor paths through GetKeyCodeFromName(name), which returns the first matching key name only.",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue already has an assignee and should not get duplicate agent work.",
+    "status": "actionable_design",
+    "rationale": "The public repro is precise, and current Keyboard Manager source shows a concrete identity-loss path: duplicate physical keys are converted to display names and then resolved back to a single key code by name lookup.",
     "evidence": [
-      "The issue already has an assignee and should not get duplicate agent work.",
-      "No upstream action. Follow the linked PR, issue, assignment, localization queue, or existing fork work."
+      "The issue describes a specific hardware case with two backslash keys where the old editor distinguishes the keys but the new editor always resolves both to the right-hand key.",
+      "src/common/interop/keyboard_layout.cpp implements LayoutMap::GetKeyFromName() by iterating GetKeyNameList(false) and returning the first key whose display name matches the supplied string.",
+      "src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardMappingService.cs exposes GetKeyCodeFromName(string keyName), and multiple new-editor validation/update paths call that method when rehydrating selected keys.",
+      "src/modules/keyboardmanager/KeyboardManagerEditorLibrary/KeyDropDownControl.cpp stores a numeric SelectedValue for ComboBox selections, but text-based paths still fall back to GetKeyFromName(text), which collapses duplicate-name keys to one identity."
     ],
-    "recommended_action": "Linked work or existing ownership signals already cover the next step.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a focused Keyboard Manager fix that keeps a stable key identity through the new editor and only uses display names for presentation.",
+    "evaluated_at": "2026-09-09T21:44:47Z",
     "source_updated_at": "2026-07-16T11:47:26Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt is visible, and the new-editor code already shows a narrow root-cause path for duplicate-name keys."
+  },
+  "issue_context": {
+    "summary": "A keyboard with two different backslash keys exposes that the new Keyboard Manager editor no longer preserves the identity of keys that share the same display name.",
+    "known_information": [
+      "The report is on PowerToys 0.100.2 from the Microsoft Store and names a Logitech Silent Wireless Combo MK295 as the affected keyboard.",
+      "The reporter says the old editor could distinguish the two keys both by physical key detection and by dropdown selection.",
+      "The new editor instead resolves both physical keys to the same right-side key and even selecting the other dropdown entry snaps back to the same identity.",
+      "The issue was later assigned to niels9001, but no public fix or workaround is linked."
+    ],
+    "inferences": [
+      "The regression is in the new editor's identity handling rather than in Windows keyboard layout data alone, because the old editor reportedly distinguished the same hardware successfully.",
+      "Any path that serializes selected keys only as display names is likely to reproduce this class of bug for other duplicate-name keys as well."
+    ],
+    "analysis": "This is ready for a design/start decision. The current code shows exactly how the new editor can lose key identity when two distinct codes share one visible label.",
+    "initial_investigation": [
+      "src/common/interop/keyboard_layout.cpp resolves key names back to codes by first-match name lookup, which cannot uniquely represent two distinct keys that render with the same visible text.",
+      "src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardMappingService.cs and related validation code repeatedly convert between key names and key codes in the new editor.",
+      "src/modules/keyboardmanager/KeyboardManagerEditorLibrary/KeyDropDownControl.cpp shows that dropdown selections have a numeric value available already, which suggests the bug is in later text-based round-tripping rather than in raw UI selection alone."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49352",
+      "type": "approve_design",
+      "label": "Approve duplicate-key identity fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "High-confidence Keyboard Manager regression: the new editor is losing stable key identity when duplicate display names map back through first-match name lookup.",
+      "issue": {
+        "number": 49352,
+        "repository": "microsoft/PowerToys"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Preserve stable key identity for duplicate-name keys in the new editor",
+      "root_cause": "The new Keyboard Manager editor round-trips selected keys through human-readable key names, but LayoutMap::GetKeyFromName() returns only the first matching key for a given display label, so two distinct physical keys with the same label collapse to one identity.",
+      "plan": [
+        "Keep the selected key identity as a stable key code or a richer key identity (for example, code plus scan-code-specific metadata where needed) throughout the new editor pipeline instead of rehydrating from display text alone.",
+        "Update duplicate-name rendering so dropdown rows remain distinguishable to the user when two different keys share the same visible character or name.",
+        "Add regression coverage for keyboards with duplicate-name keys so the new editor preserves separate left/right or OEM key identities across selection, save, and reload."
+      ],
+      "verification": [
+        "On affected hardware, map the left backslash key and confirm the new editor does not silently switch it to the right backslash key.",
+        "Reload the saved remap and verify both duplicate-name keys remain distinct in the UI and in the resulting mapping."
+      ],
+      "confidence": {
+        "score": 93,
+        "level": "green",
+        "rationale": "The public repro is very specific, and the current name-to-key first-match lookup explains both the wrong-key selection and the dropdown snapping behavior directly."
+      }
+    }
+  ]
 }

@@ -1,48 +1,102 @@
 {
-  "number": 49411,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
-  },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
-  },
-  "actions": [
-    {
-      "id": "request-info-49411",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 49411,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
-      }
-    }
+  "number": 49411,
+  "title": "Alt + Scrollwheel combos being caught by Powertoys",
+  "url": "https://github.com/microsoft/PowerToys/issues/49411",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "assignees": [],
+  "generated_at": "2026-09-09T21:38:22Z",
+  "evaluated_at": "2026-09-09T21:38:22Z",
   "source_updated_at": "2026-07-21T10:16:49Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
+    "rationale": "The issue clearly involves a PowerToys input hook swallowing Alt+Wheel in World of Warcraft, but current public evidence does not identify which enabled module or remap is responsible, and a maintainer already ruled out default Grab And Move behavior.",
     "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+      "The report says Alt+ScrollWheel is swallowed only while PowerToys is running, and closing PowerToys restores the combo in World of Warcraft.",
+      "A maintainer reply explicitly says the default Grab And Move Alt modifier did not reproduce the problem and was ruled out in a default-settings test.",
+      "Focused source search shows several PowerToys modules install low-level mouse hooks, including Keyboard Manager, FancyZones, Mouse utilities, and Grab And Move.",
+      "`src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp` installs a companion mouse hook for wheel/button events when \"Alone\" remaps exist, which makes exact enabled-module and remap state the next discriminator."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-21T10:16:49Z"
-  }
+    "recommended_action": "Ask which hook-based modules and remaps were enabled when the problem occurred, and whether the issue is WoW-specific or more general."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A fix path is plausible, but the live thread still lacks the module/remap scope needed to choose one without guessing among several hook consumers."
+  },
+  "issue_context": {
+    "summary": "Alt+Wheel is reportedly swallowed while PowerToys is running, but a maintainer already ruled out default Grab And Move behavior. Several hook-based modules remain plausible, so the missing evidence is which modules/remaps were active and whether the problem is global or only in WoW.",
+    "known_information": [
+      "The report is on PowerToys 0.100.2 and says the affected app was World of Warcraft on Windows 10.",
+      "The reporter says no shortcut currently assigned uses Alt+Wheel, but that does not identify single-key or hook-based remaps/modules.",
+      "Commenter `foxmsft` tested the default Grab And Move Alt modifier and said it was not enough to reproduce the issue.",
+      "No bug-report ZIP or follow-up clarification is attached."
+    ],
+    "inferences": [
+      "This is more likely a specific hook/remap interaction than a universal Alt+Wheel regression, because default Grab And Move behavior did not reproduce it.",
+      "Keyboard Manager's companion mouse-hook path is a credible candidate when \"Alone\" remaps exist, but current public evidence does not show whether that configuration was present."
+    ],
+    "analysis": "The report is specific enough to know PowerToys is involved, but not enough to identify which hook path. Because multiple modules can observe low-level mouse/keyboard input and default Grab And Move is already ruled out, the smallest next question is to narrow the active modules/remaps and the app/elevation scope rather than asking for a generic bug-report bundle first.",
+    "initial_investigation": [
+      "Reviewed the issue body and both public comments, including the maintainer note ruling out default Grab And Move behavior.",
+      "Searched for `WH_MOUSE_LL` consumers in the PowerToys source and found hook-based candidates in Grab And Move, Keyboard Manager, FancyZones, Mouse utilities, and Mouse Without Borders.",
+      "Inspected `src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp` and confirmed wheel/button events are intentionally intercepted when \"Alone\" remaps are configured."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Which PowerToys modules were enabled when Alt+Wheel was swallowed, and whether disabling Keyboard Manager alone changes the behavior.",
+        "why_needed": "Multiple modules install low-level hooks, so triage first needs to identify the active hook owner.",
+        "how_to_collect": "Please list which PowerToys modules were enabled when this happened, then try one run with only Keyboard Manager disabled and say whether Alt+Wheel still gets swallowed."
+      },
+      {
+        "evidence_type": "configuration_export",
+        "information": "The exact Keyboard Manager remaps in effect, especially any single-key \"Alone\" remaps involving Alt, Ctrl, or Shift.",
+        "why_needed": "Keyboard Manager's mouse-hook path only matters when those remaps exist, so the remap configuration changes the likely owner immediately.",
+        "how_to_collect": "If Keyboard Manager is enabled, please paste the exact remaps configured there, especially any single-key or \"Alone\" remaps that involve Alt, Ctrl, or Shift."
+      },
+      {
+        "evidence_type": "settings_permissions",
+        "information": "Whether the issue happens only in World of Warcraft and whether PowerToys and WoW are running at the same elevation level.",
+        "why_needed": "That distinguishes a game-specific or admin-bound input path from a general PowerToys hook problem.",
+        "how_to_collect": "Please confirm whether Alt+Wheel is swallowed only in World of Warcraft or also in another app that uses the same combo, and whether both PowerToys and WoW were running as administrator or both running normally."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm enabled modules and remaps",
+      "note": "Narrow which PowerToys hook path owns Alt+Wheel before proposing a fix.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49411,
+        "body": "Thanks for the report. `foxmsft` already checked default Grab And Move behavior and could not reproduce this just from Alt being the modifier, so the missing piece is **which PowerToys hook or remap is active on your machine when Alt+Wheel is swallowed**.\n\n**Needed**\n1. Please list which PowerToys modules were enabled when this happened, and try one run with **only Keyboard Manager disabled** to say whether Alt+Wheel still gets swallowed.\n2. If Keyboard Manager is enabled, please paste the exact remaps configured there, especially any single-key or **\"Alone\"** remaps that involve Alt / Ctrl / Shift.\n3. Please confirm whether this happens only in **World of Warcraft** or also in another app that uses the same Alt+Wheel combo.\n4. Please also confirm whether **PowerToys** and **World of Warcraft** were both running as administrator or both running normally.\n\nThis will distinguish a specific hook/remap path from a WoW-only or elevation-specific input conflict."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "Dark-Jaguar",
+  "comments": 2,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 2
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 68,
+    "level": "yellow",
+    "rationale": "PowerToys is clearly involved, but the responsible hook owner is still ambiguous without enabled-module and remap scope."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

@@ -1,48 +1,76 @@
 {
+  "schemaVersion": 5,
   "number": 49306,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
+  "stage": "triaging",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path."
+  "generated_at": "2026-09-09T21:22:58Z",
+  "evaluated_at": "2026-09-09T21:22:58Z",
+  "source_updated_at": "2026-07-14T10:08:44Z",
+  "title": "CmdPal: Performance monitor cannot detect my hardware",
+  "url": "https://github.com/microsoft/PowerToys/issues/49306",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report already includes screenshots, a restart-based symptom, and a PowerToys bug report ZIP, so maintainers can reproduce the stale performance-monitor state locally before deciding whether the dock-order note is a second bug.",
+    "evidence": [
+      "The issue says the Command Palette performance monitor often fails after turning off and restarting, and it includes before/after screenshots.",
+      "The report already attaches PowerToysReport_2026-07-14-12-17-55.zip.",
+      "Current source in src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs still initializes band titles from loading placeholders and updates them asynchronously after restart-related activation."
+    ],
+    "recommended_action": "Run a maintainer-side reproduce pass against the performance-monitor restart path and split out the separate clock-order symptom only if it still appears after reproducing.",
+    "evaluated_at": "2026-09-09T21:22:58Z",
+    "source_updated_at": "2026-07-14T10:08:44Z"
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused reproduction evidence",
-    "reason": "Current data does not yet isolate a safe code path to change."
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current report is strong enough for reproduction, but it still bundles stale performance-monitor output with a dock-order symptom, so this pass should confirm the live behavior before proposing a repository change."
+  },
+  "issue_context": {
+    "summary": "The reporter says Command Palette performance widgets fail after restart and also notes that the docked Time widget can move relative to the Task Manager section after the same restart cycle.",
+    "known_information": [
+      "The issue is filed against PowerToys 0.100.2 on Windows 11 25H2 with a GitHub install.",
+      "The body describes a repeated restart-triggered symptom rather than a one-off crash.",
+      "The report already includes expected/actual screenshots and a PowerToys diagnostic ZIP."
+    ],
+    "inferences": [
+      "The issue may combine two related but distinct dock problems: performance data refresh after restart and persistent ordering of dock widgets.",
+      "The current evidence is sufficient for maintainer reproduction, but not yet specific enough to choose one implementation plan for both symptoms together."
+    ],
+    "analysis": "Because the issue already includes a concrete restart pattern and a bug report ZIP, a reproduce action is more useful than sending the reporter back for another general information roundtrip. The lightweight source pass shows that performance widgets still start from placeholder-style state and update asynchronously, while other recent perf-monitor code changed GPU detection behavior; that is enough to justify maintainer-side confirmation before a design is proposed.",
+    "initial_investigation": [
+      "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs creates the dock items up front and updates their titles later from widget Updated events, which is a plausible restart-refresh boundary.",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs can soft-disable the performance-monitor provider after repeated crashes and load placeholder pages instead of live counters.",
+      "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/DevHome/Helpers/GPUStats.cs already contains newer adapter-enumeration work keyed by GPU LUIDs, so current-main hardware detection behavior is not identical to older perf-monitor failures."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-49306",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "reproduce-49306",
+      "type": "reproduce",
+      "label": "Reproduce CmdPal performance monitor restart failure",
       "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 49306,
-        "body": "Could you attach a short recording and a PowerToys bug-report ZIP, then list the exact Command Palette settings involved (including dock position, monitor layout/scaling, and whether the command is pinned or launched from search)? That will let us separate layout/state issues from command-provider issues."
+      "confirm": false,
+      "reproduce": {
+        "module": "Command Palette",
+        "version": "0.100.2 or newer",
+        "prerequisites": [
+          "Enable the Command Palette dock with the performance monitor band visible.",
+          "Keep the Time/clock component visible if you also want to confirm the ordering symptom."
+        ],
+        "steps": [
+          "Start with a working dock that shows the performance monitor data.",
+          "Turn off and restart the affected component or reboot/sign out and back in, matching the issue description.",
+          "Open the dock again and compare the performance band against the expected screenshot.",
+          "If the performance monitor still shows the wrong placeholder or stale state, also note whether the Time widget changed relative position during the same restart cycle."
+        ],
+        "expected_result": "The performance monitor should repopulate live hardware data after restart, and dock item order should remain stable if that second symptom is still part of the same bug.",
+        "attachments": [
+          "https://github.com/user-attachments/files/29992917/PowerToysReport_2026-07-14-12-17-55.zip"
+        ]
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Maintainer-side local repro guidance only; this artifact does not post upstream content."
     }
-  ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-14T10:08:44Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-    "evidence": [
-      "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "Current data does not yet isolate a safe code path to change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-14T10:08:44Z"
-  }
+  ]
 }

@@ -1,48 +1,103 @@
 {
-  "number": 49254,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused reproduction evidence",
-    "reason": "Current data does not yet isolate a safe code path to change."
-  },
-  "actions": [
-    {
-      "id": "request-info-49254",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 49254,
-        "body": "Could you retest this on the latest stable PowerToys build and attach a PowerToys bug-report ZIP? Please include the exact key/shortcut mapping, whether PowerToys is running elevated, the contents of `%LOCALAPPDATA%\\Microsoft\\PowerToys\\Keyboard Manager\\Engine\\Logs\\`, and a short recording showing the failure from a fresh launch."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
-    }
+  "number": 49254,
+  "title": "Keyboard manager doesn't work",
+  "url": "https://github.com/microsoft/PowerToys/issues/49254",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "assignees": [],
+  "generated_at": "2026-09-09T21:38:22Z",
+  "evaluated_at": "2026-09-09T21:38:22Z",
   "source_updated_at": "2026-07-17T14:56:50Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
+    "rationale": "The report says `remap any key to any other key` does not work and already includes a bug-report ZIP, but it still does not name the actual failed mapping, the affected app scope, or whether the problem is configuration-wide versus elevation-specific.",
     "evidence": [
-      "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-      "Draft only; no upstream comment is posted without explicit approval."
+      "The current issue body is too broad: `Remap any key to any other key` could mean a settings-load failure, a specific key combination, or an app/elevation interaction.",
+      "A public comment already asked for specific reproduction steps and how often the issue reproduces, but no reply has clarified the exact failing remap.",
+      "The issue already includes a PowerToysReport ZIP, so another generic request for logs would duplicate existing evidence.",
+      "Focused source review of Keyboard Manager shows the runtime uses low-level hooks and injected input paths where exact key choice, target app, and elevation context can matter."
     ],
-    "recommended_action": "Current data does not yet isolate a safe code path to change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-17T14:56:50Z"
-  }
+    "recommended_action": "Ask for the exact failed remap, app/elevation scope, and a short deterministic repro instead of repeating a generic logs request."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current report still lacks the specific mapping and target context needed to isolate whether the failure is configuration load, input injection, or app-specific behavior."
+  },
+  "issue_context": {
+    "summary": "Keyboard Manager reportedly ignores basic key-to-key remaps, but the issue never says which remap fails. Because a bug-report ZIP already exists, the missing evidence is the exact mapping, where it fails, and whether elevation/layout are involved.",
+    "known_information": [
+      "The report is on PowerToys 0.100.2 from the Microsoft Store on Windows 10 with English (UK).",
+      "A PowerToysReport ZIP is already attached.",
+      "A public comment asked for specific steps and how often the bug reproduces, but there is no follow-up answer yet.",
+      "No linked pull requests or other comments are present."
+    ],
+    "inferences": [
+      "This may be a real Keyboard Manager bug, but the current wording is too broad to tell whether one specific remap fails, settings never load, or the problem only affects certain apps/elevation boundaries.",
+      "Because Keyboard Manager uses hook/injection paths, exact key choice and app scope are likely decisive."
+    ],
+    "analysis": "The reporter already supplied a bug-report ZIP, so the next question should not be `send more logs`. The shortest useful follow-up is to ask exactly which remap fails, where it fails, how often it fails, and whether keyboard layout or admin boundaries are involved.",
+    "initial_investigation": [
+      "Reviewed the issue body, the attached bug-report ZIP presence, and the existing public comment asking for more specific steps.",
+      "Inspected `src/modules/keyboardmanager/dll/dllmain.cpp` and `KeyboardManagerEngineLibrary/KeyboardManager.cpp` to confirm the runtime depends on a separate engine process and low-level hook startup.",
+      "Inspected `src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp` and confirmed injected remap events have code paths where exact keys and UIPI/elevation context can affect behavior."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "keyboard_layout",
+        "information": "The exact failed remap, including source key, target key, and any non-US or special-key layout involved.",
+        "why_needed": "The current `any key to any other key` wording is too broad to identify the failing remap path.",
+        "how_to_collect": "Please reply with the exact remap that fails (for example `A -> B` or `Caps Lock -> Escape`) and mention the exact keyboard layout if the keys depend on a non-US or special layout."
+      },
+      {
+        "evidence_type": "settings_permissions",
+        "information": "Whether the failure happens in every app or only certain/elevated apps, and whether PowerToys itself is running as administrator.",
+        "why_needed": "That separates a general Keyboard Manager failure from an app/elevation-specific injection boundary.",
+        "how_to_collect": "Please confirm whether the remap fails in every app or only specific apps, and whether PowerToys and the affected app are running as administrator or both running normally."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "A short deterministic repro from a fresh PowerToys start, plus how often it fails.",
+        "why_needed": "The issue currently does not say whether this happens every time, intermittently, or only after certain setup steps.",
+        "how_to_collect": "Please share the shortest numbered steps from a fresh PowerToys start that reproduce the failed remap, and tell us whether it happens every time or only occasionally."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm exact failed remap",
+      "note": "Ask for the specific remap and app/elevation scope that the current broad report does not provide.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49254,
+        "body": "Thanks for attaching a PowerToys report. Right now the issue says **\"remap any key to any other key\"**, which is too broad to tell whether this is one specific remap, a settings-load failure, or an app/elevation-specific injection problem.\n\n**Needed**\n1. Please reply with the exact remap that fails (for example `A -> B` or `Caps Lock -> Escape`).\n2. Please mention the exact keyboard layout if the keys depend on a non-US or special layout.\n3. Please confirm whether the remap fails in **every app** or only certain apps, and whether **PowerToys** and the affected app are both running as administrator or both running normally.\n4. Please share the shortest numbered repro steps from a fresh PowerToys start, and tell us whether it fails every time or only occasionally.\n\nThis will separate a specific Keyboard Manager remap bug from a configuration-load or elevation-boundary issue."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "Flottii",
+  "comments": 1,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 1
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 62,
+    "level": "yellow",
+    "rationale": "The issue probably reflects a real Keyboard Manager problem, but the exact remap and app scope are still missing."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

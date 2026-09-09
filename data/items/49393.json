@@ -1,23 +1,91 @@
 {
-  "number": 49393,
+  "schemaVersion": 5,
   "kind": "issue",
+  "number": 49393,
+  "title": "Fancy Zones drop calculation",
+  "url": "https://github.com/microsoft/PowerToys/issues/49393",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-09T21:38:22Z",
+  "evaluated_at": "2026-09-09T21:38:22Z",
+  "source_updated_at": "2026-07-20T15:06:32Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "FancyZones is not clamping the realized snapped window back inside the monitor work area after Windows enforces a minimum width.",
+    "evidence": [
+      "The issue repro is specifically a window such as Steam or GOG that cannot shrink enough horizontally, dropped into a right-hand zone, and ends with its right edge beyond the monitor bounds.",
+      "`src/modules/fancyzones/FancyZonesLib/WorkArea.cpp` calls `FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(...)` and then `FancyZonesWindowUtils::SizeWindowToRect(...)` when snapping.",
+      "`src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp` applies the requested placement but never clamps the realized window rectangle back inside the monitor work area after Windows enforces the app's minimum width.",
+      "Existing tests under `src/modules/fancyzones/FancyZonesTests/UnitTests/WorkArea.Spec.cpp` cover ordinary resizing paths, but current coverage does not pin the oversized-right-edge case described in the issue."
+    ],
+    "recommended_action": "Approve the post-placement work-area clamp design and add the oversized-right-zone regression before changing broader FancyZones snapping behavior."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "There is no linked upstream fix attempt yet, and the current repro plus source investigation already identify a narrow FancyZones snapping path that is ready for implementation approval."
+  },
+  "issue_context": {
+    "summary": "This FancyZones bug is already design-ready. The report and current source both point to a narrow snapping failure: after Windows enforces a minimum width, FancyZones does not shift the realized window back inside the work area for right-edge zones.",
+    "known_information": [
+      "The report is on PowerToys 0.100.2 and explicitly calls out Steam or GOG windows dropped into a right-side zone that is narrower than the window's minimum width.",
+      "A PowerToysReport ZIP is attached.",
+      "A later public comment says the issue appears to be a right-edge minimum-width placement edge case and offers to work on it if triage confirms the diagnosis.",
+      "There is no linked PR or existing public fix attempt on the issue."
+    ],
+    "inferences": [
+      "The bug likely appears when Windows preserves the window's minimum width after FancyZones requests a narrower target rect, leaving the realized right edge off-screen.",
+      "Because the snap path and missing regression are already identified, more reporter evidence is unlikely to change the next engineering step."
+    ],
+    "analysis": "Unlike the less-specific issues in this batch, this one is already narrow enough for an implementation-grade design. The public repro lines up directly with the current snapping helpers, and current tests do not cover the oversized right-edge case. That makes a design-approval action more valuable than another reproduce/info request.",
+    "initial_investigation": [
+      "Reviewed the live issue body, attachment presence, and the public follow-up comment volunteering to implement after confirmation.",
+      "Inspected `src/modules/fancyzones/FancyZonesLib/WorkArea.cpp` and confirmed `WorkArea::Snap` routes through `AdjustRectForSizeWindowToRect(...)` and `SizeWindowToRect(...)`.",
+      "Inspected `src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp` and confirmed the placement helper does not re-clamp the realized window bounds back inside the monitor work area after Windows applies minimum-size constraints.",
+      "Inspected `src/modules/fancyzones/FancyZonesTests/UnitTests/Util.cpp` and `WorkArea.Spec.cpp` and confirmed the current tests do not synthesize the minimum-width edge case described in the report."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve FancyZones work-area clamp design",
+      "note": "The root cause, affected files, and regression-test shape are already identified."
+    }
+  ],
+  "repository": "microsoft/PowerToys",
   "track": "fix",
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design ready — needs approval",
-    "detail": "FancyZones is not clamping the realized snapped window back inside the monitor work area after Windows enforces a minimum width."
+  "author": "mrj760",
+  "comments": 1,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 1
   },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Approve the design and build the fix",
-    "reason": "Approve the post-placement work-area clamp design and add the oversized-right-zone regression before touching broader FancyZones snapping behavior."
-  },
-  "actions": [],
-  "confidence": "High",
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [
+    {
+      "title": "Clamp oversized snapped windows back inside the work area after placement",
+      "root_cause": "FancyZones computes and applies the target zone rectangle, but after Windows enforces a resizable window's minimum width there is no post-placement clamp that shifts the realized window back inside the monitor work area.",
+      "plan": [
+        "Keep the current zone-rect computation, but add a post-placement check that reads the realized window rectangle and offsets it back inside the monitor work area without shrinking below the app's enforced minimum size.",
+        "Cover the bug with a dedicated FancyZones unit-test window that reports a minimum width larger than the zone width so the oversize-right-edge case becomes reproducible in tests.",
+        "Regression-check ordinary resizable and non-resizable snapping to ensure the new clamp only affects overflow cases."
+      ],
+      "verification": [
+        "Snap an oversized minimum-width window into a right-edge zone and confirm the final rect stays fully visible on-screen.",
+        "Run the updated FancyZones snapping tests to confirm standard snap behavior is unchanged."
+      ],
+      "confidence": {
+        "score": 89,
+        "level": "green",
+        "rationale": "The current repro, snap helpers, and missing regression coverage converge on the same fix direction."
+      }
+    }
+  ],
   "design": {
     "root_cause": "FancyZones snaps a window by computing a zone rect, passing it through AdjustRectForSizeWindowToRect, and then calling SizeWindowToRect. That path never validates the final realized window rect against the monitor work area after Windows enforces a resizable window's minimum tracking size. On right-edge zones, a window such as Steam/GOG can end up wider than the zone, keep the requested left edge, and spill its realized right edge off-screen.",
     "evidence": [
@@ -119,20 +187,12 @@
       "Hard-coding a right-edge-only special case would miss top, bottom, and left overflow scenarios on unusual work-area geometries."
     ]
   },
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-20T15:06:32Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "FancyZones is not clamping the realized snapped window back inside the monitor work area after Windows enforces a minimum width.",
-    "evidence": [
-      "FancyZones is not clamping the realized snapped window back inside the monitor work area after Windows enforces a minimum width.",
-      "The issue repro is specifically a window that cannot shrink enough horizontally, dropped into a right-hand zone, ending with its right edge beyond the monitor bounds.",
-      "src/modules/fancyzones/FancyZonesLib/WorkArea.cpp calls FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(...) and then FancyZonesWindowUtils::SizeWindowToRect(...) when snapping.",
-      "src/modules/fancyzones/FancyZonesLib/WindowUtils.cpp adjusts borders and non-resizable windows, but SizeWindowToRect never clamps the final window rectangle back inside the monitor work area after SetWindowPlacement.",
-      "Existing unit tests cover resizable vs non-resizable snapping in WorkArea.Spec.cpp, but there is no regression covering a resizable window whose minimum width is larger than the target zone."
-    ],
-    "recommended_action": "Approve the post-placement work-area clamp design and add the oversized-right-zone regression before touching broader FancyZones snapping behavior.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-20T15:06:32Z"
-  }
+  "full_design": true,
+  "confidence": {
+    "score": 90,
+    "level": "green",
+    "rationale": "The public repro, current snap code, and missing regression coverage all point to the same narrow FancyZones placement bug."
+  },
+  "pending_author": false,
+  "stage": "awaiting_design_approval"
 }

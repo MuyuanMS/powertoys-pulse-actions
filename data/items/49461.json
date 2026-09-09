@@ -1,33 +1,109 @@
 {
-  "number": 49461,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
-  },
-  "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49461,
+  "title": "Having \"Awake\" aktivated makes my laptop need a hard reset in the morning",
+  "url": "https://github.com/microsoft/PowerToys/issues/49461",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Awake"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-09T21:38:22Z",
+  "evaluated_at": "2026-09-09T21:38:22Z",
   "source_updated_at": "2026-07-23T07:05:16Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "rationale": "The report already narrows the symptom to Awake being enabled but passive, and it includes a bug-report ZIP, but a hard-reset overnight crash still needs OS crash evidence and a current-build confirmation before PowerToys can be blamed or fixed safely.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "The reporter says the laptop crashes overnight only when Awake is enabled, even when Awake is set to follow the normal power plan, and that turning the module off completely stops the recurring problem.",
+      "The issue already includes a PowerToysReport ZIP plus detailed hardware, Windows build, and install-scope information.",
+      "`src/modules/awake/Awake/Core/Manager.cs` computes active keep-awake execution-state flags only for non-passive modes and `ReapplyAwakeState()` returns early when `CurrentOperatingMode` is `PASSIVE`.",
+      "There are no comments or linked fixes that identify whether the overnight hard reset is a PowerToys-owned passive-mode bug or a deeper OS/driver/firmware crash path."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-23T07:05:16Z"
-  }
+    "recommended_action": "Request crash-time Event Viewer evidence plus a latest-stable A/B confirmation for Awake Off versus Awake passive mode."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report names the right module, but the current public evidence does not isolate a PowerToys code path strongly enough to justify a fix proposal without crash-time OS evidence."
+  },
+  "issue_context": {
+    "summary": "The reporter already did useful narrowing: the machine reportedly hard-resets overnight only when Awake is left enabled, even in follow-normal-power-plan mode. Because passive Awake should not assert keep-awake flags, the next discriminating evidence is crash-time OS data and current-build confirmation rather than another generic bug-report request.",
+    "known_information": [
+      "The issue is on PowerToys 0.99.1 using auto-update, targeting the Awake module.",
+      "The laptop is a Lenovo P16s on Windows 11 Pro 25H2 build 26200.8875, and the reporter says the problem stops when Awake is fully turned off from the tray.",
+      "A PowerToysReport ZIP is already attached.",
+      "There are no public maintainer comments or linked fixes on the thread."
+    ],
+    "inferences": [
+      "Because passive Awake should not continually request `ES_SYSTEM_REQUIRED`, the overnight hard reset may involve a deeper power-event interaction than ordinary keep-awake mode logic.",
+      "A fresh current-build comparison between Awake Off and Awake Passive could quickly separate an old-build issue from a still-current regression."
+    ],
+    "analysis": "This is not a good place for a speculative fix. The reporter already provided more than the average Awake issue, but a motherboard-reset-level overnight crash still needs OS crash signatures to establish ownership. The narrowest next step is crash-time Event Viewer data plus a simple current-build comparison of Awake Off versus Passive.",
+    "initial_investigation": [
+      "Reviewed the full issue body and noted the existing PowerToysReport ZIP and detailed hardware/Windows information.",
+      "Inspected `src/modules/awake/Awake/Core/Manager.cs` and confirmed passive mode early-returns from `ReapplyAwakeState()` and does not compute active keep-awake flags the same way as indefinite/timed modes.",
+      "Inspected `src/modules/awake/Awake.ModuleServices/AwakeService.cs` and confirmed the current service model explicitly distinguishes Passive, Indefinite, Timed, and Expirable states."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Whether the same overnight crash still reproduces on the latest stable PowerToys build.",
+        "why_needed": "The report is on 0.99.1, so triage first needs to know whether the problem is still current on today's stable bits.",
+        "how_to_collect": "Please update to the latest stable PowerToys build if possible and confirm whether the overnight crash still happens there."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "A direct comparison between two overnight runs: Awake fully Off versus Awake enabled but in passive/follow-normal-power-plan mode.",
+        "why_needed": "That separates a general system instability from a crash path that only correlates with the passive Awake process being present.",
+        "how_to_collect": "Please compare one overnight run with Awake fully Off and one with Awake enabled but set to follow the normal power plan, keeping the rest of the setup the same, and report whether only the passive-Awake run crashes."
+      },
+      {
+        "evidence_type": "event_viewer",
+        "information": "Crash-time System/Application events such as BugCheck, Kernel-Power, WHEA, or Application Error entries from the failing overnight run.",
+        "why_needed": "A hard reset needs OS-level fault evidence to determine whether PowerToys owns the failure or is only correlated with it.",
+        "how_to_collect": "After the next failing reboot, please open Event Viewer > Windows Logs > System and Application and share the events from the crash time, especially BugCheck, Kernel-Power, WHEA, or Application Error entries."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic bundle from a current-build repro, captured as soon as Windows is usable again after the failing run.",
+        "why_needed": "A fresh bundle on the current build can confirm which Awake state and settings were active during the latest reproducing run.",
+        "how_to_collect": "If the issue still reproduces on the current stable build, please submit a comment containing `/bugreport` right after Windows comes back from the failing run, or run `BugReportTool.exe` if the normal UI cannot open."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Share crash event entries",
+      "note": "Ask for crash-time OS evidence and a current-build A/B confirmation instead of repeating a generic bug-report request.",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 49461,
+        "body": "Thanks for already attaching a PowerToys report and for narrowing this to **Awake enabled but following the normal power plan**.\n\n**Needed**\n1. Please confirm whether this still reproduces on the latest stable PowerToys build.\n2. Please compare two overnight runs with the rest of the setup unchanged: one with **Awake fully Off**, and one with **Awake enabled but in passive / follow-normal-power-plan mode**, and tell us whether only the passive-Awake run crashes.\n3. After the next failing reboot, please open **Event Viewer > Windows Logs > System** and **Application** and share the entries from the crash time, especially any **BugCheck**, **Kernel-Power**, **WHEA**, or **Application Error** events.\n4. If it still reproduces on the current build, please submit a comment containing `/bugreport` right after Windows becomes usable again, or run `BugReportTool.exe` if the normal UI cannot open.\n\nThis will tell us whether the hard reset is tied to PowerToys' passive Awake process or to a broader OS/driver crash path."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "akraus53",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 63,
+    "level": "yellow",
+    "rationale": "The reporter already narrowed the scenario well, but ownership of an overnight hard reset still depends on current-build and OS-crash evidence."
+  },
+  "pending_author": false,
+  "stage": "needs_reply"
 }

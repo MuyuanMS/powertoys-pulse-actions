@@ -1,33 +1,128 @@
 {
-  "number": 49341,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
+  "generated_at": "2026-09-09T21:44:47Z",
+  "evaluated_at": "2026-09-09T21:44:47Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable",
-    "detail": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Do focused module triage",
-    "reason": "Hide or disable dock context-menu shortcuts that cannot actually be invoked from that surface."
-  },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49341,
+  "track": "triage",
+  "stage": "needs_reply",
   "source_updated_at": "2026-07-15T20:44:36Z",
+  "title": "CmdPal: Context menu on dock shows unusable shortcuts",
+  "url": "https://github.com/microsoft/PowerToys/issues/49341",
+  "author": "jiripolasek",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "The dock context-menu screenshot shows advertised shortcuts, but the report never identifies which exact command/shortcut pair fails, and current dock/context-menu code already wires keyboard input into those commands.",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "status": "needs_information",
+    "rationale": "The claim is plausible, but one concrete failing shortcut example is still missing. Current code already focuses the dock context menu and routes key presses through ContextMenuViewModel.CheckKeybinding(), so maintainers need the exact dock item and command that allegedly do not fire.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "The issue includes a screenshot of a dock item context menu with shortcuts, but does not name any specific command whose shortcut fails.",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockControl.xaml.cs focuses the context-menu search box when the dock flyout opens, specifically so the flyout captures keyboard input.",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContextMenu.xaml.cs handles PreviewKeyDown and calls ViewModel.CheckKeybinding(...) to invoke matching context-menu commands.",
+      "Without one failing command/shortcut pair, the current thread cannot distinguish a dock-wide keyboard bug from a single command exposing an incorrect RequestedShortcut value."
     ],
-    "recommended_action": "Hide or disable dock context-menu shortcuts that cannot actually be invoked from that surface.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Ask the reporter for one exact dock item, context-menu command, and shown shortcut that fails, plus a short recording of the attempted invocation.",
+    "evaluated_at": "2026-09-09T21:44:47Z",
     "source_updated_at": "2026-07-15T20:44:36Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is still plausible, but the current report needs one exact failing example before a concrete dock or command-binding defect can be identified honestly."
+  },
+  "issue_context": {
+    "summary": "The dock context menu displays keyboard shortcuts, but the thread does not yet show which specific shortcut is unusable even though the current dock context-menu implementation already has shortcut handling.",
+    "known_information": [
+      "The issue was filed against a main/dev Visual Studio build of Command Palette.",
+      "The only attachment in the issue is a screenshot of a dock context menu.",
+      "No follow-up comments or bug-report ZIP are present.",
+      "The report is labeled Product-Command Palette and CmdPal - Dock with no assignee."
+    ],
+    "inferences": [
+      "This may be a real bug, but it may also be limited to one command exposing a misleading shortcut rather than the dock context menu ignoring all keyboard shortcuts.",
+      "Because the dock context menu explicitly tries to capture keyboard input, the missing failing example is the fastest way to separate focus loss from bad shortcut metadata."
+    ],
+    "analysis": "The thread needs a concrete example rather than a broader code search. Current source already shows shortcut plumbing in place, so the next high-value input is one reproducible command/shortcut pair that still fails.",
+    "initial_investigation": [
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockControl.xaml.cs sets ContextControl.ShowFilterBox = true, calls PrepareForOpen(...), and focuses the search box in ContextMenuFlyout_Opened().",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContextMenu.xaml.cs listens for PreviewKeyDown and TryCommandKeybindingMessage, then dispatches matching shortcuts through the view model.",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ContextMenuViewModel.cs builds a shortcut dictionary from RequestedShortcut values, so a bad RequestedShortcut on one command could look like a dock issue unless the failing command is identified precisely."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact dock item, exact context-menu command, and exact shortcut text shown beside it that does not work.",
+        "why_needed": "Maintainers need one concrete failing command/shortcut pair to determine whether the bug is in dock shortcut handling or in one command advertising the wrong shortcut.",
+        "how_to_collect": "Reply with the dock item you right-clicked, the menu command you tried, and the shortcut text shown beside that command."
+      },
+      {
+        "evidence_type": "gif_video",
+        "information": "A short recording that shows the context menu open and the shown shortcut being pressed.",
+        "why_needed": "This will show whether the shortcut is ignored entirely, focus is leaving the menu, or some other command is firing instead.",
+        "how_to_collect": "Record a short clip of right-clicking the dock item, pressing the shown shortcut, and showing the actual result."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether clicking the same command with the mouse works and whether keyboard focus is inside the context-menu filter/search box when the shortcut is pressed.",
+        "why_needed": "That separates command binding failures from focus/input-routing issues.",
+        "how_to_collect": "Include in your reply whether mouse click works for the same command and whether the focus caret is inside the context-menu search box when you press the shortcut."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-49341",
+      "type": "approve_design",
+      "label": "Approve dock shortcut investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The issue likely needs a code fix only if one concrete dock command/shortcut pair is shown to bypass the existing context-menu keybinding plumbing.",
+      "issue": {
+        "number": 49341,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "request-info-49341",
+      "type": "request_info",
+      "label": "Identify the dock shortcut that does not fire",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "issue": 49341,
+        "repository": "microsoft/PowerToys",
+        "body": "Thanks for the screenshot. The missing detail is which exact dock command and shortcut are failing. Current dock context-menu code already tries to keep keyboard focus inside the menu and route shown shortcuts through the command bindings, so we need one concrete failing example to tell whether this is a dock-wide bug or a single command advertising the wrong shortcut.\n\n**Needed**\n1. Please name the exact **dock item**, the exact **context-menu command**, and the exact **shortcut text** shown beside it.\n2. Please attach a short recording or GIF of: right-click the dock item -> press the shown shortcut -> show what actually happens.\n3. Please say whether **clicking the same command with the mouse works** and whether keyboard focus is inside the **context-menu search/filter box** when you press the shortcut.\n\nThat will tell us whether the shortcut is unbound, focus is being lost, or only a specific advertised shortcut is incorrect."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Correct the dock context-menu shortcut path for the failing command",
+      "root_cause": "The current best hypotheses are either that one dock context-menu command is exposing a RequestedShortcut that is not actually invokable in dock context, or that a dock-specific focus/input path is preventing one advertised shortcut from reaching ContextMenuViewModel.CheckKeybinding().",
+      "plan": [
+        "Capture one exact failing dock command/shortcut pair and reproduce it on a current build.",
+        "Verify whether the shortcut is missing from the dock context-menu keybinding dictionary or whether focus/input routing is bypassing the existing PreviewKeyDown handling.",
+        "Fix the specific bad RequestedShortcut metadata or dock input-routing path and confirm the menu no longer advertises unusable shortcuts."
+      ],
+      "verification": [
+        "Open the same dock item context menu and confirm the reported shortcut now performs the intended command.",
+        "Check that the command still works via mouse click and that unrelated context-menu shortcuts remain functional."
+      ],
+      "confidence": {
+        "score": 31,
+        "level": "red",
+        "rationale": "The issue shows the UI state but not one concrete failing command/shortcut pair, and current source already contains generic dock context-menu shortcut handling."
+      }
+    }
+  ]
 }

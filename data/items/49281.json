@@ -1,33 +1,81 @@
 {
+  "schemaVersion": 5,
   "number": 49281,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_reply",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-09T21:22:58Z",
+  "evaluated_at": "2026-09-09T21:22:58Z",
   "source_updated_at": "2026-07-12T11:04:03Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the linked canonical issue or pull request and do not start duplicate work."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "Command palette dock is unstable with frequent crashes",
+  "url": "https://github.com/microsoft/PowerToys/issues/49281",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation.",
+    "status": "needs_information",
+    "rationale": "The issue already has a ZIP and a maintainer comment that narrows one crash to AdaptiveCards.Rendering.WinUI3.dll, but it still does not identify which specific dock extension or action reliably triggers the access violation.",
     "evidence": [
-      "The issue is explicitly marked duplicate by the upstream triage state, so the canonical linked report should carry further investigation."
+      "The issue says Command Palette Dock crashes spontaneously and mentions adding or using extensions such as Simple snippet and To-do list.",
+      "A maintainer comment refocuses the issue away from generic Dock instability and records an Application Error access violation in AdaptiveCards.Rendering.WinUI3.dll.",
+      "Current source in src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/AdaptiveCardsConfig.cs and ContentFormControl.xaml.cs shows Command Palette still hosts Adaptive Cards content in several extension/form paths."
     ],
-    "recommended_action": "Monitor the linked canonical issue or pull request and do not start duplicate work.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask for the exact extension/action trigger and fresh crash evidence so maintainers can narrow the Adaptive Cards crash to one reproducible Dock scenario.",
+    "evaluated_at": "2026-09-09T21:22:58Z",
     "source_updated_at": "2026-07-12T11:04:03Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A code fix is plausible, but the current evidence still spans multiple Dock and Adaptive Cards entry points and does not isolate one reproducible crash path."
+  },
+  "issue_context": {
+    "summary": "The issue began as broad Dock instability, but the live maintainer triage narrowed it to a crash path that surfaces as an access violation in AdaptiveCards.Rendering.WinUI3.dll.",
+    "known_information": [
+      "The report is filed against PowerToys 0.100.2 from the Microsoft Store and includes a PowerToys bug report ZIP.",
+      "The reporter mentions instability after adding or using extensions, especially Simple snippet and To-do list.",
+      "A maintainer comment says other dock-position issues should be treated separately and quotes an Application Error entry for AdaptiveCards.Rendering.WinUI3.dll."
+    ],
+    "inferences": [
+      "The likely crash boundary is not generic monitor placement but a specific extension or adaptive-card-rendering path inside Dock-hosted content.",
+      "The current report is still too broad to choose a safe fix plan because several Command Palette surfaces use Adaptive Cards."
+    ],
+    "analysis": "This should stay in needs-information rather than be marked duplicate or design-ready. The maintainer comment is useful because it isolates the crash family, but the issue still needs one more step of narrowing: which extension or action produces the failing Adaptive Cards content, and whether the same crash still occurs on a current build.",
+    "initial_investigation": [
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/AdaptiveCardsConfig.cs initializes the AdaptiveCards.Rendering.WinUI3 host configuration used by Command Palette.",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContentFormControl.xaml.cs still hosts Adaptive Cards form content, so several extension-driven pages can converge on the same renderer."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Which specific extension, dock band, or action was active when the crash occurred.",
+        "why_needed": "This distinguishes a generic Dock restore failure from an extension-specific Adaptive Cards render path.",
+        "how_to_collect": "Reply with the exact extension or band in use when the crash happens, such as Simple snippet, To-do list, or extension gallery."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "A short numbered repro on a current build that shows how to make the crash happen again.",
+        "why_needed": "Without a stable trigger, maintainers cannot tell which Adaptive Cards code path to inspect first.",
+        "how_to_collect": "List the steps from opening Command Palette or Dock through the action that immediately precedes the crash."
+      },
+      {
+        "evidence_type": "crash_dump",
+        "information": "A Windows Error Reporting dump or the full Application Error details from the failing run, if available.",
+        "why_needed": "The issue already has one event-log signature; a dump or full event details can confirm the same crash site and module offsets on a current build.",
+        "how_to_collect": "After reproducing the crash, attach the WER dump if Windows saved one, or copy the Application Error details from Event Viewer for that run."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-49281",
+      "type": "request_info",
+      "label": "Identify crashing CmdPal extension path",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 49281,
+        "body": "Thanks for the existing ZIP and the maintainer note that narrows one crash to AdaptiveCards.Rendering.WinUI3.dll. To isolate the failing Command Palette path, please provide:\n\n1. The exact extension, dock band, or action that was active when the crash happened (for example Simple snippet, To-do list, or extension gallery).\n2. A short numbered repro on a current build.\n3. A WER dump if Windows captured one, or the full Application Error details from Event Viewer for that crash.\n\nThat will tell us which Adaptive Cards render path inside CmdPal needs investigation."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

@@ -1,48 +1,127 @@
 {
-  "number": 49347,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
+  "generated_at": "2026-09-09T21:44:47Z",
+  "evaluated_at": "2026-09-09T21:44:47Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
+  "number": 49347,
+  "track": "triage",
+  "stage": "needs_reply",
+  "source_updated_at": "2026-07-16T02:20:24Z",
+  "title": "PowerToys Run bar visual bug.",
+  "url": "https://github.com/microsoft/PowerToys/issues/49347",
+  "author": "sdn2k",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "The screenshots clearly show an extra black or white strip in PowerToys Run, but the thread never identifies which Windows appearance setting or accessibility toggle triggers it, so the visual path cannot yet be narrowed reliably.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The issue looks real, but the public report does not say which OS-level theme/backdrop setting caused it, and that missing discriminator is what would separate a generic PowerToys Run rendering bug from a specific theme-transition or accessibility-state interaction.",
+    "evidence": [
+      "The issue includes screenshots of the visual artifact and says the reporter thinks it started after changing some Windows theme setting, but does not name the setting.",
+      "The same report says Command Palette does not show the issue, which suggests the trigger may be specific to PowerToys Run's WPF window/backdrop path rather than a universal shell theme problem.",
+      "No bug-report ZIP or follow-up comments are attached.",
+      "Current PowerToys Run UI code uses separate themed borders and transparent backgrounds in MainWindow.xaml, so the exact OS appearance state matters to narrowing the bad bar source."
+    ],
+    "recommended_action": "Ask the reporter to identify the exact Windows appearance settings involved, attach settings screenshots, and capture one fresh diagnostic bundle immediately after reproducing the artifact.",
+    "evaluated_at": "2026-09-09T21:44:47Z",
+    "source_updated_at": "2026-07-16T02:20:24Z"
   },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is plausible, but the current report needs one focused theme-state clarification pass before a specific rendering path can be proposed honestly."
+  },
+  "issue_context": {
+    "summary": "PowerToys Run can render with an unexpected solid bar near the top of the window, but the report never pins down which Windows appearance or accessibility setting change triggered that state.",
+    "known_information": [
+      "The issue is on PowerToys 0.100.2 from GitHub on Windows 11 25H2 build 26200.8875.",
+      "The reporter suspects the trigger was changing some Windows theme setting but does not know which one.",
+      "Two screenshots show the artifact in both light and dark variants.",
+      "The reporter explicitly says Command Palette does not show the same issue."
+    ],
+    "inferences": [
+      "The problem is likely tied to a specific OS appearance combination rather than to every normal PowerToys Run theme state.",
+      "Because Command Palette is unaffected, the missing discriminator is probably in the PowerToys Run window/backdrop stack or WPF theming path rather than in a shared color token alone."
+    ],
+    "analysis": "A targeted request for the exact Windows appearance state is the cheapest next step. Without that, any proposed root cause would be guesswork across multiple theming and backdrop combinations.",
+    "initial_investigation": [
+      "src/modules/launcher/PowerLauncher/MainWindow.xaml splits the window into a search border, optional overview region, and results region, which matches the report that the artifact appears as a bounded strip rather than a whole-window theme failure.",
+      "The PowerToys Run window uses transparent backgrounds and themed border resources, so OS-level visual settings such as transparency, contrast themes, or title-bar accent behavior could be decisive.",
+      "The public thread does not record which Windows setting was changed, and there is no diagnostic bundle to correlate the bad state with runtime theme values."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact Windows appearance or accessibility settings that were changed before the bar started appearing, especially transparency effects, contrast themes/high contrast, accent color on title bars, or other Personalization/Accessibility toggles.",
+        "why_needed": "Those settings would narrow whether the defect is in one specific backdrop/theme combination instead of treating every PowerToys Run render path as equally suspect.",
+        "how_to_collect": "Reply with the exact Windows settings you changed before the issue started and whether toggling any one of them makes the bar appear or disappear again."
+      },
+      {
+        "evidence_type": "screenshot_image",
+        "information": "Screenshots of the current Windows appearance settings after the issue is visible.",
+        "why_needed": "Maintainers need to see the active OS appearance state that corresponds to the broken PowerToys Run rendering.",
+        "how_to_collect": "After reproducing the visual bug, attach screenshots from Settings > Personalization > Colors and Settings > Accessibility > Contrast themes or Visual effects."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing the bad PowerToys Run rendering on the current build.",
+        "why_needed": "The bundle is needed to correlate the reproduced artifact with the active PowerToys Run theme/runtime state on the same session.",
+        "how_to_collect": "Reproduce the issue and then submit a GitHub comment containing /bugreport immediately afterward."
+      }
+    ]
   },
   "actions": [
     {
+      "id": "approve-design-49347",
+      "type": "approve_design",
+      "label": "Approve PowerToys Run theme-path investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The issue likely needs a code fix, but the trigger is still tied to an unidentified Windows appearance state.",
+      "issue": {
+        "number": 49347,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
       "id": "request-info-49347",
       "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
+      "label": "Confirm theme setting that creates the Run bar",
       "primary": true,
       "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
+      "requiresApproval": true,
       "comment": {
-        "target": "issue",
-        "number": 49347,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
+        "issue": 49347,
+        "repository": "microsoft/PowerToys",
+        "body": "Thanks for the screenshots — they clearly show the unwanted bar. The missing discriminator is which Windows appearance setting flips PowerToys Run into this state. Since Command Palette does not show the same problem, this looks more like a specific theme/backdrop combination than a generic rendering failure.\n\n**Needed**\n1. Please list the exact Windows settings you changed before this started, especially **Transparency effects**, **Contrast themes / High contrast**, **Accent color on title bars**, or any other Personalization or Accessibility setting you toggled.\n2. After the issue is visible, please attach one screenshot from **Settings > Personalization > Colors** and one from **Settings > Accessibility > Contrast themes / Visual effects**.\n3. After reproducing it on the current build, please submit a GitHub comment containing `/bugreport` immediately afterward.\n\nThat will let us narrow whether the bad bar is caused by one specific PowerToys Run theme/backdrop transition."
       }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-16T02:20:24Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-    "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-16T02:20:24Z"
-  }
+  "proposed_fixes": [
+    {
+      "title": "Correct the PowerToys Run theme/backdrop combination that renders the extra bar",
+      "root_cause": "The current best hypothesis is that one Windows appearance state is interacting badly with PowerToys Run's themed transparent border/background composition, but the report does not yet identify which OS toggle or runtime theme state triggers it.",
+      "plan": [
+        "Identify the exact Windows appearance settings that trigger the bar and reproduce them on a current build.",
+        "Trace which themed border/background element in the PowerToys Run window is picking up the wrong fill under that OS state.",
+        "Adjust the affected theme/backdrop handling so PowerToys Run renders consistently across the reproduced setting combination without regressing normal light/dark behavior."
+      ],
+      "verification": [
+        "Reproduce the reported Windows appearance state and confirm PowerToys Run no longer shows the extra black or white strip.",
+        "Switch between the affected appearance modes and confirm PowerToys Run and Command Palette both keep their intended background treatment."
+      ],
+      "confidence": {
+        "score": 34,
+        "level": "red",
+        "rationale": "The screenshots prove the bug, but the missing Windows setting means the exact theme/backdrop branch is still too speculative for a higher-confidence fix plan."
+      }
+    }
+  ]
 }

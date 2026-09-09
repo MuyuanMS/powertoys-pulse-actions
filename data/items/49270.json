@@ -1,33 +1,81 @@
 {
+  "schemaVersion": 5,
   "number": 49270,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "stage": "needs_reply",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-09T21:22:58Z",
+  "evaluated_at": "2026-09-09T21:22:58Z",
   "source_updated_at": "2026-07-11T09:50:24Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "CmdPal: Crash from ListView",
+  "url": "https://github.com/microsoft/PowerToys/issues/49270",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue preserves a valuable fail-fast stack that reaches ListItemsView container preparation, but it still does not say what page content or user action triggered that shared Command Palette view path.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body includes a long fail-fast stack and explicitly says the crash happened on the home page with ListItemsView as the suspect.",
+      "Current source in src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml.cs shows ListItemsView is a reusable renderer shared by multiple list and parameter pages.",
+      "The stack reaches DataTemplateSelector and item-container preparation, which means the current report still needs the concrete item/provider context that was being realized."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Ask for the exact home-page state and any saved dump/stowed-exception details so maintainers can narrow the crash to one ListItemsView content path.",
+    "evaluated_at": "2026-09-09T21:22:58Z",
     "source_updated_at": "2026-07-11T09:50:24Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The fail-fast stack is useful, but a code change is still premature until the specific ListItemsView content or action that triggered the crash is identified."
+  },
+  "issue_context": {
+    "summary": "A collaborator recorded a Command Palette fail-fast crash from a dev build and suspected ListItemsView, but the issue does not capture what item type, provider, or home-page action was active when the shared list renderer failed.",
+    "known_information": [
+      "The issue is from a dev build on main rather than a released PowerToys package.",
+      "The crash happened on the home page according to the issue body.",
+      "The provided stack runs through Microsoft.UI.Xaml DataTemplateSelector and list item container preparation."
+    ],
+    "inferences": [
+      "The failing branch is likely in how a specific item type is realized inside the shared list renderer, not in a generic startup path with no content.",
+      "Because ListItemsView is reused across more than one page type, “home page crash” is still too broad to select a concrete implementation fix."
+    ],
+    "analysis": "The stack is too valuable to dismiss, but it is still one step short of an actionable design. The current source confirms that ListItemsView is a shared renderer, so maintainers need the item/provider context or a dump to determine which template selector path was active when WinUI fail-fast occurred.",
+    "initial_investigation": [
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml.cs identifies ListItemsView as the shared selection, scrolling, and rendering control for Command Palette list and parameter pages.",
+      "The issue stack reaches SelectTemplateCore and list container preparation, which is consistent with a content-shape or template-selection problem rather than a pure navigation failure."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "The exact steps from launching Command Palette to the crash, including the page or provider visible on the home page.",
+        "why_needed": "This identifies which ListItemsView content path was being materialized when the crash occurred.",
+        "how_to_collect": "Reply with the minimal steps needed to reach the crash again, naming the visible page, provider, or selected item just before it happens."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether any search text, extension result, or adaptive-card-backed item was visible when the crash occurred.",
+        "why_needed": "Different item types use different templates inside ListItemsView and would materially change the likely fix path.",
+        "how_to_collect": "State what content was shown in the list immediately before the crash, including any search query or selected result."
+      },
+      {
+        "evidence_type": "crash_dump",
+        "information": "A dump, stowed-exception detail, or equivalent crash capture from a reproducing run.",
+        "why_needed": "The stack alone does not identify the managed item/template object being marshaled when the fail-fast occurs.",
+        "how_to_collect": "Attach a crash dump or paste the additional crash diagnostics from the next reproducing run if they are available."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-49270",
+      "type": "request_info",
+      "label": "Provide ListItemsView crash trigger",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 49270,
+        "body": "Thanks for saving the fail-fast stack. It already narrows the crash to a shared ListItemsView/template-selection path, but it still does not say what content triggered it. Please provide:\n\n1. The exact steps from launching CmdPal to the crash, including the visible page or provider on the home page.\n2. Whether any search text, extension result, or adaptive-card-backed item was visible just before the crash.\n3. A dump or any extra stowed-exception/crash diagnostics from the next reproducing run, if available.\n\nThat will let maintainers map the stack to one concrete ListItemsView content path."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

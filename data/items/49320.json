@@ -1,48 +1,127 @@
 {
-  "number": 49320,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
+  "generated_at": "2026-09-09T21:44:47Z",
+  "evaluated_at": "2026-09-09T21:44:47Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs more evidence",
-    "detail": "The symptom is not yet localized enough to choose a safe code owner or design path."
+  "number": 49320,
+  "track": "triage",
+  "stage": "needs_reply",
+  "source_updated_at": "2026-07-14T23:48:16Z",
+  "title": "PowerToys Run: Sometimes Window walker returns no results",
+  "url": "https://github.com/microsoft/PowerToys/issues/49320",
+  "author": "ReginaldTang",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "The attached video shows Window Walker returning no results, but the thread never says whether the failure happens with an empty query, with a specific search string, or only under a multi-desktop visibility filter state.",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The issue looks real, but the missing discriminator is whether Window Walker is failing during enumeration, filtering away windows because of desktop visibility settings, or only failing for certain queries. The report needs one precise follow-up before a reliable fix path can be chosen.",
+    "evidence": [
+      "The report says Window Walker sometimes returns no results and includes a video, but it does not identify a stable trigger beyond opening the feature.",
+      "No bug-report ZIP or follow-up comment is present.",
+      "Current Window Walker code filters windows by visibility, owner/tool-window status, title, and optionally visible desktop state, so \"no results\" can arise from more than one branch.",
+      "The issue does not say whether the failure happens with a blank query or after typing search text, which matters because Window Walker has separate all-windows and fuzzy-search paths."
+    ],
+    "recommended_action": "Ask the reporter to confirm blank-query versus typed-query behavior, visible-desktop filtering state, and to capture one fresh bug-report ZIP immediately after a no-results run.",
+    "evaluated_at": "2026-09-09T21:44:47Z",
+    "source_updated_at": "2026-07-14T23:48:16Z"
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused diagnostics",
-    "reason": "The missing evidence is specific and cheaper to collect than speculative code investigation."
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is plausible, but the public report still needs one focused clarification pass to narrow which Window Walker branch is producing the empty result set."
+  },
+  "issue_context": {
+    "summary": "Window Walker sometimes returns an empty result list, but the current thread does not distinguish whether the loss happens during window enumeration, desktop filtering, or the search step.",
+    "known_information": [
+      "The report is on Microsoft Store PowerToys 0.100.2.",
+      "A user-attachment video is provided, but there is no diagnostic ZIP or written follow-up narrowing the trigger.",
+      "The report asks whether \"Any application?\" matters, which suggests the reporter did not identify one app-specific source window.",
+      "The issue is labeled Product-PowerToys Run and Needs-Triage with no assignee."
+    ],
+    "inferences": [
+      "This does not yet look app-specific from the public thread, but it may still depend on Window Walker settings or virtual-desktop state.",
+      "Because Window Walker uses different logic for blank searches versus fuzzy filtering, the missing query-state detail is likely important to reproducing it efficiently."
+    ],
+    "analysis": "A targeted request about query state and desktop-filter settings is the cheapest next step. Without it, any proposed root cause would still have to guess among several filtering branches in the current code.",
+    "initial_investigation": [
+      "src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Main.cs refreshes the open-window list on every query and then hands the current search text to SearchController.",
+      "src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/OpenWindows.cs excludes windows based on visibility, owner/tool-window status, cloaking, and the ResultsFromVisibleDesktopOnly option.",
+      "src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/SearchController.cs uses different paths for blank query (all titled windows) and typed query (fuzzy match), but the issue does not say which path produced the empty list."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the empty Window Walker result happens with an empty query immediately after opening it, or only after typing a specific search string.",
+        "why_needed": "That separates an enumeration/filtering failure from a fuzzy-search-only failure.",
+        "how_to_collect": "Reply with whether Window Walker is already empty before typing anything, and if not, include the exact search text that produces the no-results state."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the Window Walker option that limits results to the current visible desktop is enabled, and whether multiple virtual desktops were open when the issue occurred.",
+        "why_needed": "The current code can legitimately filter windows by visible desktop, so that setting materially changes which branch should be investigated.",
+        "how_to_collect": "Check the Window Walker settings, then reply with whether the visible-desktop-only option is enabled and whether you had multiple virtual desktops open when the issue happened."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing one no-results Window Walker run on the current build.",
+        "why_needed": "The bundle is needed to correlate the empty-result session with the active Window Walker settings and runtime logs.",
+        "how_to_collect": "Reproduce the no-results behavior and then submit a GitHub comment containing /bugreport immediately afterward."
+      }
+    ]
   },
   "actions": [
     {
+      "id": "approve-design-49320",
+      "type": "approve_design",
+      "label": "Approve Window Walker no-results investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The likely fix is inside Window Walker enumeration or filtering, but the exact failing branch still needs one precise follow-up from the reporter.",
+      "issue": {
+        "number": 49320,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
       "id": "request-info-49320",
       "type": "request_info",
-      "label": "Draft request for details",
+      "label": "Capture Window Walker no-results conditions",
       "primary": true,
       "confirm": true,
+      "requiresApproval": true,
       "comment": {
-        "target": "issue",
-        "number": 49320,
-        "body": "Could you confirm whether this still reproduces on PowerToys 0.100.2 or newer, rewrite the steps as a short numbered sequence from a clean start, and attach a PowerToys bug-report ZIP plus any screenshot or recording that shows the failure?"
-      },
-      "note": "Draft only; never posted upstream without explicit approval."
+        "issue": 49320,
+        "repository": "microsoft/PowerToys",
+        "body": "Thanks for the video — it shows the empty-result symptom clearly. The missing discriminator is whether Window Walker is failing before it enumerates windows, filtering everything out by current settings, or only failing after a specific search query.\n\n**Needed**\n1. Please confirm whether this happens with an **empty Window Walker query** (just open it) or only **after typing search text**. If it is query-specific, please include the exact text.\n2. Please confirm whether the Window Walker option that limits results to the **current visible desktop** is enabled, and whether you had **multiple virtual desktops** open when this happened.\n3. After reproducing one no-results run on the current build, please submit a GitHub comment containing `/bugreport` immediately afterward.\n\nThat will tell us whether the problem is in window enumeration, desktop filtering, or the search step."
+      }
     }
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-14T23:48:16Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The symptom is not yet localized enough to choose a safe code owner or design path.",
-    "evidence": [
-      "The symptom is not yet localized enough to choose a safe code owner or design path.",
-      "Draft only; never posted upstream without explicit approval."
-    ],
-    "recommended_action": "The missing evidence is specific and cheaper to collect than speculative code investigation.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-14T23:48:16Z"
-  }
+  "proposed_fixes": [
+    {
+      "title": "Correct the Window Walker branch that produces the empty result set",
+      "root_cause": "The current best hypotheses are that Window Walker is sometimes enumerating an empty filtered window set because of visibility/desktop-state checks, or that the empty state appears only after a particular search-text path; the public thread does not yet separate those cases.",
+      "plan": [
+        "Confirm whether the empty state occurs before typing or only after a specific query, and whether visible-desktop filtering is enabled.",
+        "Reproduce the same setting/query combination on a current build and inspect whether OpenWindows is returning no eligible windows or SearchController is filtering them all out.",
+        "Fix the identified enumeration or filtering branch and add coverage for the reproduced no-results scenario."
+      ],
+      "verification": [
+        "Open Window Walker in the reproduced configuration and confirm windows are listed instead of returning an empty result set.",
+        "Repeat the same visible-desktop and query conditions to verify the empty state does not regress."
+      ],
+      "confidence": {
+        "score": 35,
+        "level": "red",
+        "rationale": "The symptom is real, but the issue does not yet pin down whether the failure is pre-search enumeration, desktop filtering, or typed-query matching."
+      }
+    }
+  ]
 }

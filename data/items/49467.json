@@ -1,34 +1,93 @@
 {
-  "number": 49467,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49467,
+  "title": "Report on Mouse Disappearance When Zooming Out While Enabling Zoom LT Screen Recording",
+  "url": "https://github.com/microsoft/PowerToys/issues/49467",
+  "state": "OPEN",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-ZoomIt"
+  ],
+  "assignees": [],
+  "generated_at": "2026-09-09T21:38:22Z",
+  "evaluated_at": "2026-09-09T21:38:22Z",
   "source_updated_at": "2026-07-23T13:19:10Z",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "status": "reproducible",
+    "rationale": "The report already gives a concrete Zoom LT + recording + disable-live-zoom sequence, and current ZoomIt source explicitly toggles cursor-capture behavior when live zoom enters or leaves annotation mode, so a maintainer-side reproduce/trace pass is the next useful step.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The issue body describes a five-step repro: start Zoom LT recording support, begin recording, activate the zooming function, then disable it and observe the mouse pointer disappear.",
+      "The actual behavior is precise: the pointer becomes visually invisible while recording continues.",
+      "`src/modules/ZoomIt/ZoomIt/MirrorWindow.cpp` explicitly enables/disables cursor capture based on `AnnotationState::AnnotatingLiveZoom`, which matches the reported on/off zoom transition.",
+      "There are no follow-up comments or linked fixes that would make more reporter clarification more valuable than an internal reproduction trace."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-23T13:19:10Z"
-  }
+    "recommended_action": "Reproduce the cursor-loss transition while toggling Zoom LT during recording and trace whether cursor capture is restored correctly when live zoom exits."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The source exposes a plausible cursor-capture path, but reproduction should confirm whether the failure belongs to ZoomIt live-zoom state, Windows Graphics Capture, or recorder interaction before proposing code changes."
+  },
+  "issue_context": {
+    "summary": "ZoomIt's live zoom can reportedly hide the mouse pointer when the user disables zoom during an active recording session. The public repro is already concrete enough for a maintainer-side reproduction pass.",
+    "known_information": [
+      "The report targets ZoomIt on PowerToys 0.100.2 from the Microsoft Store on Windows 11 23H2.",
+      "The reporter says the issue occurs with both the built-in Windows screen recorder and QQ's recording feature.",
+      "The sequence is specific: recording is already running, live zoom is turned on, then turning live zoom off makes the cursor disappear.",
+      "There are no public comments, bug-report ZIPs, or linked pull requests on the issue."
+    ],
+    "inferences": [
+      "This is more likely a state transition problem around live zoom cursor rendering/capture than a generic recorder startup failure.",
+      "Because the report already isolates the transition, another generic reporter questionnaire would add less value than direct internal reproduction."
+    ],
+    "analysis": "The public issue is already narrow: it names the module, trigger, and visible failure. Source review shows that MirrorWindow changes cursor-capture behavior when `AnnotatingLiveZoom` toggles, which makes this a good candidate for a reproduce-first triage action instead of a request for more logs.",
+    "initial_investigation": [
+      "Reviewed the full issue body and confirmed there are no public follow-up comments or linked fixes.",
+      "Inspected `src/modules/ZoomIt/ZoomIt/MirrorWindow.cpp` and confirmed `EnableCursorCapture(...)` is toggled when live zoom enters or leaves annotation mode.",
+      "Inspected the recording entry points in `src/modules/ZoomIt/ZoomIt/Zoomit.cpp` and confirmed recording and mirroring are coordinated but still use explicit state transitions worth tracing during the reported zoom-off step."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "reproduce",
+      "label": "Reproduce Zoom LT cursor loss while recording",
+      "note": "Validate whether cursor capture is restored correctly when live zoom is disabled mid-recording.",
+      "reproduce": {
+        "module": "ZoomIt",
+        "version_requirement": "PowerToys 0.100.2 or a nearby build with Zoom LT/live zoom and screen recording available.",
+        "prerequisites": [
+          "A Windows machine where ZoomIt live zoom works normally.",
+          "A recording path that shows the issue, such as the built-in Windows recorder or QQ recorder."
+        ],
+        "steps": [
+          "Start a recording session using the same recorder type the reporter described.",
+          "Enable Zoom LT/live zoom while the recording is already in progress.",
+          "Disable Zoom LT/live zoom again using the same button or shortcut used to toggle it.",
+          "Observe whether the cursor remains visible locally and in the captured recording, then repeat once without recording as a control case."
+        ],
+        "expected_result": "Disabling live zoom during recording should restore the normal visible cursor instead of making it disappear."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "author": "STHunmant",
+  "comments": 0,
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 0
+  },
+  "upstream_public_action_taken": false,
+  "proposed_fixes": [],
+  "design": null,
+  "full_design": false,
+  "confidence": {
+    "score": 70,
+    "level": "yellow",
+    "rationale": "The repro is specific and current source exposes a matching cursor-capture transition, but the exact failing branch still needs a maintainer repro."
+  },
+  "pending_author": false,
+  "stage": "triage"
 }

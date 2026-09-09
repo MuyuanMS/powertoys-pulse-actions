@@ -1,33 +1,67 @@
 {
+  "schemaVersion": 5,
   "number": 49295,
   "kind": "issue",
   "track": "fix",
   "stage": "owned_elsewhere",
-  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-09T21:22:58Z",
+  "evaluated_at": "2026-09-09T21:22:58Z",
   "source_updated_at": "2026-07-13T12:42:44Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "title": "CmdPal: Dock: Incorrectly reports display 1 as display 2",
+  "url": "https://github.com/microsoft/PowerToys/issues/49295",
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "rationale": "Current main already contains Dock monitor-refresh fixes that match the stale display numbering and reconnect behavior described in this sleep-and-lid repro.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue describes a monitor-topology transition: sleep the lid device, wake the external monitor while the lid is closed, then observe Dock mixing up display 1 and display 2.",
+      "Current source in src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs now forwards WM_DISPLAYCHANGE to MonitorService.NotifyMonitorsChanged().",
+      "Current source in src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs invalidates cached monitor snapshots and retries display-configuration mapping after topology changes."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Link the current-main Dock topology fixes rather than starting a new design pass for a stale-monitor-identification issue that appears already covered.",
+    "evaluated_at": "2026-09-09T21:22:58Z",
     "source_updated_at": "2026-07-13T12:42:44Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Current main has concrete upstream fixes for Dock display refresh and topology-change handling that cover the reported stale-monitor behavior.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49705",
+      "https://github.com/microsoft/PowerToys/pull/49814"
+    ]
+  },
+  "issue_context": {
+    "summary": "This issue reports that Command Palette Dock swaps or mislabels displays after a lid-close sleep/wake topology change, but current main already includes monitor-refresh fixes for that class of Dock bug.",
+    "known_information": [
+      "The issue is filed against PowerToys 0.100.2 from a Microsoft Store install.",
+      "The repro specifically depends on a topology transition involving sleep, a lid-closed device, and an external monitor waking while the primary device remains closed.",
+      "A follow-up comment clarifies the repro and notes that restarting fixes the state temporarily."
+    ],
+    "inferences": [
+      "This is a stale-monitor-topology problem rather than a one-off rendering glitch.",
+      "Because restart corrects the state, the likely boundary is monitor cache invalidation or display-to-dock reconciliation after reconnect."
+    ],
+    "analysis": "The current repository state now matches the failure mode closely enough to treat this as handled-by-main rather than asking the reporter for more information. The issue lines up with the two newer Dock fixes that refresh the displays list in settings and invalidate the monitor cache on WM_DISPLAYCHANGE, which is exactly the topology-change class described here.",
+    "initial_investigation": [
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs handles WM_DISPLAYCHANGE and calls _monitorService.NotifyMonitorsChanged().",
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs clears its cached monitor snapshot and rebuilds display mappings with retry logic after topology changes.",
+      "Repository history contains PR #49705 for display-list refresh on Dock settings entry and PR #49814 for Dock monitor topology changes, both newer than the 0.100.2 report."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "post-comment-49295",
+      "type": "post_comment",
+      "label": "Link current Dock topology fixes",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 49295,
+        "body": "Thanks for the clarified lid-close repro. Current main already includes two Dock monitor-refresh fixes that match this stale-display behavior:\n\n- #49705 refreshes the displays list when navigating to Dock settings.\n- #49814 fixes Dock behavior across monitor topology changes.\n\nBecause this issue is fixed temporarily by restart and the repro depends on a monitor reconfiguration while the main device is sleeping, those newer Dock fixes are the most likely coverage. Please re-check against a build that includes them before we queue a separate new Dock design."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

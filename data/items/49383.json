@@ -1,34 +1,120 @@
 {
-  "number": 49383,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
+  "generated_at": "2026-09-09T21:44:47Z",
+  "evaluated_at": "2026-09-09T21:44:47Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49383,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-07-17T13:15:12Z",
+  "title": "Crashing when Awake is set to Keep awake indefinitely and PC enters standby",
+  "url": "https://github.com/microsoft/PowerToys/issues/49383",
+  "author": "louis1642",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Awake"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "Awake indefinite mode is reported to let the PC enter standby and then leave PowerToys crashed on resume, and the thread already includes a diagnostic ZIP plus a closely related Awake sleep/crash report.",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "status": "reproducible",
+    "rationale": "The report already pins one specific Awake mode, one specific failure sequence, and includes a fresh bug-report ZIP, so the next useful step is a maintainer-side standby/resume reproduction rather than another generic evidence request.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The reporter gives a concrete two-step repro: set Awake to \"Keep awake indefinitely\" and wait for the PC to enter standby.",
+      "The observed failure is specific: the machine still enters standby and PowerToys has crashed after wake.",
+      "A PowerToys diagnostic ZIP is attached in the issue body.",
+      "A later related issue, #49461, reports another Awake overnight sleep/crash pattern on Windows 11 25H2, which suggests this is not obviously a one-off configuration typo."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce indefinite Awake on a Windows 11 standby/resume path, then inspect whether the failure is in sleep prevention itself, the resume-time reapply path, or the post-resume process stability path.",
+    "evaluated_at": "2026-09-09T21:44:47Z",
     "source_updated_at": "2026-07-17T13:15:12Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is plausible, but the public evidence still needs a maintainer-side reproduction pass to distinguish the exact failing standby/resume path."
+  },
+  "issue_context": {
+    "summary": "Awake set to keep the system awake indefinitely is reported to allow standby anyway, and when the machine wakes back up PowerToys is no longer running.",
+    "known_information": [
+      "The issue is on PowerToys 0.100.2 with Windows 11 25H2 and includes a public PowerToysReport ZIP.",
+      "The selected Awake mode is explicitly \"Keep awake indefinitely\".",
+      "The reporter says the whole PC enters standby, not just that the display turns off.",
+      "Issue #49461 was cross-linked later as another Awake sleep/crash report, although that issue describes a different Awake state."
+    ],
+    "inferences": [
+      "This looks more like a suspend/resume handling bug than a simple misunderstanding of the \"Keep screen on\" option.",
+      "The crash-after-wake symptom suggests that even if sleep prevention failed, there may also be a separate resume-time stability problem in the Awake process path."
+    ],
+    "analysis": "The issue is specific enough for a maintainer-side reproduction and log review. The reporter has already supplied the key mode selection and a diagnostic bundle, so asking for more generic information would add less value than reproducing the standby/resume path.",
+    "initial_investigation": [
+      "src/modules/Awake/Awake/Core/Manager.cs applies indefinite Awake through SetThreadExecutionState using ES_SYSTEM_REQUIRED | ES_CONTINUOUS, with ES_DISPLAY_REQUIRED added only when display-on mode is requested.",
+      "src/modules/Awake/Awake/Core/TrayHelper.cs listens for WM_POWERBROADCAST resume and power-status events and calls Manager.ReapplyAwakeState(), so there is already explicit resume-time logic to inspect.",
+      "Manager.ReapplyAwakeState() simply queues the current execution state again; the public report does not yet reveal whether the failure happens before sleep, during resume, or after resume while reapplying state."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49383",
+      "type": "approve_design",
+      "label": "Approve Awake standby/resume investigation",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The likely fix is inside Awake sleep-prevention or resume handling, but the exact failing branch still needs local reproduction.",
+      "issue": {
+        "number": 49383,
+        "repository": "microsoft/PowerToys"
+      }
+    },
+    {
+      "id": "reproduce-49383",
+      "type": "reproduce",
+      "label": "Reproduce Awake standby crash",
+      "primary": true,
+      "note": "Verify whether indefinite Awake fails to block standby, crashes after resume, or both on a Windows 11 standby path.",
+      "reproduce": {
+        "module": "Awake",
+        "version": "0.100.2 or current main",
+        "prerequisites": [
+          "Use a Windows 11 machine where sleep/standby is expected to occur normally.",
+          "Enable Awake and set the mode to \"Keep awake indefinitely\".",
+          "Prefer a setup close to the report if available, including Windows 11 25H2."
+        ],
+        "steps": [
+          "Enable Awake indefinite mode and leave the machine idle long enough that it would normally enter standby.",
+          "Confirm whether the PC still enters standby even though Awake is active.",
+          "Wake the machine and check whether PowerToys is still running, then correlate the sleep/resume timestamps with Awake logs and any crash evidence from the attached diagnostic bundle."
+        ],
+        "expected_result": "With Awake set to keep the system awake indefinitely, the machine should not enter standby and PowerToys should still be running normally after any wake/resume event.",
+        "attachments": [
+          "https://github.com/user-attachments/files/30125522/PowerToysReport_2026-07-17-14-51-23.zip"
+        ]
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Harden Awake against the reported standby/resume failure path",
+      "root_cause": "The current best fit is that Awake indefinite mode is not surviving the reporter's standby path correctly: either the keep-awake request is not preventing that sleep state, or the module is destabilized when the system resumes and re-applies state.",
+      "plan": [
+        "Reproduce the exact indefinite-mode standby/resume sequence on a current build and confirm whether the first failure is unexpected sleep, a resume-time exception, or both.",
+        "Inspect the Awake power-event handling path around TrayHelper power broadcasts and Manager.ReapplyAwakeState() to see whether the module re-enters an invalid state after standby.",
+        "Fix the specific standby/resume branch that fails and add coverage for indefinite Awake surviving the same sleep/wake sequence without crashing."
+      ],
+      "verification": [
+        "With indefinite Awake enabled, the machine should remain out of standby on the reproduced configuration.",
+        "If the system is forced through a wake/resume event, PowerToys should remain running and Awake should continue to report the correct mode afterward."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The module, mode, and symptom are clear, but the public thread does not yet distinguish whether the primary defect is failed sleep prevention, failed resume recovery, or a combined path."
+      }
+    }
+  ]
 }

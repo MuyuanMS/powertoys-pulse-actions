@@ -1,34 +1,95 @@
 {
-  "number": 49351,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "triage",
+  "generated_at": "2026-09-09T21:44:47Z",
+  "evaluated_at": "2026-09-09T21:44:47Z",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "number": 49351,
+  "track": "triage",
+  "stage": "triaged",
   "source_updated_at": "2026-07-16T09:31:37Z",
+  "title": "Mouse Without Borders Debug Output Active in Production Version",
+  "url": "https://github.com/microsoft/PowerToys/issues/49351",
+  "author": "101101100",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "Mouse Without Borders logging is reaching debugger-visible Trace output in release installs, and current logging code shows that routine MWB Log calls flow through ManagedCommon.Logger.LogInfo(), which unconditionally writes Trace lines.",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The report is already concrete, and the current logging pipeline clearly routes ordinary Mouse Without Borders logging through an always-on Trace.WriteLine path in production builds.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The issue reports that a standard PowerToys install floods debugger output with Mouse Without Borders messages instead of keeping them confined to normal logs.",
+      "src/modules/MouseWithoutBorders/App/Core/Logger.cs routes routine MWB Logger.Log(...) calls to ManagedCommon.Logger.LogInfo(...).",
+      "src/common/ManagedCommon/Logger.cs implements LogInfo by calling a shared Log(...) method that unconditionally writes Trace.WriteLine output.",
+      "ManagedCommon.Logger.InitializeLogger(...) also adds a TextWriterTraceListener for the log file in all builds, so normal release logging is explicitly wired through the Trace pipeline rather than through a debugger-silent file-only path."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a focused logging-path fix that preserves supportable MWB file logs while stopping routine release logging from always appearing in debugger output.",
+    "evaluated_at": "2026-09-09T21:44:47Z",
     "source_updated_at": "2026-07-16T09:31:37Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No public fix attempt is linked, and the current MWB-to-ManagedCommon logging path already exposes a concrete code-level cause."
+  },
+  "issue_context": {
+    "summary": "Mouse Without Borders currently sends ordinary release logging through Trace, which is why developers see large amounts of MWB output even when they are not intentionally enabling a verbose diagnostic mode.",
+    "known_information": [
+      "The report is on PowerToys 0.100.0 from the auto-updater and describes noisy output in a standard install.",
+      "A follow-up commenter confirmed the same pain point and suggested broader logging configurability.",
+      "The issue does not request removal of all logs; it asks for normal production behavior without always-on debug-style noise and mentions opt-in configurability as a welcome improvement.",
+      "No assignee or linked fix is present."
+    ],
+    "inferences": [
+      "The immediate bug is narrower than a full ILogger migration: ordinary release logging is currently using a debugger-visible Trace path by default.",
+      "A complete logging redesign may be optional; the first-value fix is to separate supportable file logging from always-on debugger-output emission."
+    ],
+    "analysis": "This is ready for a focused design/start decision. The current source already explains the reported symptom and narrows the fix surface to the MWB/ManagedCommon logging path.",
+    "initial_investigation": [
+      "src/modules/MouseWithoutBorders/App/Core/Logger.cs stamps and forwards routine log lines with ManagedCommon.Logger.LogInfo(...).",
+      "src/common/ManagedCommon/Logger.cs uses Trace.WriteLine for LogInfo, LogWarning, LogError, and LogTrace, while only LogDebug is conditional on DEBUG.",
+      "Because InitializeLogger adds a TextWriterTraceListener in all builds, the existing logger can preserve file logs even if debugger-facing trace emission is narrowed or made opt-in."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-49351",
+      "type": "approve_design",
+      "label": "Approve MWB logging-noise fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "High-confidence logging issue: routine Mouse Without Borders release logs are flowing through an unconditional Trace pipeline.",
+      "issue": {
+        "number": 49351,
+        "repository": "microsoft/PowerToys"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Separate routine release logging from always-on debugger trace output",
+      "root_cause": "Mouse Without Borders forwards ordinary release log lines to ManagedCommon.Logger.LogInfo(), and ManagedCommon.Logger implements that path with unconditional Trace.WriteLine calls, so routine production logging shows up in debugger output by default.",
+      "plan": [
+        "Refactor the MWB/ManagedCommon logging path so normal release Info logging still reaches the support log file without always emitting debugger-visible Trace output.",
+        "If verbose debugger tracing is still needed, make it opt-in through a dedicated diagnostic mode or narrower trace path instead of the default release logging behavior.",
+        "Verify that existing support scenarios still capture the needed log file content after the debugger-noise reduction."
+      ],
+      "verification": [
+        "Run a release or packaged build with Mouse Without Borders active and confirm routine operation no longer floods debugger output or DebugView by default.",
+        "Confirm the normal PowerToys/Mouse Without Borders log files still contain the expected support diagnostics for the same scenario."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The current code path maps directly to the reported symptom: ordinary MWB logging goes through a shared logger that unconditionally writes Trace output in production."
+      }
+    }
+  ]
 }
