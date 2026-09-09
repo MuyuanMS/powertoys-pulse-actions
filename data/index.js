@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-09T13:21:42.5732271+08:00",
+  "generated_at": "2026-09-09T13:25:41.4004415+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 391
   },
   "impact": {
-    "as_of": "2026-09-09T13:21:42.5732271+08:00",
+    "as_of": "2026-09-09T13:25:41.4004415+08:00",
     "issues_helped": 10,
     "prs_iterated": 24,
     "constructive_comments_posted": 3,
@@ -542,7 +542,7 @@ window.BOARD_INDEX = {
       "title": "[UITests][Workspaces] Add UI tests",
       "author": "khmyznikov",
       "state": "open",
-      "is_draft": false,
+      "is_draft": true,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
@@ -557,13 +557,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback",
         "Product-Workspaces"
       ],
       "assignees": [],
       "created_at": "2026-09-08T21:53:35Z",
-      "updated_at": "2026-09-09T01:00:54Z",
-      "comments": 1,
+      "updated_at": "2026-09-09T04:54:22Z",
+      "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1648,7 +1647,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-01T00:26:05Z",
-      "updated_at": "2026-09-09T04:50:35Z",
+      "updated_at": "2026-09-09T04:50:49Z",
       "comments": 19,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -3762,10 +3761,10 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 3,
       "primary_action": {
-        "type": "approve",
-        "label": "Approve"
+        "type": "request_changes",
+        "label": "Request two inline fixes and one general routing correction"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -5753,7 +5752,7 @@ window.BOARD_INDEX = {
       "title": "[MouseWithoutBorders] Add theme-adaptive system tray icon setting",
       "author": "JRScott812",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
@@ -5768,12 +5767,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Mouse Without Borders"
+        "Product-Mouse Without Borders",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-07-08T20:33:34Z",
-      "updated_at": "2026-08-15T01:03:50Z",
-      "comments": 2,
+      "updated_at": "2026-09-09T05:06:02Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -88247,8 +88247,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-06-26T22:17:59Z",
-      "updated_at": "2026-09-09T04:54:35Z",
-      "comments": 0,
+      "updated_at": "2026-09-09T05:00:16Z",
+      "comments": 2,
       "priority": null
     },
     {
