@@ -3,9 +3,10 @@
     Find PowerToys PRs that must go through the looped review before publishing.
 .DESCRIPTION
     Enumerates all live open upstream PRs and compares them with dashboard
-    artifacts. A PR is queued when it is open, non-draft, not genuinely waiting
-    on its author, and either has no publishable proposed review action for the
-    live head or has new commits since the artifact head.
+    artifacts. A PR is queued for a full review when it has no publishable
+    proposed review action for the live head or has new commits since the
+    artifact head. A current-head PR with newer discussion is queued separately
+    for focused context revalidation.
 
     This script is intentionally read-only. Use -FailOnStale in dashboard runs
     as a publication gate after workers finish; a non-empty queue means the
@@ -55,6 +56,17 @@ function Get-Artifact {
     }
 
     return Get-Content $path -Raw | ConvertFrom-Json
+}
+
+function Test-HasNewerActivity {
+    param($Artifact, [string]$LiveUpdatedAt)
+    if (-not $Artifact -or [string]::IsNullOrWhiteSpace([string]$Artifact.source_updated_at) -or
+        [string]::IsNullOrWhiteSpace($LiveUpdatedAt)) {
+        return $false
+    }
+
+    return [datetimeoffset]::Parse($LiveUpdatedAt).ToUniversalTime() -gt
+        [datetimeoffset]::Parse([string]$Artifact.source_updated_at).ToUniversalTime()
 }
 
 function Test-HasApplicableReviewAction {
@@ -146,13 +158,12 @@ foreach ($pr in $pullRequests) {
     if ($pr.isDraft) {
         continue
     }
-    if (Test-IsHoldState $artifact) {
-        continue
-    }
-
     $artifactHead = if ($artifact) { [string]$artifact.head_sha } else { '' }
     $liveHead = [string]$pr.headRefOid
-    if (Test-IsTerminalBlocker $artifact $liveHead) {
+    $hasNewerActivity = Test-HasNewerActivity $artifact ([string]$pr.updatedAt)
+    $isHoldState = Test-IsHoldState $artifact
+    $isTerminalBlocker = Test-IsTerminalBlocker $artifact $liveHead
+    if (($isHoldState -or $isTerminalBlocker) -and -not $hasNewerActivity) {
         continue
     }
 
@@ -186,6 +197,15 @@ foreach ($pr in $pullRequests) {
     if (-not [string]::IsNullOrWhiteSpace($reviewHead) -and $reviewHead -ne $liveHead) {
         $reasons.Add('new_commits_since_proposed_review')
     }
+    if ($hasNewerActivity -and $artifactHead -eq $liveHead) {
+        if ($isHoldState) {
+            $reasons.Add('new_activity_after_author_wait')
+        } elseif ($isTerminalBlocker) {
+            $reasons.Add('new_activity_after_blocker')
+        } elseif ($hasApplicableReview) {
+            $reasons.Add('new_discussion_on_reviewed_head')
+        }
+    }
 
     if ($reasons.Count -eq 0) {
         continue
@@ -200,6 +220,11 @@ foreach ($pr in $pullRequests) {
         artifact_stage = if ($artifact) { [string]$artifact.stage } else { '' }
         artifact_head_sha = $artifactHead
         proposed_review_head_sha = $reviewHead
+        work_type = if ($reasons -contains 'new_discussion_on_reviewed_head') {
+            'context_revalidation'
+        } else {
+            'full_review'
+        }
         reasons = $reasons.ToArray()
     })
 }
@@ -220,5 +245,5 @@ if ($AsJson) {
 }
 
 if ($FailOnStale -and $queue.Count -gt 0) {
-    throw "Dashboard has $($queue.Count) applicable PR(s) that still require looped powertoys-pr-review."
+    throw "Dashboard has $($queue.Count) applicable PR(s) that still require review or context revalidation."
 }

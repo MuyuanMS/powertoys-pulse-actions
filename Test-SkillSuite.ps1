@@ -225,26 +225,30 @@ if (-not (Test-Path $runPlanScript)) {
         @{ number = 3; artifact_stage = ''; updated_at = '2026-08-03T00:00:00Z'; reasons = @('new_commits_since_proposed_review') }
         @{ number = 4; artifact_stage = ''; updated_at = '2026-08-04T00:00:00Z'; reasons = @('missing_artifact') }
         @{ number = 5; artifact_stage = ''; updated_at = '2026-08-05T00:00:00Z'; reasons = @('missing_current_review_action') }
+        @{ number = 6; artifact_stage = 'review_ready'; updated_at = '2026-08-06T00:00:00Z'; reasons = @('new_discussion_on_reviewed_head'); work_type = 'context_revalidation' }
       )
     } | ConvertTo-Json -Depth 5 | Set-Content $fixturePath
     $plan = & $runPlanScript -Dashboard $PSScriptRoot -QueueJsonPath $fixturePath `
       -BatchSize 3 -MaxConcurrency 2 -RunBudgetMinutes 45 -AsJson |
       ConvertFrom-Json
-    if ($plan.selected_count -ne 3 -or $plan.deferred_count -ne 2) {
+    if ($plan.selected_count -ne 3 -or $plan.deferred_count -ne 3) {
       $errors.Add('Bounded PR run planner did not enforce the requested batch size.')
     }
     if ($plan.policy.max_concurrency -ne 2 -or $plan.policy.run_budget_minutes -ne 45 -or
         $plan.policy.publish_interval_minutes -ne 8 -or $plan.policy.publish_transition_count -ne 2) {
       $errors.Add('Bounded PR run planner did not preserve concurrency, budget, or publish policy.')
     }
-    if (@($plan.selected_prs)[0].number -ne 2) {
-      $errors.Add('Bounded PR run planner did not prioritize resumable review work.')
+    if (@($plan.selected_prs)[0].number -ne 3) {
+      $errors.Add('Bounded PR run planner did not prioritize changed-head review work.')
+    }
+    if (@($plan.deferred_prs)[-1].number -ne 6) {
+      $errors.Add('Bounded PR run planner did not defer same-head context revalidation behind full reviews.')
     }
 
     $drainPlan = & $runPlanScript -Dashboard $PSScriptRoot -QueueJsonPath $fixturePath `
       -DrainQueue -AsJson |
       ConvertFrom-Json
-    if ($drainPlan.selected_count -ne 5 -or $drainPlan.deferred_count -ne 0) {
+    if ($drainPlan.selected_count -ne 6 -or $drainPlan.deferred_count -ne 0) {
       $errors.Add('Drain PR run planner did not select the full stale queue.')
     }
     if (-not $drainPlan.policy.drain_mode -or $null -ne $drainPlan.deadline_utc -or
