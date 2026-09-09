@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-10T01:50:22.1703105+08:00",
+  "generated_at": "2026-09-10T02:11:11.6651014+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 470
   },
   "impact": {
-    "as_of": "2026-09-10T01:50:22.1703105+08:00",
+    "as_of": "2026-09-10T02:11:11.6651014+08:00",
     "issues_helped": 10,
     "prs_iterated": 23,
     "constructive_comments_posted": 3,
@@ -2913,18 +2913,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "maintainer",
+      "stage": "waiting_copilot",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post the drafted alignment and CLA request"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Command Palette"
       ],
@@ -2938,11 +2935,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 465,
+        "fork_number": 739,
         "fork_title": "[PR 50151] Fix adaptive card theme refresh",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50151",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/465"
+        "fork_branch": "pr-iterate/50151-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/739"
       }
     },
     {
