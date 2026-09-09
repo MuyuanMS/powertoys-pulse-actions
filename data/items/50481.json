@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 5,
+  "number": 50481,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_author_information",
+  "state": "open",
+  "pending_author": true,
+  "title": "Powertoysbugreport",
+  "url": "https://github.com/microsoft/PowerToys/issues/50481",
+  "generated_at": "2026-09-09T11:50:34.2517752Z",
+  "evaluated_at": "2026-09-09T11:50:34.2517752Z",
+  "source_updated_at": "2026-09-09T10:27:43Z",
+  "summary": "The attached archive proves repeated updater network-check failures, but the issue still lacks the user-visible symptom and same-machine connectivity context needed to distinguish a PowerToys defect from the external network pattern already seen in issue #29515.",
+  "next_action": "Keep the issue in author-feedback state and request the exact visible update-check failure path plus same-machine connectivity confirmation.",
+  "confidence": {
+    "score": 76,
+    "level": "yellow",
+    "rationale": "The logs and prior duplicate history strongly suggest an external connectivity problem, but the current report does not yet state what visible failure the reporter actually hit."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "linked_work": [
+    {
+      "kind": "issue",
+      "number": 29515,
+      "title": "Couldn't obtain version info from github: Network error",
+      "state": "CLOSED",
+      "url": "https://github.com/microsoft/PowerToys/issues/29515",
+      "relation": "related_issue"
+    }
+  ],
+  "comment_count": 1,
+  "judgment": {
+    "status": "waiting_on_author",
+    "rationale": "The current archive shows historical GitHub update-check network failures, but the issue body still does not say what visible problem occurred, and a closely matching earlier issue was resolved as a machine NIC/connectivity problem rather than a PowerToys code defect.",
+    "evidence": [
+      "The issue body contains only a diagnostic ZIP and leaves steps to reproduce plus expected/actual behavior blank.",
+      "Runner logs in the attached archive repeatedly record `Couldn't obtain version info from github: Network error` across many startup sessions from 2026-07-17 through 2026-08-30.",
+      "A later log in the same archive (`RunnerLogs/runner-log_2026-09-06.log`) records `Version is up to date`, so the updater path was not failing continuously in every session.",
+      "`src/runner/UpdateUtils.cpp` logs the same message when `get_github_version_info_async(...)` fails and then retries later.",
+      "Issue #29515 has the same updater error signature and was closed after the reporter determined the real cause was broader NIC/connectivity failure affecting Teams and Microsoft Store too.",
+      "There is no assignee, linked PR, or maintainer comment beyond the automated request for reproduction details."
+    ],
+    "recommended_action": "Request the exact visible updater failure and same-machine connectivity state, then keep the issue waiting on author evidence instead of starting a speculative fix design.",
+    "evaluated_at": "2026-09-09T11:50:34.2517752Z",
+    "source_updated_at": "2026-09-09T10:27:43Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys code fix is not actionable from the current evidence because the archive is consistent with intermittent external connectivity failure and the reporter has not yet described a reproducible user-facing defect."
+  },
+  "issue_context": {
+    "summary": "The report is currently a bare diagnostic upload. The attached Runner logs show repeated failures while contacting GitHub for version information, but the issue does not yet say whether the reporter saw a Settings error, a startup notification, or only noticed the log entry.",
+    "known_information": [
+      "The issue was filed on 2026-09-09 against PowerToys v0.101.2362 from the Microsoft Store.",
+      "The issue area is General, there is no assignee, and the issue is labeled Needs-Author-Feedback after the automated triage comment.",
+      "The issue body supplies a PowerToys diagnostic ZIP but leaves reproduction steps and expected/actual behavior empty.",
+      "The attached archive's Runner logs repeatedly record `Couldn't obtain version info from github: Network error` during background update checks across many July and August sessions.",
+      "The same archive also contains a later successful update check: `Version is up to date` on 2026-09-06.",
+      "`src/runner/UpdateUtils.cpp` and `src/Update/PowerToys.Update.cpp` both use GitHub version-info calls and log this exact error string when the request fails.",
+      "Closed issue #29515 reported the same updater error message and was resolved when the reporter fixed a machine networking problem outside PowerToys."
+    ],
+    "inferences": [
+      "The current evidence more strongly suggests intermittent GitHub reachability or local network filtering than a deterministic PowerToys logic bug.",
+      "Because the archive also shows at least one later successful check, the missing discriminator is the visible failure mode and surrounding network state, not another blind request for generic logs.",
+      "If the reporter only noticed the historical log entry and did not see an actual update symptom, the issue may not need code work at all."
+    ],
+    "analysis": "Focused investigation found a plausible explanation before asking for more evidence: the same error string is emitted only when GitHub version lookup fails, the archive shows repeated failures but at least one later success, and the closest upstream duplicate was resolved as a host-network problem. That means the next maintainer question should not be another generic bug-report request. The missing facts are the exact visible symptom, whether GitHub and Store connectivity fail at the same time, and whether a VPN/proxy/firewall layer is involved.",
+    "initial_investigation": [
+      "Read the complete live issue body, labels, assignees, and the automated triage comment; no maintainer follow-up or linked work is present.",
+      "Downloaded and inspected the attached PowerToys diagnostic ZIP, then searched the Runner logs for updater/version-check failures and later successes.",
+      "Reviewed `src/runner/UpdateUtils.cpp`, which logs `Couldn't obtain version info from github: ...` when `get_github_version_info_async(...)` fails during periodic or manual update checks.",
+      "Reviewed older duplicate/history signal in issue #29515, which matches the same error string and closed as an external NIC/connectivity problem rather than a code fix."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "The exact user action and visible result when the problem occurs now, including whether Settings > Check for updates shows a network error, a startup/update toast appeared, or the reporter only noticed the log entry.",
+        "why_needed": "This distinguishes a real user-facing updater failure from a historical background log entry with no current symptom.",
+        "how_to_collect": "Please describe the exact steps you took, what you expected, and what PowerToys visibly showed instead."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether github.com, the PowerToys releases page, and Microsoft Store are reachable from the same machine at the time the problem happens.",
+        "why_needed": "This separates a PowerToys-specific updater failure from a broader connectivity problem on the machine.",
+        "how_to_collect": "Please confirm whether those sites/services open normally on the same machine when the update check fails."
+      },
+      {
+        "evidence_type": "other_software",
+        "information": "Whether a VPN, proxy, firewall, or security/network-filtering product is active and whether disabling only that layer changes the behavior.",
+        "why_needed": "A network-interception layer is a plausible cause for intermittent GitHub API failures without a PowerToys code regression.",
+        "how_to_collect": "Please name any active VPN, proxy, firewall, or network-filtering/security software and note whether the issue changes when only that layer is disabled."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Confirm update-check failure path",
+      "comment": {
+        "body": "Thanks for attaching the report bundle. It already shows repeated Runner update-check failures (Couldn't obtain version info from github: Network error) across older sessions, but the issue form still does not say what visible problem you hit. The same error signature in #29515 turned out to be a machine connectivity/NIC issue, and your archive also shows at least one later successful update check.\n\nPlease provide:\n1. The exact action and visible result now: for example, whether **Settings > Check for updates** shows a network error, whether you saw a startup/update notification, or whether you only noticed the log entry.\n2. Whether github.com, the PowerToys releases page, and Microsoft Store are reachable from the same machine when this happens.\n3. Whether a VPN, proxy, firewall, or security/network-filtering product is active, and whether disabling only that layer changes the behavior.\n\nThis will distinguish a reproducible PowerToys updater bug from the external connectivity pattern previously seen in #29515."
+      }
+    }
+  ],
+  "design": null
+}

@@ -1,34 +1,95 @@
 {
+  "schemaVersion": 5,
   "number": 49515,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
+  "stage": "owned_elsewhere",
+  "state": "open",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
+  "title": "Keyboard Manager settings lines enable/disable randomly during edit",
+  "url": "https://github.com/microsoft/PowerToys/issues/49515",
+  "generated_at": "2026-09-09T11:50:34.2517752Z",
+  "evaluated_at": "2026-09-09T11:50:34.2517752Z",
+  "source_updated_at": "2026-09-09T09:27:36Z",
+  "summary": "This Keyboard Manager report is already covered by merged upstream work: PR #49287 contains a follow-up commit that fixes mappings silently turning off when ListView row recycling re-fires the enabled-toggle handler during list refresh.",
+  "next_action": "Draft a maintainer comment pointing the reporter to merged PR #49287 and ask for a retest on a build newer than 0.101.2362 before opening any new design track.",
+  "confidence": {
+    "score": 95,
+    "level": "green",
+    "rationale": "The merged fix commit names the same symptom, explains the exact ListView recycling mechanism, and touches the precise toggle handler used by the affected editor rows."
   },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-29T06:49:43Z",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "linked_work": [
+    {
+      "kind": "pull_request",
+      "number": 49287,
+      "title": "[Keyboard Manager] Search, filter and bulk-delete for the remapping list",
+      "state": "MERGED",
+      "url": "https://github.com/microsoft/PowerToys/pull/49287",
+      "relation": "existing_fix"
+    }
+  ],
+  "comment_count": 1,
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "status": "duplicate_or_handled",
+    "rationale": "Merged PR #49287 already contains a Keyboard Manager editor fix for mappings randomly switching OFF during list refresh, which matches both the original report and the later reproduction on 0.101.2362 stable.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The original report says that after adding or removing a mapping row, other Keyboard Manager entries become randomly enabled or disabled.",
+      "A later commenter reproduces the same issue on PowerToys v0.101.2362 stable with a mix of Keys, Text, and Disabled remappings and adds that some mappings appear enabled but do not take effect until toggled again; a recording link is attached.",
+      "`src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml` binds each `MappingEnabledToggle` to `IsActive` for remappings, text mappings, program shortcuts, URL shortcuts, and disabled rows.",
+      "`src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs` now contains an explicit guard in `ToggleSwitch_Toggled` plus an explanatory comment stating that ListView container recycling during filtering, bulk-delete reloads, or scrolling previously re-fired `Toggled` and flipped the wrong mapping's persisted active state.",
+      "Merged PR #49287 includes commit `ba331c72d5eb6d164313dd9b2a4c5bf6373bf81f` titled `[Keyboard Manager] editor: stop mappings silently turning OFF on list refresh`, and its commit message describes the same random-disable symptom and root cause in detail.",
+      "The issue has no assignee, no linked upstream PR, and no contradictory maintainer guidance that would justify a competing new design."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-29T06:49:43Z"
-  }
+    "recommended_action": "Point the reporter to merged PR #49287 as the existing fix path and ask for a retest on a build newer than 0.101.2362 instead of opening a second design investigation.",
+    "evaluated_at": "2026-09-09T11:50:34.2517752Z",
+    "source_updated_at": "2026-09-09T09:27:36Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Merged PR #49287 already fixes the exact Keyboard Manager editor state-flip mechanism described by this issue.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49287",
+      "https://github.com/microsoft/PowerToys/commit/ba331c72d5eb6d164313dd9b2a4c5bf6373bf81f"
+    ]
+  },
+  "issue_context": {
+    "summary": "Keyboard Manager's unified editor could silently flip a different mapping's persisted active state while rows were added, removed, filtered, or recycled. The reporter's \"random enable/disable\" symptom and the follow-up \"enabled but not taking effect until toggled\" symptom line up with an already-merged list-refresh fix.",
+    "known_information": [
+      "The original report was filed against PowerToys 0.100.2 from a GitHub install, with the Keyboard Manager area selected.",
+      "The reporter says that when one line is added or removed, other lines are randomly enabled or disabled during editing.",
+      "A follow-up commenter reproduces the same problem on PowerToys v0.101.2362 stable on Windows 11 25H2 with Czech keyboard context, using a mix of key remaps, text remaps, and disabled remaps.",
+      "That follow-up also says some mappings appear enabled but do not actually take effect until they are toggled off and on again, and includes a recording attachment.",
+      "The issue is still open, has no assignee, and has no linked upstream PR in its live timeline.",
+      "The current Keyboard Manager editor row template binds each row's toggle to `IsActive`, and the current toggle handler contains a guard specifically intended to ignore recycle/binding-induced `Toggled` events."
+    ],
+    "inferences": [
+      "The random enabled/disabled UI state and the \"enabled but not active until retoggled\" symptom are both consistent with the wrong mapping's persisted `IsActive` value being flipped during row recycling.",
+      "Because the merged fix is in the editor-only list-refresh path, this issue is more likely a pre-fix stable-build report than a new Keyboard Manager engine regression."
+    ],
+    "analysis": "Focused code and history review show that current upstream already has a precise fix for this symptom. The relevant code path is not a speculative match: the merged commit names the same failure mode, explains how recycled ListView containers re-fired the toggle handler, and adds a model-vs-control-state guard in the exact method that persists active-state changes. Existing-fix handling is therefore more accurate than opening a competing design.",
+    "initial_investigation": [
+      "Read the complete upstream issue body, the later reproduction comment, labels, assignees, rename event, and absence of linked work in the timeline.",
+      "Inspected `src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml`, where every editor row exposes `MappingEnabledToggle` bound to `IsActive`.",
+      "Inspected `src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs`, especially `ToggleSwitch_Toggled`, whose current comment documents ListView container recycling causing unrelated mappings to turn OFF before the guard was added.",
+      "Reviewed merged PR #49287 and its fix commit `ba331c72d5eb6d164313dd9b2a4c5bf6373bf81f`, which explicitly targets \"stop mappings silently turning OFF on list refresh\".",
+      "Reviewed `src/modules/keyboardmanager/Tests/KeyboardManager.UITests/KeyboardManagerEditorTests.cs` to confirm the same editor surface already has persistence/toggle test coverage, even though the issue-specific list-refresh regression was fixed in the production handler rather than through a new linked issue."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Point to merged list-refresh fix",
+      "comment": {
+        "body": "Thanks for the detailed reproduction and the follow-up recording. This symptom matches the Keyboard Manager editor list-refresh bug fixed in merged PR #49287. That fix specifically guards the per-row enabled toggle so recycled list rows no longer flip a different mapping's persisted active state while mappings are added, removed, filtered, or scrolled. Because the follow-up reproduction is still on 0.101.2362 stable and the fix was merged afterward, the next step is to retest on a build that includes PR #49287 / the next release rather than opening a second fix design. If it still reproduces there, a fresh report should note whether it happens while filtering, adding, or deleting rows."
+      }
+    }
+  ],
+  "design": null
 }
