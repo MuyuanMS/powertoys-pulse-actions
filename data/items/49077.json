@@ -1,114 +1,271 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-49077",
   "number": 49077,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "maintainer",
+  "stage": "waiting_copilot",
+  "owes": "review-automation",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "evaluated_at": "2026-08-14T00:19:14Z",
-  "source_updated_at": "2026-08-06T16:31:16Z",
+  "generated_at": "2026-09-10T04:50:42.2603324Z",
+  "evaluated_at": "2026-09-10T04:50:42.2603324Z",
+  "source_updated_at": "2026-08-14T16:00:29Z",
+  "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+  "title": "[Workspaces] Migrate Editor from WPF to WinUI 3",
+  "url": "https://github.com/microsoft/PowerToys/pull/49077",
+  "repository": "microsoft/PowerToys",
+  "author": "chatasweetie",
+  "authorAssociation": "MEMBER",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Area-User Interface",
+    "Area-Accessibility",
+    "Issue-Refactoring",
+    "Product-Workspaces"
+  ],
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "summary": "The first current-head Copilot review on fork PR 759 was consumed. Four published findings and one important suppressed serialization finding were fixed, the four published threads were replied to and resolved, and the fixes were pushed as head 4d67ccfd074d15fdc9820b72bd7d28db6222b21e. A second fresh Copilot review was requested at 2026-09-10T04:48:10Z and had not submitted at the required immediate check, so the accurate nonterminal stage remains waiting_copilot.",
   "status": {
-    "glyph": "📝",
-    "label": "Review ready — six requests drafted",
-    "detail": "Upstream remains at dd7e6fd976e33d78eec2bd3007213df1f1970724 with all 8 reported checks successful. Fork PR 217 is at 4df6d8ac43764b229b4398370fbd806cd60b6f98; the fresh 2026-08-13T11:21:58Z Copilot pass generated no new comments, and all 57 fork review threads are resolved."
+    "glyph": "WAIT",
+    "label": "Waiting for fresh Copilot review",
+    "detail": "Fork PR 759 is on head 4d67ccfd074d15fdc9820b72bd7d28db6222b21e with zero unresolved Copilot threads. The second request recorded at 2026-09-10T04:48:10Z had no submitted result at the immediate check; do not create another request until this one is consumed."
   },
   "next_action": {
-    "glyph": "📝",
-    "label": "Review the six drafted change requests",
-    "reason": "The migration still needs coordinated shell, state-preservation, preview/overlay, save-validation, data-safety, and automation/accessibility fixes before merge."
+    "glyph": "clock",
+    "label": "Consume the outstanding review on fork PR 759",
+    "reason": "Inspect Copilot reviews submitted after 2026-09-10T04:48:10Z for fork head 4d67ccfd074d15fdc9820b72bd7d28db6222b21e. If findings exist, continue the fork-only fix, reply, resolve, and re-request loop. If the review has zero published findings, confirm zero unresolved threads and run the required current-head Workspaces build and tests before drafting the final upstream review."
   },
+  "blockers": [],
+  "proposed_comments": [],
   "actions": [],
-  "confidence": "High",
-  "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
-  "proposed_comments": [
-    {
-      "id": "complete-winui-window-shell",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Complete the WinUI window shell and lifecycle wiring",
-      "body": "### Complete the WinUI window shell and lifecycle wiring\n\n**Severity:** `high`\n\n`MainWindow.xaml` currently declares only the content frame and loading ring while its code-behind expects the title bar and search box, and the generated XAML base types do not match the `WindowEx` code-behind for the main and snapshot windows. Align the XAML roots and code-behind, restore the search/back/title-bar controls, enforce the minimum size, preserve valid saved window placement, restore a minimized window on hotkey activation, and exit the WinUI dispatcher when the editor closes so the single-instance mutex is not left behind.",
-      "path": "src/modules/Workspaces/WorkspacesEditor.WinUI/Views/MainWindow.xaml",
-      "line": 2,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "preserve-launch-edit-state",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Preserve workspace state during Launch & Edit recapture",
-      "body": "### Preserve workspace state during Launch & Edit recapture\n\n**Severity:** `high`\n\nThe recapture path currently preserves only the workspace ID. It can reset the name, `MoveExistingWindows`, per-app command-line/elevation settings, and monitor ownership, then serialize new application positions against stale monitor metadata. Preserve those existing settings, replace the monitor snapshot with the recaptured configuration, re-parent retained applications, recover missing monitor numbers from window geometry, and regenerate the preview before saving.",
-      "path": "src/modules/Workspaces/WorkspacesEditor.WinUI/Models/Project.cs",
-      "line": 326,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "restore-preview-and-clickthrough-overlay",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Restore the live preview and make capture overlays click-through",
-      "body": "### Restore the live preview and make capture overlays click-through\n\n**Severity:** `high`\n\nThe editing page still renders a placeholder instead of the calculated workspace preview, and `WS_EX_TRANSPARENT` only changes paint ordering; it does not make the opaque overlay strips return transparent hit tests. Bind the generated preview image into the editor, preserve hover highlighting, use the disabled DWM non-client policy value, and return `HTTRANSPARENT` from `WM_NCHITTEST` so the capture border cannot intercept clicks along monitor edges.",
-      "path": "src/modules/Workspaces/WorkspacesEditor.WinUI/Views/WorkspacesEditorPage.xaml",
-      "line": 254,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "prevent-empty-workspace-saves",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Keep excluded apps restorable and prevent zero-app saves",
-      "body": "### Keep excluded apps restorable and prevent zero-app saves\n\n**Severity:** `high`\n\nDisabling the whole app expander also disables its Add back action, while `CanBeSaved` counts excluded applications and can leave Save enabled after every app is removed. Disable only the editable settings, keep the remove/restore action enabled, require at least one included app before saving, and raise the save-validity notification whenever `IsIncluded` changes.",
-      "path": "src/modules/Workspaces/WorkspacesEditor.WinUI/Views/WorkspacesEditorPage.xaml",
-      "line": 33,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "make-settings-load-atomic",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Do not discard workspace data on a partial parse failure",
-      "body": "### Do not discard workspace data on a partial parse failure\n\n**Severity:** `high`\n\n`SetWorkspaces` clears the live collection before every workspace has been parsed. A malformed entry can therefore leave the editor with a partial or empty in-memory list even though loading failed. Parse the entire payload into a temporary collection first and replace the live list only after all entries succeed; keep unit tests on an injected in-memory settings instance so validation never mutates the user's real sort preference.",
-      "path": "src/modules/Workspaces/WorkspacesEditor.WinUI/Utils/WorkspacesEditorIO.cs",
-      "line": 164,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "finish-uia-and-localization-migration",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Finish the UI Automation and localization migration",
-      "body": "### Finish the UI Automation and localization migration\n\n**Severity:** `medium`\n\nSeveral tests still target WPF class-name selectors or remain attached to the closed Snapshot Creator window, and some new Narrator names are hard-coded in English. Use stable WinUI automation IDs consistently, reattach to the editor after capture, make clean-profile and empty-state tests exercise the actual controls, localize accessible names through `.resw`, and keep the UI-test project in the normal solution/build path.",
-      "path": "src/modules/Workspaces/WorkspacesEditorUITest/WorkspacesUiAutomationBase.cs",
-      "line": 30,
-      "side": "RIGHT",
-      "in_diff": false,
-      "disposition": "proposed"
+  "publicPayload": {
+    "comments": []
+  },
+  "phase0": {
+    "verdict": "Proceed",
+    "disposition": "Proceed",
+    "author": "chatasweetie",
+    "author_association": "MEMBER",
+    "bar": "member-authored migration PR; routine community-contributor process nags skipped",
+    "who_owes_next": "Review automation",
+    "gates_tripped": [],
+    "processAsks": [],
+    "summary": "No process ask is warranted. The member-authored PR is open and non-draft, links the Workspaces migration and localization issues, includes a user-visible recording and detailed manual validation, and all eight reported upstream checks pass, including CLA and both PowerToys CI architectures."
+  },
+  "judgment": {
+    "status": "waiting_copilot",
+    "rationale": "The first current-head Copilot review produced four published findings plus one important suppressed correctness finding. All five were fixed, the published threads were replied to and resolved, and a regression test was added for omitted applications. Review_ready still requires the newly requested zero-finding Copilot review for exact head 4d67ccfd074d15fdc9820b72bd7d28db6222b21e, zero unresolved threads, and fresh local validation.",
+    "evidence": [
+      "Upstream PR 49077 remains open and non-draft at head dd7e6fd976e33d78eec2bd3007213df1f1970724.",
+      "All eight reported upstream checks completed successfully: label, dependency-review, telemetry detection, aggregate PowerToys CI, Command Palette SDK, arm64, x64, and license/cla.",
+      "Resume discovery found fork PR 217 and 23 prior Copilot reviews with zero unresolved threads, but the branch diverged before the current upstream head and its diff no longer matched the live upstream scope.",
+      "Branch pr-iterate/49077-v4 was rebuilt from the current upstream head, merged with current upstream main, and received the previously reviewed Workspaces fixes.",
+      "The first fresh current-head Copilot review was submitted at 2026-09-10T04:43:26Z on fork head 478eed9ab9010b918cb6db64af489260271d9c46 and published four findings.",
+      "The published findings were fixed by restoring executable-basename matching in installer termination and BugReportTool queries, removing the duplicate Runner lifecycle registration, and caching failed launcher icon initialization attempts.",
+      "The important suppressed finding was fixed by serializing only included workspace applications, with a focused WorkspacesEditorIO regression test.",
+      "All four published Copilot threads were replied to and resolved before requesting the next review.",
+      "Fork PR 759 now contains 97 changed paths: 92 paths remain from the upstream diff, two incorrect upstream process-path edits intentionally collapse back to main, and five directly coupled review-fix paths cover migrated automation, serialization testing, legacy resource removal, UI-test helpers, and launcher icon conversion.",
+      "The rebuilt local checkout passes git diff --check after removing a trailing blank line.",
+      "GitHub recorded the second Copilot review request on fork PR 759 at 2026-09-10T04:48:10Z.",
+      "No Copilot review had submitted after the second stored request timestamp at the immediate check, and the requested-reviewers response was already empty.",
+      "No comment, review, approval, label, close, merge, or other mutation was made to microsoft/PowerToys."
+    ],
+    "recommended_action": "Preserve waiting_copilot and consume the existing request before any new request. Keep all further writes fork-side only.",
+    "evaluated_at": "2026-09-10T04:50:42.2603324Z",
+    "source_updated_at": "2026-08-14T16:00:29Z"
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "upstream_updated_at": "2026-08-14T16:00:29Z",
+    "upstream_head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+    "upstream_base_sha": "93669df118c45d6f1dc3a19d7a64a5593f264d45",
+    "changed_file_count": 94,
+    "additions": 5101,
+    "deletions": 4411,
+    "reported_checks": {
+      "status": "passed",
+      "total": 8,
+      "successful": 8,
+      "failed": 0,
+      "pending": 0,
+      "names": [
+        "label",
+        "dependency-review",
+        "detect-telemetry-events",
+        "PowerToys CI",
+        "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
+        "PowerToys CI (Build arm64 Build Release_arm64)",
+        "PowerToys CI (Build x64 Build Release_x64)",
+        "license/cla"
+      ]
     }
-  ],
-  "upstream_pr": {
-    "number": 49077,
-    "url": "https://github.com/microsoft/PowerToys/pull/49077"
+  },
+  "validation": {
+    "status": "pending_current_head_build",
+    "configuration": "Debug x64 required after Copilot convergence",
+    "builds": [],
+    "tests": [
+      {
+        "name": "git diff --check origin/main...HEAD",
+        "result": "passed"
+      },
+      {
+        "name": "upstream scope coverage",
+        "result": "passed",
+        "upstream_paths": 94,
+        "fork_paths": 97,
+        "upstream_paths_corrected_back_to_main": 2,
+        "directly_coupled_review_fix_paths": 5
+      }
+    ],
+    "outputs": [],
+    "notes": [
+      "No current-head build is claimed. The drain contract returns at waiting_copilot after the immediate review check.",
+      "On resume after a clean Copilot result, run build-essentials, the Workspaces module chain, WorkspacesEditor.UnitTests, and the applicable UI-test project validation."
+    ]
+  },
+  "freshness": {
+    "checkpoint_at": "2026-09-10T04:50:42.2603324Z",
+    "live_upstream_head": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+    "live_source_updated_at": "2026-08-14T16:00:29Z",
+    "fork_head": "4d67ccfd074d15fdc9820b72bd7d28db6222b21e",
+    "fork_base": "74a42383d10a37cc83f3c812dff19a859537dcad",
+    "scope": {
+      "upstream_changed_paths": 94,
+      "fork_changed_paths": 97,
+      "upstream_paths_corrected_back_to_main": [
+        "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+        "tools/BugReportTool/BugReportTool/ProcessesList.cpp"
+      ],
+      "review_fix_extra_paths": [
+        "src/common/UITestAutomation.Next/ModuleConfigData.cs",
+        "src/modules/Workspaces/WorkspacesEditor.UnitTests/WorkspacesEditorIOTests.cs",
+        "src/modules/Workspaces/WorkspacesEditor/Properties/Resources.resx",
+        "src/modules/Workspaces/WorkspacesEditorUITest/WorkspacesUiAutomationBase.cs",
+        "src/modules/Workspaces/WorkspacesLauncherUI/Models/AppLaunching.cs"
+      ]
+    }
+  },
+  "freshReview": {
+    "status": "requested_waiting",
+    "stored_request_at": "2026-09-10T04:48:10Z",
+    "prior_completed_review_at": "2026-09-10T04:43:26Z",
+    "prior_completed_review_id": 5162804478,
+    "fork_pr": 759,
+    "fork_head": "4d67ccfd074d15fdc9820b72bd7d28db6222b21e",
+    "published_comments": null,
+    "unresolved_threads": 0,
+    "converged": false
+  },
+  "copilot": {
+    "status": "waiting_for_fresh_review",
+    "fork_pr": 759,
+    "current_fork_head": "4d67ccfd074d15fdc9820b72bd7d28db6222b21e",
+    "prior_review_count": 23,
+    "current_head_reviews_consumed": 1,
+    "published_findings_processed": 4,
+    "important_suppressed_findings_processed": 1,
+    "latest_prior_completed_review_at": "2026-09-10T04:43:26Z",
+    "latest_prior_completed_review_id": 5162804478,
+    "fresh_review_requested_at": "2026-09-10T04:48:10Z",
+    "fresh_review_immediate_result": "no_submitted_review",
+    "request_api_succeeded": true,
+    "request_response_reviewers": [],
+    "unresolved_threads": 0,
+    "converged": false,
+    "convergence_requirement": "Not satisfied for the exact current fork head until the stored request produces a fresh zero-published-comment review and zero unresolved threads remain."
+  },
+  "threads": {
+    "prior_fork_pr": {
+      "number": 217,
+      "copilot_unresolved": 0,
+      "state": "OPEN",
+      "status": "superseded_stale_branch"
+    },
+    "current_fork_pr": {
+      "number": 759,
+      "copilot_total": 4,
+      "copilot_resolved": 4,
+      "copilot_unresolved": 0,
+      "state": "OPEN"
+    },
+    "upstream_new_writes": 0
   },
   "fork_pr": {
-    "number": 217,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/217",
+    "number": 759,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/759",
     "state": "OPEN",
-    "updated_at": "2026-08-13T11:22:47Z",
-    "head_sha": "4df6d8ac43764b229b4398370fbd806cd60b6f98",
-    "base_sha": "29471231dd4efdb4433163be135c839177287cdc",
-    "commit_count": 100,
-    "changed_file_count": 100
+    "branch": "pr-iterate/49077-v4",
+    "base_branch": "main",
+    "head_sha": "4d67ccfd074d15fdc9820b72bd7d28db6222b21e",
+    "base_sha": "74a42383d10a37cc83f3c812dff19a859537dcad",
+    "reviewed_upstream_head": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+    "upstream_file_count": 94,
+    "fork_file_count": 97,
+    "upstream_scope_covered": true,
+    "scope_difference": {
+      "upstream_paths_corrected_back_to_main": [
+        "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
+        "tools/BugReportTool/BugReportTool/ProcessesList.cpp"
+      ],
+      "review_fix_extra_files": [
+        "src/common/UITestAutomation.Next/ModuleConfigData.cs",
+        "src/modules/Workspaces/WorkspacesEditor.UnitTests/WorkspacesEditorIOTests.cs",
+        "src/modules/Workspaces/WorkspacesEditor/Properties/Resources.resx",
+        "src/modules/Workspaces/WorkspacesEditorUITest/WorkspacesUiAutomationBase.cs",
+        "src/modules/Workspaces/WorkspacesLauncherUI/Models/AppLaunching.cs"
+      ]
+    },
+    "prior_pr": {
+      "number": 217,
+      "state": "OPEN",
+      "reason": "The branch was preserved for audit but superseded because it did not contain the current upstream head and no longer had valid live diff scope."
+    }
   },
-  "fork_branch": "pr-iterate/49077-v2",
-  "needs_revalidation": true
+  "fork_changes": {
+    "commits_carried_forward": 18,
+    "latest_fix_commit": {
+      "sha": "4d67ccfd074d15fdc9820b72bd7d28db6222b21e",
+      "summary": "Fix four published current-head findings and the important suppressed workspace serialization finding, including a regression test."
+    },
+    "writes": [
+      "Created current-head branch pr-iterate/49077-v4 from upstream PR head dd7e6fd976e33d78eec2bd3007213df1f1970724.",
+      "Merged current upstream main into the review branch.",
+      "Carried forward the previously reviewed Workspaces fixes while resolving superseded XAML and installer conflicts against the live head.",
+      "Pushed fork branch pr-iterate/49077-v4 and opened fork PR 759.",
+      "Requested and consumed one fresh current-head Copilot review for fork PR 759.",
+      "Replied to and resolved all four published Copilot threads.",
+      "Pushed current-head review fixes as 4d67ccfd074d15fdc9820b72bd7d28db6222b21e.",
+      "Requested one second fresh Copilot review for fork PR 759."
+    ]
+  },
+  "upstream_writes": {
+    "performed": false,
+    "repository": "microsoft/PowerToys",
+    "comments": 0,
+    "reviews": 0,
+    "labels": 0,
+    "closes": 0,
+    "merges": 0,
+    "detail": "No writes were made to microsoft/PowerToys."
+  },
+  "workflow": {
+    "drain": "active explicit drain worker",
+    "phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-10T04:50:42.2603324Z",
+    "resume_action": "consume_review_submitted_after_stored_request",
+    "prior_copilot_rounds_completed": 23,
+    "current_head_rounds_completed": 1,
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "fresh_review_pending_after_immediate_check",
+    "fresh_review_requested_at": "2026-09-10T04:48:10Z",
+    "local_validation": "pending_current_head_build"
+  },
+  "dashboard_modified": false,
+  "canonical_dashboard_identity": "<PowerToysCheckout>"
 }
