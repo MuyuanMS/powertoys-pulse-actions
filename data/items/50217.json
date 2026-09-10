@@ -5,35 +5,26 @@
   "kind": "pr",
   "track": "review",
   "stage": "review_in_progress",
-  "owes": "automation",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-10T04:53:42.3587355Z",
-  "evaluated_at": "2026-09-10T04:53:42.3587355Z",
+  "generated_at": "2026-09-09T19:03:25.3400089Z",
+  "evaluated_at": "2026-09-09T19:03:25.3400089Z",
   "source_updated_at": "2026-08-31T14:52:41Z",
   "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
   "title": "fix(file-locksmith): isolate handle enumeration",
   "url": "https://github.com/microsoft/PowerToys/pull/50217",
   "repository": "microsoft/PowerToys",
-  "author": "crutkas",
-  "authorAssociation": "MEMBER",
-  "isCommunity": false,
-  "isMine": false,
-  "state": "OPEN",
-  "draft": false,
-  "confidence": "High",
-  "processVerdict": "proceed",
-  "summary": "Resumed the durable fork review without remirroring or duplicating the prior Copilot request. The protected review branch was rebased onto current microsoft/PowerToys main, advanced without force-pushing by preserving the old branch as merge history, and the fork PR base was refreshed to the synchronized fork main. The live fork diff is exactly the 20 upstream files plus three files added by review fixes. Debug x64 build-essentials, the File Locksmith extension, UI, CLI tests, and UI tests all built successfully; both test suites passed 23 of 23 tests. One fresh Copilot review was requested for the new fork head at 2026-09-10T04:51:25.0833763Z, but no post-request review has arrived, so the valid nonterminal state is waiting_copilot.",
+  "summary": "The existing fork review state for PR 50217 is still clean on the Copilot side and retains six current-head draft findings, but this resume pass is not yet concluded because fresh local validation is still pending after local checkout recreation. The last Copilot request was already consumed, no duplicate request was created, and the rebuild attempt stalled behind a shared vcpkg registry lock before the targeted File Locksmith build finished.",
   "status": {
     "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Fork PR 527 is on head 385f4d14e628c13e7606fe5f90cce5a1c610b90c with zero unresolved Copilot threads. The mandatory fresh review request for this rebased head is recorded by GitHub at 2026-09-10T04:51:26Z and has no later submitted review yet. Do not request again."
+    "label": "Local validation running",
+    "detail": "Resume state found an existing fork PR and converged Copilot loop with zero unresolved Copilot threads. A new local checkout was recreated successfully, but the fresh rebuild did not complete because build-essentials remained blocked waiting on a shared vcpkg registry lock; no upstream write occurred and no duplicate Copilot request was sent."
   },
   "next_action": {
-    "glyph": ">",
-    "label": "Consume the outstanding Copilot request",
-    "reason": "Inspect fork PR 527 for a Copilot review submitted after 2026-09-10T04:51:25.0833763Z. If it has published findings, process, reply to, resolve, push, rebuild, retest, and re-request. If it has zero published findings, confirm zero unresolved threads and current upstream head before setting review_ready."
+    "glyph": "▶",
+    "label": "Resume targeted File Locksmith validation",
+    "reason": "Once the shared vcpkg registry lock clears, rerun the targeted build and test pass in the recreated local checkout. If validation succeeds, republish the existing six current-head findings as a request-changes draft."
   },
-  "blockers": [],
   "proposed_comments": [
     {
       "id": "isolate-direct-cli-enumeration",
@@ -42,11 +33,10 @@
       "title": "Isolate enumeration for normal CLI commands",
       "body": "### Isolate enumeration for normal CLI commands\n\n**Severity:** `high`\n\nThe hidden worker protects the UI, but normal `FileLocksmithCLI.exe` commands still construct `RealProcessFinder` and execute the potentially blocking native enumeration in the CLI process. A kernel query hang therefore still hangs `--json`, `--kill`, and `--wait --timeout`, so the timeout cannot be honored. Route every normal enumeration through a contained child `--worker-json` process with redirected BOM-free UTF-8 pipes, a finite wait, complete stdout draining, and explicit failure propagation. Also cover a deliberately blocked worker and verify that no child is orphaned.",
       "in_diff": false,
-      "outOfDiffReason": "The coordinated fix spans the normal CLI entry points, worker process containment, resources, and executable-level tests; it cannot be represented as one safe current-diff replacement.",
       "disposition": "proposed",
       "confidence": {
         "score": 98,
-        "rationale": "Normal commands still invoke the native finder directly on the upstream head, so a blocking kernel query can hang the CLI indefinitely."
+        "rationale": "Normal commands still invoke the native finder directly, so a blocking kernel query can hang the CLI indefinitely."
       }
     },
     {
@@ -136,189 +126,101 @@
     }
   ],
   "actions": [],
-  "publicPayload": {
-    "comments": []
-  },
-  "safe_actions": [
-    "Do not send another Copilot request until the request recorded at 2026-09-10T04:51:25.0833763Z is consumed.",
-    "Keep all writes on the configured fork; post nothing to microsoft/PowerToys.",
-    "Revalidate the live upstream head and map every carried finding to the current RIGHT-side diff before review_ready."
-  ],
-  "needs_revalidation": true,
-  "phase0": {
-    "author": "crutkas",
-    "author_association": "MEMBER",
-    "bar": "member-authored; community process nags skipped",
-    "disposition": "Proceed",
-    "who_owes_next": "Review automation",
-    "gates_tripped": [],
-    "processAsks": [],
-    "note": "CLA and all reported CI checks pass. The automated intake requested visual evidence, but the author is a repository member and the change is primarily a crash/hang containment fix with detailed validation; no additional Phase 0 ask is drafted.",
+  "judgment": {
+    "status": "build_revalidation_pending",
+    "rationale": "The live upstream head is unchanged from the previously drafted review, the fork loop already converged, and the last outstanding Copilot request from 2026-08-28T22:51:25Z was satisfied by the 2026-08-28T22:55:41Z zero-new-comment review on fork head 5a64966b1022e316bb332bb5ed502ac1e72c6f5d. However, cross-session local validation was not re-established in this run because the rebuild stopped behind shared vcpkg lock contention.",
+    "recommended_action": "Resume from the recreated local checkout at the building phase; do not request another Copilot review unless the branch changes after local validation or thread work.",
+    "evaluated_at": "2026-09-09T19:03:25.3400089Z",
+    "source_updated_at": "2026-08-31T14:52:41Z",
     "evidence": [
-      "The PR is open and non-draft on upstream head 36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd.",
-      "The author supplied detailed build, unit-test, worker-protocol, timeout-cleanup, and smoke-test validation.",
-      "license/cla, PowerToys CI, x64 Release, arm64 Release, dependency review, telemetry detection, and intake checks are successful."
+      "Live upstream head is 36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd and upstream updatedAt is 2026-08-31T14:52:41Z.",
+      "Resume discovery found fork branch pr-iterate/50217, fork PR 527, and fork head 5a64966b1022e316bb332bb5ed502ac1e72c6f5d.",
+      "The current local checkout was recreated at resume time from pr-iterate/50217 rather than remirroring the branch.",
+      "Fork requested_reviewers is currently empty, so no Copilot request is outstanding.",
+      "The latest review request event for Copilot is 2026-08-28T22:51:25Z, and the latest Copilot review submitted afterward is the 2026-08-28T22:55:41Z COMMENTED review on commit 5a64966b1022e316bb332bb5ed502ac1e72c6f5d with zero new inline comments.",
+      "Review thread inspection shows zero unresolved Copilot threads.",
+      "The previous current-head draft carried six proposed review comments.",
+      "This session attempted fresh local validation, but build-essentials stalled during the runner build while waiting on a shared vcpkg registry filesystem lock."
     ]
   },
-  "judgment": {
-    "status": "waiting_copilot",
-    "rationale": "The current fork head is rebased, scope-correct, locally validated, and has no unresolved prior Copilot threads. It is not review_ready because the required freshly requested review for fork head 385f4d14e628c13e7606fe5f90cce5a1c610b90c has not yet been submitted.",
-    "evidence": [
-      "Fork main 74a42383d10a37cc83f3c812dff19a859537dcad has the same tree as current microsoft/PowerToys main 65d79b27b93b7883c6010e5e57b638c6de9725f4.",
-      "Fork PR 527 base was refreshed to synchronized main and now reports 23 changed files.",
-      "The fork diff contains every one of the 20 upstream files and only three review-fix extras: FileLocksmithCLI.rc, resource.h, and FileLocksmithCLITests.cpp.",
-      "Debug x64 build-essentials, FileLocksmithExt, FileLocksmithUI, FileLocksmithCLI.UnitTests, and FileLocksmithUI.UnitTests builds completed with exit code 0.",
-      "VSTest ran 23 tests across both File Locksmith suites: 23 passed, 0 failed, 0 skipped.",
-      "PowerToys.exe, PowerToys.FileLocksmithExt.dll, PowerToys.FileLocksmithUI.exe, and FileLocksmithCLI.exe exist in the Debug x64 output.",
-      "All prior Copilot threads are resolved.",
-      "GitHub recorded one new Copilot review request event at 2026-09-10T04:51:26Z.",
-      "No Copilot review was submitted after the request timestamp during the immediate drain check.",
-      "No upstream or dashboard writes occurred."
-    ],
-    "recommended_action": "Resume by consuming the outstanding request. Do not request another review unless that result is processed and a subsequent fork-head change requires another round.",
-    "evaluated_at": "2026-09-10T04:53:42.3587355Z",
-    "source_updated_at": "2026-08-31T14:52:41Z"
-  },
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "upstream_updated_at": "2026-08-31T14:52:41Z",
-    "upstream_head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
-    "changed_file_count": 20,
-    "issue_comment_count": 2,
-    "review_count": 0,
-    "review_comment_count": 0,
-    "reported_checks": {
-      "status": "passed",
-      "successful": 9,
-      "failed": 0,
-      "pending": 0
-    }
+  "process_review": {
+    "author": "crutkas",
+    "author_association": "MEMBER",
+    "community_gates_applied": false,
+    "disposition": "proceed",
+    "checks": {
+      "ci": "passed",
+      "cla": "passed",
+      "demo_required": false
+    },
+    "notes": [
+      "Because the author association is MEMBER, community-contributor process asks remain skipped.",
+      "The intake-generated Needs-Author-Feedback label was not treated as a blocking community process gate for this member-authored PR."
+    ]
   },
   "fork_pr": {
     "number": 527,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/527",
-    "state": "OPEN",
-    "branch": "pr-iterate/50217",
-    "base_branch": "main",
-    "base_sha": "74a42383d10a37cc83f3c812dff19a859537dcad",
-    "head_sha": "385f4d14e628c13e7606fe5f90cce5a1c610b90c",
-    "upstream_head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
-    "upstream_file_count": 20,
-    "fork_file_count": 23,
-    "exact_scope_verified": true,
-    "scope_difference": {
-      "missing_files": [],
-      "review_fix_extra_files": [
-        "src/modules/FileLocksmith/FileLocksmithCLI/FileLocksmithCLI.rc",
-        "src/modules/FileLocksmith/FileLocksmithCLI/resource.h",
-        "src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLITests.cpp"
-      ]
-    }
+    "head_sha": "5a64966b1022e316bb332bb5ed502ac1e72c6f5d"
   },
+  "fork_repo": "MuyuanMS/PowerToys",
   "fork_branch": "pr-iterate/50217",
   "workflow": {
-    "drain": "active explicit drain worker",
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-10T04:53:42.3587355Z",
-    "resume_action": "consume_post_request_review",
-    "copilot_rounds_completed": 10,
-    "fresh_review_requested_at": "2026-09-10T04:51:25.0833763Z",
-    "fresh_review_event_at": "2026-09-10T04:51:26Z",
-    "fresh_review_immediate_check_at": "2026-09-10T04:53:42.3587355Z",
-    "post_request_review_submitted": false,
+    "phase": "building",
+    "checkpoint_at": "2026-09-09T19:03:25.3400089Z",
+    "resume_action": "create-local checkout",
+    "pending_copilot_request": false,
+    "last_copilot_request_at": "2026-08-28T22:51:25Z",
+    "copilot_latest_review_at": "2026-08-28T22:55:41Z",
+    "copilot_result": "clean_zero_published_comments",
     "unresolved_copilot_threads": 0,
-    "local_validation": "completed",
+    "local_validation": "waiting_on_shared_vcpkg_lock",
     "carried_forward_draft_findings": 6
   },
   "freshness": {
-    "status": "current_upstream_head_validation_passed_waiting_copilot",
-    "checkpoint_at": "2026-09-10T04:53:42.3587355Z",
+    "checkpoint_at": "2026-09-09T19:03:25.3400089Z",
     "live_upstream_head": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
     "live_source_updated_at": "2026-08-31T14:52:41Z",
-    "fork_head": "385f4d14e628c13e7606fe5f90cce5a1c610b90c",
-    "fork_base": "74a42383d10a37cc83f3c812dff19a859537dcad",
-    "exact_scope_verified": true
+    "upstream_head_changed_since_previous_draft": false,
+    "relevant_new_upstream_activity": true
   },
-  "validation": {
-    "status": "passed",
-    "configuration": "Debug x64",
-    "builds": [
-      {
-        "name": "build-essentials",
-        "result": "passed"
-      },
-      {
-        "name": "FileLocksmithExt.vcxproj",
-        "result": "passed"
-      },
-      {
-        "name": "FileLocksmithUI.csproj",
-        "result": "passed"
-      },
-      {
-        "name": "FileLocksmithCLIUnitTests.vcxproj",
-        "result": "passed"
-      },
-      {
-        "name": "FileLocksmithUI.UnitTests.csproj",
-        "result": "passed"
-      }
+  "build_evidence": {
+    "status": "in_progress",
+    "attempted_commands": [
+      "tools\\\\build\\\\build-essentials.cmd",
+      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\FileLocksmith\\\\FileLocksmithUI",
+      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\FileLocksmith\\\\FileLocksmithCLI\\\\tests",
+      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\FileLocksmith\\\\Tests\\\\FileLocksmithUI.UnitTests"
     ],
-    "tests": [
-      {
-        "name": "FileLocksmithCLI.UnitTests and FileLocksmithUI.UnitTests",
-        "result": "passed",
-        "total": 23,
-        "passed": 23,
-        "failed": 0,
-        "skipped": 0,
-        "duration_seconds": 13.7212,
-        "runner": "vstest.console.exe"
-      }
-    ],
-    "outputs": {
-      "powerToysExe": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
-      "moduleInterface": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\PowerToys.FileLocksmithExt.dll",
-      "fileLocksmithUi": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\PowerToys.FileLocksmithUI.exe",
-      "fileLocksmithCli": "<PowerToysCheckout>\\x64\\Debug\\FileLocksmithCLI.exe",
-      "testResults": "<local-artifact>"
+    "tests": {
+      "status": "not_run_in_this_resume",
+      "cli_unit_tests": null,
+      "ui_unit_tests": null
     },
     "notes": [
-      "POWERTOYS_DISABLE_SPECTRE=1 was used.",
-      "The shared PowerToys build lock was held for the complete build chain.",
-      "The repository build scripts entered Visual Studio 18 Enterprise successfully despite a non-fatal localized vswhere lookup message."
+      "POWERTOYS_DISABLE_SPECTRE=1 was set for the attempted rebuild.",
+      "Inherited GIT_CONFIG_* environment variables were cleared before invoking git-backed build scripts.",
+      "The build-essentials restore step completed, but the runner build then stalled while waiting on a shared vcpkg registry filesystem lock from another build process."
     ]
   },
   "copilot": {
-    "fork_pr": 527,
-    "latest_completed_review_at": "2026-08-28T22:55:41Z",
-    "latest_completed_review_head": "5a64966b1022e316bb332bb5ed502ac1e72c6f5d",
-    "latest_completed_review_published_comments": 0,
+    "last_requested_at": "2026-08-28T22:51:25Z",
+    "latest_review_at": "2026-08-28T22:55:41Z",
+    "latest_review_head": "5a64966b1022e316bb332bb5ed502ac1e72c6f5d",
+    "latest_review_summary": "Needs a closer look; 0 new comments",
+    "new_comments": 0,
     "unresolved_threads": 0,
-    "fresh_review_requested_at": "2026-09-10T04:51:25.0833763Z",
-    "fresh_review_event_at": "2026-09-10T04:51:26Z",
-    "fresh_review_immediate_check_at": "2026-09-10T04:53:42.3587355Z",
-    "fresh_review_status": "pending_after_immediate_check",
-    "post_request_review_submitted": false,
-    "converged": false
+    "pending_requested_reviewers": [],
+    "reviews_after_last_request": [
+      {
+        "reviewer": "copilot-pull-request-reviewer[bot]",
+        "state": "COMMENTED",
+        "submitted_at": "2026-08-28T22:55:41Z",
+        "commit_id": "5a64966b1022e316bb332bb5ed502ac1e72c6f5d"
+      }
+    ]
   },
-  "fork_writes": [
-    "Advanced configured fork main with a merge commit whose tree exactly matches current microsoft/PowerToys main.",
-    "Rebased pr-iterate/50217 onto current upstream main and preserved the protected branch history with a non-force merge before pushing.",
-    "Refreshed fork PR 527 from a stale cached base back to synchronized main.",
-    "Requested one fresh Copilot review for the new fork head."
-  ],
-  "upstream_writes": {
-    "performed": false,
-    "repository": "microsoft/PowerToys",
-    "comments": 0,
-    "reviews": 0,
-    "labels": 0,
-    "closes": 0,
-    "merges": 0,
-    "detail": "No writes were made to microsoft/PowerToys."
-  },
+  "upstream_writes": false,
   "dashboard_modified": false,
-  "canonical_dashboard_identity": "<PowerToysCheckout>"
+  "needs_revalidation": true
 }

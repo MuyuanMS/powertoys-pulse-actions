@@ -183,7 +183,6 @@
       "severity": "high",
       "title": "Do not intercept Alt-modified snap chords in no-cycle mode",
       "body": "### Do not intercept Alt-modified snap chords in no-cycle mode\n\n**Severity:** `high`\n\nWhen cycling is disabled, the new index-mode Up/Down path should not intercept Win+Ctrl+Alt+Up/Down. The hook already treats that chord specially, but the hotkey gate does not know whether Alt is down, so the new fallback can swallow the chord and run FancyZones maximize/minimize behavior instead of the intended Alt-modified handling. Please pass the Alt state into the gate and only enable the new index-mode Up/Down path when Alt is not pressed.",
-      "path": "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp",
       "in_diff": false,
       "disposition": "proposed",
       "confidence": {
@@ -193,17 +192,19 @@
     },
     {
       "id": "use-native-minimize-semantics",
-      "kind": "companion",
+      "kind": "inline",
       "severity": "high",
       "title": "Use native minimize semantics for the Win+Down fallback",
-      "body": "### Use native minimize semantics for the Win+Down fallback\n\n**Severity:** `high`\n\nThe Win+Down fallback currently sets `WINDOWPLACEMENT.showCmd` to `SW_SHOWMINIMIZED`. That shows the window minimized while keeping activation semantics different from a user-initiated minimize, so focus can remain with the minimized app instead of moving normally. Use `SW_MINIMIZE` for the Down fallback while keeping `SW_SHOWMAXIMIZED` for Up.",
+      "body": "The Win+Down fallback should use native minimize semantics so focus is released as it would be for a user-initiated minimize.\r\n\r\n```suggestion\r\n            placement.showCmd = SW_MINIMIZE;\r\n```",
       "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp",
-      "in_diff": false,
+      "in_diff": true,
       "disposition": "proposed",
       "confidence": {
         "score": 91,
         "rationale": "The reviewed code directly assigns SW_SHOWMINIMIZED on the Down fallback; Win+Down should follow the native minimize activation path."
-      }
+      },
+      "side": "RIGHT",
+      "line": 63
     },
     {
       "id": "separate-snap-failure-from-boundary",
@@ -211,7 +212,6 @@
       "severity": "high",
       "title": "Separate snap failure from no directional target",
       "body": "### Separate snap failure from no directional target\n\n**Severity:** `high`\n\nWin+Up/Down should maximize or minimize only when there is genuinely no directional zone target. A real `WorkArea::Snap` failure should be returned as failure instead of being reinterpreted as a boundary, and any `WINDOWPLACEMENT` read must initialize `length` and handle failure before changing state. Otherwise an internal snap failure or invalid placement query can incorrectly turn into maximize/minimize behavior.",
-      "path": "src/modules/fancyzones/FancyZonesLib/WindowKeyboardSnap.cpp",
       "in_diff": false,
       "disposition": "proposed",
       "confidence": {
@@ -225,7 +225,6 @@
       "severity": "medium",
       "title": "Align Settings serialization with the native default",
       "body": "### Align Settings serialization with the native default\n\n**Severity:** `medium`\n\nThe new Settings property is constructed without the native default value, while the runtime default keeps zone cycling enabled. Please add a named Settings default that matches the native default and use it when creating the `FancyzonesCycleThroughAllZones` property, so a missing or newly created settings file does not serialize an unintended value.",
-      "path": "src/settings-ui/Settings.UI.Library/FZConfigProperties.cs",
       "in_diff": false,
       "disposition": "proposed",
       "confidence": {
@@ -239,7 +238,6 @@
       "severity": "medium",
       "title": "Add deterministic boundary and persistence regression coverage",
       "body": "### Add deterministic boundary and persistence regression coverage\n\n**Severity:** `medium`\n\nPlease cover cycling-disabled navigation in both index and position modes, single- and multi-monitor transitions, global-edge stops, unsnapped windows, and maximize/restore/minimize state changes. Also add Settings coverage proving the toggle persists and native serialization coverage for `cycle-through-zones=false` so the new option does not regress across UI, settings files, and runtime behavior.",
-      "path": "src/modules/fancyzones/FancyZonesTests/UnitTests/WindowKeyboardSnap.Spec.cpp",
       "in_diff": false,
       "disposition": "proposed",
       "confidence": {

@@ -35,9 +35,6 @@
         "rationale": "Microsoft PlaySound documentation explicitly requires SND_MEMORY plus SND_ASYNC buffers to remain valid until playback completes, while the current byte[] P/Invoke pin lasts only for the call."
       },
       "body": "### Keep asynchronous in-memory WAV buffers valid\r\n\r\n**Severity:** `high`\r\n\r\n`PlaySound` is called with `SND_MEMORY | SND_ASYNC`, but the current `byte[]` marshalling pin is only guaranteed for the duration of the P/Invoke. The native audio playback can therefore retain a pointer after the managed array is movable again, causing corrupted playback or an invalid memory read. Keep each lazily loaded WAV buffer pinned for the application lifetime, pass its stable `IntPtr` to `PlaySound`, and handle a `false` return as a playback failure.",
-      "path": "src/modules/launcher/PowerLauncher/MainWindow.xaml.cs",
-      "line": 860,
-      "side": "RIGHT",
       "in_diff": false,
       "disposition": "proposed"
     },
@@ -51,9 +48,6 @@
         "rationale": "The MSI authoring enumerates configured directories non-recursively and has no Sounds directory/component, while the project emits both files under the Sounds subdirectory."
       },
       "body": "### Deploy the sound files in installed builds\r\n\r\n**Severity:** `high`\r\n\r\n`CopyToOutputDirectory` places the assets in the build output's `Sounds` subdirectory, but the MSI authoring neither declares that directory nor installs either WAV file. Installed PowerToys builds will therefore always take the missing-sound path even though local project builds work. Add a `Sounds` installer directory/component containing `open.wav` and `close.wav`, include it in `RunComponentGroup`, and remove the directory on uninstall.",
-      "path": "src/modules/launcher/PowerLauncher/PowerLauncher.csproj",
-      "line": 118,
-      "side": "RIGHT",
       "in_diff": false,
       "disposition": "proposed"
     },
@@ -67,9 +61,6 @@
         "rationale": "Both per-event switches now default true; the current opening=true assignments are no-ops, and the fork spell-check directly required winmm as a one-word allow entry."
       },
       "body": "### Exercise the non-default settings and allow `winmm`\r\n\r\n**Severity:** `medium`\r\n\r\nAfter the per-event defaults changed to `true`, the opening-sound assignments in the CLI and view-model tests stopped exercising that setter. Set the opening option to `false`, make the view-model test drive all three properties away from their defaults and expect three IPC callbacks, and add `winmm` as its own entry in the spell-check allow list so the new P/Invoke does not fail the spelling gate.",
-      "path": "src/settings-ui/Settings.UI.UnitTests/ViewModelTests/PowerLauncherViewModelTest.cs",
-      "line": 223,
-      "side": "RIGHT",
       "in_diff": false,
       "disposition": "proposed"
     },
@@ -83,9 +74,6 @@
         "rationale": "The live body says the bundled Freesound assets are purpose-recorded and all three toggles default false, while NOTICE and code identify existing CC BY recordings and true per-event defaults."
       },
       "body": "### Align the PR description with the implementation\r\n\r\n**Severity:** `medium`\r\n\r\nThe summary describes purpose-recorded custom sounds and says all three settings default to `false`, while `NOTICE.md` identifies existing Freesound recordings and the code defaults both per-event switches to `true`. Update the description to call them bundled third-party CC BY 3.0 assets and document that the parent defaults off while opening and closing default on. This keeps the reviewed provenance, compatibility behavior, and validation contract consistent.",
-      "path": "NOTICE.md",
-      "line": 779,
-      "side": "RIGHT",
       "in_diff": false,
       "disposition": "proposed"
     }

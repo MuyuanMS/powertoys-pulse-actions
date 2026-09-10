@@ -144,7 +144,7 @@
       "kind": "companion",
       "severity": "high",
       "title": "Retain and dispose the managed IPC endpoints",
-      "in_diff": true,
+      "in_diff": false,
       "disposition": "proposed",
       "body": "### Retain and dispose the managed IPC endpoints\n\n**Severity:** `high`\n\nBoth applications still keep `TwoWayPipeMessageIPCManaged` only in a local variable, so the wrapper can be collected after startup and neither shutdown path can call `Dispose()`, which is what deletes the native IPC object. Retain the endpoint as an application field and dispose it during the existing shutdown path. In PowerDisplay, create and assign the main window before starting IPC so an immediately delivered first command cannot be discarded while `_mainWindow` is still null.",
       "confidence": {
@@ -157,7 +157,7 @@
       "kind": "companion",
       "severity": "high",
       "title": "Do not drop commands while the child pipe is starting",
-      "in_diff": true,
+      "in_diff": false,
       "disposition": "proposed",
       "body": "### Do not drop commands while the child pipe is starting\n\n**Severity:** `high`\n\nThe old implementation did not return until the child connected, but the shared sender removes a queued message and returns when `CreateFile` reports `ERROR_FILE_NOT_FOUND`. A hotkey or profile command issued during child startup can therefore be lost. Retain and retry that queued message until the peer pipe appears or IPC is ended, and add a deterministic regression test that waits until the missing-pipe attempt has occurred before creating the peer.",
       "confidence": {
@@ -170,7 +170,7 @@
       "kind": "companion",
       "severity": "medium",
       "title": "Release IPC when disabling an already-stopped child",
-      "in_diff": true,
+      "in_diff": false,
       "disposition": "proposed",
       "body": "### Release IPC when disabling an already-stopped child\n\n**Severity:** `medium`\n\nIf either child exits before its module is disabled, `refresh()` sees both the desired and observed running states as false and returns before cleanup. That leaves the signaled process handle and the shared IPC queue workers retained while the disabled module remains loaded. Close the stale process handle and reset the IPC endpoint before taking this early-return path in both process managers.",
       "confidence": {
