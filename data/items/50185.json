@@ -3,11 +3,11 @@
   "number": 50185,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T11:25:15.555Z",
-  "evaluated_at": "2026-09-09T11:25:15.555Z",
+  "generated_at": "2026-09-10T07:15:46.8405888Z",
+  "evaluated_at": "2026-09-10T07:15:46.8405888Z",
   "source_updated_at": "2026-09-08T19:43:11Z",
   "head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
   "title": "CmdPal: Icons (5/n) - Move icon conversion helpers from C++ to C#",
@@ -20,19 +20,35 @@
   "draft": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "summary": "Resumed from the durable waiting_copilot checkpoint without creating a duplicate review request. The stored Copilot request from 2026-09-09T05:35:55.4822997Z completed at 2026-09-09T05:42:42Z on fork head 1ac83dae785925050095562988425b5d4050b168 with zero new published comments, unresolved Copilot threads remain zero, and the existing local checkout was rebuilt in this session with all focused tests passing. The current-head review is concluded and a request-changes payload is drafted for the six validated follow-up fixes.",
+  "summary": "Resumed the durable review without issuing a duplicate Copilot request. The outstanding post-request Copilot review already completed on final fork head 1ac83dae785925050095562988425b5d4050b168 with zero published comments, unresolved Copilot threads remain zero, upstream head and activity are unchanged, and the required Debug x64 build chain plus all 38 focused icon tests passed again. Six current-head findings remain drafted for maintainer approval, each pinned to an exact RIGHT-side diff range.",
   "status": {
     "glyph": "READY",
-    "label": "Review ready — six follow-up fixes drafted",
-    "detail": "The already-requested final Copilot review on fork PR 499 covered final fork head 1ac83dae785925050095562988425b5d4050b168 at 2026-09-09T05:42:42Z and generated zero published comments. This session rebuilt build-essentials, CmdPalModuleInterface, Microsoft.Terminal.UI, Microsoft.CmdPal.UI, and Microsoft.CmdPal.UI.UnitTests in Debug x64; 38 focused tests passed and git diff --check is clean."
+    "label": "Review ready — six current-head fixes drafted",
+    "detail": "Upstream head 24e1caeba67bc6d8f278af9676df98584ed2f58c remains unchanged with no newer comments or reviews. The final Copilot pass covered fork head 1ac83dae785925050095562988425b5d4050b168 with zero published comments; this run rebuilt all required Debug x64 targets and passed 38/38 focused tests."
   },
   "next_action": {
     "glyph": "REVIEW",
     "label": "Review the drafted request-changes action",
-    "reason": "Publishing the current-head findings remains an explicit maintainer decision and still requires a final upstream freshness check before anything is posted to microsoft/PowerToys."
+    "reason": "The six findings are mapped to exact current RIGHT-side diff ranges and pinned to the live upstream head. Publishing remains an explicit maintainer decision and requires a final freshness check."
   },
   "blockers": [],
-  "actions": [],
+  "actions": [
+    {
+      "id": "request-changes-50185",
+      "type": "request_changes",
+      "label": "Request six icon-conversion follow-up fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50185,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c"
+      },
+      "note": "Do not post without explicit approval and a final upstream freshness check."
+    }
+  ],
   "proposed_comments": [
     {
       "id": "reject-overflowing-native-icon-index",
@@ -53,31 +69,37 @@
     },
     {
       "id": "preserve-binary-icon-transparency",
-      "kind": "companion",
+      "kind": "inline",
       "severity": "high",
       "title": "Preserve HICON transparency when materializing binary icons",
-      "in_diff": false,
+      "in_diff": true,
       "disposition": "proposed",
       "body": "### Preserve HICON transparency when materializing binary icons\n\n**Severity:** `high`\n\n`Icon.ToBitmap()` flattens HICON transparency before the pixels are copied into the `SoftwareBitmap`, so transparent shell-icon pixels are turned into opaque dark backgrounds. That changes the behavior from the removed native conversion path and breaks extracted icons that rely on alpha or legacy AND-mask transparency. Please render the icon through a 32-bit DIB or another native bitmap path that preserves alpha, then premultiply or reconstruct mask transparency before creating the `SoftwareBitmap`.",
       "confidence": {
         "score": 98,
         "rationale": "The reproduced fix preserves both transparent and visible pixels, and the final focused test run proves the regression on the current extraction path."
       },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconPathConverter.cs",
+      "start_line": 156,
+      "line": 156,
+      "side": "RIGHT"
     },
     {
       "id": "avoid-icon-extraction-loh-churn",
-      "kind": "companion",
+      "kind": "inline",
       "severity": "medium",
       "title": "Avoid per-icon large-object-heap churn during extraction",
-      "in_diff": false,
+      "in_diff": true,
       "disposition": "proposed",
       "body": "### Avoid per-icon large-object-heap churn during extraction\n\n**Severity:** `medium`\n\nAt the default 256×256 size, the current extraction path allocates a 262,144-byte managed buffer for every binary icon load. That lands on the large object heap and can churn heavily when providers enumerate many distinct icons. Please rent the staging buffer from `ArrayPool<byte>` or copy directly into a locked `SoftwareBitmap` buffer so repeated icon loads do not keep allocating new LOH arrays.",
       "confidence": {
         "score": 97,
         "rationale": "The allocation size is deterministic from the current code path, and the validated review-branch fix removes the per-icon LOH allocation without changing behavior."
       },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconPathConverter.cs",
+      "start_line": 166,
+      "line": 166,
+      "side": "RIGHT"
     },
     {
       "id": "remove-unused-drawing-package-from-app-project",
@@ -173,13 +195,13 @@
   },
   "freshness": {
     "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-09T11:25:15.555Z",
+    "evaluated_at": "2026-09-10T07:15:46.8405888Z",
     "head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
     "source_updated_at": "2026-09-08T19:43:11Z"
   },
   "workflow": {
     "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-09T11:25:15.555Z",
+    "checkpoint_at": "2026-09-10T07:15:46.8405888Z",
     "reviewed_upstream_head": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
     "previous_reviewed_upstream_head": "725b8cd792fbbc8b8de3077c52b580deb6ffc6ca",
     "fork_pr": 499,
@@ -282,8 +304,9 @@
     },
     "notes": [
       "POWERTOYS_DISABLE_SPECTRE=1 was used for the resumed Debug x64 rebuild.",
-      "git diff --check passed and the resumed local checkout remained clean after validation.",
-      "The Settings build printed repeated token-recognition warnings to stdout but still completed with exit code 0, zero warnings, and zero errors in the build script summary."
+      "build-essentials, CmdPalModuleInterface, Microsoft.Terminal.UI, Microsoft.CmdPal.UI, and Microsoft.CmdPal.UI.UnitTests all completed with exit code 0 in this session.",
+      "FontIconGlyphClassifierTests, IconPathConverterTests, and IconPathParserTests passed 38/38 via vstest.console.",
+      "git diff --check passed and the review checkout remained clean."
     ]
   },
   "checks": {
@@ -304,6 +327,5 @@
     ]
   },
   "upstream_writes": [],
-  "dashboard_modified": false,
-  "needs_revalidation": true
+  "dashboard_modified": false
 }
