@@ -1,33 +1,105 @@
 {
+  "schemaVersion": 5,
   "number": 48951,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T10:00:22Z",
+  "evaluated_at": "2026-09-10T10:00:22Z",
   "source_updated_at": "2026-08-14T04:09:07Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/48951",
+  "title": "PowerRename and File Locksmith context menu entries missing in v0.94.0 and later",
+  "author": "Gowntn",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerRename",
+    "Needs-Triage",
+    "Product-File Locksmith"
+  ],
+  "assignees": [],
+  "comment_count": 2,
+  "summary": "PowerRename and File Locksmith context-menu entries fail to appear after runtime-registration changes, with a separate ARM64 report describing PowerRename disappearing after the first invocation.",
+  "next_action": "Reproduce the Windows 10 always-missing case and the ARM64 disappears-after-first-use case as separate test variants.",
+  "confidence": {
+    "score": 82,
+    "level": "yellow",
+    "rationale": "Both variants have useful evidence, but their shared cause is not established."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The main Windows 10 report gives a clear version boundary and diagnostic ZIP; the ARM64 comment adds a distinct intermittent re-registration pattern that should be tested separately rather than treated as proven identical.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The main report says both entries are missing on Windows 10 22H2 from 0.94.0 onward and work on 0.93.0.",
+      "Both GitHub and Store installation methods were tested.",
+      "The reporter ruled out blocked shell-extension CLSIDs.",
+      "An ARM64 commenter reports PowerRename registers once, then later logs enabled without a matching registration-completed line; File Locksmith remains healthy.",
+      "Current installer and module code contain runtime package registration/unregistration paths for these context-menu modules."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the Windows 10 always-missing case and the ARM64 disappears-after-first-use case as separate test variants.",
+    "evaluated_at": "2026-09-10T10:00:22Z",
     "source_updated_at": "2026-08-14T04:09:07Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The issue contains at least two environments and possibly two failure modes; current evidence does not justify one shared code fix."
+  },
+  "issue_context": {
+    "summary": "PowerRename and File Locksmith context-menu entries fail to appear after runtime-registration changes, with a separate ARM64 report describing PowerRename disappearing after the first invocation.",
+    "known_information": [
+      "The main reporter attached a 0.100-era diagnostic ZIP.",
+      "The ARM64 report includes logs from both 0.93.0 and 0.100.2.",
+      "Toggling the module or restarting Explorer temporarily restores PowerRename in the ARM64 case."
+    ],
+    "inferences": [
+      "Registration verification or runtime package state may be involved, but the Windows 10 and ARM64 behaviors may not share a root cause."
+    ],
+    "analysis": "A two-variant maintainer repro will prevent one environment's diagnosis from being incorrectly generalized to the other.",
+    "initial_investigation": [
+      "Read the full main report and ARM64 diagnostic trail.",
+      "Confirmed public source contains runtime registration and cleanup paths for context-menu packages."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-48951",
+      "type": "reproduce",
+      "label": "Reproduce context-menu registration failures",
+      "primary": true,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Compare Windows 10 missing entries with ARM64 one-use disappearance",
+        "module": "PowerRename / File Locksmith context-menu registration",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Windows 10 22H2 x64 test system",
+          "Windows 11 ARM64 test system if available",
+          "PowerRename and File Locksmith enabled"
+        ],
+        "setup": [
+          "Install the current stable release by the same scope used in each report.",
+          "Keep Explorer and module logs available."
+        ],
+        "steps": [
+          "On Windows 10, right-click files and folders after install and after Explorer restart.",
+          "On ARM64, toggle PowerRename, invoke it once, then repeat in a new Explorer session.",
+          "Compare package registration state and registration-completed log entries for PowerRename and File Locksmith.",
+          "Repeat after sign-out/sign-in without changing module settings."
+        ],
+        "expected_result": "Both enabled context-menu commands should remain registered and visible across repeated Explorer sessions.",
+        "attachments": [
+          {
+            "label": "Windows 10 diagnostic ZIP",
+            "url": "https://github.com/user-attachments/files/29407385/PowerToysReport_2026-06-27-18-32-32.zip"
+          },
+          {
+            "label": "ARM64 0.100.2 logs",
+            "url": "https://github.com/user-attachments/files/29691217/v0.100.2.zip"
+          }
+        ]
+      }
+    }
+  ]
 }

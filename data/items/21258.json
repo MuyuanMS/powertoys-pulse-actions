@@ -27,13 +27,34 @@
       "A closed duplicate describes the same pre-RDP versus post-RDP remapping mismatch.",
       "The newest request proposes excluding Remote Desktop from local remapping."
     ],
-    "recommended_action": "Queue a focused design investigation of Keyboard Manager's RDP input boundary and application-exclusion semantics."
+    "recommended_action": "Queue a focused design investigation of Keyboard Manager's RDP input boundary and application-exclusion semantics.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-23T09:50:12Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The issue is reproducible and longstanding, but lightweight re-triage did not inspect the current input-hook implementation deeply enough to select between RDP-aware translation and app exclusion."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Define an RDP-safe Keyboard Manager remapping boundary",
+      "root_cause": "Keyboard Manager's local low-level remap and Remote Desktop's keyboard capture both process stateful keys, allowing the physical key state and mapped key event to reach the remote session inconsistently.",
+      "plan": [
+        "Trace key-down, key-up, toggle-state, and suppression behavior when mstsc.exe owns foreground input.",
+        "Choose between an RDP-aware event-handling correction and an explicit per-application bypass based on the trace.",
+        "Cover ESC/Caps Lock, Ctrl/Caps Lock, toggle keys, and Ctrl-based shortcuts in focused regression tests."
+      ],
+      "verification": [
+        "Connect through Windows Remote Desktop and repeat each public remap without duplicate physical-key behavior.",
+        "Confirm local remaps and remote toggle-key state remain balanced after disconnecting."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The RDP boundary is consistently implicated, but public evidence does not establish whether suppression, toggle state, or RDP translation is the first failing layer."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Keyboard Manager remaps can leak both original and mapped key behavior into Remote Desktop sessions.",
     "known_information": [
@@ -60,11 +81,29 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue RDP input-boundary design",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "The thread now contains consistent evidence that local Keyboard Manager remaps can send both original and mapped behavior through Remote Desktop. The next maintainer step should be a focused investigation of where remapping occurs relative to RDP input capture, including whether an explicit Remote Desktop application exclusion is the supported mitigation or whether the input path itself can be corrected."
+      "type": "approve_design",
+      "label": "Approve define an rdp-safe keyboard manager remapping boundary",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Keyboard Manager doesn't work properly through remote desktop",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Two Windows systems or a reachable Windows Remote Desktop host.",
+          "Remote Desktop Connection (mstsc.exe)."
+        ],
+        "steps": [
+          "Swap Escape and Caps Lock locally.",
+          "Connect through Remote Desktop.",
+          "Press the physical Caps Lock key in the remote session.",
+          "Repeat with Caps Lock/Ctrl and a Ctrl-based shortcut."
+        ],
+        "expected_result": "Only the mapped key behavior reaches the remote session.",
+        "observed_result": "The remote session can receive both original and mapped behavior or lose modifier shortcuts."
       }
     }
   ],

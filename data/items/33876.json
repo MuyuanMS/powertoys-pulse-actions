@@ -29,13 +29,34 @@
       "The issue is confirmed on 0.100.2.",
       "A warning for simultaneous Quick Accent and Backspace remapping is proposed as a mitigation."
     ],
-    "recommended_action": "Queue a cross-module design to define whether synthetic Quick Accent cleanup should bypass Keyboard Manager remaps or expose a supported conflict warning."
+    "recommended_action": "Queue a cross-module design to define whether synthetic Quick Accent cleanup should bypass Keyboard Manager remaps or expose a supported conflict warning.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-19T17:46:10Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The root interaction is public and reproducible, but the correct coupling boundary and safe bypass mechanism require design review."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Prevent Quick Accent cleanup input from being remapped as user input",
+      "root_cause": "Quick Accent emits a synthetic virtual Backspace to replace the source character, and Keyboard Manager processes that event through the user's Backspace remap.",
+      "plan": [
+        "Identify PowerToys-originated Quick Accent cleanup events at the Keyboard Manager hook boundary.",
+        "Bypass only the cleanup Backspace from remapping while preserving ordinary synthetic and physical Backspace behavior.",
+        "If a safe origin marker is unavailable, add an explicit conflict warning as a documented fallback."
+      ],
+      "verification": [
+        "Swap Backspace with another key, enter an accented character, and confirm the source character is removed without emitting the remapped key.",
+        "Confirm physical Backspace and unrelated synthetic input still follow the configured remap."
+      ],
+      "confidence": {
+        "score": 79,
+        "level": "yellow",
+        "rationale": "The failing event and cross-module interaction are confirmed, but a safe origin marker and coupling policy require implementation review."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Quick Accent's synthetic Backspace is remapped by Keyboard Manager, turning accent replacement into incorrect text such as `a/á`.",
     "known_information": [
@@ -62,11 +83,29 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue Quick Accent/Keyboard Manager conflict design",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "This is reproducible on 0.100.2 when Backspace is remapped: Quick Accent's synthetic Backspace is processed by Keyboard Manager and becomes the remapped key. The next step is a cross-module design decision—either provide a safe way for Quick Accent cleanup input to bypass remaps, or add an explicit conflict warning as a mitigation if that coupling is not supportable."
+      "type": "approve_design",
+      "label": "Approve prevent quick accent cleanup input from being remapped as user input",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Quick Accent conficts with Keyboard Manager remaps",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "Quick Accent and Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Quick Accent enabled.",
+          "A Keyboard Manager remap that swaps Backspace with another key."
+        ],
+        "steps": [
+          "Configure the Backspace remap.",
+          "Type a supported base letter and activate Quick Accent.",
+          "Select an accented character.",
+          "Observe the replacement sequence."
+        ],
+        "expected_result": "The base letter is removed and only the accented character remains.",
+        "observed_result": "The remapped Backspace output is inserted, producing text such as `a/á`."
       }
     }
   ],

@@ -33,13 +33,34 @@
       "A second maintainer-side confirmation says the template is not created, even when the dialog does not freeze.",
       "The issue is labeled reproducible, Priority-1, Cost-Medium, and Product-New+."
     ],
-    "recommended_action": "Queue a New+ design for completing the protected-folder copy through a correctly elevated operation and reporting failures."
+    "recommended_action": "Queue a New+ design for completing the protected-folder copy through a correctly elevated operation and reporting failures.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-14T15:27:21Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The defect is reproducible, but the lightweight pass did not inspect the current shell/elevation implementation deeply enough for a full design."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Complete New+ template creation through an elevated file operation",
+      "root_cause": "New+ starts a protected-folder copy that triggers elevation, but the operation does not complete or propagate a useful failure result back to the New+ progress flow.",
+      "plan": [
+        "Trace the template copy handoff through the shell/elevation boundary for protected destinations.",
+        "Execute the copy in the elevated operation context and propagate success, cancellation, and failure explicitly.",
+        "Ensure the progress UI always completes and reports a concrete error instead of hanging."
+      ],
+      "verification": [
+        "Create a template in Program Files, approve elevation, and confirm the file is created.",
+        "Repeat with elevation cancelled and with a deliberate name conflict and confirm deterministic UI completion."
+      ],
+      "confidence": {
+        "score": 67,
+        "level": "yellow",
+        "rationale": "The protected-folder boundary is maintainer-reproduced, but the public evidence does not identify the exact failed handoff or API."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "New+ accepts an elevation prompt for protected folders but fails to create the selected template.",
     "known_information": [
@@ -59,11 +80,29 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue New+ elevated-copy design",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "This is already maintainer-reproduced: New+ prompts for permission in a protected folder such as Program Files, but the template is not created, with or without the progress dialog freezing. The next step is a focused design of the elevated copy/operation handoff and explicit error reporting, with tests for success, cancellation, and elevation failure."
+      "type": "approve_design",
+      "label": "Approve complete new+ template creation through an elevated file operation",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce [New+] Not able to create new files in folders that require higher privilege",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "New+",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "A New+ template.",
+          "A destination such as Program Files that requires elevation."
+        ],
+        "steps": [
+          "Open the protected folder.",
+          "Choose the template from the New+ context menu.",
+          "Approve the Windows elevation prompt.",
+          "Wait for the file operation to complete."
+        ],
+        "expected_result": "The template is created and progress closes.",
+        "observed_result": "The template is not created and the progress UI may freeze."
       }
     }
   ],

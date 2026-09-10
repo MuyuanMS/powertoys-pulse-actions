@@ -28,13 +28,34 @@
       "The author confirmed the bug on stable 0.100.2.",
       "The issue links another public report of the same ZoomIt graphical glitch."
     ],
-    "recommended_action": "Queue a focused ZoomIt Live Zoom taskbar/composition investigation using the supplied reproduction."
+    "recommended_action": "Queue a focused ZoomIt Live Zoom taskbar/composition investigation using the supplied reproduction.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-23T04:12:56Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The defect is current and reproducible, but no public linked fix or implementation-ready root cause is available in the lightweight evidence."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Prevent unzoomed taskbar surfaces from overlaying ZoomIt Live Zoom",
+      "root_cause": "When taskbar flyouts create or update compositor surfaces during Live Zoom, an unzoomed taskbar/flyout surface is presented over the zoomed desktop instead of being incorporated into or excluded consistently from the live-zoom composition.",
+      "plan": [
+        "Reproduce while tracing window and compositor-surface creation for the taskbar and flyout.",
+        "Identify whether Live Zoom must capture the new surface or suppress the separate unzoomed presentation.",
+        "Add regression coverage for taskbar hover, click flyouts, and repeated open/close while zoomed."
+      ],
+      "verification": [
+        "Enable Live Zoom, open multiple taskbar flyouts, and confirm only one zoomed taskbar/flyout presentation is visible.",
+        "Repeat on the reported Windows 11 25H2 environment and current stable PowerToys."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The visual failure is current and well documented, but the composition mechanism is inferred and needs a graphics trace."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "ZoomIt Live Zoom duplicates Windows taskbar and flyout surfaces, leaving zoomed and unzoomed copies overlaid.",
     "known_information": [
@@ -54,11 +75,29 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue ZoomIt Live Zoom investigation",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "Thanks for confirming this on 0.100.2 and for providing screenshots and a diagnostic report. The reproduction is specific enough for a focused ZoomIt Live Zoom investigation: enable Live Zoom, then open a taskbar flyout and compare the simultaneous zoomed and unzoomed taskbar surfaces. No additional author evidence is currently required before code-level triage."
+      "type": "approve_design",
+      "label": "Approve prevent unzoomed taskbar surfaces from overlaying zoomit live zoom",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce ZoomIt Live Zoom Duplicate Taskbar",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "ZoomIt Live Zoom",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Windows 11 with a taskbar item that opens a flyout.",
+          "ZoomIt Live Zoom enabled."
+        ],
+        "steps": [
+          "Activate Live Zoom.",
+          "Hover or click a taskbar item that opens a popup.",
+          "Compare the taskbar and flyout surfaces.",
+          "Repeat after closing and reopening the popup."
+        ],
+        "expected_result": "Only the zoomed taskbar and flyout are visible.",
+        "observed_result": "Zoomed and unzoomed copies overlap and make the taskbar difficult to use."
       }
     }
   ],

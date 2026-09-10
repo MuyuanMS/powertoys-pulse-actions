@@ -29,13 +29,34 @@
       "A public comment explains that Windows drag-and-drop is normally synchronous and discusses asynchronous shell support.",
       "The issue is labeled Priority-1 and Product-PowerToys Run."
     ],
-    "recommended_action": "Queue a PowerToys Run design to reject or safely handle a concurrent OLE drag operation without crashing."
+    "recommended_action": "Queue a PowerToys Run design to reject or safely handle a concurrent OLE drag operation without crashing.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-14T15:27:20Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The exception boundary is known; implementation should guard/catch the specific concurrent-drag failure and restore UI state, with async drag considered only if justified."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Handle an already-active OLE drag operation in PowerToys Run",
+      "root_cause": "SuggestionsList_MouseMove calls WPF/OLE DoDragDrop while another synchronous drag is active, and the resulting COMException is unhandled.",
+      "plan": [
+        "Guard the Run result drag initiation and catch the specific already-in-progress COMException.",
+        "Cancel the attempted Run drag and restore pointer/UI state without closing PowerToys Run.",
+        "Add focused coverage for normal drag and concurrent external drag behavior."
+      ],
+      "verification": [
+        "Start a long external drag, attempt to drag a Run result, and confirm Run remains responsive.",
+        "After the external drag ends, confirm a normal Run result drag still succeeds."
+      ],
+      "confidence": {
+        "score": 92,
+        "level": "green",
+        "rationale": "The public stack trace identifies the exact handler and OLE exception, and the reproduction deterministically exercises it."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "PowerToys Run crashes when a result drag starts while another Windows drag-and-drop operation is already in progress.",
     "known_information": [
@@ -55,12 +76,9 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue concurrent drag guard",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "The supplied stack and reproduction identify a narrow failure boundary: `SuggestionsList_MouseMove` calls WPF/OLE `DoDragDrop` while another drag is active, raising `A drag operation is already in progress`. The fix should prevent that specific COMException from terminating PowerToys Run, restore drag/UI state, and include a regression test or manual case with a long external drag already active."
-      }
+      "type": "approve_design",
+      "label": "Approve handle an already-active ole drag operation in powertoys run",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
     }
   ],
   "design": null

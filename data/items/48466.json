@@ -29,13 +29,34 @@
       "A later reporter reproduced a closely related second-monitor failure on 0.100.2 without Windhawk.",
       "The later setup uses equal 1920x1080 displays at 100% scaling and the failure follows monitor 2 rather than Windows primary-display selection."
     ],
-    "recommended_action": "Queue a focused Command Palette dock monitor-geometry investigation; retain Windhawk as one amplifier, not the sole cause."
+    "recommended_action": "Queue a focused Command Palette dock monitor-geometry investigation; retain Windhawk as one amplifier, not the sole cause.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-21T15:01:30Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The multi-monitor defect is reproducible, but lightweight evidence does not establish the faulty coordinate/scaling calculation."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Use the correct per-monitor work area for Command Palette Dock placement",
+      "root_cause": "Command Palette Dock appears to derive size or position from the wrong monitor/work-area context, producing an oversized or misplaced surface on a secondary display; Windhawk can amplify but does not fully explain the defect.",
+      "plan": [
+        "Trace monitor identity, work-area bounds, and coordinate scaling used when each Dock instance is created.",
+        "Bind each Dock instance to its target monitor's effective work area and transform coordinates exactly once.",
+        "Add multi-monitor coverage for equal and mixed DPI, primary-display changes, and taskbar modifications."
+      ],
+      "verification": [
+        "Enable Dock only on monitor 2 in the reported equal-DPI topology and confirm correct size and edge placement.",
+        "Change the primary display and repeat with and without Windhawk Taskbar on Top."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The monitor-specific behavior is well established, but the exact geometry or identity calculation has not been inspected."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Command Palette Dock can become oversized or misplaced on a secondary monitor, including on systems without Windhawk.",
     "known_information": [
@@ -55,11 +76,28 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue CmdPal dock multi-monitor investigation",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "The later 0.100.2 report establishes that a closely related secondary-monitor Dock positioning failure also occurs without Windhawk, on equal-resolution 100%-scale displays, and remains on monitor 2 after primary-display changes. This is enough to investigate Command Palette Dock's per-monitor work-area and placement handling; Windhawk should be retained as an additional trigger rather than treated as the sole cause."
+      "type": "approve_design",
+      "label": "Approve use the correct per-monitor work area for command palette dock placement",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce [0.100] Command Palette: incorrect dock position on 2nd display",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "Command Palette Dock",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Two monitors; begin with both at 1920x1080 and 100% scaling."
+        ],
+        "steps": [
+          "Enable Dock only on monitor 2.",
+          "Observe its size and position.",
+          "Change monitor 2 to primary and repeat.",
+          "Optionally repeat with Windhawk Taskbar on Top enabled."
+        ],
+        "expected_result": "The Dock uses the selected monitor's configured edge, width, and work area.",
+        "observed_result": "The secondary-monitor Dock can be oversized or positioned incorrectly."
       }
     }
   ],

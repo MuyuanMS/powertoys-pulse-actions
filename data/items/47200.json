@@ -30,13 +30,34 @@
       "One user reports the issue through 0.100.2.",
       "A second Windows 11 report and diagnostic ZIP were added in August 2026."
     ],
-    "recommended_action": "Queue File Locksmith crash diagnosis using the two attached reports and the five-second reproduction window."
+    "recommended_action": "Queue File Locksmith crash diagnosis using the two attached reports and the five-second reproduction window.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-18T22:05:51Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The issue is well evidenced, but no public stack trace or linked fix establishes an implementation-ready root cause."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Isolate and harden the File Locksmith post-enumeration crash path",
+      "root_cause": "The repeated five-second timing and reports that results sometimes appear before exit suggest a failure during or immediately after process enumeration/result publication, but the public thread does not expose the exception.",
+      "plan": [
+        "Reproduce with the attached-report environments and correlate the final enumeration/result-publication phase with process exit.",
+        "Add diagnostics around process metadata access and UI result publication to identify the first failing operation.",
+        "Guard the confirmed failing operation and surface a partial-result error instead of terminating File Locksmith."
+      ],
+      "verification": [
+        "Inspect a file and folder on affected Windows 10 and Windows 11 environments and keep File Locksmith open beyond the reported interval.",
+        "Confirm inaccessible or terminating processes cannot close the UI and produce a bounded partial result."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The timing and cross-user reproduction are strong, but the root cause remains a hypothesis until the attached reports or a local trace reveal the exception."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "File Locksmith loads briefly and then silently exits for multiple users across recent PowerToys versions.",
     "known_information": [
@@ -56,11 +77,29 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue File Locksmith crash diagnosis",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "The thread now has multiple independent reproductions through 0.100.2 and two attached diagnostic reports, with File Locksmith closing within roughly five seconds and sometimes after results begin loading. This is sufficient for a focused crash investigation using the April and August reports; no additional generic reproduction request is needed before maintainers inspect the failing path."
+      "type": "approve_design",
+      "label": "Approve isolate and harden the file locksmith post-enumeration crash path",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce FileLocksmith runs for 5 sec and then crashes",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "File Locksmith",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys.",
+          "A file or folder with at least one active process handle."
+        ],
+        "steps": [
+          "Open Show more options for the target.",
+          "Launch File Locksmith.",
+          "Observe whether results load.",
+          "Keep the window open for at least 15 seconds and capture the process exit if it occurs."
+        ],
+        "expected_result": "File Locksmith remains open and displays results or a recoverable partial-result error.",
+        "observed_result": "The UI silently exits after roughly five seconds, sometimes after results appear."
       }
     }
   ],

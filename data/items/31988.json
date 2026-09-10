@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 31988,
   "kind": "issue",
   "track": "fix",
   "stage": "handled_elsewhere",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-31T09:54:20Z",
-  "evaluated_at": "2026-08-31T09:54:20Z",
+  "generated_at": "2026-09-10T10:00:22Z",
+  "evaluated_at": "2026-09-10T10:00:22Z",
   "source_updated_at": "2026-08-14T06:13:57Z",
   "url": "https://github.com/microsoft/PowerToys/issues/31988",
   "title": "Quick Accent layover stuck",
@@ -18,47 +18,48 @@
     "Product-Quick Accent"
   ],
   "assignees": [],
-  "comments": 13,
-  "confidence": "High",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled by linked PR",
-    "detail": "The Quick Accent stuck-overlay issue is longstanding and now has an active upstream PR, so it is not a 0.101 release regression to design separately."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked PR",
-    "reason": "Track PR #50212 and avoid duplicate dashboard design work."
+  "comment_count": 13,
+  "summary": "Quick Accent can remain stuck when its owning key-up is missed; an open PR implements recovery when focus leaves the current process.",
+  "next_action": "Track PR 50212 and avoid a parallel design; separately retain the same-window timing race as a possible follow-up.",
+  "confidence": {
+    "score": 96,
+    "level": "green",
+    "rationale": "The issue, source state, and active PR all reference the same failure mechanism."
   },
   "judgment": {
     "status": "duplicate_or_handled",
-    "rationale": "This issue predates 0.101 and is already covered by active PR #50212 for the focus-loss stuck-toolbar path.",
+    "rationale": "Open PR 50212 targets this issue and changes the same native KeyboardListener state described in the recent discussion.",
     "evidence": [
-      "Original report was filed for PowerToys 0.79.0 and later commenters describe longstanding timing/focus-loss behavior.",
-      "Recent analysis says the toolbar is hidden only when the held letter key-up reaches KeyboardListener::OnKeyUp, leaving it orphaned if that key-up is missed.",
-      "PR #50212 is open for Quick Accent and its commit message says it closes #31988.",
-      "The PR changes KeyboardListener.cpp and KeyboardListener.h to hide the toolbar on EVENT_SYSTEM_FOREGROUND when focus leaves."
+      "Multiple users report the toolbar becoming stuck during fast input, gaming, reboot, or RDP.",
+      "Recent contributor analysis identifies m_toolbarVisible being cleared in KeyboardListener::OnKeyUp.",
+      "PR 50212 is open, explicitly closes this issue, and adds an EVENT_SYSTEM_FOREGROUND recovery hook.",
+      "Current main still shows the key-up state-clearing path, while the PR documents the focus-loss limitation it addresses."
     ],
-    "recommended_action": "Track upstream PR #50212; no separate design/action.",
-    "evaluated_at": "2026-08-31T09:54:20Z",
+    "recommended_action": "Track PR 50212 and avoid a parallel design; separately retain the same-window timing race as a possible follow-up.",
+    "evaluated_at": "2026-09-10T10:00:22Z",
     "source_updated_at": "2026-08-14T06:13:57Z"
   },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "Open PR 50212 is a concrete implementation for the focus-loss stuck-toolbar path.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50212"
+    ]
+  },
   "issue_context": {
-    "summary": "Quick Accent can remain stuck on screen after fast typing, gaming, RDP, or focus loss; a contributor supplied a proposed native keyboard-service fix and opened a PR.",
+    "summary": "Quick Accent can remain stuck when its owning key-up is missed; an open PR implements recovery when focus leaves the current process.",
     "known_information": [
-      "The original issue version is 0.79.0, so it is not a 0.101 introduction.",
-      "Multiple users reported stuck overlay behavior and workarounds such as triggering another accent.",
-      "Recent comments separate focus-loss and timing/race entry points.",
-      "PR #50212, \"[PowerAccent] Hide stuck accent toolbar when focus leaves the window\", is open."
+      "The issue predates the current Quick Accent UI migration.",
+      "Triggering another accent can clear the stuck toolbar for some users.",
+      "The contributor distinguishes focus-loss from same-window timing races."
     ],
     "inferences": [
-      "The active PR likely covers the focus-loss subset but may not fully address same-window timing races described by some commenters.",
-      "The 0.101 mention is from contributor validation that the native-layer patch applies to both WPF 0.100 and WinUI 0.101, not a release-regression report."
+      "PR 50212 likely covers the focus-loss subset but not every same-window lost-key-up race."
     ],
-    "analysis": "Because there is an active PR touching the exact native keyboard listener path, the dashboard should mark the issue as handled elsewhere rather than start a duplicate design.",
+    "analysis": "The current active PR owns the directly evidenced native recovery path; creating another plan would duplicate work.",
     "initial_investigation": [
-      "PR #50212 diff adds SetWinEventHook(EVENT_SYSTEM_FOREGROUND) and resets m_toolbarVisible before calling m_hideToolbarCb(InputType::None).",
-      "Timeline shows numerous related Quick Accent stuck-overlay duplicates, including #32225, #35972, #38915, #44482, and open #32047."
+      "Checked PR 50212 live; it remains open.",
+      "Inspected current KeyboardListener::OnKeyUp and m_toolbarVisible handling."
     ],
     "information_gaps": []
   },

@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 20036,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T10:00:22Z",
+  "evaluated_at": "2026-09-10T10:00:22Z",
   "source_updated_at": "2022-08-22T12:35:26Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/20036",
+  "title": "[FancyZones] \"Custom layout not found\" error after closing editor",
+  "author": "SeraphimaZykova",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones"
+  ],
+  "assignees": [],
+  "comment_count": 0,
+  "summary": "In an RDP session, closing the FancyZones editor can leave the selected custom layout unapplied and log 'Custom layout not found' even though the layout exists in custom-layouts.json.",
+  "next_action": "Reproduce current RDP editor close/apply flow and trace the selected custom layout identifier across process boundaries.",
+  "confidence": {
+    "score": 83,
+    "level": "yellow",
+    "rationale": "The transition and error are concrete, but current identity handling must be traced."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report provides deterministic RDP steps, a control layout, the exact error text, and a diagnostic archive.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The failure occurs after selecting a non-Priority custom layout in an RDP session and closing the editor.",
+      "Shift-drag shows that the chosen layout is not active.",
+      "The log says Custom layout not found while the layout remains in custom-layouts.json."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce current RDP editor close/apply flow and trace the selected custom layout identifier across process boundaries.",
+    "evaluated_at": "2026-09-10T10:00:22Z",
     "source_updated_at": "2022-08-22T12:35:26Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report localizes the transition but does not prove whether monitor identity, editor parameters, or data reload loses the layout."
+  },
+  "issue_context": {
+    "summary": "In an RDP session, closing the FancyZones editor can leave the selected custom layout unapplied and log 'Custom layout not found' even though the layout exists in custom-layouts.json.",
+    "known_information": [
+      "The original version was 0.61.1.",
+      "The issue requires an RDP connection and multiple monitors in the described setup.",
+      "Priority Zone behaves differently from the custom layout."
+    ],
+    "inferences": [
+      "RDP display identity changes may cause the editor's selected layout reference to mismatch runtime data after editor exit."
+    ],
+    "analysis": "The exact error and archive support a maintainer-side trace without another reporter request.",
+    "initial_investigation": [
+      "Read the extracted report and diagnostic link.",
+      "Confirmed current FancyZones includes EditorParameters and FancyZonesData/AppZoneHistory paths relevant to editor-to-runtime state."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-20036",
+      "type": "reproduce",
+      "label": "Reproduce RDP custom-layout loss",
+      "primary": true,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Trace custom layout selection after closing the editor over RDP",
+        "module": "FancyZones",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Remote Windows test machine with current PowerToys",
+          "RDP session",
+          "At least one saved custom layout"
+        ],
+        "setup": [
+          "Connect through RDP and launch the FancyZones editor.",
+          "Select a custom layout other than Priority Grid."
+        ],
+        "steps": [
+          "Close the editor.",
+          "Shift-drag a window and verify the selected layout is active.",
+          "Inspect logs for Custom layout not found.",
+          "Compare the selected layout identifier with custom-layouts.json and the active monitor/desktop identifier."
+        ],
+        "expected_result": "The selected custom layout should remain active after the editor closes, with no missing-layout error.",
+        "attachments": [
+          {
+            "label": "Original diagnostic ZIP",
+            "url": "https://github.com/microsoft/PowerToys/files/9283073/PowerToysReport_2022-08-08-16-32-57.zip"
+          }
+        ]
+      }
+    }
+  ]
 }

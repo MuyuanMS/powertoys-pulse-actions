@@ -28,13 +28,34 @@
       "Adding explorer.exe to ignored fullscreen applications fixes the desktop case.",
       "A user reports non-fullscreen VLC also triggering the condition and being fixed by exclusion."
     ],
-    "recommended_action": "Queue a Mouse Without Borders fullscreen-detection design that uses actual foreground presentation state rather than broad process/window presence."
+    "recommended_action": "Queue a Mouse Without Borders fullscreen-detection design that uses actual foreground presentation state rather than broad process/window presence.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-16T08:02:45Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The false-positive boundary is clear, but current detection code was not inspected during this lightweight pass."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Restrict Mouse Without Borders fullscreen suppression to the actual foreground fullscreen window",
+      "root_cause": "The Easy Mouse fullscreen check treats the desktop shell or a non-fullscreen VLC window as a blocking fullscreen application, so edge switching is disabled on false positives.",
+      "plan": [
+        "Trace the current fullscreen predicate and the window/process chosen when the desktop or VLC is active.",
+        "Require a visible foreground presentation that actually covers the relevant monitor before disabling Easy Mouse.",
+        "Keep the ignored-app list as an override and add regression cases for explorer.exe, windowed VLC, and true fullscreen apps."
+      ],
+      "verification": [
+        "Show the desktop and cross the configured edge with fullscreen suppression enabled.",
+        "Repeat with windowed VLC and with a genuinely fullscreen application."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The false-positive behavior and workarounds are repeatable, but the exact window-selection predicate has not been inspected."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Mouse Without Borders falsely disables Easy Mouse on the desktop or with non-fullscreen-capable applications such as VLC.",
     "known_information": [
@@ -54,11 +75,29 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue MWB fullscreen-detection fix",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "The explorer.exe and VLC workarounds make this a focused false-positive in Mouse Without Borders fullscreen detection. The fix investigation should verify the actual foreground/presentation state before disabling Easy Mouse, with regression cases for the windowless desktop, non-fullscreen VLC, and a genuinely fullscreen application. Related edge-blocking report #46450 can be consolidated here."
+      "type": "approve_design",
+      "label": "Approve restrict mouse without borders fullscreen suppression to the actual foreground fullscreen window",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Mouse without Borders: Disable Easy Mouse when an application is running in full screen - setting is triggered by windowless desktop",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Two connected PCs.",
+          "Easy Mouse and Disable Easy Mouse when an application is running in full screen enabled."
+        ],
+        "steps": [
+          "Press Win+D on the host.",
+          "Move the pointer across the configured edge.",
+          "Add explorer.exe to ignored fullscreen applications and repeat.",
+          "Repeat with VLC windowed and fullscreen."
+        ],
+        "expected_result": "Desktop and windowed apps allow crossing; only a true fullscreen app blocks it.",
+        "observed_result": "The desktop or windowed VLC can block crossing until excluded."
       }
     }
   ],

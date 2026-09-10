@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 41371,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T10:00:22Z",
+  "evaluated_at": "2026-09-10T10:00:22Z",
   "source_updated_at": "2026-08-14T15:27:20Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to lei9444, indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/41371",
+  "title": "Previewing a file from Recent throws an error if the file isn’t there anymore.",
+  "author": "lei9444",
+  "labels": [
+    "Issue-Bug",
+    "Product-File Explorer",
+    "Needs-Triage",
+    "Needs-Prioritization"
+  ],
+  "assignees": [
+    "lei9444"
+  ],
+  "comment_count": 1,
+  "summary": "Selecting a stale file entry from File Explorer Home causes the Monaco preview handler to expose a raw FileNotFoundException instead of a friendly unavailable-file state.",
+  "next_action": "Approve a focused missing-file guard and friendly preview error design.",
+  "confidence": {
+    "score": 93,
+    "level": "green",
+    "rationale": "The exception site and required guard are directly evidenced."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to lei9444, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The screenshot contains the exact exception and current Monaco preview code dereferences FileInfo.Length without first checking that the path still exists.",
     "evidence": [
-      "The issue is assigned to lei9444, indicating active upstream ownership; parallel agent work would risk duplication."
+      "The screenshot shows FileInfo.get_Length throwing for a missing deps.json file selected from File Explorer Home.",
+      "The stack names MonacoPreviewHandlerControl.DoPreview.",
+      "Current DoPreview constructs FileInfo(filePath) and immediately reads Length inside its preview path."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Approve a focused missing-file guard and friendly preview error design.",
+    "evaluated_at": "2026-09-10T10:00:22Z",
     "source_updated_at": "2026-08-14T15:27:20Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix is present, and the public stack plus current source identify a small repository-side error-handling gap."
+  },
+  "issue_context": {
+    "summary": "Selecting a stale file entry from File Explorer Home causes the Monaco preview handler to expose a raw FileNotFoundException instead of a friendly unavailable-file state.",
+    "known_information": [
+      "The issue is against PowerToys 0.94.",
+      "The selected path no longer exists.",
+      "The screenshot exposes the missing path and Monaco preview stack."
+    ],
+    "inferences": [
+      "A pre-read existence guard should prevent this specific raw exception without changing normal preview rendering."
+    ],
+    "analysis": "This is a narrow error-handling defect with direct stack-to-source evidence, so a queued design is more useful than asking the reporter for information already shown.",
+    "initial_investigation": [
+      "Downloaded and inspected the public screenshot.",
+      "Inspected src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandlerControl.cs."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-41371",
+      "type": "approve_design",
+      "label": "Approve stale-preview missing-file guard",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Check File.Exists before FileInfo.Length and show the preview handler's friendly unavailable-file state.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Handle stale File Explorer Home entries before reading preview metadata",
+      "root_cause": "MonacoPreviewHandlerControl.DoPreview reads FileInfo.Length for the shell-supplied path before validating that the file still exists, so a stale Recent/Home entry surfaces FileNotFoundException text.",
+      "plan": [
+        "In MonacoPreviewHandlerControl.DoPreview, validate the string path and File.Exists before reading FileInfo.Length.",
+        "Route a missing path to the preview handler's existing user-facing error surface and stop initialization for that item.",
+        "Add a focused unit test that passes a deleted temporary path and asserts a friendly error rather than an exception."
+      ],
+      "verification": [
+        "Delete a file that remains listed in File Explorer Home, select it with Preview enabled, and confirm a friendly unavailable-file message.",
+        "Confirm existing files still render and oversized-file handling remains unchanged."
+      ],
+      "confidence": {
+        "score": 93,
+        "level": "green",
+        "rationale": "The screenshot's stack and current source meet at the unguarded FileInfo.Length access."
+      }
+    }
+  ]
 }

@@ -1,33 +1,94 @@
 {
+  "schemaVersion": 5,
   "number": 21174,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T10:00:22Z",
+  "evaluated_at": "2026-09-10T10:00:22Z",
   "source_updated_at": "2022-10-13T12:23:45Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/21174",
+  "title": "[FancyZones] Zone colors are black after restarting GPU driver",
+  "author": "lasersPew",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Priority-3",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "comment_count": 3,
+  "summary": "Restarting the graphics driver with Win+Ctrl+Shift+B can make FancyZones use black default zone colors until appearance settings or PowerToys are reset.",
+  "next_action": "Reproduce the graphics-device reset and trace theme/default brush recreation.",
+  "confidence": {
+    "score": 85,
+    "level": "green",
+    "rationale": "The reproduction and control path are explicit; only the modern graphics resource branch is unknown."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue has exact steps, expected/actual screenshots, and a workaround showing custom colors still render.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The failure follows the standard graphics-driver reset shortcut.",
+      "Windows-default zone appearance becomes black.",
+      "Switching to custom colors restores normal rendering; returning to defaults reproduces the black state.",
+      "Restarting can also restore behavior."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the graphics-device reset and trace theme/default brush recreation.",
+    "evaluated_at": "2026-09-10T10:00:22Z",
     "source_updated_at": "2022-10-13T12:23:45Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report establishes a rendering-state loss but not whether the current overlay recreates graphics resources or theme brushes after device reset."
+  },
+  "issue_context": {
+    "summary": "Restarting the graphics driver with Win+Ctrl+Shift+B can make FancyZones use black default zone colors until appearance settings or PowerToys are reset.",
+    "known_information": [
+      "The issue was reported on PowerToys 0.63.0.",
+      "Custom zone colors and default Windows colors follow different paths."
+    ],
+    "inferences": [
+      "A device-loss or theme-resource refresh path may leave the default brush uninitialized while explicit custom colors are rebuilt."
+    ],
+    "analysis": "The reporter has already provided the discriminating control case; maintainer-side graphics reset testing is next.",
+    "initial_investigation": [
+      "Read the steps, screenshots, workaround, and maintainer question.",
+      "Confirmed current FancyZones keeps separate appearance/settings and runtime overlay code."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-21174",
+      "type": "reproduce",
+      "label": "Reproduce zone colors after GPU reset",
+      "primary": true,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Reset the graphics driver while using default FancyZones colors",
+        "module": "FancyZones overlay",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "FancyZones enabled with Windows-default zone appearance",
+          "GPU driver reset shortcut available"
+        ],
+        "setup": [
+          "Set Overrides Windows Snap as reported.",
+          "Use default rather than custom zone colors."
+        ],
+        "steps": [
+          "Press Win+Ctrl+Shift+B and wait for the display driver to recover.",
+          "Shift-drag a window to show zones.",
+          "Switch to custom colors and retest.",
+          "Switch back to defaults and record whether black returns."
+        ],
+        "expected_result": "Default and custom zone colors should both survive graphics-device reset without becoming black."
+      }
+    }
+  ]
 }

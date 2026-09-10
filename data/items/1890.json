@@ -1,33 +1,92 @@
 {
+  "schemaVersion": 5,
   "number": 1890,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T10:00:22Z",
+  "evaluated_at": "2026-09-10T10:00:22Z",
   "source_updated_at": "2022-07-29T12:34:52Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/1890",
+  "title": "[FancyZones] Priority grid zone positions are not consistent",
+  "author": "JordanAnthonyKing",
+  "labels": [
+    "Issue-Bug",
+    "FancyZones-Dragging&UI",
+    "Product-FancyZones",
+    "Priority-3"
+  ],
+  "assignees": [],
+  "comment_count": 6,
+  "summary": "When a Priority Grid layout changes zone count, windows remain attached by zone number rather than by spatially corresponding zone, causing unintuitive moves.",
+  "next_action": "Reproduce current Priority Grid transitions and define a spatial zone-matching acceptance rule before changing persistence.",
+  "confidence": {
+    "score": 88,
+    "level": "green",
+    "rationale": "The defect and numeric mapping behavior are directly confirmed; only the modern acceptance rule remains."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report includes exact layout transitions, screenshots, a code-level explanation, and later maintainer confirmation that windows stay with the same zone number.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Adding a zone to the left causes windows in the large priority zone to move to a different visual zone.",
+      "The issue explains that zone numbering is left-to-right rather than based on spatial correspondence across templates.",
+      "A maintainer confirmed in 2022 that windows stay in the zone with the same number."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce current Priority Grid transitions and define a spatial zone-matching acceptance rule before changing persistence.",
+    "evaluated_at": "2026-09-10T10:00:22Z",
     "source_updated_at": "2022-07-29T12:34:52Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The behavior is established, but current layout internals and the desired matching rule require maintainer validation before a safe fix design."
+  },
+  "issue_context": {
+    "summary": "When a Priority Grid layout changes zone count, windows remain attached by zone number rather than by spatially corresponding zone, causing unintuitive moves.",
+    "known_information": [
+      "The behavior depends on the setting that moves assigned windows during layout changes.",
+      "Priority Grid zone geometry changes when the zone count changes."
+    ],
+    "inferences": [
+      "Matching by overlap or centroid may preserve visual intent better than numeric identity, but tie-breaking and custom layouts need definition."
+    ],
+    "analysis": "A current reproduction plus explicit matching criteria is the smallest next step; the old proposed SetId change may not fit today's layout model.",
+    "initial_investigation": [
+      "Read the historical proposed code change and later maintainer confirmation.",
+      "Confirmed current FancyZones has separate Layout and AppZoneHistory components, so the old ZoneSet sketch cannot be assumed current."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-1890",
+      "type": "reproduce",
+      "label": "Reproduce Priority Grid zone remapping",
+      "primary": true,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Change Priority Grid zone count with assigned windows",
+        "module": "FancyZones",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "One monitor",
+          "During layout changes, windows assigned to a zone will match new size/position enabled"
+        ],
+        "setup": [
+          "Apply the two-zone Priority Grid layout.",
+          "Place one window in the large priority zone and one in the other zone."
+        ],
+        "steps": [
+          "Increase Priority Grid to three zones.",
+          "Record which new zone receives each window.",
+          "Decrease the zone count and repeat.",
+          "Compare numeric-zone retention with maximum-overlap or nearest-center matching."
+        ],
+        "expected_result": "Windows should remain in the visually corresponding zone according to a documented deterministic rule."
+      }
+    }
+  ]
 }

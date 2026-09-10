@@ -1,33 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 40391,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T10:00:22Z",
+  "evaluated_at": "2026-09-10T10:00:22Z",
   "source_updated_at": "2026-08-14T04:10:32Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/40391",
+  "title": "dllhost.exe crash every time Powertoys is being updated to later versions",
+  "author": "yagamikira88",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comment_count": 3,
+  "summary": "During upgrades, dllhost hosting PowerToys context-menu packages hangs, extending setup time and in one report contributing to an Explorer shell restart.",
+  "next_action": "Reproduce an in-use context-menu package upgrade and correlate installer sequencing with dllhost quiesce.",
+  "confidence": {
+    "score": 84,
+    "level": "yellow",
+    "rationale": "The repeated signature is strong, but installer lifecycle instrumentation is still needed to identify the faulty transition."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "Three version ranges and two context-menu packages show the same MoAppHang signature, including a current 0.95.0 to 0.100.2 per-user upgrade.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerRename and Image Resizer context-menu packages both appear in upgrade-time dllhost hangs.",
+      "The same hang signature 463a / 2097152 is reported across multiple upgrades.",
+      "The newest report supplies Event 1002 timing and a current per-user MSI upgrade path.",
+      "Current installer sequencing unregisters context-menu packages during removal and terminates PowerToys processes during setup, making lifecycle ordering the relevant maintainer test area."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce an in-use context-menu package upgrade and correlate installer sequencing with dllhost quiesce.",
+    "evaluated_at": "2026-09-10T10:00:22Z",
     "source_updated_at": "2026-08-14T04:10:32Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The failure is reproducible, but public evidence does not prove whether package unregister, COM host quiesce, Explorer restart, or process termination ordering is the faulty step."
+  },
+  "issue_context": {
+    "summary": "During upgrades, dllhost hosting PowerToys context-menu packages hangs, extending setup time and in one report contributing to an Explorer shell restart.",
+    "known_information": [
+      "The issue occurs during auto-update or MSI upgrade rather than ordinary context-menu invocation.",
+      "Both PowerRename and Image Resizer packages have been observed.",
+      "Reverting the classic-context-menu registry tweak did not eliminate the issue."
+    ],
+    "inferences": [
+      "Replacing or unregistering an in-use sparse context-menu package may be involved, but the exact installer transition is unconfirmed."
+    ],
+    "analysis": "The newest Event Viewer evidence makes a maintainer reproduction more useful than another reporter request.",
+    "initial_investigation": [
+      "Inspected current Product.wxs context-menu unregister/cleanup and process-termination sequencing.",
+      "Compared all three public hang reports in the thread."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-40391",
+      "type": "reproduce",
+      "label": "Reproduce context-menu upgrade hang",
+      "primary": true,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Upgrade while context-menu packages are hosted by dllhost",
+        "module": "Installer / PowerRename / Image Resizer / File Locksmith",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Windows 11 24H2 test system",
+          "Per-user PowerToys install with at least one context-menu module enabled",
+          "Event Viewer available"
+        ],
+        "setup": [
+          "Install a prior stable build.",
+          "Invoke the enabled context menu so its package is loaded before upgrade."
+        ],
+        "steps": [
+          "Start an in-product or MSI upgrade to the current stable release.",
+          "Measure time spent around package unregister/removal and observe dllhost.",
+          "Collect Application Hang and shell-restart events with timestamps.",
+          "Repeat with each context-menu module disabled to isolate package-specific behavior."
+        ],
+        "expected_result": "Upgrade should complete without a dllhost MoAppHang or Explorer shell restart.",
+        "attachments": [
+          {
+            "label": "Original diagnostic ZIP",
+            "url": "https://github.com/user-attachments/files/21050816/PowerToysReport_2025-07-04-13-14-34.zip"
+          }
+        ]
+      }
+    }
+  ]
 }

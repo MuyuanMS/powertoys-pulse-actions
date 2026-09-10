@@ -28,13 +28,34 @@
       "Explicitly remapping those sequences back to mouse actions restores behavior for some users.",
       "The problem affects current Surface hardware and other remapping tools, indicating a Windows synthetic-input interaction."
     ],
-    "recommended_action": "Queue a Keyboard Manager design for preserving precision-touchpad synthetic gesture sequences across modifier remaps."
+    "recommended_action": "Queue a Keyboard Manager design for preserving precision-touchpad synthetic gesture sequences across modifier remaps.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-16T18:32:13Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The mechanism and workaround are well grounded, but a safe rule for recognizing or exempting Windows gesture sequences requires code-level design."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Preserve Windows precision-touchpad gesture shortcuts across modifier remaps",
+      "root_cause": "Windows precision-touchpad taps are represented by Win+Ctrl+Shift+F22/F24 sequences, and Keyboard Manager modifier swaps rewrite or suppress those synthetic sequences before Windows converts them to the configured gesture action.",
+      "plan": [
+        "Trace F22/F24 precision-touchpad sequences through the current Keyboard Manager hook and identify reliable injected-input metadata.",
+        "Preserve recognized Windows gesture sequences while retaining normal user-defined modifier remaps.",
+        "Add regression coverage for three- and four-finger taps with Ctrl/Alt and Caps Lock/Ctrl swaps."
+      ],
+      "verification": [
+        "Configure three- and four-finger actions, apply the reported modifier swaps, and confirm both gesture actions and ordinary remaps work.",
+        "Verify ordinary user-generated F22/F24 shortcuts are not unintentionally exempted."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The public sequence and workaround are strong, but safely distinguishing OS gesture input from user shortcuts still requires hook-level inspection."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Keyboard Manager modifier swaps can break Windows precision-touchpad three- and four-finger tap sequences encoded with F22/F24 shortcuts.",
     "known_information": [
@@ -60,11 +81,28 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue touchpad gesture/remap design",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "The thread now provides a consistent mechanism and workaround: Windows precision-touchpad taps can arrive as Win+Ctrl+Shift+F22/F24 sequences, and modifier remaps alter those sequences. The next step is a Keyboard Manager design for preserving OS-generated gesture shortcuts without exempting ordinary user shortcuts incorrectly; the posted F22/F24 remap workarounds provide useful verification cases."
+      "type": "approve_design",
+      "label": "Approve preserve windows precision-touchpad gesture shortcuts across modifier remaps",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Keyboard manager breaks 3 and 4 finger touch pad taps with certain remaps",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "A Windows precision touchpad with configurable three- and four-finger tap actions."
+        ],
+        "steps": [
+          "Configure actions for three- and four-finger taps.",
+          "Swap Left Alt and Left Ctrl in Keyboard Manager.",
+          "Invoke each configured touchpad tap.",
+          "Repeat with the posted F22/F24 workaround for comparison."
+        ],
+        "expected_result": "Configured touchpad actions work while the modifier swap remains active.",
+        "observed_result": "The gesture actions stop working unless the synthetic F22/F24 shortcut is explicitly remapped."
       }
     }
   ],

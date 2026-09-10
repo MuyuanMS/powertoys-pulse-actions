@@ -28,13 +28,34 @@
       "A 0.100.2 user says opening PowerDisplay settings immediately makes the taskbar icon appear and function.",
       "The symptom is associated with restart/startup."
     ],
-    "recommended_action": "Queue a focused PowerDisplay startup and tray-icon initialization investigation."
+    "recommended_action": "Queue a focused PowerDisplay startup and tray-icon initialization investigation.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-17T16:50:39Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "The current reproduction boundary is strong, but lightweight evidence does not establish whether module startup, tray registration, or settings activation is the root cause."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Initialize PowerDisplay and its tray icon during startup",
+      "root_cause": "PowerDisplay is enabled but its startup path does not always create or register the tray icon; opening the settings page triggers initialization that makes the icon appear.",
+      "plan": [
+        "Compare PowerDisplay startup initialization with settings-page activation and identify the missing startup call or ordering dependency.",
+        "Make tray-icon creation idempotent and run it after the required PowerToys host state is ready.",
+        "Add startup/restart coverage that does not open Settings."
+      ],
+      "verification": [
+        "Restart Windows with PowerDisplay enabled and confirm the tray icon appears without opening Settings.",
+        "Open Settings afterward and confirm no duplicate icon or initialization occurs."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "The settings-page trigger is a strong lifecycle boundary, but the exact skipped initialization step is not public."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "PowerDisplay's tray icon can be absent after restart even while PowerToys is running, then appears when its settings page is opened.",
     "known_information": [
@@ -54,11 +75,28 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Queue PowerDisplay startup investigation",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "The 0.100.2 confirmation provides a useful boundary: PowerToys is running after restart, the PowerDisplay tray icon is absent, and opening PowerDisplay settings causes the icon to appear and work. That is sufficient to investigate whether startup skips module or tray initialization that the settings page later triggers, using the original attached report for correlation."
+      "type": "approve_design",
+      "label": "Approve initialize powerdisplay and its tray icon during startup",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Power Display Icon Dissapearing on restart",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "PowerDisplay",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "PowerDisplay enabled and its icon configured to appear in the notification area."
+        ],
+        "steps": [
+          "Restart Windows.",
+          "Wait for PowerToys startup without opening Settings.",
+          "Check for the PowerDisplay icon.",
+          "Open the PowerDisplay settings page and check again."
+        ],
+        "expected_result": "The icon is present after startup and opening Settings does not change module initialization.",
+        "observed_result": "The icon is absent until the PowerDisplay settings page is opened."
       }
     }
   ],

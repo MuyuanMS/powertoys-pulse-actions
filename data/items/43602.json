@@ -27,13 +27,34 @@
       "Random Data Generator had a fix submitted.",
       "The newest maintainer comment says Colors behaves correctly but no extension appears to receive a signal when merely disabled in CmdPal UI."
     ],
-    "recommended_action": "Split and investigate host-exit versus UI-disable lifecycle signaling, then update affected extensions against the current SDK contract."
+    "recommended_action": "Split and investigate host-exit versus UI-disable lifecycle signaling, then update affected extensions against the current SDK contract.",
+    "evaluated_at": "2026-09-10T09:54:42.573Z",
+    "source_updated_at": "2026-08-20T19:15:07Z"
   },
   "fix_assessment": {
     "status": "proposed",
     "rationale": "Public evidence identifies the lifecycle boundary but not whether the remaining defect is in host signaling, extension adoption, or both."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Unify Command Palette extension stop signaling for disable and host exit",
+      "root_cause": "Extension processes depend on an SDK stop signal, but host exit and UI disable follow different lifecycle paths; some extensions have not adopted the SDK contract and compliant extensions may not receive a signal on disable.",
+      "plan": [
+        "Build a lifecycle matrix for host exit, CmdPal close, and extension disable using compliant and outdated extensions.",
+        "Ensure the host sends and awaits the supported stop signal on every operation that promises process shutdown.",
+        "Track extension-specific SDK updates separately from host signaling fixes."
+      ],
+      "verification": [
+        "Exercise host exit and UI disable with Colors and another known extension while monitoring process lifetime.",
+        "Confirm compliant extensions exit within a bounded interval and outdated extensions are identified explicitly."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "The SDK ownership and two lifecycle paths are public, but the remaining failures have not been separated into host and extension defects."
+      }
+    }
+  ],
   "issue_context": {
     "summary": "Some Command Palette extension processes survive host shutdown, and UI disable may not signal any extension to stop.",
     "known_information": [
@@ -59,11 +80,28 @@
   },
   "actions": [
     {
-      "type": "post_comment",
-      "label": "Separate CmdPal shutdown paths",
-      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
-      "comment": {
-        "body": "The remaining investigation should separate two operations: fully exiting PowerToys/Command Palette and disabling an extension from the CmdPal UI. Please verify a small set of current extensions against both paths and the current SDK shutdown contract. Extensions that miss the SDK callback need extension updates; if compliant extensions receive no signal on UI disable, that is a host lifecycle defect."
+      "type": "approve_design",
+      "label": "Approve unify command palette extension stop signaling for disable and host exit",
+      "note": "Approve/start the fork-side design workflow from this public-evidence fix plan. No upstream write occurs from this action."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Some Command Palette extensions remain running even after Powertoys is closed",
+      "note": "Maintainer-side reproduction reduces the recorded implementation uncertainty without asking the reporter to perform code investigation.",
+      "reproduce": {
+        "module": "Command Palette",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current CmdPal with Colors and one additional third-party extension installed."
+        ],
+        "steps": [
+          "Launch each extension and record its process.",
+          "Disable the extension in CmdPal and check process lifetime.",
+          "Re-enable it, then fully exit PowerToys and check again.",
+          "Repeat for both extensions."
+        ],
+        "expected_result": "A supported shutdown operation signals compliant extensions and their processes exit.",
+        "observed_result": "Some processes survive host exit, and UI disable may not signal extensions."
       }
     }
   ],

@@ -1,33 +1,97 @@
 {
+  "schemaVersion": 5,
   "number": 10408,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T10:00:22Z",
+  "evaluated_at": "2026-09-10T10:00:22Z",
   "source_updated_at": "2021-03-24T14:28:56Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/10408",
+  "title": "Two different records with the same name and subtitle",
+  "author": "mykhailopylyp",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Area-Quality",
+    "Area-User Interface",
+    "Planning-Consideration"
+  ],
+  "assignees": [],
+  "comment_count": 4,
+  "summary": "PowerToys Run still keys user-selected history by Result.ToString, which is only Title plus SubTitle, so distinct executables with identical display text share ranking history.",
+  "next_action": "Approve a stable per-result identity design that distinguishes executable path and plugin while migrating existing history safely.",
+  "confidence": {
+    "score": 90,
+    "level": "green",
+    "rationale": "The current collision mechanism is directly visible in source."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue's proposed path-based identity remains consistent with current source: UserSelectedRecord uses result.ToString as the dictionary key and Result.ToString formats only title and subtitle.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Maintainer discussion confirms different executables may legally have the same title and subtitle.",
+      "Current UserSelectedRecord.Add, Remove, and GetSelectedData use result.ToString as the key.",
+      "Current Result.ToString returns only Title and SubTitle.",
+      "UserSelectedRecordItem already stores IconPath and PluginID, providing migration context but not unique identity."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Approve a stable per-result identity design that distinguishes executable path and plugin while migrating existing history safely.",
+    "evaluated_at": "2026-09-10T10:00:22Z",
     "source_updated_at": "2021-03-24T14:28:56Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked implementation exists, and current source still has the collision described by the issue."
+  },
+  "issue_context": {
+    "summary": "PowerToys Run still keys user-selected history by Result.ToString, which is only Title plus SubTitle, so distinct executables with identical display text share ranking history.",
+    "known_information": [
+      "Different programs and shortcuts can share title and subtitle.",
+      "Selection count affects result ordering.",
+      "Current records store title, subtitle, icon path, plugin ID, and search text."
+    ],
+    "inferences": [
+      "A canonical path plus plugin identity should distinguish the reported program cases, but non-file plugins need their own stable identity contract."
+    ],
+    "analysis": "The defect is current and source-localized enough for a queued design, with migration and non-file result identity called out as required safeguards.",
+    "initial_investigation": [
+      "Inspected Wox.Plugin/UserSelectedRecord.cs and Result.cs.",
+      "Confirmed all selection-history operations still use Result.ToString."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-10408",
+      "type": "approve_design",
+      "label": "Approve stable Run history identity",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Replace Title+SubTitle history keys with a plugin-aware stable result identity and migrate legacy records.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Key Run selection history by stable result identity",
+      "root_cause": "UserSelectedRecord collapses distinct results because its dictionary key is Result.ToString, and Result.ToString contains only title and subtitle.",
+      "plan": [
+        "Add a stable history identity supplied by each result/plugin, using canonical executable or shortcut path plus PluginID where available.",
+        "Use that identity consistently in Add, Remove, and GetSelectedData, retaining a legacy Title/SubTitle lookup only for one-time migration.",
+        "Add collision tests with two results sharing title/subtitle but pointing to different executables and verify independent counts and ordering."
+      ],
+      "verification": [
+        "Launch two identically named results from different paths and confirm their selection counts remain independent across restart.",
+        "Load an existing UserSelectedRecord.json and confirm usable legacy history is migrated without corrupting the file."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The key collision is explicit in both the issue and current source; migration details are the primary implementation risk."
+      }
+    }
+  ]
 }
