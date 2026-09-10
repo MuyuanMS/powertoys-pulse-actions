@@ -829,12 +829,16 @@ Also verify validation-tree consistency:
   `validation.upstream_head.result == passed`;
 - any proposed suggestion block requires
   `validation.suggestion_patch.head_sha == head_sha`,
-  `validation.suggestion_patch.result == passed`, and
+  `validation.suggestion_patch.result == passed`,
+  `validation.suggestion_patch.minimal_ranges_reviewed == true`, and
   `applied_comment_ids` exactly matching all proposed comments that contain
   suggestion blocks;
 - the suggestion-patch result must come from applying the literal public
   suggestion blocks to the pinned upstream head and building that candidate
   tree, not from a hand-edited fork branch.
+- before that final build, trim unchanged leading and trailing lines from each
+  suggestion range. Retain one unchanged anchor only for a pure insertion that
+  GitHub cannot otherwise represent.
 
 Never copy fork-only tests, documentation, braces, or behavior into the
 artifact summary as if they exist upstream. If the converged fork differs from

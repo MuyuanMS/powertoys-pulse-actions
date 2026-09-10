@@ -102,6 +102,14 @@ If a prerequisite is missing, guide the user through setup ([references/prerequi
     fork approximation is not sufficient. For a clean zero-finding result,
     record a passing build of the exact upstream head under
     `internalEvidence.validation.upstreamHead`.
+23. **Minimize suggestion ranges after proving correctness.** An apply-ready
+    suggestion must show the author only the lines whose replacement is needed.
+    Trim every unchanged leading and trailing line from the selected range and
+    suggestion body unless one unchanged line is required as GitHub's anchor
+    for a pure insertion. Do not include an unchanged opening brace,
+    declaration, condition, or closing brace merely as visual context. Put
+    context in the explanatory prose; keep the apply block to the smallest
+    independently valid replacement.
 
 ## Phase 0: Context & Process Review
 

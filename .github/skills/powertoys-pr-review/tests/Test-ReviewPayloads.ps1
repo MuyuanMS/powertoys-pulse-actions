@@ -93,6 +93,7 @@ $reviewData = [pscustomobject]@{
                         headSha = $headSha
                         result = 'passed'
                         appliedItemIds = @('fix-value')
+                        minimalRangesReviewed = $true
                         commands = @('dotnet build src/Test.csproj')
                     }
                 }
@@ -132,6 +133,11 @@ $invalid = Copy-JsonObject $reviewData
 $invalid.prs[0].internalEvidence.validation.suggestionPatch.appliedItemIds = @('different-item')
 $errors = @(Test-ReviewDataDocument -Document $invalid)
 Assert-True (($errors -join "`n") -match 'must exactly match every public suggestion item') 'Suggestion validation must cover the exact public suggestion IDs.'
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].internalEvidence.validation.suggestionPatch.minimalRangesReviewed = $false
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'minimalRangesReviewed must be true') 'Suggestion validation must record the minimal-range pass.'
 
 $cleanReview = Copy-JsonObject $reviewData
 $cleanReview.prs[0].publicPayload.items = @()
@@ -207,6 +213,27 @@ $invalid.prs[0].publicPayload.items[0].line = 20
 $invalid.prs[0].publicPayload.items[0].startLine = 20
 $errors = @(Test-ReviewDataDocument -Document $invalid -CheckGitHub -LiveData $liveData)
 Assert-True (($errors -join "`n") -match 'current RIGHT-side diff hunk') 'Out-of-diff ranges must fail.'
+
+$nonMinimal = Copy-JsonObject $reviewData
+$nonMinimal.prs[0].publicPayload.items[0].startLine = 1
+$nonMinimal.prs[0].publicPayload.items[0].line = 3
+$nonMinimal.prs[0].publicPayload.items[0].body = @'
+### Keep the value stable
+
+**Severity:** `high`
+
+Only the middle line changes, so unchanged context must not be included.
+
+```suggestion
+context
+    Existing = 1,
+context
+```
+'@
+$nonMinimalLiveData = @{ 42 = Copy-JsonObject $liveData[42] }
+$nonMinimalLiveData[42].files[0].patch = "@@ -1,3 +1,3 @@`n context`n-old`n+    Existing = 1,`n context"
+$errors = @(Test-ReviewDataDocument -Document $nonMinimal -CheckGitHub -LiveData $nonMinimalLiveData)
+Assert-True (($errors -join "`n") -match 'unchanged leading or trailing lines') 'Context-heavy suggestion ranges must fail current-head validation.'
 
 $staleLiveData = @{ 42 = Copy-JsonObject $liveData[42] }
 $staleLiveData[42].headSha = 'ffffffffffffffffffffffffffffffffffffffff'

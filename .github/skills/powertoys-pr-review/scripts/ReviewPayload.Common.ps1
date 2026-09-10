@@ -183,14 +183,26 @@ function Get-RightSideHunkMap {
         }
 
         if ($patchLine.StartsWith('+') -and -not $patchLine.StartsWith('+++')) {
-            $map[$newLine] = $hunk
+            $map[$newLine] = [pscustomobject]@{
+                hunk = $hunk
+                content = $patchLine.Substring(1)
+            }
             $newLine++
         }
         elseif ($patchLine.StartsWith('-') -and -not $patchLine.StartsWith('---')) {
             continue
         }
         else {
-            $map[$newLine] = $hunk
+            $content = if ($patchLine.StartsWith(' ')) {
+                $patchLine.Substring(1)
+            }
+            else {
+                $patchLine
+            }
+            $map[$newLine] = [pscustomobject]@{
+                hunk = $hunk
+                content = $content
+            }
             $newLine++
         }
     }
@@ -213,7 +225,46 @@ function Test-RightSideRange {
         return $false
     }
 
-    return $HunkMap[$StartLine] -eq $HunkMap[$Line]
+    return $HunkMap[$StartLine].hunk -eq $HunkMap[$Line].hunk
+}
+
+function Test-SuggestionRangeIsMinimal {
+    param(
+        [Parameter(Mandatory)][hashtable]$HunkMap,
+        [Parameter(Mandatory)][int]$StartLine,
+        [Parameter(Mandatory)][int]$Line,
+        [Parameter(Mandatory)][string]$Body
+    )
+
+    $match = [regex]::Match($Body, '(?ms)```suggestion[ \t]*\r?\n(.+?)\r?\n```')
+    if (-not $match.Success) {
+        return $true
+    }
+
+    $original = @($StartLine..$Line | ForEach-Object {
+        [string]$HunkMap[$_].content
+    })
+    $replacement = @($match.Groups[1].Value -split "`r?`n")
+    if ($original.Count -le 1) {
+        return $true
+    }
+
+    $commonPrefix = 0
+    while ($commonPrefix -lt $original.Count -and
+           $commonPrefix -lt $replacement.Count -and
+           $original[$commonPrefix] -ceq $replacement[$commonPrefix]) {
+        $commonPrefix++
+    }
+
+    $commonSuffix = 0
+    while ($commonSuffix -lt ($original.Count - $commonPrefix) -and
+           $commonSuffix -lt ($replacement.Count - $commonPrefix) -and
+           $original[$original.Count - 1 - $commonSuffix] -ceq
+             $replacement[$replacement.Count - 1 - $commonSuffix]) {
+        $commonSuffix++
+    }
+
+    return ($commonPrefix + $commonSuffix) -eq 0
 }
 
 function Invoke-GhGet {
@@ -487,6 +538,9 @@ function Test-ReviewDataDocument {
                 if ([string]$suggestionPatch.result -ne 'passed') {
                     $errors.Add("$prefix suggestionPatch.result must be 'passed'.")
                 }
+                if ($suggestionPatch.minimalRangesReviewed -ne $true) {
+                    $errors.Add("$prefix suggestionPatch.minimalRangesReviewed must be true.")
+                }
                 $expectedItemIds = @($suggestionItems | ForEach-Object { [string]$_.id } | Sort-Object -Unique)
                 $appliedItemIds = @($suggestionPatch.appliedItemIds | ForEach-Object { [string]$_ } | Sort-Object -Unique)
                 if (($expectedItemIds -join "`n") -cne ($appliedItemIds -join "`n")) {
@@ -548,6 +602,13 @@ function Test-ReviewDataDocument {
                 $startLine = if ($null -ne $item.startLine) { [int]$item.startLine } else { $line }
                 if (-not (Test-RightSideRange -HunkMap $patches[[string]$item.path] -StartLine $startLine -Line $line)) {
                     $errors.Add("$label range $startLine-$line is not inside one current RIGHT-side diff hunk.")
+                }
+                elseif ([string]$item.body -match '(?i)```suggestion' -and
+                        -not (Test-SuggestionRangeIsMinimal `
+                            -HunkMap $patches[[string]$item.path] `
+                            -StartLine $startLine -Line $line `
+                            -Body ([string]$item.body))) {
+                    $errors.Add("$label suggestion range contains unchanged leading or trailing lines that must be trimmed.")
                 }
             }
         }

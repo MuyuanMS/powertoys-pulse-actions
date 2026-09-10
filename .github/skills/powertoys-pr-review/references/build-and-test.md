@@ -95,6 +95,12 @@ same head, apply every suggestion block verbatim using its exact line range,
 and build the affected project. When suggestions may be accepted separately,
 also apply/build each structurally risky suggestion independently.
 
+After that first pass succeeds, trim unchanged leading/trailing lines from
+each suggestion range, recreate the candidate from the pinned upstream head,
+and build again. The recorded passing result must cover the final minimized
+suggestions that will be shown to the author, not an earlier context-heavy
+version.
+
 Record the exact head, applied item IDs, commands, and passing result under
 `internalEvidence.validation`. Never reuse a build result from a tree with a
 different diff. If the exact suggestion candidate fails syntax or compilation,

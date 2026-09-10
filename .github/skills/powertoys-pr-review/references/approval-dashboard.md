@@ -106,6 +106,7 @@ The page polls `/status` every few seconds. The coordinator is the only writer o
             "headSha": "0123456789abcdef0123456789abcdef01234567",
             "result": "passed",
             "appliedItemIds": ["stable-value"],
+            "minimalRangesReviewed": true,
             "commands": ["dotnet build src/.../ChangedProject.csproj"]
           }
         }
@@ -136,6 +137,7 @@ The validator rejects:
 - duplicate PR or item IDs.
 - suggestion payloads whose exact applied item IDs and build evidence are
   missing or do not match;
+- suggestion payloads that did not record the final minimal-range pass;
 - clean zero-item payloads without a passing build of the pinned upstream head.
 
 ## `review-decisions.json` schema

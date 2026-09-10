@@ -97,13 +97,16 @@ A one-line "Add singular form." with a bare suggestion block is **too terse** â€
 
 When posting **multiple suggestions on the same file**, applying them one at a time shifts line numbers, so a later suggestion can target stale lines and produce broken code. To prevent this:
 
-1. **Prefer a single combined suggestion** when fixes are within ~30 lines of each other. Use `start_line`/`line` to cover the full range in one block.
+1. **Combine only interdependent edits.** Proximity alone is not a reason to
+   span the lines between two fixes. Keep nearby independent edits separate so
+   each suggestion shows one understandable change. Combine them only when
+   applying either one alone would be invalid or behaviorally incomplete.
 2. **If fixes must be separate:** post suggestions targeting **later lines first**, and add an application note: `> If applying multiple suggestions individually, use "Commit suggestion" from bottom to top, or batch them with "Add suggestion to batch" then "Commit suggestions" to apply atomically.`
 3. **When suggestions add/remove lines**, include the smallest complete
-   syntactic unit, not merely the fewest lines. A missing brace may be a
-   one-line repair, but a control-flow rewrite must include the complete
-   `if`/loop/`try` block needed for valid syntax. Do not include unrelated
-   neighboring code just to make the patch look substantial.
+   syntactic replacement, not the surrounding syntax that remains unchanged.
+   A missing brace may be a one-line repair. A control-flow rewrite may span a
+   complete `if`/loop/`try` block when its delimiters or structure change, but
+   unchanged declarations and braces at either edge must be trimmed.
 4. **Self-contained test:** apply each suggestion independently on the pinned
    original head; if any produces invalid syntax alone, expand it to include
    the needed context.
@@ -116,6 +119,41 @@ When posting **multiple suggestions on the same file**, applying them one at a t
 Shorter is safer only when the shorter replacement remains a complete
 syntactic unit. The goal is the **smallest independently valid patch**, not the
 smallest possible line range.
+
+### Minimal-range pass
+
+After the exact-patch build passes, perform a separate readability pass:
+
+1. Compare the selected original lines with the suggestion replacement.
+2. Remove their longest identical prefix and suffix.
+3. Repeat until the first and last selected lines both materially change.
+4. The only exception is a pure insertion, where GitHub requires one unchanged
+   anchor line; retain exactly one nearby anchor, preferably the closing line
+   immediately after the insertion.
+5. Reapply and rebuild the minimized suggestion set. Minimization must not
+   reuse validation from the pre-minimized patch.
+
+Example â€” avoid replacing an unchanged block:
+
+````markdown
+```suggestion
+foreach (...)
+{
+    UpdatedCall();
+}
+```
+````
+
+when only the call changes. Target the call line and suggest only:
+
+````markdown
+```suggestion
+    UpdatedCall();
+```
+````
+
+The prose above the block explains the surrounding method and control flow.
+The suggestion itself should make the actual edit visually obvious.
 
 When a localized replacement is safe, use the exact ` ```suggestion ` format,
 reference the correct file/line range, make it self-contained so the author can
@@ -156,6 +194,7 @@ For a payload containing suggestion blocks, also record:
       "headSha": "<pinned upstream head>",
       "result": "passed",
       "appliedItemIds": ["missing-loop-brace"],
+      "minimalRangesReviewed": true,
       "commands": ["dotnet build <smallest affected project>"]
     }
   }
@@ -164,7 +203,8 @@ For a payload containing suggestion blocks, also record:
 
 The applied item IDs must exactly match every public item containing a
 suggestion block. Run the commands after applying the literal suggestion text,
-not after manually recreating the intended fix.
+not after manually recreating the intended fix. `minimalRangesReviewed` is set
+only after trimming unchanged edges and rebuilding the final minimized patch.
 
 For a clean result with no public items, record:
 

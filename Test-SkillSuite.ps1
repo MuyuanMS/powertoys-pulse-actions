@@ -506,6 +506,7 @@ if (-not (Test-Path $artifactValidator)) {
         suggestion_patch = @{
           head_sha = ('d' * 40)
           result = 'passed'
+          minimal_ranges_reviewed = $true
           applied_comment_ids = @('inline-fix')
         }
       }

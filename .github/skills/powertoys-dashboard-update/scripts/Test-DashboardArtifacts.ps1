@@ -234,6 +234,7 @@ foreach ($path in @($paths)) {
         ForEach-Object { [string]$_ } | Sort-Object -Unique)
       if ([string]$artifact.validation.suggestion_patch.head_sha -ne [string]$artifact.head_sha -or
           [string]$artifact.validation.suggestion_patch.result -ne 'passed' -or
+          $artifact.validation.suggestion_patch.minimal_ranges_reviewed -ne $true -or
           ($expectedCommentIds -join "`n") -cne ($appliedCommentIds -join "`n")) {
         $errors.Add("$prefix apply-ready suggestions require passing exact-patch validation for every suggestion comment")
       }
