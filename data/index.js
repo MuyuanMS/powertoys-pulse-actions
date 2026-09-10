@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-10T18:30:00.1409897+08:00",
+  "generated_at": "2026-09-10T18:41:36.2300495+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 153,
-    "open_issues": 12614,
-    "community": 11769,
+    "open_issues": 12615,
+    "community": 11770,
     "artifacts": 604
   },
   "impact": {
-    "as_of": "2026-09-10T18:30:00.1409897+08:00",
+    "as_of": "2026-09-10T18:41:36.2300495+08:00",
     "issues_helped": 10,
     "prs_iterated": 20,
     "constructive_comments_posted": 3,
@@ -2046,7 +2046,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2054,7 +2054,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 3,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with three general review notes"
+      },
       "labels": [
         "Product-Advanced Paste",
         "Product-PowerDisplay",
@@ -153258,6 +153261,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50499",
+      "kind": "issue",
+      "number": 50499,
+      "url": "https://github.com/microsoft/PowerToys/issues/50499",
+      "title": "Advanced Paste - please add \"Paste as Rich Text\"",
+      "author": "mbreischer",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-10T10:30:20Z",
+      "updated_at": "2026-09-10T10:30:20Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-50498",
       "kind": "issue",
       "number": 50498,
@@ -157009,8 +157043,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-09T12:21:41Z",
-      "comments": 53,
+      "updated_at": "2026-09-10T10:37:57Z",
+      "comments": 54,
       "priority": null
     },
     {
