@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-10T11:13:44.5738184+08:00",
+  "generated_at": "2026-09-10T11:27:33.128747+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 154,
     "open_issues": 12613,
     "community": 11768,
-    "artifacts": 542
+    "artifacts": 543
   },
   "impact": {
-    "as_of": "2026-09-10T11:13:44.5738184+08:00",
+    "as_of": "2026-09-10T11:27:33.128747+08:00",
     "issues_helped": 10,
     "prs_iterated": 21,
     "constructive_comments_posted": 3,
@@ -101,6 +101,7 @@ window.BOARD_INDEX = {
     50493,
     50488,
     50487,
+    50485,
     50480,
     50479,
     50472,
@@ -854,16 +855,19 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 3,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post two inline findings and one general review note"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -900,7 +904,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -908,10 +912,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 4,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request three inline MWB IPC fixes and one companion change"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
@@ -931,7 +932,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50480",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/733"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50479",
@@ -969,11 +971,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 734,
+        "fork_number": 755,
         "fork_title": "[PR 50479] [Shortcut Guide] Restore keyboard tab order and accessible focus to shortcut items",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50479",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/734"
+        "fork_branch": "pr-iterate/50479-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/755"
       }
     },
     {
@@ -1898,7 +1900,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -1906,10 +1908,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 2,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with two companion comments"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Advanced Paste",
         "Ready for review"
@@ -1929,7 +1928,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50333-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/579"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50271",
@@ -1944,7 +1944,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "request_changes",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -1952,10 +1952,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 4,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with four general review notes"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Mouse Utilities",
         "Product-Command Palette",
@@ -1976,7 +1973,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50271-v5",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/730"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50268",
@@ -2035,7 +2033,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_drafted",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2043,10 +2041,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 3,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with 3 current-head companion comments"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Advanced Paste",
         "Product-PowerDisplay",
@@ -2069,7 +2064,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50253-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/552"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50252",
@@ -2084,7 +2080,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "post_review",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2092,10 +2088,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 3,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post general logger note and inline handle findings"
-      },
+      "primary_action": null,
       "labels": [
         "Product-File Explorer",
         "Ready for review"
@@ -2117,7 +2110,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50252-v4",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/601"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50251",
@@ -2260,7 +2254,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_drafted",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2268,10 +2262,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 3,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with 3 general review notes"
-      },
+      "primary_action": null,
       "labels": [
         "Product-PowerRename",
         "Product-Image Resizer",
@@ -2294,7 +2285,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50218-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/526"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50217",
@@ -2309,7 +2301,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "building",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2337,7 +2329,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50217",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/527"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50216",
@@ -2386,7 +2379,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "request_changes",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2394,10 +2387,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 2,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with one general note and one inline suggestion"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Quick Accent",
         "Ready for review"
@@ -2417,7 +2407,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50212-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/697"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50211",
@@ -2663,7 +2654,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "request_changes",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2671,10 +2662,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 4,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with four separate general review notes"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -2696,7 +2684,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50188-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/732"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50187",
@@ -2804,7 +2793,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2812,10 +2801,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 6,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request six icon-conversion follow-up fixes"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -2837,7 +2823,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50185",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/499"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50184",
@@ -2990,7 +2977,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "request_changes",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2998,10 +2985,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 9,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with six inline suggestions and three general notes"
-      },
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Product-Command Palette"
@@ -3023,7 +3007,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50181",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/496"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50151",
@@ -3083,7 +3068,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-31T01:33:35.0000000Z",
+      "waiting_since": "2026-08-31T01:33:35Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -3346,7 +3331,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -3354,10 +3339,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 5,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes on the current upstream head"
-      },
+      "primary_action": null,
       "labels": [
         "Ready for review"
       ],
@@ -3378,7 +3360,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50081-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/440"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50054",
@@ -3484,7 +3467,7 @@ window.BOARD_INDEX = {
       "mine": true,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -3492,10 +3475,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 1,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes on the current upstream head"
-      },
+      "primary_action": null,
       "labels": [
         "Ready for review"
       ],
@@ -3514,7 +3494,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50027",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/421"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50020",
@@ -3692,7 +3673,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -3700,10 +3681,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 2,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post one general review note and one inline suggestion"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3725,7 +3703,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49988-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/713"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49979",
@@ -4076,7 +4055,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -4084,10 +4063,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 3,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request two inline fixes and one general routing correction"
-      },
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Product-Command Palette"
@@ -4109,7 +4085,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49943-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/684"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49933",
@@ -4169,7 +4146,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -4177,10 +4154,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 4,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request four drag-and-drop correctness fixes"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -4202,7 +4176,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49932-v4",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/687"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49916",
@@ -4262,7 +4237,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -4270,10 +4245,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 5,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes on the current upstream head"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -4295,7 +4267,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49915-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/562"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49891",
@@ -4310,7 +4283,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_drafted",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -4318,10 +4291,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 3,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post 3 general review notes (no inline suggestions)"
-      },
+      "primary_action": null,
       "labels": [],
       "assignees": [],
       "created_at": "2026-08-14T11:45:37Z",
@@ -4338,7 +4308,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49891",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/392"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49863",
@@ -4699,7 +4670,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -4707,10 +4678,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 2,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request the two fixes on the current upstream head"
-      },
+      "primary_action": null,
       "labels": [
         "Needs-Triage",
         "Needs-Team-Response",
@@ -4732,7 +4700,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49759-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/735"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49751",
@@ -4894,7 +4863,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -4902,10 +4871,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 3,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with 2 fixes and 1 coverage note"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Peek",
         "Area-CLI"
@@ -4925,7 +4891,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49724-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/595"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49662",
@@ -4943,7 +4910,7 @@ window.BOARD_INDEX = {
       "stage": "waiting_on_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-31T14:44:48.0000000Z",
+      "waiting_since": "2026-08-31T14:44:48Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -5386,7 +5353,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -5394,10 +5361,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 4,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post selected requests as general review notes (no inline suggestions)"
-      },
+      "primary_action": null,
       "labels": [
         "Product-PowerToys Run",
         "Product-Settings"
@@ -5409,7 +5373,8 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-49394",
@@ -5508,10 +5473,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_author",
+      "stage": "review_in_progress",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-31T14:21:56.0000000Z",
+      "waiting_since": "2026-08-31T14:21:56Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -5530,7 +5495,8 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-49333",
@@ -5717,7 +5683,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -5725,10 +5691,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 3,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with three companion comments"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "0.102",
@@ -5751,7 +5714,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49324-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/467"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49323",
@@ -5766,7 +5730,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "request_changes",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -5774,10 +5738,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 1,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "0.102",
@@ -5800,7 +5761,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49323-v8",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/608"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49321",
@@ -5864,7 +5826,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "post_review",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -5885,7 +5847,8 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-49279",
@@ -5900,7 +5863,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "post_review",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -5908,10 +5871,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 12,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes on the current upstream head"
-      },
+      "primary_action": null,
       "labels": [
         "Needs-Triage",
         "Needs-Team-Response",
@@ -5933,7 +5893,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49279-v4",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/695"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-49276",
@@ -6276,7 +6237,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6284,10 +6245,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 6,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post selected requests as a review"
-      },
+      "primary_action": null,
       "labels": [
         "Area-User Interface",
         "Area-Accessibility",
@@ -6301,7 +6259,8 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-48904",
@@ -6448,7 +6407,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-05T18:18:15.0000000Z",
+      "waiting_since": "2026-08-05T18:18:15Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6519,7 +6478,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "blocked_with_request_changes_drafted",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6549,7 +6508,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/48524",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/599"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-48483",
@@ -6596,7 +6556,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_drafted",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6604,10 +6564,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 1,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Post follow-up request for changes"
-      },
+      "primary_action": null,
       "labels": [
         "Product-File Explorer",
         "Ready for review"
@@ -6619,7 +6576,8 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "needs_revalidation": true
     },
     {
       "id": "pr-48100",
@@ -6634,7 +6592,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_drafted",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6642,10 +6600,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 1,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post general review note (no inline suggestions)"
-      },
+      "primary_action": null,
       "labels": [
         "Needs-Review",
         "Product-Command Palette",
@@ -6669,7 +6624,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/48100",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/435"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-47888",
@@ -6810,7 +6766,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "request_changes",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6818,10 +6774,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 5,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with five current-head review items"
-      },
+      "primary_action": null,
       "labels": [
         "Idea-New PowerToy",
         "Area-Setup/Install",
@@ -6842,7 +6795,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/46056-v5",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/696"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-45972",
@@ -6857,7 +6811,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6865,10 +6819,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 5,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post general review notes with no inline suggestions"
-      },
+      "primary_action": null,
       "labels": [
         "Product-FancyZones"
       ],
@@ -6887,7 +6838,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/45972-v20260902-modern",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/575"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-45927",
@@ -7024,7 +6976,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-05T18:17:56.0000000Z",
+      "waiting_since": "2026-08-05T18:17:56Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -7094,7 +7046,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -7102,10 +7054,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 2,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post the selected requests as REQUEST_CHANGES"
-      },
+      "primary_action": null,
       "labels": [
         "Idea-New PowerToy",
         "Needs-Discussion"
@@ -7119,7 +7068,8 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "DIRTY",
+      "needs_revalidation": true
     },
     {
       "id": "issue-36350",

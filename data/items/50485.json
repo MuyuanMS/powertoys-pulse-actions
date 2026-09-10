@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 5,
+  "id": "pr-50485",
+  "number": 50485,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-10T03:16:54.584Z",
+  "evaluated_at": "2026-09-10T03:13:52.859Z",
+  "source_updated_at": "2026-09-09T14:06:57Z",
+  "head_sha": "7612d3806c66176e8ceaf391fcfd96f5030f9f05",
+  "title": "CmdPal: Prevent failing event handlers from blocking updates",
+  "url": "https://github.com/microsoft/PowerToys/pull/50485",
+  "repository": "microsoft/PowerToys",
+  "author": "jiripolasek",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "high",
+  "processVerdict": "proceed",
+  "summary": "The current upstream head was mirrored with exact 11-file scope and reviewed through a clean fork Copilot loop. Two published lifecycle findings were fixed, replied to, and resolved; an additional cleanup-failure edge case was corrected and covered. Full Debug x64 validation passed, including the runner/module chain and 19 focused tests. Three current-head upstream review items are drafted for maintainer approval; no upstream action was taken.",
+  "status": {
+    "glyph": "APPROVAL",
+    "label": "Awaiting maintainer review approval",
+    "detail": "The current-head review is converged and validated, but all three comments remain proposed and unposted. The existing post_review action requires explicit maintainer approval and a final freshness check."
+  },
+  "next_action": {
+    "glyph": "APPROVAL",
+    "label": "Approve, edit, or hold the drafted COMMENT review",
+    "reason": "All three proposed comments remain pending. Revalidate the exact upstream head and activity snapshot before any explicitly approved publication."
+  },
+  "blockers": [],
+  "actions": [
+    {
+      "id": "post-review-50485",
+      "type": "post_review",
+      "label": "Post two inline findings and one general review note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50485,
+        "pullRequest": 50485,
+        "event": "COMMENT",
+        "head_sha": "7612d3806c66176e8ceaf391fcfd96f5030f9f05",
+        "body_prefix": "Thanks for making CmdPal event delivery resilient per subscriber. I found three lifecycle edge cases to address so dead RPC recipients and cleanup failures cannot keep extensions active or interrupt later notifications."
+      },
+      "note": "This action includes two apply-ready inline suggestions plus one separate general PR conversation comment. Do not post without explicit approval and a final freshness check."
+    }
+  ],
+  "proposed_comments": [
+    {
+      "id": "performance-monitor-remove-dead-handler",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Remove disconnected subscribers through the lifetime-aware accessor",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/OnLoadStaticPage.cs",
+      "line": 124,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Remove disconnected subscribers through the lifetime-aware accessor\n\n**Severity:** `high`\n\nThis call omits the dead-recipient removal callback, so a disconnected RPC proxy remains in `InternalItemsChanged`. `ReconcileLoadState()` therefore continues treating the page as subscribed, which can keep Performance Monitor background work active and retry the dead proxy on every update. Remove the handler through the public accessor so the existing lifecycle reconciliation can unload the page when the final live recipient disappears.\n\n```suggestion\n        EventHelpers.Raise(handlers, this, new ItemsChangedEventArgs(totalItems), handler => ItemsChanged -= handler);\n```\n\nPlease also update the disconnected-HRESULT test cases to expect the dead callback only once.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 99,
+        "rationale": "The changed call passes no cleanup callback while the retained delegate is the page's load-lifetime signal; the corrected path compiled and all focused lifecycle tests passed."
+      }
+    },
+    {
+      "id": "contain-unsubscribe-callback-failure",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Keep cleanup failures from interrupting event delivery",
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/EventHelpers.cs",
+      "line": 46,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep cleanup failures from interrupting event delivery\n\n**Severity:** `medium`\n\nThe disconnected-handler callback is invoked from inside the exception branch without its own isolation. If lifecycle cleanup throws, that exception escapes `Raise` and prevents later healthy subscribers from receiving the notification, recreating the failure mode this helper is intended to eliminate. Contain cleanup failures independently and add a regression test with a throwing unsubscribe callback.\n\n```suggestion\n                try\n                {\n                    unsubscribe?.Invoke(handler);\n                }\n                catch\n                {\n                    // Cleanup must not prevent delivery to the remaining subscribers.\n                }\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "An exception from the callback deterministically escapes the current catch block and stops the invocation loop; the added regression test reproduced the control-flow gap and passed with the fix."
+      }
+    },
+    {
+      "id": "time-date-lifetime-aware-dead-handler-removal",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make Time and Date dead-subscriber removal idempotent and lifetime-aware",
+      "in_diff": false,
+      "body": "### Make Time and Date dead-subscriber removal idempotent and lifetime-aware\n\n**Severity:** `high`\n\n`OnLoadDynamicListPage` also omits disconnected-recipient cleanup, so stale host proxies remain subscribed and `_loadCount` can keep the page's live updates running indefinitely. Simply routing cleanup through the current `remove` accessor is unsafe because that accessor decrements `_loadCount` even when the handler was already removed; a later host cleanup can therefore unload while another subscriber is still active. Under `_loadLock`, derive the loaded transition from whether the actual invocation list changes between empty and non-empty, snapshot handlers before dispatch, remove disconnected handlers through that idempotent accessor, contain cleanup-transition failures, and update the disconnected-HRESULT regression cases to expect one failed callback. This is a general review note because the safe correction spans unchanged accessor code and the changed dispatch hunk, so it cannot be represented as one honest apply-ready suggestion.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current counter is decremented for unknown or already-removed delegates, while the disconnected proxy remains retained without a callback; focused tests confirmed correct lifetime transitions and one-shot dead-recipient removal after the fix."
+      },
+      "out_of_diff_reason": "The safe fix spans the unchanged custom event accessor, its lifetime bookkeeping, the changed dispatch line, and regression expectations; GitHub cannot represent it as one current RIGHT-side suggestion."
+    }
+  ],
+  "phase0": {
+    "author": "jiripolasek",
+    "author_association": "COLLABORATOR",
+    "bar": "repository collaborator; routine community process gates skipped",
+    "disposition": "Proceed",
+    "who_owes_next": "Maintainer approval for the drafted review",
+    "gates_tripped": [],
+    "note": "The PR is an atomic internal CmdPal reliability fix linked to issue 50483. CLA, intake, dependency review, telemetry, the Command Palette Toolkit SDK build, and the x64/arm64 Azure builds pass. No demo or community-process ask is warranted for this collaborator-authored non-UI change.",
+    "evidence": [
+      "The PR is open, non-draft, and authored by a repository collaborator.",
+      "All reported current-head checks completed successfully.",
+      "The PR links issue 50483 and adds focused regression coverage across the toolkit, Time and Date, and Performance Monitor.",
+      "No upstream discussion or review thread exists, so there is no author request to duplicate."
+    ]
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "7612d3806c66176e8ceaf391fcfd96f5030f9f05",
+    "updated_at": "2026-09-09T14:06:57Z",
+    "commit_count": 1,
+    "changed_file_count": 11,
+    "additions": 293,
+    "deletions": 60,
+    "issue_comment_count": 0,
+    "review_comment_count": 0,
+    "review_count": 0,
+    "review_decision": "REVIEW_REQUIRED",
+    "mergeable_state": "blocked",
+    "reported_checks": {
+      "total": 11,
+      "successful": 11,
+      "failing": 0,
+      "pending": 0
+    }
+  },
+  "fork_pr": {
+    "number": 753,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/753",
+    "state": "OPEN",
+    "head_sha": "40ab49a97b9e0bc7096b8056ef1b84ed5171c15a",
+    "base_sha": "ca6e72c9d13cbd3871207013e18907ac754a9b93",
+    "changed_files": 11
+  },
+  "fork_repo": "MuyuanMS/PowerToys",
+  "fork_branch": "pr-iterate/50485",
+  "copilot_review": {
+    "status": "fresh_zero_published_comments",
+    "latest_submitted_at": "2026-09-10T03:08:45Z",
+    "latest_review_id": 5162214537,
+    "reviewed_commit": "40ab49a97b9e0bc7096b8056ef1b84ed5171c15a",
+    "latest_new_comments": 0,
+    "published_inline_comments_total": 2,
+    "unresolved_threads": 0,
+    "rounds_completed": 3
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "builds": [
+      "PowerToys solution restore plus Runner and Settings via build-essentials.cmd",
+      "CmdPalModuleInterface",
+      "Microsoft.CmdPal.UI",
+      "Microsoft.CommandPalette.Extensions.Toolkit",
+      "Microsoft.CmdPal.Ext.PerformanceMonitor",
+      "Microsoft.CmdPal.Ext.TimeDate",
+      "all three affected unit-test projects"
+    ],
+    "tests": [
+      {
+        "scope": "EventNotificationTests, OnLoadDynamicListPageTests, and PageActivationTests",
+        "passed": 19,
+        "failed": 0,
+        "duration_seconds": 3.8459
+      }
+    ],
+    "exe_path": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+    "exe_exists": true,
+    "module_interface_exists": true,
+    "diff_check": "passed"
+  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and exercise the Time and Date custom-clock page/dock band and the Performance Monitor page so both subscribe to item updates.",
+    "Restart or disconnect the CmdPal host, reopen those surfaces, and verify healthy subscribers continue receiving updates without duplicated stale callbacks or background work remaining active after the last surface closes.",
+    "For deterministic coverage, run the three focused MSTest assemblies with the EventNotificationTests, OnLoadDynamicListPageTests, and PageActivationTests filter; the validated result is 19/19 passed."
+  ],
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-10T03:16:54.584Z",
+    "resume_action": "await_explicit_maintainer_approval",
+    "fork_pr": 753,
+    "fork_branch": "pr-iterate/50485",
+    "fork_head_sha": "40ab49a97b9e0bc7096b8056ef1b84ed5171c15a",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed"
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-10T03:13:52.859Z",
+    "source_updated_at": "2026-09-09T14:06:57Z",
+    "head_sha": "7612d3806c66176e8ceaf391fcfd96f5030f9f05",
+    "fork_head_sha": "40ab49a97b9e0bc7096b8056ef1b84ed5171c15a"
+  },
+  "fork_writes": [
+    "Created fork review PR 753 with exact current upstream scope.",
+    "Pushed two review-fix commits to pr-iterate/50485.",
+    "Replied to and resolved both published fork Copilot threads.",
+    "Requested and consumed a final clean Copilot review on the current fork head."
+  ],
+  "upstream_writes": false,
+  "dashboard_modified": false,
+  "canonical_dashboard_identity": "<PowerToysCheckout>"
+}
