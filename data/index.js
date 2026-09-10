@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-10T15:20:43.1652452+08:00",
+  "generated_at": "2026-09-10T15:25:12.1358894+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 542
   },
   "impact": {
-    "as_of": "2026-09-10T15:20:43.1652452+08:00",
+    "as_of": "2026-09-10T15:25:12.1358894+08:00",
     "issues_helped": 10,
     "prs_iterated": 20,
     "constructive_comments_posted": 3,
@@ -2323,7 +2323,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -2331,7 +2331,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 2,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request the two fixes on the current upstream head"
+      },
       "labels": [
         "Product-Quick Accent",
         "Ready for review"
@@ -2918,14 +2921,14 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "maintainer",
+      "stage": "waiting_copilot",
+      "owes": "automation",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 9,
+      "proposed_open": 0,
       "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
