@@ -111,8 +111,9 @@ function Test-SuggestionBody {
         $errors.Add($errorMessage)
     }
 
+    $suggestionStarts = [regex]::Matches($Body, '(?i)```suggestion').Count
     $matches = [regex]::Matches($Body, '(?ms)```suggestion[ \t]*\r?\n(.+?)\r?\n```')
-    if ($matches.Count -ne 1) {
+    if ($suggestionStarts -ne 1 -or $matches.Count -ne 1) {
         $errors.Add("$Label must contain exactly one non-empty suggestion block.")
     }
     elseif ([string]::IsNullOrWhiteSpace($matches[0].Groups[1].Value)) {
@@ -428,8 +429,13 @@ function Test-ReviewDataDocument {
             }
 
             if ($kind -eq 'inline') {
-                foreach ($errorMessage in Test-SuggestionBody -Body ([string]$item.body) -Label "$label body" -Severity ([string]$item.severity).ToLowerInvariant()) {
+                foreach ($errorMessage in Test-ReviewItemBody -Body ([string]$item.body) -Label "$label body" -Severity ([string]$item.severity).ToLowerInvariant()) {
                     $errors.Add($errorMessage)
+                }
+                if ([string]$item.body -match '(?i)```suggestion') {
+                    foreach ($errorMessage in Test-SuggestionBody -Body ([string]$item.body) -Label "$label body" -Severity ([string]$item.severity).ToLowerInvariant()) {
+                        $errors.Add($errorMessage)
+                    }
                 }
 
                 if ([string]::IsNullOrWhiteSpace([string]$item.path)) {
@@ -453,6 +459,14 @@ function Test-ReviewDataDocument {
 
                 if ([string]$item.body -match '```suggestion') {
                     $errors.Add("$label is a companion note and cannot contain a suggestion block.")
+                }
+                if ([string]::IsNullOrWhiteSpace([string]$item.outOfDiffReason)) {
+                    $errors.Add("$label is a companion note and must include outOfDiffReason.")
+                }
+                if (-not [string]::IsNullOrWhiteSpace([string]$item.path) -or
+                    [int]$item.line -gt 0 -or
+                    [int]$item.startLine -gt 0) {
+                    $errors.Add("$label is a companion note and cannot contain inline coordinates.")
                 }
             }
         }

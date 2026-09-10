@@ -173,6 +173,31 @@ foreach ($path in @($paths)) {
           $_.in_diff -eq $true
         }
     )
+    $reviewActions = @(
+      $artifact.actions |
+        Where-Object { $_.type -in @('post_review', 'request_changes') }
+    )
+    if ($artifact.stage -eq 'review_ready' -and
+        ($proposedComments.Count -gt 0 -or $reviewActions.Count -gt 0)) {
+      $errors.Add("$prefix stage review_ready requires zero proposed comments and no post_review/request_changes action")
+    }
+    foreach ($comment in $proposedComments) {
+      if ($comment.kind -notin @('inline', 'companion')) {
+        $errors.Add("$prefix comment '$($comment.id)' must declare kind inline or companion")
+        continue
+      }
+      if (($comment.kind -eq 'inline') -ne ($comment.in_diff -eq $true)) {
+        $errors.Add("$prefix comment '$($comment.id)' kind and in_diff must agree")
+      }
+      if ($comment.kind -eq 'companion') {
+        Require-Text $comment.out_of_diff_reason 'proposed_comments[].out_of_diff_reason' $prefix
+        if (-not [string]::IsNullOrWhiteSpace([string]$comment.path) -or
+            [int]$comment.line -gt 0 -or
+            [int]$comment.start_line -gt 0) {
+          $errors.Add("$prefix companion comment '$($comment.id)' cannot contain inline coordinates")
+        }
+      }
+    }
     foreach ($comment in $inlineComments) {
       Require-Text $comment.path 'proposed_comments[].path' $prefix
       Require-Text $comment.body 'proposed_comments[].body' $prefix
@@ -189,6 +214,12 @@ foreach ($path in @($paths)) {
         $errors.Add("$prefix inline comment '$($comment.id)' has an invalid suggestion block")
       }
     }
+    $validInlineSuggestions = @(
+      $inlineComments |
+        Where-Object {
+          ([regex]::Matches([string]$_.body, '(?s)```suggestion\s*\r?\n.+?\r?\n```')).Count -eq 1
+        }
+    )
     foreach ($comment in $proposedComments | Where-Object { $null -ne $_.confidence }) {
       $confidenceScore = 0
       if (-not [int]::TryParse([string]$comment.confidence.score, [ref]$confidenceScore) -or
@@ -198,11 +229,10 @@ foreach ($path in @($paths)) {
       Require-Text $comment.confidence.rationale 'proposed_comments[].confidence.rationale' $prefix
     }
 
-    $reviewAction = @(
-      $artifact.actions |
-        Where-Object { $_.type -eq 'post_review' }
-    ) | Select-Object -First 1
-    if ($reviewAction -and $reviewAction.review.event -and $reviewAction.review.event -ne 'COMMENT') {
+    $reviewAction = $reviewActions | Select-Object -First 1
+    if ($reviewAction.type -eq 'post_review' -and
+        $reviewAction.review.event -and
+        $reviewAction.review.event -ne 'COMMENT') {
       $errors.Add("$prefix post_review action must use review event COMMENT")
     }
     if ($reviewAction -and $proposedComments.Count -gt 0 -and
@@ -214,6 +244,13 @@ foreach ($path in @($paths)) {
       $presentationText = "$($reviewAction.label) $($reviewAction.note)"
       if ($presentationText -notmatch '(?i)general|no inline|separate|conversation') {
         $errors.Add("$prefix companion-only review action must disclose that it posts separate general PR comments")
+      }
+    }
+    foreach ($action in $reviewActions) {
+      $presentationText = "$($action.label) $($action.note)"
+      if ($presentationText -match '(?i)inline suggestion' -and
+          $validInlineSuggestions.Count -eq 0) {
+        $errors.Add("$prefix action '$($action.type)' claims inline suggestions but proposed_comments has no valid inline suggestion")
       }
     }
   }

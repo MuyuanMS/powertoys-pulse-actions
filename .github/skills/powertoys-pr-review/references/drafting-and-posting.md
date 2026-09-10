@@ -102,19 +102,25 @@ When posting **multiple suggestions on the same file**, applying them one at a t
 3. **When suggestions add/remove lines**, include enough surrounding context (the full syntactic block) so partial application cannot leave orphaned braces or dangling clauses.
 4. **Self-contained test:** mentally apply each suggestion independently on the original code; if any would produce invalid syntax alone, expand it to include the needed context.
 
-Each suggestion must use the exact ` ```suggestion ` format, reference the correct file/line range, be self-contained so the author can click "Commit suggestion", and cross-reference related suggestions in other files. Classify every public item as:
+When a localized replacement is safe, use the exact ` ```suggestion ` format,
+reference the correct file/line range, make it self-contained so the author can
+click "Commit suggestion", and cross-reference related suggestions in other
+files. Classify every public item as:
 
-- **`inline`** — one apply-ready suggestion targeting the current RIGHT-side diff.
-- **`companion`** — readable review-body guidance for architectural, multi-file, or out-of-diff work that cannot honestly use an apply button.
+- **`inline`** — explanatory prose with zero or one apply-ready suggestion,
+  targeting the current RIGHT-side diff.
+- **`companion`** — readable review-body guidance only when no current
+  RIGHT-side anchor exists. Include a concrete `outOfDiffReason`.
 - **obsolete** — omit it from `publicPayload`; keep any audit note under `internalEvidence`.
 
 Do not group localized, apply-ready fixes into a companion item merely because
 the overall finding spans several files. Split each exact current-diff edit
 that can be safely applied on its own into an `inline` item, and keep only the
-cross-file coordination or out-of-diff remainder as a companion. If no inline
-item is possible, label the approval action clearly as general review notes
-with no inline suggestions so the maintainer knows GitHub will render one
-review-body text block.
+truly out-of-diff remainder as a companion. After convergence, perform a
+mandatory line-mapping pass against the live head: try a safe apply-ready
+suggestion first, otherwise emit exact inline prose, otherwise use a companion
+with `outOfDiffReason`. If no inline item is possible, label the approval
+action clearly as general review notes with no inline suggestions.
 
 Store author-facing text only in `publicPayload`. Store fork links, worktrees, build evidence, internal thread URLs, and convergence notes only in `internalEvidence`. Never concatenate internal evidence into a public body.
 
