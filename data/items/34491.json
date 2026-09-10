@@ -1,46 +1,127 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 34491,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-09-10T09:52:27Z",
+  "evaluated_at": "2026-09-10T09:52:27Z",
   "source_updated_at": "2026-08-27T23:48:00Z",
   "url": "https://github.com/microsoft/PowerToys/issues/34491",
   "title": "Abysmal performance from SVG Thumbnail Provider",
   "author": "callmeTayyy",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Product-File Explorer",
     "Needs-Triage"
   ],
+  "assignees": [],
   "comments": 8,
+  "owes": "maintainer",
+  "pending_author": false,
+  "stage": "design_candidate",
   "confidence": "Medium-high",
+  "summary": "SVG thumbnail generation takes about two seconds per file because each request creates and tears down a WebView2 rendering environment and process.",
   "status": {
     "glyph": "🎯",
-    "label": "Actionable design candidate",
-    "detail": "The issue has a concrete bug report for File Explorer with reproduction evidence and enough diagnostic context for deeper design investigation."
+    "label": "Actionable SVG thumbnail design",
+    "detail": "The report, videos, and code-path analysis identify per-thumbnail browser startup as the dominant cost."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Queue full design investigation",
-    "reason": "Queue this issue for a full fork-side design investigation before exposing an approve-design action."
+    "glyph": "✅",
+    "label": "Approve SVG renderer design investigation",
+    "reason": "Choose and validate a renderer/lifetime strategy that preserves SVG fidelity without a browser startup per file."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue has a concrete bug report for File Explorer with reproduction evidence and enough diagnostic context for deeper design investigation.",
+    "rationale": "The failure is reproducible with a large SVG folder, and the latest investigation identifies the expensive lifecycle boundary. A bounded design can compare renderer reuse or replacement without requesting more generic logs.",
     "evidence": [
-      "Labels: Issue-Bug, Product-File Explorer, Needs-Triage",
-      "Candidate sources: updated_week",
-      "Issue body includes reproduction steps and a bug-report ZIP or equivalent diagnostic evidence."
+      "The reporter measured roughly two seconds per thumbnail and observed a WebView2 process for each SVG.",
+      "The latest contributor traced each request through WebView2 creation, render, image capture, and disposal.",
+      "The discussion identifies fidelity limits of Direct2D and packaging/toolchain costs of alternative renderers."
     ],
-    "recommended_action": "Queue this issue for a full fork-side design investigation before exposing an approve-design action.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Approve a focused design and benchmark the current lifecycle against a reusable or non-WebView2 renderer.",
+    "evaluated_at": "2026-09-10T09:52:27Z",
     "source_updated_at": "2026-08-27T23:48:00Z"
   },
-  "actions": []
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt exists; the public analysis supports a repository change at the SVG thumbnail renderer lifecycle."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid per-thumbnail WebView2 startup for SVG thumbnails",
+      "root_cause": "The SVG thumbnail provider pays WebView2 environment, process, user-data, rendering, capture, and cleanup costs for each individual thumbnail request.",
+      "plan": [
+        "Instrument the SVG thumbnail provider to separate WebView2 startup, navigation/render, capture, resize, and cleanup time.",
+        "Prototype the lowest-risk lifecycle reuse boundary allowed by the out-of-process thumbnail host and compare it with a native renderer option on representative SVG features.",
+        "Preserve a fidelity fallback for text, CSS, filters, foreignObject, and embedded-font cases that a faster renderer cannot handle.",
+        "Add performance coverage for a cold cache folder with at least 100 SVGs and correctness fixtures for complex SVG features."
+      ],
+      "verification": [
+        "Clear the thumbnail cache and measure time/process creation for 100 representative SVG files.",
+        "Confirm complex text, CSS, filter, and foreignObject samples remain visually correct.",
+        "Verify Explorer host isolation and cleanup after cancellation or process termination."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The expensive lifecycle is directly identified, but the safe reuse boundary and fidelity-compatible renderer choice require maintainer benchmarking."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Large SVG folders generate thumbnails slowly and spawn many WebView2/provider processes.",
+    "known_information": [
+      "The report includes comparative videos, hardware details, and a diagnostic archive.",
+      "Each SVG request currently creates and discards a WebView2 renderer.",
+      "Native renderer alternatives differ materially in SVG feature support and packaging cost."
+    ],
+    "inferences": [
+      "Removing repeated browser startup should improve throughput substantially, but replacing WebView2 outright could regress complex SVG fidelity."
+    ],
+    "analysis": "The remaining uncertainty is an engineering tradeoff best reduced by local profiling and fidelity fixtures, not additional reporter diagnostics.",
+    "initial_investigation": [
+      "Read all issue comments and linked similar-issue references.",
+      "Used the latest contributor's code-path analysis to identify the per-request lifecycle cost.",
+      "Compared the stated renderer alternatives and their known fidelity/toolchain constraints."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-34491",
+      "type": "approve_design",
+      "label": "Approve SVG thumbnail renderer design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Avoid per-thumbnail WebView2 startup for SVG thumbnails"
+      },
+      "note": "Draft only; no upstream code, pull request, comment, or issue write is authorized by this artifact."
+    },
+    {
+      "id": "reproduce-34491",
+      "type": "reproduce",
+      "label": "Benchmark SVG thumbnail generation",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "File Explorer SVG Thumbnail Provider",
+        "prerequisites": [
+          "Use the latest stable or Preview PowerToys build in a disposable test environment."
+        ],
+        "steps": [
+          "Clear the Windows thumbnail cache.",
+          "Open a folder containing at least 100 representative SVG files.",
+          "Record thumbnail completion time and count new PowerToys.SvgThumbnailProvider.exe and msedgewebview2.exe processes.",
+          "Profile startup, render, capture, and cleanup phases in a local instrumented build."
+        ],
+        "expected": "A candidate design materially reduces process creation and total rendering time while preserving output for complex SVG fixtures.",
+        "setup_prompt": "Create a non-sensitive corpus of at least 100 SVGs including paths, gradients, live text, CSS, filters, foreignObject, and embedded fonts; record per-feature expected thumbnails."
+      },
+      "note": "Local maintainer investigation only; this action performs no upstream write."
+    }
+  ]
 }

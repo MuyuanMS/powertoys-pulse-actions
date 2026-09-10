@@ -1,33 +1,71 @@
 {
-  "number": 43602,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "maintainer",
+  "number": 43602,
+  "title": "Some Command Palette extensions remain running even after Powertoys is closed",
+  "url": "https://github.com/microsoft/PowerToys/issues/43602",
+  "generated_at": "2026-09-10T09:54:42.573Z",
+  "evaluated_at": "2026-09-10T09:54:42.573Z",
+  "source_updated_at": "2026-08-20T19:15:07Z",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2025-11-30T02:02:09Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "author": "heheeheeha",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 4,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The issue and maintainer edits identify a concrete extension-lifecycle gap: some third-party extensions survive host shutdown, and the newest maintainer comment says extensions may not receive a stop signal when disabled in the Command Palette UI. The SDK-side shutdown contract exists, but host and extension behavior need coordinated verification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report shows extension processes remaining after PowerToys exits.",
+      "A maintainer says affected extensions need to adopt an SDK shutdown fix from 2025.",
+      "Random Data Generator had a fix submitted.",
+      "The newest maintainer comment says Colors behaves correctly but no extension appears to receive a signal when merely disabled in CmdPal UI."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2025-11-30T02:02:09Z"
-  }
+    "recommended_action": "Split and investigate host-exit versus UI-disable lifecycle signaling, then update affected extensions against the current SDK contract."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Public evidence identifies the lifecycle boundary but not whether the remaining defect is in host signaling, extension adoption, or both."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Some Command Palette extension processes survive host shutdown, and UI disable may not signal any extension to stop.",
+    "known_information": [
+      "The SDK has a shutdown-handling update.",
+      "At least one extension fix was submitted.",
+      "Colors may follow the extension contract yet still survive UI disable."
+    ],
+    "inferences": [
+      "Host exit and extension disable are distinct lifecycle paths and should not be conflated."
+    ],
+    "analysis": "The issue is ready for a focused lifecycle matrix rather than another generic request to update PowerToys.",
+    "initial_investigation": [
+      "Reviewed the current public issue body, labels, assignees, and up to the latest 20 public comments returned by GitHub.",
+      "Kept the existing dashboard read-only; no dashboard files were modified or published."
+    ],
+    "information_gaps": [
+      {
+        "information": "Which current extensions survive full host exit versus only UI disable.",
+        "why_needed": "The two paths imply different ownership.",
+        "how_to_collect": "Test a small known set on current stable and record process lifetime for both operations."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Separate CmdPal shutdown paths",
+      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
+      "comment": {
+        "body": "The remaining investigation should separate two operations: fully exiting PowerToys/Command Palette and disabling an extension from the CmdPal UI. Please verify a small set of current extensions against both paths and the current SDK shutdown contract. Extensions that miss the SDK callback need extension updates; if compliant extensions receive no signal on UI disable, that is a host lifecycle defect."
+      }
+    }
+  ],
+  "design": null
 }

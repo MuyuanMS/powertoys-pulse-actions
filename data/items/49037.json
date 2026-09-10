@@ -1,18 +1,14 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "number": 49037,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_in_progress",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-08-31T07:49:22.913Z",
-  "evaluated_at": "2026-08-31T07:49:22.913Z",
+  "generated_at": "2026-09-10T09:52:27Z",
+  "evaluated_at": "2026-09-10T09:52:27Z",
   "source_updated_at": "2026-08-27T22:52:24Z",
   "url": "https://github.com/microsoft/PowerToys/issues/49037",
   "title": "Alt key conflict in Grab and Move with Powershell",
   "author": "ZL114514",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
@@ -20,6 +16,8 @@
   ],
   "assignees": [],
   "comments": 1,
+  "owes": "maintainer",
+  "pending_author": false,
   "confidence": "High",
   "summary": "Grab and Move’s default Alt hook can withhold Alt from applications and Explorer during non-Grab mouse interactions, breaking PowerShell Alt+click and desktop Alt-drag semantics.",
   "status": {
@@ -42,7 +40,7 @@
       "Current code can swallow bare Alt before a Grab gesture exists."
     ],
     "recommended_action": "Continue focused input-state design and regression tests; keep approval gated until passthrough timing is proven.",
-    "evaluated_at": "2026-08-31T07:49:22.913Z",
+    "evaluated_at": "2026-09-10T09:52:27Z",
     "source_updated_at": "2026-08-27T22:52:24Z"
   },
   "issue_context": {
@@ -66,5 +64,67 @@
     ],
     "information_gaps": []
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "approve-design-49037",
+      "type": "approve_design",
+      "label": "Approve Grab And Move Alt passthrough design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Preserve native Alt semantics until Grab And Move commits to a drag"
+      },
+      "note": "Draft only; no upstream code, pull request, comment, or issue write is authorized by this artifact."
+    },
+    {
+      "id": "reproduce-49037",
+      "type": "reproduce",
+      "label": "Reproduce native Alt passthrough",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Grab And Move",
+        "prerequisites": [
+          "Use the latest stable or Preview PowerToys build in a disposable test environment."
+        ],
+        "steps": [
+          "Set Grab And Move's activation modifier to Alt.",
+          "In PowerShell, use the documented Alt+click split-pane gesture.",
+          "In Explorer/Desktop, Alt-drag a file where Windows would create a shortcut.",
+          "Perform an ordinary configured Alt-drag on a movable window."
+        ],
+        "expected": "Non-Grab gestures retain native Alt behavior while the configured window drag still works."
+      },
+      "note": "Local maintainer investigation only; this action performs no upstream write."
+    }
+  ],
+  "stage": "design_in_progress",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix covers the generalized Alt suppression reported across PowerShell and Explorer."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve native Alt semantics until Grab And Move commits to a drag",
+      "root_cause": "Grab And Move swallows Alt before a qualifying window drag exists, so mouse controls and Explorer drop logic cannot observe the modifier at the time they decide their native behavior.",
+      "plan": [
+        "Model Alt as pending rather than absorbed when no Grab And Move drag is active.",
+        "Commit modifier absorption only when pointer movement and target validation start a window grab.",
+        "Replay or pass through the original ordering for clicks, file drops, Alt+Tab, AltGr, and canceled drags.",
+        "Add regression scenarios for PowerShell split-pane Alt+click and Explorer Alt-drag shortcut creation."
+      ],
+      "verification": [
+        "Confirm PowerShell Alt+click splits a pane.",
+        "Confirm Explorer Alt-drag creates a shortcut.",
+        "Confirm configured Alt-drag still moves eligible windows and Alt+Tab remains native."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The hook timing matches two independent symptoms, but input ordering must be proven against canceled and committed drags."
+      }
+    }
+  ]
 }

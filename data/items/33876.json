@@ -1,34 +1,74 @@
 {
-  "number": 33876,
+  "schemaVersion": 5,
   "kind": "issue",
-  "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author follow-up",
-    "detail": "The issue is blocked on reporter follow-up to an explicit maintainer request."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for reporter follow-up",
-    "reason": "A maintainer has already asked the next blocking question."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-05T02:35:24Z",
+  "number": 33876,
+  "title": "Quick Accent conficts with Keyboard Manager remaps",
+  "url": "https://github.com/microsoft/PowerToys/issues/33876",
+  "generated_at": "2026-09-10T09:54:42.573Z",
+  "evaluated_at": "2026-09-10T09:54:42.573Z",
+  "source_updated_at": "2026-08-19T17:46:10Z",
+  "pending_author": false,
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "author": "RobertoRRW",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage",
+    "Product-Quick Accent"
+  ],
+  "assignees": [],
+  "comments": 4,
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The issue is blocked on reporter follow-up to an explicit maintainer request.",
+    "status": "actionable_design",
+    "rationale": "The issue has a deterministic cross-module reproduction: Quick Accent sends a virtual Backspace that is intercepted by a Keyboard Manager Backspace remap, producing the remapped character instead of deleting the source letter. A user confirmed the issue on 0.100.2.",
     "evidence": [
-      "The issue is blocked on reporter follow-up to an explicit maintainer request.",
-      "A maintainer has already asked the blocking question; avoid duplicating that request upstream."
+      "Swapping Backspace with another key causes Quick Accent replacement to emit that other key.",
+      "A contributor identified Quick Accent's synthetic virtual Backspace as the relevant operation.",
+      "The issue is confirmed on 0.100.2.",
+      "A warning for simultaneous Quick Accent and Backspace remapping is proposed as a mitigation."
     ],
-    "recommended_action": "A maintainer has already asked the next blocking question.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-05T02:35:24Z"
-  }
+    "recommended_action": "Queue a cross-module design to define whether synthetic Quick Accent cleanup should bypass Keyboard Manager remaps or expose a supported conflict warning."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The root interaction is public and reproducible, but the correct coupling boundary and safe bypass mechanism require design review."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Quick Accent's synthetic Backspace is remapped by Keyboard Manager, turning accent replacement into incorrect text such as `a/á`.",
+    "known_information": [
+      "The bug specifically requires a Backspace remap.",
+      "Quick Accent intentionally sends Backspace to remove the original letter.",
+      "The conflict remains on 0.100.2."
+    ],
+    "inferences": [
+      "A bypass flag or module-aware synthetic input may solve the conflict, but could create coupling.",
+      "A warning is a lower-risk mitigation but not a behavioral fix."
+    ],
+    "analysis": "No additional author evidence is needed; ownership and synthetic-input policy are the missing decisions.",
+    "initial_investigation": [
+      "Reviewed the current public issue body, labels, assignees, and up to the latest 20 public comments returned by GitHub.",
+      "Kept the existing dashboard read-only; no dashboard files were modified or published."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether PowerToys permits module-originated synthetic input to bypass Keyboard Manager.",
+        "why_needed": "This determines whether the behavior can be fixed without fragile coupling.",
+        "how_to_collect": "Confirm the cross-module input policy before implementation."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Queue Quick Accent/Keyboard Manager conflict design",
+      "note": "Draft candidate only; no comment or other write was made to microsoft/PowerToys.",
+      "comment": {
+        "body": "This is reproducible on 0.100.2 when Backspace is remapped: Quick Accent's synthetic Backspace is processed by Keyboard Manager and becomes the remapped key. The next step is a cross-module design decision—either provide a safe way for Quick Accent cleanup input to bypass remaps, or add an explicit conflict warning as a mitigation if that coupling is not supportable."
+      }
+    }
+  ],
+  "design": null
 }
