@@ -82,9 +82,11 @@ $Board = 'MuyuanMS/powertoys-pulse-actions'
 $Since = (Get-Date).AddDays(-2).ToUniversalTime().ToString('o')
 $IssueWindowDays = 30
 $DrainReviewQueue = $env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1'
-$DesignBatchSize = if ($env:POWERTOYS_DESIGN_BATCH_SIZE) { [int]$env:POWERTOYS_DESIGN_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 4 }
+$DesignBatchSize = if ($env:POWERTOYS_DESIGN_BATCH_SIZE) { [int]$env:POWERTOYS_DESIGN_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 6 }
 $PrReviewBatchSize = if ($env:POWERTOYS_PR_REVIEW_BATCH_SIZE) { [int]$env:POWERTOYS_PR_REVIEW_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 16 }
-$IssueRevalidationBatchSize = if ($env:POWERTOYS_ISSUE_REVALIDATION_BATCH_SIZE) { [int]$env:POWERTOYS_ISSUE_REVALIDATION_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 50 }
+$IssueRevalidationBatchSize = if ($env:POWERTOYS_ISSUE_REVALIDATION_BATCH_SIZE) { [int]$env:POWERTOYS_ISSUE_REVALIDATION_BATCH_SIZE } elseif ($DrainReviewQueue) { [int]::MaxValue } else { 75 }
+$OldIssueReserve = if ($env:POWERTOYS_OLD_ISSUE_RESERVE) { [int]$env:POWERTOYS_OLD_ISSUE_RESERVE } elseif ($DrainReviewQueue) { 0 } else { 15 }
+$SpareIssuesPerUnusedPrSlot = if ($env:POWERTOYS_SPARE_ISSUES_PER_UNUSED_PR_SLOT) { [int]$env:POWERTOYS_SPARE_ISSUES_PER_UNUSED_PR_SLOT } else { 4 }
 $PrReviewConcurrency = if ($env:POWERTOYS_PR_REVIEW_CONCURRENCY) { [int]$env:POWERTOYS_PR_REVIEW_CONCURRENCY } elseif ($DrainReviewQueue) { 6 } else { 3 }
 $RunBudgetMinutes = if ($env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES) { [int]$env:POWERTOYS_DASHBOARD_RUN_BUDGET_MINUTES } elseif ($DrainReviewQueue) { 0 } else { 50 }
 $RunStartedAt = (Get-Date).ToUniversalTime().ToString('o')
@@ -212,13 +214,26 @@ Keep messages brief and clear. Send:
    Include selected PRs, deferred PR count, changed/new bug issues, selected
    full-design issues, the concurrency cap, and the UTC deadline. In drain
    mode, state that the deadline, PR selection limit, and issue design cap are
-   disabled, and include the higher worker count.
+   disabled, and include the higher worker count. Include a Markdown table
+   listing every selected item:
+
+   | Type | Number | Work | Current stage |
+   | --- | ---: | --- | --- |
+   | PR | 50000 | Full review | queued |
+   | Issue | 40000 | Revalidation | triaged |
+
+   Put deferred totals below the table rather than silently omitting them.
 2. **30-minute checkpoint** — if the run is still active 30 minutes after the
    started email, reply to the original with completed PRs/issues, currently
    running PRs/issues, remaining queue count, and next expected milestone.
+   Include a Markdown table with `Type`, `Number`, `Result/stage`, and
+   `Next step` for every selected item that has started or finished.
 3. **Completed** — reply to the original after validation and deployment
    verification, with commit, PR/issue coverage, stale queue count, artifact
-   count, and whether any upstream public action occurred.
+   count, and whether any upstream public action occurred. Include a Markdown
+   table covering every selected PR and issue with `Type`, `Number`, `Final
+   result`, and `Action available / next run`. This table must distinguish
+   concluded, waiting, still in progress, and deferred outcomes.
 4. **Blocked/failed** — reply to the original before stopping on an
    unrecoverable failure, with the failing phase and the next manual action
    needed.
@@ -310,6 +325,8 @@ $updatePlanArgs = @(
   '-Dashboard', $Dashboard, '-Upstream', $Upstream,
   '-PrBatchSize', $PrReviewBatchSize,
   '-IssueBatchSize', $IssueRevalidationBatchSize,
+  '-OldIssueReserve', $OldIssueReserve,
+  '-SpareIssuesPerUnusedPrSlot', $SpareIssuesPerUnusedPrSlot,
   '-AsJson'
 )
 if ($DrainReviewQueue) { $updatePlanArgs += '-DrainQueue' }
@@ -320,6 +337,13 @@ Normal runs process only `selected_prs` and `selected_issues`; all deferred
 entries remain in the exhaustive inventory for the next run. Drain mode selects
 all candidates. A targeted operator run may pass `-PrNumbers` and
 `-IssueNumbers` without changing discovery semantics.
+
+Normal issue selection deliberately advances old backlog as well as recent
+activity. The default issue capacity is 75, with 15 slots reserved for the
+oldest stale bugs. Every unused PR slot adds four issue-revalidation slots, so
+quiet PR runs spend their spare budget reducing old issue debt. Environment
+overrides remain available. Do not reorder the whole issue queue newest-first
+in a way that starves the oldest reserve.
 
 ### PR freshness
 
@@ -732,7 +756,7 @@ full-design queue. The lightweight correction pass is not limited by
 `$DesignBatchSize`; only implementation-grade design expansion is bounded.
 Normal-mode full design work is bounded: rank `actionable_design` judgments by confidence,
 reproducibility, scope, recency, and lack of existing ownership, then run at
-most `$DesignBatchSize` (default 4) through `powertoys-issue-to-design`; leave
+most `$DesignBatchSize` (default 6) through `powertoys-issue-to-design`; leave
 the rest queued with explicit `Design fix` actions. Drain mode removes this
 design cap and processes every actionable issue design, still checkpointing and
 publishing after each durable transition or completed artifact. Prefer issues

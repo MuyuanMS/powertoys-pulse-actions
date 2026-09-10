@@ -359,7 +359,12 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
       )
     } | ConvertTo-Json -Depth 5 | Set-Content $prQueuePath
     $issueQueuePath = Join-Path $fixtureRoot 'issue-queue.json'
-    @{ issues = @(@{ number = 20; reasons = @('upstream activity is newer than the artifact') }) } |
+    @{
+      issues = @(
+        @{ number = 20; reasons = @('upstream activity is newer than the artifact') }
+        @{ number = 21; reasons = @('schemaVersion below 5') }
+      )
+    } |
       ConvertTo-Json -Depth 5 | Set-Content $issueQueuePath
 
     $inventoryPath = Join-Path $fixtureRoot 'inventory.json'
@@ -370,26 +375,37 @@ if (-not (Test-Path $candidateScript) -or -not (Test-Path $updatePlanScript)) {
     $inventory = Get-Content $inventoryPath -Raw | ConvertFrom-Json
     if ($inventory.summary.full_review -ne 2 -or
         $inventory.summary.context_revalidation -ne 1 -or
-        $inventory.summary.issue_revalidation -ne 1 -or
+        $inventory.summary.issue_revalidation -ne 2 -or
         $inventory.summary.waiting_author -ne 1 -or
         $inventory.summary.blocked -ne 1 -or
-        $inventory.summary.no_action -ne 1 -or
+        $inventory.summary.no_action -ne 0 -or
         $inventory.summary.excluded -ne 1) {
       $errors.Add('Dashboard candidate inventory did not classify the complete fixture set.')
     }
 
     $plan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
-      -PrBatchSize 1 -IssueBatchSize 1 -AsJson | ConvertFrom-Json
+      -PrBatchSize 1 -IssueBatchSize 1 -OldIssueReserve 0 `
+      -SpareIssuesPerUnusedPrSlot 0 -AsJson | ConvertFrom-Json
     if ($plan.selected_pr_count -ne 1 -or $plan.deferred_pr_count -ne 2 -or
-        $plan.selected_issue_count -ne 1 -or $plan.deferred_issue_count -ne 0 -or
+        $plan.selected_issue_count -ne 1 -or $plan.deferred_issue_count -ne 1 -or
         @($plan.selected_prs)[0].classification -ne 'full_review') {
       $errors.Add('Combined dashboard run plan did not prioritize and bound candidate work.')
+    }
+
+    $adaptivePlan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
+      -PrBatchSize 4 -IssueBatchSize 1 -OldIssueReserve 1 `
+      -SpareIssuesPerUnusedPrSlot 1 -AsJson | ConvertFrom-Json
+    if ($adaptivePlan.policy.effective_issue_batch_size -ne 2 -or
+        $adaptivePlan.policy.selected_old_issue_count -ne 1 -or
+        $adaptivePlan.selected_issue_count -ne 2 -or
+        [int]$adaptivePlan.selected_issues[-1].number -ne 21) {
+      $errors.Add('Combined dashboard run plan did not spend spare PR capacity while reserving old issue work.')
     }
 
     $drainPlan = & $updatePlanScript -Dashboard $fixtureRoot -CandidatesJsonPath $inventoryPath `
       -DrainQueue -AsJson | ConvertFrom-Json
     if ($drainPlan.selected_pr_count -ne 3 -or $drainPlan.deferred_pr_count -ne 0 -or
-        $drainPlan.selected_issue_count -ne 1 -or $drainPlan.deferred_issue_count -ne 0) {
+        $drainPlan.selected_issue_count -ne 2 -or $drainPlan.deferred_issue_count -ne 0) {
       $errors.Add('Combined dashboard drain plan did not select every candidate.')
     }
   } catch {

@@ -24,7 +24,21 @@ param(
     } elseif ($env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1') {
         [int]::MaxValue
     } else {
-        50
+        75
+    }),
+    [ValidateRange(0, 2147483647)]
+    [int]$OldIssueReserve = $(if ($env:POWERTOYS_OLD_ISSUE_RESERVE) {
+        [int]$env:POWERTOYS_OLD_ISSUE_RESERVE
+    } elseif ($env:POWERTOYS_DASHBOARD_DRAIN_QUEUE -eq '1') {
+        0
+    } else {
+        15
+    }),
+    [ValidateRange(0, 100)]
+    [int]$SpareIssuesPerUnusedPrSlot = $(if ($env:POWERTOYS_SPARE_ISSUES_PER_UNUSED_PR_SLOT) {
+        [int]$env:POWERTOYS_SPARE_ISSUES_PER_UNUSED_PR_SLOT
+    } else {
+        4
     }),
     [int[]]$PrNumbers,
     [int[]]$IssueNumbers,
@@ -87,8 +101,41 @@ $issueCandidates = @(
 
 $selectedPrs = @($prCandidates | Select-Object -First $PrBatchSize)
 $deferredPrs = @($prCandidates | Select-Object -Skip $PrBatchSize)
-$selectedIssues = @($issueCandidates | Select-Object -First $IssueBatchSize)
-$deferredIssues = @($issueCandidates | Select-Object -Skip $IssueBatchSize)
+$unusedPrSlots = if ($isDrainMode -or $PrBatchSize -eq [int]::MaxValue) {
+    0
+} else {
+    [math]::Max(0, $PrBatchSize - $selectedPrs.Count)
+}
+$effectiveIssueBatchSize = if ($isDrainMode -or $IssueBatchSize -eq [int]::MaxValue) {
+    [int]::MaxValue
+} else {
+    $IssueBatchSize + ($unusedPrSlots * $SpareIssuesPerUnusedPrSlot)
+}
+$oldIssueCount = if ($IssueNumbers.Count -gt 0 -or $isDrainMode) {
+    0
+} else {
+    [math]::Min($OldIssueReserve, $effectiveIssueBatchSize)
+}
+$oldIssues = @(
+    $issueCandidates |
+        Sort-Object `
+            @{ Expression = {
+                if ($_.live_updated_at) { [datetime]$_.live_updated_at } else { [datetime]::MinValue }
+            } }, `
+            number |
+        Select-Object -First $oldIssueCount
+)
+$oldIssueNumbers = @($oldIssues | ForEach-Object { [int]$_.number })
+$newestIssues = @(
+    $issueCandidates |
+        Where-Object { [int]$_.number -notin $oldIssueNumbers } |
+        Select-Object -First ([math]::Max(0, $effectiveIssueBatchSize - $oldIssues.Count))
+)
+$selectedIssues = @($newestIssues) + @($oldIssues)
+$selectedIssueNumbers = @($selectedIssues | ForEach-Object { [int]$_.number })
+$deferredIssues = @($issueCandidates | Where-Object {
+    [int]$_.number -notin $selectedIssueNumbers
+})
 
 $plan = [pscustomobject]@{
     planned_at = (Get-Date).ToUniversalTime().ToString('o')
@@ -98,6 +145,11 @@ $plan = [pscustomobject]@{
         drain_mode = $isDrainMode
         pr_batch_size = $PrBatchSize
         issue_batch_size = $IssueBatchSize
+        effective_issue_batch_size = $effectiveIssueBatchSize
+        old_issue_reserve = $OldIssueReserve
+        selected_old_issue_count = $oldIssues.Count
+        unused_pr_slots = $unusedPrSlots
+        spare_issues_per_unused_pr_slot = $SpareIssuesPerUnusedPrSlot
         explicit_pr_numbers = @($PrNumbers)
         explicit_issue_numbers = @($IssueNumbers)
     }
