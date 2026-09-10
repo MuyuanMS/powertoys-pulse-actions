@@ -1,33 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 21039,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T12:05:21Z",
+  "evaluated_at": "2026-09-10T12:05:21Z",
   "source_updated_at": "2022-12-24T11:44:49Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/21039",
+  "title": "The key combination of the screen ruler utility causes problems with standard key combinations in Windows 10",
+  "author": "kvpdesperado",
+  "labels": [
+    "Issue-Bug",
+    "Area-Quality",
+    "Needs-Repro",
+    "Product-Screen Ruler"
+  ],
+  "assignees": [],
+  "comment_count": 6,
+  "summary": "Screen Ruler's historical Win+Shift+M shortcut conflicts with Windows restore-minimized-windows, and one report says the conflict remained after changing the PowerToys hotkey.",
+  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+  "confidence": {
+    "score": 62,
+    "level": "yellow",
+    "rationale": "The conflict is established, but stale registration and current defaults are unconfirmed."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Win+Shift+M is a Windows shortcut.",
+      "The reporter changed Screen Ruler to Win+Shift+L.",
+      "Several commenters confirmed the default conflict."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+    "evaluated_at": "2026-09-10T12:05:21Z",
     "source_updated_at": "2022-12-24T11:44:49Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
+  },
+  "issue_context": {
+    "summary": "Screen Ruler's historical Win+Shift+M shortcut conflicts with Windows restore-minimized-windows, and one report says the conflict remained after changing the PowerToys hotkey.",
+    "known_information": [
+      "PowerToys 0.63 was elevated.",
+      "Linked issue 20194 is closed."
+    ],
+    "inferences": [
+      "The prior hotkey registration may remain until restart, or the KVM scenario may be separate Windows behavior."
+    ],
+    "analysis": "A clean-start versus live-change test can distinguish stale registration from a resolved default complaint.",
+    "initial_investigation": [
+      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
+      "Found no current assignee or completed linked implementation that conclusively resolves this report."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-21039",
+      "type": "approve_design",
+      "label": "Approve Screen Ruler hotkey lifecycle design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Release the prior Screen Ruler hotkey immediately and handle conflicts explicitly.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    },
+    {
+      "id": "reproduce-21039",
+      "type": "reproduce",
+      "label": "Reproduce Screen Ruler hotkey conflict",
+      "primary": false,
+      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
+      "reproduce": {
+        "title": "Change Screen Ruler away from Win+Shift+M",
+        "module": "Screen Ruler",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Screen Ruler enabled"
+        ],
+        "setup": [
+          "Confirm Windows Win+M then Win+Shift+M behavior."
+        ],
+        "steps": [
+          "Set Screen Ruler to Win+Shift+M.",
+          "Change to Win+Shift+L.",
+          "Retest immediately.",
+          "Restart and retest."
+        ],
+        "expected_result": "After changing or disabling the module, PowerToys should not consume Win+Shift+M."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Release the prior Screen Ruler hotkey immediately and handle conflicts explicitly.",
+      "root_cause": "Hotkey replacement may fail to unregister the previous global chord immediately.",
+      "plan": [
+        "Verify current default and registration lifecycle.",
+        "Replace hotkeys transactionally with rollback on failure.",
+        "Test live change, disable, restart, and OS conflicts."
+      ],
+      "verification": [
+        "Test Win+Shift+M before, during, and after changing Screen Ruler.",
+        "Repeat after restart and optionally KVM transition."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The conflict is established, but stale registration and current defaults are unconfirmed."
+      }
+    }
+  ]
 }

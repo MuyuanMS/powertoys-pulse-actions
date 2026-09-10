@@ -1,33 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 10065,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T12:05:21Z",
+  "evaluated_at": "2026-09-10T12:05:21Z",
   "source_updated_at": "2022-10-21T15:46:03Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/10065",
+  "title": "[KBM] missing shortcuts if executed fast one after another",
+  "author": "Combinacijus",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Priority-3",
+    "Planning-Consideration"
+  ],
+  "assignees": [],
+  "comment_count": 1,
+  "summary": "Two shortcuts sharing Win+Ctrl leak A or D when their final keys are pressed nearly together instead of executing only mapped arrows.",
+  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+  "confidence": {
+    "score": 76,
+    "level": "yellow",
+    "rationale": "The failure shape is clear, but the current race boundary needs tracing."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Slow alternating input works.",
+      "Near-simultaneous A/D leaks characters.",
+      "A second user confirmed the same class with Ctrl+A/Ctrl+E."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+    "evaluated_at": "2026-09-10T12:05:21Z",
     "source_updated_at": "2022-10-21T15:46:03Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
+  },
+  "issue_context": {
+    "summary": "Two shortcuts sharing Win+Ctrl leak A or D when their final keys are pressed nearly together instead of executing only mapped arrows.",
+    "known_information": [
+      "Both shortcuts share held modifiers.",
+      "The author refined the trigger to overlapping final keys."
+    ],
+    "inferences": [
+      "Suppression for one chord may end before the overlapping second chord is classified."
+    ],
+    "analysis": "The overlap sequence is suitable for a focused state-machine design after current verification.",
+    "initial_investigation": [
+      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
+      "Found no current assignee or completed linked implementation that conclusively resolves this report."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-10065",
+      "type": "approve_design",
+      "label": "Approve overlapping-shortcut suppression design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Make matching and source-key suppression atomic across overlapping chords.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    },
+    {
+      "id": "reproduce-10065",
+      "type": "reproduce",
+      "label": "Reproduce overlapping shortcut leakage",
+      "primary": false,
+      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
+      "reproduce": {
+        "title": "Alternate two shortcuts sharing modifiers",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Text editor"
+        ],
+        "setup": [
+          "Map Win+Ctrl+A to Left and Win+Ctrl+D to Right."
+        ],
+        "steps": [
+          "Hold Win+Ctrl.",
+          "Alternate A and D slowly.",
+          "Press A and D nearly together repeatedly.",
+          "Check for literal letters."
+        ],
+        "expected_result": "Only mapped arrow actions should occur."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Make matching and source-key suppression atomic across overlapping chords.",
+      "root_cause": "Shortcut classification and source-key suppression are not atomic across overlapping chords.",
+      "plan": [
+        "Model held modifiers and candidate final keys as one transition.",
+        "Replay only genuinely unmatched keys in order.",
+        "Add near-simultaneous shared-modifier tests."
+      ],
+      "verification": [
+        "Repeat the A/D sequence rapidly and verify no letters appear.",
+        "Verify unmatched shortcuts still replay."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The failure shape is clear, but the current race boundary needs tracing."
+      }
+    }
+  ]
 }

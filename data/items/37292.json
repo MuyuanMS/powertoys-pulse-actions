@@ -1,34 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 37292,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaged",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🚫",
-    "label": "Not actionable for a new PowerToys fix",
-    "detail": "The behavior tracks Windows clipboard-history semantics rather than a PowerToys-owned paste path."
-  },
-  "next_action": {
-    "glyph": "🚫",
-    "label": "No new fix action now",
-    "reason": "Current evidence points outside a PowerToys-owned implementation change."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T12:05:21Z",
+  "evaluated_at": "2026-09-10T12:05:21Z",
   "source_updated_at": "2026-08-05T02:24:22Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/37292",
+  "title": "Mapping Window+V to  any other key when use at background  unlike the usual fixed popup menu  doesn't automatically paste when clicking",
+  "author": "JoeJoeyMa",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 2,
+  "summary": "Alt+C remapped to Win+V opens clipboard history only after a long press and differs between the unsaved editor test and active saved mapping.",
+  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+  "confidence": {
+    "score": 63,
+    "level": "yellow",
+    "rationale": "Behavior is current, but only an event trace can confirm the timing hypothesis."
+  },
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "The behavior tracks Windows clipboard-history semantics rather than a PowerToys-owned paste path.",
+    "status": "actionable_design",
+    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
     "evidence": [
-      "The behavior tracks Windows clipboard-history semantics rather than a PowerToys-owned paste path.",
-      "Current evidence points to system, environment, packaging, or preference constraints rather than a new PowerToys fix."
+      "The report includes a saved-versus-unsaved contrast.",
+      "A second user reproduced on 0.100.2.",
+      "AutoHotkey reportedly behaves normally."
     ],
-    "recommended_action": "Current evidence points outside a PowerToys-owned implementation change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+    "evaluated_at": "2026-09-10T12:05:21Z",
     "source_updated_at": "2026-08-05T02:24:22Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
+  },
+  "issue_context": {
+    "summary": "Alt+C remapped to Win+V opens clipboard history only after a long press and differs between the unsaved editor test and active saved mapping.",
+    "known_information": [
+      "PowerToys 0.88 was elevated.",
+      "The target is Windows clipboard history."
+    ],
+    "inferences": [
+      "Injected modifier/key timing may make clipboard history interpret the chord as a hold."
+    ],
+    "analysis": "The saved/editor discrepancy supports comparing event order rather than assuming a Windows-only defect.",
+    "initial_investigation": [
+      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
+      "Found no current assignee or completed linked implementation that conclusively resolves this report."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-37292",
+      "type": "approve_design",
+      "label": "Approve clipboard shortcut event-sequence design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Emit saved Win+V remaps with the bounded sequence of a physical shortcut.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    },
+    {
+      "id": "reproduce-37292",
+      "type": "reproduce",
+      "label": "Reproduce remapped clipboard history behavior",
+      "primary": false,
+      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
+      "reproduce": {
+        "title": "Compare saved and editor-test Win+V remaps",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Clipboard history enabled"
+        ],
+        "setup": [
+          "Create Alt+C to Win+V."
+        ],
+        "steps": [
+          "Test before saving.",
+          "Save and close.",
+          "Tap then long-press Alt+C.",
+          "Select an item and compare with physical Win+V."
+        ],
+        "expected_result": "A normal tap should open clipboard history and preserve normal selection behavior."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Emit saved Win+V remaps with the bounded sequence of a physical shortcut.",
+      "root_cause": "The active replay sequence likely differs from a physical Win+V chord in down/up ordering or hold duration.",
+      "plan": [
+        "Capture physical, editor-test, and saved-remap event sequences.",
+        "Normalize modifier and V ordering to a physical chord.",
+        "Add shell-shortcut press/hold regression coverage."
+      ],
+      "verification": [
+        "Compare physical Win+V, AutoHotkey, and Keyboard Manager.",
+        "Verify selecting an item pastes normally after the remap."
+      ],
+      "confidence": {
+        "score": 63,
+        "level": "yellow",
+        "rationale": "Behavior is current, but only an event trace can confirm the timing hypothesis."
+      }
+    }
+  ]
 }

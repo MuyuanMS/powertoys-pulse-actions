@@ -1,33 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 9531,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T12:05:21Z",
+  "evaluated_at": "2026-09-10T12:05:21Z",
   "source_updated_at": "2022-10-21T14:45:04Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/9531",
+  "title": "[PT Run][Service Plugin] Stopping services not working",
+  "author": "htcfreek",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Run-Plugin"
+  ],
+  "assignees": [],
+  "comment_count": 2,
+  "summary": "The Run Service plugin reports a service stopped even when Windows Search or Windows Update immediately remains or becomes running.",
+  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+  "confidence": {
+    "score": 80,
+    "level": "yellow",
+    "rationale": "A maintainer identified the API distinction, but current code and service behavior need verification."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "A maintainer reproduced the behavior.",
+      "ServiceController behaved differently from net.exe.",
+      "Another user confirmed on 0.63."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+    "evaluated_at": "2026-09-10T12:05:21Z",
     "source_updated_at": "2022-10-21T14:45:04Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
+  },
+  "issue_context": {
+    "summary": "The Run Service plugin reports a service stopped even when Windows Search or Windows Update immediately remains or becomes running.",
+    "known_information": [
+      "The operation crosses UAC.",
+      "Issue 8968 remains open but is not a completed fix."
+    ],
+    "inferences": [
+      "The plugin may trust command completion instead of the verified final service state."
+    ],
+    "analysis": "Public maintainer evidence supports a service-control API and final-state verification design.",
+    "initial_investigation": [
+      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
+      "Found no current assignee or completed linked implementation that conclusively resolves this report."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-9531",
+      "type": "approve_design",
+      "label": "Approve verified service-control design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Control services through the service API and report the verified final state.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    },
+    {
+      "id": "reproduce-9531",
+      "type": "reproduce",
+      "label": "Reproduce Service plugin false success",
+      "primary": false,
+      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
+      "reproduce": {
+        "title": "Stop and verify a service",
+        "module": "PowerToys Run",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Service plugin enabled",
+          "Permission to accept UAC"
+        ],
+        "setup": [
+          "Record Windows Search state in Services."
+        ],
+        "steps": [
+          "Search for Windows Search.",
+          "Choose Stop and accept UAC.",
+          "Wait for the toast.",
+          "Refresh state after several seconds."
+        ],
+        "expected_result": "The toast should match the verified service state."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Control services through the service API and report the verified final state.",
+      "root_cause": "The net.exe path treats command completion as success and does not verify whether the service reached and remained Stopped.",
+      "plan": [
+        "Use the service-control API in the elevated path.",
+        "Wait for and verify final state before success UI.",
+        "Test stoppable and auto-restarting services."
+      ],
+      "verification": [
+        "Stop Windows Search and inspect final state after the toast.",
+        "Never report Stopped when the observed state is Running."
+      ],
+      "confidence": {
+        "score": 80,
+        "level": "yellow",
+        "rationale": "A maintainer identified the API distinction, but current code and service behavior need verification."
+      }
+    }
+  ]
 }

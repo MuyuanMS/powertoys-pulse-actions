@@ -1,48 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 37083,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
+  "generated_at": "2026-09-10T12:05:21Z",
+  "evaluated_at": "2026-09-10T12:05:21Z",
+  "source_updated_at": "2026-08-05T02:25:27Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/37083",
+  "title": "Keyboard shortcut mappings fail in some applications.",
+  "author": "Zhonjc2",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 6,
+  "summary": "A custom shortcut is ignored in Task Manager search on PowerToys 0.100.2; broader older claims about other surfaces are not consistently reproducible.",
+  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+  "confidence": {
+    "score": 72,
+    "level": "yellow",
+    "rationale": "Current reproduction is strong, but a trace must locate interception versus injection failure."
   },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
+    "evidence": [
+      "A second reporter supplied three minimal steps on 0.100.2.",
+      "A maintainer independently reproduced Task Manager search.",
+      "Elevation improved some contexts."
+    ],
+    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+    "evaluated_at": "2026-09-10T12:05:21Z",
+    "source_updated_at": "2026-08-05T02:25:27Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
+  },
+  "issue_context": {
+    "summary": "A custom shortcut is ignored in Task Manager search on PowerToys 0.100.2; broader older claims about other surfaces are not consistently reproducible.",
+    "known_information": [
+      "The mapping works elsewhere.",
+      "Control Panel was not reproducible in the current test."
+    ],
+    "inferences": [
+      "Task Manager's input or integrity context may reject interception or replay."
+    ],
+    "analysis": "The Task Manager case is narrow enough to trace without expanding to every cited Win32 surface.",
+    "initial_investigation": [
+      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
+      "Found no current assignee or completed linked implementation that conclusively resolves this report."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-37083",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
+      "id": "approve-design-37083",
+      "type": "approve_design",
+      "label": "Approve Task Manager shortcut-path design",
       "primary": true,
       "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 37083,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
+      "requiresApproval": true,
+      "design_summary": "Restore shortcut delivery in Task Manager search while preserving secure-input boundaries.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    },
+    {
+      "id": "reproduce-37083",
+      "type": "reproduce",
+      "label": "Reproduce Task Manager shortcut failure",
+      "primary": false,
+      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
+      "reproduce": {
+        "title": "Invoke a saved remap in Task Manager search",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "A simple global shortcut remap",
+          "Task Manager"
+        ],
+        "setup": [
+          "Confirm the remap works in Notepad."
+        ],
+        "steps": [
+          "Focus Task Manager search.",
+          "Invoke the shortcut.",
+          "Repeat with matching elevation.",
+          "Record source, target, or no input."
+        ],
+        "expected_result": "The target shortcut should be delivered in a supported integrity context."
       }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-05T02:25:27Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-    "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-05T02:25:27Z"
-  }
+  "proposed_fixes": [
+    {
+      "title": "Restore shortcut delivery in Task Manager search while preserving secure-input boundaries.",
+      "root_cause": "The interception or replay path does not reach Task Manager search under its current input/integrity context.",
+      "plan": [
+        "Trace matching and injection with Task Manager search focused.",
+        "Handle the confirmed boundary without weakening secure-input exclusions.",
+        "Add a regression scenario for Task Manager and ordinary controls."
+      ],
+      "verification": [
+        "Compare the same shortcut in Notepad and Task Manager search.",
+        "Verify supported equal-integrity contexts work and secure fields remain excluded."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "Current reproduction is strong, but a trace must locate interception versus injection failure."
+      }
+    }
+  ]
 }

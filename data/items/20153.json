@@ -1,33 +1,121 @@
 {
+  "schemaVersion": 5,
   "number": 20153,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T12:05:21Z",
+  "evaluated_at": "2026-09-10T12:05:21Z",
   "source_updated_at": "2022-11-08T16:45:20Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/20153",
+  "title": "powertoys.powerlauncher.exe loaded all shell extensions for no reason",
+  "author": "daoluong",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Area-Quality",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 4,
+  "summary": "PowerToys.PowerLauncher.exe loads third-party shell-extension DLLs, locking them and interfering with extension deployment.",
+  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+  "confidence": {
+    "score": 64,
+    "level": "yellow",
+    "rationale": "Loaded modules are observed, but the triggering API is not identified."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Process Explorer screenshots show loaded extension modules.",
+      "The reporter observed update/deployment interference.",
+      "File Explorer add-ons were enabled."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
+    "evaluated_at": "2026-09-10T12:05:21Z",
     "source_updated_at": "2022-11-08T16:45:20Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
+  },
+  "issue_context": {
+    "summary": "PowerToys.PowerLauncher.exe loads third-party shell-extension DLLs, locking them and interfering with extension deployment.",
+    "known_information": [
+      "PowerToys 0.61.1 was not elevated.",
+      "The concern is retained in-process DLL loading."
+    ],
+    "inferences": [
+      "A shell enumeration, icon, or metadata API may activate registered in-process extensions."
+    ],
+    "analysis": "A current module-load stack can identify the trigger before choosing isolation.",
+    "initial_investigation": [
+      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
+      "Found no current assignee or completed linked implementation that conclusively resolves this report."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-20153",
+      "type": "approve_design",
+      "label": "Approve PowerLauncher shell-extension isolation design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Prevent long-lived PowerLauncher from retaining unrelated shell extensions.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    },
+    {
+      "id": "reproduce-20153",
+      "type": "reproduce",
+      "label": "Trace PowerLauncher shell-extension loading",
+      "primary": false,
+      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
+      "reproduce": {
+        "title": "Observe extension DLLs in PowerLauncher",
+        "module": "PowerToys Run",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Known third-party shell extension",
+          "Process Explorer"
+        ],
+        "setup": [
+          "Confirm whether the DLL is loaded before PowerToys Run queries."
+        ],
+        "steps": [
+          "Open Run and issue program/file queries.",
+          "Refresh modules after each query.",
+          "Record first load.",
+          "Try replacing the DLL."
+        ],
+        "expected_result": "Unrelated shell extensions should not be retained by PowerLauncher."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Prevent long-lived PowerLauncher from retaining unrelated shell extensions.",
+      "root_cause": "PowerLauncher invokes a shell API that activates and retains arbitrary registered in-process shell extensions.",
+      "plan": [
+        "Capture the first module-load stack during Run queries.",
+        "Avoid activation or isolate unavoidable shell work in a short-lived helper.",
+        "Test with a known shell extension DLL."
+      ],
+      "verification": [
+        "Identify the first query that loads the DLL.",
+        "Verify the DLL can be replaced while PowerToys remains running."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "Loaded modules are observed, but the triggering API is not identified."
+      }
+    }
+  ]
 }
