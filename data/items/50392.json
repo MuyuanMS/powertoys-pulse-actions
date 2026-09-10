@@ -4,123 +4,312 @@
   "number": 50392,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "automation",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T00:14:05.930617Z",
-  "evaluated_at": "2026-09-10T00:14:05.930617Z",
+  "generated_at": "2026-09-10T06:00:44.9170567Z",
+  "evaluated_at": "2026-09-10T06:00:44.9170567Z",
   "source_updated_at": "2026-09-09T19:14:19Z",
   "head_sha": "d8e65eff5b14d81430efb007df1d4b43a4b4ccaa",
+  "fork_head_sha": "fe1105cbe52798167d74c256ac9ba425638ed2ee",
   "title": "CmdPal: Marshal handling of UI messages in MainWindow to the dispatcher queue",
   "url": "https://github.com/microsoft/PowerToys/pull/50392",
   "repository": "microsoft/PowerToys",
   "author": "jiripolasek",
   "authorAssociation": "COLLABORATOR",
   "isCommunity": false,
+  "isMine": false,
   "state": "OPEN",
   "draft": false,
   "confidence": "High",
-  "processVerdict": "proceed",
-  "summary": "The exact current upstream scope is mirrored on fork PR 747. Three Copilot findings were fixed in two pushed commits, replied to, and resolved. A fresh Copilot review was requested for the resulting fork head and had not submitted at the required immediate check. Local validation was attempted but could not complete because concurrent PowerToys builds held the shared vcpkg registry lock.",
+  "processVerdict": "request_changes",
+  "summary": "The outstanding post-fix Copilot request was consumed before any new request. Its HWND truncation finding was fixed, replied to, and resolved; a final fresh review on fork head fe1105cbe52798167d74c256ac9ba425638ed2ee returned zero published comments with zero unresolved threads. Debug x64 runner/settings, CmdPal UI, CmdPal module interface, and the ViewModel test project build successfully, and all 376 targeted tests pass. Three current-head upstream findings are drafted for maintainer approval.",
   "status": {
-    "glyph": "WAIT",
-    "label": "Waiting for fresh Copilot review",
-    "detail": "Fork head 4e4ad3f0414b89ed19faff6c7de3a3f9bdb873a2 is pushed with zero unresolved Copilot threads. Consume the outstanding request before requesting again."
+    "glyph": "APPROVAL",
+    "label": "Review complete — request changes awaiting approval",
+    "detail": "The converged current-head review has two apply-ready inline suggestions and one coordinated rename note. The final Copilot review at 2026-09-10T05:55:20Z generated zero published comments, all fork threads are resolved, and required Debug x64 validation passes."
   },
   "next_action": {
-    "glyph": "▶",
-    "label": "Consume the outstanding review on fork PR 747",
-    "reason": "Do not request another review. Resume by finding the Copilot review submitted after 2026-09-10T00:13:24.3337282Z, process any findings, then rerun required local validation when the shared vcpkg lock is available."
+    "glyph": "APPROVAL",
+    "label": "Approve, edit, or hold the drafted request-changes review",
+    "reason": "The current upstream head still narrows the cached HWND to 32 bits, leaves a delayed continuation scheduler implicit, and names a session-action message as command-only."
   },
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "return-full-width-window-handle",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Return the full-width native window handle",
+      "confidence": {
+        "score": 99,
+        "rationale": "MainWindow initializes _hwnd through ToInt32, while GetHwndMessage.Hwnd is pointer-sized. Returning the raw WinUI handle avoids deterministic 64-bit narrowing; the corrected fork implementation builds and passes all targeted tests."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
+      "line": 1987,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Return the full-width native window handle\n\n**Severity:** `high`\n\nThe cached `_hwnd` is initialized through `ToInt32()`, so returning it here can truncate a 64-bit window handle before consumers use it. That can make HWND-dependent commands target an invalid window. Return the raw WinUI handle so the pointer-sized value is preserved end to end.\n\n```suggestion\n        message.Hwnd = this.GetWindowHandle();\n```\n\n> If applying both suggestions in this file individually, apply this later-line suggestion first, or batch both suggestions and commit them atomically.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "schedule-drag-continuation-explicitly",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Use an explicit scheduler for the delayed focus continuation",
+      "confidence": {
+        "score": 91,
+        "rationale": "ContinueWith otherwise captures TaskScheduler.Current from the caller context. The explicit default-scheduler version compiled in the full CmdPal UI build and preserves the intended dispatcher hop through RunOnUiThread."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
+      "line": 1955,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Use an explicit scheduler for the delayed focus continuation\n\n**Severity:** `medium`\n\nThis fire-and-forget continuation inherits `TaskScheduler.Current`, so its execution context can vary with the message-delivery caller. Explicitly selecting the default scheduler keeps the delay off any ambient scheduler, while `RunOnUiThread` remains the single controlled hop back to the dispatcher.\n\n```suggestion\n            _ = Task.Delay(200).ContinueWith(\n                _ => RunOnUiThread(StealForeground),\n                CancellationToken.None,\n                TaskContinuationOptions.None,\n                TaskScheduler.Default);\n```\n\n> If applying both suggestions in this file individually, apply the later-line HWND suggestion first, or batch both suggestions and commit them atomically.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "rename-session-action-message",
+      "kind": "companion",
+      "severity": "low",
+      "title": "Name the message for every session action it counts",
+      "confidence": {
+        "score": 96,
+        "rationale": "ShellViewModel sends this message for both accepted command invocations and page navigation, and its XML summary already documents both cases. The coordinated TelemetrySessionActionStartedMessage rename builds and all 376 tests pass."
+      },
+      "in_diff": false,
+      "body": "### Name the message for every session action it counts\n\n**Severity:** `low`\n\n`TelemetryCommandStartedMessage` is sent for both command invocations and page navigation, so the command-only name conflicts with the behavior documented by the type itself. Please rename the file and record to `TelemetrySessionActionStartedMessage`, then update the registrations, sends, receiver, and tests together so future callers do not assume it is command-specific.",
+      "disposition": "proposed",
+      "out_of_diff_reason": "The safe change requires an atomic file rename plus coordinated updates across MainWindow, ShellViewModel, and the test file; GitHub cannot express that multi-file rename as one apply-ready current-diff suggestion."
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50392",
+      "type": "request_changes",
+      "label": "Request the two correctness fixes and coordinated message rename",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Two apply-ready inline suggestions and one general coordinated-rename note are pinned to the current upstream head. Require explicit maintainer approval and a final freshness check before publishing.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50392,
+        "pullRequest": 50392,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "d8e65eff5b14d81430efb007df1d4b43a4b4ccaa",
+        "body_prefix": "The dispatcher marshalling and telemetry ordering are well covered. I found two correctness issues around the native window handle and delayed continuation scheduling, plus one coordinated naming cleanup so the new session-action message accurately describes both commands and page navigation."
+      }
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted request-changes review for explicit maintainer approval.",
+    "Post nothing upstream until the pinned head, conversation, and review threads are revalidated.",
+    "Hold or edit the review without changing labels, review state, or PR state.",
+    "Repeat the fork review loop and validation after any material upstream update."
+  ],
   "blockers": [],
   "phase0": {
     "author": "jiripolasek",
     "author_association": "COLLABORATOR",
-    "bar": "repository collaborator; routine community process nags skipped",
+    "bar": "repository collaborator; routine community process gates skipped",
     "disposition": "Proceed",
-    "who_owes_next": "Review automation",
+    "who_owes_next": "Maintainer approval for the drafted review",
     "gates_tripped": [],
-    "note": "Linked issue 50388 describes the threading inconsistency. Current upstream CI, CLA, dependency review, x64/arm64 release builds, and Command Palette SDK build pass; an upstream maintainer approved the exact head."
-  },
-  "proposed_comments": [],
-  "actions": [],
-  "judgment": {
-    "status": "waiting_copilot",
-    "rationale": "The current fork fixes are pushed and all known Copilot threads are resolved, but review_ready requires a fresh post-fix zero-comment review and completed required local validation.",
+    "note": "The PR is an atomic internal CmdPal threading and telemetry fix linked to issue 50388. CLA, intake, dependency review, telemetry, Command Palette SDK, x64, and arm64 checks pass, and a maintainer approved the exact upstream head. No demo or community-process ask is warranted.",
     "evidence": [
-      "Upstream head d8e65eff5b14d81430efb007df1d4b43a4b4ccaa remained current at checkpoint.",
-      "Fork PR 747 originally matched all five upstream changed paths exactly; review fixes remain confined to those paths.",
-      "Copilot findings on HWND conversion, continuation scheduling, and telemetry message naming were fixed, replied to, and resolved.",
-      "Fork PR 747 has zero unresolved Copilot review threads.",
-      "The fresh Copilot request at 2026-09-10T00:13:24.3337282Z had no submitted post-request review at the immediate check.",
-      "Local build attempts restored successfully but were blocked waiting for the shared vcpkg registry lock held by concurrent PowerToys builds; no compile failure was observed."
+      "The PR is open, non-draft, and authored by a repository collaborator.",
+      "All reported current-head checks are complete with no failures or pending jobs.",
+      "Issue 50388 documents the inconsistent UI-thread message handling addressed by the PR.",
+      "The change includes focused unit coverage and has an upstream maintainer approval on the exact current head."
+    ]
+  },
+  "judgment": {
+    "status": "request_changes",
+    "rationale": "The current upstream implementation can truncate the native HWND through the cached 32-bit conversion and leaves the delayed focus continuation dependent on an ambient scheduler. The new telemetry message also has a command-only name despite being sent for page navigation. These items were corrected on the fork, the loop converged on the current fork head, and the full targeted validation passed.",
+    "evidence": [
+      "The prior request at 2026-09-10T00:13:24.3337282Z was consumed as review 5161283242 at 2026-09-10T00:21:41Z before another review was requested.",
+      "Post-request review 5161239001 exposed the 64-bit HWND narrowing problem; the constructor now preserves the pointer-sized handle, and the published thread was replied to and resolved.",
+      "The delayed focus continuation uses TaskScheduler.Default explicitly and discards the fire-and-forget task.",
+      "The message and file were renamed to TelemetrySessionActionStartedMessage across senders, receiver, and tests.",
+      "Final review 5163246731 at 2026-09-10T05:55:20Z reviewed fork head fe1105cbe52798167d74c256ac9ba425638ed2ee and generated zero published comments.",
+      "All four published Copilot threads were replied to and resolved; the unresolved count is zero.",
+      "The repeated post-round-five TryEnqueue observation remained suppressed and was ignored under the suppressed-comment policy.",
+      "build-essentials, Microsoft.CmdPal.UI, CmdPalModuleInterface, and Microsoft.CmdPal.UI.ViewModels.UnitTests all build successfully in Debug x64.",
+      "Microsoft.CmdPal.UI.ViewModels.UnitTests passed 376 of 376 tests.",
+      "The fork contains exactly the same five paths as the upstream PR, with no extra or missing paths.",
+      "Upstream head d8e65eff5b14d81430efb007df1d4b43a4b4ccaa and updated time 2026-09-09T19:14:19Z remained unchanged through the final freshness check.",
+      "No review, comment, label, close, merge, or other mutation was made to microsoft/PowerToys."
     ],
-    "recommended_action": "Preserve waiting_copilot, consume the existing request, and rerun targeted validation before terminal readiness.",
-    "evaluated_at": "2026-09-10T00:14:05.930617Z",
+    "recommended_action": "After explicit approval and a final upstream freshness check, submit the drafted REQUEST_CHANGES review with the two inline suggestions and coordinated rename note.",
+    "evaluated_at": "2026-09-10T06:00:44.9170567Z",
     "source_updated_at": "2026-09-09T19:14:19Z"
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "d8e65eff5b14d81430efb007df1d4b43a4b4ccaa",
+    "updated_at": "2026-09-09T19:14:19Z",
+    "commit_count": 3,
+    "changed_file_count": 5,
+    "additions": 321,
+    "deletions": 56,
+    "issue_comment_count": 0,
+    "review_comment_count": 0,
+    "review_count": 1,
+    "review_decision": "APPROVED",
+    "unresolved_review_threads": 0,
+    "reported_checks": {
+      "status": "passed",
+      "total": 12,
+      "successful": 11,
+      "skipped": 1,
+      "failed": 0,
+      "pending": 0
+    }
   },
   "fork_pr": {
     "number": 747,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/747",
-    "head_sha": "4e4ad3f0414b89ed19faff6c7de3a3f9bdb873a2",
-    "base_branch": "review-base/50392-current"
+    "state": "OPEN",
+    "branch": "pr-iterate/50392",
+    "base_branch": "review-base/50392-current",
+    "base_sha": "8caf82e0a2a6e3aff5ae3ad7933d77205812ee41",
+    "head_sha": "fe1105cbe52798167d74c256ac9ba425638ed2ee",
+    "upstream_head_sha": "d8e65eff5b14d81430efb007df1d4b43a4b4ccaa",
+    "upstream_file_count": 5,
+    "fork_file_count": 5,
+    "upstream_scope_covered": true,
+    "scope_difference": {
+      "missing_files": [],
+      "review_fix_extra_files": []
+    }
   },
   "fork_repo": "MuyuanMS/PowerToys",
   "fork_branch": "pr-iterate/50392",
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-10T00:14:05.930617Z",
-    "resume_action": "consume_submitted_review_then_validate",
-    "copilot_rounds_completed": 2,
-    "copilot_latest_completed_review_at": "2026-09-09T23:47:58Z",
-    "copilot_latest_completed_review_id": 5161068784,
-    "copilot_result": "fresh_review_pending_after_immediate_check",
-    "fresh_review_requested_at": "2026-09-10T00:13:24.3337282Z",
-    "copilot_immediate_check_at": "2026-09-10T00:14:05.930617Z",
+    "drain": "active explicit dashboard drain worker",
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-10T06:00:44.9170567Z",
+    "resume_action": "await_explicit_maintainer_approval",
+    "copilot_rounds_completed": 6,
+    "stored_request_at": "2026-09-10T00:13:24.3337282Z",
+    "stored_request_review_at": "2026-09-10T00:21:41Z",
+    "stored_request_review_id": 5161283242,
+    "final_request_at": "2026-09-10T05:51:07Z",
+    "latest_copilot_review_id": 5163246731,
+    "latest_copilot_review_at": "2026-09-10T05:55:20Z",
+    "latest_copilot_review_head": "fe1105cbe52798167d74c256ac9ba425638ed2ee",
+    "latest_copilot_published_comments": 0,
     "unresolved_copilot_threads": 0,
-    "local_validation": "pending_shared_vcpkg_lock"
+    "outstanding_copilot_request": false,
+    "local_validation": "completed"
   },
-  "freshness": {
-    "checkpoint_at": "2026-09-10T00:14:05.930617Z",
-    "live_upstream_head": "d8e65eff5b14d81430efb007df1d4b43a4b4ccaa",
-    "live_source_updated_at": "2026-09-09T19:14:19Z",
-    "fork_head": "4e4ad3f0414b89ed19faff6c7de3a3f9bdb873a2",
-    "scope_match": {
-      "upstream_changed_paths": 5,
-      "fork_changed_paths": 5,
-      "extra_paths": 0,
-      "missing_paths": 0
-    }
-  },
-  "build_evidence": {
-    "status": "pending_environment_lock",
-    "commands": [
-      "tools\\build\\build-essentials.cmd",
-      "tools\\build\\build.cmd in src\\modules\\cmdpal\\Microsoft.CmdPal.UI",
-      "tools\\build\\build.cmd in src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests"
+  "validation": {
+    "status": "passed",
+    "configuration": "Debug x64",
+    "builds": [
+      {
+        "name": "build-essentials",
+        "result": "passed"
+      },
+      {
+        "name": "Microsoft.CmdPal.UI.csproj",
+        "result": "passed"
+      },
+      {
+        "name": "CmdPalModuleInterface.vcxproj",
+        "result": "passed"
+      },
+      {
+        "name": "Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj",
+        "result": "passed"
+      }
     ],
-    "tests": {
-      "status": "not_run",
-      "reason": "Build could not proceed while other concurrent PowerToys builds held the shared vcpkg registry lock."
+    "tests": [
+      {
+        "name": "Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "result": "passed",
+        "passed": 376,
+        "failed": 0,
+        "runner": "vstest.console.exe"
+      },
+      {
+        "name": "Patch validation",
+        "result": "passed",
+        "command": "git diff --check"
+      }
+    ],
+    "outputs": {
+      "powerToysExe": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+      "cmdPalModuleInterfaceDll": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll",
+      "cmdPalUiExe": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe",
+      "unitTests": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.dll"
     },
+    "diff_check": "passed",
     "notes": [
       "POWERTOYS_DISABLE_SPECTRE=1 was used.",
-      "Inherited GIT_CONFIG_* variables were cleared after the first attempt exposed an invalid empty GIT_CONFIG_VALUE_2.",
-      "Package restore completed successfully.",
-      "Subsequent builds waited on C:\\Users\\muyuanli\\AppData\\Local\\vcpkg\\registries\\git\\.vcpkg-lock and were stopped to avoid blocking the drain worker indefinitely."
+      "Inherited GIT_CONFIG_* entries were cleared before builds.",
+      "build-essentials completed with one pre-existing CsWinRT1028 warning and recurring ANTLR token-recognition noise but zero errors.",
+      "The first CmdPal UI build exposed the unsafe HWND.Value conversion; the corrected pointer-sized cast was then rebuilt successfully before the final review.",
+      "The final fork diff contains exactly the five upstream paths; additional lines in those files are review fixes."
     ]
   },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette, navigate into an extension page, invoke commands that keep the palette open, hide it, and dismiss it, and verify no cross-thread exception or missing UI update occurs.",
+    "Drag or reposition the palette, release it, and verify focus is restored after the short delay without freezing or switching to an unrelated scheduler context.",
+    "Repeat open, page-navigation, command, hide, and dismiss cycles and verify the palette targets the correct native window and remains responsive."
+  ],
   "copilot": {
-    "latest_completed_review_at": "2026-09-09T23:47:58Z",
-    "latest_completed_review_id": 5161068784,
-    "latest_completed_review_head": "1e24e2f2fc1a037e5511a7a264944a4846d8ce6b",
-    "published_inline_comments": 1,
+    "fork_pr": 747,
+    "review_rounds_completed": 6,
+    "published_threads_total": 4,
+    "threads_replied": 4,
+    "threads_resolved": 4,
     "unresolved_threads": 0,
-    "fresh_review_requested_at": "2026-09-10T00:13:24.3337282Z",
-    "fresh_review_immediate_check_at": "2026-09-10T00:14:05.930617Z",
-    "fresh_review_status": "pending_after_immediate_check",
-    "fresh_review_new_comments": null,
-    "converged": false
+    "latest_completed_review_at": "2026-09-10T05:55:20Z",
+    "latest_completed_review_id": 5163246731,
+    "latest_completed_review_head": "fe1105cbe52798167d74c256ac9ba425638ed2ee",
+    "latest_completed_review_published_comments": 0,
+    "suppressed_findings_ignored_after_round_five": 1,
+    "fresh_review_status": "clean_current_head",
+    "converged": true
+  },
+  "fork_changes": {
+    "commits": [
+      {
+        "sha": "1e24e2f2fc1a037e5511a7a264944a4846d8ce6b",
+        "summary": "Make the delayed UI continuation scheduler explicit and clarify the HWND reply conversion."
+      },
+      {
+        "sha": "4e4ad3f0414b89ed19faff6c7de3a3f9bdb873a2",
+        "summary": "Rename the telemetry message for both command and page-navigation session actions."
+      },
+      {
+        "sha": "5275f709e5b2570a1cc247c502ae7547eb8ef088",
+        "summary": "Preserve the full pointer-sized HWND at construction."
+      },
+      {
+        "sha": "fe1105cbe52798167d74c256ac9ba425638ed2ee",
+        "summary": "Use the compiling pointer-sized HWND conversion in the message reply."
+      }
+    ],
+    "writes": [
+      "Consumed the outstanding post-request review before making another request.",
+      "Committed and pushed the full-width HWND correction to pr-iterate/50392.",
+      "Replied to and resolved the final published Copilot thread.",
+      "Requested and consumed a final clean Copilot review on the exact current fork head."
+    ]
+  },
+  "freshness": {
+    "status": "fresh_current_head_request_changes_drafted",
+    "evaluated_at": "2026-09-10T06:00:44.9170567Z",
+    "upstream_head_sha": "d8e65eff5b14d81430efb007df1d4b43a4b4ccaa",
+    "source_updated_at": "2026-09-09T19:14:19Z",
+    "fork_head_sha": "fe1105cbe52798167d74c256ac9ba425638ed2ee",
+    "fork_review_submitted_at": "2026-09-10T05:55:20Z",
+    "exact_scope_verified": true
   },
   "threads": {
     "fork_copilot_unresolved": 0,
@@ -130,14 +319,14 @@
     "status": "passed",
     "failed": 0,
     "pending": 0,
-    "note": "Current upstream aggregate CI and component checks are successful."
+    "note": "Current upstream CLA, intake, dependency review, telemetry, Command Palette SDK, x64, and arm64 checks are complete and successful; one telemetry detection run was skipped."
   },
   "fork_writes": [
-    "Created and pushed current-main base branch review-base/50392-current.",
-    "Created fork PR 747 from pr-iterate/50392.",
-    "Committed and pushed review fixes as 1e24e2f2fc1a037e5511a7a264944a4846d8ce6b and 4e4ad3f0414b89ed19faff6c7de3a3f9bdb873a2.",
-    "Replied to and resolved all three Copilot review threads.",
-    "Requested a fresh GitHub Copilot review on fork PR 747."
+    "Previously created fork PR 747 and pushed three review fixes.",
+    "Consumed Copilot reviews submitted after the stored request.",
+    "Committed and pushed 5275f709e5b2570a1cc247c502ae7547eb8ef088 and fe1105cbe52798167d74c256ac9ba425638ed2ee.",
+    "Replied to and resolved the final HWND truncation thread.",
+    "Requested and consumed final review 5163246731, which returned zero published comments."
   ],
   "upstream_writes": false,
   "dashboard_modified": false,
