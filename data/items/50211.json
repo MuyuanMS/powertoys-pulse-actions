@@ -1,39 +1,269 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50211",
   "number": 50211,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T04:42:00Z",
-  "evaluated_at": "2026-09-10T04:42:00Z",
+  "generated_at": "2026-09-10T14:23:26.9440183Z",
+  "evaluated_at": "2026-09-10T14:23:26.9440183Z",
   "source_updated_at": "2026-08-31T21:08:18Z",
   "head_sha": "fc2e1cf645816060bd19eaf8d3a8a0c8036bfdd2",
   "title": "CmdPal: add an in-place adaptive card updater",
   "url": "https://github.com/microsoft/PowerToys/pull/50211",
-  "summary": "The durable fork review was rebased onto current main, six arrived Copilot findings were processed, the focused tests pass, and a fresh zero-finding checkpoint review is pending.",
+  "summary": "The outstanding fork Copilot request was consumed without duplication. The current fork head has a fresh zero-published-comment Copilot review, zero unresolved threads, a passing CmdPal UI build, and 24 passing focused tests. Eleven current-head review comments are drafted; one localized malformed-SVG fix is apply-ready and was independently validated on the exact upstream head.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Fresh fork review requested for head 09d53668e588948a21066d894264299d82206431. The next drain pass must consume this request before requesting another review."
+    "glyph": "review",
+    "label": "Review comments drafted",
+    "detail": "Fork review converged at 18b30e61b80e0ea7bd854d755fb7fbeefb1397df after the review submitted at 2026-09-10T12:28:39Z; no new request was issued."
   },
-  "next_action": "Copilot review is pending; no maintainer action is currently available.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "post",
+    "label": "Review approval required",
+    "reason": "Recheck upstream freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
+  },
+  "proposed_comments": [
+    {
+      "id": "cancel-superseded-queue-items",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Cancel updates that never execute",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/LatestWinsUpdateQueue.cs",
+      "line": 39,
+      "side": "RIGHT",
+      "body": "### Cancel updates that never execute\n\n**Severity:** `medium`\n\nSuperseded and cleared work items are completed successfully even though their callback never ran. Callers awaiting `UpdateAsync` can therefore continue as if their card was rendered, while the visible state belongs to a different request. Complete these tasks as canceled at both removal sites and update the queue tests to assert cancellation.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The queue directly calls Complete for work that is removed without invoking the processor, and the caller observes only that completion task."
+      }
+    },
+    {
+      "id": "propagate-reset-cancellation",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Do not report reset updates as successful",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/IncrementalAdaptiveCardUpdater.cs",
+      "line": 82,
+      "side": "RIGHT",
+      "body": "### Do not report reset updates as successful\n\n**Severity:** `medium`\n\n`ProcessUpdateAsync` swallows the cancellation raised by `Reset`, so the queue marks the request successful even though the host and updater state were cleared. Let that cancellation propagate to the queued task, and handle the expected `OperationCanceledException` at the UI integration boundary. This keeps completion semantics aligned with what was actually rendered.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The catch filters internal cancellation and returns normally, which necessarily drives WorkItem.Complete in the queue."
+      }
+    },
+    {
+      "id": "advance-card-after-in-place-patch",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Keep Card synchronized with the patched visual",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/IncrementalAdaptiveCardUpdater.cs",
+      "line": 136,
+      "side": "RIGHT",
+      "body": "### Keep `Card` synchronized with the patched visual\n\n**Severity:** `medium`\n\nThe successful patch path advances `_snapshot` but leaves `Card` pointing to the previous `AdaptiveCard`. Consumers inspecting actions or other model state can then observe a card that no longer matches the displayed visual. Assign the new card before returning from this branch.",
+      "confidence": {
+        "score": 99,
+        "rationale": "The replacement path assigns Card, while the in-place success branch returns without doing so."
+      }
+    },
+    {
+      "id": "fallback-when-snapshot-build-fails",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Fall back when the candidate visual cannot be mapped",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/IncrementalAdaptiveCardUpdater.cs",
+      "line": 121,
+      "side": "RIGHT",
+      "body": "### Fall back when the candidate visual cannot be mapped\n\n**Severity:** `medium`\n\nA card may render successfully while snapshot construction fails on an unexpected visual-tree shape. Currently that exception faults the entire update even though the rendered candidate is usable. Treat mapping failure as a signal to replace the hosted card and clear the incremental snapshot, while still preserving caller cancellation.",
+      "confidence": {
+        "score": 88,
+        "rationale": "Rendering and snapshot mapping are separate operations; the candidate root is already available when Build throws."
+      }
+    },
+    {
+      "id": "read-and-apply-single-run-text",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Use the rendered Run text for plain-text patches",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/IncrementalAdaptiveCardVisualTree.cs",
+      "line": 192,
+      "side": "RIGHT",
+      "body": "### Use the rendered `Run` text for plain-text patches\n\n**Severity:** `medium`\n\nAdaptive Cards can render a plain text block as a single `Run`, while `TextBlock.Text` is empty or stale. Snapshotting, validation, and assignment through `TextBlock.Text` can therefore force unnecessary replacement or leave the visible run unchanged. Normalize reads to the single run when present and apply the candidate plain text to the existing run.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The patchability predicate explicitly accepts single-Run TextBlocks, but the subsequent snapshot and apply code use a different text source."
+      }
+    },
+    {
+      "id": "validate-current-svg-resource",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "high",
+      "title": "Validate and advance the current SVG resource",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/IncrementalAdaptiveCardVisualTree.cs",
+      "line": 87,
+      "side": "RIGHT",
+      "body": "### Validate and advance the current SVG resource\n\n**Severity:** `high`\n\nImage updates skip checking that the current node still contains `ExpectedOldValue`, so a stale plan can patch the wrong visual element after the tree drifts. Enable current-value validation for images and update the current tagged `AdaptiveImage.Url` after a successful patch so the next incremental update validates against the new resource.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The explicit false flag bypasses the same optimistic-concurrency check used for text, and the tag retains the prior URL unless updated."
+      }
+    },
+    {
+      "id": "handle-malformed-svg-percent-escapes",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Treat malformed SVG escapes as an unsupported patch",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/IncrementalAdaptiveCardVisualTree.cs",
+      "line": 333,
+      "side": "RIGHT",
+      "body": "### Treat malformed SVG escapes as an unsupported patch\n\n**Severity:** `medium`\n\n`Uri.UnescapeDataString` throws `ArgumentException` for malformed percent escapes. That currently faults the update instead of returning `null` and falling back to full-card replacement like invalid base64 does. Handle both decoding exception types.\n\n```suggestion\n        catch (Exception ex) when (ex is FormatException or ArgumentException)\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The documented .NET API behavior directly reaches this uncaught branch for malformed non-base64 data URIs."
+      }
+    },
+    {
+      "id": "exclude-action-subtrees-from-patch-counts",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Do not count unmapped action-card elements as patch targets",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/AdaptiveCardSemanticFingerprint.cs",
+      "line": 180,
+      "side": "RIGHT",
+      "body": "### Do not count unmapped action-card elements as patch targets\n\n**Severity:** `medium`\n\n`CountPatchableElements` descends into action subtrees such as `Action.ShowCard`, but those elements are not mapped into the current visual tree. Their authored counts can disable otherwise safe body-only text or SVG patches and reintroduce full-card flicker. Apply the same action-subtree exclusion rules used by canonical serialization when counting patchable elements.",
+      "confidence": {
+        "score": 94,
+        "rationale": "Counting and canonicalization currently traverse action properties differently, so mapped body counts can never match authored totals in this case."
+      }
+    },
+    {
+      "id": "allow-supported-adaptive-card-depth",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "low",
+      "title": "Avoid rejecting otherwise renderable deep metadata",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/AdaptiveCardSemanticFingerprint.cs",
+      "line": 40,
+      "side": "RIGHT",
+      "body": "### Avoid rejecting otherwise renderable deep metadata\n\n**Severity:** `low`\n\n`JsonDocument.Parse` uses a default maximum depth of 64, while the updater fingerprints the complete authored JSON including non-rendered metadata. A card that the Adaptive Cards renderer accepts can therefore fail before rendering solely because metadata is deeply nested. Set an explicit bounded depth appropriate for this input and cover it with a focused test.",
+      "confidence": {
+        "score": 82,
+        "rationale": "The default System.Text.Json depth is fixed and the fingerprint parser independently processes fields that need not affect rendering."
+      }
+    },
+    {
+      "id": "refresh-accessibility-after-patch",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Refresh accessibility names after in-place updates",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContentFormControl.xaml.cs",
+      "line": 136,
+      "side": "RIGHT",
+      "body": "### Refresh accessibility names after in-place updates\n\n**Severity:** `medium`\n\nThe previous replacement flow regenerated accessibility names through the new visual tree, but an in-place patch keeps the existing controls. Toggle and related automation names can remain tied to the old content after text changes. Re-run the existing accessibility-name repair after a successful updater call.",
+      "confidence": {
+        "score": 87,
+        "rationale": "This integration now intentionally preserves the visual tree, while the accessibility repair is otherwise only associated with initial/replacement setup."
+      }
+    },
+    {
+      "id": "document-atomic-svg-image-group",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "low",
+      "title": "Document the actual all-or-nothing SVG behavior",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/README.md",
+      "line": 48,
+      "side": "RIGHT",
+      "body": "### Document the actual all-or-nothing SVG behavior\n\n**Severity:** `low`\n\nThe implementation awaits every decode and returns without mutating the tree if any image fails, but the README says images are committed individually as each decode completes. That makes the documented failure semantics inaccurate. Describe the image group as being applied only after all SVG decodes succeed.",
+      "confidence": {
+        "score": 99,
+        "rationale": "Task.WhenAll and the subsequent null scan occur before the mutation loop, directly contradicting the current sentence."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50211",
+      "type": "post_review",
+      "label": "Post 11 inline review comments (1 apply-ready suggestion)",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50211,
+        "event": "COMMENT",
+        "head_sha": "fc2e1cf645816060bd19eaf8d3a8a0c8036bfdd2"
+      },
+      "note": "Do not post without explicit approval and a final upstream freshness check."
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "fc2e1cf645816060bd19eaf8d3a8a0c8036bfdd2",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "handle-malformed-svg-percent-escapes"
+      ],
+      "commands": [
+        "MSBuild Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.UnitTests.csproj -restore -t:Build (Debug x64 win-x64)",
+        "vstest.console.exe Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.UnitTests.dll"
+      ],
+      "tests": "20/20 passed on the exact upstream head with the literal one-line suggestion applied"
+    }
+  },
   "fork_pr": {
     "number": 757,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/757"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/757",
+    "head_sha": "18b30e61b80e0ea7bd854d755fb7fbeefb1397df"
   },
   "fork_branch": "pr-iterate/50211-v3",
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-10T04:42:00Z",
-    "fork_head_sha": "09d53668e588948a21066d894264299d82206431",
-    "request_timestamp": "2026-09-10T04:41:12.7518489Z",
-    "latest_copilot_review_at": "2026-09-10T04:37:11Z",
-    "latest_copilot_review_head_sha": "acca89470c262821ccf6f99a5fa7b5edb5d92575",
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-10T14:23:26.9440183Z",
+    "stored_request_timestamp": "2026-09-10T04:41:12.7518489Z",
+    "consumed_review_at": "2026-09-10T12:28:39Z",
+    "latest_copilot_review_head_sha": "18b30e61b80e0ea7bd854d755fb7fbeefb1397df",
+    "latest_published_comment_count": 0,
     "unresolved_copilot_threads": 0,
-    "build_result": "focused test project built; final CmdPal UI build pending",
-    "unit_test_result": "23/23 passed"
+    "duplicate_request_avoided": true,
+    "transitions": [
+      {
+        "phase": "reviewing_findings",
+        "at": "2026-09-10T14:12:30Z",
+        "detail": "Consumed the outstanding request before considering any new request."
+      },
+      {
+        "phase": "building",
+        "at": "2026-09-10T14:13:20Z",
+        "detail": "Started final fork-head UI and focused test validation."
+      },
+      {
+        "phase": "building",
+        "at": "2026-09-10T14:20:50Z",
+        "detail": "Started exact-upstream-head validation for the minimized malformed-SVG suggestion."
+      },
+      {
+        "phase": "converged_draft_ready",
+        "at": "2026-09-10T14:23:26.9440183Z",
+        "detail": "Mapped current-head findings and prepared the approval-gated review candidate."
+      }
+    ]
+  },
+  "context_review": {
+    "author_type": "member",
+    "phase0_disposition": "proceed",
+    "note": "Community-contributor process nags were skipped. Upstream already has a maintainer changes-requested review and a Needs-Author-Feedback label; this candidate adds no process comment."
   }
 }
