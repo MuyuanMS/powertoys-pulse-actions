@@ -502,6 +502,13 @@ if (-not (Test-Path $artifactValidator)) {
       evaluated_at = '2026-08-24T00:00:00Z'
       source_updated_at = '2026-08-24T00:00:00Z'
       head_sha = ('d' * 40)
+      validation = @{
+        suggestion_patch = @{
+          head_sha = ('d' * 40)
+          result = 'passed'
+          applied_comment_ids = @('inline-fix')
+        }
+      }
       proposed_comments = @(
         @{
           id = 'inline-fix'
@@ -525,8 +532,28 @@ if (-not (Test-Path $artifactValidator)) {
     & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
     $validPrArtifactText = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw
 
+    $invalidSuggestionValidation = $validPrArtifactText | ConvertFrom-Json
+    $invalidSuggestionValidation.validation.suggestion_patch.applied_comment_ids = @('other-fix')
+    $invalidSuggestionValidation | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted suggestion validation for the wrong comment.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
+
     $invalidStage = $validPrArtifactText | ConvertFrom-Json
     $invalidStage.stage = 'review_ready'
+    $invalidStage.validation = @{
+      upstream_head = @{
+        head_sha = ('d' * 40)
+        result = 'passed'
+      }
+    }
     $invalidStage | ConvertTo-Json -Depth 10 |
       Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
     try {
@@ -566,6 +593,33 @@ if (-not (Test-Path $artifactValidator)) {
         -not $sanitizedIndexRow.needs_revalidation -or
         $null -ne $sanitizedIndexRow.primary_action) {
       $errors.Add('Sanitizer did not fail closed for invalid review stage/action data.')
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
+
+    $cleanReview = $validPrArtifactText | ConvertFrom-Json
+    $cleanReview.stage = 'review_ready'
+    $cleanReview.proposed_comments = @()
+    $cleanReview.actions = @()
+    $cleanReview.validation = @{
+      upstream_head = @{
+        head_sha = ('d' * 40)
+        result = 'passed'
+      }
+    }
+    $cleanReview | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
+
+    $cleanReview.validation.upstream_head.head_sha = ('e' * 40)
+    $cleanReview | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted clean validation from a different head.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
     }
     Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
 

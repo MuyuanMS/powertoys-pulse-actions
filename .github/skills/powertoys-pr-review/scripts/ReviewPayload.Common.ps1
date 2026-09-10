@@ -471,6 +471,54 @@ function Test-ReviewDataDocument {
             }
         }
 
+        $suggestionItems = @($items | Where-Object {
+            [string]$_.body -match '(?i)```suggestion'
+        })
+        $validation = $pullRequest.internalEvidence.validation
+        if ($suggestionItems.Count -gt 0) {
+            $suggestionPatch = $validation.suggestionPatch
+            if ($null -eq $suggestionPatch) {
+                $errors.Add("$prefix is ready with apply-ready suggestions but is missing internalEvidence.validation.suggestionPatch.")
+            }
+            else {
+                if ([string]$suggestionPatch.headSha -ne [string]$pullRequest.headSha) {
+                    $errors.Add("$prefix suggestionPatch.headSha must match the pinned upstream headSha.")
+                }
+                if ([string]$suggestionPatch.result -ne 'passed') {
+                    $errors.Add("$prefix suggestionPatch.result must be 'passed'.")
+                }
+                $expectedItemIds = @($suggestionItems | ForEach-Object { [string]$_.id } | Sort-Object -Unique)
+                $appliedItemIds = @($suggestionPatch.appliedItemIds | ForEach-Object { [string]$_ } | Sort-Object -Unique)
+                if (($expectedItemIds -join "`n") -cne ($appliedItemIds -join "`n")) {
+                    $errors.Add("$prefix suggestionPatch.appliedItemIds must exactly match every public suggestion item.")
+                }
+                if (@($suggestionPatch.commands | Where-Object {
+                    -not [string]::IsNullOrWhiteSpace([string]$_)
+                }).Count -eq 0) {
+                    $errors.Add("$prefix suggestionPatch.commands must record at least one syntax or build command.")
+                }
+            }
+        }
+        elseif ($items.Count -eq 0) {
+            $upstreamHead = $validation.upstreamHead
+            if ($null -eq $upstreamHead) {
+                $errors.Add("$prefix is a clean zero-item review but is missing internalEvidence.validation.upstreamHead.")
+            }
+            else {
+                if ([string]$upstreamHead.headSha -ne [string]$pullRequest.headSha) {
+                    $errors.Add("$prefix upstreamHead.headSha must match the pinned upstream headSha.")
+                }
+                if ([string]$upstreamHead.result -ne 'passed') {
+                    $errors.Add("$prefix upstreamHead.result must be 'passed'.")
+                }
+                if (@($upstreamHead.commands | Where-Object {
+                    -not [string]::IsNullOrWhiteSpace([string]$_)
+                }).Count -eq 0) {
+                    $errors.Add("$prefix upstreamHead.commands must record at least one syntax or build command.")
+                }
+            }
+        }
+
         if ($CheckGitHub) {
             $live = if ($null -ne $LiveData -and $LiveData.ContainsKey([int]$pullRequest.number)) {
                 $LiveData[[int]$pullRequest.number]

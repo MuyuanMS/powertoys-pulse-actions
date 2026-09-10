@@ -169,6 +169,19 @@ author-wait signal, the next emit clears `pending_author`, sets
   "generated_at": "…", "confidence": "high",   // high | medium | low
   "pending_author": true,
   "head_sha": "abc123…",        // upstream head the agent last reviewed against
+  "validation": {
+    // Required for a clean review_ready artifact.
+    "upstream_head": {
+      "head_sha": "abc123…",
+      "result": "passed"
+    },
+    // Required when proposed_comments contains suggestion blocks.
+    "suggestion_patch": {
+      "head_sha": "abc123…",
+      "result": "passed",
+      "applied_comment_ids": ["c-m5"]
+    }
+  },
   "fork": { "pr": 178, "branch": "pr-iterate/49136-v3" },
   "summary": "one-line human summary of current state",
   "next_action": "Waiting on author to address the posted review.",
@@ -196,6 +209,11 @@ author-wait signal, the next emit clears `pending_author`, sets
   ]
 }
 ```
+
+`validation.upstream_head` means the exact upstream tree was built; a passing
+divergent fork build cannot be substituted. `validation.suggestion_patch`
+means the literal public suggestion blocks were applied to that upstream head
+and the resulting candidate tree passed the relevant syntax/build check.
 
 Issue artifacts with `schemaVersion: 5` include a fix-coverage decision and
 display-only proposed fix plans in addition to the issue context:

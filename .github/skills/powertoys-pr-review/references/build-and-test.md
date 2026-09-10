@@ -80,6 +80,26 @@ Verify: exit code 0 for all steps; `x64/Debug/PowerToys.exe` exists; the module 
 Get-Content "$env:LOCALAPPDATA\Microsoft\PowerToys\RunnerLogs\runner-log_$(Get-Date -Format yyyy-MM-dd).log" | Select-String "<ModuleName>"
 ```
 
+## Step 7a: Validate the exact upstream/suggestion tree
+
+The fork build and this gate prove different things:
+
+- the fork build proves the converged reviewer implementation;
+- this gate proves what the upstream author actually has or will get by
+  clicking the proposed suggestions.
+
+For a clean zero-finding review, create a clean detached worktree at the exact
+upstream `headSha` and run the smallest affected-project build there. For a
+review with apply-ready suggestions, create a second clean worktree at that
+same head, apply every suggestion block verbatim using its exact line range,
+and build the affected project. When suggestions may be accepted separately,
+also apply/build each structurally risky suggestion independently.
+
+Record the exact head, applied item IDs, commands, and passing result under
+`internalEvidence.validation`. Never reuse a build result from a tree with a
+different diff. If the exact suggestion candidate fails syntax or compilation,
+fix the suggestion and repeat this gate before presenting it.
+
 ## Step 7b: End-to-end testing instructions
 
 After the Step 7 full build, `x64/Debug/PowerToys.exe` **already exists in the worktree** — the instructions you hand the user (and the `testInstructions` you put in `review-data.json`) should therefore be *run-and-verify*, not "build then run". Give the **concrete, resolved launch path**, not a `<worktree>` placeholder: substitute the actual worktree directory for this PR (e.g. `C:\PowerToys-review-N\x64\Debug\PowerToys.exe`), since the user is often coming straight from the dashboard and just wants to double-click / paste one path.
