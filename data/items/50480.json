@@ -4,11 +4,11 @@
   "number": 50480,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T14:47:03.613Z",
-  "evaluated_at": "2026-09-09T14:47:03.613Z",
+  "generated_at": "2026-09-10T02:35:50.949Z",
+  "evaluated_at": "2026-09-10T02:35:50.949Z",
   "source_updated_at": "2026-09-09T10:08:07Z",
   "head_sha": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
   "title": "feat(mwb): improve handling of unexpected settings-sync callers",
@@ -25,89 +25,106 @@
     "Ready for review"
   ],
   "confidence": "High",
-  "processVerdict": "proceed",
-  "summary": "Fresh resume state for PR 50480 did not exist, so this drain mirrored the PR to fork branch pr-iterate/50480, built the current-source MWB/settings projects in the review local checkout, processed every Copilot thread to convergence, and ended on a fresh zero-new-comment Copilot review for fork head 6666dde08f4b2c9481868c71b75e57218efa4e7e. The current upstream head c431c370bb9ebd8fd260874c8e716b73e35bf17f is still unchanged and review_ready, with a request-changes draft prepared for four validated follow-up fixes: cached offline revocation, tighter rejection/error throttling, accepted-only peer verification caching, and deterministic certificate-fixture validity windows.",
+  "processVerdict": "request_changes",
+  "summary": "Focused current-head recheck converted the three localized MWB IPC fixes into apply-ready RIGHT-side inline suggestions: cached/offline signer revocation, rejection/error-loop backoff and log throttling, and issuer-bounded certificate fixture validity. The accepted-only process-verification cache spans multiple separated declarations and call sites, so it remains one evidence-backed companion note rather than a misleading partial patch. Fork PR 733 is still clean on head 6666dde08f4b2c9481868c71b75e57218efa4e7e, with zero unresolved Copilot threads and no outstanding review request.",
   "status": {
-    "glyph": "READY",
-    "label": "Review ready — four follow-up fixes drafted",
-    "detail": "Fork PR 733 received a fresh Copilot review at 2026-09-09T14:37:34Z for exact fork head 6666dde08f4b2c9481868c71b75e57218efa4e7e with zero new published comments. All Copilot threads are resolved, the review local checkout is clean, upstream CI/CLA remain green on c431c370bb9ebd8fd260874c8e716b73e35bf17f, and targeted MWB/settings build-and-test validation passed on the fork review branch."
+    "glyph": "REVIEW",
+    "label": "Review complete — four findings awaiting approval",
+    "detail": "Three findings now target exact current RIGHT-side ranges with one apply-ready suggestion each; the distributed accepted-only cache change remains a concrete companion note. The upstream head is unchanged, the final fork review has zero new comments, and zero Copilot threads remain unresolved."
   },
   "next_action": {
     "glyph": "REVIEW",
-    "label": "Review the drafted request-changes action",
-    "reason": "Publishing these current-head findings to microsoft/PowerToys still requires an explicit approval decision and one more live freshness check at post time."
+    "label": "Approve, edit, or hold the drafted request-changes review",
+    "reason": "The current upstream head still contains three localized defects with exact suggestions plus one multi-region performance-hardening companion note."
   },
   "blockers": [],
   "actions": [
     {
       "id": "request-changes-50480",
       "type": "request_changes",
-      "label": "Request four MWB IPC follow-up fixes",
+      "label": "Request three inline MWB IPC fixes and one companion change",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
+      "note": "Three apply-ready inline suggestions and one evidence-backed general companion note are pinned to the current upstream head. Require explicit maintainer approval and a final freshness check before publishing.",
       "review": {
         "repository": "microsoft/PowerToys",
+        "pr": 50480,
         "pullRequest": 50480,
         "event": "REQUEST_CHANGES",
         "head_sha": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
-        "body_prefix": "Thanks for hardening the Mouse Without Borders Settings IPC path. I validated the current head and found four follow-up fixes that should land before merge."
-      },
-      "note": "Do not post without explicit approval and a final upstream freshness check."
+        "body_prefix": "Thanks for hardening the Mouse Without Borders Settings IPC path. Three localized fixes are included as inline suggestions below; the accepted-only process verification cache is a separate multi-region companion note."
+      }
     }
   ],
   "proposed_comments": [
     {
       "id": "enforce-cached-offline-revocation",
-      "kind": "companion",
+      "kind": "inline",
+      "inline": true,
       "severity": "high",
       "title": "Honor cached revocation when verifying the peer signer",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Honor cached revocation when verifying the peer signer\n\n**Severity:** `high`\n\nThe new peer verifier currently disables revocation in the custom signer chain, so a binary signed with the same PowerToys leaf would still pass after that certificate or key is revoked. Please mirror the existing native verifier here: use cached/offline revocation, reject known revocation, and tolerate only the expected unknown/offline revocation states so the check stays network-free without trusting a revoked signer.",
       "confidence": {
         "score": 98,
-        "rationale": "The upstream file still sets X509RevocationMode.NoCheck, while the converged fork branch switches to cached offline revocation and the refreshed Copilot loop plus targeted tests stay green."
-      }
+        "rationale": "The current RIGHT-side code explicitly sets X509RevocationMode.NoCheck. The converged fork replacement uses the offline cache, rejects known revocation, tolerates only offline or unknown revocation statuses, and passed the targeted 23-test Settings IPC security run."
+      },
+      "path": "src/settings-ui/Settings.UI.Library/Utilities/NamedPipePeerVerification.cs",
+      "startLine": 368,
+      "line": 433,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Honor cached revocation when verifying the peer signer\n\n**Severity:** `high`\n\nThe custom signer chain currently sets `X509RevocationMode.NoCheck`, so it cannot reject a certificate whose revocation is already present in the machine cache. Keep this path network-free by using offline revocation, allowing only the expected unavailable or offline status flags, and still rejecting every known revocation or other chain error.\n\n```suggestion\n                using var chain = new X509Chain();\n                chain.ChainPolicy.RevocationMode = X509RevocationMode.Offline;\n                chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;\n\n                // Check lifetime at the same current time or validated timestamp that Windows used.\n                chain.ChainPolicy.VerificationTime = verificationTime;\n                chain.ChainPolicy.ApplicationPolicy.Add(new Oid(\"1.3.6.1.5.5.7.3.3\"));\n                chain.ChainPolicy.VerificationFlags =\n                    X509VerificationFlags.IgnoreEndRevocationUnknown |\n                    X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |\n                    X509VerificationFlags.IgnoreRootRevocationUnknown;\n\n                var rootCertificates = roots.Certificates;\n                try\n                {\n                    chain.ChainPolicy.CustomTrustStore.AddRange(rootCertificates);\n\n                    if (TryGetEmbeddedPkcs7Store(imagePath, out var store, out var message))\n                    {\n                        using (store)\n                        using (message)\n                        using (var embeddedStore = new X509Store(store.DangerousGetHandle()))\n                        {\n                            var extraCertificates = embeddedStore.Certificates;\n                            try\n                            {\n                                chain.ChainPolicy.ExtraStore.AddRange(extraCertificates);\n                                if (!chain.Build(imageSigner) && !HasOnlyAllowedRevocationStatuses(chain.ChainStatus))\n                                {\n                                    return false;\n                                }\n\n                                signer = X509CertificateLoader.LoadCertificate(imageSigner.RawData);\n                                return true;\n                            }\n                            finally\n                            {\n                                DisposeCertificates(extraCertificates);\n                            }\n                        }\n                    }\n\n                    if (!chain.Build(imageSigner) && !HasOnlyAllowedRevocationStatuses(chain.ChainStatus))\n                    {\n                        return false;\n                    }\n\n                    signer = X509CertificateLoader.LoadCertificate(imageSigner.RawData);\n                    return true;\n                }\n                finally\n                {\n                    DisposeCertificates(rootCertificates);\n                }\n            }\n            catch (CryptographicException)\n            {\n                signer?.Dispose();\n                signer = null;\n                return false;\n            }\n        }\n\n        private static void DisposeCertificates(X509Certificate2Collection certificates)\n        {\n            foreach (var certificate in certificates)\n            {\n                certificate.Dispose();\n            }\n        }\n\n        private static bool HasOnlyAllowedRevocationStatuses(X509ChainStatus[] statuses)\n        {\n            foreach (var status in statuses)\n            {\n                var disallowedFlags = status.Status & ~(X509ChainStatusFlags.NoError | X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation);\n                if (disallowedFlags != X509ChainStatusFlags.NoError)\n                {\n                    return false;\n                }\n            }\n\n            return true;\n        }\n```",
+      "disposition": "proposed"
     },
     {
       "id": "throttle-settings-ipc-retry-logs",
-      "kind": "companion",
+      "kind": "inline",
+      "inline": true,
       "severity": "medium",
-      "title": "Throttle the repeated IPC rejection and retry log paths",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Throttle the repeated IPC rejection and retry log paths\n\n**Severity:** `medium`\n\nRejected or squatted pipe connections can currently reconnect in a tight loop and emit a log entry on every attempt. Please keep the retry/backoff behavior, but rate-limit both the rejected-client log and the exception retry log by time so an unexpected same-user caller cannot drive sustained CPU churn and unbounded log growth.",
+      "title": "Back off rejected clients and throttle both retry log paths",
       "confidence": {
         "score": 97,
-        "rationale": "The current review branch adds a 250 ms backoff plus strict time-based throttling for both rejection and exception paths, and the final fresh Copilot review no longer raises the resource-growth issue."
-      }
+        "rationale": "The current added server loop immediately continues after rejection and logs every rejection and exception. The fork replacement adds cancellation-aware rejection backoff and independent 30-second throttles; targeted MWB IPC tests passed and the final review was clean."
+      },
+      "path": "src/modules/MouseWithoutBorders/App/Class/IClipboardHelper.cs",
+      "startLine": 233,
+      "line": 279,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Back off rejected clients and throttle both retry log paths\n\n**Severity:** `medium`\n\nA rejected or pipe-squatting caller can currently drive this loop continuously: rejected connections immediately retry, while both rejection and exception paths emit a log on every attempt. Add a cancellation-aware delay after rejection and rate-limit each log path independently so the server remains responsive without sustained CPU or log growth.\n\n```suggestion\n            _ = Task.Run(\n                async () =>\n                {\n                    DateTime lastRejectedConnectionLogAt = DateTime.MinValue;\n                    DateTime lastServerErrorLogAt = DateTime.MinValue;\n\n                    while (!cancellationToken.IsCancellationRequested)\n                    {\n                        try\n                        {\n                            using var serverChannel = RestrictedNamedPipeServer.Create(pipeName, allowedUser);\n                            await serverChannel.WaitForConnectionAsync(cancellationToken);\n\n                            var rejectionReason = verifyClientConnection(serverChannel);\n                            if (!string.IsNullOrEmpty(rejectionReason))\n                            {\n#if !MM_HELPER\n                                var utcNow = DateTime.UtcNow;\n                                if (utcNow - lastRejectedConnectionLogAt >= TimeSpan.FromSeconds(30))\n                                {\n                                    Logger.Log($\"Rejected Settings IPC client: {rejectionReason}\");\n                                    lastRejectedConnectionLogAt = utcNow;\n                                }\n#endif\n                                if (serverChannel.IsConnected)\n                                {\n                                    serverChannel.Disconnect();\n                                }\n\n                                await Task.Delay(250, cancellationToken);\n                                continue;\n                            }\n\n                            var taskRpc = JsonRpc.Attach(serverChannel, new T());\n                            await taskRpc.Completion;\n                        }\n                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)\n                        {\n                            break;\n                        }\n                        catch (Exception e)\n                        {\n                            serverErrorObserver?.Invoke(e);\n#if MM_HELPER\n                            _ = e;\n#else\n                            var utcNow = DateTime.UtcNow;\n                            if (utcNow - lastServerErrorLogAt >= TimeSpan.FromSeconds(30))\n                            {\n                                Logger.Log(e);\n                                lastServerErrorLogAt = utcNow;\n                            }\n#endif\n                            if (!cancellationToken.IsCancellationRequested)\n                            {\n                                await Task.Delay(250);\n                            }\n                        }\n                    }\n                },\n                cancellationToken);\n```",
+      "disposition": "proposed"
     },
     {
       "id": "cache-only-accepted-peer-processes",
       "kind": "companion",
+      "inline": false,
       "severity": "medium",
       "title": "Cache only accepted peer verification results by process instance",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Cache only accepted peer verification results by process instance\n\n**Severity:** `medium`\n\nThe current implementation rebuilds signer trust on every reconnect, but an unbounded cache of rejected callers would let short-lived unexpected processes accumulate state for the lifetime of MWB. Cache the verified peer verdict by PID plus process creation time for the expected Settings/MWB pair, and retain only accepted entries so reconnects stay cheap without turning rejected callers into a memory-growth vector.",
       "confidence": {
         "score": 96,
-        "rationale": "The converged fork branch proves that accepted-only PID+creation-time caching addresses both repeated signature work and cache growth, and Copilot accepted the change on the final zero-comment pass."
-      }
+        "rationale": "NamedPipePeerVerification.TryVerifyPeerProcess lines 95-180 currently reaches MeetsSigningPolicy at line 173 on every accepted reconnect. The validated fork uses PID plus process creation time and identity inputs as the key, stores only accepted results, and removes rejected keys."
+      },
+      "in_diff": false,
+      "body": "### Cache only accepted peer verification results by process instance\n\n**Severity:** `medium`\n\n`TryVerifyPeerProcess` performs the full executable and signer verification on every accepted reconnect (`NamedPipePeerVerification.cs`, current lines 95–180, including `MeetsSigningPolicy` at line 173). Please cache successful verification by PID plus process creation time and the expected identity inputs, while never retaining rejected results. This is a multi-region change (imports and static state, the verification flow, helpers, and key or result records), so it is intentionally a general companion note rather than a partial inline suggestion.",
+      "disposition": "proposed"
     },
     {
       "id": "bind-child-cert-validity-to-issuer",
-      "kind": "companion",
+      "kind": "inline",
+      "inline": true,
       "severity": "medium",
-      "title": "Keep generated certificate fixtures inside the issuer validity window",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Keep generated certificate fixtures inside the issuer validity window\n\n**Severity:** `medium`\n\nThe new certificate-building helpers derive child certificates from `DateTimeOffset.UtcNow.AddDays(7)`. Near a second boundary, that can make the child `notAfter` slightly later than the issuer's `NotAfter`, which turns the new revocation-chain test into a flaky failure. Bind each child certificate's validity window to the issuing certificate instead of recomputing it from the current clock.",
+      "title": "Keep generated certificate fixtures inside issuer validity",
       "confidence": {
         "score": 99,
-        "rationale": "This failure reproduced directly during targeted validation on the current head, and the converged fork branch fixed it by deriving each child notAfter from the issuer certificate before the rerun passed 23 of 23 settings IPC tests."
-      }
+        "rationale": "The current RIGHT-side helpers independently evaluate UtcNow for issuer and child expiration, so the child can outlive its issuer by a fraction of a second. The fork derives each notAfter from the issuer and the targeted Settings IPC suite then passed 23 of 23 tests."
+      },
+      "path": "src/settings-ui/Settings.UI.UnitTests/MouseWithoutBordersIpcSecurityTests.cs",
+      "startLine": 502,
+      "line": 536,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep generated certificate fixtures inside issuer validity\n\n**Severity:** `medium`\n\nThese helpers recompute `UtcNow.AddDays(7)` for each child after its issuer was created, which can make the child expire slightly later than the issuer and intermittently invalidate the chain. Derive each child expiration from its issuer so the generated hierarchy is deterministic and always valid.\n\n```suggestion\n        private static X509Certificate2 CreateIntermediateCertificate(X509Certificate2 root, RSA intermediateKey)\n        {\n            var notBefore = DateTimeOffset.UtcNow.AddDays(-1);\n            var notAfter = root.NotAfter.ToUniversalTime().AddMinutes(-1);\n            var request = new CertificateRequest(\n                \"CN=MWB IPC Test Intermediate\",\n                intermediateKey,\n                HashAlgorithmName.SHA256,\n                RSASignaturePadding.Pkcs1);\n            request.CertificateExtensions.Add(new X509BasicConstraintsExtension(true, false, 0, true));\n            request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, true));\n            request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));\n\n            using var intermediate = request.Create(root, notBefore, notAfter, RandomNumberGenerator.GetBytes(16));\n            return intermediate.CopyWithPrivateKey(intermediateKey);\n        }\n\n        private static X509Certificate2 CreateCodeSigningLeafCertificate(X509Certificate2 intermediate)\n        {\n            using var leafKey = RSA.Create(2048);\n            var notBefore = DateTimeOffset.UtcNow.AddDays(-1);\n            var notAfter = intermediate.NotAfter.ToUniversalTime().AddMinutes(-1);\n            var request = new CertificateRequest(\n                \"CN=Microsoft Corporation Unit Test\",\n                leafKey,\n                HashAlgorithmName.SHA256,\n                RSASignaturePadding.Pkcs1);\n            request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, true));\n            request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, true));\n            request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));\n\n            var enhancedKeyUsage = new OidCollection\n            {\n                new Oid(\"1.3.6.1.5.5.7.3.3\"),\n            };\n            request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(enhancedKeyUsage, true));\n\n            return request.Create(intermediate, notBefore, notAfter, RandomNumberGenerator.GetBytes(16));\n        }\n```",
+      "disposition": "proposed"
     }
   ],
   "phase0": {
@@ -163,8 +180,8 @@
     }
   },
   "freshness": {
-    "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-09T14:47:03.613Z",
+    "status": "fresh_current_head_request_changes_drafted",
+    "evaluated_at": "2026-09-10T02:35:50.949Z",
     "head_sha": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
     "source_updated_at": "2026-09-09T10:08:07Z",
     "exact_scope_verified": true,
@@ -172,8 +189,8 @@
     "fork_review_completed_at": "2026-09-09T14:37:34Z"
   },
   "workflow": {
-    "phase": "converged_draft_ready",
-    "resume_action": "fresh-mirror",
+    "phase": "awaiting_review_approval",
+    "resume_action": "await_explicit_approval",
     "reviewed_upstream_head": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
     "fork_pr": 733,
     "fork_branch": "pr-iterate/50480",
@@ -198,7 +215,19 @@
       "Replied to every Copilot thread on the fork PR and resolved all six published Copilot threads.",
       "Requested successive Copilot reviews until the latest fresh review on the final fork head returned zero new comments."
     ],
-    "upstream_writes": []
+    "upstream_writes": [],
+    "checkpoint_at": "2026-09-10T02:35:50.949Z",
+    "latest_copilot_review_id": 5155821820,
+    "latest_copilot_review_at": "2026-09-09T14:37:34Z",
+    "latest_copilot_review_head": "6666dde08f4b2c9481868c71b75e57218efa4e7e",
+    "latest_copilot_published_comments": 0,
+    "outstanding_copilot_request": false,
+    "local_validation": "completed",
+    "finding_recheck": {
+      "inline": 3,
+      "companion": 1,
+      "removed": 0
+    }
   },
   "validation": {
     "status": "passed",
@@ -275,6 +304,61 @@
       "license/cla"
     ]
   },
-  "upstream_writes": [],
-  "dashboard_modified": false
+  "upstream_writes": {
+    "performed": false,
+    "repository": "microsoft/PowerToys",
+    "comments": 0,
+    "reviews": 0,
+    "labels": 0,
+    "closes": 0,
+    "merges": 0,
+    "detail": "No writes were made to microsoft/PowerToys."
+  },
+  "dashboard_modified": false,
+  "fork_head_sha": "6666dde08f4b2c9481868c71b75e57218efa4e7e",
+  "safe_actions": [
+    "Present the drafted current-head request-changes review for explicit maintainer approval.",
+    "Post nothing upstream until the pinned head, conversation, and review threads are revalidated.",
+    "Hold or edit any finding without changing labels, review state, or PR state.",
+    "Repeat the fork review loop and validation after any material upstream update."
+  ],
+  "judgment": {
+    "status": "request_changes",
+    "rationale": "The current upstream head retains three localized correctness or operational issues with exact apply-ready replacements and one distributed accepted-only caching improvement that cannot be represented honestly as a single local patch.",
+    "evidence": [
+      "Upstream head c431c370bb9ebd8fd260874c8e716b73e35bf17f remains current and all eight relevant paths are in the PR diff.",
+      "Revocation suggestion replaces current RIGHT lines 368-433 in NamedPipePeerVerification.cs and contains every required chain-policy, build-status, and helper change.",
+      "Retry and log suggestion replaces current RIGHT lines 233-279 in IClipboardHelper.cs and contains rejection backoff plus both independent log throttles.",
+      "Certificate suggestion replaces current RIGHT lines 502-536 in MouseWithoutBordersIpcSecurityTests.cs and binds both child certificates to issuer expiration.",
+      "Accepted-only caching spans separated declarations and methods, so it remains a concrete general note rather than a non-apply-ready inline patch.",
+      "Fork PR 733 final review 5155821820 was submitted at 2026-09-09T14:37:34Z for exact fork head 6666dde08f4b2c9481868c71b75e57218efa4e7e with zero new comments and zero unresolved Copilot threads.",
+      "Targeted validation passed 9 MWB IPC tests and 23 Settings IPC security tests.",
+      "No review, comment, label, close, merge, or other mutation was made to microsoft/PowerToys, and the dashboard was not modified."
+    ],
+    "recommended_action": "After explicit approval and a final freshness check, submit the pinned REQUEST_CHANGES review with three inline suggestions and the one companion note.",
+    "evaluated_at": "2026-09-10T02:35:50.949Z",
+    "source_updated_at": "2026-09-09T10:08:07Z"
+  },
+  "copilot": {
+    "fork_pr": 733,
+    "latest_completed_review_id": 5155821820,
+    "latest_completed_review_at": "2026-09-09T14:37:34Z",
+    "latest_completed_review_head": "6666dde08f4b2c9481868c71b75e57218efa4e7e",
+    "latest_completed_review_published_comments": 0,
+    "unresolved_threads": 0,
+    "outstanding_request": false,
+    "fresh_review_status": "clean_current_head",
+    "converged": true
+  },
+  "fork_pr": {
+    "number": 733,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/733",
+    "state": "OPEN",
+    "branch": "pr-iterate/50480",
+    "base_sha": "2f01e6d004b4c4a8dede52156ef239961d71bd32",
+    "head_sha": "6666dde08f4b2c9481868c71b75e57218efa4e7e",
+    "upstream_head_sha": "c431c370bb9ebd8fd260874c8e716b73e35bf17f",
+    "upstream_file_count": 8
+  },
+  "canonical_dashboard_identity": "<PowerToysCheckout>"
 }
