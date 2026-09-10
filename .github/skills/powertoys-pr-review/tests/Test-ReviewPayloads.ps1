@@ -80,6 +80,7 @@ $reviewData = [pscustomobject]@{
                             rationale = 'The missing regression test leaves the identified upgrade path uncovered.'
                         }
                         title = 'Add regression coverage'
+                        outOfDiffReason = 'The required test belongs in an unchanged test file outside the current PR diff.'
                         body = "### Add regression coverage`n`n**Severity:** ``medium```n`nPlease add a regression test that verifies the persisted value during upgrade."
                     }
                 )
@@ -124,10 +125,31 @@ $invalid.prs[0].publicPayload.items[0].PSObject.Properties.Remove('confidence')
 $errors = @(Test-ReviewDataDocument -Document $invalid)
 Assert-True (($errors -join "`n") -match 'missing confidence metadata') 'Public findings without confidence metadata must fail.'
 
+$inlineProse = Copy-JsonObject $reviewData
+$inlineProse.prs[0].publicPayload.items[0].body = "### Verify the persisted value`n`n**Severity:** ``high```n`nThis changed assignment renumbers persisted telemetry. Please preserve the existing numeric value so upgrades retain the same meaning."
+$errors = @(Test-ReviewDataDocument -Document $inlineProse)
+Assert-True ($errors.Count -eq 0) "Inline explanatory prose should pass without a suggestion block: $($errors -join '; ')"
+
 $invalid = Copy-JsonObject $reviewData
-$invalid.prs[0].publicPayload.items[0].body = 'Prose without an apply-ready block.'
+$invalid.prs[0].publicPayload.items[0].body = "Malformed block.`n`n``````suggestion`nvalue = 2;"
 $errors = @(Test-ReviewDataDocument -Document $invalid)
-Assert-True (($errors -join "`n") -match 'exactly one non-empty suggestion block') 'Missing suggestion fences must fail.'
+Assert-True (($errors -join "`n") -match 'exactly one non-empty suggestion block') 'Malformed suggestion fences must fail.'
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].publicPayload.items[0].body += "`n`n``````suggestion`nvalue = 3;"
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'exactly one non-empty suggestion block') 'An extra malformed suggestion start must fail.'
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].publicPayload.items[1].PSObject.Properties.Remove('outOfDiffReason')
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'must include outOfDiffReason') 'Companion findings must explain why they cannot be inline.'
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].publicPayload.items[1] | Add-Member -NotePropertyName path -NotePropertyValue 'src/Test.cs'
+$invalid.prs[0].publicPayload.items[1] | Add-Member -NotePropertyName line -NotePropertyValue 2
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'cannot contain inline coordinates') 'Line-addressable findings cannot remain companions.'
 
 $invalid = Copy-JsonObject $reviewData
 $invalid.prs[0].publicPayload.items[0].body += "`nValidated in fork PR 99."

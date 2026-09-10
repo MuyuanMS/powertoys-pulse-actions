@@ -783,11 +783,19 @@ item with the exact range. Include an apply-ready `suggestion` block when one
 is justified, but do not downgrade a valid line comment to `companion` merely
 because prose is clearer than a patch. For every truly out-of-diff supported
 finding, emit a non-inline proposed comment that explains the concern, its
-impact, and the required follow-up; Pulse posts those findings as separate PR
+impact, and the required follow-up, and record a concrete
+`out_of_diff_reason`; Pulse posts those findings as separate PR
 conversation comments rather than combining them into one review body. Never
 replace them with a generic local `review_summary` action. Label
 companion-only reviews `Post general review notes` and disclose `general
 review notes — separate PR conversation comments`.
+
+Before emission, verify stage/action consistency. `stage: review_ready` is
+reserved for a clean current-head result with zero proposed comments and no
+`post_review` or `request_changes` action. Any drafted finding uses
+`awaiting_review_approval` or another explicit draft/pending stage. An action
+label may say `inline suggestion(s)` only when at least one proposed inline
+comment contains a valid apply-ready suggestion block.
 
 Use a local manual-review or validation action only when no defensible
 author-facing comment can be drafted from the current head—for example, the

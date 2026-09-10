@@ -3,6 +3,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$downgradedPrs = [System.Collections.Generic.HashSet[int]]::new()
 $dashboardRoot = Split-Path -Parent (Resolve-Path $DataPath).Path
 if (Test-Path (Join-Path $dashboardRoot '.git')) {
   & (Join-Path $dashboardRoot '.github\skills\powertoys-dashboard-update\scripts\Assert-CanonicalDashboardTarget.ps1') `
@@ -101,6 +102,59 @@ function Get-PublicActions {
       $_.kind -eq 'inline' -or
       $_.in_diff -eq $true
     })
+    $reviewActions = @($actions | Where-Object {
+      $_.type -in @('post_review', 'request_changes')
+    })
+    $invalidReviewReasons = [System.Collections.Generic.List[string]]::new()
+    if ($Artifact.stage -eq 'review_ready' -and
+        ($proposedComments.Count -gt 0 -or $reviewActions.Count -gt 0)) {
+      $invalidReviewReasons.Add("PR $($Artifact.number) stage review_ready cannot contain proposed comments or review actions")
+    }
+    foreach ($comment in $proposedComments) {
+      $id = if ($comment.id) { [string]$comment.id } else { '<missing-id>' }
+      if ($comment.kind -notin @('inline', 'companion')) {
+        $invalidReviewReasons.Add("PR $($Artifact.number) comment $id must declare kind inline or companion")
+        continue
+      }
+      if (($comment.kind -eq 'inline') -ne ($comment.in_diff -eq $true)) {
+        $invalidReviewReasons.Add("PR $($Artifact.number) comment $id has inconsistent kind/in_diff metadata")
+      }
+      if ($comment.kind -eq 'companion') {
+        if ([string]::IsNullOrWhiteSpace([string]$comment.out_of_diff_reason)) {
+          $invalidReviewReasons.Add("PR $($Artifact.number) companion comment $id is missing out_of_diff_reason")
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$comment.path) -or
+            -not [string]::IsNullOrWhiteSpace([string]$comment.line) -or
+            -not [string]::IsNullOrWhiteSpace([string]$comment.start_line) -or
+            [string]$comment.body -match '(?i)```suggestion') {
+          $invalidReviewReasons.Add("PR $($Artifact.number) companion comment $id contains inline location or suggestion data")
+        }
+      }
+    }
+    $validInlineSuggestions = @($inlineComments | Where-Object {
+      ([regex]::Matches([string]$_.body, '(?s)```suggestion\s*\r?\n.+?\r?\n```')).Count -eq 1
+    })
+    foreach ($action in $reviewActions) {
+      if ("$($action.label) $($action.note)" -match '(?i)inline suggestion' -and
+          $validInlineSuggestions.Count -eq 0) {
+        $invalidReviewReasons.Add("PR $($Artifact.number) action '$($action.type)' claims inline suggestions but none are valid")
+      }
+    }
+    if ($invalidReviewReasons.Count -gt 0) {
+      foreach ($reason in $invalidReviewReasons) {
+        Write-Warning $reason
+      }
+      $actions = @($actions | Where-Object {
+        $_.type -notin @('post_review', 'request_changes')
+      })
+      $Artifact.stage = 'review_in_progress'
+      if ($Artifact.PSObject.Properties['needs_revalidation']) {
+        $Artifact.needs_revalidation = $true
+      } else {
+        $Artifact | Add-Member -NotePropertyName needs_revalidation -NotePropertyValue $true
+      }
+      [void]$downgradedPrs.Add([int]$Artifact.number)
+    }
     foreach ($action in $actions | Where-Object { $_.type -eq 'post_review' }) {
       if ($action.review) {
         $action.review.event = 'COMMENT'
@@ -132,6 +186,36 @@ foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
   $json = $publicArtifact | ConvertTo-Json -Depth 30
   [System.IO.File]::WriteAllText($path.FullName, $json, $encoding)
   $count++
+}
+
+if ($downgradedPrs.Count -gt 0) {
+  $indexPath = Join-Path $DataPath 'index.json'
+  if (Test-Path $indexPath) {
+    $index = Get-Content $indexPath -Raw | ConvertFrom-Json
+    foreach ($row in @($index.items | Where-Object {
+      $_.kind -eq 'pr' -and $downgradedPrs.Contains([int]$_.number)
+    })) {
+      $row.stage = 'review_in_progress'
+      if ($row.PSObject.Properties['needs_revalidation']) {
+        $row.needs_revalidation = $true
+      } else {
+        $row | Add-Member -NotePropertyName needs_revalidation -NotePropertyValue $true
+      }
+      if ($row.PSObject.Properties['primary_action']) {
+        $row.primary_action = $null
+      }
+    }
+    $indexJson = $index | ConvertTo-Json -Depth 30
+    [System.IO.File]::WriteAllText($indexPath, $indexJson, $encoding)
+    $indexJsPath = Join-Path $DataPath 'index.js'
+    if (Test-Path $indexJsPath) {
+      [System.IO.File]::WriteAllText(
+        $indexJsPath,
+        "window.BOARD_INDEX = $indexJson;`n",
+        $encoding
+      )
+    }
+  }
 }
 
 Write-Host "Sanitized $count public action artifact(s)."

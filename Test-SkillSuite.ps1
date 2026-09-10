@@ -466,10 +466,13 @@ if (-not (Test-Path $checkpointScript)) {
 
 $artifactValidator = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Test-DashboardArtifacts.ps1'
 $staleIssueQueue = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-StaleIssueTriageQueue.ps1'
+$actionSanitizer = Join-Path $PSScriptRoot 'Sanitize-ActionData.ps1'
 if (-not (Test-Path $artifactValidator)) {
   $errors.Add("Missing dashboard artifact validator: $artifactValidator")
 } elseif (-not (Test-Path $staleIssueQueue)) {
   $errors.Add("Missing stale issue triage queue: $staleIssueQueue")
+} elseif (-not (Test-Path $actionSanitizer)) {
+  $errors.Add("Missing action-data sanitizer: $actionSanitizer")
 } else {
   $artifactRoot = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-artifact-$PID"
   try {
@@ -487,6 +490,7 @@ if (-not (Test-Path $artifactValidator)) {
         @{
           id = 'inline-fix'
           kind = 'inline'
+          in_diff = $true
           disposition = 'proposed'
           path = 'src/Test.cs'
           line = 2
@@ -503,6 +507,96 @@ if (-not (Test-Path $artifactValidator)) {
       )
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
     & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
+    $validPrArtifactText = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw
+
+    $invalidStage = $validPrArtifactText | ConvertFrom-Json
+    $invalidStage.stage = 'review_ready'
+    $invalidStage | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted review_ready with drafted findings.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    @{
+      items = @(
+        @{
+          id = 'pr-34567'
+          kind = 'pr'
+          number = 34567
+          stage = 'review_ready'
+          primary_action = @{
+            type = 'post_review'
+            label = 'Post inline suggestion'
+          }
+        }
+      )
+    } | ConvertTo-Json -Depth 6 |
+      Set-Content (Join-Path $artifactRoot 'data\index.json')
+    & $actionSanitizer -DataPath (Join-Path $artifactRoot 'data') 3>$null | Out-Null
+    $sanitizedInvalidStage = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw |
+      ConvertFrom-Json
+    $sanitizedIndexRow = (Get-Content (Join-Path $artifactRoot 'data\index.json') -Raw |
+      ConvertFrom-Json).items[0]
+    if ($sanitizedInvalidStage.stage -ne 'review_in_progress' -or
+        -not $sanitizedInvalidStage.needs_revalidation -or
+        @($sanitizedInvalidStage.actions | Where-Object {
+          $_.type -in @('post_review', 'request_changes')
+        }).Count -gt 0 -or
+        $sanitizedIndexRow.stage -ne 'review_in_progress' -or
+        -not $sanitizedIndexRow.needs_revalidation -or
+        $null -ne $sanitizedIndexRow.primary_action) {
+      $errors.Add('Sanitizer did not fail closed for invalid review stage/action data.')
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
+
+    $generalOnly = $validPrArtifactText | ConvertFrom-Json
+    $generalOnly.proposed_comments[0].kind = 'companion'
+    $generalOnly.proposed_comments[0].in_diff = $false
+    $generalOnly.proposed_comments[0].PSObject.Properties.Remove('path')
+    $generalOnly.proposed_comments[0].PSObject.Properties.Remove('line')
+    $generalOnly.proposed_comments[0].PSObject.Properties.Remove('side')
+    $generalOnly.proposed_comments[0].body = '### Coordinate the cross-file lifetime change`n`n**Severity:** `medium``n`nThis concern spans unchanged ownership and shutdown paths, so please align the lifetime contract before applying a localized edit.'
+    $generalOnly.proposed_comments[0] |
+      Add-Member -NotePropertyName out_of_diff_reason -NotePropertyValue 'The required ownership change spans unchanged files and has no current RIGHT-side anchor.'
+    $generalOnly.actions[0].label = 'Post general review notes'
+    $generalOnly.actions[0] |
+      Add-Member -NotePropertyName note -NotePropertyValue 'General review notes — separate PR conversation comments'
+    $generalOnly | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
+
+    $misleadingLabel = $generalOnly
+    $misleadingLabel.actions[0].label = 'Post inline suggestion'
+    $misleadingLabel | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted an inline-suggestion label without inline suggestions.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
+
+    $missingKind = $generalOnly
+    $missingKind.actions[0].label = 'Post general review notes'
+    $missingKind.proposed_comments[0].PSObject.Properties.Remove('kind')
+    $missingKind | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted an out-of-diff comment without companion kind.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
 
     @{
       number = 34569
@@ -558,13 +652,21 @@ if (-not (Test-Path $artifactValidator)) {
 
     $invalidArtifact.actions[0].review.PSObject.Properties.Remove('body_prefix')
     $invalidArtifact.proposed_comments[0].kind = 'companion'
-    $invalidArtifact.proposed_comments[0] |
-      Add-Member -NotePropertyName in_diff -NotePropertyValue $true
+    $invalidArtifact.proposed_comments[0].in_diff = $true
     $invalidArtifact.proposed_comments[0].body = 'Prose without a suggestion block.'
     $invalidArtifact | ConvertTo-Json -Depth 10 |
       Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
-    & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted inconsistent companion inline metadata.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
 
+    $invalidArtifact.proposed_comments[0].kind = 'inline'
+    $invalidArtifact.proposed_comments[0].in_diff = $true
     $invalidArtifact.proposed_comments[0].body = "Malformed block.`n`n``````suggestion`nvalue = 2;"
     $invalidArtifact | ConvertTo-Json -Depth 10 |
       Set-Content (Join-Path $artifactRoot 'data\items\34567.json')

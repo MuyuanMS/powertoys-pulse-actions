@@ -109,8 +109,8 @@ The page polls `/status` every few seconds. The coordinator is the only writer o
 
 | `kind` | Requirements | Published as |
 | --- | --- | --- |
-| `inline` | Canonical `body`; exactly one non-empty `suggestion` fence; `path`, `line`, optional `startLine`; `side: RIGHT`; range in one current diff hunk | Inline review comment |
-| `companion` | Canonical readable `body`; no suggestion fence; no path required | Review body section |
+| `inline` | Canonical `body`; zero or one non-empty `suggestion` fence; `path`, `line`, optional `startLine`; `side: RIGHT`; range in one current diff hunk | Inline review comment |
+| `companion` | Canonical readable `body`; no suggestion fence or inline coordinates; concrete `outOfDiffReason` | Review body section |
 
 Do not use separate `body` and `fix` fields. Do not place status, links, build evidence, or private review provenance in a public item.
 
