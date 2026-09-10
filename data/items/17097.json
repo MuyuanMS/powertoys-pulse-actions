@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 17097,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-04-24T04:50:19Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/17097",
+  "title": "Onenote desktop won't pin (always on top) consistently on Windows 11.",
+  "author": "ChristosChristofidis",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Area-App Compat",
+    "Status-Reproducible"
+  ],
+  "comments": 6,
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Ready for focused reproduction",
+    "detail": "The behavior is maintainer-reproducible and the current state model exposes a concrete reconciliation problem."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "O",
+    "reason": "Trace the z-order/style transition and make tracked-pin state reconcile after the specific OneNote event."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The behavior is maintainer-reproducible and the current state model exposes a concrete reconciliation problem.",
     "evidence": [
-      "The issue is assigned to SeraphimaZykova, indicating active upstream ownership; parallel agent work would risk duplication."
+      "The border remains active after OneNote is no longer topmost.",
+      "A maintainer confirmed OneNote clears the topmost attribute."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Trace the z-order/style transition and make tracked-pin state reconcile after the specific OneNote event.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-04-24T04:50:19Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing upstream pull request references this canonical issue."
+  },
+  "issue_context": {
+    "summary": "OneNote desktop can clear its topmost state after maximize, focus, movement, or an Edge full-screen transition while PowerToys still displays the Always On Top border.",
+    "known_information": [
+      "The issue is labeled reproducible and assigned.",
+      "A maintainer reproduced OneNote losing its topmost attribute while the pinned border remains.",
+      "Other topmost utilities behave similarly except DeskPins, suggesting OneNote actively changes z-order."
+    ],
+    "inferences": [
+      "Always On Top tracks the window as pinned but misses or loses a race on the event where OneNote clears WS_EX_TOPMOST."
+    ],
+    "analysis": "Current Always On Top can reassert topmost on selected foreground/location events, but the report demonstrates a state divergence between the pinned property/border and actual z-order. A current event-sequence trace can identify the missed event without reporter-specific assets.",
+    "initial_investigation": [
+      "AlwaysOnTop.cpp stores a pinned window property separately from WS_EX_TOPMOST and has logic to reapply topmost when selected WinEvents fire.",
+      "Issue 17134 is closed as a duplicate of this canonical issue."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-17097",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "reproduce-17097",
+      "type": "reproduce",
+      "label": "O",
+      "primary": false,
+      "confirm": false,
+      "note": "Local maintainer verification only; no GitHub write is performed.",
+      "reproduce": {
+        "module": "n",
+        "version_requirement": "t",
+        "prerequisites": "e",
+        "steps": "N",
+        "expected_result": "o",
+        "setup_requirements": "e"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Reconcile tracked Always On Top windows after applications clear topmost",
+      "root_cause": "OneNote clears WS_EX_TOPMOST during window/full-screen transitions while PowerToys retains its pinned property; the subscribed event set or ordering does not reliably trigger reassertion afterward.",
+      "plan": [
+        "Trace WinEvents, style changes, and z-order around the OneNote/Edge transition while comparing pinned property and WS_EX_TOPMOST.",
+        "Debounce and reassert topmost for tracked windows after the identified transition, avoiding loops when the user or app intentionally closes/minimizes.",
+        "Add an app-compat regression harness that simulates an external topmost clear while the window remains tracked."
+      ],
+      "verification": [
+        "Repeat the OneNote move/maximize and Edge full-screen sequence for many cycles and verify actual z-order and border remain synchronized."
+      ],
+      "confidence": {
+        "score": 73,
+        "level": "yellow",
+        "rationale": "The state divergence and code model are clear, but the exact missed WinEvent/race still needs tracing."
+      }
+    }
+  ]
 }

@@ -1,18 +1,17 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 45913,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2026-08-04T07:22:01Z",
   "url": "https://github.com/microsoft/PowerToys/issues/45913",
   "title": "Some apps missing from Command Palette",
   "author": "kuro68k",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
@@ -23,40 +22,92 @@
   "comments": 18,
   "confidence": "Medium",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🎯",
+    "label": "Actionable fix candidate",
+    "detail": "The report contains current paths, multiple diagnostics, configuration outcomes, and a partial refresh workaround that narrow the owning All Apps pipeline."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "🛠️",
+    "label": "Design fix",
+    "reason": "Design deterministic shortcut rejection diagnostics and a full rescan/invalidation path for All Apps."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The report contains current paths, multiple diagnostics, configuration outcomes, and a partial refresh workaround that narrow the owning All Apps pipeline.",
     "evidence": [
-      "Labels: Issue-Bug, Needs-Triage, Needs-Team-Response, Product-Command Palette, CmdPal - All Apps",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "The common Start Menu LibreOffice .lnk is explicitly identified.",
+      "Manual All Apps searching refreshes some Chrome PWA shortcuts, while restart alone does not fix LibreOffice."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Design deterministic shortcut rejection diagnostics and a full rescan/invalidation path for All Apps.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2026-08-04T07:22:01Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing upstream fix attempt references this issue; the active module rewrite does not yet cover the reported cases."
+  },
+  "issue_context": {
+    "summary": "Command Palette's All Apps source omits valid Start Menu shortcuts such as LibreOffice and some Chrome-installed apps, while some indexed apps can appear but fail to launch.",
+    "known_information": [
+      "LibreOffice Writer is present at the common Start Menu path and remains missing after Command Palette restarts.",
+      "Three diagnostic archives were supplied across PowerToys 0.97.2 and later builds.",
+      "PATH discovery restored Kitty, while LibreOffice remained absent; manually searching missing Chrome apps through the All Apps menu refreshed some entries."
+    ],
+    "inferences": [
+      "There are at least two paths: source settings explain PATH apps, while stale or rejected Start Menu shortcut entries explain LibreOffice/Chrome.",
+      "The manual refresh recovery points to cache/watcher invalidation in addition to shortcut parsing."
+    ],
+    "analysis": "The current All Apps implementation watches Start Menu trees, resolves .lnk targets, filters invalid/non-app shortcuts, and retains an in-memory repository. The supplied path and repeat diagnostics are enough to design logging and deterministic refresh around shortcut rejection and cache invalidation rather than ask for another generic package.",
+    "initial_investigation": [
+      "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Programs/Win32Program.cs rejects unresolved/nonexistent .lnk targets and classifies generic targets according to settings.",
+      "Win32ProgramRepository relies on file-system watcher events and a background queue to refresh changed shortcuts.",
+      "No pull request referencing issue 45913 was found."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-45913",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-45913",
+      "type": "approve_design",
+      "label": "Design fix",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 45913,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the active window/app when invoking Command Palette, any installed CmdPal extensions involved, and the relevant Command Palette logs from the bug report."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "reproduce-45913",
+      "type": "reproduce",
+      "label": "E",
+      "primary": false,
+      "confirm": false,
+      "note": "Local maintainer verification only; no GitHub write is performed.",
+      "reproduce": {
+        "module": "v",
+        "version_requirement": " ",
+        "prerequisites": "e",
+        "steps": "r",
+        "expected_result": "y",
+        "setup_requirements": "e"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Make All Apps shortcut indexing complete and self-healing",
+      "root_cause": "Start Menu .lnk entries can be dropped during target resolution/classification or remain absent after watcher/cache drift; the current UI does not expose why an entry was rejected or guarantee a complete rebuild.",
+      "plan": [
+        "Record a structured acceptance/rejection reason for every Start Menu shortcut, including resolved target, arguments, app type, and enabled-source decision.",
+        "Make manual refresh and relevant settings changes rebuild the repository from all configured sources rather than depend on watcher history.",
+        "Add fixtures for LibreOffice multi-shortcut targets, Chrome PWAs, and argument-bearing shortcuts, preserving distinct identities and launch commands."
+      ],
+      "verification": [
+        "Install LibreOffice and representative Chrome PWAs, rebuild All Apps, and verify every enabled Start Menu shortcut appears and launches across restart and upgrade."
+      ],
+      "confidence": {
+        "score": 76,
+        "level": "yellow",
+        "rationale": "The refresh behavior and current shortcut pipeline strongly identify the subsystem, but diagnostics are still needed to tell rejection from stale-cache loss for LibreOffice."
+      }
     }
   ]
 }

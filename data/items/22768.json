@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 22768,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-03-01T19:51:42Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/22768",
+  "title": "ctrl + left/right will cause failure",
+  "author": "luoyou",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Ready for focused reproduction",
+    "detail": "The public remap table and event sequence are sufficient for focused local verification."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "O",
+    "reason": "Reproduce the chained remap and assert balanced synthetic modifier state after every action key."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The public remap table and event sequence are sufficient for focused local verification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The GIF and steps identify the held source modifier and the exact key that begins leaking.",
+      "No existing fix is linked to this canonical scenario."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the chained remap and assert balanced synthetic modifier state after every action key.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-03-01T19:51:42Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing upstream fix attempt references this issue."
+  },
+  "issue_context": {
+    "summary": "A layered Keyboard Manager configuration that remaps Caps Lock to Right Ctrl and then maps Right Ctrl chords eventually leaks original Q/E/W/A/S/D input instead of the remapped arrows and Ctrl+Arrow outputs.",
+    "known_information": [
+      "The report provides exact remaps and a GIF.",
+      "Failure occurs while Caps Lock is held across multiple mapped action keys.",
+      "No current-version follow-up or linked pull request exists."
+    ],
+    "inferences": [
+      "The engine may release or fail to recognize the synthetic Right Ctrl modifier state after one target shortcut, allowing subsequent physical action keys through."
+    ],
+    "analysis": "This is a deterministic chained-remap state-machine scenario that maintainers can reproduce locally. Current Keyboard Manager explicitly distinguishes physical, remapped, and injected state, so the first action should be a targeted event-sequence test rather than a generic log request.",
+    "initial_investigation": [
+      "KeyboardEventHandlers.cpp tracks injected events and source/target modifier state across shortcut remaps.",
+      "Related issue 20368 discussed Ctrl+Left/Ctrl+Right and Quick Accent but did not establish that it is the same chained-remap failure."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-22768",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "reproduce-22768",
+      "type": "reproduce",
+      "label": "O",
+      "primary": false,
+      "confirm": false,
+      "note": "Local maintainer verification only; no GitHub write is performed.",
+      "reproduce": {
+        "module": "n",
+        "version_requirement": "t",
+        "prerequisites": "l",
+        "steps": "y",
+        "expected_result": " ",
+        "setup_requirements": "h"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Preserve synthetic modifier state across chained shortcut remaps",
+      "root_cause": "The remapped Caps Lock-to-Right-Ctrl state may not remain represented as a held source modifier after a shortcut target completes, so later action keys bypass the matching shortcut and emit their originals.",
+      "plan": [
+        "Add a low-level event test for the exact Caps Lock/Right Ctrl and W/A/S/D/Q/E mapping graph.",
+        "Separate physical source-key lifetime from each invoked target shortcut's cleanup and suppress original action keys while the synthetic modifier remains held.",
+        "Guarantee all injected modifiers are released exactly once when Caps Lock is released or remapping is reset."
+      ],
+      "verification": [
+        "Hold Caps Lock and cycle through all six action keys repeatedly; verify only arrows and Ctrl+Arrow events are emitted and no modifier remains stuck."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The state-machine hypothesis matches the sequence, but the old report needs a current event trace to locate the precise cleanup branch."
+      }
+    }
+  ]
 }

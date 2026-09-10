@@ -1,48 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 45471,
   "kind": "issue",
   "track": "fix",
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
+  "source_updated_at": "2026-08-04T08:19:29Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/45471",
+  "title": "Mouse Without Borders causing the entire system to freeze",
+  "author": "FoxaXuDecvin",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "comments": 2,
+  "confidence": "Low",
   "status": {
     "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
+    "label": "Needs specific evidence",
+    "detail": "The failure is severe and PowerToys-owned, but the two public scenarios do not yet identify one fix path."
   },
   "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
+    "glyph": "💬",
+    "label": "Request Mouse Without Borders freeze trace",
+    "reason": "Request one fresh package and the exact edge/input transition, then route the fix to the component that stops progressing."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The failure is severe and PowerToys-owned, but the two public scenarios do not yet identify one fix path.",
+    "evidence": [
+      "The original report supplies screenshots and environment details but no diagnostic ZIP.",
+      "A later reporter reproduces without the originally suspected tablet prerequisite."
+    ],
+    "recommended_action": "Request one fresh package and the exact edge/input transition, then route the fix to the component that stops progressing.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
+    "source_updated_at": "2026-08-04T08:19:29Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is likely, but the current evidence supports competing input-loop and service-deadlock causes."
+  },
+  "issue_context": {
+    "summary": "Mouse Without Borders can enter a system-disrupting freeze near a screen edge; one report involves a Wacom-like absolute-position device, while another reports apparently random freezes without a tablet.",
+    "known_information": [
+      "The original report is on PowerToys 0.97.1, Windows 11 25H2, with PowerToys elevated.",
+      "The process cannot be terminated normally during the failure and cursor movement becomes blocked or erratic.",
+      "A second reporter sees the same freeze without a tablet and has no deterministic trigger."
+    ],
+    "inferences": [
+      "An edge-transition input loop or blocked service/client handoff may be amplified by absolute/high-rate pointer input.",
+      "The tablet and non-tablet reports may be different failures unless a trace shows the same transition state."
+    ],
+    "analysis": "Current Mouse Without Borders code handles absolute mouse injection and edge switching, but the thread contains no fresh diagnostic archive or timestamped transition trace. Those are necessary to distinguish an input-event storm from a network/service deadlock before selecting a safe fix.",
+    "initial_investigation": [
+      "src/modules/MouseWithoutBorders/App/Class/InputSimulation.cs emits MOUSEEVENTF_ABSOLUTE input, and edge-switch behavior is configurable in the module.",
+      "No upstream pull request referencing issue 45471 was found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic package captured immediately after reproducing the freeze",
+        "why_needed": "It can show whether the service, UI process, input hook, or network path stopped making progress.",
+        "how_to_collect": "After recovery, reproduce once and submit a comment containing /bugreport immediately afterward."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "The exact edge transition and input device active when the freeze starts",
+        "why_needed": "It distinguishes an absolute-pointer edge loop from the tablet-independent random freeze report.",
+        "how_to_collect": "List the source and destination machines, edge crossed, Easy Mouse setting, device type, and the last three input actions before the freeze."
+      }
+    ]
   },
   "actions": [
     {
+      "id": "approve-design-45471",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": false,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
       "id": "request-info-45471",
       "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
+      "label": "Request Mouse Without Borders freeze trace",
       "primary": true,
       "confirm": true,
       "note": "Draft only; no upstream comment is posted without explicit approval.",
       "comment": {
         "target": "issue",
         "number": 45471,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
+        "body": "Thanks for documenting the cursor lockup, the unkillable Mouse Without Borders process, and the Wacom-like device scenario. The thread now also contains a tablet-independent report, so we need to determine whether both failures stop in the same path.\n\n**Needed**\n1. Please reproduce once and submit a comment containing `/bugreport` immediately after recovery so the service, UI, input-hook, and network timestamps can be correlated.\n2. Please list the source and destination machines, the screen edge crossed, the Easy Mouse setting, the active pointing device, and the last three input actions before the freeze.\n\nThis will distinguish an absolute-pointer edge loop from a service/network deadlock and determine which component needs the fix."
       }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-04T08:19:29Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-    "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-04T08:19:29Z"
-  }
+  "proposed_fixes": [
+    {
+      "title": "Bound edge switching and recover a stalled Mouse Without Borders input handoff",
+      "root_cause": "Best current hypothesis: an edge transition repeatedly processes absolute or high-rate pointer events while the remote handoff is incomplete, starving normal input and leaving the privileged process unresponsive.",
+      "plan": [
+        "Add timestamped state transitions and bounded re-entry around edge detection, remote handoff, and injected absolute mouse events.",
+        "Coalesce or reject repeated edge events while a switch is pending and guarantee cancellation restores local cursor control.",
+        "Add a watchdog-safe shutdown path and stress tests for tablet and ordinary mouse transitions."
+      ],
+      "verification": [
+        "Run repeated edge crossings with an absolute-position tablet and a standard mouse, including network interruption, and verify input remains recoverable."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The symptom fits an input-loop failure, but no trace yet distinguishes that path from a service or transport deadlock."
+      }
+    }
+  ]
 }

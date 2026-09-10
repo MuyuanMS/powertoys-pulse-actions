@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 26880,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-06-20T10:40:35Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/26880",
+  "title": "Always on Top and VirtualBox(es)",
+  "author": "wrtechnopath",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "confidence": "Low",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "The issue is too old and underspecified to select among several distinct app-compat paths."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Request VirtualBox pin diagnostics",
+    "reason": "Request one current package plus VirtualBox mode and integrity levels."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The issue is too old and underspecified to select among several distinct app-compat paths.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "No border appears, suggesting the pin command exits early or targets the wrong HWND.",
+      "No current diagnostics or display mode are supplied."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request one current package plus VirtualBox mode and integrity levels.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-06-20T10:40:35Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys app-compat fix may apply, but the current evidence does not identify the failing branch."
+  },
+  "issue_context": {
+    "summary": "Always On Top does not show a border or retain topmost state for a VirtualBox VM window on an old PowerToys/VirtualBox combination.",
+    "known_information": [
+      "The report uses PowerToys 0.70.1, VirtualBox 7.0.8, and says PowerToys is elevated.",
+      "No screenshot, diagnostic archive, current-version retest, or follow-up exists.",
+      "Always On Top skips excluded/game windows and SetWindowPos can fail across integrity or special full-screen window boundaries."
+    ],
+    "inferences": [
+      "VirtualBox elevation, full-screen/seamless mode, game-mode detection, or target HWND replacement could each explain both missing border and failed pin."
+    ],
+    "analysis": "The report does not identify VirtualBox mode or process integrity, and the software versions are obsolete. A current targeted package and those two facts are necessary before assigning a code path.",
+    "initial_investigation": [
+      "AlwaysOnTop::ProcessCommand returns before pinning for excluded or detected game-mode windows.",
+      "PinTopmostWindow logs SetWindowPos failures, which a fresh package can expose."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A current PowerToys diagnostic package immediately after the VirtualBox pin attempt",
+        "why_needed": "It can show exclusion/game-mode decisions and SetWindowPos failure details.",
+        "how_to_collect": "Reproduce on the latest stable build and submit a comment containing /bugreport immediately afterward."
+      },
+      {
+        "evidence_type": "install_scope",
+        "information": "VirtualBox mode and elevation relative to PowerToys",
+        "why_needed": "Full-screen/seamless mode and integrity mismatch select different Windows restrictions.",
+        "how_to_collect": "State windowed/full-screen/seamless mode and whether VirtualBox.exe and PowerToys run elevated; repeat once with matching non-elevated levels if possible."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-26880",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": false,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "request-info-26880",
+      "type": "request_info",
+      "label": "Request VirtualBox pin diagnostics",
+      "primary": true,
+      "confirm": true,
+      "note": "Draft only; no upstream comment is posted without explicit approval.",
+      "comment": {
+        "target": "issue",
+        "number": 26880,
+        "body": "Thanks for identifying VirtualBox 7.0.8 and the missing Always On Top border. The original PowerToys 0.70.1 report does not say which VirtualBox display mode or integrity boundary is active, and those select different Windows paths.\n\n**Needed**\n1. Please reproduce on the latest stable PowerToys build and submit a comment containing `/bugreport` immediately after the failed pin attempt.\n2. Please state whether VirtualBox is windowed, full-screen, or seamless, and whether both VirtualBox.exe and PowerToys are elevated; if possible, repeat once with both non-elevated.\n\nThis will distinguish an exclusion/game-mode decision from a SetWindowPos or target-window replacement failure."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Pin the stable VirtualBox top-level window across display modes",
+      "root_cause": "Best current hypothesis: the foreground HWND is excluded/replaced during VirtualBox full-screen or seamless transitions, or SetWindowPos is denied across an integrity boundary.",
+      "plan": [
+        "Log target HWND, process, mode-relevant styles, exclusion/game detection, integrity level, and SetWindowPos result.",
+        "Resolve the stable owner/top-level VirtualBox window before tracking and update tracking if the app replaces it.",
+        "Respect Windows integrity and full-screen restrictions, with clear user feedback when pinning is not permitted."
+      ],
+      "verification": [
+        "Test VirtualBox windowed, full-screen, and seamless modes with matched and mismatched elevation and verify supported modes pin or report a precise limitation."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The missing border narrows the stage but not whether the cause is exclusion, HWND replacement, or integrity."
+      }
+    }
+  ]
 }

@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 20330,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-04-07T19:51:54Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/20330",
+  "title": "Text Extractor not working when Windows Magnifier is active",
+  "author": "upyesp",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Area-App Compat",
+    "Product-Text Extractor"
+  ],
+  "comments": 1,
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Ready for focused reproduction",
+    "detail": "The issue has deterministic steps and current source confirms the capture path is unaware of full-screen magnification."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "S",
+    "reason": "Reproduce on current Windows and design an unmagnified capture/coordinate path or a clear supported fallback."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue has deterministic steps and current source confirms the capture path is unaware of full-screen magnification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Magnifier changes the selectable area to the visible zoomed viewport.",
+      "Text Extractor relies on screen-composited pixel copies."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce on current Windows and design an unmagnified capture/coordinate path or a clear supported fallback.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-04-07T19:51:54Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing upstream fix attempt references this issue."
+  },
+  "issue_context": {
+    "summary": "Text Extractor's overlay and capture coordinates break when Windows Magnifier is active in full-screen mode, preventing selection beyond the currently magnified viewport.",
+    "known_information": [
+      "The report gives deterministic Magnifier and Text Extractor steps.",
+      "A second reporter confirms selection is limited to the visible zoomed portion.",
+      "Current Text Extractor captures pixels with Graphics.CopyFromScreen using overlay/screen rectangles."
+    ],
+    "inferences": [
+      "The overlay operates in magnified desktop coordinates while CopyFromScreen captures the composed viewport, so pointer selection and source pixels no longer represent the full unmagnified desktop."
+    ],
+    "analysis": "This is a public, accessibility-critical reproduction. The current screen-copy implementation provides a concrete starting point for a maintainer-side test with Magnifier APIs/state; no new reporter logs are required to establish the first fix boundary.",
+    "initial_investigation": [
+      "src/modules/PowerOCR/PowerOCR/Helpers/ImageMethods.cs uses CopyFromScreen for full-window, region, and clicked-word capture.",
+      "No Magnifier-aware coordinate or capture handling was found in the module."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-20330",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "reproduce-20330",
+      "type": "reproduce",
+      "label": "S",
+      "primary": false,
+      "confirm": false,
+      "note": "Local maintainer verification only; no GitHub write is performed.",
+      "reproduce": {
+        "module": "e",
+        "version_requirement": "t",
+        "prerequisites": "l",
+        "steps": "e",
+        "expected_result": "c",
+        "setup_requirements": "i"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Make Text Extractor capture and selection Magnifier-aware",
+      "root_cause": "CopyFromScreen and overlay coordinates observe the magnified composition rather than a stable unmagnified desktop coordinate space, so the selection cannot address off-viewport content.",
+      "plan": [
+        "Detect active Windows Magnifier mode and capture its transform and viewport.",
+        "Map pointer/selection coordinates consistently to the source desktop or use a capture API that can obtain the unmagnified monitor surface.",
+        "Provide a safe fallback and accessibility messaging if Windows prevents full-desktop capture in a Magnifier mode."
+      ],
+      "verification": [
+        "Run region and clicked-word extraction at multiple Magnifier zoom levels and modes, comparing selection geometry and OCR text with Magnifier off."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "The capture implementation and viewport-limited symptom align, but Windows capture behavior must be measured to choose transform mapping versus another API."
+      }
+    }
+  ]
 }

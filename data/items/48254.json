@@ -1,33 +1,110 @@
 {
+  "schemaVersion": 5,
   "number": 48254,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaging",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
+  "source_updated_at": "2026-08-03T14:19:08Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/48254",
+  "title": "Cannot pin \"Open hosts file (Admin)\" to command palete dock",
+  "author": "blackparadox",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "comments": 0,
+  "confidence": "Medium",
   "status": {
     "glyph": "🎯",
-    "label": "Design fix candidate",
-    "detail": "The report is specific enough to queue code-backed design work without another upstream clarification round."
+    "label": "Actionable fix candidate",
+    "detail": "The report is deterministic and current code identifies a narrow persistence-versus-reconstruction boundary."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Queue detailed design",
-    "reason": "The issue is already reproducible enough for code investigation and does not need another upstream information round first."
+    "glyph": "🛠️",
+    "label": "Design fix",
+    "reason": "Design nested command lookup/reconstruction coverage for dock pins, including elevated PowerToys commands."
   },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-03T14:19:08Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to queue code-backed design work without another upstream clarification round.",
+    "rationale": "The report is deterministic and current code identifies a narrow persistence-versus-reconstruction boundary.",
     "evidence": [
-      "The report is specific enough to queue code-backed design work without another upstream clarification round."
+      "The admin command's pin state persists even though no dock item renders.",
+      "The non-admin sibling from the same provider renders correctly."
     ],
-    "recommended_action": "The issue is already reproducible enough for code investigation and does not need another upstream information round first.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Design nested command lookup/reconstruction coverage for dock pins, including elevated PowerToys commands.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2026-08-03T14:19:08Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers this nested admin command pin."
+  },
+  "issue_context": {
+    "summary": "Command Palette records the nested 'Open Hosts File Editor (Admin)' command as pinned, but the dock cannot render it; the non-admin sibling pins normally.",
+    "known_information": [
+      "Both Hosts commands expose Pin to dock, and the admin command changes to Unpin after selection.",
+      "The missing dock item still launches correctly from search and prompts for UAC.",
+      "Current extension code gives the admin command a stable ID distinct from the non-admin command."
+    ],
+    "inferences": [
+      "Persistence succeeds, but dock reconstruction likely fails to resolve the nested admin command back through its provider or wraps it differently from a top-level dock band."
+    ],
+    "analysis": "The asymmetry between two commands from the same module rules out Hosts enablement and UAC launch logic. Current dock code persists provider/command IDs and reconstructs pinned items through provider lookup, making nested-command resolution the focused design surface.",
+    "initial_investigation": [
+      "HostsModuleCommandProvider emits com.microsoft.powertoys.hosts.open and com.microsoft.powertoys.hosts.openAdmin as sibling ListItems.",
+      "TopLevelCommandManager routes pin-to-dock operations through CommandProviderWrapper using provider and command IDs.",
+      "No pull request referencing issue 48254 was found."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-48254",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "reproduce-48254",
+      "type": "reproduce",
+      "label": "B",
+      "primary": false,
+      "confirm": false,
+      "note": "Local maintainer verification only; no GitHub write is performed.",
+      "reproduce": {
+        "module": "o",
+        "version_requirement": "i",
+        "prerequisites": "t",
+        "steps": "h",
+        "expected_result": " ",
+        "setup_requirements": "t"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Resolve nested PowerToys commands when rebuilding dock pins",
+      "root_cause": "The dock saves the nested admin command ID, but its rebuild path likely resolves only top-level commands or dock bands and therefore cannot materialize the persisted Hosts admin ListItem.",
+      "plan": [
+        "Trace the provider/command ID written for both Hosts commands and the lookup used during dock rebuild.",
+        "Add a provider API path that resolves persisted nested ICommandItems by stable ID without invoking them.",
+        "Use the same resolved item wrapper for admin and non-admin commands and remove stale pins only when the provider definitively no longer exposes the ID."
+      ],
+      "verification": [
+        "Pin both Hosts commands, restart Command Palette, verify both render, and invoke the admin item to confirm UAC still occurs."
+      ],
+      "confidence": {
+        "score": 79,
+        "level": "yellow",
+        "rationale": "The saved-but-invisible state strongly indicates reconstruction failure, but a settings snapshot is needed to confirm the exact provider ID stored."
+      }
+    }
+  ]
 }

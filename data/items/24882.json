@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 24882,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-04-03T15:31:11Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/24882",
+  "title": "FancyZones cross-zone snapping does not work properly with different size monitors",
+  "author": "Caleb-D",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "comments": 2,
+  "confidence": "Low",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "The physical setup is clear, but the issue combines two different expected behaviors and lacks current coordinate evidence."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Request mixed-DPI topology",
+    "reason": "Request current topology and one selected behavior path before designing a fix."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The physical setup is clear, but the issue combines two different expected behaviors and lacks current coordinate evidence.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The editor/applied mismatch is reported only for a spanning attempt.",
+      "Separate layouts work individually but cross-monitor selection is a distinct feature request."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request current topology and one selected behavior path before designing a fix.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-04-03T15:31:11Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix likely applies to the spanning DPI mismatch, but the defect and enhancement scopes must first be separated."
+  },
+  "issue_context": {
+    "summary": "A mixed-resolution, mixed-DPI three-monitor setup cannot produce the desired cross-monitor zones: a spanning layout is mis-scaled, while separate per-monitor layouts cannot be selected as one cross-monitor group.",
+    "known_information": [
+      "The setup uses two 4K portrait monitors at 150% and one 2K landscape monitor at 100%.",
+      "The editor preview and applied spanning layout disagree on zone size and position.",
+      "The report also requests a new cross-monitor snapping capability for separate layouts."
+    ],
+    "inferences": [
+      "The thread combines a DPI coordinate bug in span-across-monitors mode with an enhancement request to combine zones from independent work areas."
+    ],
+    "analysis": "These outcomes require different designs. A current topology plus active FancyZones setting and applied layout screenshot is necessary to isolate the scaling bug from the unsupported separate-layout interaction.",
+    "initial_investigation": [
+      "Issue 30706 is documentation saying FancyZones can work with different DPI, but it does not cover spanning-coordinate correctness.",
+      "Current FancyZones has distinct spanZonesAcrossMonitors and per-monitor work-area branches."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Current display ordering, pixel resolution, scaling, orientation, primary display, and virtual coordinates",
+        "why_needed": "It identifies the coordinate-space transform that produces the wrong applied zones.",
+        "how_to_collect": "List those values for all three displays and attach a Windows Display Settings screenshot with sensitive content hidden."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Which current path is the bug: mis-scaled spanning layout or inability to combine separate per-monitor layouts",
+        "why_needed": "The first is a defect; the second is a product enhancement with different architecture.",
+        "how_to_collect": "State whether 'Allow zones to span across monitors' is enabled and provide editor-versus-applied screenshots for that one configuration."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-24882",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": false,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "request-info-24882",
+      "type": "request_info",
+      "label": "Request mixed-DPI topology",
+      "primary": true,
+      "confirm": true,
+      "note": "Draft only; no upstream comment is posted without explicit approval.",
+      "comment": {
+        "target": "issue",
+        "number": 24882,
+        "body": "Thanks for describing the two 4K portrait displays at 150% and the 2K landscape display at 100%. The report currently combines a mis-scaled spanning layout with a separate enhancement request to combine zones from independent monitor layouts.\n\n**Needed**\n1. Please list each display's current pixel resolution, scaling, orientation, primary status, and left-to-right virtual position, and attach a Windows Display Settings screenshot with sensitive content hidden.\n2. Please confirm whether **Allow zones to span across monitors** is enabled and attach the editor preview and applied-zone overlay for that same configuration.\n\nThis will isolate a DPI coordinate defect from the unsupported cross-work-area selection request."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Use one coordinate space for mixed-DPI spanning layouts",
+      "root_cause": "Best current hypothesis: editor zones are serialized in device-independent or combined-monitor coordinates and the runtime reapplies per-monitor DPI conversion, shifting or resizing zones across the mixed-DPI boundary.",
+      "plan": [
+        "Record editor, serialized, and runtime rectangles with explicit coordinate-space/DPI metadata.",
+        "Normalize the spanning work area and every zone in one physical-pixel coordinate space at the process boundary.",
+        "Add mixed orientation/scaling tests; treat cross-selection from separate layouts as a separately approved enhancement."
+      ],
+      "verification": [
+        "Apply the same spanning layout across 150% portrait and 100% landscape displays and verify preview and runtime rectangles match."
+      ],
+      "confidence": {
+        "score": 49,
+        "level": "red",
+        "rationale": "Mixed-DPI conversion is plausible, but the current setting and coordinate map are missing and the report includes a separate enhancement."
+      }
+    }
+  ]
 }

@@ -1,33 +1,111 @@
 {
+  "schemaVersion": 5,
   "number": 37817,
   "kind": "issue",
   "track": "fix",
   "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
+  "source_updated_at": "2026-08-04T10:58:50Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/37817",
+  "title": "ZoomIt Error PopUp - Specified record hotkey is already in use",
+  "author": "bdstien",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-ZoomIt"
+  ],
+  "comments": 3,
+  "confidence": "Medium",
   "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
+    "glyph": "🎯",
+    "label": "Actionable fix candidate",
+    "detail": "The public reports and current registration code identify a concrete collision/error-reporting path that can be designed without requesting another generic diagnostic package."
   },
   "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
+    "glyph": "🛠️",
+    "label": "Design fix",
+    "reason": "Design atomic record-hotkey registration that identifies the exact conflicting chord and does not retain partial state."
   },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-04T10:58:50Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "status": "actionable_design",
+    "rationale": "The public reports and current registration code identify a concrete collision/error-reporting path that can be designed without requesting another generic diagnostic package.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "Three reporters describe the same startup/settings failure across keyboard layouts.",
+      "Current code derives and registers two additional record chords that are not separately shown in the setting."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Design atomic record-hotkey registration that identifies the exact conflicting chord and does not retain partial state.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2026-08-04T10:58:50Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked upstream fix covers the derived-hotkey collision and rollback path."
+  },
+  "issue_context": {
+    "summary": "ZoomIt reports that its record hotkey is already in use at startup or when settings change, even when the visible configured chord is unique.",
+    "known_information": [
+      "The original report reproduces on PowerToys 0.89.0 and includes a diagnostic archive and screenshots.",
+      "Later reports reproduce on non-French keyboards and after switching from standalone Sysinternals ZoomIt to the PowerToys module.",
+      "Current ZoomIt code registers the configured record chord plus automatically derived Shift and Alt variants for crop and window recording."
+    ],
+    "inferences": [
+      "A hidden derived record chord, rather than the visible base chord, may be the registration that collides.",
+      "A failed multi-chord registration may also leave partial registrations or produce an error that does not identify the conflicting variant."
+    ],
+    "analysis": "The error text is emitted only after one of the base, crop, or window record RegisterHotKey calls fails. The settings surface exposes the base chord, while the two derived chords are computed by XORing Shift and Alt, which explains why changing an apparently unique chord can still fail.",
+    "initial_investigation": [
+      "src/modules/ZoomIt/ZoomIt/Zoomit.cpp registers RECORD_HOTKEY, RECORD_CROP_HOTKEY, and RECORD_WINDOW_HOTKEY as one logical setting and uses the same generic error for all three failures.",
+      "No pull request referencing issue 37817 was found in the live upstream repository."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-37817",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "reproduce-37817",
+      "type": "reproduce",
+      "label": "E",
+      "primary": false,
+      "confirm": false,
+      "note": "Local maintainer verification only; no GitHub write is performed.",
+      "reproduce": {
+        "module": "a",
+        "version_requirement": "f",
+        "prerequisites": "c",
+        "steps": "h",
+        "expected_result": " ",
+        "setup_requirements": "a"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Make ZoomIt record-hotkey registration atomic and diagnosable",
+      "root_cause": "The single visible record shortcut expands into base, crop, and window RegisterHotKey calls; a collision in either derived chord is reported as if the base chord were invalid, and partial success is not handled as one transaction.",
+      "plan": [
+        "Represent the base and derived record chords as a named set before registration.",
+        "Validate/register each chord while recording the exact failing variant and roll back every chord registered in the attempt on failure.",
+        "Surface the conflicting derived chord in Settings and add coverage for AltGr/Shift-derived collisions and standalone-ZoomIt migration."
+      ],
+      "verification": [
+        "Start PowerToys with a deliberate collision on each of the base, crop, and window record chords and verify the exact chord is reported.",
+        "Change to a collision-free chord and confirm startup and repeated settings changes leave one complete registration set."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The failing calls and user symptom align closely, but a local registration trace is still needed to identify which derived variant fails on each machine."
+      }
+    }
+  ]
 }

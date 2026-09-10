@@ -1,34 +1,120 @@
 {
+  "schemaVersion": 5,
   "number": 31843,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
+  "source_updated_at": "2026-07-31T13:21:08Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/31843",
+  "title": "Regression : FancyZones does not work anymore with VSCode windows",
+  "author": "MarArMar",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "comments": 12,
+  "confidence": "Low",
   "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "The issue is current but combines incompatible reproduction paths and conflicting elevation outcomes."
   },
   "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
+    "glyph": "💬",
+    "label": "Clarify VS Code snap path",
+    "reason": "Request one current, single-path reproduction with process integrity context."
   },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-31T13:21:08Z",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "status": "needs_information",
+    "rationale": "The issue is current but combines incompatible reproduction paths and conflicting elevation outcomes.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "A WSL-launched VS Code case behaves differently from a Windows-launched case.",
+      "The newest comment describes native half-screen snapping rather than the original highlighted-zone drag failure."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Request one current, single-path reproduction with process integrity context.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2026-07-31T13:21:08Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is plausible, but the owning path is not yet isolated."
+  },
+  "issue_context": {
+    "summary": "FancyZones intermittently fails to zone VS Code; reports differ on whether elevation, WSL-launched VS Code, Shift-dragging, or Win+Arrow behavior is involved.",
+    "known_information": [
+      "The original 0.76.2 report says a highlighted zone does not accept VS Code.",
+      "Some users report matching PowerToys and VS Code elevation fixes it, while others say elevation does not help.",
+      "One report narrows failure to VS Code launched from WSL2; a 0.100.2 comment instead describes Windows half-screen snapping."
+    ],
+    "inferences": [
+      "The thread likely combines at least two failures: integrity-level exclusion during drag and an override-snap/launch-context case."
+    ],
+    "analysis": "A fix cannot safely target VS Code until the current failing input path and launch/elevation context are separated. The latest report does not say whether Shift-dragging shows a FancyZones overlay, whether Win+Arrow override is enabled, or how VS Code was launched.",
+    "initial_investigation": [
+      "Issue 28634 describes the same VS Code drag symptom but was closed stale rather than fixed.",
+      "No pull request referencing issue 31843 was found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "One current numbered reproduction using either Shift-drag or Win+Arrow, not both",
+        "why_needed": "It selects the mouse-drag hook path or keyboard override path and prevents conflating two bugs.",
+        "how_to_collect": "On the latest stable release, list how VS Code was launched, the exact snapping input, whether a zone overlay appears, and the resulting window bounds."
+      },
+      {
+        "evidence_type": "install_scope",
+        "information": "The elevation level of PowerToys and VS Code in that reproduction",
+        "why_needed": "Integrity mismatch can prevent PowerToys from controlling an elevated target window.",
+        "how_to_collect": "State whether each process is elevated and whether matching their elevation changes the result."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-31843",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": false,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "request-info-31843",
+      "type": "request_info",
+      "label": "Clarify VS Code snap path",
+      "primary": true,
+      "confirm": true,
+      "note": "Draft only; no upstream comment is posted without explicit approval.",
+      "comment": {
+        "target": "issue",
+        "number": 31843,
+        "body": "Thanks for confirming that a VS Code snapping problem still exists on 0.100.2 and for documenting the WSL/elevation observations. The thread now mixes Shift-drag behavior with Win+Arrow half-screen behavior, which enter different FancyZones paths.\n\n**Needed**\n1. Please provide one numbered reproduction on the latest stable build using either Shift-drag or Win+Arrow, and state how VS Code was launched, whether the FancyZones overlay appears, and the final window bounds.\n2. Please state whether PowerToys and VS Code are elevated, and whether matching their elevation changes that same reproduction.\n\nThis will distinguish a drag-hook integrity problem from an Override Windows Snap problem and determine the owning fix."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Keep VS Code eligible and route it through the correct FancyZones snap path",
+      "root_cause": "Best current hypothesis: VS Code windows are skipped or lose the zone operation when their launch/elevation context prevents the drag hook from controlling them; a separate configuration path may be leaving Win+Arrow to native Snap.",
+      "plan": [
+        "Instrument zone eligibility decisions with target integrity level, process path, window styles, and active snap mode.",
+        "Correct the identified eligibility/dispatch branch without bypassing Windows integrity boundaries.",
+        "Add VS Code launch variants for normal, elevated, and WSL-initiated windows to FancyZones UI coverage."
+      ],
+      "verification": [
+        "Repeat the isolated current reproduction and verify the same VS Code window enters and completes the intended zone operation."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "Conflicting reports support multiple causes; the exact current snap path and integrity context are still missing."
+      }
+    }
+  ]
 }

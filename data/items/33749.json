@@ -1,18 +1,17 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 33749,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2026-08-01T16:28:18Z",
   "url": "https://github.com/microsoft/PowerToys/issues/33749",
   "title": "Windows Terminal as Keyboard Manager shortcut does not get focus properly",
   "author": "tianon",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Product-Keyboard Shortcut Manager",
@@ -23,40 +22,90 @@
   "comments": 19,
   "confidence": "Medium",
   "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
+    "glyph": "🎯",
+    "label": "Actionable fix candidate",
+    "detail": "Current reproduction and source control flow identify a concrete missing new-process focus path."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+    "glyph": "🛠️",
+    "label": "Design fix",
+    "reason": "Design a bounded new-process window discovery and foreground-transfer flow with explicit launch semantics."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "Current reproduction and source control flow identify a concrete missing new-process focus path.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Repro, Needs-Triage, Needs-Team-Response",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "Notepad reproduces independently of Windows Terminal.",
+      "The existing-process branch invokes ShowProgram while the new-process branch does not."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Design a bounded new-process window discovery and foreground-transfer flow with explicit launch semantics.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2026-08-01T16:28:18Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No merged fix references the canonical issue; a duplicate remains closed in favor of this thread."
+  },
+  "issue_context": {
+    "summary": "Applications launched by Keyboard Manager shortcut remaps frequently open behind the current foreground window instead of receiving focus.",
+    "known_information": [
+      "The issue reproduces with Windows Terminal and Notepad on PowerToys 0.100.2.",
+      "The new process receives focus when the desktop is foreground, but not when Keyboard Manager or another window is foreground.",
+      "ForegroundLockTimeout=0 mitigates the problem, confirming Windows foreground-activation policy is involved."
+    ],
+    "inferences": [
+      "Keyboard Manager launches the process but does not complete a foreground-transfer protocol permitted by Windows, leaving the new window flashing for attention."
+    ],
+    "analysis": "Current CreateOrShowProcessForShortcut calls ShowProgram for an already-running process, but the corresponding call for a newly created process remains commented out. A robust fix must handle delayed top-level window creation and Windows foreground restrictions rather than only call SetForegroundWindow once.",
+    "initial_investigation": [
+      "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp leaves ShowProgram(processId, ...) commented after new-process creation.",
+      "Issue 44720 was closed as a duplicate of this issue; enhancement 39737 separately requests an explicit focused launch mode."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-33749",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-33749",
+      "type": "approve_design",
+      "label": "Design fix",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 33749,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the exact shortcut/key sequence, keyboard layout/input language, whether PowerToys is elevated, and a short recording if possible."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "reproduce-33749",
+      "type": "reproduce",
+      "label": "T",
+      "primary": false,
+      "confirm": false,
+      "note": "Local maintainer verification only; no GitHub write is performed.",
+      "reproduce": {
+        "module": "h",
+        "version_requirement": "a",
+        "prerequisites": "e",
+        "steps": " ",
+        "expected_result": "l",
+        "setup_requirements": "u"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Transfer foreground activation to newly launched shortcut apps",
+      "root_cause": "Keyboard Manager starts the target process but omits the ShowProgram/focus path used for existing processes, and therefore relies on default Windows activation that is often denied to the hook-driven launcher.",
+      "plan": [
+        "Add an explicit launch-focus option or make normal visible launches request focus consistently.",
+        "Wait with a short bound for the target process's eligible top-level window, then use the established foreground-transfer helper from an allowed UI context.",
+        "Handle packaged/multi-process apps, no-window processes, elevation boundaries, and Start another without blocking the keyboard hook."
+      ],
+      "verification": [
+        "Launch Notepad and Windows Terminal from a shortcut while Settings, Explorer, and another app are foreground; verify the target receives focus without changing ForegroundLockTimeout."
+      ],
+      "confidence": {
+        "score": 83,
+        "level": "yellow",
+        "rationale": "The missing new-process call and foreground-dependent reproduction are strong evidence, though Windows focus restrictions require validating the exact transfer mechanism."
+      }
     }
   ]
 }

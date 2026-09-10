@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 24334,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-02-27T12:50:20Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/24334",
+  "title": "FancyZones - Hot Swapping Monitor Configuration",
+  "author": "gerneio",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "confidence": "Low",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "A PowerToys-owned fix is plausible, but current monitor identity evidence is required because the only report predates major display handling changes."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Request hot-plug monitor identity",
+    "reason": "Request a current hot-plug package and exact topology, then compare hot-plug and startup layout keys."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "A PowerToys-owned fix is plausible, but current monitor identity evidence is required because the only report predates major display handling changes.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Restart fixes the layout without changing the physical topology.",
+      "The current code keys layout recreation on several monitor identity fields."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request a current hot-plug package and exact topology, then compare hot-plug and startup layout keys.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-02-27T12:50:20Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers this exact dock hot-swap lookup."
+  },
+  "issue_context": {
+    "summary": "FancyZones falls back to a default layout after a display dock is attached until PowerToys is restarted, instead of loading the saved layout for the new monitor configuration.",
+    "known_information": [
+      "The original report uses PowerToys 0.67.1, Windows 11 22H2, a laptop panel, and a Samsung ultrawide.",
+      "Restarting PowerToys immediately restores the expected saved layouts.",
+      "No current-version confirmation or later discussion exists."
+    ],
+    "inferences": [
+      "The hot-plug path may compute a transient monitor identity before EDID/serial information stabilizes, while startup computes the saved identity correctly."
+    ],
+    "analysis": "Current FancyZones has extensive monitor identity and work-area recreation logic, so a three-year-old package cannot establish whether the issue remains or which identity changes during hot-plug. A current package plus topology transition is the smallest discriminating evidence.",
+    "initial_investigation": [
+      "FancyZones::ShouldWorkAreasBeRecreated compares monitor device ID, serial number, virtual desktop, and work-area rectangle.",
+      "Issue 8906 is a closed older monitor-configuration reset report; no linked fix for this issue was found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "The current before/after monitor identities, scaling, orientation, and dock transition",
+        "why_needed": "It shows which monitor-configuration key changes or is missing during hot-plug.",
+        "how_to_collect": "List each display's connection, resolution, scaling, orientation, primary status, and the exact dock attach/detach sequence."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A current FancyZones diagnostic package immediately after the wrong default layout appears",
+        "why_needed": "It contains the monitor IDs and applied-layout lookup used by the hot-plug path.",
+        "how_to_collect": "Reproduce on the latest stable build and submit a comment containing /bugreport before restarting PowerToys."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-24334",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": false,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "request-info-24334",
+      "type": "request_info",
+      "label": "Request hot-plug monitor identity",
+      "primary": true,
+      "confirm": true,
+      "note": "Draft only; no upstream comment is posted without explicit approval.",
+      "comment": {
+        "target": "issue",
+        "number": 24334,
+        "body": "Thanks for the clear dock attach sequence and for noting that a PowerToys restart immediately restores the saved layouts. The original 0.67.1 data predates substantial FancyZones monitor-identity changes, so the current hot-plug key must be compared with the startup key.\n\n**Needed**\n1. Please list each display's connection, resolution, scaling, orientation, primary status, and the exact dock attach/detach sequence on the latest stable build.\n2. When the wrong default layout appears, please submit a comment containing `/bugreport` before restarting PowerToys.\n\nThis will show whether the hot-plug path sees a transient device/serial ID or fails to reload the matching applied layout."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Stabilize FancyZones applied-layout lookup after dock hot-plug",
+      "root_cause": "Best current hypothesis: the hot-plug callback looks up layouts with a transient or incomplete monitor identity, falls back to default, and does not retry after identity stabilization.",
+      "plan": [
+        "Log the full monitor identity and applied-layout key at each display-change phase.",
+        "Debounce/retry layout lookup until monitor identity stabilizes, without blocking the window event hook.",
+        "Preserve the last known layout per stable topology and add dock attach/detach integration coverage."
+      ],
+      "verification": [
+        "Attach and detach the reported dock repeatedly and verify the saved per-topology layout loads without restarting PowerToys."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The restart behavior supports an identity timing issue, but no current trace confirms which key differs."
+      }
+    }
+  ]
 }

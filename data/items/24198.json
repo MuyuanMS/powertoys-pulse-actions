@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 24198,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-07-13T15:11:36Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/24198",
+  "title": "FancyZones - \"Overwrite Windows Snap\" not working after Windows startup",
+  "author": "Hrubyk",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "comments": 1,
+  "confidence": "Low",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "The only reports are old, while current main has direct restart coverage for the basic scenario."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Confirm startup snap override state",
+    "reason": "Request a current released-version retest and focused FancyZones configuration before designing a new fix."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The only reports are old, while current main has direct restart coverage for the basic scenario.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "A settings toggle repairs the failure.",
+      "Current automated coverage exercises restart with the setting enabled."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request a current released-version retest and focused FancyZones configuration before designing a new fix.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-07-13T15:11:36Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A startup/hook fix may be needed, but current evidence cannot show whether the old defect remains."
+  },
+  "issue_context": {
+    "summary": "FancyZones Override Windows Snap was enabled in settings but inactive after startup until toggled off and on; a later report says it could also stop randomly.",
+    "known_information": [
+      "The original report is on PowerToys 0.67.1 and portrait monitors.",
+      "Toggling Override Windows Snap restores the hotkey behavior.",
+      "Current FancyZones UI coverage explicitly restarts PowerToys with overrideSnapHotkeys enabled and asserts Win+Arrow zones a window."
+    ],
+    "inferences": [
+      "The original startup-order bug may now be fixed; any current failure may instead be a hook loss or a configuration-specific startup race."
+    ],
+    "analysis": "A current test covers the basic persisted-setting restart case, so the next evidence must establish whether a latest release still fails and whether it is startup-only or a later hook loss. A focused settings export avoids requesting unrelated diagnostics.",
+    "initial_investigation": [
+      "FancyZones.UITests.Next/CoreBehaviorTests.cs restarts PowerToys after enabling Override Windows Snap and asserts zone cycling.",
+      "No pull request referencing issue 24198 was found."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "The latest stable PowerToys version on which Override Windows Snap is inactive after startup",
+        "why_needed": "Current main has restart coverage, so this confirms whether a released regression remains.",
+        "how_to_collect": "Retest after a full Windows sign-out/restart and provide the version shown in PowerToys About."
+      },
+      {
+        "evidence_type": "configuration_export",
+        "information": "The relevant FancyZones settings and active layout for the failing portrait display",
+        "why_needed": "It distinguishes a persisted setting/load failure from a layout or hotkey routing issue.",
+        "how_to_collect": "Share only the FancyZones settings export or screenshots for Override Windows Snap, active layout, and move-across-monitor options, with personal paths removed."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-24198",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": false,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "request-info-24198",
+      "type": "request_info",
+      "label": "Confirm startup snap override state",
+      "primary": true,
+      "confirm": true,
+      "note": "Draft only; no upstream comment is posted without explicit approval.",
+      "comment": {
+        "target": "issue",
+        "number": 24198,
+        "body": "Thanks for documenting that toggling **Override Windows Snap** restores Win+Arrow behavior and that the failure affected portrait displays. Current FancyZones main now has a restart test for the persisted setting, so we need to know whether a released build still fails or whether the remaining case is a later hook loss.\n\n**Needed**\n1. Please retest after a full Windows sign-out or reboot on the latest stable PowerToys release and provide the version from About.\n2. If it fails, please share only the relevant FancyZones settings/export or screenshots showing Override Windows Snap, the active portrait-display layout, and move-across-monitor options, with personal paths removed.\n\nThis will distinguish startup settings loading from hotkey-hook or layout routing failure."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Keep Override Windows Snap active across startup and hook recovery",
+      "root_cause": "Best current hypothesis: the persisted setting can be loaded before the keyboard hook is ready, or the hook can later be lost without reapplying the enabled routing state.",
+      "plan": [
+        "Trace setting load, FancyZones startup, and Win+Arrow hook registration/recovery order.",
+        "Make hook activation idempotently reflect the latest persisted setting after startup and any hook reinstall.",
+        "Extend restart coverage to Windows sign-in timing, portrait layouts, and simulated hook loss."
+      ],
+      "verification": [
+        "Reboot/sign in repeatedly with Override Windows Snap enabled and verify the first Win+Arrow after startup uses the active FancyZones layout without toggling settings."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The toggle workaround suggests state application, but current tests imply the original basic path may already be fixed."
+      }
+    }
+  ]
 }

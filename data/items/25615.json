@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 25615,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-04-27T13:02:52Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/25615",
+  "title": "Remapping Functionality donot detect  \".\" and contnuously shows \":\"",
+  "author": "Muhammadjunaidmalik1",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "comments": 1,
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "🧪",
+    "label": "Ready for focused reproduction",
+    "detail": "The report defines the exact layout, physical key, expected glyph, and two affected editor surfaces."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "🧪",
+    "label": "T",
+    "reason": "Reproduce under de-DE and make key naming/capture use the active input layout plus actual modifiers."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The report defines the exact layout, physical key, expected glyph, and two affected editor surfaces.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Type capture emits ':' for an unshifted '.' key.",
+      "The drop-down also lacks the period entry."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce under de-DE and make key naming/capture use the active input layout plus actual modifiers.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-04-27T13:02:52Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt references this issue."
+  },
+  "issue_context": {
+    "summary": "Keyboard Manager's key picker on a German layout identifies the physical period key as colon and does not offer a usable period entry.",
+    "known_information": [
+      "The report reproduces in the Type key capture UI on PowerToys 0.69.1.",
+      "A second user confirms both capture and drop-down behavior.",
+      "Colon should require Shift on the German key, while the unshifted key should be period."
+    ],
+    "inferences": [
+      "The editor maps the OEM virtual key to a display string without consistently applying the active layout and modifier state, conflating the base key with its shifted glyph."
+    ],
+    "analysis": "Current editor code caches GetKeyboardLayout for its thread and regenerates the key list only when that thread's layout changes. A German-layout UI test can inspect VK_OEM_PERIOD display/capture without needing private data.",
+    "initial_investigation": [
+      "KeyDropDownControl.cpp stores the current thread keyboard layout and rebuilds names on layout changes.",
+      "Keyboard Manager uses virtual-key and scan-code mapping paths that can be tested for VK_OEM_PERIOD under German layout."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-25615",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "reproduce-25615",
+      "type": "reproduce",
+      "label": "T",
+      "primary": false,
+      "confirm": false,
+      "note": "Local maintainer verification only; no GitHub write is performed.",
+      "reproduce": {
+        "module": "h",
+        "version_requirement": "a",
+        "prerequisites": "e",
+        "steps": " ",
+        "expected_result": "b",
+        "setup_requirements": "s"
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Resolve OEM key names from the active keyboard layout",
+      "root_cause": "The editor's virtual-key naming/capture path likely resolves VK_OEM_PERIOD with stale/default modifier state or the wrong thread layout, displaying the shifted colon glyph as the base key.",
+      "plan": [
+        "Add layout-specific tests for VK_OEM_PERIOD using German scan code, unshifted, and Shift states.",
+        "Resolve key names with the active input HKL and an explicit cleared modifier state for base-key display.",
+        "Keep physical key identity separate from localized glyph labels so saved remaps remain stable across layout switches."
+      ],
+      "verification": [
+        "On de-DE, capture and select period and Shift+period; verify labels and emitted remaps are '.' and ':' respectively, then switch layouts and retest."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The layout-specific OEM-key symptom and current HKL-dependent UI path align, though the exact naming helper still needs event-level confirmation."
+      }
+    }
+  ]
 }

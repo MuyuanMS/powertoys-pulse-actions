@@ -1,33 +1,119 @@
 {
+  "schemaVersion": 5,
   "number": 26613,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T14:36:48Z",
+  "evaluated_at": "2026-09-10T14:36:48Z",
   "source_updated_at": "2023-06-03T23:41:55Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/26613",
+  "title": "Power renaming removes links from links",
+  "author": "elitatwo",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerRename",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "confidence": "Low",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "The old symptom conflicts with the current rename mechanism, and one small current test can distinguish the remaining causes."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "💬",
+    "label": "Confirm renamed shortcut file type",
+    "reason": "Request a current synthetic before/after shortcut-properties comparison."
   },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "needs_information",
+    "rationale": "The old symptom conflicts with the current rename mechanism, and one small current test can distinguish the remaining causes.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report describes a display-name edit, not intentional target editing.",
+      "Current code uses IFileOperation::RenameItem on the .lnk shell item."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Request a current synthetic before/after shortcut-properties comparison.",
+    "evaluated_at": "2026-09-10T14:36:48Z",
     "source_updated_at": "2023-06-03T23:41:55Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerRename fix may apply, but the current evidence does not show whether the extension or payload is lost."
+  },
+  "issue_context": {
+    "summary": "PowerRename reportedly renames a desktop .lnk but leaves Windows treating it as an empty link or text file.",
+    "known_information": [
+      "The shortcut was created with Send to desktop and renamed on PowerToys 0.70.1.",
+      "The search removed the localized '.exe - Verknüpfung' portion of the display name.",
+      "Current PowerRename uses the filesystem path and IFileOperation::RenameItem, which should preserve shortcut contents."
+    ],
+    "inferences": [
+      "The apparent target loss may actually be removal of the hidden .lnk extension or may have been fixed since 0.70.1; current file properties will distinguish those cases."
+    ],
+    "analysis": "The current rename path does not edit IShellLink contents. The smallest useful evidence is a current synthetic shortcut plus before/after file type, extension, size, and target—not a broad diagnostic package.",
+    "initial_investigation": [
+      "PowerRenameItem initializes the original name from SIGDN_FILESYSPATH, which includes the real filename.",
+      "PowerRenameManager performs IFileOperation::RenameItem on the IShellItem and does not intentionally modify shortcut payload."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the renamed file still has the .lnk extension, nonzero size, and original Target in Properties on a current build",
+        "why_needed": "It distinguishes lost file association/name handling from actual shortcut-content corruption.",
+        "how_to_collect": "Create a non-sensitive test shortcut, enable Explorer file-name extensions, record Properties before and after PowerRename, and state the resulting filename, type, size, and Target."
+      },
+      {
+        "evidence_type": "powertoys_version",
+        "information": "The latest PowerToys version on which the synthetic shortcut still fails",
+        "why_needed": "The only report is from 0.70.1 and current rename code may no longer reproduce.",
+        "how_to_collect": "Retest on the latest stable release and provide the version from PowerToys About."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-26613",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": false,
+      "confirm": true,
+      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
+    },
+    {
+      "id": "request-info-26613",
+      "type": "request_info",
+      "label": "Confirm renamed shortcut file type",
+      "primary": true,
+      "confirm": true,
+      "note": "Draft only; no upstream comment is posted without explicit approval.",
+      "comment": {
+        "target": "issue",
+        "number": 26613,
+        "body": "Thanks for the exact German shortcut name and replacement text. Current PowerRename renames the shell item but does not intentionally edit the shortcut target, so we need to distinguish hidden `.lnk` extension removal from actual shortcut-content corruption.\n\n**Needed**\n1. Please retest with a non-sensitive test shortcut on the latest stable PowerToys version and provide that version from About.\n2. With Explorer **File name extensions** enabled, please record the shortcut's filename, file type, size, and Target in Properties before and after PowerRename.\n\nThis will determine whether the fix belongs in extension preservation, shell-item renaming, or shortcut payload handling."
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Preserve shell-link identity during localized display-name renames",
+      "root_cause": "Best current hypothesis: extension-exclusion or localized display-name handling can produce a final name without .lnk, making intact shortcut bytes appear as an unknown/empty file.",
+      "plan": [
+        "Add a test shortcut with a localized '- Verknüpfung' name and inspect the exact newName passed to IFileOperation.",
+        "Guarantee hidden shell-link extensions are preserved independently of the visible search/replace segment.",
+        "Verify the target, arguments, icon, and file size remain unchanged after rename."
+      ],
+      "verification": [
+        "Rename synthetic .lnk files with extensions hidden and shown; verify Windows still recognizes and launches every shortcut."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The hidden-extension explanation fits the appearance, but the current code path should preserve .lnk and needs a modern reproduction."
+      }
+    }
+  ]
 }
