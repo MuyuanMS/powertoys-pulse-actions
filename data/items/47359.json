@@ -1,139 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 47359,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T12:10:19Z",
+  "evaluated_at": "2026-09-10T12:10:19Z",
+  "source_updated_at": "2026-08-10T15:44:31Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47359",
+  "title": "Awake's tray icon doesn't respect 24h time format",
+  "author": "Rool-IO",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Awake"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "confidence": "High",
   "status": {
     "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
+    "label": "Culture-aware Awake tray-time fix is well supported",
+    "detail": "Awake formats its expirable tray text with a hard-coded 12-hour pattern, directly explaining why a 24-hour Windows preference still displays 1:30 instead of 13:30."
   },
   "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
+    "glyph": "➡️",
+    "label": "Design the culture-aware formatting change",
+    "reason": "Queue a narrow fork-side design around the confirmed formatting call site."
   },
-  "actions": [],
-  "confidence": "High",
-  "design": {
-    "root_cause": "Awake hard-codes the expirable tray tooltip to `MMM d, h:mm tt` in `Manager.SetModeShellIcon`, so users with 24-hour regional settings still see a 12-hour time string.",
-    "evidence": [
-      "Issue #47359 gives a one-step repro: set an expirable time such as 13:30 and observe that the tray text shows 1:30 instead of respecting the user's 24-hour format.",
-      "The reporter attached the requested screenshot after a maintainer asked for the tray/settings view.",
-      "In `src/modules/awake/Awake/Core/Manager.cs`, `SetModeShellIcon` formats expirable mode with `ExpireAt:MMM d, h:mm tt`, which forces a 12-hour clock regardless of `CultureInfo.CurrentCulture`."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/awake/Awake/Core/Manager.cs",
-        "purpose": "Builds the tray tooltip text for each Awake mode.",
-        "symbols": [
-          "Manager.SetModeShellIcon"
-        ]
-      },
-      {
-        "path": "src/modules/awake/Awake.ModuleServices/AwakeTrayTextFormatter.cs",
-        "purpose": "New pure helper that formats expiration text with the active culture so it can be unit-tested.",
-        "symbols": [
-          "AwakeTrayTextFormatter.FormatExpirationTooltip"
-        ]
-      },
-      {
-        "path": "src/modules/awake/Awake.ModuleServices.UnitTests/AwakeTrayTextFormatterTests.cs",
-        "purpose": "Regression tests for 12-hour and 24-hour cultures.",
-        "symbols": [
-          "AwakeTrayTextFormatterTests.FormatsExpirationWithCurrentCulture",
-          "AwakeTrayTextFormatterTests.PreservesAmPmFor12HourCultures"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/awake/Awake.ModuleServices/AwakeTrayTextFormatter.cs",
-        "symbols": [
-          "AwakeTrayTextFormatter.FormatExpirationTooltip"
-        ],
-        "current_behavior": "Formatting logic is embedded inline inside `Manager.SetModeShellIcon`, so the tray path always emits a fixed `h:mm tt` pattern and cannot be unit-tested.",
-        "change": "Extract a small formatter that composes the localized short-time pattern from `CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern`.",
-        "code_block": "internal static string FormatExpirationTooltip(DateTimeOffset expiration, CultureInfo culture)\r\n{\r\n    var timePattern = culture.DateTimeFormat.ShortTimePattern;\r\n    return $\"{Resources.AWAKE_TRAY_UNTIL} {expiration.ToString($\"MMM d, {timePattern}\", culture)}\";\r\n}",
-        "edge_cases": [
-          "24-hour cultures must stay 24-hour.",
-          "12-hour cultures must continue to show AM/PM markers.",
-          "The helper must not mutate thread culture."
-        ],
-        "tests": [
-          "Unit-test 24-hour cultures such as `sv-SE`.",
-          "Unit-test `en-US` and assert AM/PM output is preserved."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/awake/Awake/Core/Manager.cs",
-        "symbols": [
-          "Manager.SetModeShellIcon"
-        ],
-        "current_behavior": "Expirable mode concatenates `Resources.AWAKE_TRAY_UNTIL` with `ExpireAt:MMM d, h:mm tt`.",
-        "change": "Replace the inline format string with the shared formatter.",
-        "code_block": "case AwakeMode.EXPIRABLE:\r\n    iconText = $\"{Constants.FullAppName}\\n{AwakeTrayTextFormatter.FormatExpirationTooltip(ExpireAt, CultureInfo.CurrentCulture)}\\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}\";\r\n    icon = TrayHelper.ExpirableIcon;\r\n    break;",
-        "edge_cases": [
-          "Passive, timed, and indefinite modes must remain unchanged.",
-          "Tooltip length must stay within Shell_NotifyIcon limits."
-        ],
-        "tests": [
-          "Manual: set Windows to a 24-hour locale and verify the tray tooltip shows `13:30`.",
-          "Manual: switch back to a 12-hour locale and verify AM/PM output still appears."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/awake/Awake.ModuleServices.UnitTests/AwakeTrayTextFormatterTests.cs",
-        "symbols": [
-          "AwakeTrayTextFormatterTests"
-        ],
-        "current_behavior": "There is no automated regression coverage for tray expiration formatting.",
-        "change": "Add focused tests that call the extracted formatter directly under both 12-hour and 24-hour cultures.",
-        "code_block": "[TestMethod]\r\npublic void FormatsExpirationWithCurrentCulture()\r\n{\r\n    var expiration = new DateTimeOffset(2030, 1, 2, 13, 30, 0, TimeSpan.Zero);\r\n    var text = AwakeTrayTextFormatter.FormatExpirationTooltip(expiration, new CultureInfo(\"sv-SE\"));\r\n    StringAssert.Contains(text, \"13:30\");\r\n}",
-        "edge_cases": [
-          "Tests must restore any culture override they apply.",
-          "Use a fixed DateTimeOffset so daylight-savings changes cannot make the test flaky."
-        ],
-        "tests": [
-          "Run the Awake module services unit tests and confirm both culture-specific cases pass."
-        ]
-      }
-    ],
-    "verify": [
-      "pwsh -NoProfile -File tools\\build\\build.ps1 -Platform x64 -Configuration Debug",
-      "Build and run the Awake unit tests that include `AwakeTrayTextFormatterTests`.",
-      "Manual: set Windows to a 24-hour locale, enable Awake until 13:30, hover the tray icon, and confirm the tooltip shows `13:30` rather than `1:30`.",
-      "Manual: repeat with a 12-hour locale and confirm AM/PM formatting is still correct."
-    ],
-    "risks": [
-      "Changing the format string can unintentionally alter the compact tooltip shape for some locales.",
-      "The helper must stay tray-thread-safe and avoid UI-thread-only state."
-    ],
-    "alternatives": [
-      "Keep the hard-coded format and document the limitation. Rejected because the issue is caused by the hard-coded string itself.",
-      "Use a fully localized long date/time pattern. Rejected because the bug is specifically about respecting the short time format."
-    ]
-  },
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T15:44:31Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The report, screenshot, and current source agree on a single mechanism: Manager.SetModeShellIcon forces `h:mm tt` rather than using the current culture's short-time pattern.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Issue #47359 gives a one-step repro: set an expirable time such as 13:30 and observe that the tray text shows 1:30 instead of respecting the user's 24-hour format.",
-      "The reporter attached the requested screenshot after a maintainer asked for the tray/settings view.",
-      "In `src/modules/awake/Awake/Core/Manager.cs`, `SetModeShellIcon` formats expirable mode with `ExpireAt:MMM d, h:mm tt`, which forces a 12-hour clock regardless of `CultureInfo.CurrentCulture`.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The reporter reproduces by choosing 13:30 and seeing 1:30 without an AM/PM marker.",
+      "The requested screenshot was supplied.",
+      "src/modules/awake/Awake/Core/Manager.cs formats ExpireAt with `MMM d, h:mm tt`."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a focused design that replaces the forced 12-hour segment with culture-aware short-time formatting and adds 12/24-hour tests.",
+    "evaluated_at": "2026-09-10T12:10:19Z",
     "source_updated_at": "2026-08-10T15:44:31Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked upstream or fork implementation covers the confirmed hard-coded format string.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Respect the Windows short-time format in Awake tray text",
+      "root_cause": "Manager.SetModeShellIcon hard-codes `h:mm tt`, overriding the user's 24-hour regional time preference.",
+      "plan": [
+        "Extract or centralize expiration-tooltip formatting using the active culture's short-time pattern.",
+        "Replace the expirable-mode inline `h:mm tt` formatting while leaving other Awake modes unchanged.",
+        "Add focused tests for representative 24-hour and 12-hour cultures."
+      ],
+      "verification": [
+        "With a 24-hour culture, an expiration at 13:30 displays 13:30.",
+        "With a 12-hour culture, the same time displays the appropriate PM marker.",
+        "Timed, indefinite, and passive tray text remain unchanged."
+      ],
+      "confidence": {
+        "score": 96,
+        "level": "green",
+        "rationale": "The exact symptom is generated by an exact hard-coded source format and the reporter supplied the requested visual confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Awake formats its expirable tray text with a hard-coded 12-hour pattern, directly explaining why a 24-hour Windows preference still displays 1:30 instead of 13:30.",
+    "known_information": [
+      "PowerToys 0.99 is reported affected.",
+      "Only the expirable tray time is described; other Awake modes are not implicated.",
+      "The current source contains an exact hard-coded 12-hour format in Manager.SetModeShellIcon."
+    ],
+    "inferences": [
+      "Using CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern should preserve both 24-hour and 12-hour user preferences."
+    ],
+    "analysis": "The code-level cause is directly visible and the correction is narrow. The later reminder adds no conflicting evidence, so a full issue-design investigation is unnecessary for this triage artifact.",
+    "initial_investigation": [
+      "Read the complete report, screenshot response, and latest comment.",
+      "Verified the exact current format string in src/modules/awake/Awake/Core/Manager.cs.",
+      "Checked for linked work and found no existing fix URL."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-47359",
+      "type": "approve_design",
+      "label": "Design culture-aware Awake tray time",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Starts the fork-side design workflow only; it does not post or modify anything upstream."
+    }
+  ]
 }

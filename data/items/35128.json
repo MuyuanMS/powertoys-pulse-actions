@@ -1,48 +1,138 @@
 {
+  "schemaVersion": 5,
   "number": 35128,
   "kind": "issue",
   "track": "fix",
   "stage": "needs_reply",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T12:10:19Z",
+  "evaluated_at": "2026-09-10T12:10:19Z",
+  "source_updated_at": "2026-08-05T20:34:59Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/35128",
+  "title": "Multi-Desktop Powertoy FancyZone settings would change from existing settings after rebooting computer",
+  "author": "lunamoth",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "confidence": "Low",
   "status": {
-    "glyph": "💬",
-    "label": "Needs more evidence",
-    "detail": "The symptom is not yet localized enough to choose a safe code owner or design path."
+    "glyph": "❓",
+    "label": "FancyZones identity evidence is needed",
+    "detail": "FancyZones layouts move between monitors and virtual desktops after reboot or lock/unlock on current 0.100.2 systems, but the public thread lacks the before/after identity data needed to distinguish monitor enumeration from virtual-desktop reassociation."
   },
   "next_action": {
-    "glyph": "💬",
-    "label": "Request focused diagnostics",
-    "reason": "The missing evidence is specific and cheaper to collect than speculative code investigation."
+    "glyph": "➡️",
+    "label": "Request FancyZones topology and state",
+    "reason": "Collect the exact WorkArea identity change before approving a fix design."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The recurrence on new monitors and current builds makes a PowerToys identity/persistence defect plausible. Current FancyZones stores applied layouts by WorkAreaId combining monitor identity and virtual desktop GUID, so a changed or ambiguously compared identity can select a default or another monitor's layout.",
+    "evidence": [
+      "The original report describes two virtual desktops and two monitors whose layouts shift after reboot.",
+      "A current 0.100.2 report says lock/unlock can assign the right monitor's template to both monitors.",
+      "Changing to new monitors did not eliminate the behavior.",
+      "Current source keys AppliedLayouts by WorkAreaId containing MonitorId and virtualDesktopId."
+    ],
+    "recommended_action": "Request a before/after topology, applied-layouts snapshot, and immediate bug report; then approve a narrow identity-matching design if the key drift is confirmed.",
+    "evaluated_at": "2026-09-10T12:10:19Z",
+    "source_updated_at": "2026-08-05T20:34:59Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the current recurrence. A monitor/virtual-desktop identity change is the best repository-grounded hypothesis, but its exact dimension is unproven.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Stabilize FancyZones layout lookup across lock and reboot",
+      "root_cause": "Persisted AppliedLayouts entries are likely missing or ambiguously matching after a monitor or virtual-desktop WorkAreaId changes, causing fallback or another display's layout to be selected.",
+      "plan": [
+        "Capture before/after serialized WorkAreaId values and the live monitor/virtual-desktop identities during lock/unlock and reboot.",
+        "Correct the confirmed identity comparison or migration boundary while preserving distinct identical-monitor and virtual-desktop assignments.",
+        "Add regression coverage for two monitors across lock/unlock, reboot, and stable/changed enumeration order."
+      ],
+      "verification": [
+        "Two monitors and two virtual desktops retain their assigned layouts after lock/unlock and reboot.",
+        "Identical monitor models remain distinguishable when serial/instance data is available.",
+        "Disconnected/reconnected monitors do not steal another display's saved layout."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "The persistence key is a strong owning-code hypothesis, but no before/after identity data proves whether monitor identity, desktop GUID, or lookup ordering changes."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones layouts move between monitors and virtual desktops after reboot or lock/unlock on current 0.100.2 systems, but the public thread lacks the before/after identity data needed to distinguish monitor enumeration from virtual-desktop reassociation.",
+    "known_information": [
+      "The problem occurs after reboot and also after lock/unlock without a reported physical reconnect.",
+      "Both virtual desktop and monitor assignments are affected.",
+      "The issue reproduces on PowerToys 0.100.2 and Windows 11 Pro.",
+      "FancyZones persists layout selection by monitor and virtual desktop identity."
+    ],
+    "inferences": [
+      "A transient monitor instance/number or virtual desktop GUID change may cause AppliedLayouts lookup to miss and fall back.",
+      "The WorkAreaId ordering/equality or migration path may ambiguously match identical monitor models."
+    ],
+    "analysis": "The issue has enough evidence for a red-confidence implementation hypothesis, but the public state must show which identifier changes before a safe fix can be designed.",
+    "initial_investigation": [
+      "Read the full report, similar-issue bot list, and current 0.100.2 confirmation.",
+      "Inspected FancyZonesData/AppliedLayouts.cpp and FancyZonesDataTypes.h for WorkAreaId serialization, equality, ordering, monitor IDs, serial numbers, and virtual desktop GUIDs.",
+      "Found no linked PR, assignee, or concrete existing fix."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Monitor count, primary display, model/connection, resolution, scaling, and the exact lock/unlock or reboot transition that swaps layouts.",
+        "why_needed": "This determines whether the mismatch follows monitor identity, enumeration order, or a virtual-desktop transition.",
+        "how_to_collect": "List each display with primary status, resolution, scaling, orientation, and dock/connection type, then state whether lock/unlock alone reproduces before any cable change."
+      },
+      {
+        "evidence_type": "configuration_export",
+        "information": "The relevant FancyZones applied-layouts configuration before and after one failure, with personal paths removed.",
+        "why_needed": "Comparing WorkAreaId keys and layout UUIDs will show whether persisted monitor/virtual-desktop identities change or the wrong existing entry is selected.",
+        "how_to_collect": "Export or copy only the FancyZones applied-layouts data before and after reproduction, removing usernames or unrelated settings."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic captured immediately after the layouts swap on unlock or reboot.",
+        "why_needed": "The current 0.100.2 confirmation needs logs from the failing transition to correlate monitor and virtual-desktop identity changes.",
+        "how_to_collect": "Immediately after reproducing, submit a comment containing /bugreport."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "request-info-35128",
-      "type": "request_info",
-      "label": "Draft request for details",
+      "id": "approve-design-35128",
+      "type": "approve_design",
+      "label": "Design stable FancyZones work-area matching",
       "primary": true,
       "confirm": true,
+      "requiresApproval": true,
+      "note": "Starts the fork-side design workflow only; it does not post or modify anything upstream."
+    },
+    {
+      "id": "request-info-35128",
+      "type": "request_info",
+      "label": "Request FancyZones topology report",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
       "comment": {
         "target": "issue",
+        "repository": "microsoft/PowerToys",
         "number": 35128,
-        "body": "Could you confirm whether this still reproduces on PowerToys 0.100.2 or newer, rewrite the steps as a short numbered sequence from a clean start, and attach a PowerToys bug-report ZIP plus any screenshot or recording that shows the failure?"
+        "body": "Thanks for confirming that the layout swap still occurs on PowerToys 0.100.2, survives a monitor replacement, and can happen after lock/unlock as well as reboot. FancyZones stores assignments by monitor and virtual-desktop identity, so the missing evidence is which identity changes during the failing transition.\n\n**Needed**\n1. Please list each monitor's model/connection, primary status, resolution, scaling, and orientation, and state whether lock/unlock reproduces without reconnecting a display.\n2. Please attach the relevant FancyZones applied-layouts configuration from immediately before and after one failure, with usernames or unrelated settings removed.\n3. Immediately after reproducing, please submit a comment containing `/bugreport`.\n\nThis will distinguish monitor re-enumeration from virtual-desktop reassociation and determine the correct persistence fix."
       },
-      "note": "Draft only; never posted upstream without explicit approval."
+      "note": "Draft only; no upstream comment is posted without explicit approval."
     }
-  ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-05T20:34:59Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The symptom is not yet localized enough to choose a safe code owner or design path.",
-    "evidence": [
-      "The symptom is not yet localized enough to choose a safe code owner or design path.",
-      "Draft only; never posted upstream without explicit approval."
-    ],
-    "recommended_action": "The missing evidence is specific and cheaper to collect than speculative code investigation.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-05T20:34:59Z"
-  }
+  ]
 }

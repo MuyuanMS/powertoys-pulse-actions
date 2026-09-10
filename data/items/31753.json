@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 31753,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable",
-    "detail": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Do focused module triage",
-    "reason": "Tighten Keyboard Manager shortcut matching so extra modifiers do not trigger remaps that were configured without them."
-  },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T12:08:58Z",
+  "evaluated_at": "2026-09-10T12:08:58Z",
   "source_updated_at": "2026-08-05T02:56:21Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/31753",
+  "title": "Remapping a shortcut allows extra modifier keys",
+  "author": "thany",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "comment_count": 5,
+  "summary": "Win+Right remapping also captures Ctrl+Win+Right even though Ctrl was not configured.",
+  "next_action": "Approve exact-modifier matching",
+  "confidence": {
+    "score": 82,
+    "level": "yellow",
+    "rationale": "The reproduction is exact; all matcher paths still need inspection."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "rationale": "The minimal reproduction supports exact modifier matching.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "The mapping was Win+Right to End.",
+      "Ctrl+Win+Right triggers the remap instead of virtual-desktop navigation.",
+      "A bug report was supplied."
     ],
-    "recommended_action": "Tighten Keyboard Manager shortcut matching so extra modifiers do not trigger remaps that were configured without them.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve exact-modifier matching",
+    "evaluated_at": "2026-09-10T12:08:58Z",
     "source_updated_at": "2026-08-05T02:56:21Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete existing fix covers the reported path; the lightweight hypothesis is ready for a bounded design workflow."
+  },
+  "issue_context": {
+    "summary": "Win+Right remapping also captures Ctrl+Win+Right even though Ctrl was not configured.",
+    "known_information": [
+      "The mapping was Win+Right to End.",
+      "Ctrl+Win+Right triggers the remap instead of virtual-desktop navigation.",
+      "A bug report was supplied."
+    ],
+    "inferences": [
+      "The matcher accepts configured modifiers as a subset."
+    ],
+    "analysis": "The minimal reproduction supports exact modifier matching.",
+    "initial_investigation": [
+      "Reviewed the exact source/target and diagnostic handoff."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-31753",
+      "type": "approve_design",
+      "label": "Approve exact-modifier matching",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Require exact modifier matching",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight candidate performs no code or upstream write."
+    },
+    {
+      "id": "reproduce-31753",
+      "type": "reproduce",
+      "label": "Verify extra-modifier matching",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "steps": [
+          "Map Win+Right to End.",
+          "Press Win+Right, Ctrl+Win+Right, and Shift+Win+Right.",
+          "Record each result."
+        ],
+        "expected_result": "Only exact Win+Right remaps.",
+        "prerequisites": [
+          "Current PowerToys"
+        ]
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Require exact modifier matching",
+      "root_cause": "Shortcut matching accepts extra active modifiers beyond the configured set.",
+      "plan": [
+        "Compare active and configured modifier sets exactly.",
+        "Apply the rule consistently to chord and app-specific paths.",
+        "Test extra Ctrl and Shift combinations."
+      ],
+      "verification": [
+        "Confirm only exact Win+Right remaps."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The reproduction is exact; all matcher paths still need inspection."
+      }
+    }
+  ]
 }

@@ -1,60 +1,93 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 12886,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-09-10T12:08:58Z",
+  "evaluated_at": "2026-09-10T12:08:58Z",
   "source_updated_at": "2026-08-05T03:18:07Z",
   "url": "https://github.com/microsoft/PowerToys/issues/12886",
   "title": "Single key remap not working",
   "author": "Manlibear",
-  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Product-Keyboard Shortcut Manager",
     "Area-App Compat"
   ],
-  "comments": 20,
-  "confidence": "Medium",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+  "assignees": [],
+  "comment_count": 20,
+  "summary": "ShareMouse single-key events are ignored because its dwExtraInfo value collides with Keyboard Manager's injected-key marker.",
+  "next_action": "Approve injected-event marker design",
+  "confidence": {
+    "score": 93,
+    "level": "green",
+    "rationale": "The log and maintainer analysis identify the collision directly."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The public diagnostic discussion identifies the metadata collision and candidate remedies.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Keyboard Shortcut Manager, Area-App Compat",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "The diagnostic build logged ShareMouse events with KBDLLHOOKSTRUCT.dwExtraInfo equal to 5.",
+      "Keyboard Manager ignored them because the lowest bit was set.",
+      "The same remap worked from a directly attached Windows keyboard."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Approve injected-event marker design",
+    "evaluated_at": "2026-09-10T12:08:58Z",
     "source_updated_at": "2026-08-05T03:18:07Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete existing fix covers the reported path; the lightweight hypothesis is ready for a bounded design workflow."
+  },
+  "issue_context": {
+    "summary": "ShareMouse single-key events are ignored because its dwExtraInfo value collides with Keyboard Manager's injected-key marker.",
+    "known_information": [
+      "The diagnostic build logged ShareMouse events with KBDLLHOOKSTRUCT.dwExtraInfo equal to 5.",
+      "Keyboard Manager ignored them because the lowest bit was set.",
+      "The same remap worked from a directly attached Windows keyboard."
+    ],
+    "inferences": [
+      "A Keyboard Manager-specific signature or explicit sent-event tracking can preserve loop prevention."
+    ],
+    "analysis": "The public diagnostic discussion identifies the metadata collision and candidate remedies.",
+    "initial_investigation": [
+      "Reviewed the diagnostic log excerpt and dwExtraInfo maintainer discussion."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-12886",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-12886",
+      "type": "approve_design",
+      "label": "Approve injected-event marker design",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 12886,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include the exact shortcut/key sequence, keyboard layout/input language, whether PowerToys is elevated, and a short recording if possible."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "requiresApproval": true,
+      "design_summary": "Use collision-resistant injected-event tracking",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight candidate performs no code or upstream write."
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Use collision-resistant injected-event tracking",
+      "root_cause": "The engine treats the lowest dwExtraInfo bit as its own marker, but ShareMouse also sets that bit.",
+      "plan": [
+        "Replace the low-bit test with a Keyboard Manager-specific signature or explicit event tracking.",
+        "Recognize only Keyboard Manager-generated output as non-transitive.",
+        "Test third-party dwExtraInfo values and recursive-remap prevention."
+      ],
+      "verification": [
+        "Verify ShareMouse-originated remaps work.",
+        "Verify injected output is not recursively remapped."
+      ],
+      "confidence": {
+        "score": 93,
+        "level": "green",
+        "rationale": "The log and maintainer analysis identify the collision directly."
+      }
     }
   ]
 }

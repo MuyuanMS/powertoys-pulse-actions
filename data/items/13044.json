@@ -1,48 +1,112 @@
 {
+  "schemaVersion": 5,
   "number": 13044,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs more evidence",
-    "detail": "The symptom is not yet localized enough to choose a safe code owner or design path."
+  "generated_at": "2026-09-10T12:08:58Z",
+  "evaluated_at": "2026-09-10T12:08:58Z",
+  "source_updated_at": "2026-08-05T03:17:50Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/13044",
+  "title": "Remaped keys CTRL+C/V to ALT+C/V insert @copiedString@ into PowerShell 7.1.4 console",
+  "author": "siegfriedcw",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager"
+  ],
+  "assignees": [],
+  "comment_count": 13,
+  "summary": "Remapped shortcuts can add at-signs in standalone PowerShell, ConEmu, and RDP while Windows Terminal is unaffected.",
+  "next_action": "Approve legacy-console injection investigation",
+  "confidence": {
+    "score": 42,
+    "level": "red",
+    "rationale": "The symptom pattern is strong, but the malformed synthetic event is not identified."
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused diagnostics",
-    "reason": "The missing evidence is specific and cheaper to collect than speculative code investigation."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The host split and event timing justify tracing injection, but no event trace proves the exact field.",
+    "evidence": [
+      "A contributor reproduced it on PowerShell 7.1.4.",
+      "One at-sign appears on key press and another on modifier release.",
+      "It persists on 0.100.2 in ConEmu and RDP but not Windows Terminal."
+    ],
+    "recommended_action": "Approve legacy-console injection investigation",
+    "evaluated_at": "2026-09-10T12:08:58Z",
+    "source_updated_at": "2026-08-05T03:17:50Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete existing fix covers the reported path; the lightweight hypothesis is ready for a bounded design workflow."
+  },
+  "issue_context": {
+    "summary": "Remapped shortcuts can add at-signs in standalone PowerShell, ConEmu, and RDP while Windows Terminal is unaffected.",
+    "known_information": [
+      "A contributor reproduced it on PowerShell 7.1.4.",
+      "One at-sign appears on key press and another on modifier release.",
+      "It persists on 0.100.2 in ConEmu and RDP but not Windows Terminal."
+    ],
+    "inferences": [
+      "A synthetic modifier or key-up event is likely translated differently by legacy console input."
+    ],
+    "analysis": "The host split and event timing justify tracing injection, but no event trace proves the exact field.",
+    "initial_investigation": [
+      "Compared standalone console, ConEmu, RDP, and Windows Terminal reports."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-13044",
-      "type": "request_info",
-      "label": "Draft request for details",
+      "id": "approve-design-13044",
+      "type": "approve_design",
+      "label": "Approve legacy-console injection investigation",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 13044,
-        "body": "Could you confirm whether this still reproduces on PowerToys 0.100.2 or newer, rewrite the steps as a short numbered sequence from a clean start, and attach a PowerToys bug-report ZIP plus any screenshot or recording that shows the failure?"
-      },
-      "note": "Draft only; never posted upstream without explicit approval."
+      "requiresApproval": true,
+      "design_summary": "Normalize synthetic events for legacy console hosts",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight candidate performs no code or upstream write."
+    },
+    {
+      "id": "reproduce-13044",
+      "type": "reproduce",
+      "label": "Trace remapped keys in legacy PowerShell",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "steps": [
+          "Configure Alt+V to send Ctrl+V.",
+          "Paste into standalone PowerShell or ConEmu.",
+          "Repeat in Windows Terminal as a control."
+        ],
+        "expected_result": "Pasted text contains no added at-signs.",
+        "prerequisites": [
+          "PowerToys 0.100.2 or newer",
+          "Legacy ConsoleHost and Windows Terminal"
+        ]
+      }
     }
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-05T03:17:50Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The symptom is not yet localized enough to choose a safe code owner or design path.",
-    "evidence": [
-      "The symptom is not yet localized enough to choose a safe code owner or design path.",
-      "Draft only; never posted upstream without explicit approval."
-    ],
-    "recommended_action": "The missing evidence is specific and cheaper to collect than speculative code investigation.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-05T03:17:50Z"
-  }
+  "proposed_fixes": [
+    {
+      "title": "Normalize synthetic events for legacy console hosts",
+      "root_cause": "A generated modifier or key-up sequence is likely interpreted as @ by legacy console input translation.",
+      "plan": [
+        "Capture the same remap's low-level events in ConsoleHost and Windows Terminal.",
+        "Correct ordering, scan-code, or Unicode flags only after isolating the translated event.",
+        "Add legacy-console remap regression coverage."
+      ],
+      "verification": [
+        "Paste with Alt+V to Ctrl+V and confirm no added @ in either console host."
+      ],
+      "confidence": {
+        "score": 42,
+        "level": "red",
+        "rationale": "The symptom pattern is strong, but the malformed synthetic event is not identified."
+      }
+    }
+  ]
 }

@@ -1,48 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 28422,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path."
+  "generated_at": "2026-09-10T12:08:58Z",
+  "evaluated_at": "2026-09-10T12:08:58Z",
+  "source_updated_at": "2026-08-05T03:09:53Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/28422",
+  "title": "Switching key and shifted key not working",
+  "author": "bahamallama1",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 1,
+  "summary": "Reciprocal mappings between a German base key and its Shift variant cancel because generated output is not remapped transitively.",
+  "next_action": "Approve atomic base/Shift swap design",
+  "confidence": {
+    "score": 60,
+    "level": "yellow",
+    "rationale": "The reciprocal collision is visible; compilation behavior needs source confirmation."
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused reproduction evidence",
-    "reason": "Current data does not yet isolate a safe code path to change."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The configuration supports a non-recursive swap design without claiming exact engine ownership.",
+    "evidence": [
+      "The user maps # to Shift+# and Shift+# back to the base output.",
+      "With both entries, output remains unchanged.",
+      "The request requires distinguishing physical source from synthetic output."
+    ],
+    "recommended_action": "Approve atomic base/Shift swap design",
+    "evaluated_at": "2026-09-10T12:08:58Z",
+    "source_updated_at": "2026-08-05T03:09:53Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete existing fix covers the reported path; the lightweight hypothesis is ready for a bounded design workflow."
+  },
+  "issue_context": {
+    "summary": "Reciprocal mappings between a German base key and its Shift variant cancel because generated output is not remapped transitively.",
+    "known_information": [
+      "The user maps # to Shift+# and Shift+# back to the base output.",
+      "With both entries, output remains unchanged.",
+      "The request requires distinguishing physical source from synthetic output."
+    ],
+    "inferences": [
+      "An atomic source-aware swap can avoid recursive remapping."
+    ],
+    "analysis": "The configuration supports a non-recursive swap design without claiming exact engine ownership.",
+    "initial_investigation": [
+      "Reviewed both mappings and resulting output."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-28422",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-28422",
+      "type": "approve_design",
+      "label": "Approve atomic base/Shift swap design",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 28422,
-        "body": "Could you retest this on the latest stable PowerToys build and attach a PowerToys bug-report ZIP? Please include the exact key/shortcut mapping, whether PowerToys is running elevated, the contents of `%LOCALAPPDATA%\\Microsoft\\PowerToys\\Keyboard Manager\\Engine\\Logs\\`, and a short recording showing the failure from a fresh launch."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "requiresApproval": true,
+      "design_summary": "Handle reciprocal base/Shift swaps atomically",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight candidate performs no code or upstream write."
+    },
+    {
+      "id": "reproduce-28422",
+      "type": "reproduce",
+      "label": "Reproduce reciprocal German-key swap",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "steps": [
+          "Use a German layout.",
+          "Map # to Shift+# and Shift+# to the base key.",
+          "Test both inputs and modifier state."
+        ],
+        "expected_result": "Each input produces the opposite character without loops or stuck Shift.",
+        "prerequisites": [
+          "Current PowerToys",
+          "German keyboard layout"
+        ]
+      }
     }
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-05T03:09:53Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-    "evidence": [
-      "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "Current data does not yet isolate a safe code path to change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-05T03:09:53Z"
-  }
+  "proposed_fixes": [
+    {
+      "title": "Handle reciprocal base/Shift swaps atomically",
+      "root_cause": "Independent reciprocal rules collide with non-transitive injected-event protection.",
+      "plan": [
+        "Detect reciprocal mappings sharing one physical key.",
+        "Compile them into one source-aware transformation.",
+        "Test German base/Shift output and modifier cleanup."
+      ],
+      "verification": [
+        "Confirm each physical input produces the opposite character once."
+      ],
+      "confidence": {
+        "score": 60,
+        "level": "yellow",
+        "rationale": "The reciprocal collision is visible; compilation behavior needs source confirmation."
+      }
+    }
+  ]
 }

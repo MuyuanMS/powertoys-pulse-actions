@@ -1,34 +1,114 @@
 {
+  "schemaVersion": 5,
   "number": 31524,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author follow-up",
-    "detail": "The issue is blocked on reporter follow-up to an explicit maintainer request."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for reporter follow-up",
-    "reason": "A maintainer has already asked the next blocking question."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "stage": "design_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-10T12:08:58Z",
+  "evaluated_at": "2026-09-10T12:08:58Z",
   "source_updated_at": "2026-08-05T02:57:54Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/31524",
+  "title": "Remapping Browser Search Key (MS Natural Keyboard 4000) to Ctrl + F opens \"Project\" Panel",
+  "author": "TheSimArchitect",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "comment_count": 15,
+  "summary": "A remapped Microsoft keyboard search/media key sends the configured output and its original hardware command.",
+  "next_action": "Approve special-key suppression investigation",
+  "confidence": {
+    "score": 48,
+    "level": "red",
+    "rationale": "Dual dispatch is clear, but the bypassing event source may be driver-specific."
+  },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The issue is blocked on reporter follow-up to an explicit maintainer request.",
+    "status": "actionable_design",
+    "rationale": "Dual dispatch is reproducible, but hardware tracing must identify the original path.",
     "evidence": [
-      "The issue is blocked on reporter follow-up to an explicit maintainer request.",
-      "A maintainer has already asked the blocking question; avoid duplicating that request upstream."
+      "Reporter and collaborator observed both actions.",
+      "Browser Search and Browser Home style keys are affected.",
+      "The behavior spans two Microsoft keyboard models."
     ],
-    "recommended_action": "A maintainer has already asked the next blocking question.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve special-key suppression investigation",
+    "evaluated_at": "2026-09-10T12:08:58Z",
     "source_updated_at": "2026-08-05T02:57:54Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete existing fix covers the reported path; the lightweight hypothesis is ready for a bounded design workflow."
+  },
+  "issue_context": {
+    "summary": "A remapped Microsoft keyboard search/media key sends the configured output and its original hardware command.",
+    "known_information": [
+      "Reporter and collaborator observed both actions.",
+      "Browser Search and Browser Home style keys are affected.",
+      "The behavior spans two Microsoft keyboard models."
+    ],
+    "inferences": [
+      "A parallel HID consumer-control or vendor path bypasses keyboard-event suppression."
+    ],
+    "analysis": "Dual dispatch is reproducible, but hardware tracing must identify the original path.",
+    "initial_investigation": [
+      "Compared two keyboard models and simultaneous actions."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-31524",
+      "type": "approve_design",
+      "label": "Approve special-key suppression investigation",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Suppress original special-key commands while remapped",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight candidate performs no code or upstream write."
+    },
+    {
+      "id": "reproduce-31524",
+      "type": "reproduce",
+      "label": "Capture Microsoft keyboard dual dispatch",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "steps": [
+          "Map Browser Search/Home to Ctrl+F.",
+          "Capture keyboard and consumer-control events.",
+          "Repeat with the remap disabled."
+        ],
+        "expected_result": "Only Ctrl+F executes while remapped.",
+        "prerequisites": [
+          "Current PowerToys",
+          "Compatible Microsoft keyboard"
+        ]
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Suppress original special-key commands while remapped",
+      "root_cause": "The key may generate both a virtual-key event and consumer-control command; only one path is remapped.",
+      "plan": [
+        "Capture raw, low-level keyboard, and consumer-control events.",
+        "Suppress the matching original command only while remapped.",
+        "Add dual-signal abstraction tests."
+      ],
+      "verification": [
+        "Map the key to Ctrl+F and confirm only Find executes."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "Dual dispatch is clear, but the bypassing event source may be driver-specific."
+      }
+    }
+  ]
 }

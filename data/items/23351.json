@@ -1,34 +1,104 @@
 {
+  "schemaVersion": 5,
   "number": 23351,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "stage": "reproduction_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-10T12:10:19Z",
+  "evaluated_at": "2026-09-10T12:10:19Z",
+  "source_updated_at": "2026-08-10T09:56:53Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/23351",
+  "title": "Swapping capslock/ctrl causes false pen actions on Surface Laptop Studio",
+  "author": "notuntoward",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Repro",
+    "Priority-2"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "confidence": "Medium",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting on reporter follow-up",
-    "detail": "The current thread is blocked on updated repro information, logs, or confirmation on a newer build."
+    "glyph": "🧪",
+    "label": "Surface pen false-input reproduction is ready",
+    "detail": "Docking or undocking a Surface pen toggles Caps Lock and can invoke Screen Snip only when the CapsLock/Ctrl remap is enabled. The reporter reproduced on two Surface generations, and maintainers intentionally separated this false-action issue from the related remapping issue."
   },
   "next_action": {
-    "glyph": "⌛",
-    "label": "Wait for author evidence",
-    "reason": "The reporter has the next move because maintainers already asked for current-version validation or extra diagnostics."
+    "glyph": "➡️",
+    "label": "Capture the Surface pen event sequence",
+    "reason": "Reproduce on Surface hardware before selecting an injected-event or remap-state fix."
   },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T09:56:53Z",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The current thread is blocked on updated repro information, logs, or confirmation on a newer build.",
+    "status": "reproducible",
+    "rationale": "The public steps and hardware comparison are concrete, and disabling Keyboard Manager removes the behavior. The remaining discriminator is the actual keyboard/input sequence emitted by pen docking and how Keyboard Manager transforms it.",
     "evidence": [
-      "The current thread is blocked on updated repro information, logs, or confirmation on a newer build.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The original Surface Laptop Studio report includes a screenshot of the CapsLock/Ctrl swap and a diagnostic ZIP.",
+      "The reporter later reproduced different but related behavior on a Copilot Surface Pro.",
+      "Turning Keyboard Manager off stops the Caps Lock toggles and Screen Snip popup.",
+      "A maintainer says issue 33968 has the same visible symptoms but a distinct Win+Ctrl+F20 remapping failure."
     ],
-    "recommended_action": "The reporter has the next move because maintainers already asked for current-version validation or extra diagnostics.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Run a hardware-backed event trace and keep this issue separate from issue 33968 unless the same injected sequence is proven.",
+    "evaluated_at": "2026-09-10T12:10:19Z",
     "source_updated_at": "2026-08-10T09:56:53Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A fix cannot be scoped until the pen dock event sequence and Keyboard Manager transformation are captured on supported Surface hardware.",
+    "existing_fix_urls": [],
+    "related_issue_urls": [
+      "https://github.com/microsoft/PowerToys/issues/23438",
+      "https://github.com/microsoft/PowerToys/issues/33968"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Docking or undocking a Surface pen toggles Caps Lock and can invoke Screen Snip only when the CapsLock/Ctrl remap is enabled. The reporter reproduced on two Surface generations, and maintainers intentionally separated this false-action issue from the related remapping issue.",
+    "known_information": [
+      "The failure occurs on pen removal and return.",
+      "The symptom persists across two Surface device generations.",
+      "The single-click pen action is no longer configured, yet Screen Snip can still appear.",
+      "Keyboard Manager disablement is a reliable negative control."
+    ],
+    "inferences": [
+      "A synthetic or HID-generated key sequence associated with pen docking may pass through the CapsLock/Ctrl remap and become a Caps Lock toggle or Screen Snip chord.",
+      "Hardware/firmware differences may change the precise emitted sequence."
+    ],
+    "analysis": "The report is no longer waiting on the author: the author answered with a current device and a strong on/off control. Maintainer-side reproduction is the next action.",
+    "initial_investigation": [
+      "Read the full body and all comments, including the maintainer distinction from issue 33968.",
+      "Reviewed the related issue URLs 23438 and 33968.",
+      "Identified KeyboardManagerEngineLibrary keyboard event handling and injected-event test infrastructure as the likely trace boundary without claiming a confirmed source cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-23351",
+      "type": "reproduce",
+      "label": "Trace Surface pen dock key events",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirements": "Current PowerToys on a Surface Laptop Studio or Surface Pro with a dockable pen",
+        "prerequisites": [
+          "Configure a Caps Lock and Ctrl swap matching the report.",
+          "Record raw physical/HID and Keyboard Manager output events, including injected flags.",
+          "Verify the configured Windows pen click action before testing."
+        ],
+        "steps": [
+          "Undock the pen and record Caps Lock state and all emitted key events.",
+          "Redock the pen and record Caps Lock state, Screen Snip activation, and emitted events.",
+          "Disable Keyboard Manager and repeat as the negative control.",
+          "Compare the sequence with the Win+Ctrl+F20 behavior tracked in issue 33968."
+        ],
+        "expected_result": "Pen docking and undocking must not toggle Caps Lock or invoke Screen Snip; the trace must show where Keyboard Manager changes the sequence.",
+        "setup_requirements": []
+      }
+    }
+  ]
 }

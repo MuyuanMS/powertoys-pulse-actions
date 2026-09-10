@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 34193,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🔁",
-    "label": "Duplicate or already handled",
-    "detail": "The issue already has a stronger duplicate / localization / handled signal than a fresh standalone investigation."
-  },
-  "next_action": {
-    "glyph": "🔁",
-    "label": "Verify the existing handling path before doing new work",
-    "reason": "Verify the linked/related handling path and avoid opening a second parallel investigation unless new evidence proves this is distinct."
-  },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T12:08:58Z",
+  "evaluated_at": "2026-09-10T12:08:58Z",
   "source_updated_at": "2026-08-05T02:35:08Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/34193",
+  "title": "Enabling keyboard manager overrides the system keyboard setting",
+  "author": "wilczarzgit",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 4,
+  "summary": "Keyboard Manager can break Polish Programmer-layout AltGr characters and trigger commands instead.",
+  "next_action": "Approve AltGr pass-through design",
+  "confidence": {
+    "score": 66,
+    "level": "yellow",
+    "rationale": "The control implicates Keyboard Manager; exact matching behavior needs inspection."
+  },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue already has a stronger duplicate / localization / handled signal than a fresh standalone investigation.",
+    "status": "actionable_design",
+    "rationale": "The enable/disable control supports preserving unconfigured AltGr composition.",
     "evidence": [
-      "The issue already has a stronger duplicate / localization / handled signal than a fresh standalone investigation."
+      "Disabling Keyboard Manager restores AltGr characters.",
+      "Mouse Without Borders is disabled.",
+      "Send text becomes unreliable at normal fast typing speeds."
     ],
-    "recommended_action": "Verify the linked/related handling path and avoid opening a second parallel investigation unless new evidence proves this is distinct.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve AltGr pass-through design",
+    "evaluated_at": "2026-09-10T12:08:58Z",
     "source_updated_at": "2026-08-05T02:35:08Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete existing fix covers the reported path; the lightweight hypothesis is ready for a bounded design workflow."
+  },
+  "issue_context": {
+    "summary": "Keyboard Manager can break Polish Programmer-layout AltGr characters and trigger commands instead.",
+    "known_information": [
+      "Disabling Keyboard Manager restores AltGr characters.",
+      "Mouse Without Borders is disabled.",
+      "Send text becomes unreliable at normal fast typing speeds."
+    ],
+    "inferences": [
+      "AltGr may be decomposed into Ctrl+Alt and intercepted without an exact remap."
+    ],
+    "analysis": "The enable/disable control supports preserving unconfigured AltGr composition.",
+    "initial_investigation": [
+      "Reviewed Polish-layout examples and related AltGr reports."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-34193",
+      "type": "approve_design",
+      "label": "Approve AltGr pass-through design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Preserve unconfigured AltGr composition",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight candidate performs no code or upstream write."
+    },
+    {
+      "id": "reproduce-34193",
+      "type": "reproduce",
+      "label": "Reproduce Polish AltGr composition",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "steps": [
+          "Activate Polish (Programmers).",
+          "Enable Keyboard Manager with an unrelated remap.",
+          "Type AltGr+A, AltGr+O, and a fast sequence."
+        ],
+        "expected_result": "Polish characters appear consistently and no command fires.",
+        "prerequisites": [
+          "Current PowerToys",
+          "Polish (Programmers) layout"
+        ]
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Preserve unconfigured AltGr composition",
+      "root_cause": "The engine may treat AltGr as ordinary Ctrl+Alt and suppress layout composition.",
+      "plan": [
+        "Model AltGr as layout-aware input state.",
+        "Pass through the full original sequence when no exact remap matches.",
+        "Test Polish characters and fast typing."
+      ],
+      "verification": [
+        "Type Polish AltGr characters with unrelated remaps enabled."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "The control implicates Keyboard Manager; exact matching behavior needs inspection."
+      }
+    }
+  ]
 }

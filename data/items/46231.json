@@ -1,34 +1,132 @@
 {
+  "schemaVersion": 5,
   "number": 46231,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T12:10:19Z",
+  "evaluated_at": "2026-09-10T12:10:19Z",
+  "source_updated_at": "2026-08-12T22:39:12Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/46231",
+  "title": "\"PowerToys commands and settings\" missing in Command Palette",
+  "author": "BEN425",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "cmdpal-PowertoysExtension"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "confidence": "Medium",
   "status": {
     "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
+    "label": "PowerToys extension activation needs focused design",
+    "detail": "The built-in PowerToys commands provider is absent after install on multiple machines, including a current 0.100.2 Windows 10 report, but the public thread does not identify whether package activation, extension startup, or provider discovery failed."
   },
   "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
+    "glyph": "➡️",
+    "label": "Design and instrument the missing-provider path",
+    "reason": "Use the existing report plus a fresh current capture to select the extension registration or activation boundary before implementation."
   },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-12T22:39:12Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The report is repeatable across reinstalls and now has a second current-version confirmation. Current source contains a dedicated Microsoft.CmdPal.Ext.PowerToys process and command provider, so disappearance of the root command is a bounded extension activation/discovery failure rather than an undefined search-result complaint.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The original 0.98.0 report includes screenshots and a diagnostic ZIP and says restart, reboot, and reinstall did not restore the provider.",
+      "A second reporter reproduces on PowerToys 0.100.2 on Windows 10 but not on a separate Windows 11 computer.",
+      "Current source starts the extension in src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Program.cs and exposes the root provider through PowerToysExtensionCommandsProvider."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Start a focused fork-side design for extension activation recovery, while requesting one fresh affected diagnostic to avoid choosing the wrong boundary.",
+    "evaluated_at": "2026-09-10T12:10:19Z",
     "source_updated_at": "2026-08-12T22:39:12Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked issue, assignee, or public fix attempt covers the missing built-in provider. A repository change is plausible, but the failing activation stage is not yet proven.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover or surface failure of the built-in PowerToys Command Palette provider",
+      "root_cause": "The dedicated PowerToys Command Palette extension is not reaching the provider catalog on affected installations; the unresolved boundary is package activation versus extension startup/provider registration.",
+      "plan": [
+        "Trace the Microsoft.CmdPal.Ext.PowerToys package/extension registration and out-of-process startup path on an affected installation.",
+        "Make provider startup failure observable and add a bounded retry or repair path at the confirmed failed boundary.",
+        "Add regression coverage that verifies the PowerToys root command is enumerated after install, update, restart, and extension-process recovery."
+      ],
+      "verification": [
+        "Install or update on an affected Windows build and confirm PowerToys commands and settings appears without manual repair.",
+        "Terminate or fail the extension process and verify the catalog recovers or reports a precise diagnostic.",
+        "Confirm unaffected Windows 11 installations and third-party providers still enumerate normally."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The missing provider and owning code area are clear, but public evidence does not yet prove which activation stage fails."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The built-in PowerToys commands provider is absent after install on multiple machines, including a current 0.100.2 Windows 10 report, but the public thread does not identify whether package activation, extension startup, or provider discovery failed.",
+    "known_information": [
+      "PowerToys v0.98.0 on Windows 11 23H2 and v0.100.2 on Windows 10 are reported affected.",
+      "The root entry named PowerToys commands and settings is entirely missing, not merely returning empty results.",
+      "The original reporter tried restarting, rebooting, and reinstalling.",
+      "The Command Palette PowerToys extension is implemented as a separate extension process and provider in current source."
+    ],
+    "inferences": [
+      "The extension package or out-of-process activation may be failing on affected installations.",
+      "An OS-specific difference is possible, but the original Windows 11 report means Windows version alone cannot explain all occurrences."
+    ],
+    "analysis": "A focused design should follow registration, extension process startup, provider registration, and root-command enumeration. A fresh report from an affected current build is the cheapest discriminator before selecting recovery behavior.",
+    "initial_investigation": [
+      "Read the complete issue body, diagnostic links, screenshots, and the current-version confirmation.",
+      "Checked the current PowerToys Command Palette extension entry point and provider classes under src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys.",
+      "Checked the timeline and found no linked PR, duplicate, assignee, or existing public fix attempt."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic capture from an affected current installation immediately after Command Palette opens without the PowerToys commands provider.",
+        "why_needed": "This distinguishes extension package/activation failure from provider enumeration or enablement state and provides current PowerToysExtension logs.",
+        "how_to_collect": "On the affected computer, reproduce once and submit a comment containing /bugreport immediately afterward."
+      },
+      {
+        "evidence_type": "windows_version",
+        "information": "The exact Windows edition and build for each affected and unaffected computer.",
+        "why_needed": "The newest comment reports different behavior on Windows 10 and Windows 11, while the original report reproduced on Windows 11 23H2.",
+        "how_to_collect": "Run winver on each computer and report the edition and full build number."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-46231",
+      "type": "approve_design",
+      "label": "Design PowerToys provider activation recovery",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Starts the fork-side design workflow only; it does not post or modify anything upstream."
+    },
+    {
+      "id": "request-info-46231",
+      "type": "request_info",
+      "label": "Request Command Palette activation report",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 46231,
+        "body": "Thanks for confirming that the built-in PowerToys commands provider is still missing on PowerToys 0.100.2 and for comparing Windows 10 with Windows 11. The remaining ambiguity is whether the extension package fails to activate or activates but never registers its provider.\n\n**Needed**\n1. On an affected current installation, reproduce once and submit a comment containing `/bugreport` immediately afterward.\n2. Please include the exact Windows edition and full build from `winver` for the affected computer and, if available, the unaffected comparison computer.\n\nThis will identify the failing extension stage and determine whether the fix belongs in package activation, process startup, or provider discovery."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

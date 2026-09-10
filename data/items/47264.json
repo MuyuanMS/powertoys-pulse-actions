@@ -1,34 +1,99 @@
 {
+  "schemaVersion": 5,
   "number": 47264,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaged",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T12:10:19Z",
+  "evaluated_at": "2026-09-10T12:10:19Z",
+  "source_updated_at": "2026-08-10T10:33:44Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47264",
+  "title": "Grab and Move doesn't work through Google Chrome Remote Desktop",
+  "author": "finlaybob",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "confidence": "Medium",
   "status": {
-    "glyph": "🚫",
-    "label": "Not actionable for a new PowerToys fix",
-    "detail": "Grab and Move depends on local input/window semantics that Chrome Remote Desktop / Parsec do not preserve."
+    "glyph": "🧪",
+    "label": "Remote-session input reproduction is ready",
+    "detail": "Grab and Move fails through both Chrome Remote Desktop and Parsec while a comparable tool works, but the report does not establish whether remote clients suppress low-level hook events, alter injected flags, or expose a session/elevation boundary."
   },
   "next_action": {
-    "glyph": "🚫",
-    "label": "No new fix action now",
-    "reason": "Current evidence points outside a PowerToys-owned implementation change."
+    "glyph": "➡️",
+    "label": "Trace remote modifier and mouse events",
+    "reason": "Run a controlled maintainer reproduction before proposing a compatibility fix."
   },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T10:33:44Z",
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "Grab and Move depends on local input/window semantics that Chrome Remote Desktop / Parsec do not preserve.",
+    "status": "reproducible",
+    "rationale": "The two-machine steps are sufficient for reproduction and a second remote product confirms the class of failure. Current Grab and Move uses global low-level keyboard and mouse hooks, ignores injected keyboard events, and samples physical modifier state, all of which can behave differently under remote input.",
     "evidence": [
-      "Grab and Move depends on local input/window semantics that Chrome Remote Desktop / Parsec do not preserve.",
-      "Current evidence points to system, environment, packaging, or preference constraints rather than a new PowerToys fix."
+      "Chrome Remote Desktop with Send System Keys enabled does not activate Grab and Move.",
+      "A second reporter confirms the same behavior through Parsec.",
+      "AltSnap reportedly works in the same Chrome Remote Desktop environment.",
+      "Current Grab and Move installs WH_KEYBOARD_LL and WH_MOUSE_LL hooks and ignores LLKHF_INJECTED keyboard events."
     ],
-    "recommended_action": "Current evidence points outside a PowerToys-owned implementation change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce while tracing hook delivery and flags, then decide whether compatibility can be added without accepting unsafe synthetic input.",
+    "evaluated_at": "2026-09-10T12:10:19Z",
     "source_updated_at": "2026-08-10T10:33:44Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A code fix is premature until maintainers determine which event or state differs under remote input and whether accepting that input is safe.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Grab and Move fails through both Chrome Remote Desktop and Parsec while a comparable tool works, but the report does not establish whether remote clients suppress low-level hook events, alter injected flags, or expose a session/elevation boundary.",
+    "known_information": [
+      "The report includes exact two-machine prerequisites, Windows build, remote-host version, and a diagnostic ZIP.",
+      "The failure affects both moving and resizing.",
+      "Local behavior is implied to work.",
+      "A comparable third-party tool works remotely."
+    ],
+    "inferences": [
+      "Remote clients may mark modifier events as injected, causing Grab and Move to forward them without updating its activation state.",
+      "Remote-session key-state APIs may not match hook delivery even when system keys are forwarded."
+    ],
+    "analysis": "Because remote-input trust and event semantics are central, the safe lightweight result is a maintainer trace rather than a speculative change to injected-event filtering.",
+    "initial_investigation": [
+      "Read the complete body, diagnostic reference, and Parsec confirmation.",
+      "Inspected src/modules/GrabAndMove/GrabAndMove/main.cpp for hook installation, LLKHF_INJECTED filtering, modifier state, and GetAsyncKeyState use.",
+      "Found no linked upstream fix or assignee."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-47264",
+      "type": "reproduce",
+      "label": "Trace Grab and Move over remote desktop",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Grab and Move",
+        "version_requirements": "PowerToys 0.100.2 or newer; current Chrome Remote Desktop and Parsec if available",
+        "prerequisites": [
+          "Use two computers and enable Grab and Move locally on the host.",
+          "Enable system-key forwarding in the remote client.",
+          "Prepare a normal non-elevated window and confirm local Alt/Win plus mouse drag works first."
+        ],
+        "steps": [
+          "Connect with Chrome Remote Desktop and attempt move and resize with the configured activation modifier.",
+          "Record keyboard and mouse low-level hook delivery, injected flags, scan codes, and GetAsyncKeyState for the modifier.",
+          "Repeat through Parsec and compare with a local attempt.",
+          "Repeat with AltSnap only as a behavioral comparison, without inferring identical hook policy."
+        ],
+        "expected_result": "The trace should identify whether missing, injected, or inconsistent modifier/mouse state prevents activation; local behavior must remain correct.",
+        "setup_requirements": []
+      }
+    }
+  ]
 }

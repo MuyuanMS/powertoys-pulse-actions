@@ -1,33 +1,113 @@
 {
+  "schemaVersion": 5,
   "number": 24106,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author evidence",
-    "detail": "A maintainer-owned follow-up already asked for the missing evidence or a current-version retest. The next useful signal is the reporter's reply, not another parallel investigation."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for author follow-up",
-    "reason": "A maintainer or triage automation already asked for the missing evidence or retest."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "stage": "design_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-10T12:08:58Z",
+  "evaluated_at": "2026-09-10T12:08:58Z",
   "source_updated_at": "2026-08-05T03:12:21Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/24106",
+  "title": "Remapped Keyboard Shortcut Causing a Problem to Other Keys: Existing Issue",
+  "author": "MMBian",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Priority-1"
+  ],
+  "assignees": [],
+  "comment_count": 9,
+  "summary": "After app-specific Alt+C/Alt+V remaps in Explorer, the physical Delete key can stop working until Keyboard Manager is disabled.",
+  "next_action": "Approve modifier-state cleanup investigation",
+  "confidence": {
+    "score": 46,
+    "level": "red",
+    "rationale": "Keyboard Manager is implicated, but no trace identifies the stale state."
+  },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "A maintainer-owned follow-up already asked for the missing evidence or a current-version retest. The next useful signal is the reporter's reply, not another parallel investigation.",
+    "status": "actionable_design",
+    "rationale": "The reporter supplied requested evidence; the next discriminator is maintainer-side event tracing.",
     "evidence": [
-      "A maintainer-owned follow-up already asked for the missing evidence or a current-version retest. The next useful signal is the reporter's reply, not another parallel investigation."
+      "The reporter supplied a bug report and video.",
+      "Disabling Keyboard Manager restores Delete.",
+      "A collaborator matched the remap but could not reproduce locally."
     ],
-    "recommended_action": "A maintainer or triage automation already asked for the missing evidence or retest.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve modifier-state cleanup investigation",
+    "evaluated_at": "2026-09-10T12:08:58Z",
     "source_updated_at": "2026-08-05T03:12:21Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No concrete existing fix covers the reported path; the lightweight hypothesis is ready for a bounded design workflow."
+  },
+  "issue_context": {
+    "summary": "After app-specific Alt+C/Alt+V remaps in Explorer, the physical Delete key can stop working until Keyboard Manager is disabled.",
+    "known_information": [
+      "The reporter supplied a bug report and video.",
+      "Disabling Keyboard Manager restores Delete.",
+      "A collaborator matched the remap but could not reproduce locally."
+    ],
+    "inferences": [
+      "A synthetic modifier or suppression state may remain active after the remap sequence."
+    ],
+    "analysis": "The reporter supplied requested evidence; the next discriminator is maintainer-side event tracing.",
+    "initial_investigation": [
+      "Reviewed the diagnostic/video handoff and disable-control result."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-24106",
+      "type": "approve_design",
+      "label": "Approve modifier-state cleanup investigation",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Release synthetic modifier state after remaps",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight candidate performs no code or upstream write."
+    },
+    {
+      "id": "reproduce-24106",
+      "type": "reproduce",
+      "label": "Trace Delete after remapped copy and paste",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "steps": [
+          "Map Alt+C and Alt+V to Ctrl+C and Ctrl+V.",
+          "Copy, navigate, paste, then press Delete in Explorer.",
+          "Capture modifier transitions."
+        ],
+        "expected_result": "Delete remains functional and no modifier is logically pressed.",
+        "prerequisites": [
+          "Current PowerToys",
+          "Disposable Explorer test folder"
+        ]
+      }
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Release synthetic modifier state after remaps",
+      "root_cause": "An app-specific Alt-to-Ctrl remap may leave a modifier or suppression state active and swallow Delete.",
+      "plan": [
+        "Trace physical and synthetic modifier transitions around copy, paste, navigation, and Delete.",
+        "Clear injected modifiers and suppression state on completion and focus transition.",
+        "Add a sequence test ending with an unrelated physical key."
+      ],
+      "verification": [
+        "Repeat the Explorer sequence and confirm Delete always works."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "Keyboard Manager is implicated, but no trace identifies the stale state."
+      }
+    }
+  ]
 }

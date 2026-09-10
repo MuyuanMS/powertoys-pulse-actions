@@ -1,33 +1,128 @@
 {
+  "schemaVersion": 5,
   "number": 35537,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "design_queued",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T12:10:19Z",
+  "evaluated_at": "2026-09-10T12:10:19Z",
+  "source_updated_at": "2026-08-10T12:47:15Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/35537",
+  "title": "PowerToys Run application missing from the programs (Firefox)",
+  "author": "jaraco",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 4,
+  "confidence": "Medium",
   "status": {
     "glyph": "🎯",
-    "label": "Actionable",
-    "detail": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+    "label": "Firefox shortcut cache invalidation is a focused design candidate",
+    "detail": "Firefox's normal shortcut intermittently disappears from both PowerToys Run and Command Palette while the private-browsing shortcut remains; reboot restores it and recurrence follows Firefox's self-update lifecycle."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Do focused module triage",
-    "reason": "Investigate the shared app-index/discovery path used by both PowerToys Run and Command Palette for Firefox-start-menu shortcuts."
+    "glyph": "➡️",
+    "label": "Reproduce and design app-index refresh",
+    "reason": "Use a controlled Firefox update to identify the shared shortcut replacement event missed by both app catalogs."
   },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T12:47:15Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "rationale": "The reporter supplied repeated occurrences, screenshots, and a fresh 2026 diagnostic. Both launchers enumerate Start Menu shortcuts and maintain file-system-watcher-backed repositories, making transient shortcut replacement/cache invalidation the strongest bounded hypothesis.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "The normal Firefox shortcut is absent while Firefox Private Browsing remains and Windows Search still sees Firefox.",
+      "Restarting the computer restores the result, but the issue later recurs.",
+      "The reporter suspects Firefox updates and reproduced the same missing result in Command Palette on 0.100-era builds.",
+      "Both launcher implementations watch Start Menu, common Start Menu, desktop, and common desktop paths."
     ],
-    "recommended_action": "Investigate the shared app-index/discovery path used by both PowerToys Run and Command Palette for Firefox-start-menu shortcuts.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a focused app-index refresh design after reproducing Firefox's shortcut replacement sequence against both catalogs.",
+    "evaluated_at": "2026-09-10T12:10:19Z",
     "source_updated_at": "2026-08-10T12:47:15Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix or owner covers the intermittent stale shortcut state. The shared symptom supports a repository change, but the exact missed file-system event still needs maintainer reproduction.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make app repositories converge after atomic shortcut replacement",
+      "root_cause": "A Firefox update likely replaces the normal Start Menu shortcut through a file-system event sequence that leaves the PowerToys Run and Command Palette program caches stale until a full startup rebuild.",
+      "plan": [
+        "Capture the exact Firefox `.lnk` event sequence and compare it with both repositories' watcher subscriptions and filters.",
+        "Normalize create/delete/rename/change handling so atomic replacement invalidates the old record and reparses the final shortcut.",
+        "Add tests that replace a shortcut while preserving a sibling shortcut and assert both app catalogs converge without restart."
+      ],
+      "verification": [
+        "Update Firefox and verify both normal and private entries remain discoverable in both launchers.",
+        "Simulate atomic `.lnk` replacement and confirm no stale or missing cache entry remains.",
+        "Confirm ordinary Start Menu create, rename, delete, and duplicate handling are unchanged."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "Repeated reboot recovery and two app catalogs support stale indexing, but the exact watcher event and parser outcome have not been captured."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Firefox's normal shortcut intermittently disappears from both PowerToys Run and Command Palette while the private-browsing shortcut remains; reboot restores it and recurrence follows Firefox's self-update lifecycle.",
+    "known_information": [
+      "The report spans 0.85.1 through a fresh August 2026 diagnostic.",
+      "A reboot repairs the missing entry without recreating the shortcut manually.",
+      "The shortcut remains visible beside Firefox Private Browsing in the Start Menu.",
+      "PowerToys Run and Command Palette have separate Win32 program repositories but watch the same shell shortcut locations."
+    ],
+    "inferences": [
+      "Firefox's updater may replace or rename its `.lnk` atomically in a way that leaves one or both cached repositories stale.",
+      "A full catalog rebuild on process start explains why reboot repairs the result."
+    ],
+    "analysis": "The next useful step is maintainer-side reproduction around a Firefox update, recording file-system events and repository cache mutations. That evidence can distinguish a watcher filter bug from shortcut parsing or deduplication.",
+    "initial_investigation": [
+      "Read all issue comments, both diagnostic references, and the latest Command Palette screenshot.",
+      "Inspected the PowerToys Run and Command Palette Win32ProgramFileSystemWatchers implementations and their shared watched shell locations.",
+      "Found no linked PR, assignee, or duplicate in the public timeline."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-35537",
+      "type": "approve_design",
+      "label": "Design resilient app-shortcut refresh",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Starts the fork-side design workflow only; it does not post or modify anything upstream."
+    },
+    {
+      "id": "reproduce-35537",
+      "type": "reproduce",
+      "label": "Reproduce Firefox shortcut replacement",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "module": "PowerToys Run and Command Palette Apps",
+        "version_requirements": "PowerToys 0.100.2 or newer with current Firefox",
+        "prerequisites": [
+          "Install Firefox so both normal and Private Browsing Start Menu shortcuts exist.",
+          "Enable the Applications plugin in PowerToys Run and the Apps extension in Command Palette."
+        ],
+        "steps": [
+          "Confirm both Firefox entries appear in PowerToys Run, Command Palette, and Windows Search.",
+          "Allow Firefox to self-update or reproduce its shortcut replacement while recording Create/Delete/Rename/Change events in the watched Start Menu directory.",
+          "Query both PowerToys surfaces without rebooting and compare their repository/cache state with the actual `.lnk` files.",
+          "Restart only PowerToys, then reboot if needed, recording which action rebuilds the missing entry."
+        ],
+        "expected_result": "Both catalogs should converge on the current Start Menu shortcut set after Firefox updates, without requiring a reboot.",
+        "setup_requirements": [
+          "Use a disposable profile or VM so Firefox can be updated between two known versions."
+        ]
+      }
+    }
+  ]
 }
