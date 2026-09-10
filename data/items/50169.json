@@ -4,70 +4,126 @@
   "number": 50169,
   "title": "PowerToys randomly exits",
   "url": "https://github.com/microsoft/PowerToys/issues/50169",
-  "generated_at": "2026-09-09T10:28:38.042Z",
-  "evaluated_at": "2026-09-09T10:28:38.042Z",
-  "source_updated_at": "2026-09-08T08:44:29Z",
+  "repository": "microsoft/PowerToys",
+  "track": "fix",
+  "stage": "needs_reply",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-09-10T03:43:40.5039147Z",
+  "evaluated_at": "2026-09-10T03:43:40.5039147Z",
+  "source_updated_at": "2026-09-10T01:21:17Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Merged PR #50273 adds Runner logging for WM_QUERYENDSESSION and WM_ENDSESSION and explicitly references this issue. It provides diagnostic coverage for a likely system/session-end exit path, but is not proof that every random exit cause is fixed; further user-facing fix work should be driven by logs from a recurrence after that change.",
-    "recommended_action": "Use the merged session-end telemetry to classify any remaining recurrence before opening a new implementation plan.",
+    "status": "waiting_on_author",
+    "rationale": "The maintainer has already provided preview release v0.101.2512.0 containing the merged Runner session-end diagnostics and asked the reporter to upload a new report after the next unexpected exit. The reporter has not replied after that request, so the next useful evidence is owed by the author and a duplicate request should not be posted.",
+    "recommended_action": "Wait for the reporter to reproduce on v0.101.2512.0 or later and provide the requested post-exit diagnostic report; then use the new Runner reason fields to decide whether the exit is a Windows session-end path or an application failure.",
     "evidence": [
       {
-        "fact": "The author supplied a bug report and confirmed recurrence on the latest stable release.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50169"
+        "fact": "The reporter reproduced the exit on the then-latest stable release, on multiple systems, while Command Palette remained active.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50169#issuecomment-5542800062"
       },
       {
-        "fact": "Merged PR #50273 adds Runner logging for Windows session-end reasons and explicitly relates to issue #50169.",
+        "fact": "The earlier diagnostic ZIP was generated after PowerToys had been restarted, and the maintainer reported that it did not show anything abnormal.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50169#issuecomment-5482920161"
+      },
+      {
+        "fact": "Merged PR #50273 adds Runner logging for WM_QUERYENDSESSION and WM_ENDSESSION, decodes session-end reasons, and intentionally leaves behavior unchanged.",
         "source": "https://github.com/microsoft/PowerToys/pull/50273"
       },
       {
-        "fact": "Related live issue #50270 covers random PowerToys exits and links the same diagnostic direction.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50270"
+        "fact": "The latest maintainer comment links preview v0.101.2512.0 and asks for another log after the next exit.",
+        "source": "https://github.com/microsoft/PowerToys/issues/50169#issuecomment-5611227649"
       }
-    ]
+    ],
+    "evaluated_at": "2026-09-10T03:43:40.5039147Z",
+    "source_updated_at": "2026-09-10T01:21:17Z"
   },
   "fix_assessment": {
     "status": "existing_fix",
-    "rationale": "The linked PR is merged and adds the targeted diagnostic coverage requested by the issue investigation; no separate behavioral fix is justified without a post-merge recurrence trace.",
+    "rationale": "Merged PR #50273 is the concrete implementation associated with this issue. It adds the diagnostic coverage needed to classify the unexplained Runner exit, but it is not a behavioral correction and does not establish that the underlying exit cause is fixed.",
     "existing_fix_urls": [
       "https://github.com/microsoft/PowerToys/pull/50273"
     ]
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Random PowerToys exits have merged diagnostic coverage for Windows session-end reasons, but recurrence classification is still required if the issue persists.",
+    "summary": "PowerToys Runner disappears after hours of ordinary use on multiple systems while the separately hosted Command Palette remains active. Existing diagnostics captured after restarting PowerToys did not identify the exit cause, so a merged Runner telemetry change and a linked preview build are now awaiting a post-recurrence report.",
     "known_information": [
-      "Issue is assigned to moooyo and labeled Needs-Team-Response.",
-      "The reporter confirmed recurrence on the latest stable release and supplied diagnostics.",
-      "PR #50273 is merged and logs session-end reason details in Runner.",
-      "The latest reporter comment asks to be pinged when the preview containing the extra Runner logs is available."
+      "The original report was filed for PowerToys 0.100.2 installed from the Microsoft Store.",
+      "The reporter observed the issue on multiple systems after hours of normal use; the tray icon and other PowerToys tools stopped working while Command Palette stayed active.",
+      "The reporter supplied a PowerToys report after noticing the exit and restarting PowerToys.",
+      "The maintainer found nothing abnormal in that report and asked whether software had been installed during the exit period; the reporter said no and described only web browsing and video playback.",
+      "The reporter later confirmed the same behavior after updating to the latest stable GitHub release.",
+      "The reporter linked issues #50270, #49438, and #49208 as similar reports; all three are currently open.",
+      "PR #50273 merged on 2026-09-07 and adds logging around Runner WM_QUERYENDSESSION and WM_ENDSESSION handling without changing the existing session-end behavior.",
+      "The maintainer first asked the reporter to wait for a preview containing the new logs, then provided preview v0.101.2512.0 and requested another report after the next exit.",
+      "The issue remains open, assigned to moooyo, and labeled Issue-Bug, Needs-Triage, Needs-Team-Response, and Product-General."
     ],
     "inferences": [
-      "Some apparent random exits may be Windows shutdown, sign-out, restart, or session-end behavior rather than an unexplained crash.",
-      "A recurrence after the merged logging change would need a new, classified trace."
+      "Because Command Palette remains active while the tray-hosted Runner disappears, the failure likely affects the Runner lifecycle rather than every PowerToys process.",
+      "A Windows shutdown, sign-out, restart, or Restart Manager close-app message is one plausible explanation, but PR #50273 describes it as a hypothesis and the current public evidence does not confirm it.",
+      "The earlier report may not preserve the decisive pre-exit state because it was captured after restarting PowerToys."
     ],
-    "analysis": "The artifact should record the merged diagnostic coverage and avoid opening new design work until the new Runner logging produces a classified recurrence.",
+    "analysis": "The report is credible and sufficiently described to establish an intermittent Runner-lifecycle failure, but it is not deterministic enough to select a behavioral code fix. The repository already contains a merged, issue-linked diagnostic implementation specifically intended to distinguish session-end messages from other exits. Since the maintainer has now supplied the preview and made the exact evidence request, the correct current state is waiting on the reporter rather than proposing a competing design or posting a duplicate comment.",
     "initial_investigation": [
-      "src/runner",
-      "https://github.com/microsoft/PowerToys/pull/50273"
+      "Read the complete live issue body and all 13 comments through the latest activity at 2026-09-10T01:21:17Z.",
+      "Checked the live issue timeline: PR #50273 is the only linked pull request and is merged.",
+      "Reviewed PR #50273 metadata and changed-file scope: it modifies src/runner/tray_icon.cpp to add session-end diagnostics while preserving behavior.",
+      "Checked the three similar issues named by the reporter: #50270, #49438, and #49208 are all still open and do not supply a confirmed root cause or merged behavioral fix."
     ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "type": "post_comment",
-      "label": "Point to PR #50273",
-      "note": "Post the evidence-based status and linked public work.",
-      "comment": {
-        "body": "PR #50273 is merged and adds Runner logging for WM_QUERYENDSESSION and WM_ENDSESSION, including decoded session-end reasons and confirmed/cancelled state. That is the current fix coverage for this issue unexplained-exit investigation. If PowerToys still exits unexpectedly after the change, please attach a fresh report from a recurrence so the new reason fields can distinguish session-end behavior from an application crash before another code fix is designed."
+    "information_gaps": [
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic report captured immediately after the next unexpected Runner exit while running preview v0.101.2512.0 or later.",
+        "why_needed": "The added Runner fields can distinguish a Windows session-end or Restart Manager path from an unexplained application exit and determine the next code investigation.",
+        "how_to_collect": "After the exit recurs, restart PowerToys if necessary and promptly submit a comment containing /bugreport so the generated ZIP includes the new Runner session-end fields."
       }
+    ]
+  },
+  "actions": [],
+  "author_wait_evidence": {
+    "requested_by": "moooyo",
+    "url": "https://github.com/microsoft/PowerToys/issues/50169#issuecomment-5611227649",
+    "created_at": "2026-09-10T01:21:17Z",
+    "requested_evidence": "Run preview v0.101.2512.0 and upload a fresh diagnostic report after the next unexpected exit."
+  },
+  "linked_items": [
+    {
+      "kind": "pull_request",
+      "number": 50273,
+      "state": "MERGED",
+      "url": "https://github.com/microsoft/PowerToys/pull/50273",
+      "relationship": "issue-linked diagnostic implementation"
+    },
+    {
+      "kind": "issue",
+      "number": 50270,
+      "state": "OPEN",
+      "url": "https://github.com/microsoft/PowerToys/issues/50270",
+      "relationship": "similar report linked by the reporter"
+    },
+    {
+      "kind": "issue",
+      "number": 49438,
+      "state": "OPEN",
+      "url": "https://github.com/microsoft/PowerToys/issues/49438",
+      "relationship": "similar report linked by the reporter"
+    },
+    {
+      "kind": "issue",
+      "number": 49208,
+      "state": "OPEN",
+      "url": "https://github.com/microsoft/PowerToys/issues/49208",
+      "relationship": "similar report linked by the reporter"
     }
   ],
-  "repository": "microsoft/PowerToys",
-  "track": "fix",
+  "status": {
+    "glyph": "clock",
+    "label": "Waiting for preview recurrence diagnostics",
+    "detail": "Preview v0.101.2512.0 with merged Runner session-end logging has been provided; the reporter now owes a fresh post-exit /bugreport before behavioral fix design can proceed."
+  },
   "state": "OPEN",
   "created_at": "2026-08-27T14:56:19Z",
-  "updated_at": "2026-09-08T08:44:29Z",
+  "updated_at": "2026-09-10T01:21:17Z",
   "author": "Ishaan1313",
   "labels": [
     "Issue-Bug",
@@ -78,18 +134,14 @@
   "assignees": [
     "moooyo"
   ],
-  "comments": 12,
+  "comments": 13,
   "live_activity": {
     "issue_body_read": true,
-    "comments_read": 12,
-    "timeline_events_read": 34
+    "comments_read": 13,
+    "timeline_events_read": 12,
+    "linked_items_revalidated": 4
   },
-  "upstream_public_action_taken": false,
   "design": null,
   "full_design": false,
-  "confidence": {
-    "score": 86,
-    "level": "green",
-    "rationale": "Merged upstream diagnostic coverage already exists, and the latest comment only asks to be pinged when the preview build is available."
-  }
+  "upstream_public_action_taken": false
 }
