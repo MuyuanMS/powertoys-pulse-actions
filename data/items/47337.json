@@ -1,33 +1,142 @@
 {
+  "schemaVersion": 5,
   "number": 47337,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T14:18:21Z",
+  "evaluated_at": "2026-09-10T14:18:21Z",
+  "source_updated_at": "2026-08-05T02:12:03Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47337",
+  "title": "Grab and move blocks some shortcuts",
+  "author": "davidgilbertson",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comments": 8,
+  "confidence": "Medium",
   "status": {
-    "glyph": "🔁",
-    "label": "Duplicate or already handled",
-    "detail": "The issue already has a stronger duplicate / localization / handled signal than a fresh standalone investigation."
+    "glyph": "🎯",
+    "label": "Focused fix hypothesis is ready for design approval",
+    "detail": "Grab and Move configured for Alt consumes or reorders Alt-first keyboard sequences used by AutoHotkey and shell Alt-drag, even after two earlier hotfixes."
   },
   "next_action": {
-    "glyph": "🔁",
-    "label": "Verify the existing handling path before doing new work",
-    "reason": "Verify the linked/related handling path and avoid opening a second parallel investigation unless new evidence proves this is distinct."
+    "glyph": "➡️",
+    "label": "Approve the focused fix direction",
+    "reason": "The fast judgment identifies a repository change, while implementation-grade design remains deferred."
   },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-05T02:12:03Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "updated_at": "2026-08-05T02:12:03Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 8,
+    "timeline_events_read": 2
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true,
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue already has a stronger duplicate / localization / handled signal than a fresh standalone investigation.",
+    "status": "actionable_design",
+    "rationale": "The issue has multiple concrete public reproductions, survived the intended hotfix, and includes a maintainer statement that related input infrastructure must change.",
     "evidence": [
-      "The issue already has a stronger duplicate / localization / handled signal than a fresh standalone investigation."
+      "Reporter retested after PRs 47261 and 47326 and said the original issue remains.",
+      "PR 47261 releases retained Alt state on other interactions.",
+      "AutoHotkey and shell Alt-drag examples demonstrate that non-mouse consumers receive the wrong modifier sequence."
     ],
-    "recommended_action": "Verify the linked/related handling path and avoid opening a second parallel investigation unless new evidence proves this is distinct.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve the focused design direction, then run the full issue-to-design workflow before implementation.",
+    "evaluated_at": "2026-09-10T14:18:21Z",
     "source_updated_at": "2026-08-05T02:12:03Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current upstream or fork implementation fully covers the reproduced interaction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Alt state for unrelated keyboard combinations while Grab and Move waits for a mouse gesture",
+      "root_cause": "The Grab and Move hook temporarily owns Alt activation state and replays/releases it for selected transitions, but unrelated keyboard combinations can observe a missing or reordered Alt down/hold sequence.",
+      "plan": [
+        "Trace low-level keyboard events for Alt-first multi-modifier input with Grab and Move enabled.",
+        "Separate pending drag activation from unrelated keyboard combinations and replay the absorbed Alt event before forwarding the non-mouse key sequence.",
+        "Preserve the existing suppression of window-menu activation only after an actual drag/resize gesture.",
+        "Add regression coverage for AutoHotkey-style Alt combos and shell Alt-drag alongside normal Grab and Move activation."
+      ],
+      "verification": [
+        "Run the issue's Ctrl+Shift+Alt+Q AutoHotkey sequence with Alt pressed first and confirm it fires once.",
+        "Alt-drag a file to create a shortcut and confirm the shell receives the modifier.",
+        "Verify Alt+mouse drag still moves/resizes and does not activate the window menu afterward."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The public reproduction and prior hook fixes identify the interaction boundary, but exact event ordering still requires a maintainer trace."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Grab and Move configured for Alt consumes or reorders Alt-first keyboard sequences used by AutoHotkey and shell Alt-drag, even after two earlier hotfixes.",
+    "known_information": [
+      "The original Alt-first Ctrl+Shift+Alt+Q sequence fails only while Grab and Move is enabled.",
+      "The reporter confirmed the hotfix did not resolve the issue.",
+      "A maintainer said the solution is expected to resemble the earlier fix but needs infrastructure changes.",
+      "Other commenters reproduce failures for Alt-to-text and Alt-drag shortcut creation."
+    ],
+    "inferences": [
+      "Grab and Move's activation hook likely absorbs the Alt transition and does not restore a continuously held modifier before forwarding unrelated keyboard input.",
+      "The exact failure varies by consumer because event ordering, not the downstream shortcut definition, is likely corrupted."
+    ],
+    "analysis": "The discussion and merged PR descriptions identify the key-event replay boundary well enough for a focused design proposal, while a trace must still confirm ordering for multi-modifier sequences.",
+    "initial_investigation": [
+      "Read the complete issue body and all public comments.",
+      "Inspected the linked Grab and Move fixes and related issue relationships.",
+      "Used the public reproductions to separate confirmed symptoms from the hook-order root-cause hypothesis."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-47337",
+      "type": "approve_design",
+      "label": "Approve Preserve Alt state for unrelated keyboard combinations while Grab and Move waits for a mouse gesture",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Preserve Alt state for unrelated keyboard combinations while Grab and Move waits for a mouse gesture"
+      },
+      "note": "Fast-pass proposal only; full design and all upstream writes remain gated."
+    },
+    {
+      "id": "reproduce-47337",
+      "type": "reproduce",
+      "label": "Trace Alt event ordering with Grab and Move",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "module": "Grab and Move",
+        "version_requirements": "Latest stable PowerToys and a current AutoHotkey v2 build",
+        "prerequisites": [
+          "Enable Grab and Move with Alt as activation modifier.",
+          "Enable the option that prevents Alt from activating the window menu.",
+          "Create a harmless AutoHotkey Alt-first shortcut such as Ctrl+Shift+Alt+Q showing a message."
+        ],
+        "steps": [
+          "Run the shortcut with Alt pressed before the other modifiers and record low-level key down/up ordering.",
+          "Repeat with Grab and Move disabled.",
+          "Repeat Alt-dragging a file to create a shell shortcut.",
+          "Repeat an actual Alt+mouse drag to verify Grab and Move activation."
+        ],
+        "expected_result": "Unrelated Alt keyboard combinations and shell Alt-drag receive a normal held-Alt sequence, while actual Grab and Move gestures retain menu-suppression behavior.",
+        "setup_requirements": []
+      }
+    }
+  ],
+  "design": null
 }

@@ -1,33 +1,144 @@
 {
+  "schemaVersion": 5,
   "number": 47585,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T14:18:21Z",
+  "evaluated_at": "2026-09-10T14:18:21Z",
+  "source_updated_at": "2026-08-05T02:11:25Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47585",
+  "title": "Grab and Move with Win key affects other Win-key hotkeys",
+  "author": "jingyu9575",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "confidence": "Medium",
   "status": {
     "glyph": "🎯",
-    "label": "Actionable",
-    "detail": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+    "label": "Focused fix hypothesis is ready for design approval",
+    "detail": "When Grab and Move uses Win, the first Win-modified key can be swallowed before Keyboard Manager, Command Palette, or SendInput consumers see it; pressing the key a second time while Win remains held works."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Do focused module triage",
-    "reason": "Treat this as a concrete Grab and Move / Win-modifier conflict and collapse it with the related Win-key hotkey interference work instead of waiting for more generic reports."
+    "glyph": "➡️",
+    "label": "Approve the focused fix direction",
+    "reason": "The fast judgment identifies a repository change, while implementation-grade design remains deferred."
   },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-05T02:11:25Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "updated_at": "2026-08-05T02:11:25Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 3,
+    "timeline_events_read": 3
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true,
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "rationale": "The issue is current, maintainer-reproduced, cross-module, and precise enough to propose coordinating the pending Win activation with unrelated key forwarding.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "Maintainer Chealer reproduced the exact sequence on 0.100.2.",
+      "The first 0 press is lost and the second becomes the configured 1.",
+      "PR 47326 changed Grab and Move to absorb and replay both Win down and up to avoid an ordering race."
     ],
-    "recommended_action": "Treat this as a concrete Grab and Move / Win-modifier conflict and collapse it with the related Win-key hotkey interference work instead of waiting for more generic reports.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve the focused design direction, then run the full issue-to-design workflow before implementation.",
+    "evaluated_at": "2026-09-10T14:18:21Z",
     "source_updated_at": "2026-08-05T02:11:25Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current upstream or fork implementation fully covers the reproduced interaction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Forward the first non-mouse Win chord coherently across Grab and Move and other hooks",
+      "root_cause": "Grab and Move's pending Win activation consumes or replays modifier events independently from other low-level keyboard hooks, so the first unrelated Win chord is observed with incomplete ordering.",
+      "plan": [
+        "Instrument Grab and Move and Keyboard Manager hook callbacks for the exact Win+0 sequence and module enable order.",
+        "Cancel pending Grab and Move activation on unrelated keyboard input while replaying the complete Win-plus-key sequence before dependent hooks evaluate it.",
+        "Avoid recursive handling of replayed events and preserve the mouse-gesture path and Start-menu suppression rules.",
+        "Add integration regression coverage for Keyboard Manager and Command Palette Win shortcuts with both module enable orders and after restart."
+      ],
+      "verification": [
+        "Run the seven-step maintainer reproduction and confirm the first Win+0 press maps to 1.",
+        "Verify Command Palette's Win shortcut and an external SendInput Win chord on the first press.",
+        "Verify Win+mouse Grab and Move remains functional and releasing Win does not open Start unexpectedly."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The public reproduction and prior hook fixes identify the interaction boundary, but exact event ordering still requires a maintainer trace."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "When Grab and Move uses Win, the first Win-modified key can be swallowed before Keyboard Manager, Command Palette, or SendInput consumers see it; pressing the key a second time while Win remains held works.",
+    "known_information": [
+      "A maintainer reproduced the issue on 0.100.2.",
+      "The report gives a deterministic Keyboard Manager Win+0 mapping and hook-priority setup.",
+      "Other commenters confirm effects on Command Palette and Keyboard Manager.",
+      "The first non-modifier key is lost while a second press succeeds under the same held Win key."
+    ],
+    "inferences": [
+      "Grab and Move likely consumes the first key event to cancel a pending Win activation and replays modifier state too late for another low-level hook to match the same chord.",
+      "Hook installation order changes exposure, explaining why disabling and re-enabling modules alters the result."
+    ],
+    "analysis": "The deterministic two-module reproduction and prior Win replay fix identify an inter-hook event-ordering defect suitable for focused design, with exact ordering still to be traced.",
+    "initial_investigation": [
+      "Read the complete issue body and all public comments.",
+      "Inspected the linked Grab and Move fixes and related issue relationships.",
+      "Used the public reproductions to separate confirmed symptoms from the hook-order root-cause hypothesis."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-47585",
+      "type": "approve_design",
+      "label": "Approve Forward the first non-mouse Win chord coherently across Grab and Move and other hooks",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Forward the first non-mouse Win chord coherently across Grab and Move and other hooks"
+      },
+      "note": "Fast-pass proposal only; full design and all upstream writes remain gated."
+    },
+    {
+      "id": "reproduce-47585",
+      "type": "reproduce",
+      "label": "Trace first Win chord across module hooks",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "module": "Grab and Move / Keyboard Manager",
+        "version_requirements": "Latest stable PowerToys",
+        "prerequisites": [
+          "Enable Grab and Move and select Win as the activation modifier.",
+          "Create a Keyboard Manager shortcut mapping Win+0 to the single key 1.",
+          "Disable and re-enable Keyboard Manager so its hook priority matches the report.",
+          "Open Run and focus its text box."
+        ],
+        "steps": [
+          "Hold Win and press 0 once; record Grab and Move and Keyboard Manager hook events and injected flags.",
+          "Without releasing Win, press 0 a second time.",
+          "Repeat after reversing the module enable order.",
+          "Restart PowerToys and repeat.",
+          "Disable Grab and Move and repeat as the control."
+        ],
+        "expected_result": "The first Win+0 press is delivered to Keyboard Manager and produces 1 regardless of module enable order, while Grab and Move still activates only for Win+mouse gestures.",
+        "setup_requirements": []
+      }
+    }
+  ],
+  "design": null
 }
