@@ -181,6 +181,12 @@ foreach ($path in @($paths)) {
         ($proposedComments.Count -gt 0 -or $reviewActions.Count -gt 0)) {
       $errors.Add("$prefix stage review_ready requires zero proposed comments and no post_review/request_changes action")
     }
+    if ($artifact.stage -eq 'review_ready') {
+      if ([string]$artifact.validation.upstream_head.head_sha -ne [string]$artifact.head_sha -or
+          [string]$artifact.validation.upstream_head.result -ne 'passed') {
+        $errors.Add("$prefix stage review_ready requires passing validation of the exact upstream head")
+      }
+    }
     foreach ($comment in $proposedComments) {
       if ($comment.kind -notin @('inline', 'companion')) {
         $errors.Add("$prefix comment '$($comment.id)' must declare kind inline or companion")
@@ -220,6 +226,18 @@ foreach ($path in @($paths)) {
           ([regex]::Matches([string]$_.body, '(?s)```suggestion\s*\r?\n.+?\r?\n```')).Count -eq 1
         }
     )
+    if ($validInlineSuggestions.Count -gt 0) {
+      $expectedCommentIds = @($validInlineSuggestions | ForEach-Object {
+        [string]$_.id
+      } | Sort-Object -Unique)
+      $appliedCommentIds = @($artifact.validation.suggestion_patch.applied_comment_ids |
+        ForEach-Object { [string]$_ } | Sort-Object -Unique)
+      if ([string]$artifact.validation.suggestion_patch.head_sha -ne [string]$artifact.head_sha -or
+          [string]$artifact.validation.suggestion_patch.result -ne 'passed' -or
+          ($expectedCommentIds -join "`n") -cne ($appliedCommentIds -join "`n")) {
+        $errors.Add("$prefix apply-ready suggestions require passing exact-patch validation for every suggestion comment")
+      }
+    }
     foreach ($comment in $proposedComments | Where-Object { $null -ne $_.confidence }) {
       $confidenceScore = 0
       if (-not [int]::TryParse([string]$comment.confidence.score, [ref]$confidenceScore) -or

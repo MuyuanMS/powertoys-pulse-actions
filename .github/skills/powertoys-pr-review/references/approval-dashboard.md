@@ -13,6 +13,9 @@ The dashboard never posts to GitHub. It validates public payloads, records the u
 - Companion items contain readable review-body guidance for work that cannot use an apply button.
 - The dashboard has no approve action.
 - Submission is blocked while any PR is queued/in progress or validation fails.
+- A ready payload with suggestion blocks includes passing exact-patch
+  validation for precisely those item IDs. A clean payload with zero public
+  items includes a passing build of the pinned upstream head.
 
 ## Parallel batch flow
 
@@ -97,7 +100,15 @@ The page polls `/status` every few seconds. The coordinator is the only writer o
         "status": "reviewed-pending-approval",
         "worktree": "C:\\PowerToys-review-43741",
         "validationSummary": "Debug build and targeted tests passed",
-        "privateReviewUrl": "internal URL"
+        "privateReviewUrl": "internal URL",
+        "validation": {
+          "suggestionPatch": {
+            "headSha": "0123456789abcdef0123456789abcdef01234567",
+            "result": "passed",
+            "appliedItemIds": ["stable-value"],
+            "commands": ["dotnet build src/.../ChangedProject.csproj"]
+          }
+        }
       },
       "testInstructions": "Enable Advanced Paste, bind the hotkey, and verify multiline input."
     }
@@ -123,6 +134,9 @@ The validator rejects:
 - PowerShell serialization/interpolation artifacts;
 - missing activity snapshots; and
 - duplicate PR or item IDs.
+- suggestion payloads whose exact applied item IDs and build evidence are
+  missing or do not match;
+- clean zero-item payloads without a passing build of the pinned upstream head.
 
 ## `review-decisions.json` schema
 

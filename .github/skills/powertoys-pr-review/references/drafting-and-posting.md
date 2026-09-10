@@ -99,8 +99,23 @@ When posting **multiple suggestions on the same file**, applying them one at a t
 
 1. **Prefer a single combined suggestion** when fixes are within ~30 lines of each other. Use `start_line`/`line` to cover the full range in one block.
 2. **If fixes must be separate:** post suggestions targeting **later lines first**, and add an application note: `> If applying multiple suggestions individually, use "Commit suggestion" from bottom to top, or batch them with "Add suggestion to batch" then "Commit suggestions" to apply atomically.`
-3. **When suggestions add/remove lines**, include enough surrounding context (the full syntactic block) so partial application cannot leave orphaned braces or dangling clauses.
-4. **Self-contained test:** mentally apply each suggestion independently on the original code; if any would produce invalid syntax alone, expand it to include the needed context.
+3. **When suggestions add/remove lines**, include the smallest complete
+   syntactic unit, not merely the fewest lines. A missing brace may be a
+   one-line repair, but a control-flow rewrite must include the complete
+   `if`/loop/`try` block needed for valid syntax. Do not include unrelated
+   neighboring code just to make the patch look substantial.
+4. **Self-contained test:** apply each suggestion independently on the pinned
+   original head; if any produces invalid syntax alone, expand it to include
+   the needed context.
+5. **Exact-patch build gate:** apply all proposed suggestion blocks verbatim to
+   a clean worktree at the pinned upstream head, then run the smallest
+   syntax/build check that compiles every affected source file. This candidate
+   worktree—not the hand-edited review fork—is the evidence that GitHub's
+   apply button cannot produce malformed code.
+
+Shorter is safer only when the shorter replacement remains a complete
+syntactic unit. The goal is the **smallest independently valid patch**, not the
+smallest possible line range.
 
 When a localized replacement is safe, use the exact ` ```suggestion ` format,
 reference the correct file/line range, make it self-contained so the author can
@@ -131,6 +146,42 @@ Before presenting the dashboard, run:
 ```
 
 Before marking a PR `ready`, run with `-CheckGitHub` so every pinned head and inline range is current.
+
+For a payload containing suggestion blocks, also record:
+
+```jsonc
+"internalEvidence": {
+  "validation": {
+    "suggestionPatch": {
+      "headSha": "<pinned upstream head>",
+      "result": "passed",
+      "appliedItemIds": ["missing-loop-brace"],
+      "commands": ["dotnet build <smallest affected project>"]
+    }
+  }
+}
+```
+
+The applied item IDs must exactly match every public item containing a
+suggestion block. Run the commands after applying the literal suggestion text,
+not after manually recreating the intended fix.
+
+For a clean result with no public items, record:
+
+```jsonc
+"internalEvidence": {
+  "validation": {
+    "upstreamHead": {
+      "headSha": "<pinned upstream head>",
+      "result": "passed",
+      "commands": ["dotnet build <smallest affected project>"]
+    }
+  }
+}
+```
+
+This prevents a passing divergent fork build from being reported as a clean
+upstream review.
 
 ## Step 10: Wait for approval — MANDATORY STOP
 

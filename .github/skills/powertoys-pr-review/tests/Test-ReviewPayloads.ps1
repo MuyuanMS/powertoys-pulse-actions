@@ -88,6 +88,14 @@ $reviewData = [pscustomobject]@{
             internalEvidence = [pscustomobject]@{
                 validationRepository = 'https://github.com/example/PowerToys'
                 worktree = 'C:\Internal'
+                validation = [pscustomobject]@{
+                    suggestionPatch = [pscustomobject]@{
+                        headSha = $headSha
+                        result = 'passed'
+                        appliedItemIds = @('fix-value')
+                        commands = @('dotnet build src/Test.csproj')
+                    }
+                }
             }
         }
     )
@@ -114,6 +122,34 @@ Assert-True ($errors.Count -eq 0) "Valid review data should pass: $($errors -joi
 
 $errors = @(Test-ReviewDataDocument -Document $reviewData -CheckGitHub -LiveData $liveData)
 Assert-True ($errors.Count -eq 0) "Valid current diff range should pass: $($errors -join '; ')"
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].internalEvidence.validation.PSObject.Properties.Remove('suggestionPatch')
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'missing internalEvidence.validation.suggestionPatch') 'Suggestion payloads must include exact-patch validation.'
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].internalEvidence.validation.suggestionPatch.appliedItemIds = @('different-item')
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'must exactly match every public suggestion item') 'Suggestion validation must cover the exact public suggestion IDs.'
+
+$cleanReview = Copy-JsonObject $reviewData
+$cleanReview.prs[0].publicPayload.items = @()
+$cleanReview.prs[0].publicPayload.contextBody = ''
+$cleanReview.prs[0].internalEvidence.validation = [pscustomobject]@{
+    upstreamHead = [pscustomobject]@{
+        headSha = $headSha
+        result = 'passed'
+        commands = @('dotnet build src/Test.csproj')
+    }
+}
+$errors = @(Test-ReviewDataDocument -Document $cleanReview)
+Assert-True ($errors.Count -eq 0) "Clean upstream-head validation should pass: $($errors -join '; ')"
+
+$invalid = Copy-JsonObject $cleanReview
+$invalid.prs[0].internalEvidence.validation.PSObject.Properties.Remove('upstreamHead')
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'clean zero-item review.*missing internalEvidence.validation.upstreamHead') 'Clean reviews must validate the exact upstream head.'
 
 $invalid = Copy-JsonObject $reviewData
 $invalid.prs[0].publicPayload.items[0].confidence.score = 49

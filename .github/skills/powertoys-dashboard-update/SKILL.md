@@ -695,7 +695,8 @@ Do not re-review an unchanged head that already has a current clean fork result
 and no relevant newer activity.
 Do not call a PR review complete, approval-ready, or "clean" unless the latest
 freshly requested Copilot review has zero new comments, zero unresolved threads,
-and the required local build has passed. A Copilot-clean result with a pending
+the required local build has passed, and that build covers the exact upstream
+head rather than a divergent fork tree. A Copilot-clean result with a pending
 build, context review, spelling check, or timed-out fresh request remains
 `review_in_progress` and must get a `Re-run review`/`Continue review` action.
 
@@ -820,6 +821,25 @@ reserved for a clean current-head result with zero proposed comments and no
 `awaiting_review_approval` or another explicit draft/pending stage. An action
 label may say `inline suggestion(s)` only when at least one proposed inline
 comment contains a valid apply-ready suggestion block.
+
+Also verify validation-tree consistency:
+
+- `review_ready` requires
+  `validation.upstream_head.head_sha == head_sha` and
+  `validation.upstream_head.result == passed`;
+- any proposed suggestion block requires
+  `validation.suggestion_patch.head_sha == head_sha`,
+  `validation.suggestion_patch.result == passed`, and
+  `applied_comment_ids` exactly matching all proposed comments that contain
+  suggestion blocks;
+- the suggestion-patch result must come from applying the literal public
+  suggestion blocks to the pinned upstream head and building that candidate
+  tree, not from a hand-edited fork branch.
+
+Never copy fork-only tests, documentation, braces, or behavior into the
+artifact summary as if they exist upstream. If the converged fork differs from
+the upstream head, every meaningful hunk must remain represented as a proposed
+comment or explicit author request; the artifact cannot be `review_ready`.
 
 Use a local manual-review or validation action only when no defensible
 author-facing comment can be drafted from the current head—for example, the

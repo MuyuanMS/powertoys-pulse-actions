@@ -113,3 +113,26 @@ Before moving on (to the next PR, to Step 9, or to ending the turn), run the str
 2. Produce a clean diff of the net changes relative to the original PR's base: `git diff main...pr-iterate/N`.
 3. Distinguish meaningful changes from noise (back-and-forth later reverted). If some iterations added code that does not contribute, consider squashing or reverting those specific changes.
 4. Keep only changes that fix genuine issues. The Step 9 suggestions are drawn from this converged net diff — never from raw round-1 Copilot output.
+
+### Fork-to-upstream delta accounting
+
+Before calling the result clean, compare the pinned upstream head with the
+converged fork tree:
+
+```powershell
+git diff --stat <upstream-head>..<converged-fork-head>
+git diff <upstream-head>..<converged-fork-head>
+```
+
+Classify every fork-only hunk:
+
+- **Already upstream** — no action.
+- **Apply-ready localized fix** — draft an inline suggestion.
+- **Required but not safely suggestible** — draft an exact inline prose or
+  companion request and keep the PR pending review approval.
+- **Review-only experiment/noise** — revert it from the converged fork branch.
+
+The accounting must reach zero unexplained fork-only hunks. A clean
+zero-finding result is allowed only when the validated tree is the exact
+upstream head. Do not claim that upstream has tests, documentation, syntax
+repairs, or behavior that exists only in the fork.
