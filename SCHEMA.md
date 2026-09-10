@@ -179,6 +179,7 @@ author-wait signal, the next emit clears `pending_author`, sets
     "suggestion_patch": {
       "head_sha": "abc123…",
       "result": "passed",
+      "minimal_ranges_reviewed": true,
       "applied_comment_ids": ["c-m5"]
     }
   },
