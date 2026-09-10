@@ -1,34 +1,138 @@
 {
+  "schemaVersion": 5,
   "number": 38128,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author follow-up",
-    "detail": "The issue is blocked on reporter follow-up to an explicit maintainer request."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for reporter follow-up",
-    "reason": "A maintainer has already asked the next blocking question."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "stage": "triaged",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
   "source_updated_at": "2026-07-28T03:19:16Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/38128",
+  "title": "Add shortcut keys to the keyboard managerIf you start WeChat or TIM, the shortcut keys will be invalid",
+  "author": "wisheen",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "summary": "Launching WeChat or TIM disables Keyboard Manager shortcuts until those applications close and PowerToys restarts, indicating a reproducible low-level input-hook compatibility failure.",
+  "confidence": {
+    "score": 45,
+    "level": "red",
+    "rationale": "The lifecycle symptom fits hook-chain interference, but no trace confirms whether callbacks stop, events are consumed, or another application state causes the failure."
+  },
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The issue is blocked on reporter follow-up to an explicit maintainer request.",
+    "status": "actionable_design",
+    "rationale": "The issue has a concrete lifecycle sequence and a duplicate was closed into this canonical thread. The current-version status is not confirmed by the original author, but the behavior is specific enough for maintainer-side reproduction.",
     "evidence": [
-      "The issue is blocked on reporter follow-up to an explicit maintainer request.",
-      "A maintainer has already asked the blocking question; avoid duplicating that request upstream."
+      "Shortcuts work after login, fail after WeChat or TIM starts, and recover only after closing those applications and restarting PowerToys.",
+      "Issue 37967 was closed by a maintainer as a duplicate of this same WeChat/TIM compatibility bug.",
+      "The report says the applications do not merely claim the same configured shortcut."
     ],
-    "recommended_action": "A maintainer has already asked the next blocking question.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce with current WeChat/TIM and trace low-level keyboard-hook chain health before and after those processes start.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
     "source_updated_at": "2026-07-28T03:19:16Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. This is suitable for a red-confidence design candidate only after a maintainer trace confirms hook-chain loss. Reporter-side generic logs are less useful than controlled local instrumentation around hook registration and callbacks."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Detect and recover Keyboard Manager hook loss caused by input software",
+      "root_cause": "WeChat/TIM likely changes the low-level keyboard-hook chain or input interception state so Keyboard Manager stops receiving callbacks until PowerToys re-registers its hook during restart.",
+      "plan": [
+        "Instrument hook registration, callback cadence, and removal/error paths while launching and closing WeChat/TIM.",
+        "If hook loss is confirmed, add bounded health detection and safe re-registration outside the hook callback, with debounce and telemetry.",
+        "Add fault-injection tests for hook-registration failure/replacement and verify no duplicate hooks or lost physical input."
+      ],
+      "verification": [
+        "Launch current WeChat/TIM and confirm whether Keyboard Manager callback traffic stops while raw input continues.",
+        "Verify a bounded recovery restores remaps without restarting PowerToys and without duplicating shortcut actions."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The lifecycle symptom fits hook-chain interference, but no trace confirms whether callbacks stop, events are consumed, or another application state causes the failure."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Launching WeChat or TIM disables Keyboard Manager shortcuts until those applications close and PowerToys restarts, indicating a reproducible low-level input-hook compatibility failure.",
+    "known_information": [
+      "The original report used PowerToys 0.89.0 running elevated.",
+      "The named configured shortcut launches Remote Desktop.",
+      "The external link in the comments is not sufficient public technical evidence for a fix."
+    ],
+    "inferences": [
+      "WeChat/TIM may install or reorder a low-level keyboard hook that prevents Keyboard Manager's hook from receiving events, and PowerToys restart re-registers it later in the chain.",
+      "A watchdog/re-registration strategy could help, but blindly reinstalling hooks risks loops or input disruption."
+    ],
+    "analysis": "This is suitable for a red-confidence design candidate only after a maintainer trace confirms hook-chain loss. Reporter-side generic logs are less useful than controlled local instrumentation around hook registration and callbacks.",
+    "initial_investigation": [
+      "Read the complete issue, all comments, labels, and the closed duplicate 37967.",
+      "Used the close-app plus restart-PowerToys recovery sequence to narrow the likely boundary to global hook lifetime/order."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-38128",
+      "type": "approve_design",
+      "label": "Approve input-hook compatibility investigation",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "input-hook compatibility investigation"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    },
+    {
+      "id": "reproduce-38128",
+      "type": "reproduce",
+      "label": "Trace WeChat/TIM hook interference",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Measure Keyboard Manager hook behavior while launching WeChat or TIM",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release unless the issue names a required preview build",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Current WeChat or TIM in a test environment",
+          "A harmless global remapped shortcut",
+          "Maintainer diagnostics for hook registration/callbacks"
+        ],
+        "setup": [
+          "Verify the remap works before launching the external application.",
+          "Enable focused Keyboard Manager hook diagnostics without recording typed content."
+        ],
+        "steps": [
+          "Launch and sign in to WeChat or TIM.",
+          "Test the remap and record whether Keyboard Manager callbacks continue.",
+          "Close the external application and test again without restarting PowerToys.",
+          "Restart PowerToys and compare hook registration/callback state."
+        ],
+        "expected_result": "External applications should not permanently disable Keyboard Manager; if hook health is lost, recovery should restore it safely without a full PowerToys restart."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2025-03-25T05:39:59Z",
+  "updated_at": "2026-07-28T03:19:16Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 3,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }

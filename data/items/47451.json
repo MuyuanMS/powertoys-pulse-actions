@@ -1,48 +1,138 @@
 {
+  "schemaVersion": 5,
   "number": 47451,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
+  "source_updated_at": "2026-07-27T10:20:32Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47451",
+  "title": "Grab and Move doesn't work with Mouse without Borders secondary systems",
+  "author": "DL-Ohio",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comments": 5,
+  "summary": "Grab and Move reacts to the physically attached host's input rather than Mouse Without Borders forwarded input, so remote-system windows do not move and host windows may move instead.",
+  "confidence": {
+    "score": 66,
+    "level": "yellow",
+    "rationale": "Input origin is strongly isolated, but the exact MWB injection transport and secure integration boundary require code tracing."
   },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Multiple users reproduce on 0.99.1 and 0.100.2 with PowerToys installed on both systems. Touchpad input local to the secondary works, isolating the defect to forwarded input identity/state.",
+    "evidence": [
+      "Grab and Move works with the secondary laptop touchpad but not with mouse/keyboard forwarded by Mouse Without Borders.",
+      "With Grab and Move enabled on the primary, the gesture can move or resize a primary-machine window even while the pointer is on the secondary.",
+      "A 0.100.2 confirmation says both mouse and keyboard must be host-native; mixed local/remote input also fails."
+    ],
+    "recommended_action": "Trace how Mouse Without Borders injects/forwards button and modifier state and expose a supported local input signal to Grab and Move on the active machine.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
+    "source_updated_at": "2026-07-27T10:20:32Z"
   },
-  "actions": [
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. The public report is already reproducible. Maintainer-side two-machine tracing should compare physical, MWB-forwarded, and mixed input and define a secure module-to-module handoff that does not broaden trust for arbitrary injected input."
+  },
+  "proposed_fixes": [
     {
-      "id": "request-info-47451",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 47451,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
+      "title": "Bridge Mouse Without Borders input state to Grab and Move",
+      "root_cause": "Grab and Move observes physical/local mouse and keyboard state, while Mouse Without Borders forwards input through a path that does not satisfy those checks on the secondary and can leave the host gesture active.",
+      "plan": [
+        "Instrument both modules to compare physical, forwarded, and mixed button/modifier events and identify the missing state on the active machine.",
+        "Add a narrow authenticated in-process/module signal from MWB to Grab and Move for the active remote gesture instead of accepting arbitrary injected input globally.",
+        "Cancel host-side Grab and Move activation when MWB is controlling another machine and add two-machine regression coverage."
+      ],
+      "verification": [
+        "Using two machines, verify Grab and Move with local secondary touchpad, fully MWB-forwarded input, and mixed local/remote input.",
+        "Confirm only the window under the active machine's pointer moves and disabling Grab and Move on the host does not block the secondary."
+      ],
+      "confidence": {
+        "score": 66,
+        "level": "yellow",
+        "rationale": "Input origin is strongly isolated, but the exact MWB injection transport and secure integration boundary require code tracing."
       }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-27T10:20:32Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-    "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+  "issue_context": {
+    "summary": "Grab and Move reacts to the physically attached host's input rather than Mouse Without Borders forwarded input, so remote-system windows do not move and host windows may move instead.",
+    "known_information": [
+      "PowerToys is installed and Grab and Move configured on both machines.",
+      "Mouse Without Borders is configured for relative mouse movement in one detailed report.",
+      "No active linked fix or assignee appears."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-27T10:20:32Z"
-  }
+    "inferences": [
+      "Grab and Move likely consumes local low-level/raw input that MWB does not reproduce on the secondary, while the host still sees the physical gesture.",
+      "A direct dependency between modules may be safer than trying to treat all injected input as physical input."
+    ],
+    "analysis": "The public report is already reproducible. Maintainer-side two-machine tracing should compare physical, MWB-forwarded, and mixed input and define a secure module-to-module handoff that does not broaden trust for arbitrary injected input.",
+    "initial_investigation": [
+      "Read the complete issue, all five comments, labels, and current-version confirmation.",
+      "Used the local secondary touchpad success and host-window misactivation as the main input-origin discriminator."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-47451",
+      "type": "approve_design",
+      "label": "Approve Mouse Without Borders input integration",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Mouse Without Borders input integration"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    },
+    {
+      "id": "reproduce-47451",
+      "type": "reproduce",
+      "label": "Trace Grab and Move across MWB",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Compare local and forwarded Grab and Move gestures on two systems",
+        "module": "Grab and Move / Mouse Without Borders",
+        "version_requirement": "Current stable PowerToys release unless the issue names a required preview build",
+        "prerequisites": [
+          "Two Windows systems with current stable PowerToys",
+          "Mouse Without Borders paired",
+          "Grab and Move configured on both systems"
+        ],
+        "setup": [
+          "Place a movable window on each system.",
+          "Configure the same Grab and Move activation chord on both.",
+          "Record whether MWB uses relative mouse movement."
+        ],
+        "steps": [
+          "Use the secondary machine's local touchpad/keyboard to move its window.",
+          "Use the primary's mouse/keyboard through MWB to repeat on the secondary.",
+          "Try one local and one forwarded input device.",
+          "Observe whether the host window moves and repeat with Grab and Move disabled only on the host."
+        ],
+        "expected_result": "The gesture should act on the window under the pointer on the active machine regardless of whether input is local or forwarded, without moving host windows."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2026-04-29T20:45:23Z",
+  "updated_at": "2026-07-27T10:20:32Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 5,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }

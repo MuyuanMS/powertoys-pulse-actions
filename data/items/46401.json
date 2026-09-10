@@ -1,33 +1,109 @@
 {
+  "schemaVersion": 5,
   "number": 46401,
   "kind": "issue",
   "track": "fix",
-  "stage": "pr_open_upstream",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🔁",
-    "label": "Duplicate or already handled",
-    "detail": "A linked upstream pull request already appears to be carrying the fix."
-  },
-  "next_action": {
-    "glyph": "🔁",
-    "label": "Follow the linked PR and verify the fix",
-    "reason": "Track the linked upstream pull request, retest once it changes state, and close this issue if the PR resolves the repro."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
   "source_updated_at": "2026-07-27T15:35:40Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/46401",
+  "title": "CmdPal: ProviderContext contamination between normal and Dock attached palette",
+  "author": "jiripolasek",
+  "labels": [
+    "Issue-Bug",
+    "Priority-0",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal - Dock"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "Dock-pinned Command Palette commands can receive the normal palette's current page context, such as All Apps, instead of their own provider context.",
+  "confidence": {
+    "score": 91,
+    "level": "green",
+    "rationale": "The exact method, contaminated state, and previously proposed focused patch are public and directly match the reproduction."
+  },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "A linked upstream pull request already appears to be carrying the fix.",
+    "status": "actionable_design",
+    "rationale": "The issue author identifies the exact method and state contamination. A linked PR contains a focused patch but was closed unmerged, so the bug remains an actionable, high-confidence design candidate rather than an existing fix.",
     "evidence": [
-      "A linked upstream pull request already appears to be carrying the fix."
+      "The repro pins Dad Jokes to Dock, navigates normal Command Palette to All Apps, then invokes Dad Jokes and receives All Apps as provider context.",
+      "The body names PowerToysAppHostService.GetProviderContextForCommand and its currentContext dependency.",
+      "PR 49511 proposed preferring TopLevelViewModel.ProviderContext and explicitly fixed 46401, but it is closed and unmerged."
     ],
-    "recommended_action": "Track the linked upstream pull request, retest once it changes state, and close this issue if the PR resolves the repro.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Recreate the focused provider-context precedence fix with regression coverage for Dock and normal palette isolation.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
     "source_updated_at": "2026-07-27T15:35:40Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. The closed PR is concrete evidence for both root cause and minimal remedy, but not an active fix. The dashboard can safely propose a new fork-side design based on provider-context precedence and isolation tests."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Prefer command provider context over palette page context",
+      "root_cause": "GetProviderContextForCommand uses shared palette currentContext even when a Dock-pinned command has its own TopLevelViewModel.ProviderContext, allowing navigation in one surface to contaminate another.",
+      "plan": [
+        "Resolve context from the command/top-level provider first and use page currentContext only when no command provider context exists.",
+        "Keep Dock-attached and normal palette navigation state isolated across command invocation.",
+        "Add regression tests for All Apps navigation followed by Dock invocation and for commands that legitimately rely on page fallback context."
+      ],
+      "verification": [
+        "Pin Dad Jokes to Dock, navigate the normal palette to All Apps, invoke Dad Jokes, and verify its own provider context.",
+        "Repeat across multiple page transitions and confirm normal in-page commands still receive the intended fallback context."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The exact method, contaminated state, and previously proposed focused patch are public and directly match the reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Dock-pinned Command Palette commands can receive the normal palette's current page context, such as All Apps, instead of their own provider context.",
+    "known_information": [
+      "The issue is Priority-0 and was filed from a 0.98 development build.",
+      "A contributor publicly claimed the issue and opened PR 49511.",
+      "No merged or open fix currently covers the issue."
+    ],
+    "inferences": [
+      "The command's top-level provider context is the correct primary source, while page currentContext should remain only a fallback for commands without their own provider context."
+    ],
+    "analysis": "The closed PR is concrete evidence for both root cause and minimal remedy, but not an active fix. The dashboard can safely propose a new fork-side design based on provider-context precedence and isolation tests.",
+    "initial_investigation": [
+      "Read the issue body, comment, labels, and timeline.",
+      "Inspected PR 49511 and confirmed its state is closed, unmerged, with a focused provider-context precedence change."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-46401",
+      "type": "approve_design",
+      "label": "Approve provider-context isolation fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "provider-context isolation fix"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2026-03-22T21:30:34Z",
+  "updated_at": "2026-07-27T15:35:40Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 1,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }

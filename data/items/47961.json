@@ -1,33 +1,135 @@
 {
+  "schemaVersion": 5,
   "number": 47961,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable",
-    "detail": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Do focused module triage",
-    "reason": "Plumb the targeted-process label through the disabled-chord list item renderer in the new Keyboard Manager editor."
-  },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
   "source_updated_at": "2026-07-29T16:58:58Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47961",
+  "title": "[Keyboard Manager] the new editor doesn't show targeted process name for disabled chords",
+  "author": "thefasquelle",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "The new Keyboard Manager editor omits the targeted process name for app-specific disabled shortcuts/chords and can lose specificity when converting a disabled chord to a disabled key.",
+  "confidence": {
+    "score": 78,
+    "level": "yellow",
+    "rationale": "The public reproduction localizes the missing metadata path, but code inspection must confirm whether display and conversion share one mapper or two defects."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "rationale": "The report includes exact steps, a screenshot, diagnostics, and independent confirmation on 0.100.2. The symptom is localized to disabled-remap presentation and conversion in the new editor.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "An app-specific ordinary remap displays its target, while an app-specific disabled chord does not.",
+      "The reporter supplied a screenshot and a PowerToys bug-report ZIP.",
+      "A current 0.100.2 confirmation also found that converting an app-specific disabled chord to a disabled key breaks specificity."
     ],
-    "recommended_action": "Plumb the targeted-process label through the disabled-chord list item renderer in the new Keyboard Manager editor.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Preserve and render target-application metadata for disabled entries across list display and chord-to-key conversion.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
     "source_updated_at": "2026-07-29T16:58:58Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. The UI omission and data-loss observation point to the same metadata plumbing boundary. The fix should cover both rendering and edit/conversion serialization rather than only adding a label."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve target application metadata for disabled remaps",
+      "root_cause": "The new editor's disabled-shortcut/key representation or list-item mapper does not consistently carry the target process field used by normal app-specific remaps.",
+      "plan": [
+        "Trace disabled chord/key models through editor loading, list-item projection, and save/conversion code.",
+        "Include target application in disabled-entry display and preserve it when converting between disabled chord and disabled key.",
+        "Add round-trip tests for global and app-specific disabled entries and UI assertions for the displayed process name."
+      ],
+      "verification": [
+        "Create app-specific ordinary, disabled-chord, and disabled-key remaps and confirm every list row displays the same target.",
+        "Convert the disabled chord to a disabled key, save/reopen the editor, and confirm the target scope and runtime behavior remain app-specific."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The public reproduction localizes the missing metadata path, but code inspection must confirm whether display and conversion share one mapper or two defects."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The new Keyboard Manager editor omits the targeted process name for app-specific disabled shortcuts/chords and can lose specificity when converting a disabled chord to a disabled key.",
+    "known_information": [
+      "The issue affects the new/default Keyboard Manager editor.",
+      "The target application is configured but absent from the disabled-chord list display.",
+      "The conversion path can change an app-specific disabled chord into a key while losing application scope."
+    ],
+    "inferences": [
+      "Disabled entries likely use a specialized view model or conversion path that omits the target process field used by ordinary remaps."
+    ],
+    "analysis": "The UI omission and data-loss observation point to the same metadata plumbing boundary. The fix should cover both rendering and edit/conversion serialization rather than only adding a label.",
+    "initial_investigation": [
+      "Read the complete issue, screenshot markup, diagnostic link, labels, and current confirmation.",
+      "Checked the timeline and found no assignee or linked fix attempt."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-47961",
+      "type": "approve_design",
+      "label": "Approve disabled-remap target metadata fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "disabled-remap target metadata fix"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    },
+    {
+      "id": "reproduce-47961",
+      "type": "reproduce",
+      "label": "Reproduce disabled-remap target loss",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Round-trip app-specific disabled remaps in the new editor",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release unless the issue names a required preview build",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "The new/default Keyboard Manager editor",
+          "A harmless target such as notepad.exe"
+        ],
+        "setup": [
+          "Create one app-specific ordinary shortcut remap and one app-specific disabled chord for the same target."
+        ],
+        "steps": [
+          "Compare the target-process text shown in both rows.",
+          "Edit the disabled chord into a disabled key and save.",
+          "Reopen the editor and test the disabled key inside and outside the target app."
+        ],
+        "expected_result": "Every app-specific disabled entry should display and retain its target process, including after conversion and reload."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2026-05-18T13:48:47Z",
+  "updated_at": "2026-07-29T16:58:58Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 1,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }

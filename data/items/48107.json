@@ -1,48 +1,137 @@
 {
+  "schemaVersion": 5,
   "number": 48107,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
+  "source_updated_at": "2026-07-29T11:55:44Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/48107",
+  "title": "Microsoft.CmdPal.UI.exe Won't Start (crash) due to RPCRT4.dll",
+  "author": "evanly",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "summary": "Command Palette crashes in RPCRT4.dll after reboot but launches again after toggling the module off and on, suggesting a boot-time RPC/extension initialization failure rather than permanent package corruption.",
+  "confidence": {
+    "score": 58,
+    "level": "yellow",
+    "rationale": "The recovery pattern strongly implicates startup state, but RPCRT4 is a broad fault location and the exact owner requires a cold-boot trace."
   },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report includes repeatable reboot steps, Event Viewer fault data, a diagnostic ZIP, and independent confirmation on a newer CmdPal package. Maintainer-side startup tracing is the next useful step.",
+    "evidence": [
+      "The crash occurs after reboot and temporarily clears after PowerToys update or toggling Command Palette off/on.",
+      "Event Viewer reports Microsoft.CmdPal.UI.exe faulting in RPCRT4.dll with exception 0xc0020043.",
+      "A second user confirms the same pattern on CmdPal executable 0.11.2606.25002 and package 0.11.11762.0."
+    ],
+    "recommended_action": "Trace cold-boot RPC/extension startup and add recovery when the initial app-service/RPC connection is invalid.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
+    "source_updated_at": "2026-07-29T11:55:44Z"
   },
-  "actions": [
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. The evidence supports a bounded design hypothesis, but the exact failing RPC call requires a maintainer cold-boot trace or dump. The dashboard should offer that reproduction rather than ask reporters to perform internal profiling."
+  },
+  "proposed_fixes": [
     {
-      "id": "request-info-48107",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 48107,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
+      "title": "Recover Command Palette from invalid cold-boot RPC initialization",
+      "root_cause": "Command Palette appears to initialize an RPC/app-service or extension connection into an invalid state during logon; toggling the module rebuilds that state and restores launch.",
+      "plan": [
+        "Instrument cold-boot initialization boundaries around CmdPal UI activation, host connection, and extension enumeration to identify the RPC call preceding 0xc0020043.",
+        "Validate connection/endpoint state before first use and recreate the client/host channel once when startup returns a terminal RPC failure.",
+        "Add lifecycle coverage for boot/logon activation, delayed dependency availability, and module off/on restart without masking repeated faults."
+      ],
+      "verification": [
+        "Reboot a machine with Command Palette enabled and confirm the first shortcut launch succeeds repeatedly.",
+        "Simulate unavailable/delayed host or extension endpoints and verify one bounded recovery attempt without a crash loop."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The recovery pattern strongly implicates startup state, but RPCRT4 is a broad fault location and the exact owner requires a cold-boot trace."
       }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-29T11:55:44Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-    "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+  "issue_context": {
+    "summary": "Command Palette crashes in RPCRT4.dll after reboot but launches again after toggling the module off and on, suggesting a boot-time RPC/extension initialization failure rather than permanent package corruption.",
+    "known_information": [
+      "Windows 11 25H2 builds 26100.8246 and 26100.8875 are represented.",
+      "The Store/MSIX package is present and can run after a module restart.",
+      "No assignee or linked fix appears in the issue timeline."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-29T11:55:44Z"
-  }
+    "inferences": [
+      "A startup ordering or stale RPC/app-service endpoint may be established during logon and reset by toggling the module.",
+      "The RPCRT4 fault alone does not identify which Command Palette component owns the invalid state."
+    ],
+    "analysis": "The evidence supports a bounded design hypothesis, but the exact failing RPC call requires a maintainer cold-boot trace or dump. The dashboard should offer that reproduction rather than ask reporters to perform internal profiling.",
+    "initial_investigation": [
+      "Read the complete report, diagnostic reference, Event Viewer entries, labels, and current confirmation.",
+      "Compared the cold-boot failure with the successful off/on recovery to narrow the investigation to initialization/lifecycle state."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-48107",
+      "type": "approve_design",
+      "label": "Approve cold-boot RPC recovery investigation",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "cold-boot RPC recovery investigation"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    },
+    {
+      "id": "reproduce-48107",
+      "type": "reproduce",
+      "label": "Trace the first CmdPal launch after reboot",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Capture Command Palette cold-boot initialization failure",
+        "module": "Command Palette",
+        "version_requirement": "Current stable PowerToys release unless the issue names a required preview build",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Command Palette enabled at Windows sign-in",
+          "Event Viewer or debugger available"
+        ],
+        "setup": [
+          "Confirm Command Palette launches before reboot.",
+          "Enable startup and reboot the machine normally."
+        ],
+        "steps": [
+          "After sign-in, invoke Command Palette once with its shortcut.",
+          "Record whether Microsoft.CmdPal.UI.exe starts and the exact Event Viewer timestamp/exception.",
+          "Without reinstalling, toggle Command Palette off and on and invoke it again.",
+          "Capture a maintainer trace or dump around the first RPC/host/extension initialization when possible."
+        ],
+        "expected_result": "Command Palette should launch on the first post-reboot invocation; a failed connection should be recovered or reported without an RPCRT4 crash."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2026-05-25T04:51:19Z",
+  "updated_at": "2026-07-29T11:55:44Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 1,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }

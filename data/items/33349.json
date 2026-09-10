@@ -1,33 +1,135 @@
 {
+  "schemaVersion": 5,
   "number": 33349,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable",
-    "detail": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Do focused module triage",
-    "reason": "Investigate the targeted-process matching path for git-bash.exe so app-specific shortcut remaps reach the intended child window / process."
-  },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
   "source_updated_at": "2026-07-28T14:10:45Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/33349",
+  "title": "Remap a shortcut is not working when targeting git-bash",
+  "author": "juanjetomas",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "summary": "App-specific remaps targeting git-bash.exe do not apply because the focused terminal window belongs to mintty.exe, while global rules and rules targeting mintty.exe work.",
+  "confidence": {
+    "score": 74,
+    "level": "yellow",
+    "rationale": "The process mismatch is confirmed, but safe descendant identity and user-facing semantics require product/code review."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "rationale": "A current 0.100.2 reproduction identifies the exact process boundary. The remaining product decision is how launcher/child-process targeting should be represented safely.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "Shift+A to B targeted to git-bash.exe leaves A unchanged.",
+      "The same mapping works globally and in Chrome.",
+      "A current reproducer confirmed that targeting mintty.exe works because mintty owns the foreground window and is a child of git-bash.exe."
     ],
-    "recommended_action": "Investigate the targeted-process matching path for git-bash.exe so app-specific shortcut remaps reach the intended child window / process.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Design explicit launcher/descendant process targeting or improve the editor's process selection guidance without broad accidental matches.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
     "source_updated_at": "2026-07-28T14:10:45Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. The bug is not generic shortcut dispatch. A safe fix must define whether app targeting means current foreground executable, launcher's process tree, or an explicit group, then make that choice visible in the editor."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make launcher-child targeting explicit for app-specific remaps",
+      "root_cause": "Keyboard Manager compares the configured application name with the foreground window's executable; Git Bash's visible window belongs to mintty.exe rather than the git-bash.exe launcher.",
+      "plan": [
+        "Document and expose the actual foreground executable when selecting a target application.",
+        "Evaluate an explicit optional descendant/process-group target rather than silently matching every child of a launcher.",
+        "Add process-target tests for direct executables, launchers with terminal children, unrelated descendants, and process restarts."
+      ],
+      "verification": [
+        "Target mintty.exe and confirm the remap applies only in Git Bash terminals.",
+        "If descendant targeting is added, target git-bash.exe and verify only its intended terminal child matches while unrelated mintty instances do not."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The process mismatch is confirmed, but safe descendant identity and user-facing semantics require product/code review."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "App-specific remaps targeting git-bash.exe do not apply because the focused terminal window belongs to mintty.exe, while global rules and rules targeting mintty.exe work.",
+    "known_information": [
+      "The issue was reproduced on PowerToys 0.100.2 with Git 2.53.0.2.",
+      "The runtime matcher uses the focused process identity, which is mintty.exe for Git Bash.",
+      "A closed older issue reported similar Git targeting behavior."
+    ],
+    "inferences": [
+      "Matching every descendant automatically could be surprising or unsafe for general launchers; the editor may need an explicit option or resolved foreground-process selection."
+    ],
+    "analysis": "The bug is not generic shortcut dispatch. A safe fix must define whether app targeting means current foreground executable, launcher's process tree, or an explicit group, then make that choice visible in the editor.",
+    "initial_investigation": [
+      "Read the body, all comments, labels, and related closed issue.",
+      "Used the current git-bash.exe versus mintty.exe reproduction to localize process matching."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-33349",
+      "type": "approve_design",
+      "label": "Approve launcher-child process targeting",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "launcher-child process targeting"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    },
+    {
+      "id": "reproduce-33349",
+      "type": "reproduce",
+      "label": "Reproduce Git Bash process targeting",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Compare git-bash.exe and mintty.exe app targets",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release unless the issue names a required preview build",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Git for Windows with Git Bash",
+          "A harmless Shift+A to B test remap"
+        ],
+        "setup": [
+          "Create an app-specific remap targeting git-bash.exe.",
+          "Open Git Bash and a separate ordinary application."
+        ],
+        "steps": [
+          "Press Shift+A in Git Bash and record the foreground executable.",
+          "Change only the target to mintty.exe and repeat.",
+          "Confirm the rule does not apply in the ordinary application."
+        ],
+        "expected_result": "The editor/runtime should clearly target the process that owns the window, or an explicit safe launcher-child scope should work predictably."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2024-06-12T09:48:12Z",
+  "updated_at": "2026-07-28T14:10:45Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 3,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }

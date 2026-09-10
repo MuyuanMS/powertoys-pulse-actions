@@ -1,46 +1,137 @@
 {
+  "schemaVersion": 5,
   "number": 31845,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "The latest GitHub state already asks the reporter to confirm the current build or provide clearer reproduction details."
+  "stage": "triaged",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
+  "source_updated_at": "2026-07-28T03:23:42Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/31845",
+  "title": "Using keyboard manager shortcut to activate systray minimised application does not restore window correctly",
+  "author": "insanityinside",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Repro",
+    "Needs-Triage",
+    "Area-App Compat"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "summary": "Keyboard Manager's Run Program/activation shortcut exposes hidden KeePass/KeePassXC windows instead of asking the existing application to restore its intended tray window.",
+  "confidence": {
+    "score": 68,
+    "level": "yellow",
+    "rationale": "The symptom strongly matches broad window restoration, but the exact current activation implementation and app-specific single-instance behavior need reproduction."
   },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for the reporter's follow-up",
-    "reason": "Hold engineering work until the reporter answers the current-version / repro questions already raised in the thread."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report identifies two affected applications and a specific tray-minimized state. The likely window-selection behavior can be reproduced locally without asking the reporter for maintainer-side investigation.",
+    "evidence": [
+      "Activating tray-minimized KeePassXC through a Keyboard Manager shortcut restores a hidden Qt window and prevents normal restore.",
+      "KeePass similarly exposes multiple normally hidden windows.",
+      "The issue explicitly observes that all windows from the process appear to be made visible."
+    ],
+    "recommended_action": "Reproduce the existing-instance activation path and restrict restoration to an appropriate top-level application window or native activation contract.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
+    "source_updated_at": "2026-07-28T03:23:42Z"
   },
-  "actions": [
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. The cross-app evidence supports a focused plan: prefer application-native single-instance activation, otherwise rank/filter eligible top-level windows and never reveal hidden helper windows indiscriminately."
+  },
+  "proposed_fixes": [
     {
-      "id": "request-info-31845",
-      "type": "request_info",
-      "label": "Reply with the missing-info request",
-      "primary": true,
-      "comment": {
-        "target": "issue",
-        "number": 31845,
-        "body": "Could you retest this on the latest PowerToys build and reply with numbered reproduction steps, the exact key remap/shortcut entries involved, whether running PowerToys elevated changes the result, and a fresh bug report ZIP if it still reproduces?"
+      "title": "Avoid restoring hidden helper windows for Run Program actions",
+      "root_cause": "The existing-process activation path likely shows multiple top-level windows owned by the executable instead of selecting the application's intended restorable window or relying on its single-instance activation.",
+      "plan": [
+        "Trace Run Program handling when an executable already exists and inventory which windows are enumerated/restored.",
+        "Filter out owned/tool/hidden helper windows and prefer an eligible visible/minimized main window; if no safe target exists, launch normally and let the app's single-instance contract activate itself.",
+        "Add tests around window eligibility/ranking and app-compat verification with KeePassXC and KeePass tray modes."
+      ],
+      "verification": [
+        "Minimize KeePassXC to tray, invoke the shortcut, and confirm only the intended main window restores.",
+        "Repeat with KeePass and with a normal minimized single-window application; verify no hidden helper windows become visible."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The symptom strongly matches broad window restoration, but the exact current activation implementation and app-specific single-instance behavior need reproduction."
       }
     }
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-28T03:23:42Z",
-  "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "The latest GitHub state already asks the reporter to confirm the current build or provide clearer reproduction details.",
-    "evidence": [
-      "The latest GitHub state already asks the reporter to confirm the current build or provide clearer reproduction details.",
-      "Could you retest this on the latest PowerToys build and reply with numbered reproduction steps, the exact key remap/shortcut entries involved, whether running PowerToys elevated changes the result, and a fresh bug report ZIP if it still reproduces?"
+  "issue_context": {
+    "summary": "Keyboard Manager's Run Program/activation shortcut exposes hidden KeePass/KeePassXC windows instead of asking the existing application to restore its intended tray window.",
+    "known_information": [
+      "The original report used PowerToys 0.79.0 and KeePassXC 2.7.6.",
+      "The application is configured to hide to the system tray when minimized.",
+      "The issue is labeled Area-App Compat and Needs-Repro."
     ],
-    "recommended_action": "Hold engineering work until the reporter answers the current-version / repro questions already raised in the thread.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-28T03:23:42Z"
-  }
+    "inferences": [
+      "Keyboard Manager may enumerate process windows and call a show/restore operation without filtering tool, owner, hidden helper, or application-main windows."
+    ],
+    "analysis": "The cross-app evidence supports a focused plan: prefer application-native single-instance activation, otherwise rank/filter eligible top-level windows and never reveal hidden helper windows indiscriminately.",
+    "initial_investigation": [
+      "Read the full issue, both comments, labels, and named application behavior.",
+      "Used KeePass and KeePassXC exhibiting the same hidden-window symptom as evidence of a generic activation path."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-31845",
+      "type": "approve_design",
+      "label": "Approve safe existing-process window activation",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "safe existing-process window activation"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    },
+    {
+      "id": "reproduce-31845",
+      "type": "reproduce",
+      "label": "Reproduce tray-window activation",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Activate KeePassXC from a Keyboard Manager Run Program shortcut",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release unless the issue names a required preview build",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "KeePassXC with tray icon and hide-on-minimize enabled"
+        ],
+        "setup": [
+          "Create a Keyboard Manager shortcut that runs KeePassXC.",
+          "Launch KeePassXC and minimize it to the system tray."
+        ],
+        "steps": [
+          "Invoke the shortcut once.",
+          "Record every window made visible and whether the main window can still be restored.",
+          "Repeat after fully closing KeePassXC.",
+          "Optionally repeat with KeePass to compare helper-window behavior."
+        ],
+        "expected_result": "When an instance already exists in the tray, only its intended main window should restore; hidden helper windows must remain hidden."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2024-03-11T07:19:54Z",
+  "updated_at": "2026-07-28T03:23:42Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 2,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }

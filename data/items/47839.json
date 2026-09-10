@@ -1,34 +1,134 @@
 {
+  "schemaVersion": 5,
   "number": 47839,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
   "source_updated_at": "2026-07-29T12:12:20Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47839",
+  "title": "Keyboard manager: shortcuts globally disabled (i.e. without assigning a specific app) are not disabled everywhere",
+  "author": "RussellDionGreen",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "summary": "Globally disabled shortcuts created by the new Keyboard Manager editor still invoke Windows actions in foreground applications, while the classic editor does not show the same failure.",
+  "confidence": {
+    "score": 73,
+    "level": "yellow",
+    "rationale": "The classic/new editor split strongly points to configuration mapping, but the exact field and runtime interpretation need inspection."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "The issue has a current 0.100.2 reproduction and a direct classic-versus-new-editor discriminator. The failure is specific enough for a focused serialization/runtime comparison.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "A current reproduction disables Win+S globally, then Windows Search still opens while Paint is focused.",
+      "The disabled shortcut only behaves as expected on the desktop in the original report.",
+      "A commenter cannot reproduce with the classic editor, identifying the new editor or its output as the key variable."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Compare the new editor's global disabled-shortcut serialization and runtime rule construction with the classic editor.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
     "source_updated_at": "2026-07-29T12:12:20Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. The editor comparison is more discriminating than requesting logs. Inspect the saved JSON/rule object from both editors, normalize global scope, and prove runtime behavior in desktop and ordinary applications."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Normalize global disabled-shortcut scope from the new editor",
+      "root_cause": "The new editor likely writes or maps the unchecked application target into a scope value that the Keyboard Manager engine does not interpret as global, unlike classic-editor output.",
+      "plan": [
+        "Create equivalent disabled shortcuts in classic and new editors and compare persisted configuration plus runtime rule objects.",
+        "Normalize empty/global target application values at the editor-model boundary and preserve the global flag through save/load.",
+        "Add tests that apply a global disabled shortcut on the desktop and in multiple foreground applications."
+      ],
+      "verification": [
+        "Disable Win+S globally in the new editor and verify Search remains suppressed in Paint, Notepad, and on the desktop.",
+        "Reload settings and confirm the global rule remains global and equivalent to classic-editor output."
+      ],
+      "confidence": {
+        "score": 73,
+        "level": "yellow",
+        "rationale": "The classic/new editor split strongly points to configuration mapping, but the exact field and runtime interpretation need inspection."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Globally disabled shortcuts created by the new Keyboard Manager editor still invoke Windows actions in foreground applications, while the classic editor does not show the same failure.",
+    "known_information": [
+      "The 'Only apply to a specific app' option is unchecked.",
+      "The issue affects PowerToys 0.99.1 and was confirmed on 0.100.2.",
+      "Related open issues cover disabled keys/chords and application-specific behavior, but no linked fix is present."
+    ],
+    "inferences": [
+      "The new editor may serialize an empty application scope differently from the classic editor, causing the runtime matcher to treat the rule as desktop-specific or nonmatching."
+    ],
+    "analysis": "The editor comparison is more discriminating than requesting logs. Inspect the saved JSON/rule object from both editors, normalize global scope, and prove runtime behavior in desktop and ordinary applications.",
+    "initial_investigation": [
+      "Read the issue, both comments, labels, and three related open issue cross-references.",
+      "Used the classic-editor non-reproduction as the focused initial discriminator."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-47839",
+      "type": "approve_design",
+      "label": "Approve global disabled-shortcut scope fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "global disabled-shortcut scope fix"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    },
+    {
+      "id": "reproduce-47839",
+      "type": "reproduce",
+      "label": "Compare classic and new editor scope",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Compare global disabled-shortcut output and runtime behavior",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release unless the issue names a required preview build",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Access to both classic and new editor modes if still available"
+        ],
+        "setup": [
+          "Create a global Win+S disabled shortcut in the new editor.",
+          "Prepare Paint and Notepad as foreground test applications."
+        ],
+        "steps": [
+          "Press Win+S on the desktop, in Paint, and in Notepad.",
+          "Create the equivalent rule in the classic editor and repeat.",
+          "Compare the persisted rule representation after each save."
+        ],
+        "expected_result": "Equivalent global disabled rules should suppress the shortcut in every foreground context and persist identically."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2026-05-12T19:00:01Z",
+  "updated_at": "2026-07-29T12:12:20Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 2,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }

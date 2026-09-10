@@ -1,33 +1,136 @@
 {
+  "schemaVersion": 5,
   "number": 45474,
   "kind": "issue",
   "track": "fix",
-  "stage": "dropped",
+  "stage": "triaged",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🔗",
-    "label": "Duplicate or outdated",
-    "detail": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked work",
-    "reason": "Existing linked or owner-backed follow-up should move first."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:34:18Z",
+  "evaluated_at": "2026-09-10T16:34:18Z",
   "source_updated_at": "2026-07-28T22:34:36Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/45474",
+  "title": "heic-support broken",
+  "author": "MarqueeDOTscr",
+  "labels": [
+    "Issue-Bug",
+    "Product-Image Resizer",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 3,
+  "summary": "Image Resizer regressed for HEIC files: it opens a file picker instead of using the selected Explorer item, and later reports indicate HEIC is no longer recognized at all.",
+  "confidence": {
+    "score": 67,
+    "level": "yellow",
+    "rationale": "The regression and shell-flow symptom are well established, but codec availability versus extension filtering must be separated in reproduction."
+  },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation.",
+    "status": "actionable_design",
+    "rationale": "Multiple users report the same regression, and issue 47840 was explicitly closed as a duplicate of this canonical issue. The file-type activation/codec path can be reproduced by maintainers.",
     "evidence": [
-      "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation."
+      "The original report says HEIC worked previously and regressed by PowerToys 0.97.1.",
+      "The context-menu action opens a file chooser; selecting the file manually previously allowed resize.",
+      "Later reports say HEIC files are not recognized at all, and issue 47840 was closed as a duplicate."
     ],
-    "recommended_action": "Existing linked or owner-backed follow-up should move first.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce with and without the Windows HEIF extension, then inspect HEIC extension filtering and WIC decoder activation.",
+    "evaluated_at": "2026-09-10T16:34:18Z",
     "source_updated_at": "2026-07-28T22:34:36Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No active merged fix covers the scoped PowerToys-owned path. The canonical issue is sufficiently concrete for a design candidate. The maintainer reproduction should first distinguish missing codec support from PowerToys incorrectly filtering or handing off a valid HEIC shell item."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Restore HEIC shell-item recognition in Image Resizer",
+      "root_cause": "The Image Resizer activation or decoder-eligibility path likely rejects .heic selections after a registration/filter change, causing file-picker fallback or no processing despite an installed HEIF decoder.",
+      "plan": [
+        "Compare HEIC extension/codec eligibility and shell activation handling with a supported format and the last known working behavior.",
+        "Treat a valid selected HEIC shell item as input when a WIC decoder is available and surface a clear codec requirement when it is not.",
+        "Add tests for extension normalization, decoder availability, multi-select activation, and no-codec error handling."
+      ],
+      "verification": [
+        "Invoke Image Resizer from Explorer on HEIC files with the HEIF extension installed and confirm the selected files reach the resize dialog directly.",
+        "Repeat without a decoder and verify an actionable error rather than an unrelated file picker."
+      ],
+      "confidence": {
+        "score": 67,
+        "level": "yellow",
+        "rationale": "The regression and shell-flow symptom are well established, but codec availability versus extension filtering must be separated in reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Image Resizer regressed for HEIC files: it opens a file picker instead of using the selected Explorer item, and later reports indicate HEIC is no longer recognized at all.",
+    "known_information": [
+      "Affected systems are Windows 11 25H2.",
+      "The problem is specific to .heic while other Image Resizer formats continue through the normal dialog.",
+      "No active fix or assignee is linked."
+    ],
+    "inferences": [
+      "A file-type registration/filter change or failed WIC decoder selection may cause the selected shell item to be rejected and fall back to file-picker flow."
+    ],
+    "analysis": "The canonical issue is sufficiently concrete for a design candidate. The maintainer reproduction should first distinguish missing codec support from PowerToys incorrectly filtering or handing off a valid HEIC shell item.",
+    "initial_investigation": [
+      "Read the complete issue and all comments.",
+      "Inspected issue 47840 and confirmed a collaborator closed it as a duplicate of 45474."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-45474",
+      "type": "approve_design",
+      "label": "Approve HEIC activation and codec handling fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "HEIC activation and codec handling fix"
+      },
+      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+    },
+    {
+      "id": "reproduce-45474",
+      "type": "reproduce",
+      "label": "Reproduce HEIC Image Resizer activation",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Compare HEIC context-menu activation with decoder present and absent",
+        "module": "Image Resizer",
+        "version_requirement": "Current stable PowerToys release unless the issue names a required preview build",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "A non-sensitive HEIC sample",
+          "Windows HEIF Image Extensions installation state recorded"
+        ],
+        "setup": [
+          "Prepare one HEIC and one JPEG in the same folder.",
+          "Record whether the Windows HEIF extension is installed."
+        ],
+        "steps": [
+          "Right-click the HEIC and select Resize with Image Resizer.",
+          "Record whether a file picker or resize dialog opens and whether the selected file is present.",
+          "Repeat with the JPEG.",
+          "Repeat the HEIC test after changing only HEIF decoder availability if practical."
+        ],
+        "expected_result": "A decodable HEIC selection should open directly in Image Resizer; missing codec support should produce a specific actionable message."
+      }
+    }
+  ],
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "created_at": "2026-02-08T08:47:10Z",
+  "updated_at": "2026-07-28T22:34:36Z",
+  "live_activity": {
+    "issue_body_read": true,
+    "comments_read": 3,
+    "timeline_events_read": true
+  },
+  "upstream_public_action_taken": false,
+  "full_design": false,
+  "design_deferred": true
 }
