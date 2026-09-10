@@ -1,151 +1,273 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
+  "id": "pr-50333",
   "number": 50333,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T07:24:54Z",
-  "evaluated_at": "2026-09-03T07:24:54Z",
+  "generated_at": "2026-09-10T08:48:24.094286Z",
+  "evaluated_at": "2026-09-10T08:48:24.094286Z",
   "source_updated_at": "2026-09-02T13:51:47Z",
   "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
   "title": "Feature/advanced paste text case part2",
   "url": "https://github.com/microsoft/PowerToys/pull/50333",
+  "repository": "microsoft/PowerToys",
   "author": "massimomazzariol",
   "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
+  "isCommunity": true,
   "state": "OPEN",
   "draft": false,
-  "confidence": "High",
-  "summary": "The preserved fork-side review loop converged for the Advanced Paste text-case PR. The final Copilot review on fork PR 579 generated zero new comments, all fork Copilot threads are resolved, and targeted Advanced Paste build plus Settings UI validation passed. Two companion requests are drafted for maintainer approval.",
+  "confidence": "high",
+  "processVerdict": "proceed",
+  "summary": "The unchanged upstream head and its review activity were revalidated. The already-requested current fork review was consumed rather than duplicated: it reviewed the newest fork commit, returned zero new published comments, and all Copilot threads are resolved. The exact upstream head and the literal apply-ready suggestion candidate build successfully in Debug x64. One exact RIGHT-side suggestion and two companion findings are drafted for approval; no upstream write was made.",
   "status": {
-    "glyph": "!",
-    "label": "Review drafted - Advanced Paste compatibility fixes",
-    "detail": "Upstream remains at 3a34ad99de1802df74e5110335f1609dbf35bd9f with CLA, intake, and telemetry checks successful. Fork PR 579 is clean at 19745cac86b888d4f9747707d21063da75dfe35d with zero unresolved Copilot threads."
+    "glyph": "APPROVAL",
+    "label": "Awaiting maintainer review approval",
+    "detail": "One exact RIGHT-side inline suggestion and two companion findings are pinned to upstream head 3a34ad99de1802df74e5110335f1609dbf35bd9f. Publication requires explicit approval and a final freshness check."
   },
   "next_action": {
-    "glyph": ">",
-    "label": "Review drafted companion requests",
-    "reason": "The review is pinned to the current upstream head and requires explicit maintainer approval plus a final freshness check before any upstream post."
+    "glyph": "REVIEW",
+    "label": "Approve, edit, or hold the drafted request-changes review",
+    "reason": "The proposed comments remain unposted. Revalidate the pinned upstream head and activity before any explicitly approved publication."
   },
-  "actions": [],
-  "safe_actions": [
-    "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
-    "Post nothing upstream until the pinned head, checks, comments, reviews, and threads are revalidated",
-    "Hold the review without changing labels, review state, or PR state",
-    "Re-run the review if the upstream head changes"
+  "blockers": [],
+  "actions": [
+    {
+      "id": "request-changes-50333",
+      "type": "request_changes",
+      "label": "Request one inline fix and two companion fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50333,
+        "pullRequest": 50333,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+        "body_prefix": "Thanks for the thorough Advanced Paste text-case implementation and test coverage. I found three compatibility and distribution-notice gaps that should be addressed before merge."
+      },
+      "note": "This head-pinned action contains one exact RIGHT-side suggestion and two general companion notes. Do not post without explicit approval and a final freshness check."
+    }
   ],
-  "needs_revalidation": true,
   "proposed_comments": [
     {
-      "id": "preserve-advanced-paste-hotkey-ids",
+      "id": "reserve-text-case-ids-for-legacy-settings",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Reserve text-case hotkey IDs for existing settings",
+      "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+      "start_line": 430,
+      "line": 431,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Reserve text-case hotkey IDs for existing settings\n\n**Severity:** `high`\n\nExisting Advanced Paste settings files do not contain the new `text-case` property. The Settings UI deserializes a default text-case group and includes its ten leaves when assigning IDs, while this runner path skips the group entirely when the JSON key is absent; custom-action IDs can therefore refer to different actions on the two sides. Insert a disabled in-memory default group when the persisted key is absent so the existing processing loop reserves the same ten IDs without enabling any shortcut.\n\n```suggestion\n                            L\"text-case\"\n                        };\n\n                        if (!additionalActions.HasKey(L\"text-case\"))\n                        {\n                            winrt::Windows::Data::Json::JsonObject textCaseActions;\n                            static constexpr std::array textCaseActionIds{\n                                L\"lower-case\",\n                                L\"upper-case\",\n                                L\"title-case\",\n                                L\"sentence-case\",\n                                L\"toggle-case\",\n                                L\"camel-case\",\n                                L\"pascal-case\",\n                                L\"snake-case\",\n                                L\"screaming-snake-case\",\n                                L\"kebab-case\",\n                            };\n\n                            for (const auto actionId : textCaseActionIds)\n                            {\n                                winrt::Windows::Data::Json::JsonObject action;\n                                action.Insert(JSON_KEY_IS_SHOWN, winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(false));\n                                action.Insert(JSON_KEY_SHORTCUT, winrt::Windows::Data::Json::JsonObject{});\n                                textCaseActions.Insert(actionId, action);\n                            }\n\n                            additionalActions.Insert(L\"text-case\", textCaseActions);\n                        }\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "The changed runner loop conditionally processes only keys present in JSON, while the managed model initializes TextCase even when the property is absent. The converged fork implemented and reviewed the reservation path."
+      }
+    },
+    {
+      "id": "complete-text-case-conflict-metadata",
       "kind": "companion",
       "severity": "high",
-      "title": "Preserve the Advanced Paste hotkey ID contract",
-      "confidence": {
-        "score": 96,
-        "rationale": "The new text-case leaves expand the Advanced Paste action tree; stale fixed action-count assumptions can relabel conflicts and shift custom-action IDs across settings and the runner."
-      },
-      "body": "### Preserve the Advanced Paste hotkey ID contract\n\n**Severity:** `high`\n\nAdding the text-case action group changes the set of built-in Advanced Paste hotkeys. Please update the Settings UI conflict labels for every new text-case action, derive the custom-action boundary from the actual built-in action count instead of a fixed ID, and preserve the runner/settings contract for users upgrading from settings that do not yet contain `text-case`. Without that compatibility handling, shortcut conflicts can be shown under the wrong action name or custom action IDs can be interpreted differently between Settings and the module.",
+      "title": "Complete the text-case shortcut conflict metadata",
       "in_diff": false,
       "disposition": "proposed",
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "outOfDiffReason": "The required correction is in AdvancedPasteSettings.GetAllHotkeyAccessors and ShortcutConflictViewModel, neither of which is part of the current upstream diff; anchoring only the new action-group declaration would leave the necessary coordinated edits outside the suggestion.",
+      "out_of_diff_reason": "The required correction is in AdvancedPasteSettings.GetAllHotkeyAccessors and ShortcutConflictViewModel, neither of which is part of the current upstream diff; anchoring only the new action-group declaration would leave the necessary coordinated edits outside the suggestion.",
+      "body": "### Complete the text-case shortcut conflict metadata\n\n**Severity:** `high`\n\nAdding these ten leaves expands the built-in Advanced Paste hotkey list, but `AdvancedPasteSettings.GetAllHotkeyAccessors()` still has only the previous additional-action header keys and clamps later entries to `TranscodeToMp4`. `ShortcutConflictViewModel` also treats IDs above the old fixed cutoff as custom actions. Please add the ten localized header keys and derive the custom-action boundary from the actual built-in accessor count, including the optional coaching shortcut, so conflicts are labeled and routed to the correct action.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The new recursive action list directly exceeds both existing fixed-size assumptions. The converged fork corrected both sites and its final Copilot review returned zero new comments."
+      }
     },
     {
       "id": "add-unicode-root-notice",
       "kind": "companion",
       "severity": "medium",
-      "title": "Add root notice coverage for the Unicode data",
-      "confidence": {
-        "score": 94,
-        "rationale": "The PR vendors Unicode sentence-break data for Advanced Paste; PowerToys keeps third-party attribution visible from the root notice as well as module-local files."
-      },
-      "body": "### Add root notice coverage for the Unicode data\n\n**Severity:** `medium`\n\nThe new sentence-break data and generated lookup table are derived from Unicode data files. Please add the corresponding Unicode attribution to the root `NOTICE.md`, in addition to the module-local Unicode data license, so the distribution-level third-party notices include the new vendored material.",
+      "title": "Add distribution-level notice coverage for Unicode data",
       "in_diff": false,
       "disposition": "proposed",
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "outOfDiffReason": "The required distribution-level attribution belongs in the root NOTICE.md, which is not changed by the current upstream PR; the module-local LICENSE.txt cannot safely carry a suggestion that edits a different file.",
+      "out_of_diff_reason": "The required distribution-level attribution belongs in the root NOTICE.md, which is not changed by the current upstream PR; the module-local LICENSE.txt cannot safely carry a suggestion that edits a different file.",
+      "body": "### Add distribution-level notice coverage for Unicode data\n\n**Severity:** `medium`\n\nThis license file covers the newly vendored Unicode sentence-break data locally, but the generated lookup table is compiled into the product and the root `NOTICE.md` does not include this attribution. Please add an Advanced Paste Unicode-data entry to the root notice so distributed builds retain the required third-party notice.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The PR adds Unicode source data and a generated compiled table, while the current root NOTICE.md has no Advanced Paste or Unicode entry. The converged fork added the distribution-level notice."
+      }
     }
   ],
+  "publicPayload": {
+    "event": "REQUEST_CHANGES",
+    "body_prefix": "Thanks for the thorough Advanced Paste text-case implementation and test coverage. I found three compatibility and distribution-notice gaps that should be addressed before merge.",
+    "comments": [
+      {
+        "id": "reserve-text-case-ids-for-legacy-settings",
+        "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+        "start_line": 430,
+        "line": 431,
+        "side": "RIGHT",
+        "body": "### Reserve text-case hotkey IDs for existing settings\n\n**Severity:** `high`\n\nExisting Advanced Paste settings files do not contain the new `text-case` property. The Settings UI deserializes a default text-case group and includes its ten leaves when assigning IDs, while this runner path skips the group entirely when the JSON key is absent; custom-action IDs can therefore refer to different actions on the two sides. Insert a disabled in-memory default group when the persisted key is absent so the existing processing loop reserves the same ten IDs without enabling any shortcut.\n\n```suggestion\n                            L\"text-case\"\n                        };\n\n                        if (!additionalActions.HasKey(L\"text-case\"))\n                        {\n                            winrt::Windows::Data::Json::JsonObject textCaseActions;\n                            static constexpr std::array textCaseActionIds{\n                                L\"lower-case\",\n                                L\"upper-case\",\n                                L\"title-case\",\n                                L\"sentence-case\",\n                                L\"toggle-case\",\n                                L\"camel-case\",\n                                L\"pascal-case\",\n                                L\"snake-case\",\n                                L\"screaming-snake-case\",\n                                L\"kebab-case\",\n                            };\n\n                            for (const auto actionId : textCaseActionIds)\n                            {\n                                winrt::Windows::Data::Json::JsonObject action;\n                                action.Insert(JSON_KEY_IS_SHOWN, winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(false));\n                                action.Insert(JSON_KEY_SHORTCUT, winrt::Windows::Data::Json::JsonObject{});\n                                textCaseActions.Insert(actionId, action);\n                            }\n\n                            additionalActions.Insert(L\"text-case\", textCaseActions);\n                        }\n```"
+      },
+      {
+        "id": "complete-text-case-conflict-metadata",
+        "kind": "companion",
+        "out_of_diff_reason": "The required correction is in AdvancedPasteSettings.GetAllHotkeyAccessors and ShortcutConflictViewModel, neither of which is part of the current upstream diff.",
+        "body": "### Complete the text-case shortcut conflict metadata\n\n**Severity:** `high`\n\nAdding these ten leaves expands the built-in Advanced Paste hotkey list, but `AdvancedPasteSettings.GetAllHotkeyAccessors()` still has only the previous additional-action header keys and clamps later entries to `TranscodeToMp4`. `ShortcutConflictViewModel` also treats IDs above the old fixed cutoff as custom actions. Please add the ten localized header keys and derive the custom-action boundary from the actual built-in accessor count, including the optional coaching shortcut, so conflicts are labeled and routed to the correct action."
+      },
+      {
+        "id": "add-unicode-root-notice",
+        "kind": "companion",
+        "out_of_diff_reason": "The required distribution-level attribution belongs in root NOTICE.md, which is not changed by the current upstream PR.",
+        "body": "### Add distribution-level notice coverage for Unicode data\n\n**Severity:** `medium`\n\nThis license file covers the newly vendored Unicode sentence-break data locally, but the generated lookup table is compiled into the product and the root `NOTICE.md` does not include this attribution. Please add an Advanced Paste Unicode-data entry to the root notice so distributed builds retain the required third-party notice."
+      }
+    ]
+  },
   "phase0": {
     "author": "massimomazzariol",
     "author_association": "FIRST_TIME_CONTRIBUTOR",
     "bar": "full community-contributor process review",
     "disposition": "Proceed",
-    "owes_after_posting": "author",
+    "who_owes_next": "Maintainer approval for the drafted review",
     "gates_tripped": [],
-    "summary": "The PR is open, non-draft, labeled Ready for review, and has successful CLA, intake, and telemetry checks. No separate process blocker was found; the remaining draft action is code-review feedback."
+    "note": "The PR is open and non-draft, the intake check detected visual evidence, and the CLA, intake, and telemetry checks pass. No separate process blocker was found.",
+    "evidence": [
+      "The author is a first-time contributor, so the full community process review applies.",
+      "The current PR description includes validation details and visual evidence detected by the intake check.",
+      "The three currently reported checks are successful.",
+      "No upstream maintainer or author activity has appeared since the reviewed head."
+    ]
   },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "review_decision": "REVIEW_REQUIRED",
     "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+    "base_sha": "fbf7cbd35df5918850686b4032521e8ced176d39",
     "updated_at": "2026-09-02T13:51:47Z",
-    "author": "massimomazzariol",
-    "author_association": "FIRST_TIME_CONTRIBUTOR",
-    "assignees": [],
-    "review_requests": [],
+    "commit_count": 2,
+    "changed_file_count": 28,
+    "additions": 6607,
+    "deletions": 18,
     "issue_comment_count": 1,
+    "review_comment_count": 0,
     "review_count": 0,
-    "review_thread_count": 0,
-    "unresolved_upstream_review_threads": 0,
+    "review_decision": "REVIEW_REQUIRED",
+    "mergeable": true,
+    "mergeable_state": "BLOCKED",
     "reported_checks": {
-      "total": 3,
       "successful": 3,
       "failing": 0,
       "pending": 0,
-      "note": "Reported upstream checks are pr-intake, detect-telemetry-events, and license/cla."
+      "names": [
+        "license/cla",
+        "pr-intake",
+        "detect-telemetry-events"
+      ],
+      "note": "Azure Pipelines has not been triggered on this external contribution; its absence is not treated as a failed check."
     }
-  },
-  "copilot_review": {
-    "latest_submitted_at": "2026-09-03T02:42:48Z",
-    "latest_commit_id": "19745cac86b888d4f9747707d21063da75dfe35d",
-    "latest_new_comments": 0,
-    "unresolved_threads": 0,
-    "latest_summary": "Needs a closer look; files reviewed 31/32; comments generated 0 new."
-  },
-  "verification": {
-    "result": "passed",
-    "configuration": "x64 Debug",
-    "summary": "AdvancedPasteModuleInterface built successfully. Settings.UI.UnitTests restored and built successfully. AdvancedPasteSettingsTests passed 2/2.",
-    "builds": [
-      "src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface\\AdvancedPasteModuleInterface.vcxproj",
-      "src\\settings-ui\\Settings.UI.UnitTests\\Settings.UI.UnitTests.csproj"
-    ],
-    "tests": [
-      {
-        "suite": "Settings.UI.UnitTests",
-        "filter": "AdvancedPasteSettingsTests",
-        "passed": 2,
-        "failed": 0
-      }
-    ]
   },
   "fork_pr": {
     "number": 579,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/579",
     "state": "OPEN",
-    "updated_at": "2026-09-03T02:45:09Z",
     "head_sha": "19745cac86b888d4f9747707d21063da75dfe35d",
-    "branch": "pr-iterate/50333-v2"
+    "branch": "pr-iterate/50333-v2",
+    "updated_at": "2026-09-03T02:45:09Z"
   },
-  "fork_branch": "pr-iterate/50333-v2",
+  "copilot_review": {
+    "status": "fresh_zero_published_comments",
+    "latest_submitted_at": "2026-09-03T02:42:48Z",
+    "latest_review_id": 5097227250,
+    "reviewed_commit": "19745cac86b888d4f9747707d21063da75dfe35d",
+    "latest_new_comments": 0,
+    "published_inline_comments_total": 3,
+    "unresolved_threads": 0,
+    "rounds_completed": 3,
+    "outstanding_request": false,
+    "outstanding_request_consumed": true,
+    "resume_decision": "The completed review after the newest fork commit was consumed. No duplicate Copilot request was created."
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "exact_upstream_head": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+    "validation_worktree": "<PowerToysCheckout>",
+    "worktree_retained": false,
+    "builds": [
+      {
+        "scope": "PowerToys solution restore, Runner, and Settings UI via tools\\build\\build-essentials.cmd",
+        "result": "passed"
+      },
+      {
+        "scope": "src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface\\AdvancedPasteModuleInterface.vcxproj",
+        "result": "passed"
+      }
+    ],
+    "tests": [],
+    "diff_check": "passed",
+    "candidate_diff_only": true,
+    "note": "The exact upstream module was built after restoring the local checkout to the pinned head, then the literal suggestion fence was applied and the same module was rebuilt successfully. The scratch local checkout was removed after validation so the requested JSON remains the only stored result."
+  },
+  "test_instructions": [
+    "The exact-head Debug x64 build passed in a temporary validation local checkout, which was removed after validation; no persistent launch executable was retained.",
+    "After applying the proposed fixes in a normal development local checkout, open Advanced Paste settings, configure shortcuts for several Text case actions, and verify shortcut conflicts show each action's own localized name rather than Transcode to MP4.",
+    "Start from a version-1 Advanced Paste settings file without the text-case property, add custom actions, and verify the Settings UI and runner assign the same hotkey IDs before and after saving.",
+    "Exercise a Text case action and confirm the transformed text is produced; separately verify the root third-party notice contains the Unicode attribution before distribution."
+  ],
   "workflow": {
     "phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-03T07:24:54Z",
+    "checkpoint_at": "2026-09-10T08:48:24.094286Z",
+    "resume_action": "await_explicit_maintainer_approval",
+    "fork_pr": 579,
+    "fork_branch": "pr-iterate/50333-v2",
     "fork_head_sha": "19745cac86b888d4f9747707d21063da75dfe35d",
-    "upstream_head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+    "reviewed_upstream_head": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
     "unresolved_copilot_threads": 0,
-    "notes": [
-      "Set-PrReviewCheckpoint.ps1 was used before this terminal artifact update.",
-      "Existing fork PR 579, branch pr-iterate/50333-v2, and local checkout <PowerToysCheckout> were preserved.",
-      "No review, comment, label, assignment, or PR-state mutation was made on microsoft/PowerToys."
-    ]
+    "build_result": "passed"
   },
   "freshness": {
-    "evaluated_at": "2026-09-03T07:24:54Z",
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-10T08:48:24.094286Z",
+    "source_updated_at": "2026-09-02T13:51:47Z",
     "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
-    "head_updated_at": "2026-09-02T13:51:47Z",
-    "status": "fresh"
+    "fork_head_sha": "19745cac86b888d4f9747707d21063da75dfe35d"
+  },
+  "fork_writes": [],
+  "upstream_writes": [],
+  "dashboard_modified": false,
+  "canonical_dashboard_identity": "<PowerToysCheckout>",
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+      "result": "passed",
+      "applied_comment_ids": [
+        "reserve-text-case-ids-for-legacy-settings"
+      ],
+      "commands": [
+        "Apply the literal suggestion replacement to RIGHT lines 430-431 of src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface\\dllmain.cpp at head 3a34ad99de1802df74e5110335f1609dbf35bd9f",
+        "tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface",
+        "git diff --check"
+      ],
+      "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+      "start_line": 430,
+      "line": 431,
+      "side": "RIGHT",
+      "patched_blob_sha": "fee7c4df694cd199c089da8ef8846d4d371af8c1",
+      "validated_at": "2026-09-10T08:48:24.094286Z"
+    },
+    "upstream_head": {
+      "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface",
+        "git diff --check"
+      ],
+      "validated_at": "2026-09-10T08:48:24.094286Z"
+    }
   }
 }
