@@ -1,58 +1,72 @@
 {
   "schemaVersion": 5,
+  "id": "pr-49932",
+  "number": 49932,
   "kind": "pr",
   "track": "review",
-  "number": 49932,
-  "title": "CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
-  "url": "https://github.com/microsoft/PowerToys/pull/49932",
-  "generated_at": "2026-09-09T05:29:16.3946679Z",
-  "evaluated_at": "2026-09-09T05:29:16.3946679Z",
-  "source_updated_at": "2026-09-08T16:05:46Z",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
+  "generated_at": "2026-09-10T08:08:05.6376201Z",
+  "evaluated_at": "2026-09-10T08:08:05.6376201Z",
+  "source_updated_at": "2026-09-08T16:05:46Z",
   "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
-  "summary": "The live 14-file stacked scope is current, all process checks pass, and the external review loop converged on a validated fix set. Four supported current-head findings remain in the upstream patch, including a potentially destructive external move negotiation, so a request-changes review is drafted.",
+  "title": "CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
+  "url": "https://github.com/microsoft/PowerToys/pull/49932",
+  "repository": "microsoft/PowerToys",
+  "author": "jiripolasek",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "high",
+  "processVerdict": "proceed",
+  "summary": "The durable fork review was resumed without creating a duplicate Copilot request. Its existing current-head review is clean, all Copilot threads are resolved, and fresh Debug x64 builds plus 588 focused tests passed. Three non-duplicative current-head correctness findings are staged for maintainer approval; the already-raised upstream external-move concern is recorded internally and is not proposed again. No upstream write was made.",
   "status": {
-    "glyph": "READY",
-    "label": "Review ready — four correctness findings drafted",
-    "detail": "The current-head payload is supported by a zero-comment final Copilot review, zero unresolved threads, successful Debug x64 builds, and 588 passing focused assemblies."
+    "glyph": "APPROVAL",
+    "label": "Awaiting maintainer review approval",
+    "detail": "Three exact RIGHT-side inline findings are pinned to upstream head 1f551a7d72083bcf7b5681c9501154291b6870d5. Publication requires explicit approval and a final freshness check."
   },
   "next_action": {
-    "glyph": "REVIEW",
-    "label": "Review the drafted request-changes action",
-    "reason": "Publishing the current-head findings remains an explicit maintainer decision and requires a final upstream freshness check."
+    "glyph": "APPROVAL",
+    "label": "Approve, edit, or hold the drafted request-changes review",
+    "reason": "The proposed comments are unposted. Revalidate the pinned upstream head and activity before any explicitly approved publication."
   },
   "blockers": [],
-  "actions": [],
+  "actions": [
+    {
+      "id": "request-changes-49932",
+      "type": "request_changes",
+      "label": "Request three drag-and-drop correctness fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 49932,
+        "pullRequest": 49932,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5"
+      },
+      "note": "This head-pinned action contains three current RIGHT-side inline comments. Do not post without explicit approval and a final freshness check."
+    }
+  ],
   "proposed_comments": [
     {
-      "id": "preserve-external-drag-operation",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Do not advertise destructive moves for external payloads",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Do not advertise destructive moves for external payloads\n\n**Severity:** `high`\n\n`QuickAccessShelfItem_DragStarting` unconditionally adds `Move` to `AllowedOperations`, even when an extension's data package requests `Copy`. An external target such as Explorer can therefore negotiate a move and relocate a bookmarked file instead of copying it. Preserve the package's requested operation for data-backed drags, use `Move` only for shelf-only items, and make the internal shelf targets accept a preferred operation from the source's allowed set while still performing the pin, remove, or reorder action.",
-      "confidence": {
-        "score": 99,
-        "rationale": "The current head directly ORs Move into every drag source at ShellPage.xaml.cs lines 1057-1060. The validated implementation preserves the requested operation, selects a compatible internal operation, builds successfully, and passed the focused tests."
-      },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
-    },
-    {
       "id": "preserve-data-package-resource-map",
-      "kind": "companion",
+      "kind": "inline",
       "severity": "medium",
       "title": "Preserve resource maps when cloning drag data",
-      "in_diff": false,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
+      "line": 28,
+      "side": "RIGHT",
+      "in_diff": true,
       "disposition": "proposed",
-      "body": "### Preserve resource maps when cloning drag data\n\n**Severity:** `medium`\n\n`DataPackageTransfer.Copy` reconstructs properties and advertised formats but never transfers `DataPackage.ResourceMap`. Payloads such as HTML with embedded images consequently lose their resource mappings when dragged through CmdPal. Capture the resource map while the original package is available, copy it into the destination package, and precompute it for drag callbacks that cannot wait asynchronously.",
+      "body": "### Preserve resource maps when cloning drag data\n\n**Severity:** `medium`\n\nThis reconstruction copies package properties and advertised formats but never transfers `DataPackage.ResourceMap`. Payloads such as HTML with embedded images can therefore lose their resource mappings when dragged through CmdPal. Capture the resource map while the original package is available, copy it into the destination package, and precompute it for drag callbacks that cannot wait asynchronously.",
       "confidence": {
         "score": 98,
-        "rationale": "The WinRT resource map is separate from AvailableFormats and Properties, and the current copy routine never reads it. The validated implementation and regression tests preserve the map without blocking non-deferrable drag callbacks."
-      },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+        "rationale": "The WinRT resource map is separate from AvailableFormats and Properties, and the current copy routine never reads it. The corrected implementation compiled and the focused regression assemblies passed."
+      }
     },
     {
       "id": "enable-directory-bookmark-drag",
@@ -68,56 +82,176 @@
       "body": "### Include directory bookmarks in drag data\n\n**Severity:** `medium`\n\nThe classification filter accepts only file-like kinds and then requires `File.Exists`, so a bookmark classified as `CommandKind.Directory` never receives a data package and cannot be dragged to Explorer. The shared helper already supports `StorageFolder`; include directories and validate them with `Directory.Exists`.\n\n```suggestion\n        var localFilePath =\n            classification.Kind is CommandKind.FileExecutable or CommandKind.FileDocument or CommandKind.Shortcut or CommandKind.InternetShortcut or CommandKind.Directory &&\n            (File.Exists(classification.Target) || Directory.Exists(classification.Target))\n                ? classification.Target\n                : null;\n```",
       "confidence": {
         "score": 99,
-        "rationale": "The current filter excludes CommandKind.Directory even though the downstream helper handles folders. The exact replacement compiled and the new directory-bookmark regression test passed."
+        "rationale": "The current filter excludes CommandKind.Directory even though the downstream helper handles folders. The exact replacement compiled and the directory-bookmark regression coverage passed."
       }
     },
     {
       "id": "separate-persisted-pin-state",
-      "kind": "companion",
+      "kind": "inline",
       "severity": "medium",
       "title": "Track persisted pin state independently from shelf section",
-      "in_diff": false,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfViewModel.cs",
+      "line": 326,
+      "side": "RIGHT",
+      "in_diff": true,
       "disposition": "proposed",
-      "body": "### Track persisted pin state independently from shelf section\n\n**Severity:** `medium`\n\nWith recent items placed before pinned items, a command that is both recent and persisted as pinned can be rendered in the recent section. The current `canPin = !item.IsPinned` check treats that section membership as persistence state, exposes an invalid pin target, and also makes reorder eligibility inconsistent even though `TryPinItem` later rejects the operation. Track whether the command exists in the persisted pin set separately from the section's `IsPinned` value, and use that persisted state for pin and reorder eligibility.",
+      "body": "### Track persisted pin state independently from shelf section\n\n**Severity:** `medium`\n\nWith recent items placed before pinned items, a command that is both recent and persisted as pinned can be rendered in the recent section. Deriving `canPin` from `item.IsPinned` treats section membership as persistence state, exposes an invalid pin target, and makes reorder eligibility inconsistent even though `TryPinItem` later rejects the operation. Track membership in the persisted pin set separately and use that state for pin and reorder eligibility.",
       "confidence": {
         "score": 98,
-        "rationale": "The resolver intentionally permits a persisted pin to be represented by the recent section, while the current code derives CanPin solely from item.IsPinned. The separate persisted-state implementation compiled and its regression coverage passed."
-      },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+        "rationale": "The resolver intentionally permits a persisted pin to be represented by the recent section, while this changed line derives CanPin solely from item.IsPinned. The separated-state correction compiled and its regression coverage passed."
+      }
     }
   ],
   "phase0": {
     "author": "jiripolasek",
     "author_association": "COLLABORATOR",
-    "bar": "Collaborator process nags skipped except genuine blockers",
+    "bar": "repository collaborator; routine community process gates skipped",
     "disposition": "Proceed",
-    "who_owes_next": "Maintainer",
+    "who_owes_next": "Maintainer approval for the drafted review",
     "gates_tripped": [],
-    "note": "The PR is open and non-draft, links issue 49928, includes a user-visible recording, has successful CLA, dependency, intake, telemetry, x64, and arm64 checks, and has a current maintainer approval. Earlier cancelled intake and telemetry runs were superseded by successful runs."
+    "note": "The PR is open and non-draft, links issue 49928, includes a user-visible recording, and has a current maintainer approval. CLA, intake, dependency review, telemetry, Command Palette SDK, x64, and arm64 checks pass; cancelled duplicate workflow runs were superseded by successful runs.",
+    "evidence": [
+      "The author is a repository collaborator, so community process nags do not apply.",
+      "The current upstream head has successful required build and policy checks.",
+      "The PR includes a drag-and-drop recording and focused automated coverage.",
+      "All upstream review threads were inspected before drafting."
+    ]
   },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "mergeable_state": "CLEAN",
-    "review_decision": "APPROVED",
     "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
     "base_sha": "b299a74e74026dd0c953953aac12f748259d4f2e",
+    "updated_at": "2026-09-08T16:05:46Z",
+    "commit_count": 2,
     "changed_file_count": 14,
+    "additions": 928,
+    "deletions": 80,
     "issue_comment_count": 1,
+    "review_comment_count": 6,
     "review_count": 9,
+    "review_decision": "APPROVED",
+    "mergeable_state": "CLEAN",
     "reported_checks": {
+      "successful": 11,
       "failing": 0,
       "pending": 0,
-      "note": "All current required checks are successful; earlier cancelled duplicate workflow runs are not current failures."
+      "cancelled_superseded": 2
     }
+  },
+  "fork_pr": {
+    "number": 687,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/687",
+    "state": "OPEN",
+    "head_sha": "b06f1d586ee526b2604cb7690af1805fca7b7943",
+    "base_sha": "b299a74e74026dd0c953953aac12f748259d4f2e",
+    "changed_files": 15
+  },
+  "fork_repo": "MuyuanMS/PowerToys",
+  "fork_branch": "pr-iterate/49932-v4",
+  "copilot_review": {
+    "status": "fresh_zero_published_comments",
+    "latest_submitted_at": "2026-09-08T10:59:27Z",
+    "latest_review_id": 5140828417,
+    "reviewed_commit": "b06f1d586ee526b2604cb7690af1805fca7b7943",
+    "latest_new_comments": 0,
+    "published_inline_comments_total": 3,
+    "unresolved_threads": 0,
+    "rounds_completed": 5,
+    "outstanding_request": false,
+    "resume_decision": "Consumed the existing completed current-head review; no duplicate request was created."
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "builds": [
+      "PowerToys solution restore plus Runner and Settings via build-essentials.cmd",
+      "CmdPalModuleInterface",
+      "Microsoft.CmdPal.UI and dependent ViewModels",
+      "Microsoft.CmdPal.Ext.Bookmarks",
+      "Microsoft.CmdPal.Ext.Indexer",
+      "Microsoft.CmdPal.Ext.Bookmarks.UnitTests",
+      "Microsoft.CmdPal.UI.ViewModels.UnitTests"
+    ],
+    "tests": [
+      {
+        "scope": "Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "passed": 361,
+        "failed": 0,
+        "skipped": 0,
+        "duration_seconds": 6
+      },
+      {
+        "scope": "Microsoft.CmdPal.Ext.Bookmarks.UnitTests",
+        "passed": 227,
+        "failed": 0,
+        "skipped": 0,
+        "duration_seconds": 6
+      }
+    ],
+    "tests_total_passed": 588,
+    "exe_path": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+    "exe_exists": true,
+    "module_interface_path": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll",
+    "module_interface_exists": true,
+    "cmdpal_exe_path": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe",
+    "cmdpal_exe_exists": true,
+    "diff_check": "passed"
+  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and drag recent shelf items into the pinned section, reorder pinned items, and drag items onto the remove target; verify the shelf updates and persists the order.",
+    "Drag file and directory bookmarks from the shelf to Explorer and verify directory bookmarks provide a usable folder payload and data-backed drags do not lose rich package resources.",
+    "Set recent commands before pinned commands, use a command that is both recent and persisted as pinned, and verify it is not offered as pinnable again and can still be reordered correctly.",
+    "Focused automated validation passed 588/588 tests across the Bookmarks and UI ViewModels test assemblies."
+  ],
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-10T08:08:05.6376201Z",
+    "resume_action": "await_explicit_maintainer_approval",
+    "fork_pr": 687,
+    "fork_branch": "pr-iterate/49932-v4",
+    "fork_head_sha": "b06f1d586ee526b2604cb7690af1805fca7b7943",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "test_result": "588_passed"
   },
   "freshness": {
     "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-09T05:29:16.3946679Z",
+    "evaluated_at": "2026-09-10T08:08:05.6376201Z",
+    "source_updated_at": "2026-09-08T16:05:46Z",
     "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
-    "source_updated_at": "2026-09-08T16:05:46Z"
+    "fork_head_sha": "b06f1d586ee526b2604cb7690af1805fca7b7943"
   },
-  "upstream_writes": [],
+  "fork_writes": [
+    "Durable review branch pr-iterate/49932-v4 and fork PR 687 were reused without remirroring.",
+    "Previously pushed review fixes remain on fork head b06f1d586ee526b2604cb7690af1805fca7b7943.",
+    "All three prior published Copilot threads were already replied to and resolved.",
+    "No new fork request, commit, push, or PR update was needed during this bounded resume."
+  ],
+  "upstream_writes": false,
   "dashboard_modified": false,
-  "needs_revalidation": true
+  "canonical_dashboard_identity": "<PowerToysCheckout>",
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
+      "result": "passed",
+      "applied_comment_ids": [
+        "enable-directory-bookmark-drag"
+      ],
+      "command": "git diff 1f551a7d72083bcf7b5681c9501154291b6870d5 b06f1d586ee526b2604cb7690af1805fca7b7943 -- src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkListItem.cs | GIT_INDEX_FILE=<isolated-index> git apply --cached --check --whitespace=error-all -; then apply to the isolated index and compare blob IDs",
+      "evidence": [
+        "The generated patch contained exactly the two removals and two additions represented by the fenced suggestion, with no extra file changes.",
+        "The exact patch passed git apply --cached --check against an isolated index populated from upstream head 1f551a7d72083bcf7b5681c9501154291b6870d5.",
+        "After applying to the isolated index, the resulting blob 45b80f0078635dfb978fecba5024dd5f385e1510 exactly matched the already built and tested fork-fix blob.",
+        "A live freshness check confirmed upstream PR 49932 still points to the pinned head."
+      ],
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkListItem.cs",
+      "start_line": 124,
+      "line": 128,
+      "side": "RIGHT",
+      "patched_blob_sha": "45b80f0078635dfb978fecba5024dd5f385e1510",
+      "validated_at": "2026-09-10T08:08:05.6376201Z"
+    }
+  }
 }
