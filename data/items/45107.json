@@ -1,34 +1,126 @@
 {
+  "schemaVersion": 5,
   "number": 45107,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Actionable bug candidate",
-    "detail": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem."
-  },
-  "next_action": {
-    "glyph": "🛠️",
-    "label": "Queue code investigation",
-    "reason": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
   "source_updated_at": "2026-07-23T09:12:04Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/45107",
+  "title": "Cmd Pal Winget Search Broken.",
+  "author": "Devil360559",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette",
+    "CmdPal-Inbox Extensions",
+    "CmdPal - Winget"
+  ],
+  "assignees": [],
+  "comment_count": 12,
+  "summary": "CmdPal's WinGet extension can return no results or spin indefinitely when its deployment API connection fails, without telling the user that RPC/source initialization is unavailable.",
+  "next_action": "Approve resilient WinGet connection and visible error-state handling.",
+  "confidence": {
+    "score": 78,
+    "level": "yellow",
+    "rationale": "The exact COM failure and UI symptom are known, but current reports may include more than one WinGet source/broker failure."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+    "rationale": "Diagnostic logs show the WinGet extension failing through the deployment API with RPC unavailable, while the UI presents an endless or empty search. Even when the external service is unavailable, CmdPal owns the missing state/error feedback and recovery behavior.",
     "evidence": [
-      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
-      "Local-only dashboard signal; no upstream action is posted."
+      "The attached report contains COM error -2147023174: The RPC server is unavailable in WinGetExtensionPage.",
+      "A network reset restored results for the original reporter but searches remained slow.",
+      "A later reporter reproduced failure while command-line winget still worked and supplied another bug report.",
+      "A maintainer explicitly kept the issue open because the extension should expose its state."
     ],
-    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve resilient WinGet connection and visible error-state handling.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
     "source_updated_at": "2026-07-23T09:12:04Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recover WinGet API sessions and surface search failures",
+      "root_cause": "The WinGet extension treats deployment API/RPC failure as an empty or perpetually loading search instead of rebuilding the session and returning a visible error state.",
+      "plan": [
+        "Classify COM/RPC/source failures separately from successful zero-result searches.",
+        "Dispose and recreate the WinGet catalog/session after recoverable RPC failures with bounded retry and cancellation.",
+        "Show a concise actionable state that identifies WinGet/source availability instead of an empty list."
+      ],
+      "verification": [
+        "Force the WinGet deployment API or source service unavailable and verify CmdPal displays an error instead of spinning or returning silent emptiness.",
+        "Restore service availability and verify a retry returns results without restarting CmdPal."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The exact COM failure and UI symptom are known, but current reports may include more than one WinGet source/broker failure."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "CmdPal's WinGet extension can return no results or spin indefinitely when its deployment API connection fails, without telling the user that RPC/source initialization is unavailable.",
+    "known_information": [
+      "The first diagnostic report records RPC unavailable from Microsoft.Management.Deployment.",
+      "Restart/network reset can change the behavior.",
+      "Command-line winget may still work while the CmdPal extension fails.",
+      "The current UI does not distinguish no results from service failure."
+    ],
+    "inferences": [
+      "The extension needs connection reinitialization and explicit error/empty-state separation.",
+      "Different WinGet source or COM broker failures may share the same silent UI symptom."
+    ],
+    "analysis": "The root external error is already known, and CmdPal can improve both recovery and user feedback regardless of why the WinGet broker became unavailable.",
+    "initial_investigation": [
+      "Reviewed the full live discussion, both diagnostic submissions, the exact COM stack, labels, and state transitions.",
+      "Found no linked implementation that resolves the silent failure."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-45107",
+      "type": "approve_design",
+      "label": "Approve WinGet recovery design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Reconnect failed WinGet sessions and expose an actionable search state",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-45107",
+      "type": "reproduce",
+      "label": "Reproduce WinGet RPC failure state",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "Command Palette WinGet extension",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "Install current winget and Command Palette",
+          "Use a test environment where the App Installer/WinGet broker or a configured source can be temporarily made unavailable"
+        ],
+        "steps": [
+          "Confirm `winget search` baseline behavior.",
+          "Open Find apps on WinGet and start a query.",
+          "Interrupt the broker/source or reproduce the RPC-unavailable condition.",
+          "Observe whether CmdPal distinguishes an error from no results, then restore service and retry."
+        ],
+        "expected_result": "CmdPal shows a bounded error state for deployment API failure and recovers after the service/source becomes available."
+      }
+    }
+  ],
+  "design": null
 }

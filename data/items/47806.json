@@ -1,33 +1,93 @@
 {
+  "schemaVersion": 5,
   "number": 47806,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked work",
-    "reason": "Existing linked or owner-backed follow-up should move first."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:35:39Z",
+  "evaluated_at": "2026-09-10T16:35:39Z",
   "source_updated_at": "2026-07-17T17:11:58Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/47806",
+  "title": "Keyboard Manager isn’t saving the shortcut enable/disable toggle.",
+  "author": "DerDemystifier",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 6,
+  "summary": "Keyboard Manager shortcut enable states can fail to persist because the editor attempts to toggle a mapping ID absent from its in-memory dictionary; users also report backup omitting disabled shortcuts.",
+  "next_action": "Reproduce against current stable using a migrated editorSettings.json and verify ID/state consistency across save, reopen, and backup.",
+  "confidence": {
+    "score": 94,
+    "level": "green",
+    "rationale": "The exception identifies a concrete failing state and several users confirm the persistence symptom."
+  },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation.",
+    "status": "reproducible",
+    "rationale": "The issue includes a precise UI sequence, screenshots, a concrete KeyNotFound error, multiple confirmations, and workarounds that point to editor state desynchronization.",
     "evidence": [
-      "Linked upstream work already carries the active follow-up, so the dashboard should track that thread instead of starting a parallel investigation."
+      "The log records `ToggleSwitch_Toggled` failing because a mapping GUID was not present in the dictionary.",
+      "Multiple users report shortcuts becoming disabled again after closing and reopening the editor.",
+      "Deleting and recreating mappings sometimes clears the logged error, while backup reportedly restores only enabled mappings."
     ],
-    "recommended_action": "Existing linked or owner-backed follow-up should move first.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce against current stable using a migrated editorSettings.json and verify ID/state consistency across save, reopen, and backup.",
+    "evaluated_at": "2026-09-10T16:35:39Z",
     "source_updated_at": "2026-07-17T17:11:58Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The issue is ready for maintainer reproduction, but the lightweight pass does not establish which migration, load, or save path owns the stale mapping ID."
+  },
+  "issue_context": {
+    "summary": "Keyboard Manager shortcut enable states can fail to persist because the editor attempts to toggle a mapping ID absent from its in-memory dictionary; users also report backup omitting disabled shortcuts.",
+    "known_information": [
+      "The original report is against 0.99.1 and the discussion includes 0.100.2.",
+      "The issue affects shortcut enable-state persistence in the new editor.",
+      "A diagnostic log and screenshots are present in the report."
+    ],
+    "inferences": [
+      "Migration or load-time normalization may leave displayed mappings whose IDs are absent from the dictionary used by the toggle handler."
+    ],
+    "analysis": "A controlled migrated-settings repro can distinguish serialization loss from an editor-only dictionary synchronization failure without asking reporters for data already supplied.",
+    "initial_investigation": [
+      "Read the full report, all six comments, screenshots described in the body, and the supplied exception text.",
+      "Separated this persistence failure from the runtime shortcut failure tracked in #47812."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-47806",
+      "type": "reproduce",
+      "label": "Reproduce shortcut toggle persistence",
+      "primary": true,
+      "confirm": false,
+      "requiresApproval": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Exercise migrated shortcut IDs across save and backup",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "A copy of pre-0.99 Keyboard Manager settings or a fixture with multiple enabled and disabled shortcuts"
+        ],
+        "setup": [
+          "Back up the test settings.",
+          "Open the new Keyboard Manager editor and identify each mapping ID in editorSettings.json."
+        ],
+        "steps": [
+          "Toggle one shortcut off and one on, save, close the editor, and reopen it.",
+          "Confirm each row retains its state and inspect the editor log for a missing mapping GUID.",
+          "Restart PowerToys and repeat the state check.",
+          "Create and restore a PowerToys backup and verify both enabled and disabled mappings remain present without duplicate IDs."
+        ],
+        "expected_result": "Every mapping keeps its enabled state through reopen, restart, and backup/restore; no toggle references an ID absent from the loaded dictionary."
+      }
+    }
+  ]
 }

@@ -1,33 +1,103 @@
 {
+  "schemaVersion": 5,
   "number": 46569,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🔁",
-    "label": "Duplicate or already handled",
-    "detail": "GitHub already shows an assignee or active owner signal."
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
+  "source_updated_at": "2026-09-06T10:08:08Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/46569",
+  "title": "Always on top will break app's window ContextMenu xaml style",
+  "author": "hoshiizumiya",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Product-Always On Top",
+    "Needs-Triage"
+  ],
+  "assignees": [
+    "vanzue"
+  ],
+  "comment_count": 10,
+  "summary": "Always On Top's system-menu integration assumes a fixed menu structure and can remove or corrupt custom entries in PuTTY, RDP, and WinUI applications even when those windows are excluded from pinning.",
+  "next_action": "Approve a design that preserves arbitrary application-owned system-menu entries.",
+  "confidence": {
+    "score": 88,
+    "level": "green",
+    "rationale": "A maintainer identified the structural assumption and several unrelated applications reproduce the same menu corruption."
   },
-  "next_action": {
-    "glyph": "🔁",
-    "label": "Verify the existing handling path before doing new work",
-    "reason": "Let the current owner or assignee drive the next step, and only reopen investigation if that path stalls."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-23T13:39:20Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "GitHub already shows an assignee or active owner signal.",
+    "status": "actionable_design",
+    "rationale": "A PowerToys maintainer identified a hard-coded system-menu structural assumption, and multiple applications lose custom title-bar menu items whenever Always On Top is enabled. The cross-application reproduction supports a PowerToys-owned fix.",
     "evidence": [
-      "GitHub already shows an assignee or active owner signal."
+      "A maintainer states that a hard-coded menu-item-count assumption is triggered when the system menu is extended.",
+      "PuTTY, mstsc/RDP, and a WinUI 3 application lose or corrupt custom system-menu entries while Always On Top is enabled.",
+      "Excluding PuTTY from pinning and disabling only the title-bar menu option do not consistently prevent the corruption.",
+      "The issue is assigned to a PowerToys maintainer."
     ],
-    "recommended_action": "Let the current owner or assignee drive the next step, and only reopen investigation if that path stalls.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-23T13:39:20Z"
-  }
+    "recommended_action": "Approve a design that preserves arbitrary application-owned system-menu entries.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
+    "source_updated_at": "2026-09-06T10:08:08Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Always On Top system-menu edits identifier-based and non-destructive",
+      "root_cause": "Always On Top assumes a fixed system-menu item count/order, so applications that extend the menu can have their custom entries removed or restyled incorrectly.",
+      "plan": [
+        "Locate and manage only the command identifier inserted by Always On Top instead of indexing menu positions.",
+        "Preserve all application-owned separators, commands, state, and ordering when enabling or disabling the module.",
+        "Apply exclusions before any per-window menu mutation and test windows created before and after module activation."
+      ],
+      "verification": [
+        "Verify PuTTY, mstsc/RDP, and the supplied WinUI sample retain custom title-bar menu entries with Always On Top enabled.",
+        "Verify the PowerToys menu command appears and is removed without changing unrelated menu items."
+      ],
+      "confidence": {
+        "score": 88,
+        "level": "green",
+        "rationale": "A maintainer identified the structural assumption and several unrelated applications reproduce the same menu corruption."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Always On Top's system-menu integration assumes a fixed menu structure and can remove or corrupt custom entries in PuTTY, RDP, and WinUI applications even when those windows are excluded from pinning.",
+    "known_information": [
+      "The problem reproduces with Always On Top enabled, including when the visible menu-item option is disabled.",
+      "PuTTY custom entries disappear for newly launched windows.",
+      "A maintainer publicly identified a hard-coded structural assumption.",
+      "Several related reports were consolidated into this issue."
+    ],
+    "inferences": [
+      "The module likely locates or rewrites menu entries by position/count rather than by the command identifier it owns.",
+      "Initialization-time menu mutation explains why windows opened before enabling the module can retain their custom entries."
+    ],
+    "analysis": "The evidence identifies a specific ownership boundary: PowerToys must add/remove only its own system-menu command and preserve application-defined entries. The issue is ready for a focused design even though an assignee is already investigating.",
+    "initial_investigation": [
+      "Reviewed all live comments, reproductions in PuTTY/RDP/WinUI, current assignment, and consolidated duplicate links.",
+      "Found no linked PowerToys pull request that already implements the fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-46569",
+      "type": "approve_design",
+      "label": "Approve non-destructive menu design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Manage only Always On Top's own system-menu item and preserve application entries",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    }
+  ],
+  "design": null
 }

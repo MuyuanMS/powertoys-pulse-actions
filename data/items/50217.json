@@ -4,26 +4,26 @@
   "number": 50217,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T19:03:25.3400089Z",
-  "evaluated_at": "2026-09-09T19:03:25.3400089Z",
+  "generated_at": "2026-09-10T16:43:17.252Z",
+  "evaluated_at": "2026-09-10T16:43:17.252Z",
   "source_updated_at": "2026-08-31T14:52:41Z",
   "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
   "title": "fix(file-locksmith): isolate handle enumeration",
   "url": "https://github.com/microsoft/PowerToys/pull/50217",
   "repository": "microsoft/PowerToys",
-  "summary": "The existing fork review state for PR 50217 is still clean on the Copilot side and retains six current-head draft findings, but this resume pass is not yet concluded because fresh local validation is still pending after local checkout recreation. The last Copilot request was already consumed, no duplicate request was created, and the rebuild attempt stalled behind a shared vcpkg registry lock before the targeted File Locksmith build finished.",
+  "summary": "The current fork head has a current-head zero-published-comment Copilot review and zero unresolved threads. Exact minimized inline suggestions were materialized on the pinned upstream head, built successfully, and passed 10/10 targeted tests. Two coordinated fixes remain companion review requests.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Resume state found an existing fork PR and converged Copilot loop with zero unresolved Copilot threads. A new local checkout was recreated successfully, but the fresh rebuild did not complete because build-essentials remained blocked waiting on a shared vcpkg registry lock; no upstream write occurred and no duplicate Copilot request was sent."
+    "glyph": "⚠️",
+    "label": "Blocking review ready for approval",
+    "detail": "Nine current-head findings are drafted: seven exact validated inline suggestions and two coordinated companion requests."
   },
   "next_action": {
     "glyph": "▶",
-    "label": "Resume targeted File Locksmith validation",
-    "reason": "Once the shared vcpkg registry lock clears, rerun the targeted build and test pass in the recreated local checkout. If validation succeeds, republish the existing six current-head findings as a request-changes draft."
+    "label": "Review request-changes draft",
+    "reason": "Obtain explicit maintainer approval, then perform the mandatory freshness recheck before any upstream publication."
   },
   "proposed_comments": [
     {
@@ -31,47 +31,27 @@
       "kind": "companion",
       "severity": "high",
       "title": "Isolate enumeration for normal CLI commands",
-      "body": "### Isolate enumeration for normal CLI commands\n\n**Severity:** `high`\n\nThe hidden worker protects the UI, but normal `FileLocksmithCLI.exe` commands still construct `RealProcessFinder` and execute the potentially blocking native enumeration in the CLI process. A kernel query hang therefore still hangs `--json`, `--kill`, and `--wait --timeout`, so the timeout cannot be honored. Route every normal enumeration through a contained child `--worker-json` process with redirected BOM-free UTF-8 pipes, a finite wait, complete stdout draining, and explicit failure propagation. Also cover a deliberately blocked worker and verify that no child is orphaned.",
       "in_diff": false,
       "disposition": "proposed",
+      "body": "### Isolate enumeration for normal CLI commands\n\n**Severity:** `high`\n\nThe hidden worker protects the UI, but normal `FileLocksmithCLI.exe` commands still execute potentially blocking native enumeration in the CLI process. A kernel query hang therefore still hangs `--json`, `--kill`, and `--wait --timeout`. Route normal enumeration through a contained child `--worker-json` process with BOM-free UTF-8 pipes, a finite wait, complete output draining, explicit failure propagation, and a job object that inherits only the three intended standard-stream handles. Cover blocked-worker cleanup so no child or inherited caller pipe survives the timeout.",
+      "out_of_diff_reason": "The safe fix requires coordinated process creation, job lifetime, pipe ownership, resource text, command error handling, and tests across several noncontiguous current-diff regions.",
       "confidence": {
         "score": 98,
-        "rationale": "Normal commands still invoke the native finder directly, so a blocking kernel query can hang the CLI indefinitely."
-      },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
-    },
-    {
-      "id": "require-worker-pid",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Require the worker PID field",
-      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
-      "start_line": 259,
-      "line": 271,
-      "side": "RIGHT",
-      "body": "### Require the worker PID field\n\n**Severity:** `medium`\n\nAn omitted `pid` currently deserializes as `0`, so a malformed worker response is accepted as a valid process. Mark the field as required and model array entries as nullable so protocol validation can reject missing or null entries explicitly.\n\n```suggestion\n        private sealed class WorkerResponse\n        {\n            [JsonPropertyName(\"processes\")]\n            public WorkerProcessInfo?[]? Processes { get; init; }\n        }\n\n        private sealed class WorkerProcessInfo\n        {\n            [JsonPropertyName(\"name\")]\n            public string? Name { get; init; }\n\n            [JsonRequired]\n            [JsonPropertyName(\"pid\")]\n            public uint Pid { get; init; }\n```",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 96,
-        "rationale": "System.Text.Json defaults an absent non-nullable uint to zero, and arrays may contain null entries."
+        "rationale": "Normal commands still instantiate RealProcessFinder directly, so their timeout cannot bound a native enumeration hang."
       }
     },
     {
-      "id": "handle-worker-exit-race",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Handle the native process-exit race",
-      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
-      "start_line": 237,
-      "line": 243,
-      "side": "RIGHT",
-      "body": "### Handle the native process-exit race\n\n**Severity:** `medium`\n\nThe worker can exit after the `HasExited` check but before `Kill`, and Windows may report that race as `Win32Exception`. Treat it as benign only when the process is confirmed exited.\n\n```suggestion\n            try\n            {\n                process.Kill(entireProcessTree: true);\n            }\n            catch (InvalidOperationException) when (process.HasExited)\n            {\n            }\n            catch (Win32Exception) when (process.HasExited)\n            {\n            }\n```",
-      "in_diff": true,
+      "id": "bound-managed-worker-cleanup",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Bound managed worker cleanup",
+      "in_diff": false,
       "disposition": "proposed",
+      "body": "### Bound managed worker cleanup\n\n**Severity:** `high`\n\nTimeout and caller-cancellation paths kill the worker and then await process exit and redirected-pipe completion without a cleanup deadline. If termination races or a descendant retains a pipe, the supposedly bounded operation can still wait indefinitely. Bound both exit and pipe draining, dispose the job before abandoning a stuck tree, observe late task faults, and add timeout guards to the cleanup tests.",
+      "out_of_diff_reason": "The correction is coordinated across the timeout catch, finally block, termination helper, a new drain helper, and multiple tests; no single current RIGHT-side range is independently safe to apply.",
       "confidence": {
-        "score": 91,
-        "rationale": "Process.Kill can raise Win32Exception when the worker exits between the check and kill call."
+        "score": 97,
+        "rationale": "The current cleanup path contains unconditional waits after timeout/cancellation, and the reviewed fork needed coordinated changes in multiple noncontiguous locations."
       }
     },
     {
@@ -80,15 +60,66 @@
       "severity": "medium",
       "title": "Reject malformed process entries",
       "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
-      "start_line": 163,
-      "line": 178,
+      "start_line": 166,
+      "line": 168,
       "side": "RIGHT",
-      "body": "### Reject malformed process entries\n\n**Severity:** `medium`\n\nA syntactically valid response can contain a null process entry or null file element. Validate the complete entry before constructing the UI model.\n\n```suggestion\n                    var processes = new List<FileLocksmithProcessInfo>(response.Processes.Length);\n                    foreach (var processInfo in response.Processes)\n                    {\n                        if (processInfo is null ||\n                            processInfo.Name is null ||\n                            processInfo.User is null ||\n                            processInfo.Files is null ||\n                            Array.Exists(processInfo.Files, static file => file is null))\n                        {\n                            return MalformedOutput();\n                        }\n\n                        processes.Add(new FileLocksmithProcessInfo(\n                            processInfo.Name,\n                            processInfo.Pid,\n                            processInfo.User,\n                            processInfo.Files));\n```",
       "in_diff": true,
       "disposition": "proposed",
+      "body": "### Reject malformed process entries\n\n**Severity:** `medium`\n\nA syntactically valid response can contain a null process entry or null file element, which currently reaches dereferences or creates invalid UI state. Validate both before constructing the model.\n\n```suggestion\n                        if (processInfo is null ||\n                            processInfo.Name is null ||\n                            processInfo.User is null ||\n                            processInfo.Files is null ||\n                            Array.Exists(processInfo.Files, static file => file is null))\n```",
       "confidence": {
         "score": 98,
-        "rationale": "Null process and file entries can currently become crashes or invalid UI state."
+        "rationale": "System.Text.Json permits null array elements, and the current loop dereferences each entry without checking it."
+      }
+    },
+    {
+      "id": "nullable-worker-process-array",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Model nullable worker entries",
+      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
+      "start_line": 262,
+      "line": 262,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Model nullable worker entries\n\n**Severity:** `medium`\n\nThe wire format can contain `null` array elements. Express that in the DTO so nullable analysis matches the runtime validation instead of treating every entry as non-null.\n\n```suggestion\n            public WorkerProcessInfo?[]? Processes { get; init; }\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "The deserializer can populate null elements even though the current element type is non-nullable."
+      }
+    },
+    {
+      "id": "require-worker-pid",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Require the worker PID field",
+      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
+      "start_line": 270,
+      "line": 270,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Require the worker PID field\n\n**Severity:** `medium`\n\nAn omitted `pid` currently deserializes as `0`, allowing a malformed worker response to be accepted as a real process. Make the field required so deserialization follows the existing malformed-output path.\n\n```suggestion\n            [JsonRequired]\n            [JsonPropertyName(\"pid\")]\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "A missing non-nullable uint property defaults to zero unless required-member validation is enabled."
+      }
+    },
+    {
+      "id": "handle-worker-exit-race",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Handle the native process-exit race",
+      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
+      "start_line": 241,
+      "line": 243,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Handle the native process-exit race\n\n**Severity:** `medium`\n\nThe worker can exit after the `HasExited` check but before `Kill`, and Windows may report that race as `Win32Exception`. Treat that error as benign only when the process is confirmed exited.\n\n```suggestion\n            catch (InvalidOperationException) when (process.HasExited)\n            {\n            }\n            catch (Win32Exception) when (process.HasExited)\n            {\n            }\n```",
+      "confidence": {
+        "score": 91,
+        "rationale": "Process.Kill can throw Win32Exception when exit occurs between the check and the native termination call."
       }
     },
     {
@@ -98,50 +129,83 @@
       "title": "Treat invalid UTF-8 as malformed input",
       "path": "src/modules/FileLocksmith/FileLocksmithCLI/main.cpp",
       "start_line": 62,
-      "line": 94,
+      "line": 69,
       "side": "RIGHT",
-      "body": "### Treat invalid UTF-8 as malformed input\n\n**Severity:** `medium`\n\n`winrt::to_hstring(input)` can throw before the current exception handler begins, terminating the worker instead of returning the documented malformed-request exit code. Move parsing and conversion inside the guarded block.\n\n```suggestion\n        try\n        {\n            json::JsonObject request;\n            if (!json::JsonObject::TryParse(winrt::to_hstring(input), request) || !request.HasKey(L\"paths\"))\n            {\n                return std::nullopt;\n            }\n\n            std::vector<std::wstring> paths;\n            const auto json_paths = request.GetNamedArray(L\"paths\");\n            paths.reserve(json_paths.Size());\n\n            for (const auto& path : json_paths)\n            {\n                if (path.ValueType() != json::JsonValueType::String)\n                {\n                    return std::nullopt;\n                }\n\n                paths.emplace_back(path.GetString());\n            }\n\n            if (paths.empty())\n            {\n                return std::nullopt;\n            }\n\n            return paths;\n        }\n        catch (const winrt::hresult_error&)\n        {\n            return std::nullopt;\n        }\n```",
       "in_diff": true,
       "disposition": "proposed",
+      "body": "### Treat invalid UTF-8 as malformed input\n\n**Severity:** `medium`\n\n`winrt::to_hstring(input)` can throw before the current exception handler begins, terminating the worker instead of returning the documented malformed-request exit code. Start the guarded region before conversion so malformed bytes follow the normal error path.\n\n```suggestion\n        try\n        {\n            json::JsonObject request;\n            if (!json::JsonObject::TryParse(winrt::to_hstring(input), request) || !request.HasKey(L\"paths\"))\n            {\n                return std::nullopt;\n            }\n\n```",
       "confidence": {
         "score": 94,
-        "rationale": "UTF-8 conversion occurs before the current try block and can escape the malformed-input path."
+        "rationale": "The UTF-8 conversion is currently outside the hresult_error handler and can bypass the intended exit-code path."
       }
     },
     {
-      "id": "cover-malformed-and-cancel-cleanup",
+      "id": "cover-structured-worker-output",
       "kind": "inline",
       "severity": "medium",
-      "title": "Cover structured protocol failures and caller cancellation",
+      "title": "Cover structured malformed worker responses",
       "path": "src/modules/FileLocksmith/Tests/FileLocksmithUI.UnitTests/FileLocksmithQueryServiceTests.cs",
-      "start_line": 37,
-      "line": 74,
+      "start_line": 48,
+      "line": 48,
       "side": "RIGHT",
-      "body": "### Cover structured protocol failures and caller cancellation\n\n**Severity:** `medium`\n\nThe existing malformed-output test covers only syntax errors, while null entries, missing required fields, and null file elements exercise different branches. Caller cancellation also follows a different cleanup path from timeout. Add focused tests for those structured responses and verify cancellation propagates while terminating the worker.\n\n```suggestion\n        [TestMethod]\n        public async Task FindProcessesAsyncReportsMalformedWorkerOutput()\n        {\n            var service = CreateService(\"[Console]::Out.Write('not-json')\");\n\n            var result = await service.FindProcessesAsync(SelectedPaths, CancellationToken.None);\n\n            Assert.AreEqual(FileLocksmithQueryStatus.MalformedOutput, result.Status);\n            Assert.IsEmpty(result.Processes);\n        }\n\n        [DataTestMethod]\n        [DataRow(\"\"\"{\"processes\":[null]}\"\"\")]\n        [DataRow(\"\"\"{\"processes\":[{\"name\":\"process.exe\",\"user\":\"user\",\"files\":[\"C:\\\\file.txt\"]}]}\"\"\")]\n        [DataRow(\"\"\"{\"processes\":[{\"pid\":123,\"name\":\"process.exe\",\"user\":\"user\",\"files\":[null]}]}\"\"\")]\n        public async Task FindProcessesAsyncReportsMalformedStructuredWorkerOutput(string output)\n        {\n            var service = CreateService($\"[Console]::Out.Write('{output}')\");\n\n            var result = await service.FindProcessesAsync(SelectedPaths, CancellationToken.None);\n\n            Assert.AreEqual(FileLocksmithQueryStatus.MalformedOutput, result.Status);\n            Assert.IsEmpty(result.Processes);\n        }\n\n        [TestMethod]\n        public async Task FindProcessesAsyncCallerCancellationTerminatesWorker()\n        {\n            var workerPid = 0;\n            var service = CreateService(\n                \"Start-Sleep -Seconds 30\",\n                TimeSpan.FromSeconds(30),\n                pid => workerPid = pid);\n            using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));\n\n            await Assert.ThrowsExceptionAsync<OperationCanceledException>(\n                () => service.FindProcessesAsync(SelectedPaths, cancellation.Token));\n\n            Assert.AreNotEqual(0, workerPid);\n            Assert.IsFalse(IsProcessRunning(workerPid), \"The canceled worker process was left running.\");\n        }\n```",
       "in_diff": true,
       "disposition": "proposed",
+      "body": "### Cover structured malformed worker responses\n\n**Severity:** `medium`\n\nThe existing malformed-output test exercises only invalid JSON. Add cases for null entries, a missing required PID, and null file elements so each protocol-validation branch remains covered.\n\n```suggestion\n        [DataTestMethod]\n        [DataRow(\"\"\"{\"processes\":[null]}\"\"\")]\n        [DataRow(\"\"\"{\"processes\":[{\"name\":\"process.exe\",\"user\":\"user\",\"files\":[\"C:\\\\file.txt\"]}]}\"\"\")]\n        [DataRow(\"\"\"{\"processes\":[{\"pid\":123,\"name\":\"process.exe\",\"user\":\"user\",\"files\":[null]}]}\"\"\")]\n        public async Task FindProcessesAsyncReportsMalformedStructuredWorkerOutput(string output)\n        {\n            var service = CreateService($\"[Console]::Out.Write('{output}')\");\n\n            var result = await service.FindProcessesAsync(SelectedPaths, CancellationToken.None);\n\n            Assert.AreEqual(FileLocksmithQueryStatus.MalformedOutput, result.Status);\n            Assert.IsEmpty(result.Processes);\n        }\n\n        [TestMethod]\n```",
       "confidence": {
-        "score": 93,
-        "rationale": "Structured malformed JSON and caller cancellation reach branches not covered by the existing tests."
+        "score": 95,
+        "rationale": "These payloads exercise distinct validation paths that the syntax-only test does not cover."
+      }
+    },
+    {
+      "id": "cover-caller-cancellation-cleanup",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Verify caller cancellation terminates the worker",
+      "path": "src/modules/FileLocksmith/Tests/FileLocksmithUI.UnitTests/FileLocksmithQueryServiceTests.cs",
+      "start_line": 76,
+      "line": 76,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Verify caller cancellation terminates the worker\n\n**Severity:** `medium`\n\nCaller cancellation follows a different cleanup path from the service timeout. Add a bounded regression test that accepts derived cancellation exceptions and verifies that the worker process is gone.\n\n```suggestion\n        [TestMethod]\n        public async Task FindProcessesAsyncCallerCancellationTerminatesWorker()\n        {\n            var workerPid = 0;\n            var service = CreateService(\n                \"Start-Sleep -Seconds 30\",\n                TimeSpan.FromSeconds(30),\n                pid => workerPid = pid);\n            using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));\n\n            try\n            {\n                await service.FindProcessesAsync(SelectedPaths, cancellation.Token)\n                    .WaitAsync(TimeSpan.FromSeconds(10));\n                Assert.Fail(\"Caller cancellation was not propagated.\");\n            }\n            catch (OperationCanceledException)\n            {\n            }\n\n            Assert.AreNotEqual(0, workerPid);\n            Assert.IsFalse(IsProcessRunning(workerPid), \"The canceled worker process was left running.\");\n        }\n\n        [TestMethod]\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "The cancellation branch is separate from timeout handling, and the exact test passes against the materialized suggestion patch."
       }
     }
   ],
-  "actions": [],
+  "actions": [
+    {
+      "id": "request_changes-50217",
+      "type": "request_changes",
+      "label": "Request changes with 9 review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Current-head review draft with seven inline suggestions and two separate general PR comments; explicit approval and freshness recheck are required before posting.",
+      "review": {
+        "pr": 50217,
+        "pullRequest": 50217,
+        "repository": "microsoft/PowerToys",
+        "event": "REQUEST_CHANGES",
+        "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
+        "body_prefix": "The worker-process direction is sound, but blocking enumeration and cleanup can still escape the intended timeout boundary. Please address the coordinated isolation and cleanup gaps together with the localized protocol fixes below."
+      }
+    }
+  ],
   "judgment": {
-    "status": "build_revalidation_pending",
-    "rationale": "The live upstream head is unchanged from the previously drafted review, the fork loop already converged, and the last outstanding Copilot request from 2026-08-28T22:51:25Z was satisfied by the 2026-08-28T22:55:41Z zero-new-comment review on fork head 5a64966b1022e316bb332bb5ed502ac1e72c6f5d. However, cross-session local validation was not re-established in this run because the rebuild stopped behind shared vcpkg lock contention.",
-    "recommended_action": "Resume from the recreated local checkout at the building phase; do not request another Copilot review unless the branch changes after local validation or thread work.",
-    "evaluated_at": "2026-09-09T19:03:25.3400089Z",
+    "status": "review_drafted",
+    "rationale": "The latest current-fork-head Copilot review produced zero published comments and all threads are resolved. Manual delta accounting retained two coordinated companion findings and seven localized suggestions; the exact suggestion-only tree builds and its targeted tests pass.",
+    "recommended_action": "Request changes with the nine drafted items after explicit approval and a freshness recheck.",
+    "evaluated_at": "2026-09-10T16:43:17.252Z",
     "source_updated_at": "2026-08-31T14:52:41Z",
     "evidence": [
-      "Live upstream head is 36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd and upstream updatedAt is 2026-08-31T14:52:41Z.",
-      "Resume discovery found fork branch pr-iterate/50217, fork PR 527, and fork head 5a64966b1022e316bb332bb5ed502ac1e72c6f5d.",
-      "The current local checkout was recreated at resume time from pr-iterate/50217 rather than remirroring the branch.",
-      "Fork requested_reviewers is currently empty, so no Copilot request is outstanding.",
-      "The latest review request event for Copilot is 2026-08-28T22:51:25Z, and the latest Copilot review submitted afterward is the 2026-08-28T22:55:41Z COMMENTED review on commit 5a64966b1022e316bb332bb5ed502ac1e72c6f5d with zero new inline comments.",
-      "Review thread inspection shows zero unresolved Copilot threads.",
-      "The previous current-head draft carried six proposed review comments.",
-      "This session attempted fresh local validation, but build-essentials stalled during the runner build while waiting on a shared vcpkg registry filesystem lock."
+      "Fork PR 527 head 25f7819176e4caaf7cf4f9d3708b45b40f7ab107 received a Copilot review at 2026-09-10T14:20:41Z with zero published inline comments.",
+      "The sole suppressed comment was ignored under the post-round-5 suppressed-comment policy.",
+      "Zero unresolved Copilot threads remain.",
+      "The exact seven-suggestion candidate was created from upstream head 36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd.",
+      "The targeted Debug x64 build passed and 10 of 10 FileLocksmithUI unit tests passed.",
+      "No request, review, comment, label, commit, or push was made to microsoft/PowerToys."
     ]
   },
   "process_review": {
@@ -155,73 +219,95 @@
       "demo_required": false
     },
     "notes": [
-      "Because the author association is MEMBER, community-contributor process asks remain skipped.",
-      "The intake-generated Needs-Author-Feedback label was not treated as a blocking community process gate for this member-authored PR."
+      "Community-contributor process gates are skipped for this member-authored PR."
     ]
   },
   "fork_pr": {
     "number": 527,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/527",
-    "head_sha": "5a64966b1022e316bb332bb5ed502ac1e72c6f5d"
+    "head_sha": "25f7819176e4caaf7cf4f9d3708b45b40f7ab107"
   },
   "fork_repo": "MuyuanMS/PowerToys",
   "fork_branch": "pr-iterate/50217",
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-09T19:03:25.3400089Z",
-    "resume_action": "create-local checkout",
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-10T16:43:17.252Z",
     "pending_copilot_request": false,
-    "last_copilot_request_at": "2026-08-28T22:51:25Z",
-    "copilot_latest_review_at": "2026-08-28T22:55:41Z",
+    "last_copilot_request_at": "2026-09-10T12:04:23Z",
+    "copilot_latest_review_at": "2026-09-10T14:20:41Z",
+    "copilot_latest_review_head": "25f7819176e4caaf7cf4f9d3708b45b40f7ab107",
     "copilot_result": "clean_zero_published_comments",
     "unresolved_copilot_threads": 0,
-    "local_validation": "waiting_on_shared_vcpkg_lock",
-    "carried_forward_draft_findings": 6
+    "automated_round_cap_reached": true
   },
   "freshness": {
-    "checkpoint_at": "2026-09-09T19:03:25.3400089Z",
+    "checkpoint_at": "2026-09-10T16:43:17.252Z",
     "live_upstream_head": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
     "live_source_updated_at": "2026-08-31T14:52:41Z",
     "upstream_head_changed_since_previous_draft": false,
-    "relevant_new_upstream_activity": true
+    "fork_head": "25f7819176e4caaf7cf4f9d3708b45b40f7ab107"
   },
-  "build_evidence": {
-    "status": "in_progress",
-    "attempted_commands": [
-      "tools\\\\build\\\\build-essentials.cmd",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\FileLocksmith\\\\FileLocksmithUI",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\FileLocksmith\\\\FileLocksmithCLI\\\\tests",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\FileLocksmith\\\\Tests\\\\FileLocksmithUI.UnitTests"
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
+      "result": "passed",
+      "applied_comment_ids": [
+        "validate-worker-process-entries",
+        "nullable-worker-process-array",
+        "require-worker-pid",
+        "handle-worker-exit-race",
+        "reject-invalid-worker-utf8",
+        "cover-structured-worker-output",
+        "cover-caller-cancellation-cleanup"
+      ],
+      "minimal_ranges_reviewed": true,
+      "commands": [
+        "tools\\build\\build.cmd from src\\modules\\FileLocksmith\\Tests\\FileLocksmithUI.UnitTests",
+        "vstest.console.exe C:\\PT50217-suggestions\\x64\\Debug\\tests\\FileLocksmithUI.UnitTests\\FileLocksmithUI.UnitTests.dll /Platform:x64"
+      ],
+      "candidate_path": "<local-artifact>",
+      "tests": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "duration_seconds": 6.2901
+      },
+      "reconstruction_result": "passed",
+      "reconstruction_note": "Applying the seven literal suggestion blocks at their pinned ranges reproduces the persisted candidate files byte-for-byte after newline normalization."
+    }
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug exact suggestion candidate",
+    "builds": [
+      "FileLocksmithUI.UnitTests and project dependencies"
     ],
-    "tests": {
-      "status": "not_run_in_this_resume",
-      "cli_unit_tests": null,
-      "ui_unit_tests": null
-    },
-    "notes": [
-      "POWERTOYS_DISABLE_SPECTRE=1 was set for the attempted rebuild.",
-      "Inherited GIT_CONFIG_* environment variables were cleared before invoking git-backed build scripts.",
-      "The build-essentials restore step completed, but the runner build then stalled while waiting on a shared vcpkg registry filesystem lock from another build process."
-    ]
-  },
-  "copilot": {
-    "last_requested_at": "2026-08-28T22:51:25Z",
-    "latest_review_at": "2026-08-28T22:55:41Z",
-    "latest_review_head": "5a64966b1022e316bb332bb5ed502ac1e72c6f5d",
-    "latest_review_summary": "Needs a closer look; 0 new comments",
-    "new_comments": 0,
-    "unresolved_threads": 0,
-    "pending_requested_reviewers": [],
-    "reviews_after_last_request": [
+    "tests": [
       {
-        "reviewer": "copilot-pull-request-reviewer[bot]",
-        "state": "COMMENTED",
-        "submitted_at": "2026-08-28T22:55:41Z",
-        "commit_id": "5a64966b1022e316bb332bb5ed502ac1e72c6f5d"
+        "suite": "Exact suggestion candidate FileLocksmithUI.UnitTests",
+        "result": "passed",
+        "passed": 10,
+        "failed": 0
+      },
+      {
+        "suite": "Fork Copilot thread audit",
+        "result": "passed",
+        "unresolved": 0
       }
     ]
   },
+  "copilot": {
+    "last_requested_at": "2026-09-10T12:04:23Z",
+    "latest_review_at": "2026-09-10T14:20:41Z",
+    "latest_review_head": "25f7819176e4caaf7cf4f9d3708b45b40f7ab107",
+    "latest_review_summary": "Needs a closer look; 0 new published comments",
+    "new_comments": 0,
+    "suppressed_comments": 1,
+    "suppressed_policy": "ignored_after_round_5",
+    "unresolved_threads": 0,
+    "pending_requested_reviewers": [],
+    "new_request_created": false
+  },
   "upstream_writes": false,
-  "dashboard_modified": false,
-  "needs_revalidation": true
+  "dashboard_modified": false
 }

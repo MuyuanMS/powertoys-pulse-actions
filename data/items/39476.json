@@ -1,14 +1,16 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 39476,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
-  "source_updated_at": "2026-07-20T14:54:19Z",
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
+  "source_updated_at": "2026-08-24T10:01:21Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
   "url": "https://github.com/microsoft/PowerToys/issues/39476",
   "title": "We can't open this 'x-cmdpal' link.",
   "author": "blakechartergit",
@@ -18,43 +20,106 @@
     "Product-Settings",
     "Product-Command Palette"
   ],
-  "comments": 58,
-  "confidence": "Medium",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+  "assignees": [],
+  "comment_count": 58,
+  "summary": "When CmdPal's per-user MSIX deployment or URI registration is blocked, missing, or stale, PowerToys still exposes x-cmdpal activation and produces an opaque 'new app' error instead of reporting package health and remediation.",
+  "next_action": "Approve package-health detection and actionable CmdPal fallback/error handling.",
+  "confidence": {
+    "score": 82,
+    "level": "yellow",
+    "rationale": "The common missing-registration failure is proven, but several independent deployment policies require different remediation branches."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "CmdPal's MSIX package or x-cmdpal URI registration fails under several known AppX deployment conditions, but PowerToys continues to expose an activation/settings link that produces an opaque Windows error. PowerToys can detect and explain that state even when enterprise policy itself cannot be bypassed.",
     "evidence": [
-      "Labels: Issue-Bug, Product-Settings, Product-Command Palette",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "Event Viewer reports AppX failures including 0x80070005, 0x80073CF9, 0x80073CFF, missing VCLibs, and AppLocker blocks.",
+      "SYSTEM-context deployment is explicitly rejected for the per-user CmdPal package.",
+      "Some machines retain older CmdPal MSIX files and install the wrong version until manually cleaned.",
+      "Maintainers proposed checking whether the x-cmdpal URI is registered before invoking it.",
+      "Issue #44901 tracks broader unpackaged CmdPal support."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
-    "source_updated_at": "2026-07-20T14:54:19Z"
+    "recommended_action": "Approve package-health detection and actionable CmdPal fallback/error handling.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
+    "source_updated_at": "2026-08-24T10:01:21Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Validate CmdPal package/URI health before exposing activation",
+      "root_cause": "PowerToys assumes the bundled CmdPal MSIX registered successfully and invokes x-cmdpal even when deployment failed, policy blocked the package, dependencies are missing, or a stale payload was selected.",
+      "plan": [
+        "After deployment, verify the expected CmdPal package version and x-cmdpal URI registration for the interactive user.",
+        "Select the newest matching package deterministically and record the full AppX deployment error when registration fails.",
+        "Disable or replace activation controls with a specific remediation/status message, and link the unpackaged path where enterprise policy prevents MSIX."
+      ],
+      "verification": [
+        "Test per-user, per-machine, SYSTEM-context, AppLocker-blocked, sideloading-disabled, missing-dependency, and stale-multiple-MSIX scenarios.",
+        "Verify PowerToys never launches an unregistered x-cmdpal URI and always reports the detected package state."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The common missing-registration failure is proven, but several independent deployment policies require different remediation branches."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "When CmdPal's per-user MSIX deployment or URI registration is blocked, missing, or stale, PowerToys still exposes x-cmdpal activation and produces an opaque 'new app' error instead of reporting package health and remediation.",
+    "known_information": [
+      "The failure affects WinGet, Scoop, Chocolatey, EXE, SYSTEM-context, and enterprise-policy environments.",
+      "Different reporters supplied precise AppX deployment error codes and dependency/policy details.",
+      "Manual installation fixes some machines but is blocked by policy on others.",
+      "The problem persists through PowerToys 0.100.2 for enterprise-managed devices."
+    ],
+    "inferences": [
+      "There are multiple deployment root causes, but all converge on missing CmdPal package/URI registration.",
+      "PowerToys should gate activation/settings controls on package health and preserve the exact AppX error for support."
+    ],
+    "analysis": "A single installer change cannot override AppLocker or sideloading policy, but the application can stop invoking an absent URI handler, select the correct package payload, and expose a precise supported/unsupported state.",
+    "initial_investigation": [
+      "Reviewed all 58 live comments, exact AppX errors, install scopes, package-manager cases, workarounds, and related issues.",
+      "Verified #44901 remains open as the broader unpackaged CmdPal path; no concrete fix is linked from this issue."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-39476",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-39476",
+      "type": "approve_design",
+      "label": "Approve CmdPal package-health design",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 39476,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "requiresApproval": true,
+      "design_summary": "Verify package and URI registration, preserve deployment errors, and expose supported remediation",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-39476",
+      "type": "reproduce",
+      "label": "Reproduce blocked CmdPal registration",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "PowerToys installer / Command Palette",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "A disposable Windows test account or VM",
+          "Ability to test normal user, SYSTEM deployment, or an AppX policy restriction"
+        ],
+        "steps": [
+          "Install or update PowerToys in the selected deployment context.",
+          "Capture the CmdPal AppX deployment result and installed package version.",
+          "Open Command Palette settings and invoke activation.",
+          "Compare behavior when x-cmdpal is registered versus absent."
+        ],
+        "expected_result": "PowerToys detects the exact unsupported or failed package state and never presents the opaque Windows URI-handler dialog."
+      }
     }
-  ]
+  ],
+  "design": null
 }

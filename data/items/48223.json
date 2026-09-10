@@ -1,14 +1,14 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "id": "pr-48223",
   "number": 48223,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "request_changes",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T14:58:00+08:00",
-  "evaluated_at": "2026-09-02T14:58:00+08:00",
+  "generated_at": "2026-09-10T16:48:00.7708744Z",
+  "evaluated_at": "2026-09-10T16:48:00.7708744Z",
   "source_updated_at": "2026-08-28T07:31:45Z",
   "head_sha": "3a607d9df11235d0c53d81245b8787b15017aa93",
   "title": "feat: cache SVG previews in File Explorer",
@@ -26,16 +26,16 @@
   "confidence": "High",
   "processVerdict": "proceed",
   "codeVerdict": "request_changes",
-  "summary": "Phase 0 is clear, but the author's feedback commit only partially addresses the earlier cache review. The current upstream head still needs coordinated cache lifetime, byte-bounded eviction, reliable large-preview fallback, and cache-hit integration coverage.",
+  "summary": "Resumed durable fork PR 364 and branch pr-iterate/48223-v3 before mirroring. The upstream head is unchanged. The fork loop is converged on exact head 72bcacce4e79668b13ad85e1925afc688b8e33a0 with zero published comments in the latest review and zero unresolved Copilot threads. A fresh Debug x64 build of the resumed fork tree and both SVG unit-test suites passed (39/39). The current upstream head still needs coordinated cache lifetime, byte-bounded eviction, reliable large-preview fallback, cache-hit ordering, and integration coverage, so the result remains a request-changes draft.",
   "status": {
     "glyph": "⚠️",
-    "label": "Follow-up code review drafted",
-    "detail": "The current upstream head was re-reviewed after the author's update. CLA and intake checks pass and no process ask is owed; a consolidated current-head code follow-up is ready for maintainer approval."
+    "label": "Current-head request-changes review ready",
+    "detail": "Upstream head 3a607d9df11235d0c53d81245b8787b15017aa93 is unchanged. Fork PR 364 remains on converged head 72bcacce4e79668b13ad85e1925afc688b8e33a0; the latest exact-head Copilot review had zero published comments, unresolved threads are zero, and the resumed Debug x64 build plus 39 targeted tests passed."
   },
   "next_action": {
     "glyph": "▶",
-    "label": "Post the current-head follow-up review",
-    "reason": "The author addressed the header, invariant formatting, delimiter ambiguity, documentation, and basic write path, but important cache correctness and performance gaps remain. Recheck head 3a607d9 before posting."
+    "label": "Review the general request-changes draft",
+    "reason": "After explicit approval and a final live freshness check, publish the consolidated general review note. No upstream write was made in this run."
   },
   "proposed_comments": [
     {
@@ -45,15 +45,34 @@
       "title": "Finish the cache lifetime and bounded-storage design",
       "confidence": {
         "score": 97,
-        "rationale": "The current head still performs unleased cache reads, falls back to NavigateToString after failed writes regardless of document size, limits entries rather than bytes, leaves interrupted temporary writes unmaintained, and generates thumbnail HTML before checking the cache."
+        "rationale": "Each behavior is directly visible on the pinned upstream head, while the converged fork implementation and 39 passing tests demonstrate a coherent correction across both consumers and the shared cache helper."
       },
-      "body": "Thanks for the update — it addresses the file header, invariant formatting, delimiter-safe keys, documentation, and the basic atomic-write path. A few current-head issues still need to be resolved before this is merge-ready:\n\n- Cache files are checked and navigated without being pinned, while other Explorer preview/thumbnail processes can overwrite or evict the same entry. Coordinate writes/pruning across processes and keep an entry leased until WebView2 finishes navigation or capture.\n- When a cache write fails, the code falls back to `NavigateToString` even for generated HTML above WebView2's size limit, so large SVG previews can still be blank. Preserve a file-backed fallback and clean it after use.\n- `ManageCacheSize` caps the number of entries, not disk bytes; large SVGs can still consume substantial space, and interrupted `*.tmp` writes are never reclaimed. Enforce a byte budget and maintain stale temporary files.\n- The thumbnail path calls `WrapSVGInHTML` before cache lookup, so cache hits still regenerate the output the cache is intended to avoid.\n\nPlease add integration coverage proving that identical SVG/settings reuse an existing entry, rendering-setting changes produce a distinct entry, large-file fallback remains file-backed, and concurrent pruning cannot remove an entry while it is loading.",
+      "body": "Thanks for the update — it addresses the file header, invariant formatting, delimiter-safe keys, documentation, and the basic atomic-write path. A few current-head issues still need to be resolved before this is merge-ready:\n\n- Cache files are checked and navigated without being pinned, while other Explorer preview/thumbnail processes can overwrite or evict the same entry. Coordinate writes/pruning across processes and keep an entry leased until WebView2 finishes navigation or capture.\n- When a cache write fails, the code falls back to `NavigateToString` even for generated HTML above WebView2's size limit, so large SVG previews can still be blank. Preserve a file-backed fallback and clean it after use.\n- `ManageCacheSize` caps the number of entries, not disk bytes; large SVGs can still consume substantial space, and interrupted `*.tmp` writes are never reclaimed. Enforce a byte budget and maintain stale temporary files.\n- The thumbnail path builds wrapped HTML before cache lookup, so cache hits still regenerate the output the cache is intended to avoid.\n\nPlease add integration coverage proving that identical SVG/settings reuse an existing entry, rendering-setting changes produce a distinct entry, large-file fallback remains file-backed, and concurrent pruning cannot remove an entry while it is loading.",
       "in_diff": false,
       "disposition": "proposed",
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "out_of_diff_reason": "The required correction spans the shared cache API, both asynchronous WebView2 consumers, cleanup/lifetime behavior, and regression coverage; no single current RIGHT-side diff range can safely express the coordinated change."
     }
   ],
-  "actions": [],
+  "actions": [
+    {
+      "id": "post-review-48223",
+      "type": "request_changes",
+      "label": "Request changes with one separate general PR review note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "This coordinated cross-file finding should be posted as one separate general PR conversation note, with no line-targeted comments. Recheck the upstream head and activity immediately before publication.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 48223,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "3a607d9df11235d0c53d81245b8787b15017aa93",
+        "body": "### Finish the cache lifetime and bounded-storage design\n\n**Severity:** `high`\n\nThanks for the update — it addresses the file header, invariant formatting, delimiter-safe keys, documentation, and the basic atomic-write path. A few current-head issues still need to be resolved before this is merge-ready:\n\n- Cache files are checked and navigated without being pinned, while other Explorer preview/thumbnail processes can overwrite or evict the same entry. Coordinate writes/pruning across processes and keep an entry leased until WebView2 finishes navigation or capture.\n- When a cache write fails, the code falls back to `NavigateToString` even for generated HTML above WebView2's size limit, so large SVG previews can still be blank. Preserve a file-backed fallback and clean it after use.\n- `ManageCacheSize` caps the number of entries, not disk bytes; large SVGs can still consume substantial space, and interrupted `*.tmp` writes are never reclaimed. Enforce a byte budget and maintain stale temporary files.\n- The thumbnail path calls `WrapSVGInHTML` before cache lookup, so cache hits still regenerate the output the cache is intended to avoid.\n\nPlease add integration coverage proving that identical SVG/settings reuse an existing entry, rendering-setting changes produce a distinct entry, large-file fallback remains file-backed, and concurrent pruning cannot remove an entry while it is loading.",
+        "pr": 48223,
+        "body_prefix": "Thanks for the update. The current head still needs coordinated cache lifetime, bounded-storage, large-preview fallback, cache-hit ordering, and integration-test follow-ups."
+      }
+    }
+  ],
   "judgment": {
     "status": "review_drafted",
     "rationale": "PR 48223 is a first-time community contribution at upstream head 3a607d9df11235d0c53d81245b8787b15017aa93. Phase 0 passes: the CLA, intake, and telemetry checks are green; the linked issue and scope are clear; the author supplied tests and responded to the prior review. The response commit fixes several earlier findings but leaves material cache lifetime, storage-bound, fallback, and cache-hit behavior unresolved.",
@@ -116,12 +135,30 @@
   },
   "fork_branch": "pr-iterate/48223-v3",
   "workflow": {
-    "phase": "review_drafted",
-    "checkpoint_at": "2026-09-02T14:58:00+08:00"
+    "phase": "converged_draft_ready",
+    "resume_action_discovered": "create-local checkout",
+    "reviewed_upstream_head": "3a607d9df11235d0c53d81245b8787b15017aa93",
+    "fork_pr": 364,
+    "fork_branch": "pr-iterate/48223-v3",
+    "final_fork_head": "72bcacce4e79668b13ad85e1925afc688b8e33a0",
+    "upstream_worktree": "<PowerToysCheckout>",
+    "unresolved_copilot_threads": 0,
+    "cutoff_utc": "2026-09-10T16:51:23Z",
+    "new_review_rounds_this_run": 0,
+    "rebase_result": "aborted_after_conflicts_without_changes",
+    "fork_writes": [],
+    "upstream_writes": []
   },
   "freshness": {
-    "queued_at": "2026-09-02T10:57:43.0546493+08:00",
-    "checkpoint_at": "2026-09-02T14:58:00+08:00"
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-10T16:48:54.0007037Z",
+    "head_sha": "3a607d9df11235d0c53d81245b8787b15017aa93",
+    "source_updated_at": "2026-08-28T07:31:45Z",
+    "exact_scope_verified": true,
+    "fork_review_commit": "72bcacce4e79668b13ad85e1925afc688b8e33a0",
+    "fork_review_completed_at": "2026-09-02T06:56:11Z",
+    "head_matches_reviewed_upstream": true,
+    "note": "Upstream has not moved since the converged fork review. A final live freshness check remains mandatory immediately before any approved publication."
   },
   "verify": [
     "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
@@ -130,5 +167,102 @@
     "Reopen the folder and verify cached previews are reused without blank output; change the SVG preview background setting and verify the preview refreshes.",
     "Exercise many distinct SVGs and verify the SVG cache stays bounded and stale temporary/transient files are reclaimed."
   ],
-  "needs_revalidation": true
+  "repository": "microsoft/PowerToys",
+  "phase0": {
+    "verdict": "proceed",
+    "disposition": "Proceed",
+    "author": "Mankurj05",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "bar": "full community-contributor process review",
+    "who_owes_next": "Maintainer review decision",
+    "owes": "maintainer",
+    "gates_tripped": [],
+    "processAsks": [],
+    "summary": "CLA, intake, and telemetry checks pass; the linked feature issue is open; scope is atomic; tests are present; and the author responded to the earlier review. A demo would not materially clarify this internal performance/correctness change, and no duplicate author ask is warranted."
+  },
+  "validation": {
+    "status": "passed",
+    "configuration": "Debug x64 on exact resumed fork head",
+    "builds": [
+      {
+        "result": "passed",
+        "name": "build-essentials"
+      },
+      {
+        "result": "passed",
+        "name": "PreviewHandlerCommon"
+      },
+      {
+        "result": "passed",
+        "name": "SvgPreviewHandler"
+      },
+      {
+        "result": "passed",
+        "name": "SvgThumbnailProvider"
+      },
+      {
+        "result": "passed",
+        "name": "SvgPreviewHandlerCpp"
+      },
+      {
+        "result": "passed",
+        "name": "SvgThumbnailProviderCpp"
+      },
+      {
+        "result": "passed",
+        "name": "Preview.SvgPreviewHandler.UnitTests"
+      },
+      {
+        "result": "passed",
+        "name": "Preview.SvgThumbnailProvider.UnitTests"
+      }
+    ],
+    "tests": [
+      {
+        "skipped": 0,
+        "result": "passed",
+        "failed": 0,
+        "passed": 24,
+        "name": "Preview.SvgPreviewHandler.UnitTests"
+      },
+      {
+        "skipped": 0,
+        "result": "passed",
+        "failed": 0,
+        "passed": 15,
+        "name": "Preview.SvgThumbnailProvider.UnitTests"
+      }
+    ],
+    "outputs": {
+      "powerToysExe": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe"
+    },
+    "diff_check": "passed",
+    "notes": [
+      "Build and test commands began before the 2026-09-10T16:51:23Z cutoff.",
+      "The first multi-DLL VSTest command accidentally included obj/ref assemblies and hit a VSTest parallel-manager error; the two real bin outputs then passed sequentially, 24/24 and 15/15.",
+      "A current-main rebase encountered conflicts from duplicated mirrored history and was aborted cleanly; no fork commit or push occurred."
+    ]
+  },
+  "publicPayload": {
+    "comments": [
+      {
+        "id": "finish-svg-cache-lifetime-and-bounds",
+        "kind": "companion",
+        "severity": "high",
+        "title": "Finish the cache lifetime and bounded-storage design",
+        "body": "Thanks for the update — it addresses the file header, invariant formatting, delimiter-safe keys, documentation, and the basic atomic-write path. A few current-head issues still need to be resolved before this is merge-ready:\n\n- Cache files are checked and navigated without being pinned, while other Explorer preview/thumbnail processes can overwrite or evict the same entry. Coordinate writes/pruning across processes and keep an entry leased until WebView2 finishes navigation or capture.\n- When a cache write fails, the code falls back to `NavigateToString` even for generated HTML above WebView2's size limit, so large SVG previews can still be blank. Preserve a file-backed fallback and clean it after use.\n- `ManageCacheSize` caps the number of entries, not disk bytes; large SVGs can still consume substantial space, and interrupted `*.tmp` writes are never reclaimed. Enforce a byte budget and maintain stale temporary files.\n- The thumbnail path builds wrapped HTML before cache lookup, so cache hits still regenerate the output the cache is intended to avoid.\n\nPlease add integration coverage proving that identical SVG/settings reuse an existing entry, rendering-setting changes produce a distinct entry, large-file fallback remains file-backed, and concurrent pruning cannot remove an entry while it is loading."
+      }
+    ]
+  },
+  "dashboard_modified": false,
+  "upstream_writes": [],
+  "blockers": [],
+  "schema_validation": {
+    "result": "passed",
+    "validated_at": "2026-09-10T16:48:54.0007037Z",
+    "validator": "Test-DashboardArtifacts.ps1",
+    "numbers": [
+      48223
+    ]
+  }
 }

@@ -1,33 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 47802,
   "kind": "issue",
   "track": "fix",
   "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design fix candidate",
-    "detail": "The report is specific enough to queue code-backed design work without another upstream clarification round."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Queue detailed design",
-    "reason": "The issue is already reproducible enough for code investigation and does not need another upstream information round first."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
   "source_updated_at": "2026-07-25T20:41:28Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/47802",
+  "title": "Grab-and-Move interferes with other Alt keyboard shortcuts even without mouse movement",
+  "author": "ajkessel",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comment_count": 11,
+  "summary": "Grab and Move reserves its configured Alt or Win modifier too early, interfering with keyboard-only shortcuts even when no mouse movement occurs.",
+  "next_action": "Approve a modifier-arbitration design and reproduce both keyboard-only and mouse-modified paths.",
+  "confidence": {
+    "score": 82,
+    "level": "yellow",
+    "rationale": "Switching the configured modifier transfers the failure, strongly implicating hook arbitration; exact event-order behavior still needs tracing."
+  },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The report is specific enough to queue code-backed design work without another upstream clarification round.",
+    "rationale": "Grab and Move consumes or delays its configured modifier before any mouse drag is established, so unrelated Alt/Win shortcuts require a second keypress. Multiple users reproduced the behavior and changing the Grab and Move modifier transfers the failure to that modifier.",
     "evidence": [
-      "The report is specific enough to queue code-backed design work without another upstream clarification round."
+      "The reporter's Alt-based AutoHotkey shortcuts recover when Grab and Move is changed to Win.",
+      "When Grab and Move uses Win, Win-based shortcuts fail instead while Alt shortcuts recover.",
+      "Related reports #47337, #47585, and #47655 describe the same first-keypress loss."
     ],
-    "recommended_action": "The issue is already reproducible enough for code investigation and does not need another upstream information round first.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a modifier-arbitration design and reproduce both keyboard-only and mouse-modified paths.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
     "source_updated_at": "2026-07-25T20:41:28Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Defer Grab and Move modifier capture until a mouse gesture is committed",
+      "root_cause": "The keyboard hook treats the configured modifier as part of Grab and Move before a qualifying mouse press/movement exists, consuming state needed by unrelated keyboard shortcuts.",
+      "plan": [
+        "Track the modifier without suppressing keyboard-only input until the configured mouse button and drag threshold are reached.",
+        "Preserve or replay normal modifier state when the gesture is abandoned or no mouse action occurs.",
+        "Keep the existing post-drag Alt-menu suppression limited to completed Grab and Move operations."
+      ],
+      "verification": [
+        "Verify Alt- and Win-based AutoHotkey, Keyboard Manager, Terminal, and Command Palette shortcuts work on the first press without mouse input.",
+        "Verify Grab and Move still starts reliably and does not activate the window menu after an actual drag."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "Switching the configured modifier transfers the failure, strongly implicating hook arbitration; exact event-order behavior still needs tracing."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Grab and Move reserves its configured Alt or Win modifier too early, interfering with keyboard-only shortcuts even when no mouse movement occurs.",
+    "known_information": [
+      "The issue reproduces on PowerToys 0.99.1 with AutoHotkey 2.",
+      "The selected modifier determines which family of shortcuts becomes unreliable.",
+      "Users report that pressing another key can disengage Grab and Move and allow the intended shortcut.",
+      "The problem is consolidated here after #47271 was closed."
+    ],
+    "inferences": [
+      "The low-level hook likely suppresses or changes state for the first modifier chord before a drag threshold is met.",
+      "The fix must preserve prevention of unwanted Alt menu activation after a real drag."
+    ],
+    "analysis": "The public discussion isolates the conflict to Grab and Move's modifier handling rather than AutoHotkey. A design can defer suppression until a mouse gesture is recognized or replay the modifier path when no drag occurs.",
+    "initial_investigation": [
+      "Reviewed every live comment and related issue references #47271, #47337, #47585, and #47655.",
+      "Confirmed #47337 and #47585 remain open while #47271 was closed in favor of continued tracking."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-47802",
+      "type": "approve_design",
+      "label": "Approve modifier-arbitration design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Delay Grab and Move modifier suppression until a real mouse gesture begins",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-47802",
+      "type": "reproduce",
+      "label": "Reproduce first-shortcut suppression",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "Grab And Move",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "Enable Grab and Move",
+          "Configure Alt, then Win, as its activation modifier",
+          "Configure an AutoHotkey, Keyboard Manager, or Command Palette shortcut using the same modifier"
+        ],
+        "steps": [
+          "Restart PowerToys.",
+          "Press the keyboard-only shortcut once without touching the mouse.",
+          "Press it a second time and record whether only the second invocation succeeds.",
+          "Change Grab and Move to the other modifier and repeat."
+        ],
+        "expected_result": "Keyboard-only shortcuts work on the first press, while Grab and Move still activates only for the configured mouse gesture."
+      }
+    }
+  ],
+  "design": null
 }

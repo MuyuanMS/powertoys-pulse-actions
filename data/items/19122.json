@@ -1,33 +1,95 @@
 {
+  "schemaVersion": 5,
   "number": 19122,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T16:35:39Z",
+  "evaluated_at": "2026-09-10T16:35:39Z",
   "source_updated_at": "2023-07-13T15:23:15Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/19122",
+  "title": "Fancy Zones: Multiple windows of the same application snapping to the same zone",
+  "author": "NsCW",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 13,
+  "summary": "FancyZones restores multiple windows from the same browser or Electron application into one last-known zone instead of preserving distinct per-window placements.",
+  "next_action": "Reproduce current multi-window restoration and capture which app/window identity fields FancyZones records for each window.",
+  "confidence": {
+    "score": 90,
+    "level": "green",
+    "rationale": "The behavior is widely confirmed, while the safe identity strategy remains uncertain."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "Many users provide consistent multi-window examples and the documented setting is application-oriented, but current identity behavior and browser restore timing need verification.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Chrome, Edge, Obsidian, and CAD users report multiple same-process windows stacking in one zone after restart.",
+      "Disabling `Move newly created windows to their last known zone` avoids the stacking behavior but removes the desired automation.",
+      "Browser profile, kiosk, and app command-line variations do not reliably distinguish the windows for FancyZones."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce current multi-window restoration and capture which app/window identity fields FancyZones records for each window.",
+    "evaluated_at": "2026-09-10T16:35:39Z",
     "source_updated_at": "2023-07-13T15:23:15Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The desired per-window identity contract is not established and may depend on application-provided properties unavailable during restore."
+  },
+  "issue_context": {
+    "summary": "FancyZones restores multiple windows from the same browser or Electron application into one last-known zone instead of preserving distinct per-window placements.",
+    "known_information": [
+      "The original environment uses seven monitors and multiple Edge and Chrome windows.",
+      "The symptom extends beyond browsers to Electron and CAD applications.",
+      "The setting currently describes the last zone location that an application was in."
+    ],
+    "inferences": [
+      "AppZoneHistory may be applying an application-level identity before stable per-window information is available during session restore."
+    ],
+    "analysis": "Maintainer-side reproduction should establish whether the present code still collapses windows and what stable discriminator, if any, exists before a design is proposed.",
+    "initial_investigation": [
+      "Read all thirteen live comments and the reported workarounds.",
+      "Separated browser restore limitations from the cross-application FancyZones stacking behavior."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-19122",
+      "type": "reproduce",
+      "label": "Reproduce same-app window stacking",
+      "primary": true,
+      "confirm": false,
+      "requiresApproval": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Trace multiple same-application windows through session restore",
+        "module": "FancyZones",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Two monitors or more",
+          "Move newly created windows to their last known zone enabled",
+          "At least three windows from one application"
+        ],
+        "setup": [
+          "Place each same-application window in a different zone.",
+          "Configure the application to restore its prior windows after sign-in."
+        ],
+        "steps": [
+          "Record the window titles, process IDs, application paths, and assigned zones before restart.",
+          "Restart Windows and restore the application session.",
+          "Record the order windows appear and the zone assigned to each.",
+          "Repeat with a second multi-window application to distinguish app-specific behavior."
+        ],
+        "expected_result": "Each restored window returns to its own prior zone, or the trace clearly identifies the identity collision that prevents it."
+      }
+    }
+  ]
 }

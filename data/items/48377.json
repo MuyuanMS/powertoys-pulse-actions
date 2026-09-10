@@ -1,33 +1,101 @@
 {
+  "schemaVersion": 5,
   "number": 48377,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
+  "source_updated_at": "2026-08-27T10:41:49Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/48377",
+  "title": "ZoomIt text extraction shortcut added in 0.99 silently breaks international keyboard usage",
+  "author": "teasmade",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-ZoomIt",
+    "Product-Keyboard Manager"
+  ],
+  "assignees": [],
+  "comment_count": 1,
+  "summary": "ZoomIt's default text-extraction chord collides with AltGr character entry on international layouts and is enabled without a dashboard conflict warning.",
+  "next_action": "Approve a safer default and AltGr-aware conflict reporting design.",
+  "confidence": {
+    "score": 91,
+    "level": "green",
+    "rationale": "The exact chord collision is deterministic, acknowledged by the existing settings warning, and introduced with the new default."
   },
-  "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-21T16:13:21Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "status": "actionable_design",
+    "rationale": "ZoomIt's newly enabled text-extraction shortcut uses Ctrl+Alt+6, which is the AltGr sequence for entering circumflex characters on UK Extended and other international layouts. The settings warning confirms the collision, but the global shortcut-conflict surface does not report it.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "Pressing AltGr/Ctrl+Alt+6 launches ZoomIt text extraction instead of entering a circumflex composition.",
+      "The issue started when the ZoomIt shortcut was added in PowerToys 0.99.",
+      "ZoomIt settings already warn about possible AltGr interference.",
+      "PowerToys' Shortcut conflicts page does not expose the conflict."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-21T16:13:21Z"
-  }
+    "recommended_action": "Approve a safer default and AltGr-aware conflict reporting design.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
+    "source_updated_at": "2026-08-27T10:41:49Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid and report AltGr-conflicting ZoomIt defaults",
+      "root_cause": "ZoomIt registers Ctrl+Alt+6 globally even though Windows international layouts use the equivalent AltGr+6 chord for dead-key text composition.",
+      "plan": [
+        "Choose a default text-extraction chord that does not overlap common AltGr text-entry sequences, with migration that preserves explicit user choices.",
+        "Teach the shared shortcut-conflict model that AltGr can emit Ctrl+Alt and flag those collisions in the dashboard.",
+        "Keep the local editor warning and add clear attribution when ZoomIt owns a conflicting chord."
+      ],
+      "verification": [
+        "On UK Extended and another AltGr layout, enter circumflex-accented characters without launching ZoomIt.",
+        "Verify the Shortcut conflicts page reports an intentionally configured AltGr-equivalent ZoomIt chord."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The exact chord collision is deterministic, acknowledged by the existing settings warning, and introduced with the new default."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "ZoomIt's default text-extraction chord collides with AltGr character entry on international layouts and is enabled without a dashboard conflict warning.",
+    "known_information": [
+      "The reported layout is United Kingdom Extended.",
+      "AltGr is represented as Ctrl+Alt for the affected character sequence.",
+      "The collision prevents normal text entry and unexpectedly opens a full-screen ZoomIt mode.",
+      "The per-setting editor knows the chord can interfere with AltGr."
+    ],
+    "inferences": [
+      "The default shortcut and global conflict detector were chosen without treating AltGr-equivalent chords as reserved text-input sequences."
+    ],
+    "analysis": "The root cause is direct and user-visible. A fix should avoid enabling a conflicting default for existing international-layout users and make AltGr equivalence visible wherever shortcut conflicts are summarized.",
+    "initial_investigation": [
+      "Reviewed the full live report, its layout clarification, current labels, and related Grab and Move reference.",
+      "Found no linked implementation or existing fix attempt."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-48377",
+      "type": "approve_design",
+      "label": "Approve AltGr-safe ZoomIt shortcut design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Use a non-conflicting default and surface AltGr-equivalent shortcut conflicts",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    }
+  ],
+  "design": null
 }

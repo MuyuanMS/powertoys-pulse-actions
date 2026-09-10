@@ -1,34 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 29904,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaged",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🚫",
-    "label": "Not actionable for a new PowerToys fix",
-    "detail": "The problem is confined to a VMware/guest-display environment rather than a normal local MWB topology."
-  },
-  "next_action": {
-    "glyph": "🚫",
-    "label": "No new fix action now",
-    "reason": "Current evidence points outside a PowerToys-owned implementation change."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
   "source_updated_at": "2026-07-19T17:58:22Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/29904",
+  "title": "MWB mouse buttons not functioning in second screen VMWARE Workstation VM",
+  "author": "thluther",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comment_count": 5,
+  "summary": "Mouse Without Borders can move the pointer on a remote PC, but VMware Workstation drops injected click, wheel, and keyboard events while its guest window has focus.",
+  "next_action": "Approve a VMware-focused input-injection compatibility design and reproduce the focus transition.",
+  "confidence": {
+    "score": 58,
+    "level": "yellow",
+    "rationale": "The focus and event-class boundary is clear, but VMware's acceptance rules and whether PowerToys can safely work around them remain uncertain."
+  },
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "The problem is confined to a VMware/guest-display environment rather than a normal local MWB topology.",
+    "status": "actionable_design",
+    "rationale": "Multiple users reproduce Mouse Without Borders pointer movement reaching a VMware Workstation guest while clicks, wheel, and keyboard input are dropped whenever the VM owns focus. The focused-window boundary makes a targeted injection compatibility investigation possible.",
     "evidence": [
-      "The problem is confined to a VMware/guest-display environment rather than a normal local MWB topology.",
-      "Current evidence points to system, environment, packaging, or preference constraints rather than a new PowerToys fix."
+      "The original report reproduces with Windows 11 hosts and VMware Player 17.5.0.",
+      "A later report on VMware Workstation 17.6.2 and PowerToys 0.100.2 confirms pointer motion works while clicks, scrolling, and keyboard input do not.",
+      "Unfocusing or minimizing VMware restores Mouse Without Borders input on the remote machine."
     ],
-    "recommended_action": "Current evidence points outside a PowerToys-owned implementation change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a VMware-focused input-injection compatibility design and reproduce the focus transition.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
     "source_updated_at": "2026-07-19T17:58:22Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Use a VMware-compatible MWB input path for focused guests",
+      "root_cause": "VMware's focused guest input capture accepts MWB pointer positioning but rejects or bypasses the injected button, wheel, and keyboard event path.",
+      "plan": [
+        "Trace the exact event APIs, flags, integrity levels, and target window state used for pointer versus button/keyboard forwarding.",
+        "Test supported SendInput/raw-input-compatible alternatives and VMware enhanced-keyboard settings without weakening security boundaries.",
+        "If VMware intentionally rejects injected input, detect the focused guest and expose a clear compatibility limitation instead of silent partial control."
+      ],
+      "verification": [
+        "Control a VMware Workstation 17.6.x guest through MWB and verify movement, clicks, wheel, and keyboard input.",
+        "Regression-test ordinary desktop apps, elevated windows, and non-VM fullscreen applications."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The focus and event-class boundary is clear, but VMware's acceptance rules and whether PowerToys can safely work around them remain uncertain."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders can move the pointer on a remote PC, but VMware Workstation drops injected click, wheel, and keyboard events while its guest window has focus.",
+    "known_information": [
+      "Both source and destination hosts are Windows.",
+      "The failure is specific to a focused VMware guest window.",
+      "Pointer movement remains functional.",
+      "The issue persists through VMware Workstation 17.6.2 and PowerToys 0.100.2."
+    ],
+    "inferences": [
+      "VMware's focused input-capture path distinguishes MWB's button/keyboard injection from pointer movement.",
+      "Integrity level, SendInput flags, raw-input capture, or VMware enhanced keyboard settings are plausible discriminators."
+    ],
+    "analysis": "The public report is sufficiently repeatable for maintainer-side testing. The design should first identify which injected event classes VMware rejects, then change MWB only if a compatible supported injection path exists.",
+    "initial_investigation": [
+      "Reviewed all live confirmations, versions, focus behavior, labels, and timeline.",
+      "Found no linked fix, duplicate owner, or reporter evidence that normal local input fails."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-29904",
+      "type": "approve_design",
+      "label": "Approve VMware input-compatibility design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Identify and correct the MWB event path rejected by focused VMware guests",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-29904",
+      "type": "reproduce",
+      "label": "Reproduce focused VMware input loss",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "Two Windows PCs paired with Mouse Without Borders",
+          "VMware Workstation or Player 17.6.x on the destination",
+          "A running Windows guest"
+        ],
+        "steps": [
+          "Move the MWB pointer into the destination desktop and verify normal input.",
+          "Focus the VMware guest.",
+          "Test pointer movement, left/right click, wheel, and keyboard separately.",
+          "Unfocus/minimize VMware and repeat."
+        ],
+        "expected_result": "The maintainer identifies exactly which MWB event classes fail only while VMware owns focus and whether a supported injection path restores them."
+      }
+    }
+  ],
+  "design": null
 }

@@ -1,14 +1,16 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 10903,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
   "source_updated_at": "2026-07-22T05:21:45Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
   "url": "https://github.com/microsoft/PowerToys/issues/10903",
   "title": "FancyZones: Bottom of windows being snapped underneath taskbar.",
   "author": "crutkas",
@@ -18,43 +20,108 @@
     "Product-FancyZones",
     "Needs-Repro"
   ],
-  "comments": 84,
-  "confidence": "Medium",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+  "assignees": [
+    "SeraphimaZykova"
+  ],
+  "comment_count": 84,
+  "summary": "FancyZones can cache or receive stale monitor work-area geometry after startup, wake, docking, taskbar, or DPI changes, causing zones and snapped windows to extend under the taskbar.",
+  "next_action": "Approve a work-area invalidation design and reproduce dock/wake/DPI transitions.",
+  "confidence": {
+    "score": 69,
+    "level": "yellow",
+    "rationale": "The stale-work-area mechanism is strongly supported, but reports indicate multiple Windows and PowerToys event-order variants."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs numbered reliable reproduction steps, fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "Years of reports consistently tie FancyZones using the wrong work area to startup, display wake/docking, monitor-layout, taskbar, or DPI transitions. Refreshing Windows display/work-area state often repairs it, so the remaining uncertainty is the invalidation event rather than whether the bug exists.",
     "evidence": [
-      "Labels: Issue-Bug, Product-FancyZones, Needs-Repro",
-      "Candidate sources: hot_comments",
-      "Missing: numbered reliable reproduction steps, fresh PowerToys bug-report ZIP."
+      "The issue has 84 comments and many duplicate reports across PowerToys versions.",
+      "Reopening the editor, toggling scaling, changing monitor arrangement, restarting Explorer, or reconnecting a display repairs the state for subsets of users.",
+      "The latest report reproduces on mixed 125%/100% displays connected through a Thunderbolt dock.",
+      "The FancyZones editor itself can show zones extending under the taskbar, proving stale work-area geometry before window placement."
     ],
-    "recommended_action": "Ask the reporter for numbered reliable reproduction steps, fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Approve a work-area invalidation design and reproduce dock/wake/DPI transitions.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
     "source_updated_at": "2026-07-22T05:21:45Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Revalidate FancyZones work areas after shell and display transitions",
+      "root_cause": "FancyZones can initialize or retain monitor work-area rectangles before the taskbar/display topology has settled, and it does not reliably rebuild them after every relevant shell, DPI, wake, or docking transition.",
+      "plan": [
+        "Centralize monitor/work-area refresh for startup, WM_SETTINGCHANGE work-area events, display/DPI changes, power resume, and topology changes.",
+        "Debounce transition bursts and compare the work-area rectangle with the current monitor/taskbar geometry before applying layouts.",
+        "Recalculate active layouts and window placements only after stable geometry is observed, with telemetry/logging for rejected stale values."
+      ],
+      "verification": [
+        "Exercise boot, monitor sleep/wake, Thunderbolt dock attach/detach, KVM switching, taskbar auto-hide, and mixed-DPI changes.",
+        "Verify the editor and snapped windows stay inside each monitor's current work area and recover without restarting Explorer or toggling scaling."
+      ],
+      "confidence": {
+        "score": 69,
+        "level": "yellow",
+        "rationale": "The stale-work-area mechanism is strongly supported, but reports indicate multiple Windows and PowerToys event-order variants."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones can cache or receive stale monitor work-area geometry after startup, wake, docking, taskbar, or DPI changes, causing zones and snapped windows to extend under the taskbar.",
+    "known_information": [
+      "The bug spans single and multi-monitor systems and many PowerToys releases.",
+      "It often begins after boot, display sleep/wake, docking/KVM changes, or display reconfiguration.",
+      "Different refresh operations repair the issue for different users.",
+      "Some users also observe incorrect Windows Snap geometry, while others reproduce only with FancyZones."
+    ],
+    "inferences": [
+      "FancyZones is not consistently invalidating and rebuilding work-area data when shell/display topology becomes stable.",
+      "There may be multiple upstream triggers, so the fix should validate geometry rather than rely on one event ordering."
+    ],
+    "analysis": "The issue is already highly reproducible in aggregate. A safe PowerToys fix can subscribe to relevant work-area/display changes, debounce unstable transitions, and reject obviously inconsistent work-area rectangles before applying layouts.",
+    "initial_investigation": [
+      "Reviewed the complete 84-comment live discussion, current labels, assignment, and the consolidated duplicate timeline.",
+      "Separated reports that also affect Windows Snap from reports where FancyZones-specific refresh operations change the outcome."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-10903",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-10903",
+      "type": "approve_design",
+      "label": "Approve work-area refresh design",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 10903,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP. Also include monitor layout/DPI, the configured PowerToys settings for this utility, and a short recording showing the failure."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "requiresApproval": true,
+      "design_summary": "Rebuild FancyZones geometry after startup, wake, docking, taskbar, and DPI transitions",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-10903",
+      "type": "reproduce",
+      "label": "Reproduce stale work-area geometry",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "FancyZones",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "At least two displays with mixed scaling or a dock/KVM",
+          "A visible non-auto-hidden taskbar",
+          "FancyZones enabled with a layout touching the work-area bottom"
+        ],
+        "steps": [
+          "Confirm zones initially stop above the taskbar.",
+          "Sleep/wake displays or attach/detach the dock/KVM.",
+          "Open the layout editor and inspect the zone boundary before changing settings.",
+          "Toggle display scaling or monitor arrangement and note whether geometry repairs."
+        ],
+        "expected_result": "The exact transition that leaves stale work-area bounds is captured, and a subsequent refresh keeps zones above the taskbar."
+      }
     }
-  ]
+  ],
+  "design": null
 }

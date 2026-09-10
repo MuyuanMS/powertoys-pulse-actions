@@ -1,34 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 48304,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaged",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🚫",
-    "label": "Not actionable for a new PowerToys fix",
-    "detail": "WSLg windows are remote-integrated Linux surfaces, not standard local Win32 windows."
-  },
-  "next_action": {
-    "glyph": "🚫",
-    "label": "No new fix action now",
-    "reason": "Current evidence points outside a PowerToys-owned implementation change."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
   "source_updated_at": "2026-07-27T08:26:59Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/48304",
+  "title": "Grab and Move + WSLg windows",
+  "author": "awilkins",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Grab And Move"
+  ],
+  "assignees": [],
+  "comment_count": 1,
+  "summary": "Grab and Move relocates WSLg window pixels without keeping the Linux surface's pointer coordinate mapping synchronized; moving the same window through the native title bar restores alignment.",
+  "next_action": "Approve a focused compatibility design and reproduce the move on a scaled WSLg desktop.",
+  "confidence": {
+    "score": 74,
+    "level": "yellow",
+    "rationale": "The symptom and native-move recovery strongly identify the move lifecycle, but the exact WSLg notification or coordinate boundary still needs a focused reproduction."
+  },
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "WSLg windows are remote-integrated Linux surfaces, not standard local Win32 windows.",
+    "status": "actionable_design",
+    "rationale": "Two independent reports show that Grab and Move visually relocates WSLg windows while their Linux-side input hit-testing remains at an offset proportional to the drag. Native taskbar movement repairs the mapping, which points to the synthetic move path rather than the WSLg application.",
     "evidence": [
-      "WSLg windows are remote-integrated Linux surfaces, not standard local Win32 windows.",
-      "Current evidence points to system, environment, packaging, or preference constraints rather than a new PowerToys fix."
+      "The original report reproduces horizontal and vertical click offsets after moving an Eclipse WSLg window.",
+      "A second reporter reproduces the same offset in Nautilus and notes that native taskbar movement restores correct pointer mapping.",
+      "The second report observes a larger mismatch around 200% display scale, making DPI/coordinate conversion a useful discriminator."
     ],
-    "recommended_action": "Current evidence points outside a PowerToys-owned implementation change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a focused compatibility design and reproduce the move on a scaled WSLg desktop.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
     "source_updated_at": "2026-07-27T08:26:59Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve WSLg input-coordinate synchronization during synthetic moves",
+      "root_cause": "Grab and Move likely repositions WSLg top-level windows through a path that updates the visible host window without triggering the native move lifecycle used to refresh WSLg input coordinate mapping.",
+      "plan": [
+        "Identify WSLg-hosted top-level windows and compare Grab and Move's positioning calls with a normal title-bar move.",
+        "Route compatible WSLg windows through a system move sequence or emit the required position/DPI notifications after movement.",
+        "If reliable synchronization is impossible, prevent Grab and Move from handling WSLg windows and explain the limitation."
+      ],
+      "verification": [
+        "Move Eclipse and Nautilus WSLg windows horizontally and vertically at 100% and 200% scaling and verify click targets remain aligned.",
+        "Verify native Win32/UWP window movement and multi-monitor dragging remain unchanged."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The symptom and native-move recovery strongly identify the move lifecycle, but the exact WSLg notification or coordinate boundary still needs a focused reproduction."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Grab and Move relocates WSLg window pixels without keeping the Linux surface's pointer coordinate mapping synchronized; moving the same window through the native title bar restores alignment.",
+    "known_information": [
+      "PowerToys 0.99.1 is reported.",
+      "The problem affects at least Eclipse and Nautilus WSLg windows.",
+      "The pointer offset grows with the drag vector and occurs on both axes.",
+      "A normal title-bar move or minimize/restore can restore correct hit testing."
+    ],
+    "inferences": [
+      "Grab and Move's synthetic positioning path may bypass a move lifecycle or coordinate update that WSLg's remoting surface relies on.",
+      "DPI scaling may amplify the stale coordinate transform but is not yet proven to be the sole cause."
+    ],
+    "analysis": "The repeatable geometric offset and recovery through native window movement make this suitable for a bounded compatibility design. The safest design should compare native move semantics with the current Grab and Move positioning path and either use a compatible move sequence or explicitly exclude unsupported WSLg surfaces.",
+    "initial_investigation": [
+      "Reviewed the complete live body, both attached screenshots, the confirming Nautilus report, current labels, assignees, and timeline.",
+      "Found no linked upstream fix or active owner for this issue."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-48304",
+      "type": "approve_design",
+      "label": "Approve WSLg move-compatibility design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Keep WSLg input coordinates synchronized with Grab and Move window positioning",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-48304",
+      "type": "reproduce",
+      "label": "Reproduce WSLg pointer-offset path",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "Grab And Move",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "WSL2 with WSLg",
+          "A Linux GUI app such as Nautilus or Eclipse",
+          "One display at 100% and, if available, one at 200% scaling"
+        ],
+        "steps": [
+          "Open a WSLg app and click a known target.",
+          "Use Grab and Move to translate the window horizontally and vertically.",
+          "Click the same visible target and record the hit offset.",
+          "Move the window through its native title bar or minimize/restore, then retest."
+        ],
+        "expected_result": "The maintainer can determine whether the offset is introduced only by Grab and Move and whether native movement refreshes the WSLg input transform."
+      }
+    }
+  ],
+  "design": null
 }

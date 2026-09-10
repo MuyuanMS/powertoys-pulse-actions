@@ -1,14 +1,16 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 33499,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-30T14:00:33.80471Z",
-  "evaluated_at": "2026-08-30T14:00:33.80471Z",
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
   "source_updated_at": "2026-07-21T06:49:07Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
   "url": "https://github.com/microsoft/PowerToys/issues/33499",
   "title": "High memory usage - Run, PowerAccent, ColorPickerUI",
   "author": "Smxthy1",
@@ -20,43 +22,106 @@
     "Product-Color Picker",
     "Product-Quick Accent"
   ],
-  "comments": 20,
-  "confidence": "Medium",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected."
-  },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused repro details",
-    "reason": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context."
+  "assignees": [],
+  "comment_count": 20,
+  "summary": "PowerToys Run can allocate hundreds of megabytes when the Program plugin indexes an unexpectedly large application set; the thread also contains less-specific baseline memory reports for other WinUI utilities.",
+  "next_action": "Approve a bounded Program-plugin indexing and cache investigation.",
+  "confidence": {
+    "score": 64,
+    "level": "yellow",
+    "rationale": "The plugin toggle is a strong discriminator, but the public evidence does not yet separate duplicate enumeration from icon/metadata retention."
   },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bug report still needs fresh PowerToys bug-report ZIP before a safe fix path can be selected.",
+    "status": "actionable_design",
+    "rationale": "The broad thread contains several memory complaints, but the newest evidence isolates an immediate repeatable increase from about 130 MB to more than 800 MB when PowerToys Run's Program plugin is enabled. That narrower path is actionable without requesting another generic diagnostic package.",
     "evidence": [
-      "Labels: Issue-Bug, Product-PowerToys Run, Needs-Triage, Product-Color Picker, Product-Quick Accent",
-      "Candidate sources: hot_comments",
-      "Missing: fresh PowerToys bug-report ZIP."
+      "The latest reporter toggles the Program plugin and consistently observes Run memory jump from about 130 MB to over 800 MB.",
+      "The Program plugin reports indexing 1,629 Win32 applications, more than the reporter expects.",
+      "Earlier users report Run memory growth, freezes, and page-file exhaustion.",
+      "A prior reporter supplied a PowerToys diagnostic archive and observed monitor-count sensitivity for some processes."
     ],
-    "recommended_action": "Ask the reporter for fresh PowerToys bug-report ZIP and area-specific diagnostic context.",
-    "evaluated_at": "2026-08-30T14:00:33.80471Z",
+    "recommended_action": "Approve a bounded Program-plugin indexing and cache investigation.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
     "source_updated_at": "2026-07-21T06:49:07Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Bound Program-plugin indexing and retained metadata",
+      "root_cause": "The Program plugin may enumerate duplicate application entries and retain heavyweight icon/metadata objects for the full index, causing an immediate working-set increase proportional to an inflated item count.",
+      "plan": [
+        "Instrument discovery sources, deduplication keys, item counts, icon cache entries, and retained object sizes during Program plugin initialization.",
+        "Deduplicate equivalent Win32 application records before constructing searchable results.",
+        "Load icons/metadata lazily and apply bounded cache eviction for results not currently displayed."
+      ],
+      "verification": [
+        "Toggle the Program plugin on a machine with the reported large index and compare discovered, deduplicated, and retained item counts.",
+        "Confirm repeated searches and plugin toggles do not monotonically increase working set."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The plugin toggle is a strong discriminator, but the public evidence does not yet separate duplicate enumeration from icon/metadata retention."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run can allocate hundreds of megabytes when the Program plugin indexes an unexpectedly large application set; the thread also contains less-specific baseline memory reports for other WinUI utilities.",
+    "known_information": [
+      "The issue spans multiple PowerToys versions.",
+      "The newest reproducible discriminator is enabling/disabling the Program plugin.",
+      "The reported index contains 1,629 Win32 applications.",
+      "Other modules in the original report may have separate WinUI/runtime memory costs."
+    ],
+    "inferences": [
+      "Duplicate program discovery or unbounded icon/metadata caching may dominate the Program plugin increase.",
+      "The Color Picker and Quick Accent observations should not be assumed to share the same root cause."
+    ],
+    "analysis": "The fast pass should scope the proposed fix to the newly isolated Program plugin path, instrument item counts and retained objects, and avoid claiming one fix for every process named in the original title.",
+    "initial_investigation": [
+      "Reviewed every live comment, screenshots, diagnostic reference, duplicates, and the latest Program-plugin isolation result.",
+      "Found no linked current fix attempt for the Program plugin memory spike."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-33499",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-33499",
+      "type": "approve_design",
+      "label": "Approve Program-plugin memory design",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 33499,
-        "body": "Could you retest this on the latest stable or Preview PowerToys build and share a focused current repro? Please include numbered reproduction steps, exact expected vs actual behavior, and a fresh PowerToys bug-report ZIP."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "requiresApproval": true,
+      "design_summary": "Instrument, deduplicate, and bound PowerToys Run Program indexing",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-33499",
+      "type": "reproduce",
+      "label": "Profile Program-plugin memory jump",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "PowerToys Run",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "Enable PowerToys Run",
+          "Use a system with a substantial Start menu/application inventory",
+          "Record baseline working set with the Program plugin disabled"
+        ],
+        "steps": [
+          "Enable the Program plugin and wait for indexing to complete.",
+          "Record indexed application count and PowerToys Run working set.",
+          "Disable and re-enable the plugin, then repeat several searches.",
+          "Compare counts for duplicate paths/package identities and retained icon cache entries."
+        ],
+        "expected_result": "The allocation source is tied to duplicate discovery or retained metadata, and working set remains bounded after indexing and repeated use."
+      }
     }
-  ]
+  ],
+  "design": null
 }

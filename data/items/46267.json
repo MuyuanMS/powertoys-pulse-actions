@@ -1,48 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 46267,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs narrower repro or diagnostics",
-    "detail": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design."
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
+  "source_updated_at": "2026-07-20T15:46:22Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/46267",
+  "title": "CmdPal missing icon",
+  "author": "huoyan1231",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comment_count": 1,
+  "summary": "Command Palette intermittently loses application and dock icons because its Windows icon-retrieval path begins failing, leaving blank results without reliable retry or fallback.",
+  "next_action": "Approve resilient icon retrieval with bounded retry and placeholders.",
+  "confidence": {
+    "score": 79,
+    "level": "yellow",
+    "rationale": "A maintainer identified the failing Windows function family, but the exact API and cache behavior still need code-level confirmation."
   },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Request current-version details",
-    "reason": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "A maintainer reproduced the missing-icon family and states that the Windows icon API begins failing for some requests. The issue and its duplicate provide enough evidence to design retry, fallback, and cache behavior rather than ask users to restate the visual symptom.",
+    "evidence": [
+      "The original and confirming screenshots show blank application icons through PowerToys 0.100.2.",
+      "Duplicate #49418 includes a fresh bug report and shows delayed or permanently missing icons.",
+      "A maintainer says the Windows function used for icon retrieval starts failing for certain icons.",
+      "PR #46927 was closed without merging, so it is not an existing fix."
+    ],
+    "recommended_action": "Approve resilient icon retrieval with bounded retry and placeholders.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
+    "source_updated_at": "2026-07-20T15:46:22Z"
   },
-  "actions": [
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
     {
-      "id": "request-info-46267",
-      "type": "request_info",
-      "label": "Ask for a narrower repro and fresh diagnostics",
-      "primary": true,
-      "confirm": true,
-      "note": "Draft only; no upstream comment is posted without explicit approval.",
-      "comment": {
-        "target": "issue",
-        "number": 46267,
-        "body": "Thanks for the report. To investigate this further on a current build, could you please provide:\n1. Exact numbered repro steps from a fresh PowerToys start on the latest version you can test.\n2. A new PowerToys Report ZIP captured immediately after the failure.\n3. Whether the issue persists after rebooting PowerToys and after updating/reinstalling the affected module.\n4. Screenshots or a short recording if the problem is visual or depends on a specific window/app."
+      "title": "Add failure-aware icon caching and fallback extraction",
+      "root_cause": "CmdPal treats transient Windows icon-provider failures as final results, leaving blank icons and potentially retaining negative cache entries indefinitely.",
+      "plan": [
+        "Record icon retrieval failure separately from a valid no-icon result and invalidate transient negative entries.",
+        "Retry with bounded backoff and use a secondary package/executable icon extraction path when the primary Windows API fails.",
+        "Keep a stable placeholder while loading and expose a cache refresh path for dock/search items."
+      ],
+      "verification": [
+        "Stress-load application results and dock items until the primary API returns failures, then verify fallback or retry fills the icons.",
+        "Confirm repeated refreshes are bounded and do not regress search latency or memory."
+      ],
+      "confidence": {
+        "score": 79,
+        "level": "yellow",
+        "rationale": "A maintainer identified the failing Windows function family, but the exact API and cache behavior still need code-level confirmation."
       }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-19T16:47:51Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-    "evidence": [
-      "The issue is still open, but the current thread does not isolate the trigger well enough to support a reliable code-level design.",
-      "Draft only; no upstream comment is posted without explicit approval."
+  "issue_context": {
+    "summary": "Command Palette intermittently loses application and dock icons because its Windows icon-retrieval path begins failing, leaving blank results without reliable retry or fallback.",
+    "known_information": [
+      "The symptom is intermittent and machine-dependent.",
+      "Some icons load slowly while others remain blank.",
+      "The failure persists in PowerToys 0.100.2 and Preview 0.101.2282.",
+      "The related icon PR #46927 was closed unmerged."
     ],
-    "recommended_action": "A targeted follow-up should collect the smallest missing piece of evidence before an engineer starts chasing a speculative root cause.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-19T16:47:51Z"
-  }
+    "inferences": [
+      "The icon provider needs failure-aware cache invalidation and a secondary extraction source.",
+      "A permanent negative cache could explain why individual icons never recover."
+    ],
+    "analysis": "The owning API failure is identified at a useful level for a lightweight design. The implementation should distinguish temporary retrieval failure from a genuinely iconless item and avoid unbounded repeated requests.",
+    "initial_investigation": [
+      "Reviewed the live issue, confirming screenshot, duplicate #49418, maintainer diagnosis, and PR #46927 state.",
+      "Verified #49418 remains open but is labeled duplicate of this issue."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-46267",
+      "type": "approve_design",
+      "label": "Approve resilient icon-loading design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Retry transient icon failures, invalidate negative cache entries, and use a fallback extractor",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-46267",
+      "type": "reproduce",
+      "label": "Reproduce icon-provider exhaustion",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "Command Palette",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "A machine that shows delayed or missing application icons",
+          "Populate search and dock with several application results"
+        ],
+        "steps": [
+          "Open Command Palette and repeatedly search across installed applications.",
+          "Record which icons remain placeholders or blank.",
+          "Close and reopen CmdPal and compare whether failures persist.",
+          "Exercise a cache refresh/reload build while tracing icon-provider failures."
+        ],
+        "expected_result": "Transient provider failures are distinguishable from iconless items and missing icons recover through bounded retry or fallback."
+      }
+    }
+  ],
+  "design": null
 }

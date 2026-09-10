@@ -1,33 +1,96 @@
 {
+  "schemaVersion": 5,
   "number": 11073,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "awaiting_action_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🛑",
-    "label": "Not actionable as filed",
-    "detail": "Request is for wording polish after an already-fixed crash, not for an unresolved bug."
-  },
-  "next_action": {
-    "glyph": "🛑",
-    "label": "Close or redirect without engineering work",
-    "reason": "Close or retag this as an enhancement / help-wanted documentation issue instead of spending bug-fix triage time on it."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:35:39Z",
+  "evaluated_at": "2026-09-10T16:35:39Z",
   "source_updated_at": "2026-07-15T17:47:58Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/11073",
+  "title": "[Run] Improve error message for file not found",
+  "author": "enricogior",
+  "labels": [
+    "Issue-Bug",
+    "Help Wanted",
+    "Product-PowerToys Run",
+    "Priority-3",
+    "Run-Plugin"
+  ],
+  "assignees": [],
+  "comment_count": 1,
+  "summary": "PowerToys Run still offers malformed or nonexistent Windows file paths through the URI Handler and then shows a generic failure dialog when launch fails.",
+  "next_action": "Approve a narrow design that excludes Windows drive/file paths from URI Handler results while preserving real URLs, application URIs, and UNC handling.",
+  "confidence": {
+    "score": 91,
+    "level": "green",
+    "rationale": "The current source directly confirms the permissive validator and the original input establishes the undesired result."
+  },
   "judgment": {
-    "status": "not_actionable",
-    "rationale": "Request is for wording polish after an already-fixed crash, not for an unresolved bug.",
+    "status": "actionable_design",
+    "rationale": "The original crash is fixed, but current source still accepts every parsed URI host and a contributor has identified the exact validation boundary and requested scope direction.",
     "evidence": [
-      "Request is for wording polish after an already-fixed crash, not for an unresolved bug."
+      "Issue #9911 confirms the crash became a generic URI Handler error and this issue was opened for the remaining UX defect.",
+      "Current `UriResolver.IsValidHost(System.Uri uri)` returns `true` unconditionally.",
+      "A prospective contributor identified drive-letter paths falling into the URI result and proposed focused MSTest coverage."
     ],
-    "recommended_action": "Close or retag this as an enhancement / help-wanted documentation issue instead of spending bug-fix triage time on it.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a narrow design that excludes Windows drive/file paths from URI Handler results while preserving real URLs, application URIs, and UNC handling.",
+    "evaluated_at": "2026-09-10T16:35:39Z",
     "source_updated_at": "2026-07-15T17:47:58Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current fix is linked, and the validation boundary remains permissive in main."
+  },
+  "issue_context": {
+    "summary": "PowerToys Run still offers malformed or nonexistent Windows file paths through the URI Handler and then shows a generic failure dialog when launch fails.",
+    "known_information": [
+      "The original input is a nonexistent Windows drive-letter path offered as `open in browser`.",
+      "The crash itself was fixed in PowerToys 0.33.1.",
+      "Current UriResolver host validation does not reject any parsed value."
+    ],
+    "inferences": [
+      "Filtering file-shaped input before result creation should prevent the misleading action without changing the generic error path for valid URIs that later fail."
+    ],
+    "analysis": "The source and history support the contributor's first scope option; changing only the dialog would retain a misleading result for input owned by file-system plugins.",
+    "initial_investigation": [
+      "Read the complete live issue and the full predecessor discussion in #9911.",
+      "Fetched current `src/modules/launcher/Plugins/Microsoft.Plugin.Uri/UriHelper/UriResolver.cs` and confirmed `IsValidHost` returns true."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-11073",
+      "type": "approve_design",
+      "label": "Approve URI file-path filtering design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Reject drive-letter and other file-system-shaped inputs before URI Handler result creation, preserve supported URL/application URI schemes and UNC ownership, and add focused resolver/query tests.",
+      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
+    }
+  ],
+  "proposed_fixes": [
+    {
+      "title": "Exclude Windows file paths from URI Handler results",
+      "root_cause": "`UriResolver.IsValidHost` currently accepts every parsed URI, allowing nonexistent drive-letter paths to be presented as browser-launchable URIs and fail through a generic dialog.",
+      "plan": [
+        "Define URI Handler ownership rules that reject drive-letter and file-system path shapes while preserving supported web and application URI schemes.",
+        "Apply the rule before producing the URI Handler result so invalid file paths are not offered as `open in browser`.",
+        "Add MSTest cases for the original nonexistent path, valid HTTPS and application URIs, and UNC inputs so the Folder plugin remains authoritative for shares."
+      ],
+      "verification": [
+        "Query the original nonexistent drive-letter path from issue #9911 and confirm no URI Handler result appears.",
+        "Confirm valid HTTPS and registered application URIs still launch and UNC paths are not misrouted to the browser."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The permissive current method and original failure path are directly documented; scheme allow-list details remain an implementation choice."
+      }
+    }
+  ]
 }

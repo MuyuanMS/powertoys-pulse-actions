@@ -1,33 +1,124 @@
 {
+  "schemaVersion": 5,
   "number": 35009,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "❓",
-    "label": "Needs diagnostic information",
-    "detail": "The current issue body does not narrow this to a single PowerToys-owned fix path."
-  },
-  "next_action": {
-    "glyph": "❓",
-    "label": "Request a current repro and diagnostics",
-    "reason": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
   "source_updated_at": "2026-07-22T18:01:39Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/35009",
+  "title": "Keyboard Manager: Remapping a shortcut using \"right Ctrl\"/⇨ with CAN/CSA Z243.200 fails (detected as \"VK 223\")",
+  "author": "Chealer",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Product-Keyboard Shortcut Manager",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 2,
+  "summary": "Keyboard Manager treats the Canadian Multilingual Standard bottom-right modifier as ordinary VK 223, preventing it from participating in shortcut remaps as the right-Control-like key users expect.",
+  "next_action": "Approve a layout-aware modifier classification design and reproduce it with the CMS layout.",
+  "confidence": {
+    "score": 67,
+    "level": "yellow",
+    "rationale": "The failing key identity is known, but the correct Windows scan-code/layout contract must be confirmed on a CMS keyboard or equivalent test layout."
+  },
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The current issue body does not narrow this to a single PowerToys-owned fix path.",
+    "status": "actionable_design",
+    "rationale": "The Canadian Multilingual Standard layout reports its bottom-right modifier as VK 223 rather than VK_RCONTROL, and Keyboard Manager consequently records it as an ordinary key instead of a modifier. The issue supplies deterministic steps and a known layout.",
     "evidence": [
-      "The current issue body does not narrow this to a single PowerToys-owned fix path."
+      "The problem reproduces from PowerToys 0.84.1 through 0.100.2.",
+      "Windows/Keyboard Manager exposes the physical bottom-right CMS modifier as VK 223.",
+      "The layout documentation and physical placement indicate modifier semantics despite the unusual virtual-key value.",
+      "A user demonstrates a workaround by explicitly mapping to VK 223."
     ],
-    "recommended_action": "Ask for a current-version repro with numbered steps, exact expected vs actual behavior, and a fresh bug report ZIP.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a layout-aware modifier classification design and reproduce it with the CMS layout.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
     "source_updated_at": "2026-07-22T18:01:39Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Recognize layout-specific modifier keys by physical identity",
+      "root_cause": "Keyboard Manager's shortcut editor classifies modifiers from a fixed virtual-key list, so the CMS layout's VK 223 bottom-right modifier is recorded as a normal key.",
+      "plan": [
+        "Capture scan code, extended-key flag, virtual key, and active keyboard layout when recording shortcut triggers.",
+        "Add layout-aware modifier classification for the CMS bottom-right key without changing VK 223 globally.",
+        "Persist and replay the physical identity consistently across editor display and runtime matching."
+      ],
+      "verification": [
+        "On the Canadian Multilingual Standard layout, record VK 223 plus another key and verify the shortcut triggers.",
+        "Switch layouts and verify ordinary VK 223/OEM keys are not incorrectly treated as modifiers."
+      ],
+      "confidence": {
+        "score": 67,
+        "level": "yellow",
+        "rationale": "The failing key identity is known, but the correct Windows scan-code/layout contract must be confirmed on a CMS keyboard or equivalent test layout."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager treats the Canadian Multilingual Standard bottom-right modifier as ordinary VK 223, preventing it from participating in shortcut remaps as the right-Control-like key users expect.",
+    "known_information": [
+      "The exact Windows layout is Canadian Multilingual Standard.",
+      "The affected physical key is the bottom-right key normally occupied by Right Ctrl.",
+      "The selector reports VK 223.",
+      "The report includes deterministic editor and runtime steps."
+    ],
+    "inferences": [
+      "Modifier classification is based too narrowly on standard VK_CONTROL variants and ignores layout-specific modifier scan codes.",
+      "A scan-code/layout-aware classification can improve editing without globally redefining VK 223."
+    ],
+    "analysis": "This is sufficiently scoped for a lightweight design: preserve the recorded physical identity, but classify the key as a modifier only when the active layout reports that role.",
+    "initial_investigation": [
+      "Reviewed the full live body, both comments, linked documentation, current labels, and timeline.",
+      "Found no linked fix or duplicate with an implementation owner."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-35009",
+      "type": "approve_design",
+      "label": "Approve CMS modifier-key design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Classify the Canadian Multilingual Standard VK 223 key using layout and scan-code context",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-35009",
+      "type": "reproduce",
+      "label": "Reproduce CMS VK 223 shortcut",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "Install the Canadian Multilingual Standard keyboard layout",
+          "Enable the current Keyboard Manager editor"
+        ],
+        "steps": [
+          "Record the bottom-right CMS key and a letter as a shortcut trigger.",
+          "Map the shortcut to type 0.",
+          "Save and invoke the physical key combination in a text field.",
+          "Capture the displayed virtual key and scan-code behavior."
+        ],
+        "expected_result": "The editor and runtime agree on the physical modifier, and the remap triggers without changing unrelated VK 223 behavior."
+      }
+    }
+  ],
+  "design": null
 }

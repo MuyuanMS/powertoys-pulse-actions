@@ -1,33 +1,80 @@
 {
+  "schemaVersion": 5,
   "number": 28143,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "awaiting_action_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T16:35:39Z",
+  "evaluated_at": "2026-09-10T16:35:39Z",
   "source_updated_at": "2023-09-21T09:54:52Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/28143",
+  "title": "Powertoys Run: allow use of symlinks",
+  "author": "bugficks",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Run-Plugin"
+  ],
+  "assignees": [],
+  "comment_count": 2,
+  "summary": "PowerToys Run intentionally skips Start Menu reparse-point directories, so programs reachable only through symlinks or junctions are not indexed.",
+  "next_action": "Reclassify as an enhancement requiring cycle detection, scope limits, and duplicate handling.",
+  "confidence": {
+    "score": 97,
+    "level": "green",
+    "rationale": "The maintainer explicitly documents the design intent and the proposed patch omits cycle controls."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "not_actionable",
+    "rationale": "A maintainer states the exclusion was deliberately added to prevent recursive directory loops; supporting links requires a bounded traversal feature design, not removing the guard as a bug fix.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The report links the code that skips `FileAttributes.ReparsePoint`.",
+      "A maintainer says the line was intentionally added after recursive loops caused infinite querying.",
+      "The proposed patch resolves links but does not specify a visited-target set, traversal boundary, or duplicate-result behavior."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reclassify as an enhancement requiring cycle detection, scope limits, and duplicate handling.",
+    "evaluated_at": "2026-09-10T16:35:39Z",
     "source_updated_at": "2023-09-21T09:54:52Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "Skipping reparse points is intentional safety behavior; link traversal is a new bounded-indexing capability."
+  },
+  "issue_context": {
+    "summary": "PowerToys Run intentionally skips Start Menu reparse-point directories, so programs reachable only through symlinks or junctions are not indexed.",
+    "known_information": [
+      "The original affected version is PowerToys 0.72.0.",
+      "Both directory symlinks and junctions are requested.",
+      "The use case is recursively indexing a custom Start Menu path."
+    ],
+    "inferences": [
+      "Resolving final targets alone does not prevent cycles formed by multiple links or targets that lead back into an ancestor."
+    ],
+    "analysis": "The current behavior is a safety boundary. Any change must preserve termination and define how linked paths are deduplicated and permission failures are handled.",
+    "initial_investigation": [
+      "Read the full report, proposed code sketch, and maintainer response.",
+      "Evaluated the suggested target resolution against the stated recursive-loop risk."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "post-comment-28143",
+      "type": "post_comment",
+      "label": "Reclassify as bounded symlink indexing",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 28143,
+        "body": "PowerToys Run intentionally skips reparse-point directories because following them previously allowed recursive loops and unbounded querying. Supporting Start Menu symlinks or junctions should therefore be tracked as an enhancement, not by simply removing `FileAttributes.ReparsePoint`. A viable design needs canonical target tracking, cycle detection, traversal limits, permission handling, and duplicate-result rules."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ]
 }

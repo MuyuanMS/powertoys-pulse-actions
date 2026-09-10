@@ -1,33 +1,94 @@
 {
+  "schemaVersion": 5,
   "number": 28208,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-10T16:35:39Z",
+  "evaluated_at": "2026-09-10T16:35:39Z",
   "source_updated_at": "2023-08-30T21:46:15Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+  "url": "https://github.com/microsoft/PowerToys/issues/28208",
+  "title": "Network shares are being opened up in the browser rather than Explorer",
+  "author": "trajano",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage",
+    "Needs-Team-Response"
+  ],
+  "assignees": [],
+  "comment_count": 7,
+  "summary": "PowerToys Run routes a bare UNC server path such as `\\\\nas` to URI Handler/browser instead of returning the network server through the Folder plugin, while a full share path works.",
+  "next_action": "Reproduce the bare UNC root and verify plugin ownership and ranking for `\\\\server` versus `\\\\server\\share`.",
+  "confidence": {
+    "score": 96,
+    "level": "green",
+    "rationale": "The thread isolates the failing input and the two competing plugins precisely."
   },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The reporter and maintainer narrowed the failure to a bare UNC server root and identified the competing URI Handler and Folder plugin results.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "Explorer opens `\\\\nas` and enumerates shares correctly.",
+      "PowerToys Run's URI Handler offers a browser action for the bare server path.",
+      "A full path such as `\\\\nas\\Videos` works once the share name is valid; only server-root enumeration remains broken."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce the bare UNC root and verify plugin ownership and ranking for `\\\\server` versus `\\\\server\\share`.",
+    "evaluated_at": "2026-09-10T16:35:39Z",
     "source_updated_at": "2023-08-30T21:46:15Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current plugin ownership behavior must be verified before choosing between URI filtering and network-share enumeration."
+  },
+  "issue_context": {
+    "summary": "PowerToys Run routes a bare UNC server path such as `\\\\nas` to URI Handler/browser instead of returning the network server through the Folder plugin, while a full share path works.",
+    "known_information": [
+      "The original affected version is PowerToys 0.72.0.",
+      "The reporter supplied screenshots of the wrong URI result and expected folder result.",
+      "The issue is labeled Needs-Team-Response."
+    ],
+    "inferences": [
+      "URI Handler accepts the UNC root while Folder plugin requires a resolved share path and does not enumerate the server root."
+    ],
+    "analysis": "A current plugin-result comparison can determine whether URI filtering, Folder enumeration, or result ranking needs change.",
+    "initial_investigation": [
+      "Read the full issue and all seven comments.",
+      "Confirmed the discussion already isolates `\\\\nas` from valid `\\\\nas\\share` paths."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-28208",
+      "type": "reproduce",
+      "label": "Reproduce bare UNC server routing",
+      "primary": true,
+      "confirm": false,
+      "requiresApproval": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Compare URI and Folder results for UNC roots",
+        "module": "PowerToys Run",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "A reachable SMB server with at least one share"
+        ],
+        "setup": [
+          "Confirm `\\\\server` opens and lists shares in File Explorer.",
+          "Confirm `\\\\server\\share` is reachable."
+        ],
+        "steps": [
+          "Enter `\\\\server` in PowerToys Run and record every result and owning plugin.",
+          "Invoke the top result and record whether it opens Explorer or a browser.",
+          "Repeat with `\\\\server\\share`.",
+          "Disable URI Handler temporarily and repeat the bare-server query to test Folder plugin enumeration."
+        ],
+        "expected_result": "A bare UNC server root is owned by a file-system result that opens Explorer and is never offered as a browser URI."
+      }
+    }
+  ]
 }

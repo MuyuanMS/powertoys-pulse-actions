@@ -1,33 +1,126 @@
 {
+  "schemaVersion": 5,
   "number": 48774,
   "kind": "issue",
   "track": "fix",
   "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design fix candidate",
-    "detail": "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request."
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
+  "source_updated_at": "2026-08-24T09:03:35Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/48774",
+  "title": "Power Display Profile Switch linked to Light Switch not triggering during wake from sleep",
+  "author": "milanmp",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-LightSwitch",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
+  "comment_count": 2,
+  "summary": "Light Switch can apply the correct theme after wake or startup without invoking the linked Power Display profile, while manual theme changes invoke it correctly.",
+  "next_action": "Approve resume/startup reconciliation for linked Power Display profiles.",
+  "confidence": {
+    "score": 84,
+    "level": "yellow",
+    "rationale": "The missing resume/startup event path is strongly isolated, but timing with monitor enumeration still needs targeted validation."
   },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Queue detailed design",
-    "reason": "The issue is already reproducible enough for code investigation and does not need another upstream information round first."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-18T19:00:19Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request.",
+    "rationale": "Three reports show that Light Switch updates the theme after sleep or power-on but the linked Power Display profile is not reconciled. Manual theme switching does trigger the profile, isolating the missing path to resume/startup state synchronization.",
     "evidence": [
-      "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request."
+      "The original issue includes deterministic night-to-day sleep/wake steps and a diagnostic archive.",
+      "Manual Light Switch theme changes trigger the linked profile correctly.",
+      "Two independent confirmations cover monitor sleep and full power-off/on.",
+      "Duplicate #50083 was closed after automated triage linked it to this canonical issue."
     ],
-    "recommended_action": "The issue is already reproducible enough for code investigation and does not need another upstream information round first.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-18T19:00:19Z"
-  }
+    "recommended_action": "Approve resume/startup reconciliation for linked Power Display profiles.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
+    "source_updated_at": "2026-08-24T09:03:35Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reconcile linked Power Display profiles after resume and startup",
+      "root_cause": "The Light Switch-to-Power Display integration applies profiles on live theme-change events but does not re-evaluate the linkage when the desired theme changes while the display or machine is asleep.",
+      "plan": [
+        "On resume/startup, wait for monitor enumeration and Light Switch mode to stabilize.",
+        "Compare the active Power Display profile with the profile linked to the current theme and apply only when they differ.",
+        "Debounce duplicate power/theme notifications and log the reconciliation decision."
+      ],
+      "verification": [
+        "Sleep before a scheduled light/dark transition, wake afterward, and verify the linked profile applies.",
+        "Repeat across monitor sleep, system sleep, restart, manual theme changes, and multiple monitors."
+      ],
+      "confidence": {
+        "score": 84,
+        "level": "yellow",
+        "rationale": "The missing resume/startup event path is strongly isolated, but timing with monitor enumeration still needs targeted validation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Light Switch can apply the correct theme after wake or startup without invoking the linked Power Display profile, while manual theme changes invoke it correctly.",
+    "known_information": [
+      "The issue affects scheduled Night Light/Light Switch transitions that occur while the machine or monitor sleeps.",
+      "Power Display profile linkage is enabled.",
+      "The profile applies during a manual light/dark switch.",
+      "The bug also occurs after power-off/on according to a confirmer."
+    ],
+    "inferences": [
+      "The integration listens to live theme-change notifications but does not reconcile desired profile state on resume or startup.",
+      "The fix should be idempotent to avoid unnecessary monitor writes on every wake."
+    ],
+    "analysis": "The difference between manual switching and resume establishes a clear missing lifecycle event. A bounded design can reconcile the current Light Switch mode and selected Power Display profile after resume/startup.",
+    "initial_investigation": [
+      "Reviewed the full live body, attached diagnostic reference, all confirmations, timeline, and duplicate #50083.",
+      "Confirmed #50083 was closed as a duplicate rather than as a separate fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-48774",
+      "type": "approve_design",
+      "label": "Approve resume profile-sync design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Reconcile the Light Switch-linked Power Display profile after resume and startup",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-48774",
+      "type": "reproduce",
+      "label": "Reproduce missed resume profile switch",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "Light Switch / Power Display",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "Create distinct light and dark Power Display profiles",
+          "Link them to Light Switch",
+          "Schedule a theme transition while the display or machine is asleep"
+        ],
+        "steps": [
+          "Start in the dark profile before the scheduled daylight transition.",
+          "Put the monitor or machine to sleep across the transition.",
+          "Wake it and record the active Windows theme and Power Display profile.",
+          "Manually toggle the theme and compare whether the profile then applies."
+        ],
+        "expected_result": "Wake/startup applies the profile linked to the current theme once monitor enumeration is ready, matching manual switching."
+      }
+    }
+  ],
+  "design": null
 }

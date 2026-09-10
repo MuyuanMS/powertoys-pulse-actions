@@ -1,43 +1,123 @@
 {
+  "schemaVersion": 5,
   "number": 48440,
   "kind": "issue",
   "track": "fix",
   "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Clear design candidate",
-    "detail": "CmdPal accepts system-reserved activation chords like Alt+Space but only reacts on the second press."
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
+  "source_updated_at": "2026-07-21T12:28:34Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/48440",
+  "title": "Command Palette: setting keyboard shortcut to anything reserved by the system causes issues",
+  "author": "ilim-cell",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comment_count": 2,
+  "summary": "Command Palette lets users assign system-reserved chords such as Alt+Space even though the first press follows the Windows system-menu path, producing unreliable double-press activation.",
+  "next_action": "Approve reserved-shortcut validation and activation handling.",
+  "confidence": {
+    "score": 77,
+    "level": "yellow",
+    "rationale": "The user-facing conflict is deterministic, but the preferred policy—support versus explicit rejection—requires maintainer confirmation."
   },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Design fix",
-    "reason": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "CmdPal accepts a system-reserved activation chord such as Alt+Space, but the first press is consumed by the shell/window-menu path and only a rapid second press activates CmdPal. The editor should either register the chord reliably or reject it clearly.",
+    "evidence": [
+      "The report gives a direct Alt+Space reproduction on PowerToys 0.100.0 and 0.100.2.",
+      "A diagnostic archive is attached.",
+      "Another user confirms the double-press behavior."
+    ],
+    "recommended_action": "Approve reserved-shortcut validation and activation handling.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
+    "source_updated_at": "2026-07-21T12:28:34Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Validate or reliably register system-reserved CmdPal shortcuts",
+      "root_cause": "CmdPal persists chords whose first key sequence is owned by Windows shell behavior without verifying that its activation registration can win consistently.",
+      "plan": [
+        "Classify known shell-reserved chords during shortcut editing and test whether the activation mechanism can register them.",
+        "Reject unsupported chords with a specific conflict message, or route supported chords through one reliable low-level activation path.",
+        "Ensure a failed registration never leaves a saved shortcut that appears valid."
+      ],
+      "verification": [
+        "Assign Alt+Space and verify it is either rejected with a clear reason or activates CmdPal on the first press.",
+        "Regression-test normal configurable shortcuts and window-menu behavior."
+      ],
+      "confidence": {
+        "score": 77,
+        "level": "yellow",
+        "rationale": "The user-facing conflict is deterministic, but the preferred policy—support versus explicit rejection—requires maintainer confirmation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Command Palette lets users assign system-reserved chords such as Alt+Space even though the first press follows the Windows system-menu path, producing unreliable double-press activation.",
+    "known_information": [
+      "Alt+Space is the concrete failing chord.",
+      "The shortcut editor accepts and saves it.",
+      "Two presses in quick succession activate CmdPal.",
+      "The issue persists in PowerToys 0.100.2."
+    ],
+    "inferences": [
+      "The configured chord is not being acquired with semantics strong enough to override the shell's reserved behavior.",
+      "Rejecting known-reserved chords may be safer than pretending they are reliable."
+    ],
+    "analysis": "The fix needs an explicit product decision implemented consistently: reserve/register the chord successfully, or block it with a specific conflict explanation.",
+    "initial_investigation": [
+      "Reviewed the full live body, attached diagnostic reference, comments, labels, and timeline.",
+      "Found no linked fix or ownership signal."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "design-48440",
+      "id": "approve-design-48440",
       "type": "approve_design",
-      "label": "Design fix",
+      "label": "Approve reserved-shortcut design",
       "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design_summary": "Reject unsupported reserved chords or register them reliably",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-48440",
+      "type": "reproduce",
+      "label": "Reproduce Alt+Space double activation",
+      "primary": false,
       "confirm": false,
-      "note": "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "Command Palette",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "Set Command Palette activation to Alt+Space",
+          "Use PowerToys 0.100.2 or newer"
+        ],
+        "steps": [
+          "Close PowerToys Settings.",
+          "Press Alt+Space once and observe the result.",
+          "Press Alt+Space twice quickly.",
+          "Repeat while different foreground windows are active."
+        ],
+        "expected_result": "The maintainer confirms whether the first press is consumed by Windows and can decide between reliable support and editor rejection."
+      }
     }
   ],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-21T12:28:34Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "CmdPal accepts system-reserved activation chords like Alt+Space but only reacts on the second press.",
-    "evidence": [
-      "CmdPal accepts system-reserved activation chords like Alt+Space but only reacts on the second press.",
-      "Dashboard-only action. No upstream comment or PR is posted by this artifact update."
-    ],
-    "recommended_action": "The repro is specific enough to justify targeted code investigation without waiting on more reporter input.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-21T12:28:34Z"
-  }
+  "design": null
 }

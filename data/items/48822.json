@@ -1,48 +1,126 @@
 {
+  "schemaVersion": 5,
   "number": 48822,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "triaging",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "💬",
-    "label": "Needs focused evidence",
-    "detail": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path."
+  "generated_at": "2026-09-10T16:37:20.276Z",
+  "evaluated_at": "2026-09-10T16:37:20.276Z",
+  "source_updated_at": "2026-07-24T09:25:10Z",
+  "repository": "microsoft/PowerToys",
+  "state": "OPEN",
+  "url": "https://github.com/microsoft/PowerToys/issues/48822",
+  "title": "Powertoys shortcuts only work with Powertoys window open and in focus",
+  "author": "TheKrakenator",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Product-Settings",
+    "Needs-Triage",
+    "Product-Color Picker"
+  ],
+  "assignees": [],
+  "comment_count": 4,
+  "summary": "Background module shortcuts lose their keyboard-hook path over time or after startup, while Command Palette remains functional and a PowerToys restart temporarily restores the affected shortcuts.",
+  "next_action": "Approve a hook-health recovery design and reproduce the decay after startup.",
+  "confidence": {
+    "score": 68,
+    "level": "yellow",
+    "rationale": "Restart recovery and the unaffected CmdPal path point to hook lifecycle, but the public report does not identify the exact failure event."
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Request focused reproduction evidence",
-    "reason": "Current data does not yet isolate a safe code path to change."
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The supplied diagnostic archive and repeated observations show that most module shortcuts stop after PowerToys has run in the background, while Command Palette still works and restarting PowerToys restores the hooks. This is sufficient for a hook-lifecycle investigation.",
+    "evidence": [
+      "Color Picker and other module shortcuts fail unless Settings is focused.",
+      "Command Palette continues to activate, including with the same chord, which argues against a global shortcut collision.",
+      "Restarting PowerToys restores background shortcuts temporarily.",
+      "The reporter supplied a PowerToys diagnostic archive and observed recurrence after changing LowLevelHooksTimeout."
+    ],
+    "recommended_action": "Approve a hook-health recovery design and reproduce the decay after startup.",
+    "evaluated_at": "2026-09-10T16:37:20.276Z",
+    "source_updated_at": "2026-07-24T09:25:10Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers the scoped PowerToys-owned path identified by this lightweight judgment."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Detect and recover failed background shortcut hooks",
+      "root_cause": "The shared background keyboard-hook or module shortcut registration can stop dispatching after startup/runtime changes, while the independent Command Palette activation path remains alive.",
+      "plan": [
+        "Add health/error reporting around the shared low-level hook and module shortcut registration lifecycle.",
+        "Re-register affected hooks when the hook thread exits, times out, or loses its module subscriptions.",
+        "Avoid resetting utility enabled states while recovering or restarting the shortcut service."
+      ],
+      "verification": [
+        "Run PowerToys at startup, leave Settings unfocused, and confirm Color Picker and other module shortcuts remain functional over the reported decay period.",
+        "Simulate hook-thread failure and verify automatic recovery without toggling module settings."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "Restart recovery and the unaffected CmdPal path point to hook lifecycle, but the public report does not identify the exact failure event."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Background module shortcuts lose their keyboard-hook path over time or after startup, while Command Palette remains functional and a PowerToys restart temporarily restores the affected shortcuts.",
+    "known_information": [
+      "PowerToys 0.100.0 on Windows 10 22H2 is reported.",
+      "PowerToys runs elevated and starts with Windows.",
+      "Command Palette uses a working activation path while Color Picker and other utilities stop responding.",
+      "Restarting PowerToys recovers the shortcuts, but the failure later returns."
+    ],
+    "inferences": [
+      "The central low-level keyboard hook or module registration may become unhealthy without triggering recovery.",
+      "Settings focus may change which process owns or refreshes shortcut registration."
+    ],
+    "analysis": "The contrast between Command Palette and other modules narrows this to the shared background shortcut infrastructure rather than the key chord itself. A lightweight fix path is to detect hook loss and re-register modules without requiring a full process restart.",
+    "initial_investigation": [
+      "Reviewed the complete body, attached bug report reference, all follow-up comments, labels, and timeline.",
+      "Found no linked fix or owner-backed implementation."
+    ],
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-info-48822",
-      "type": "request_info",
-      "label": "Ask for focused repro details",
+      "id": "approve-design-48822",
+      "type": "approve_design",
+      "label": "Approve shortcut-hook recovery design",
       "primary": true,
       "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 48822,
-        "body": "Could you retest this on the latest stable PowerToys build and attach a PowerToys bug-report ZIP? Please include exact numbered steps, any related Windows prompts, and a short recording or screenshot sequence showing the failure from a fresh launch."
-      },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      "requiresApproval": true,
+      "design_summary": "Add health detection and recovery for background module shortcut hooks",
+      "note": "Approval starts a separate fork-side design workflow; this lightweight judgment contains no full design and performs no GitHub write."
+    },
+    {
+      "id": "reproduce-48822",
+      "type": "reproduce",
+      "label": "Reproduce background shortcut decay",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side verification only; this artifact does not execute the steps or write upstream.",
+      "reproduce": {
+        "module": "PowerToys Settings / shared shortcut infrastructure",
+        "version_requirement": "Latest stable or Preview PowerToys build",
+        "prerequisites": [
+          "Enable Color Picker and at least one other shortcut-driven utility",
+          "Enable run at startup",
+          "Run PowerToys elevated as in the report"
+        ],
+        "steps": [
+          "Restart Windows and leave PowerToys Settings closed.",
+          "Exercise the shortcuts periodically and record when they stop responding.",
+          "Confirm Command Palette still opens with its shortcut.",
+          "Open/focus Settings and then restart PowerToys to compare which action restores behavior."
+        ],
+        "expected_result": "The failing lifecycle transition is isolated and affected shortcuts recover without requiring the Settings window to remain focused."
+      }
     }
   ],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-07-24T09:25:10Z",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-    "evidence": [
-      "The current report identifies a symptom, but it still needs fresher diagnostics or a tighter reproduction before code investigation can isolate a safe fix path.",
-      "Draft only; no upstream comment is posted without explicit approval."
-    ],
-    "recommended_action": "Current data does not yet isolate a safe code path to change.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-07-24T09:25:10Z"
-  }
+  "design": null
 }

@@ -1,33 +1,94 @@
 {
+  "schemaVersion": 5,
   "number": 37842,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaging",
+  "stage": "reproduction_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🎯",
-    "label": "Design fix candidate",
-    "detail": "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request."
-  },
-  "next_action": {
-    "glyph": "🎯",
-    "label": "Queue detailed design",
-    "reason": "The issue is already reproducible enough for code investigation and does not need another upstream information round first."
-  },
-  "actions": [],
-  "confidence": "Medium",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+  "generated_at": "2026-09-10T16:35:39Z",
+  "evaluated_at": "2026-09-10T16:35:39Z",
   "source_updated_at": "2026-07-16T19:46:01Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/37842",
+  "title": "FanzyZones - Overlay activates when clicking Steam Title Bar",
+  "author": "h3x1e",
+  "labels": [
+    "Issue-Bug",
+    "Product-FancyZones",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comment_count": 1,
+  "summary": "A single click on Steam's custom title bar briefly triggers the FancyZones overlay even though the configured activation requires a sustained title-bar hold.",
+  "next_action": "Reproduce on current stable with Steam and compare custom-title-bar pointer messages against a standard Win32 title bar.",
+  "confidence": {
+    "score": 88,
+    "level": "green",
+    "rationale": "The visible symptom and interaction are precise, though the current message sequence is unverified."
+  },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request.",
+    "status": "reproducible",
+    "rationale": "The report supplies a short deterministic interaction and a recording; the remaining question is whether current Steam window messages still take the drag state through FancyZones activation.",
     "evidence": [
-      "The issue already includes a concrete reproduction and attached evidence, so it is ready for repository-level design instead of another information request."
+      "The body gives a three-step Steam reproduction and a video attachment.",
+      "The overlay appears only briefly on a click without window movement.",
+      "The expected configured behavior is activation after holding the title bar for two seconds."
     ],
-    "recommended_action": "The issue is already reproducible enough for code investigation and does not need another upstream information round first.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Reproduce on current stable with Steam and compare custom-title-bar pointer messages against a standard Win32 title bar.",
+    "evaluated_at": "2026-09-10T16:35:39Z",
     "source_updated_at": "2026-07-16T19:46:01Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "Current behavior needs a focused message-level reproduction before selecting a drag-state guard."
+  },
+  "issue_context": {
+    "summary": "A single click on Steam's custom title bar briefly triggers the FancyZones overlay even though the configured activation requires a sustained title-bar hold.",
+    "known_information": [
+      "The original affected version is PowerToys 0.89.0.",
+      "PowerToys was running as administrator.",
+      "Steam uses a nonstandard title bar surface."
+    ],
+    "inferences": [
+      "Steam may emit a transient move/drag sequence that starts and immediately cancels FancyZones activation."
+    ],
+    "analysis": "A side-by-side message trace is the cheapest way to determine whether the defect belongs to FancyZones drag-state filtering or Steam-specific window behavior.",
+    "initial_investigation": [
+      "Read the complete report, recording reference, labels, and latest confirmation.",
+      "Found no linked fix, assignee, or duplicate in the live issue metadata."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-37842",
+      "type": "reproduce",
+      "label": "Reproduce Steam title-bar overlay flash",
+      "primary": true,
+      "confirm": false,
+      "requiresApproval": false,
+      "note": "Maintainer-side verification only; this artifact performs no upstream write.",
+      "reproduce": {
+        "title": "Compare click and hold activation on Steam and a standard window",
+        "module": "FancyZones",
+        "version_requirement": "Current stable PowerToys release",
+        "prerequisites": [
+          "Current stable PowerToys",
+          "Current Steam desktop client",
+          "FancyZones title-bar hold activation enabled"
+        ],
+        "setup": [
+          "Use one visible FancyZones layout.",
+          "Open Steam and a standard Explorer or Notepad window."
+        ],
+        "steps": [
+          "Single-click Steam's title bar without moving the pointer and record whether the overlay flashes.",
+          "Click and hold the same location for two seconds and confirm normal overlay activation.",
+          "Repeat both actions on the standard window.",
+          "Capture FancyZones logs around the two Steam interactions."
+        ],
+        "expected_result": "A click without drag or hold never shows the overlay; the configured sustained hold still activates it."
+      }
+    }
+  ]
 }
