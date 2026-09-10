@@ -4,18 +4,19 @@
   "number": 49759,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T21:58:07.7744337Z",
-  "evaluated_at": "2026-09-09T21:58:07.7744337Z",
+  "generated_at": "2026-09-10T01:36:48.1406386Z",
+  "evaluated_at": "2026-09-10T01:36:48.1406386Z",
   "source_updated_at": "2026-09-09T19:09:43Z",
   "head_sha": "b0cf40db0ca386a832a97702af0081d3c6bb09a3",
-  "fork_head_sha": "cf024758b11cb50bb97089b04d60564c25f29990",
+  "fork_head_sha": "e50501c6788a18daa120fc2a1672834d5948d7bd",
   "title": "Fix #49725: Block mapping any chords involving Win+L",
   "url": "https://github.com/microsoft/PowerToys/pull/49759",
+  "repository": "microsoft/PowerToys",
   "author": "amanmaurya92",
-  "author_association": "NONE",
+  "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
   "isCommunity": true,
   "isMine": false,
   "state": "OPEN",
@@ -26,41 +27,110 @@
     "Product-Keyboard Manager",
     "Ready for review"
   ],
-  "confidence": "high",
-  "summary": "The earlier author-waiting artifact is stale. The author answered the maintainer investigation request and added regression tests on the live upstream head, the fork review branch was updated with the missing shared_constants include required for those new tests to compile, targeted Keyboard Manager builds and 92 unit tests passed, and a fresh fork Copilot review was requested. Because the immediate scheduler check found that request still pending with zero newly submitted reviews, the correct resumable state is waiting_copilot.",
+  "confidence": "High",
+  "processVerdict": "request_changes",
+  "summary": "The stored Copilot request was consumed without duplication. The review branch was refreshed onto current upstream main, its three-file scope matches the upstream PR, the full Debug x64 runner/settings and Keyboard Manager build chain passed, all 92 editor unit tests passed, and the final current-head Copilot review returned zero published comments with zero unresolved fork threads. Two high-confidence upstream changes remain: cover L in the second chord position and include the header that declares VK_WIN_BOTH so the new tests compile.",
   "status": {
-    "glyph": "WAIT",
-    "label": "Waiting for Copilot review",
-    "detail": "Fork PR 735 is on head cf024758b11cb50bb97089b04d60564c25f29990 with exact 3-file scope parity to upstream. The fresh Copilot review requested at 2026-09-09T21:57:29.8039075Z is still pending, and no duplicate request should be created before consuming it."
+    "glyph": "📝",
+    "label": "Review complete — request changes awaiting approval",
+    "detail": "The fork review loop and validation are complete, but two upstream findings remain drafted for maintainer approval. Fork PR 735 converged on head e50501c6788a18daa120fc2a1672834d5948d7bd; the fresh review submitted at 2026-09-10T01:16:13Z had zero new comments, zero fork threads remain unresolved, and all 92 Keyboard Manager editor tests pass."
   },
-  "next_action": "Resume from the existing 2026-09-09T21:57:29.8039075Z Copilot request on MuyuanMS/PowerToys PR 735, inspect any review submitted afterward, and only request another round after fully consuming that result.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted request-changes review",
+    "reason": "The upstream head still misses true two-step chords ending in L and does not compile the newly added EditorHelpersTests because VK_WIN_BOTH is undeclared without shared_constants.h."
+  },
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "reject-second-key-l",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Reject chords whose second key is L",
+      "confidence": {
+        "score": 99,
+        "rationale": "Shortcut::SetKeyCodes stores the trailing key of a true two-step chord in secondKey, while the current condition checks only actionKey. The fork fix and added regression cases pass all 92 editor tests."
+      },
+      "path": "src/modules/keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.cpp",
+      "line": 141,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Reject chords whose second key is L\n\n**Severity:** `high`\n\nThe broadened check still allows a true two-step chord such as `Win+K, L`, because the trailing `L` is stored in `secondKey` rather than `actionKey`. With Win still held for the chord, that final key can invoke the protected `Win+L` action and lock the PC. Check both action-key positions and add a matching regression case.\n\n```suggestion\n        if (shortcut.winKey != ModifierKey::Disabled && (shortcut.actionKey == 0x4C || shortcut.secondKey == 0x4C))\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "include-shared-constants-header",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Include the declaration for VK_WIN_BOTH",
+      "confidence": {
+        "score": 100,
+        "rationale": "A clean targeted build of the upstream-equivalent test source fails because EditorHelpersTests.cpp uses CommonSharedConstants::VK_WIN_BOTH without including common/interop/shared_constants.h; adding that include makes the project compile and all 92 tests pass."
+      },
+      "in_diff": false,
+      "body": "### Include the declaration for `VK_WIN_BOTH`\n\n**Severity:** `high`\n\n`EditorHelpersTests.cpp` now references `CommonSharedConstants::VK_WIN_BOTH`, but its include list does not provide that declaration, so `KeyboardManagerEditorTest.vcxproj` fails to compile. Please add `#include <common/interop/shared_constants.h>` alongside the other common interop headers.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49759",
+      "type": "request_changes",
+      "label": "Request the two fixes on the current upstream head",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "One apply-ready inline suggestion and one general review note are pinned to the current upstream head. Require explicit maintainer approval and a final freshness check before publishing.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 49759,
+        "pullRequest": 49759,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "b0cf40db0ca386a832a97702af0081d3c6bb09a3",
+        "body_prefix": "Thanks for adding the investigation details and regression coverage. Two correctness/build issues remain before this can merge: true two-step chords ending in L are still accepted, and the new test file is missing the header that declares VK_WIN_BOTH."
+      }
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted request-changes review for explicit maintainer approval.",
+    "Post nothing upstream until the pinned head, conversation, and review threads are revalidated.",
+    "Hold the review without changing labels, review state, or PR state.",
+    "Repeat the fork review loop and validation after any material upstream update."
+  ],
+  "blockers": [],
   "phase0": {
     "author": "amanmaurya92",
     "author_association": "FIRST_TIME_CONTRIBUTOR",
     "bar": "full community-contributor process review",
     "disposition": "Proceed",
+    "who_owes_next": "Maintainer review",
     "gates_tripped": [],
-    "next_actor": "review workflow",
-    "note": "The maintainer investigation request is no longer waiting on the author: the author replied on 2026-09-09 with the requested investigation summary and added regression tests, and the PR now carries Needs-Team-Response rather than Needs-Author-Feedback. Visible upstream checks remain green."
+    "note": "The author answered the maintainer's investigation request, added regression tests, and accepted the CLA. The linked issue documents why Windows processes Win+L before the larger combination, the change is narrowly scoped, and all currently reported upstream checks pass. No additional process ask is warranted.",
+    "evidence": [
+      "license/cla, pr-intake, and detect-telemetry-events pass on upstream head b0cf40db0ca386a832a97702af0081d3c6bb09a3.",
+      "The PR is open, non-draft, and links issue 49725.",
+      "The author replied on 2026-09-09 with the requested investigation and added focused regression tests.",
+      "The change is behavioral but not a visual UI change, so a screenshot or recording is not required."
+    ]
   },
   "judgment": {
-    "status": "review_in_progress",
-    "rationale": "Durable fork state showed no outstanding review request to consume at the start of this run, so the scheduler resumed validation. The current fork branch then needed one local compile fix for the new EditorHelpersTests coverage, after which the targeted Keyboard Manager validation passed and a fresh Copilot review was requested. Because the bounded scheduler immediate check found that request still pending, the correct resumable state is waiting_copilot rather than review_ready.",
+    "status": "request_changes",
+    "rationale": "The current upstream implementation does not inspect Shortcut.secondKey, so it does not cover every chord involving Win and L as claimed. The new direct tests also reference VK_WIN_BOTH without its declaring header and fail to compile. Both issues were fixed and validated on the fork; the exact current fork head then received a fresh clean Copilot review.",
     "evidence": [
-      "Get-ReviewResumeState reported upstream head b0cf40db0ca386a832a97702af0081d3c6bb09a3, fork branch pr-iterate/49759-v3, fork PR 735, latest completed Copilot review 2026-09-09T15:21:23Z, unresolved Copilot threads 0, and resumeAction rebuild-and-draft.",
-      "Fork PR 735 had no requested reviewers when inspected, so there was no outstanding Copilot request to consume before resuming validation.",
-      "The live upstream PR is no longer awaiting author feedback: the author replied to the maintainer investigation request on 2026-09-09T09:33:44Z and added regression tests in commit b0cf40db0ca386a832a97702af0081d3c6bb09a3.",
-      "Upstream and fork file scopes match exactly: 3 changed files, extra [], missing [].",
-      "Targeted Keyboard Manager validation initially exposed a direct compile failure in EditorHelpersTests.cpp because the new Win+L test references CommonSharedConstants::VK_WIN_BOTH without including shared_constants.h.",
-      "Fork commit cf024758b11cb50bb97089b04d60564c25f29990 added the missing include, and the targeted KeyboardManagerEditorLibrary, KeyboardManager DLL, and KeyboardManagerEditorTest builds then succeeded.",
-      "KeyboardManager.Editor.UnitTests passed 92/92 on the fork head after the include fix.",
-      "A fresh Copilot review request was sent on fork PR 735 at 2026-09-09T21:57:29.8039075Z, and the immediate post-request check found requested reviewer copilot-pull-request-reviewer still pending with zero new submitted reviews and zero unresolved Copilot threads.",
+      "The stored request from 2026-09-09T21:57:11Z was consumed by the zero-comment review submitted at 2026-09-09T21:58:32Z; no duplicate request was made before consuming it.",
+      "The protected fork main was advanced to the current upstream main tree, and fork PR 735 was moved to synchronized base review-base/49759-v4 after GitHub retained its stale base snapshot.",
+      "Fork PR 735 contains exactly the three upstream changed paths, with no unrelated paths.",
+      "Fork commit be5e2925b8989da44a0b6ff7f83050ded0f293eb rejects L in Shortcut.secondKey and adds direct plus buffer-validation regression coverage.",
+      "Fork commit cf024758b701ed01a88f9836062c81eb73ed749d adds the missing shared_constants.h include required by the new direct tests.",
+      "Debug x64 build-essentials and the KeyboardManagerEditorLibrary, KeyboardManager module DLL, KeyboardManagerEditor, and KeyboardManagerEditorTest projects all completed successfully.",
+      "KeyboardManager.Editor.UnitTests passed 92 of 92 tests.",
+      "The final explicit Copilot request at 2026-09-10T01:14:50Z produced review 5161660668 at 2026-09-10T01:16:13Z on exact fork head e50501c6788a18daa120fc2a1672834d5948d7bd with zero published comments.",
+      "Fork PR 735 has zero unresolved Copilot threads.",
+      "The upstream head remained b0cf40db0ca386a832a97702af0081d3c6bb09a3 through the final freshness check.",
       "No review, comment, label, close, merge, or other mutation was made to microsoft/PowerToys."
     ],
-    "recommended_action": "Preserve waiting_copilot. On the next run, inspect fork PR 735 for a Copilot review submitted after 2026-09-09T21:57:29.8039075Z before requesting anything else.",
-    "evaluated_at": "2026-09-09T21:58:07.7744337Z",
+    "recommended_action": "After explicit approval and a final upstream freshness check, submit the drafted REQUEST_CHANGES review containing the inline secondKey fix and the companion missing-header note.",
+    "evaluated_at": "2026-09-10T01:32:08.8297024Z",
     "source_updated_at": "2026-09-09T19:09:43Z"
   },
   "source_activity": {
@@ -68,83 +138,176 @@
     "draft": false,
     "upstream_updated_at": "2026-09-09T19:09:43Z",
     "upstream_head_sha": "b0cf40db0ca386a832a97702af0081d3c6bb09a3",
+    "upstream_base_sha": "601460561a196edf1239d8159d2a5fb58c9eac81",
     "changed_file_count": 3,
+    "additions": 51,
+    "deletions": 3,
     "issue_comment_count": 5,
     "review_count": 1,
     "review_comment_count": 1,
+    "unresolved_review_threads": 1,
+    "unresolved_copilot_threads": 1,
     "reported_checks": {
+      "status": "passed",
       "total": 3,
       "successful": 3,
       "failed": 0,
       "pending": 0,
       "checks": [
-        "detect-telemetry-events",
         "license/cla",
-        "pr-intake"
-      ],
-      "summary": "The visible upstream checks now reported for this external-fork PR are passing."
-    }
+        "pr-intake",
+        "detect-telemetry-events"
+      ]
+    },
+    "note": "The single unresolved upstream Copilot thread asked for additional-modifier regression coverage; the author added that coverage in the current head, so it is stale and does not represent a new unresolved finding."
   },
   "fork_pr": {
     "number": 735,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/735",
     "state": "OPEN",
     "branch": "pr-iterate/49759-v3",
-    "base_branch": "main",
-    "head_sha": "cf024758b11cb50bb97089b04d60564c25f29990",
-    "file_count": 3,
-    "scope_matches_upstream": true,
+    "base_branch": "review-base/49759-v4",
+    "base_sha": "36f78abb96f8fa81cc39e481036f8df6e5570fd0",
+    "head_sha": "e50501c6788a18daa120fc2a1672834d5948d7bd",
+    "upstream_head_sha": "b0cf40db0ca386a832a97702af0081d3c6bb09a3",
+    "upstream_file_count": 3,
+    "fork_file_count": 3,
+    "upstream_scope_covered": true,
     "scope_difference": {
-      "extra_files": [],
-      "missing_files": []
-    },
-    "requested_reviewers": [
-      "copilot-pull-request-reviewer"
-    ],
-    "requested_at": "2026-09-09T21:57:29.8039075Z"
+      "missing_files": [],
+      "review_fix_extra_files": []
+    }
   },
+  "fork_branch": "pr-iterate/49759-v3",
   "workflow": {
-    "phase": "waiting_copilot",
-    "resume_action": "wait-for-review-submitted-after-stored-request",
-    "latest_completed_copilot_review_at": "2026-09-09T15:21:23Z",
-    "latest_completed_copilot_review_commit": "be5e2925b8989da44a0b6ff7f83050ded0f293eb",
-    "latest_completed_copilot_published_comments": 0,
-    "current_fork_head": "cf024758b11cb50bb97089b04d60564c25f29990",
+    "drain": "active explicit drain worker",
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-10T01:36:48.1406386Z",
+    "resume_action": "await_explicit_approval",
+    "copilot_rounds_completed": 6,
+    "stored_request_at": "2026-09-09T21:57:11Z",
+    "stored_request_review_at": "2026-09-09T21:58:32Z",
+    "final_request_at": "2026-09-10T01:14:50Z",
+    "latest_copilot_review_id": 5161660668,
+    "latest_copilot_review_at": "2026-09-10T01:16:13Z",
+    "latest_copilot_review_head": "e50501c6788a18daa120fc2a1672834d5948d7bd",
+    "latest_copilot_published_comments": 0,
     "unresolved_copilot_threads": 0,
-    "outstanding_copilot_request": true,
-    "outstanding_request_at": "2026-09-09T21:57:29.8039075Z",
-    "immediate_post_request_review_count": 0,
-    "checkpoint_at": "2026-09-09T21:58:07.7744337Z"
+    "outstanding_copilot_request": false,
+    "local_validation": "completed"
   },
-  "verification": {
-    "result": "checkpointed_waiting_copilot",
-    "configuration": "x64 Debug targeted Keyboard Manager validation",
+  "validation": {
+    "status": "passed",
+    "configuration": "Debug x64",
     "builds": [
-      "KeyboardManagerEditorLibrary.vcxproj: passed",
-      "KeyboardManager.vcxproj: passed",
-      "KeyboardManagerEditorTest.vcxproj: passed"
+      {
+        "name": "build-essentials",
+        "result": "passed"
+      },
+      {
+        "name": "KeyboardManagerEditorLibrary.vcxproj",
+        "result": "passed"
+      },
+      {
+        "name": "KeyboardManager.vcxproj",
+        "result": "passed"
+      },
+      {
+        "name": "KeyboardManagerEditor.vcxproj",
+        "result": "passed"
+      },
+      {
+        "name": "KeyboardManagerEditorTest.vcxproj",
+        "result": "passed"
+      }
     ],
     "tests": [
       {
-        "suite": "KeyboardManager.Editor.UnitTests",
+        "name": "KeyboardManager.Editor.UnitTests",
         "result": "passed",
         "passed": 92,
         "failed": 0,
         "skipped": 0,
-        "binary": "KeyboardManager.Editor.UnitTests.dll"
+        "runner": "vstest.console.exe"
+      },
+      {
+        "name": "Patch validation",
+        "result": "passed",
+        "command": "git diff --check"
       }
     ],
+    "outputs": {
+      "powerToysExe": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+      "keyboardManagerModuleDll": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.KeyboardManager.dll",
+      "unitTests": "<PowerToysCheckout>\\src\\modules\\keyboardmanager\\KeyboardManagerEditorTest\\x64\\Debug\\tests\\KeyboardManagerEditor\\KeyboardManager.Editor.UnitTests.dll"
+    },
+    "diff_check": "passed",
     "notes": [
-      "The first local validation attempt reproduced a direct compile error in the new Win+L regression test because shared_constants.h was not included in EditorHelpersTests.cpp.",
-      "That direct issue was fixed on the fork branch in commit cf024758b11cb50bb97089b04d60564c25f29990 before requesting the next Copilot round.",
-      "The fresh Copilot request is still pending, so no upstream-facing review action is drafted yet."
+      "POWERTOYS_DISABLE_SPECTRE=1 was used.",
+      "The Settings build emitted one pre-existing CsWinRT1028 warning and recurring ANTLR token-recognition noise but completed successfully.",
+      "The final fork diff contains exactly the three upstream paths; additional lines in those files are review fixes."
+    ]
+  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Keyboard Manager and choose Remap a shortcut.",
+    "Verify Win+L, Win+Ctrl+L, Win+Shift+L, and a true two-step chord ending in L such as Win+K, L are rejected with the Win+L illegal-shortcut error.",
+    "Verify nearby valid mappings such as Ctrl+L and Win+K, B remain accepted."
+  ],
+  "copilot": {
+    "fork_pr": 735,
+    "review_rounds_completed": 6,
+    "published_threads_total": 1,
+    "threads_replied": 1,
+    "threads_resolved": 1,
+    "unresolved_threads": 0,
+    "latest_completed_review_at": "2026-09-10T01:16:13Z",
+    "latest_completed_review_head": "e50501c6788a18daa120fc2a1672834d5948d7bd",
+    "latest_completed_review_published_comments": 0,
+    "fresh_review_status": "clean_current_head",
+    "converged": true
+  },
+  "fork_changes": {
+    "commits": [
+      {
+        "sha": "be5e2925b8989da44a0b6ff7f83050ded0f293eb",
+        "summary": "Reject true two-step chords ending in L and add direct plus buffer-validation regression coverage."
+      },
+      {
+        "sha": "cf024758b701ed01a88f9836062c81eb73ed749d",
+        "summary": "Include shared_constants.h so the new VK_WIN_BOTH test cases compile."
+      },
+      {
+        "sha": "e50501c6788a18daa120fc2a1672834d5948d7bd",
+        "summary": "Merge current upstream main into the protected review branch."
+      }
+    ],
+    "writes": [
+      "Advanced the protected fork main to the current upstream main tree through a fast-forward merge commit.",
+      "Merged current upstream main into pr-iterate/49759-v3 and pushed the updated fork branch.",
+      "Moved fork PR 735 to synchronized base review-base/49759-v4 to restore the exact three-file review scope.",
+      "Requested and consumed a fresh Copilot review on the exact current fork head."
     ]
   },
   "freshness": {
-    "status": "waiting_on_existing_copilot_request",
-    "evaluated_at": "2026-09-09T21:58:07.7744337Z",
+    "status": "fresh_current_head_request_changes_drafted",
+    "evaluated_at": "2026-09-10T01:36:48.1406386Z",
     "upstream_head_sha": "b0cf40db0ca386a832a97702af0081d3c6bb09a3",
-    "fork_head_sha": "cf024758b11cb50bb97089b04d60564c25f29990",
-    "latest_copilot_request_at": "2026-09-09T21:57:29.8039075Z"
-  }
+    "source_updated_at": "2026-09-09T19:09:43Z",
+    "fork_head_sha": "e50501c6788a18daa120fc2a1672834d5948d7bd",
+    "fork_review_submitted_at": "2026-09-10T01:16:13Z",
+    "exact_scope_verified": true
+  },
+  "upstream_writes": {
+    "performed": false,
+    "repository": "microsoft/PowerToys",
+    "comments": 0,
+    "reviews": 0,
+    "labels": 0,
+    "closes": 0,
+    "merges": 0,
+    "detail": "No writes were made to microsoft/PowerToys."
+  },
+  "dashboard_modified": false,
+  "canonical_dashboard_identity": "<PowerToysCheckout>"
 }
