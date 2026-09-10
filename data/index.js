@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-10T14:21:54.7904462+08:00",
+  "generated_at": "2026-09-10T14:43:21.6387864+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 542
   },
   "impact": {
-    "as_of": "2026-09-10T14:21:54.7904462+08:00",
+    "as_of": "2026-09-10T14:43:21.6387864+08:00",
     "issues_helped": 10,
     "prs_iterated": 20,
     "constructive_comments_posted": 3,
@@ -938,7 +938,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -946,7 +946,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 4,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request three inline MWB IPC fixes and one companion change"
+      },
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
@@ -966,8 +969,7 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50480",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/733"
-      },
-      "needs_revalidation": true
+      }
     },
     {
       "id": "pr-50479",
@@ -1915,11 +1917,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 730,
+        "fork_number": 761,
         "fork_title": "[PR 50271] [Mouse Utilities] Add Auto Hide Cursor",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50271-v5",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/730"
+        "fork_branch": "pr-iterate/50271-v6",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/761"
       },
       "needs_revalidation": true
     },
