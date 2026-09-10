@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-10T22:00:11.849244+08:00",
+  "generated_at": "2026-09-10T22:19:53.3744035+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 679
   },
   "impact": {
-    "as_of": "2026-09-10T22:00:11.849244+08:00",
+    "as_of": "2026-09-10T22:19:53.3744035+08:00",
     "issues_helped": 10,
     "prs_iterated": 20,
     "constructive_comments_posted": 3,
@@ -5779,15 +5779,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 4,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with four inline review notes"
+      },
       "labels": [
         "Product-Command Palette",
         "0.102",

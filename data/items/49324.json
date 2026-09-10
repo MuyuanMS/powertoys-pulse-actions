@@ -3,38 +3,123 @@
   "number": 49324,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:17:40.0034798Z",
-  "evaluated_at": "2026-09-10T12:17:40.0034798Z",
+  "generated_at": "2026-09-10T14:15:37.2839579Z",
+  "evaluated_at": "2026-09-10T14:15:37.2839579Z",
   "source_updated_at": "2026-08-29T01:51:09Z",
   "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
   "title": "CmdPal JS/TS Extensions - Phase 3: adapters + proxies",
   "url": "https://github.com/microsoft/PowerToys/pull/49324",
-  "summary": "Resumed the durable fork review at the unchanged upstream head. The previously outstanding Copilot request had completed with one unresolved action-ID finding. That finding was fixed and validated on the fork, its thread was replied to and resolved, and a fresh Copilot review was requested for the new fork head. No review has arrived after that request, so this remains resumable waiting state with no upstream action available.",
+  "summary": "The saved Copilot request from 2026-09-10T12:08:33.6817348Z completed at 12:09:30Z on the expected head with zero new comments. All Copilot threads are resolved, the resumed TypeScript and C# validation passed, and four current-head inline review notes are drafted for explicit maintainer approval. No upstream write was made.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Fork head 8d359514c100a3d0e502d35c38ece07baf722f7e includes the action-ID fix. Request timestamp 2026-09-10T12:08:33.6817348Z; as of 2026-09-10T12:14:37.9533036Z there were zero newer Copilot reviews/comments and zero unresolved Copilot threads."
+    "glyph": "📝",
+    "label": "Review draft ready — four blocking notes",
+    "detail": "Copilot returned zero new comments on fork head 8d359514c100a3d0e502d35c38ece07baf722f7e; unresolved threads are zero. The upstream head is unchanged but currently reports a merge conflict with its base."
   },
   "next_action": {
-    "glyph": "...",
-    "label": "Inspect the outstanding fork review on the next run",
-    "reason": "Do not submit another Copilot request until a review after 2026-09-10T12:08:33.6817348Z is consumed or the request is shown to have failed."
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted request-changes review",
+    "reason": "Any publication to microsoft/PowerToys requires explicit approval and a final freshness check."
   },
-  "actions": [],
-  "proposed_comments": [],
-  "safe_actions": [
-    "Inspect fork reviews submitted after the saved request timestamp",
-    "Preserve waiting_copilot while the fresh review is outstanding",
-    "Write nothing to microsoft/PowerToys without explicit approval"
+  "actions": [
+    {
+      "id": "request-changes-49324",
+      "type": "request_changes",
+      "label": "Request changes with four inline review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Four current-diff inline notes; no apply-ready suggestion blocks. Revalidate the upstream head and activity before posting.",
+      "review": {
+        "pr": 49324,
+        "pullRequest": 49324,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
+        "event": "REQUEST_CHANGES"
+      }
+    }
   ],
-  "needs_revalidation": true,
+  "proposed_comments": [
+    {
+      "id": "preserve-cleared-js-property-values",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/ts-sdk/src/base/ObservableBase.ts",
+      "line": 19,
+      "side": "RIGHT",
+      "severity": "high",
+      "title": "Preserve cleared optional property values",
+      "body": "### Preserve cleared optional property values\n\n**Severity:** `high`\n\nWhen an extension clears an optional observable property by assigning `undefined`, `JSON.stringify` omits that property from `command/propChanged`. The native adapter therefore never sees the clear and can retain stale title, subtitle, icon, or nested-command state. Please serialize changed `undefined` values as JSON `null` and add a wire-level regression test for clearing a property.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The notification payload directly embeds the reflected value, and JSON serialization omits object properties whose value is undefined."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "disambiguate-property-change-targets",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSPropertyChangeRegistry.cs",
+      "line": 52,
+      "side": "RIGHT",
+      "severity": "high",
+      "title": "Route property changes to the intended adapter",
+      "body": "### Route property changes to the intended adapter\n\n**Severity:** `high`\n\nThe registry dispatches each payload to every target registered under the same command ID. A command item and its nested command can share that ID while legitimately exposing different title or icon values, so an item update can overwrite command state and raise unrelated notifications. Please carry a target-kind discriminator in the SDK notification and filter dispatch by that discriminator, while retaining legacy fan-out for older senders that omit it.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The loop unconditionally applies the same properties object to every live target for the command ID, and item/command adapters share IDs."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "serialize-status-and-startup-notifications",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSCommandProviderProxy.cs",
+      "line": 555,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Serialize status operations and startup replay",
+      "body": "### Serialize status operations and startup replay\n\n**Severity:** `medium`\n\n`ShowStatus` and `HideStatus` are asynchronous, but this code starts them without preserving request order or waiting during disposal. A delayed show can complete after a hide or provider disposal, leaving stale status UI visible; initialization can similarly run a new notification before older buffered notifications finish replaying. Please queue status operations through disposal and drain the startup buffer before switching to inline dispatch.",
+      "confidence": {
+        "score": 92,
+        "rationale": "The async actions are intentionally discarded, so completion can reorder independently of the locked bookkeeping and disposal path."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-form-action-identifiers",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSFormContentProxy.cs",
+      "line": 20,
+      "side": "RIGHT",
+      "severity": "high",
+      "title": "Preserve Adaptive Card action identifiers",
+      "body": "### Preserve Adaptive Card action identifiers\n\n**Severity:** `high`\n\nThis proxy implements only `IFormContent`, so the host cannot call the action-aware `IFormContent2.SubmitAction` path. The selected Adaptive Card action ID is discarded, making multiple submit actions in one JavaScript form indistinguishable. Please implement `IFormContent2`, forward `actionId` through `form/submit`, and expose an optional action-aware TypeScript handler with backward-compatible fallback to `submitForm`.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The proxy contract and request payload contain no action ID, while the host action-aware branch requires IFormContent2."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "safe_actions": [
+    "Present the draft for explicit maintainer approval",
+    "Revalidate upstream head and activity before any post",
+    "Write nothing upstream without explicit approval"
+  ],
+  "needs_revalidation": false,
+  "confidence": "High",
   "phase0": {
     "author": "michaeljolley",
+    "author_association": "MEMBER",
     "disposition": "Proceed",
-    "note": "Member-authored PR; no author-process gate is pending."
+    "gates_tripped": [],
+    "note": "Member-authored PR; no community-contributor process gate is pending."
   },
   "source_activity": {
     "state": "OPEN",
@@ -56,80 +141,60 @@
     ]
   },
   "freshness": {
-    "evaluated_at": "2026-09-10T12:17:40.0034798Z",
+    "evaluated_at": "2026-09-10T14:15:37.2839579Z",
     "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
     "head_updated_at": "2026-08-29T01:51:09Z",
-    "status": "fresh_head_waiting_review",
-    "note": "Live upstream head still matches the reviewed source head; the fork loop advanced and now awaits a fresh Copilot result."
+    "status": "fresh",
+    "note": "The upstream head still matches the reviewed source head; live GitHub currently reports mergeable=CONFLICTING."
+  },
+  "validation": {
+    "review_branch": {
+      "head_sha": "8d359514c100a3d0e502d35c38ece07baf722f7e",
+      "result": "passed",
+      "commands": [
+        "npm run typecheck -- --pretty false",
+        "npm run test -- --run",
+        "msbuild Microsoft.CmdPal.JsonRpc.csproj /p:BuildProjectReferences=false",
+        "msbuild Microsoft.CmdPal.JsonRpc.UnitTests.csproj /p:BuildProjectReferences=false",
+        "vstest.console.exe Microsoft.CmdPal.JsonRpc.UnitTests.dll /TestCaseFilter:FullyQualifiedName~Form_ /Platform:x64",
+        "git diff --check"
+      ]
+    }
   },
   "verification": {
-    "result": "in_progress",
-    "summary": "The action-ID fix passed TypeScript typecheck, all 117 ts-sdk tests, a Visual Studio-shell compile of Microsoft.CmdPal.JsonRpc and its unit-test assembly, three targeted Form_ VSTest cases, and git diff --check. The normal project build first encountered reusable environment/dependency failures; the fallback compile used already-built SDK reference outputs from the same local PowerToys source generation.",
-    "tests": [
-      {
-        "suite": "CmdPal ts-sdk",
-        "command": "npm run typecheck -- --pretty false; npm run test -- --run",
-        "result": "passed",
-        "passed": 117,
-        "failed": 0
-      },
-      {
-        "suite": "Microsoft.CmdPal.JsonRpc compile",
-        "command": "msbuild Microsoft.CmdPal.JsonRpc.csproj /p:BuildProjectReferences=false",
-        "result": "passed"
-      },
-      {
-        "suite": "Microsoft.CmdPal.JsonRpc.UnitTests compile",
-        "command": "msbuild Microsoft.CmdPal.JsonRpc.UnitTests.csproj /p:BuildProjectReferences=false",
-        "result": "passed"
-      },
-      {
-        "suite": "Form_ unit tests",
-        "command": "vstest.console.exe Microsoft.CmdPal.JsonRpc.UnitTests.dll /TestCaseFilter:FullyQualifiedName~Form_ /Platform:x64",
-        "result": "passed",
-        "passed": 3,
-        "failed": 0
-      },
-      {
-        "suite": "Patch validation",
-        "command": "git diff --check",
-        "result": "passed"
-      }
-    ],
+    "result": "passed",
+    "summary": "TypeScript typecheck and 117 tests passed; both focused C# projects built with zero warnings/errors; all three Form_ tests passed; diff whitespace check passed.",
     "copilot_review": {
       "requested_at": "2026-09-10T12:08:33.6817348Z",
+      "submitted_at": "2026-09-10T12:09:30Z",
       "requested_head_sha": "8d359514c100a3d0e502d35c38ece07baf722f7e",
-      "result": "pending",
-      "new_reviews_after_request": 0,
+      "reviewed_head_sha": "8d359514c100a3d0e502d35c38ece07baf722f7e",
+      "new_reviews_after_request": 1,
       "new_comments_after_request": 0,
       "unresolved_threads": 0,
-      "last_checked_at": "2026-09-10T12:14:37.9533036Z"
+      "result": "zero_comments"
     }
   },
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-10T12:17:40.0034798Z",
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-10T14:15:37.2839579Z",
     "fork_head_sha": "8d359514c100a3d0e502d35c38ece07baf722f7e",
     "upstream_head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
     "request_timestamp": "2026-09-10T12:08:33.6817348Z",
-    "latest_consumed_copilot_review_at": "2026-09-02T05:43:46Z",
+    "latest_consumed_copilot_review_at": "2026-09-10T12:09:30Z",
     "latest_consumed_comment_id": 3911091777,
-    "fix_commit": "8d359514c100a3d0e502d35c38ece07baf722f7e",
-    "reply_id": 3978878798,
     "unresolved_copilot_threads": 0,
     "notes": [
-      "Existing fork PR 430 and pr-iterate/49324 branch were resumed; no duplicate mirror was created.",
-      "The prior action-ID thread was replied to and resolved before requesting the next round.",
-      "No write was made to microsoft/PowerToys or to the dashboard checkout."
+      "The outstanding Copilot request was consumed before considering any new request.",
+      "No duplicate Copilot request was made.",
+      "No write was made to microsoft/PowerToys."
     ]
   },
   "fork_pr": {
     "number": 430,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/430",
     "state": "OPEN",
-    "updated_at": "2026-09-10T12:15:13Z",
     "head_sha": "8d359514c100a3d0e502d35c38ece07baf722f7e",
-    "base_sha": "462f74bb1ac3bf9d7a4a4977600cd58396806cd0",
     "branch": "pr-iterate/49324"
   },
   "fork_branch": "pr-iterate/49324"
