@@ -1,33 +1,141 @@
 {
+  "schemaVersion": 5,
   "number": 21541,
   "kind": "issue",
   "track": "fix",
   "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-10T14:20:12Z",
+  "evaluated_at": "2026-09-10T14:20:12Z",
+  "source_updated_at": "2026-08-04T12:41:51Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/21541",
+  "title": "[Preview Pane] No Select-All/Copy for Source Files in Monaco File Explorer Preview",
+  "author": "hawkerm",
+  "labels": [
+    "Issue-Bug",
+    "Product-File Explorer",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "confidence": "Medium-high",
   "status": {
     "glyph": "🎯",
-    "label": "Actionable",
-    "detail": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+    "label": "Actionable preview-focus fix",
+    "detail": "The Monaco preview can select text with the mouse, but Explorer receives Ctrl+A/Ctrl+C because the out-of-process preview wrapper does not focus or route keyboard input to the preview child."
   },
   "next_action": {
-    "glyph": "🎯",
-    "label": "Do focused module triage",
-    "reason": "Revive the Monaco preview focus work so keyboard focus reaches the preview editor instead of staying in Explorer."
+    "glyph": "🧪",
+    "label": "Reproduce and approve focused design work",
+    "reason": "Validate keyboard focus and resize behavior together before reviving the abandoned non-child-window approach."
   },
-  "actions": [],
-  "confidence": "Medium-high",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-04T12:41:51Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work.",
+    "rationale": "The public report is reproducible across multiple versions and the current wrapper exposes a concrete focus-routing gap: MonacoPreviewHandler::SetFocus is a no-op, GetWindow returns the Explorer host HWND, and TranslateAccelerator forwards keys to the host. The previous PR proved that changing window style can restore shortcuts but was rejected because it broke preview resizing, so a child-window-preserving focus solution is warranted.",
     "evidence": [
-      "The repro is concrete, the issue is currently unowned, and the thread is specific enough to justify focused module work."
+      "The original report states that clicking and selecting text in Monaco works, while Ctrl+A selects Explorer files and Ctrl+C does not copy preview text.",
+      "A 2026 commenter reproduced the behavior on PowerToys 0.100.2 and confirmed that mouse selection plus the context-menu Copy command still works.",
+      "Current MonacoPreviewHandler::SetFocus returns S_OK without setting focus, QueryFocus only calls GetFocus, and GetWindow returns m_hwndParent rather than the out-of-process preview window.",
+      "Current MonacoPreviewHandler::TranslateAccelerator delegates directly to IPreviewHandlerFrame, allowing Explorer to consume shortcuts.",
+      "Closed PR 32478 removed WS_CHILD and restored keyboard shortcuts, but maintainers rejected that approach because the preview pane could no longer be resized and the author closed it to restart the work."
     ],
-    "recommended_action": "Revive the Monaco preview focus work so keyboard focus reaches the preview editor instead of staying in Explorer.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
+    "recommended_action": "Approve a focused child-window-preserving design, starting with a current-build reproduction that verifies Ctrl+A, Ctrl+C, Ctrl+F, Tab traversal, and preview-pane resizing.",
+    "evaluated_at": "2026-09-10T14:20:12Z",
     "source_updated_at": "2026-08-04T12:41:51Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No open or merged fix covers the issue. PR 32478 was closed unmerged after its non-child-window approach caused a resize regression, while the current native wrapper still leaves focus and accelerator routing unimplemented for the out-of-process Monaco child."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Route preview focus and shortcuts to the child window without removing WS_CHILD",
+      "root_cause": "The native out-of-process Monaco preview handler keeps only Explorer’s parent HWND: SetFocus is a no-op, GetWindow reports the host parent, and TranslateAccelerator forwards keyboard messages to Explorer. Consequently the WebView2/Monaco child never becomes the keyboard target even though mouse interaction can select text.",
+      "plan": [
+        "Establish a reliable child-preview HWND or focus-command handshake when MonacoPreviewHandler.exe attaches its FormHandlerControl to the Explorer preview host; keep the WS_CHILD style and existing SetParent/resize contract.",
+        "Implement MonacoPreviewHandler::SetFocus and QueryFocus against the actual preview child, and route accelerators to the managed preview/WebView2 before offering unhandled keys to IPreviewHandlerFrame.",
+        "Ensure the managed Monaco control focuses the WebView2 editor after navigation and on host focus requests without stealing focus during ordinary Explorer navigation.",
+        "Add focused regression coverage and manual validation for Ctrl+A, Ctrl+C, Ctrl+F, Tab/Shift+Tab, unload/reload, and preview-pane resizing."
+      ],
+      "verification": [
+        "Open a source file in Explorer’s preview pane, click the Monaco text, press Ctrl+A then Ctrl+C, and confirm the preview text—not Explorer files—is selected and copied.",
+        "Press Ctrl+F and confirm Monaco’s find UI opens; verify unhandled Explorer shortcuts still reach the host.",
+        "Resize the preview pane repeatedly before and after focusing Monaco and confirm the child continues to fill the assigned rectangle.",
+        "Switch files, close Explorer, and reopen the preview to confirm focus routing does not leak handles or leave preview processes running."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The missing SetFocus/child-HWND/accelerator behavior directly matches the symptom and the prior patch proves window activation is involved. The exact cross-process focus handshake and WebView2 target still require a current-build reproduction to avoid repeating the resize regression."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Explorer’s Monaco source-file preview supports mouse text selection and context-menu copying, but keyboard shortcuts stay with Explorer: Ctrl+A selects files, Ctrl+C does not copy selected preview text, and Monaco shortcuts such as Ctrl+F are unavailable.",
+    "known_information": [
+      "The issue was reported against PowerToys 0.63.0 and reproduced by another user on 0.100.2.",
+      "Mouse drag-selection and right-click Copy work inside the preview, showing that Monaco renders and handles pointer interaction.",
+      "Ctrl+A is handled by Explorer and selects files; Ctrl+C does not copy the selected preview text.",
+      "The Monaco preview is hosted out of process and the current native IPreviewHandler wrapper starts MonacoPreviewHandler.exe.",
+      "Closed PR 32478 attempted to make preview windows focusable by removing WS_CHILD, but a maintainer found that preview resizing stopped working and the PR was closed unmerged."
+    ],
+    "inferences": [
+      "Keyboard focus likely remains on the Explorer preview host or file list rather than the managed Monaco/WebView2 child.",
+      "The focus defect is broader than Ctrl+A/Ctrl+C because Ctrl+F and other Monaco commands use the same keyboard-routing path.",
+      "A correct fix should preserve the child-window hosting contract and explicitly bridge focus across the native wrapper and out-of-process managed preview."
+    ],
+    "analysis": "The live symptom distinguishes pointer handling from keyboard routing. Current source reinforces that boundary: the managed FormHandlerControl can focus itself, but the native MonacoPreviewHandler exposed to Explorer does not invoke it, does not retain the child HWND, and forwards accelerators to the host. The abandoned PR changed window style rather than repairing this contract and introduced a resize regression. This is enough for a useful proposed fix, but current-build reproduction should select the exact cross-process routing mechanism.",
+    "initial_investigation": [
+      "Read the complete live issue body, both live comments, labels, assignees, and linked pull-request references.",
+      "Reviewed current src/modules/previewpane/common/controls/FormHandlerControl.cs and confirmed it applies WS_CHILD, reparents the form, and maintains bounds for Explorer resizing.",
+      "Reviewed current src/modules/previewpane/MonacoPreviewHandlerCpp/MonacoPreviewHandler.cpp and confirmed SetFocus is a no-op, GetWindow returns the host parent, and TranslateAccelerator delegates to Explorer’s frame.",
+      "Reviewed current MonacoPreviewHandlerControl WebView2 initialization and found no host-request focus bridge after navigation.",
+      "Reviewed closed PR 32478, its patch, maintainer feedback, and closure: removing WS_CHILD enabled shortcuts but disabled preview resizing, so the patch was not merged."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-21541",
+      "type": "approve_design",
+      "label": "Approve Monaco preview focus design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "title": "Route preview focus and shortcuts without breaking resize"
+      },
+      "note": "Starts fork-side design work only; this fast judgment contains no full implementation design and authorizes no upstream write."
+    },
+    {
+      "id": "reproduce-21541",
+      "type": "reproduce",
+      "label": "Reproduce Monaco keyboard routing",
+      "primary": false,
+      "reproduce": {
+        "title": "Verify Monaco preview focus, shortcuts, and resizing",
+        "module": "File Explorer Add-ons — Monaco Preview Handler",
+        "version_requirement": "Current PowerToys development build on Windows 11 with Monaco source-file preview enabled",
+        "prerequisites": [
+          "File Explorer preview pane enabled",
+          "A small plain-text or source-code file supported by the Monaco preview handler",
+          "A clipboard-readable text editor for checking copied content"
+        ],
+        "setup": [
+          "Open a folder containing the source file and select it so Monaco renders in the preview pane.",
+          "Make the preview pane wide enough to resize in both directions during the test."
+        ],
+        "steps": [
+          "Click and drag inside Monaco to select a short text range, then press Ctrl+C and paste into the text editor.",
+          "Click Monaco again, press Ctrl+A, and observe whether Monaco text or Explorer files become selected.",
+          "Press Ctrl+F and observe whether Monaco’s find UI opens.",
+          "Resize the Explorer preview pane horizontally and vertically, then repeat Ctrl+A and Ctrl+C.",
+          "Select a different supported file, return to the first file, and repeat the shortcut checks."
+        ],
+        "expected_result": "Ctrl+C copies Monaco’s selected text, Ctrl+A selects Monaco content without selecting Explorer files, Ctrl+F opens Monaco find, unhandled Explorer commands still work, and the preview remains correctly sized throughout.",
+        "setup_prompt": "Prepare a current PowerToys development build with File Explorer Monaco previews enabled, a small source file containing distinctive text, File Explorer’s preview pane open, and a text editor ready for clipboard verification."
+      }
+    }
+  ]
 }
