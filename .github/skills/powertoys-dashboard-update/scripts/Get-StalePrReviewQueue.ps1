@@ -107,6 +107,31 @@ function Test-IsHoldState {
     )
 }
 
+function Test-IsTerminalBlocker {
+    param($Artifact, [string]$LiveHead)
+    if (-not $Artifact -or [string]$Artifact.head_sha -ne $LiveHead) {
+        return $false
+    }
+
+    if ([string]$Artifact.stage -ne 'review_blocked') {
+        return $false
+    }
+
+    $blockers = @($Artifact.blockers | Where-Object { $null -ne $_ })
+    if ($blockers.Count -eq 0) {
+        return $false
+    }
+
+    foreach ($blocker in $blockers) {
+        if ([string]::IsNullOrWhiteSpace([string]$blocker.detail) -or
+            [string]::IsNullOrWhiteSpace([string]$blocker.remediation)) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 $pullRequests = @(
     Invoke-GhJson @('pr', 'list', '-R', $Upstream, '--state', 'open',
         '--json', 'number,title,author,labels,updatedAt,isDraft,headRefOid,url',
@@ -127,6 +152,10 @@ foreach ($pr in $pullRequests) {
 
     $artifactHead = if ($artifact) { [string]$artifact.head_sha } else { '' }
     $liveHead = [string]$pr.headRefOid
+    if (Test-IsTerminalBlocker $artifact $liveHead) {
+        continue
+    }
+
     $hasApplicableReview = Test-HasApplicableReviewAction $artifact $liveHead
     $reviewHead = if ($artifact) {
         $reviewAction = @($artifact.actions | Where-Object {

@@ -1,30 +1,327 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-49279",
   "number": 49279,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "post_review",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T00:35:04.7509482Z",
-  "evaluated_at": "2026-09-07T00:35:04.7509482Z",
+  "generated_at": "2026-09-07T09:48:56.3847387Z",
+  "evaluated_at": "2026-09-07T09:48:56.3847387Z",
   "source_updated_at": "2026-08-31T22:00:40Z",
   "head_sha": "9370f9cf6bd3c5498f19e8b813b09d6975c2fec8",
+  "fork_head_sha": "dc13ca7104bb36f2441e0e6b32bd0a09fea804d4",
   "title": "Add Mouse Button Lock (ClickLock for left, right, and middle mouse buttons)",
   "url": "https://github.com/microsoft/PowerToys/pull/49279",
+  "author": "owenpkent",
+  "author_association": "FIRST_TIME_CONTRIBUTOR",
+  "confidence": "high",
+  "summary": "The current upstream head remains reviewable and clears the Phase 0 process gates, but the engineering review found blocking input-state, concurrency, and build/test defects plus several integration and documentation correctness issues. The fixes are implemented on the fork head, the 72-file fork scope exactly matches upstream, required Debug builds and targeted tests pass, and a fresh exact-head Copilot pass generated zero new comments with zero unresolved threads.",
   "status": {
-    "glyph": "...",
-    "label": "Review finalization blocked",
-    "detail": "Live upstream evidence confirms the recorded head and activity timestamp are unchanged, the PR is mergeable, and all reported checks pass. Prior evidence recorded a clean automated review with zero unresolved Copilot threads, but that result is not reliably pinned to the retained current-head review state. The single permitted Copilot status inspection could not resolve the configured review repository, so the blocker remains; no review round, build, or upstream action is proposed."
+    "glyph": "ACTION",
+    "label": "Request-changes review ready",
+    "detail": "The review is pinned to upstream head 9370f9cf6bd3c5498f19e8b813b09d6975c2fec8. Twelve current-head findings are drafted; no upstream review, comment, label, or state change was made."
   },
-  "next_action": "No public action is proposed until a fresh clean review is pinned to the retained current head.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Review and post the drafted request-changes review",
+    "reason": "The proposed comments target the current upstream head. Recheck the head and conversation immediately before any authorized publication."
+  },
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The current head contains a non-compiling fuzz target, a race that can latch a button after its setting is disabled, and deferred-release failure handling that can desynchronize the engine from the operating-system button state. Additional current-head findings affect global keyboard input, test correctness/discovery, GPO freshness/versioning, localization, side-button release behavior, and copyable DSC examples.",
+    "evidence": [
+      "Upstream head 9370f9cf6bd3c5498f19e8b813b09d6975c2fec8 is open, non-draft, mergeable, and unchanged since 2026-08-31T22:00:40Z.",
+      "The refreshed fork PR contains exactly the same 72 changed paths as upstream, with no extra or missing files.",
+      "Fresh Copilot review 5130425811 reviewed exact fork head dc13ca7104bb36f2441e0e6b32bd0a09fea804d4 at 2026-09-07T09:40:13Z and generated zero new comments.",
+      "The unresolved Copilot thread count is zero.",
+      "PowerToys essentials, Runner, Settings UI, Mouse Button Lock, Mouse Button Lock unit tests, fuzz target, MouseUtils UI tests, and common GPO tests built successfully for x64 Debug.",
+      "MouseButtonLock.UnitTests passed 19 of 19 tests, the Mouse Button Lock GPO test passed, and the fuzz target smoke input exited successfully.",
+      "No write was made to microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a mandatory freshness check, submit the twelve comments as a REQUEST_CHANGES review.",
+    "evaluated_at": "2026-09-07T09:48:56.3847387Z",
+    "source_updated_at": "2026-08-31T22:00:40Z"
+  },
+  "phase0": {
+    "author": "owenpkent",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "bar": "full community-contributor process review",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "who_owes_next": "Maintainer engineering review",
+    "note": "P1 passes because license/cla is successful. P2 passes because the PR description contains a recording. P3 does not trip: the author documented extensive local validation and clearly identified the UI test that was not run. P4 has no reported failure; dependency review, CLA, intake, and telemetry checks pass, while the full Azure build is not reported for this external-fork PR. P5-P9 do not trip: provenance is clear, the linked issue and prior maintainer discussion establish scope, the change is non-draft and atomic for a new module, and the template is substantially complete."
+  },
+  "proposed_comments": [
+    {
+      "id": "deferred-release-completion",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep deferred release failures synchronized with engine state",
+      "confidence": {
+        "score": 99,
+        "rationale": "PostThreadMessageW reports only queueing, while the engine immediately commits release state; the current deferred SendInput failure is discarded."
+      },
+      "body": "### Keep deferred release failures synchronized with engine state\n\n**Severity:** `high`\n\n`PostThreadMessageW` succeeding only means the release request was queued, but the engine treats that result as if `SendInput` already succeeded. If the deferred injection fails, a same-button release can swallow both physical events or a settings/lifecycle release can clear the logical lock while Windows still sees the button held. Report deferred completion back to the engine, distinguish the same-button paired-up path from other releases, and add regression tests that prove failure either lets the physical up through or restores the logical lock.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "remove-global-escape-injection",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Avoid injecting a global Escape during right-button release",
+      "confidence": {
+        "score": 96,
+        "rationale": "The code unconditionally injects Escape after non-chorded right-button releases without proving that a context menu opened or that modifiers are not held."
+      },
+      "body": "### Avoid injecting a global Escape during right-button release\n\n**Severity:** `high`\n\nA right-button release does not guarantee that a context menu opened, yet the adapter sends a real global Escape after same-button, settings, and lifecycle releases. That keystroke can cancel an unrelated foreground operation and can become Ctrl+Esc or Alt+Esc when a modifier is physically held. Preserve the target application's normal right-button-up behavior instead of injecting keyboard input, remove the dismissal intent from the injector contract, and update the related behavior and runtime-validation documentation.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "serialize-settings-and-hook",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Serialize setting changes with hook decisions",
+      "confidence": {
+        "score": 99,
+        "rationale": "The runner and hook threads can deterministically interleave an old settings snapshot, EnforceEnabled, and a later stale lock write."
+      },
+      "body": "### Serialize setting changes with hook decisions\n\n**Severity:** `high`\n\n`set_config` updates settings on the runner thread while button events execute on the hook thread. A button-up can capture the old enabled value, `set_config` can then observe no current lock and return, and the pending button-up can finally latch using its stale snapshot. Protect settings parsing/snapshotting and engine dispatch with one synchronization boundary, and serialize deferred injection callbacks with the engine state, so disabling a button cannot be followed by a stale lock.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "fix-fuzz-injector-signature",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Make the fuzz injector implement the current interface",
+      "confidence": {
+        "score": 100,
+        "rationale": "The checked-in override has two parameters while IButtonUpInjector::InjectUp has one, leaving CountingInjector abstract and causing a compiler error."
+      },
+      "path": "src/modules/MouseUtils/MouseButtonLock.FuzzingTest/MouseButtonLock.FuzzingTest.cpp",
+      "line": 37,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Make the fuzz injector implement the current interface\n\n**Severity:** `high`\n\n`IButtonUpInjector::InjectUp` takes only a `MouseButton`, so this two-parameter method does not override it and `CountingInjector` remains abstract. The fuzz project cannot compile until the fake matches the production interface.\n\n```suggestion\n        bool InjectUp(MouseButton) override\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "make-ui-test-step-aware",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Exercise each setting with the control's real step size",
+      "confidence": {
+        "score": 99,
+        "rationale": "QuickSetValue emits one arrow press per integer while this slider changes by 100, and the current checkbox/NumberBox checks do not verify all bindings."
+      },
+      "path": "src/modules/MouseUtils/MouseUtils.UITests/MouseButtonLockTests.cs",
+      "startLine": 42,
+      "line": 63,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Exercise each setting with the control's real step size\n\n**Severity:** `medium`\n\nThe slider has `SmallChange=\"100\"`, but `QuickSetValue` sends one arrow press per integer; requesting 800 from 1200 therefore sends 400 presses and clamps at the minimum. The existing checkbox checks also leave the default-on right button unchanged and never exercise the left binding. Drive the slider from Home in 100-ms steps, toggle every checkbox away from its default, and assert the NumberBox value after editing.\n\n```suggestion\n            mmbLock.SetCheck(true);\n            Assert.IsTrue(mmbLock.IsChecked);\n            mmbLock.SetCheck(false);\n            Assert.IsFalse(mmbLock.IsChecked);\n\n            rmbLock.SetCheck(false);\n            Assert.IsFalse(rmbLock.IsChecked);\n            rmbLock.SetCheck(true);\n            Assert.IsTrue(rmbLock.IsChecked);\n\n            lmbLock.SetCheck(true);\n            Assert.IsTrue(lmbLock.IsChecked);\n            lmbLock.SetCheck(false);\n            Assert.IsFalse(lmbLock.IsChecked);\n\n            // [Test Case] Hold duration snaps to 100 ms steps across the 200-2200 ms range.\n            var holdDuration = foundCustom.Find<Slider>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseButtonLockHoldDuration));\n            Assert.IsNotNull(holdDuration);\n\n            holdDuration.Click();\n            holdDuration.SendKeys(Key.Home);\n            for (int i = 0; i < 6; i++)\n            {\n                holdDuration.SendKeys(Key.Right);\n            }\n\n            Assert.AreEqual(800, holdDuration.GetValue());\n\n            for (int i = 0; i < 4; i++)\n            {\n                holdDuration.SendKeys(Key.Right);\n            }\n\n            Assert.AreEqual(1200, holdDuration.GetValue());\n\n            // [Test Case] Drag threshold accepts a value. The NumberBox surfaces to automation as an edit control.\n            var moveCancelPixels = foundCustom.Find<TextBox>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseButtonLockMoveCancelPixels));\n            Assert.IsNotNull(moveCancelPixels);\n            moveCancelPixels.SetText(\"12\");\n            Assert.AreEqual(\"12\", moveCancelPixels.Text);\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "notify-gpo-state-refresh",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Notify the policy-managed binding during refresh",
+      "confidence": {
+        "score": 99,
+        "rationale": "InitializeEnabledValues changes the cached GPO flag, but RefreshEnabledState currently raises only the enabled-value notification."
+      },
+      "path": "src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel.cs",
+      "line": 1474,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Notify the policy-managed binding during refresh\n\n**Severity:** `medium`\n\nRefreshing can add or retract the Mouse Button Lock policy, but only the enabled value is notified. The warning and enable-card bindings can therefore retain their previous policy-managed state. Raise the GPO property notification with the enabled-state notification.\n\n```suggestion\n            OnPropertyChanged(nameof(IsMouseButtonLockEnabled));\n            OnPropertyChanged(nameof(IsMouseButtonLockEnabledGpoConfigured));\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "correct-gpo-supported-version",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Declare the policy's actual first supported release",
+      "confidence": {
+        "score": 94,
+        "rationale": "The new module cannot be honored by PowerToys 0.99, while the current policy templates already distinguish subsequent release versions."
+      },
+      "body": "### Declare the policy's actual first supported release\n\n**Severity:** `medium`\n\nThe new policy is marked as supported since PowerToys 0.99.0 even though that release does not contain Mouse Button Lock. Add a matching `SUPPORTED_POWERTOYS_0_102_0` definition and localized string, then point `ConfigureEnabledUtilityMouseButtonLock` at it so Group Policy Editor does not advertise the setting for unsupported releases.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "localize-duration-converter",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Format the duration through a localizable resource",
+      "confidence": {
+        "score": 98,
+        "rationale": "The converter hardcodes the visible unit, spacing, and value order even though the PR claims all user-facing strings are localizable."
+      },
+      "path": "src/settings-ui/Settings.UI/Converters/MillisecondsLabelConverter.cs",
+      "line": 18,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Format the duration through a localizable resource\n\n**Severity:** `medium`\n\nThis visible slider label hardcodes the unit, spacing, and value order, preventing localizers from adapting it. Load a format string using the WinUI `x:Uid` property-resource convention and format with the current culture; apply this together with the companion resource suggestion.\n\n```suggestion\n            string format = Helpers.ResourceLoaderInstance.ResourceLoader.GetString(\"MouseUtils_MouseButtonLock_HoldDuration/ValueFormat\");\n            return string.Format(CultureInfo.CurrentCulture, format, milliseconds);\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "add-duration-format-resource",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Add the localized duration value format",
+      "confidence": {
+        "score": 98,
+        "rationale": "The converter fix needs a property resource whose slash-form key matches ResourceLoader lookup semantics."
+      },
+      "path": "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw",
+      "startLine": 2827,
+      "line": 2829,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Add the localized duration value format\n\n**Severity:** `medium`\n\nAdd the resource used by the converter so translations can control the displayed order and spacing. The slash in the resource name is required for `ResourceLoader.GetString` to resolve this `x:Uid` property value.\n\n```suggestion\n  <data name=\"MouseUtils_MouseButtonLock_HoldDuration.Description\" xml:space=\"preserve\">\n    <value>How long to hold a button before it locks</value>\n  </data>\n  <data name=\"MouseUtils_MouseButtonLock_HoldDuration/ValueFormat\" xml:space=\"preserve\">\n    <value>{0} ms</value>\n    <comment>Format string for the hold-duration value. ms is the abbreviation for milliseconds.</comment>\n  </data>\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "classify-native-unit-test",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Register the project as a native unit test",
+      "confidence": {
+        "score": 96,
+        "rationale": "PowerToys native test projects use ProjectSubType=NativeUnitTestProject so the shared Build;Test path consistently discovers and executes them."
+      },
+      "path": "src/modules/MouseUtils/MouseButtonLock.UnitTests/MouseButtonLock.UnitTests.vcxproj",
+      "startLine": 5,
+      "line": 8,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Register the project as a native unit test\n\n**Severity:** `medium`\n\nThe project currently looks like an ordinary native DLL to the shared solution test pipeline. Mark it with the same native-unit-test subtype used by the repository's other C++ MSTest projects so `Build;Test` consistently discovers the new tests.\n\n```suggestion\n    <ProjectGuid>{15f55815-dffc-4eb7-99e4-b6754a52a5c7}</ProjectGuid>\n    <Keyword>Win32Proj</Keyword>\n    <ProjectSubType>NativeUnitTestProject</ProjectSubType>\n    <RootNamespace>MouseButtonLockUnitTests</RootNamespace>\n    <ProjectName>MouseButtonLock.UnitTests</ProjectName>\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "release-lock-on-side-button",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Release active locks for mouse side-button presses",
+      "confidence": {
+        "score": 97,
+        "rationale": "WM_XBUTTONDOWN currently falls through even though the user-facing contract says any mouse-button press releases a held lock."
+      },
+      "body": "### Release active locks for mouse side-button presses\n\n**Severity:** `medium`\n\nThe Settings description promises that any mouse-button press releases a lock, but side buttons arrive as `WM_XBUTTONDOWN` and currently fall through. Handle side-button down by releasing active locks while allowing the side-button event itself to continue normally, and keep the user-facing wording aligned with the supported release inputs.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "fix-dsc-settings-shape",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Use the serialized settings shape in DSC examples",
+      "confidence": {
+        "score": 98,
+        "rationale": "MouseButtonLockProperties uses snake_case JSON names and BoolProperty/IntProperty wrappers, while the examples use PascalCase scalar fields that System.Text.Json ignores."
+      },
+      "body": "### Use the serialized settings shape in DSC examples\n\n**Severity:** `medium`\n\nThe copyable DSC examples use ViewModel-style PascalCase scalar fields, but the settings resource deserializes the module's persisted JSON contract. These values are therefore ignored. Update every example to use snake_case property names with `{ value: ... }` objects, such as `lmb_lock_enabled = @{ value = $true }` in PowerShell and `hold_duration_ms: { value: 1600 }` in YAML.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49279",
+      "type": "request_changes",
+      "label": "Request changes on the current upstream head",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Six apply-ready inline suggestions and six general review notes are pinned to the current upstream head. Require explicit authorization and a final upstream freshness check before publishing.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 49279,
+        "pullRequest": 49279,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "9370f9cf6bd3c5498f19e8b813b09d6975c2fec8",
+        "body_prefix": "Thanks for the extensive implementation and validation work. The process requirements are satisfied, but the current head still has blocking release-state, concurrency, and build/test issues, plus several integration and documentation corrections described below."
+      }
+    }
+  ],
+  "fork_pr": {
+    "number": 695,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/695",
+    "state": "OPEN",
+    "base": "pr-review-base/49279-current",
+    "base_sha": "50baadc0f36c1cea2db939653711bee4b6f79201",
+    "head_sha": "dc13ca7104bb36f2441e0e6b32bd0a09fea804d4"
+  },
+  "fork_branch": "pr-iterate/49279-v4",
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-07T00:35:04.7509482Z"
+    "phase": "review_ready",
+    "review_round": 7,
+    "latest_copilot_review_id": 5130425811,
+    "latest_copilot_review_at": "2026-09-07T09:40:13Z",
+    "latest_review_commit": "dc13ca7104bb36f2441e0e6b32bd0a09fea804d4",
+    "latest_copilot_published_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "clean_zero_published_comments",
+    "checkpoint_at": "2026-09-07T09:48:56.3847387Z"
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "mergeable": true,
+    "mergeable_state": "blocked",
+    "upstream_updated_at": "2026-08-31T22:00:40Z",
+    "upstream_head_sha": "9370f9cf6bd3c5498f19e8b813b09d6975c2fec8",
+    "changed_file_count": 72,
+    "additions": 3011,
+    "deletions": 45,
+    "reported_checks": {
+      "successful": 4,
+      "failing": 0,
+      "pending": 0,
+      "summary": "dependency-review, license/cla, pr-intake, and detect-telemetry-events pass. The external-fork Azure build is not reported."
+    }
+  },
+  "validation": {
+    "result": "passed_with_findings",
+    "configuration": "x64 Debug",
+    "upstream_head_matches": true,
+    "fork_diff_matches_upstream_scope": true,
+    "builds": [
+      "PowerToys restore: passed",
+      "PowerToys Runner: passed",
+      "PowerToys Settings UI: passed with one pre-existing CsWinRT1028 warning",
+      "PowerToys.MouseButtonLock: passed",
+      "MouseButtonLock.UnitTests: passed",
+      "MouseButtonLock.FuzzingTest: passed",
+      "MouseUtils.UITests: passed",
+      "Common.Utils.UnitTests: passed"
+    ],
+    "tests": [
+      "MouseButtonLock.UnitTests: 19 passed, 0 failed, 0 skipped",
+      "GetConfiguredMouseButtonLockEnabledValue_ReturnsValidState: passed",
+      "MouseButtonLock fuzz target smoke input: exit code 0",
+      "GPO ADMX and en-US ADML XML parse: passed",
+      "Fork check-spelling workflow: passed"
+    ],
+    "outputs": [
+      "x64\\Debug\\PowerToys.exe",
+      "x64\\Debug\\PowerToys.MouseButtonLock.dll",
+      "x64\\Debug\\tests\\MouseButtonLock\\MouseButtonLock.UnitTests.dll",
+      "x64\\Debug\\tests\\MouseButtonLock.FuzzTests\\MouseButtonLock.FuzzTests.exe"
+    ],
+    "note": "The MouseUtils UI test project compiled. Its WinAppDriver test was not executed locally because the installed environment does not provide the required interactive UI-test harness."
   },
   "freshness": {
-    "queued_at": "09/04/2026 16:16:05",
-    "checkpoint_at": "2026-09-07T00:35:04.7509482Z"
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-07T09:48:56.3847387Z",
+    "upstream_head_sha": "9370f9cf6bd3c5498f19e8b813b09d6975c2fec8",
+    "fork_head_sha": "dc13ca7104bb36f2441e0e6b32bd0a09fea804d4"
   }
 }

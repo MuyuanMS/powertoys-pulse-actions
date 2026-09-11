@@ -1,34 +1,130 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-49323",
   "number": 49323,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "request_changes",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T00:35:14.2006539Z",
-  "evaluated_at": "2026-09-07T00:35:14.2006539Z",
+  "generated_at": "2026-09-07T08:50:00Z",
+  "evaluated_at": "2026-09-07T08:50:00Z",
   "source_updated_at": "2026-09-03T14:12:11Z",
   "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
   "title": "CmdPal JS/TS Extensions - Phase 2: JSON-RPC transport + manifest",
   "url": "https://github.com/microsoft/PowerToys/pull/49323",
+  "confidence": "High",
+  "processVerdict": "ask",
+  "summary": "Current-head review converged with zero new published Copilot comments and zero unresolved Copilot threads. Fork-side fixes hardened port validation, filesystem race handling, notification admission, registration concurrency, inbound request concurrency, stderr framing/budget state, and disconnect callbacks. The remaining author-facing blocker is that the AOT-compatible CmdPal project uses StreamJsonRpc 2.21.69 reflection-based local-target registration and parameter-object invocation; the AOT-safe RpcTargetMetadata and NamedArgs APIs first appear in a later package generation and require a coordinated dependency update.",
   "status": {
-    "glyph": "...",
-    "label": "Review finalization blocked",
-    "detail": "The live upstream head is unchanged. Focused regression coverage passed after the carriage-return framing fix and the subsequent fresh automated review had no new published comments, but three unresolved Copilot review threads and final validation still prevent finalization."
+    "glyph": "⚠",
+    "label": "Review ready — request changes",
+    "detail": "The code review is current and locally validated. One high-severity NativeAOT dispatch finding remains, and the three upstream Azure UI-test jobs are red."
   },
-  "next_action": "Resume the existing review-thread work, then complete final validation in a later bounded run before exposing any upstream action.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Request the NativeAOT-safe StreamJsonRpc upgrade/registration change from the author, then rerun the failed x64 Win10, x64 Win11, and arm64 test jobs.",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "make-streamjsonrpc-dispatch-nativeaot-safe",
+      "kind": "companion",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "Microsoft.CmdPal.UI.ViewModels imports the repository AOT compatibility props, while the current StreamJsonRpc 2.21.69 assembly exposes neither RpcTargetMetadata nor NamedArgs. The changed code registers inbound methods with MethodInfo/AddLocalRpcMethod and sends parameter objects through object[], both reflection-dependent paths called out by StreamJsonRpc's NativeAOT guidance."
+      },
+      "body": "### Make the StreamJsonRpc dispatch paths NativeAOT-safe\n\n**Severity:** `high`\n\n`Microsoft.CmdPal.UI.ViewModels` opts into AOT compatibility, but the new transport registers inbound handlers through reflection-based `AddLocalRpcMethod` and sends named parameter objects through `object[]`/`InvokeCoreAsync`. The pinned StreamJsonRpc 2.21.69 package does not provide the NativeAOT-safe `RpcTargetMetadata` and `NamedArgs` APIs, so a trimmed CmdPal build can lose or fail the binder metadata even though the ordinary Debug build passes. Please coordinate an upgrade to a StreamJsonRpc version with those APIs, register local targets using generated metadata, and use the `NamedArgs` parameter-object invocation overload; add a publish/AOT smoke test that exercises both an inbound call and an outbound parameter-object request.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49323",
+      "type": "request_changes",
+      "label": "Request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Post the NativeAOT blocker as a general review note after explicit approval and a final head/activity recheck.",
+      "review": {
+        "pr": 49323,
+        "pullRequest": 49323,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Please update the StreamJsonRpc dependency and dispatch paths so the AOT-compatible CmdPal project uses NativeAOT-safe target metadata and named-argument invocation, then add an AOT publish smoke test for inbound and outbound RPC."
+      }
+    }
+  ],
+  "phase0": {
+    "author": "michaeljolley",
+    "author_association": "MEMBER",
+    "bar": "maintainer/member process bar; template and demo nags skipped",
+    "disposition": "Ask",
+    "gates_tripped": [
+      "P4"
+    ],
+    "who_owes_next": "author",
+    "note": "CLA, dependency review, PR intake, telemetry, SDK build, and both architecture builds pass. No visual demo is needed because the PR is additive transport/manifest infrastructure. The three Azure test jobs (x64 Win10, x64 Win11, arm64) are failing. The stack prerequisite PR 49321 remains open, so this PR must not merge first."
+  },
   "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-07T00:35:14.2006539Z",
-    "copilot_review_count": 3,
-    "unresolved_copilot_threads": 3,
-    "latest_copilot_review_at": "2026-09-05T07:42:00Z",
-    "last_external_copilot_check_at": "2026-09-07T00:32:00.0148589Z"
+    "phase": "review_ready",
+    "checkpoint_at": "2026-09-07T08:50:00Z",
+    "fork_pr": 608,
+    "fork_branch": "pr-iterate/49323-v8",
+    "fork_reviewed_head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
+    "copilot_review_count": 6,
+    "latest_copilot_review_at": "2026-09-07T08:39:00Z",
+    "copilot_final": "fresh review returned zero published inline comments",
+    "unresolved_copilot_threads": 0
   },
+  "validation": {
+    "upstream_head_matches": true,
+    "fork_diff_matches_upstream_scope": true,
+    "configuration": "x64 Debug",
+    "result": "passed",
+    "builds": [
+      "tools\\build\\build-essentials.cmd",
+      "src\\modules\\cmdpal\\CmdPalModuleInterface\\CmdPalModuleInterface.vcxproj",
+      "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj"
+    ],
+    "tests": [
+      {
+        "suite": "CmdPal manifest, bounded stderr, and JSON-RPC connection tests",
+        "result": "passed",
+        "count": 62
+      },
+      {
+        "suite": "Patch validation",
+        "command": "git diff --check",
+        "result": "passed"
+      }
+    ],
+    "outputs": [
+      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll",
+      "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe"
+    ]
+  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and exercise a JavaScript extension from the complete stacked branch because this phase is not wired into the product by itself.",
+    "Verify request/notification traffic, stderr lines including carriage-return updates, invalid debug-port rejection, and overload behavior under concurrent inbound requests.",
+    "Publish the CmdPal UI with NativeAOT after the StreamJsonRpc upgrade and verify one inbound handler and one outbound named-parameter request."
+  ],
   "freshness": {
-    "queued_at": "09/04/2026 20:39:59",
-    "checkpoint_at": "2026-09-07T00:35:14.2006539Z"
-  }
+    "issue_comment_count": 1,
+    "review_count": 13,
+    "review_comment_count": 23,
+    "last_issue_comment_at": "2026-09-03T13:57:00Z",
+    "last_review_at": "2026-09-03T14:12:11Z",
+    "last_review_comment_at": "2026-09-03T14:13:52Z",
+    "checkpoint_at": "2026-09-07T08:50:00Z"
+  },
+  "blockers": [
+    "NativeAOT-safe StreamJsonRpc local-target registration and named-parameter invocation require a coordinated upgrade from pinned version 2.21.69.",
+    "Upstream Azure UI-test jobs are failing for x64 Win10, x64 Win11, and arm64.",
+    "Stack prerequisite PR 49321 remains open."
+  ]
 }

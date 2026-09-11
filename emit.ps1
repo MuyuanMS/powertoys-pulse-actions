@@ -431,6 +431,11 @@ function Resolve-PrAuthorWaitState {
         ForEach-Object { $_.createdAt }
     )
     $latestPulseAction = Get-MaxDateTime @($latestPulseReview, $latestPulseComment)
+    $recordedWaitAt = if ($Artifact.author_wait_evidence) {
+      ConvertTo-DateTimeOrNull $Artifact.author_wait_evidence.created_at
+    } else {
+      $null
+    }
 
     if ($hasNeedsAuthorLabel) {
       $decision.pending_author = $true
@@ -444,6 +449,10 @@ function Resolve-PrAuthorWaitState {
       $decision.pending_author = $true
       $decision.waiting_since = $latestPulseAction.ToString('o')
       $decision.reason = 'posted Pulse review action is after author activity'
+    } elseif ($recordedWaitAt -and (-not $latestAuthorActivity -or $recordedWaitAt -gt $latestAuthorActivity)) {
+      $decision.pending_author = $true
+      $decision.waiting_since = $recordedWaitAt.ToString('o')
+      $decision.reason = 'recorded upstream author request is after author activity'
     } elseif ($PostedComments -gt 0) {
       $postedAt = Get-FirstDateValue @(
         $Artifact.proposed_comments |
@@ -1026,7 +1035,13 @@ foreach ($it in $src.items) {
     $proposedOpen = @($o.proposed_comments | Where-Object { $_.disposition -eq 'proposed' }).Count
     $postedComments = @($o.proposed_comments | Where-Object { $_.disposition -eq 'posted' }).Count
   }
-  $defaultPendingAuthor = ($iowes -eq 'author') -or ($it.kind -eq 'pr' -and $postedComments -gt 0)
+  $hasDraftReviewAction = @(
+    $o.actions |
+      Where-Object { $_.type -in @('post_review', 'request_changes') }
+  ).Count -gt 0
+  $defaultPendingAuthor =
+    ($it.kind -eq 'pr' -and $postedComments -gt 0) -or
+    (($iowes -eq 'author') -and -not $hasDraftReviewAction)
   $defaultWaitingSince = if ($o -and $o.waiting_since) { $o.waiting_since }
                          elseif ($defaultPendingAuthor) {
                            $postedAt = if ($o -and $o.proposed_comments) {
@@ -1141,6 +1156,7 @@ foreach ($it in $src.items) {
   if ($o.proposed_fixes) { $art.proposed_fixes = @($o.proposed_fixes | ForEach-Object { Obj $_ }) }
   if ($o.design)      { $art.design      = Obj $o.design }
   if ($o.proposed_comments) { $art.proposed_comments = @($o.proposed_comments | ForEach-Object { Obj $_ }) }
+  if ($o.author_wait_evidence) { $art.author_wait_evidence = Obj $o.author_wait_evidence }
   if ($o.upstream_pr) { $art.upstream_pr = Obj $o.upstream_pr } elseif ($it.upstream_pr) { $art.upstream_pr = $it.upstream_pr }
   if ($it.upstream_issue) { $art.upstream_issue = $it.upstream_issue }
   if ($o.fork_pr)     { $art.fork_pr     = Obj $o.fork_pr }

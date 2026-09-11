@@ -1,30 +1,226 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-46056",
   "number": 46056,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "request_changes",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T00:35:04.7509482Z",
-  "evaluated_at": "2026-09-07T00:35:04.7509482Z",
+  "generated_at": "2026-09-07T10:19:56.5262862Z",
+  "evaluated_at": "2026-09-07T10:19:56.5262862Z",
   "source_updated_at": "2026-06-05T18:21:53Z",
   "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
   "title": "New Shell Integration PowerToy: Copy as UNC",
   "url": "https://github.com/microsoft/PowerToys/pull/46056",
+  "author": "RamblingGeekUK",
+  "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
+  "isCommunity": true,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "labels": [
+    "Idea-New PowerToy",
+    "Area-Setup/Install",
+    "Product-File Explorer"
+  ],
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "summary": "The current upstream head needs changes before merge. The shell command has reliability and path-classification defects, sparse-package registration resolves external binaries from the wrong directory, the Windows/GPO/settings integration is incomplete, clean-build metadata is inconsistent, and the core behavior lacks focused automated coverage. The upstream branch also currently conflicts with main.",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "Live upstream evidence confirms the recorded head and activity timestamp are unchanged, required checks pass, and the PR currently has merge conflicts. The single permitted Copilot status inspection could not resolve the configured review repository, so fresh-review and unresolved-thread state remain unverified. Keep the existing review checkpoint without starting another round, build, or upstream action."
+    "glyph": "ACTION",
+    "label": "Request-changes review ready",
+    "detail": "The findings are pinned to upstream head fbb6c88b00db39fc7919c64159a1566a61dbc9b3. The isolated review implementation reached a fresh zero-comment Copilot pass with zero unresolved threads, and the required x64 Debug builds and targeted tests passed."
   },
-  "next_action": "Review progress is checkpointed for a later scheduler pass.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Request changes with five current-head review items",
+    "reason": "Post the prepared blocking review after a final upstream head and activity freshness check."
+  },
+  "needs_revalidation": false,
+  "phase0": {
+    "verdict": "proceed",
+    "disposition": "Proceed",
+    "author": "RamblingGeekUK",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "bar": "full community-contributor process review",
+    "owes": "maintainer",
+    "gates_tripped": [],
+    "note": "CLA, dependency review, and spelling checks pass. The linked issue contains a screenshot, the PR description contains detailed manual validation, and the scope follows the File Explorer Add-ons placement requested by maintainers. A maintainer stated that the team would revisit the broader shared-shell-host direction after the 0.100 release, so the author does not currently owe a separate process response.",
+    "evidence": [
+      "The linked issue is microsoft/PowerToys issue 35507 and contains the author's UI screenshot.",
+      "The PR description documents mapped-drive, local-drive, disabled-state, clipboard, and installer-cleanup validation.",
+      "The license/cla, dependency-review, Check Spelling, check-spelling, and Report (PR) checks pass.",
+      "No separate duplicate implementation was found.",
+      "The live upstream branch is currently reported as conflicting with main."
+    ]
+  },
+  "proposed_comments": [
+    {
+      "id": "harden-copy-command-contract",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make path resolution and clipboard writes reliable",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current handler can terminate its COM host on allocation failure, reports success after resolution or clipboard failures, leaks the global allocation when SetClipboardData fails, and treats local device paths beginning with two backslashes as UNC paths."
+      },
+      "body": "### Make path resolution and clipboard writes reliable\n\n**Severity:** `high`\n\n`CopyAsUNCContextMenu/dllmain.cpp` currently performs allocating work inside a `noexcept` COM entry point without an exception boundary, returns `S_OK` after resolution or clipboard failures, and does not free the global allocation when `SetClipboardData` fails. Its two-backslash test also accepts local device namespaces such as `\\\\?\\C:\\...` and `\\\\.\\C:\\...` as UNC paths. Please add an exception-to-HRESULT boundary and RAII/explicit cleanup, propagate meaningful failures, distinguish normal and extended UNC paths from local device paths, and keep the `ERROR_MORE_DATA` retry bounded.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "fix-sparse-package-location",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Register the sparse package against the installation root",
+      "confidence": {
+        "score": 99,
+        "rationale": "The module DLL is emitted under WinUI3Apps, while the manifest resolves PowerToys.exe and WinUI3Apps/PowerToys.CopyAsUNCContextMenu.dll relative to ExternalLocationUri."
+      },
+      "body": "### Register the sparse package against the installation root\n\n**Severity:** `high`\n\n`CopyAsUNCExt/PowerToysModule.cpp` passes the module's `WinUI3Apps` directory as the sparse package external location, but `AppxManifest.xml` authors `PowerToys.exe` and `WinUI3Apps\\PowerToys.CopyAsUNCContextMenu.dll` relative to the installation root. This resolves both paths incorrectly and prevents COM activation. Keep the MSIX URI under the module directory, but pass its parent installation directory as `ExternalLocationUri`.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "complete-platform-and-settings-integration",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Align platform gating, settings navigation, and the supported menu model",
+      "confidence": {
+        "score": 98,
+        "rationale": "The implementation registers only a Windows 11 IExplorerCommand, exposes the setting on unsupported systems, emits an unmapped settings route, and stores an extended-menu-only option without a classic handler where that command could appear."
+      },
+      "body": "### Align platform gating, settings navigation, and the supported menu model\n\n**Severity:** `high`\n\nThe module has no Windows 10 `IContextMenu` fallback, so the Settings card and module availability need to be explicitly gated to Windows 11. The runner's `CopyAsUNC` settings route also needs to map to `PowerPreviewPage`; otherwise opening module settings falls back to Dashboard. Finally, remove the `bool_show_extended_menu` setting and its hide condition unless a classic extended-menu handler is implemented, because the current modern-only command disappears completely when that option is enabled.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "complete-policy-and-build-integration",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Complete GPO, build, signing, and installation integration",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current head reads a policy that is absent from the shipped ADMX/ADML templates, leaves the settings control interactive under policy, imports a WIL version different from packages.config, and omits required package versioning and installation-verification coverage."
+      },
+      "body": "### Complete GPO, build, signing, and installation integration\n\n**Severity:** `high`\n\nAdd the Copy as UNC policy to `PowerToys.admx` and `en-US/PowerToys.adml`, and disable the Settings toggle while that policy controls the value. Make the WIL import and `EnsureNuGetPackageBuildImports` use the version restored by `packages.config`, add deterministic `-NoProfile` resource-generation commands, ensure the MSIX is versioned and signed through the existing pipelines, and include the new DLLs/MSIX in installation verification.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "add-focused-tests-and-keep-scope-atomic",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Add focused coverage and trim the repository-wide allowlist change",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current head has no automated coverage for the utility's path-resolution/clipboard contract, and its spell-check change adds roughly 450 unrelated entries, including misspellings, to a repository-wide allowlist."
+      },
+      "body": "### Add focused coverage and trim the repository-wide allowlist change\n\n**Severity:** `high`\n\nPlease add focused tests for direct UNC input, mapped-drive resolution, `ERROR_MORE_DATA`, local/device-path rejection, resolution failures, clipboard handoff/failures, settings serialization, and GPO-controlled state. Also reduce `.github/actions/spell-check/expect.txt` to only the Copy as UNC identifiers that genuinely need exemptions; the current repository-wide expansion suppresses unrelated spelling findings.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-46056",
+      "type": "request_changes",
+      "label": "Request changes with five current-head review items",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The review is pinned to the current upstream head. Recheck the head, checks, comments, reviews, and merge state before publication.",
+      "review": {
+        "pr": 46056,
+        "pullRequest": 46056,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the substantial work on Copy as UNC. Before this can merge, please address the shell-command reliability and path-classification issues, correct the sparse-package external location, complete the Windows/GPO/settings/build integration, add focused automated coverage, trim the unrelated spell-check allowlist expansion, and rebase the branch to resolve its current conflicts with main."
+      }
+    }
+  ],
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
+    "base_sha": "1744bdecd8a46b5c165c4fb3c0a9698c9aad682f",
+    "updated_at": "2026-06-05T18:21:53Z",
+    "author": "RamblingGeekUK",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "mergeable": false,
+    "merge_state": "dirty",
+    "review_requests": [
+      "niels9001",
+      "yeelam-gordon",
+      "PowerToys code owners"
+    ],
+    "reported_checks": {
+      "total": 7,
+      "successful": 5,
+      "failing": 0,
+      "pending": 0,
+      "skipped": 2,
+      "summary": "CLA, dependency review, spelling, and PR reporting checks pass; the skipped reporting jobs are non-blocking."
+    }
+  },
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
+    "builds": [
+      "PowerToys Debug essentials (runner and Settings)",
+      "CopyAsUNCExt",
+      "CopyAsUNCContextMenu",
+      "CopyAsUNCLib.UnitTests",
+      "Settings.UI.UnitTests"
+    ],
+    "tests": [
+      {
+        "suite": "CopyAsUNCLib.UnitTests",
+        "result": "passed",
+        "passed": 11,
+        "failed": 0
+      },
+      {
+        "suite": "Settings.UI.UnitTests PowerPreview filter",
+        "result": "passed",
+        "passed": 19,
+        "failed": 0
+      },
+      {
+        "suite": "Fresh Copilot review",
+        "result": "passed",
+        "submitted_at": "2026-09-07T10:05:28Z",
+        "new_comments": 0,
+        "unresolved_threads": 0
+      }
+    ],
+    "outputs": [
+      "x64/Debug/PowerToys.exe",
+      "x64/Debug/WinUI3Apps/PowerToys.CopyAsUNCExt.dll",
+      "x64/Debug/WinUI3Apps/PowerToys.CopyAsUNCContextMenu.dll",
+      "x64/Debug/WinUI3Apps/CopyAsUNCContextMenuPackage.msix"
+    ],
+    "build_note": "The Settings build emitted one pre-existing CsWinRT trimming warning; all required builds completed with zero errors."
+  },
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-07T00:35:04.7509482Z"
+    "phase": "request_changes",
+    "checkpoint_at": "2026-09-07T10:19:56.5262862Z",
+    "reviewed_upstream_head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
+    "fork_pr": 696,
+    "fork_pr_url": "https://github.com/MuyuanMS/PowerToys/pull/696",
+    "fork_branch": "pr-iterate/46056-v5",
+    "fork_remote_head_sha": "93758d31a0c2d63922766c288ec83b91b196303c",
+    "latest_copilot_review_at": "2026-09-07T10:05:28Z",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed"
   },
   "freshness": {
-    "queued_at": "09/04/2026 16:16:04",
-    "checkpoint_at": "2026-09-07T00:35:04.7509482Z"
+    "evaluated_at": "2026-09-07T10:19:56.5262862Z",
+    "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
+    "head_updated_at": "2026-06-05T18:21:53Z",
+    "status": "fresh"
   }
 }

@@ -1,11 +1,12 @@
 {
+  "schemaVersion": 5,
   "number": 49805,
   "kind": "issue",
   "track": "fix",
   "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
+  "generated_at": "2026-09-11T03:18:00Z",
   "status": {
     "glyph": "🎯",
     "label": "Design ready — needs approval",
@@ -151,8 +152,8 @@
     "number": 324,
     "url": "https://github.com/MuyuanMS/PowerToys/issues/324"
   },
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-10T18:19:06Z",
+  "evaluated_at": "2026-09-11T03:18:00Z",
+  "source_updated_at": "2026-09-10T22:31:24Z",
   "judgment": {
     "status": "actionable_design",
     "rationale": "The investigator/adversary loop converged after two rounds. The fix consumes handled bare-Space keydowns in Peek and adds focused regression coverage.",
@@ -165,6 +166,47 @@
     ],
     "recommended_action": "The production and test symbols are identified and no missing evidence blocks implementation.",
     "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-10T18:19:06Z"
+    "source_updated_at": "2026-09-10T22:31:24Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing public fix attempt is linked. The converged fork design identifies a narrow hotkey-consumption change and regression coverage."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Consume handled bare-Space Peek activations",
+      "root_cause": "The handled bare-Space branch in Peek::on_hotkey returns false, allowing its keydown to reach the initially focused Pin Window Size button.",
+      "plan": [
+        "Return true after every eligible and successfully handled Peek activation while preserving false for disabled or ineligible paths.",
+        "Parameterize the Peek UI-test activation chord while preserving Ctrl+Space defaults.",
+        "Add a bare-Space repeated open/close regression test that verifies pin state and window bounds remain independent."
+      ],
+      "verification": [
+        "Build the Peek module and Peek UI tests in x64 Debug.",
+        "Run the focused bare-Space activation test on Windows 10 and Windows 11.",
+        "Manually repeat rapid bare-Space preview open/close cycles with differently sized files."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The reported focus behavior, the hotkey return contract, and the PinButton invocation path agree with the converged two-round design."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With Peek configured for bare-Space activation, rapid preview toggles can also activate the initially focused Pin Window Size button.",
+    "known_information": [
+      "The report identifies PowerToys v0.101.2211, Peek, bare-Space activation, and a repeatable rapid open/close sequence.",
+      "The supplied image shows the Pin Window Size button receiving keyboard focus when Peek is created."
+    ],
+    "inferences": [
+      "The Space keydown is likely reaching the focused control after Peek handles the activation shortcut."
+    ],
+    "analysis": "The existing converged design traces the handled bare-Space branch through the shared keyboard hook and identifies a narrowly scoped key-consumption change with regression coverage.",
+    "initial_investigation": [
+      "Peek::on_hotkey handles eligible bare-Space activation but returns false.",
+      "The PowerToys hotkey contract uses true to consume the keydown, and PinButton invokes the pin toggle."
+    ],
+    "information_gaps": []
   }
 }
