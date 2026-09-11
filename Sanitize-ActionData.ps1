@@ -33,6 +33,7 @@ function Convert-PublicValue {
       -replace 'C:\\PowerToys\\', '<PowerToysCheckout>\' `
       -replace 'C:\\Users\\muyuanli\\\.copilot\\[^"''\r\n]*', '<local-artifact>' `
       -replace 'C:\\powertoys-triage-board-source\\[^"''\r\n]*', '<local-artifact>' `
+      -replace '(?i)\b[A-Z]:\\[^\s"''<>|]+', '<local-path>' `
       -replace '(?i)\bworktree\b', 'local checkout'
   }
 
@@ -135,3 +136,22 @@ foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
 }
 
 Write-Host "Sanitized $count public action artifact(s)."
+
+$indexPath = Join-Path $DataPath 'index.json'
+if (Test-Path $indexPath) {
+  $index = Get-Content $indexPath -Raw | ConvertFrom-Json
+  $publicIndex = Convert-PublicValue $index
+  [System.IO.File]::WriteAllText(
+    $indexPath,
+    ($publicIndex | ConvertTo-Json -Depth 30),
+    $encoding)
+}
+
+$indexScriptPath = Join-Path $DataPath 'index.js'
+if (Test-Path $indexScriptPath) {
+  $script = Get-Content $indexScriptPath -Raw
+  $script = $script `
+    -replace '(?i)\b[A-Z]:\\\\[^\s"''<>|]+', '<local-path>' `
+    -replace '(?i)\b[A-Z]:\\[^\s"''<>|]+', '<local-path>'
+  [System.IO.File]::WriteAllText($indexScriptPath, $script, $encoding)
+}
