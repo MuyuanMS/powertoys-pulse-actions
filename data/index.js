@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-11T23:21:11.1829684+08:00",
+  "generated_at": "2026-09-12T00:47:48.9649837+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 158,
-    "open_issues": 12628,
-    "community": 11782,
+    "open_prs": 160,
+    "open_issues": 12629,
+    "community": 11783,
     "artifacts": 407
   },
   "impact": {
-    "as_of": "2026-09-11T23:21:11.1829684+08:00",
+    "as_of": "2026-09-12T00:47:48.9649837+08:00",
     "issues_helped": 10,
     "prs_iterated": 20,
     "constructive_comments_posted": 3,
@@ -507,6 +507,81 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-50526",
+      "kind": "pr",
+      "number": 50526,
+      "url": "https://github.com/microsoft/PowerToys/pull/50526",
+      "title": "CmdPal: Simplify Performance Monitor GPU dock subtitles",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "CmdPal - Dock",
+        "CmdPal - Performance monitor"
+      ],
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-09-11T16:37:31Z",
+      "updated_at": "2026-09-11T16:37:31Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": "CLEAN"
+    },
+    {
+      "id": "pr-50525",
+      "kind": "pr",
+      "number": 50525,
+      "url": "https://github.com/microsoft/PowerToys/pull/50525",
+      "title": "CmdPal: Improve dock hints",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "CmdPal - Dock"
+      ],
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-09-11T16:37:06Z",
+      "updated_at": "2026-09-11T16:37:06Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-50520",
       "kind": "pr",
@@ -4636,7 +4711,7 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-08-09T23:26:48Z",
-      "updated_at": "2026-09-11T13:09:38Z",
+      "updated_at": "2026-09-11T16:28:30Z",
       "comments": 3,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
@@ -153195,6 +153270,38 @@ window.BOARD_INDEX = {
       "created_at": "2024-12-21T07:30:40Z",
       "updated_at": "2025-07-03T13:41:00Z",
       "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-50524",
+      "kind": "issue",
+      "number": 50524,
+      "url": "https://github.com/microsoft/PowerToys/issues/50524",
+      "title": "CmdPal: Simplify GPU subtitles in the Performance Monitor dock band",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-11T16:09:10Z",
+      "updated_at": "2026-09-11T16:20:12Z",
+      "comments": 1,
       "priority": null
     },
     {
