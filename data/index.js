@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-11T20:57:33.0675700+08:00",
+  "generated_at": "2026-09-11T22:23:39.1568603+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 347
   },
   "impact": {
-    "as_of": "2026-09-11T20:57:33.0675700+08:00",
+    "as_of": "2026-09-11T22:23:39.1568603+08:00",
     "issues_helped": 10,
     "prs_iterated": 20,
     "constructive_comments_posted": 3,
