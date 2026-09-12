@@ -6,24 +6,24 @@
   "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:31:44.0744969Z",
-  "evaluated_at": "2026-09-12T18:31:44.0744969Z",
+  "generated_at": "2026-09-12T20:06:34.064Z",
+  "evaluated_at": "2026-09-12T20:06:34.064Z",
   "source_updated_at": "2026-09-12T16:24:09Z",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The New+ hide option replaces the native Windows New handler with an invalid per-user registry value, matching the reported Ctrl+Shift+N regression.",
+    "rationale": "The New+ hide option replaces the native Windows New handler with a per-user disabled_ value, which matches the reported Ctrl+Shift+N regression.",
     "source_updated_at": "2026-09-12T16:24:09Z",
-    "evaluated_at": "2026-09-12T18:31:44.0744969Z",
+    "evaluated_at": "2026-09-12T20:06:34.064Z",
     "evidence": [
-      "The setting immediately breaks Ctrl+Shift+N and disabling it restores the shortcut.",
-      "Current New+ code writes a disabled_ marker over the native handler.",
-      "A second report confirms the regression in the latest stable release."
+      "The issue body shows that enabling Hide the built-in \"New\" context menu immediately breaks Ctrl+Shift+N and disabling it restores the shortcut.",
+      "The body also records the HKCU disabled_ override alongside the intact HKLM handler, showing the registry mutation that causes the breakage.",
+      "A current comment confirms the bug on stable v0.101.2362.0."
     ],
     "recommended_action": "Approve a fork-side migration that restores the native handler and retires the unsafe hide behavior."
   },
   "fix_assessment": {
-    "rationale": "No existing fix covers the regression.",
-    "status": "proposed"
+    "status": "proposed",
+    "rationale": "No existing fix covers the regression."
   },
   "proposed_fixes": [
     {
@@ -45,21 +45,24 @@
     }
   ],
   "issue_context": {
-    "information_gaps": [],
-    "inferences": [
-      "The invalid per-user override shadows the native implementation used by multiple folder-creation surfaces."
-    ],
+    "summary": "New+ hiding the built-in New context menu breaks File Explorer Ctrl+Shift+N.",
     "known_information": [
-      "The issue reproduces on current stable PowerToys.",
-      "Disabling the setting immediately restores Ctrl+Shift+N.",
-      "The native handler remains registered at machine scope while HKCU contains the disabled_ override."
+      "The issue is open and labeled Issue-Bug, Product-File Explorer, Product-New+, and Needs-Triage.",
+      "The reporter provides a direct reproduction: enabling Hide the built-in \"New\" context menu immediately breaks Ctrl+Shift+N, and disabling it restores the shortcut without restarting Explorer.",
+      "The report includes registry evidence showing HKCU\\\\Software\\\\Classes\\\\Directory\\\\Background\\\\shellex\\\\ContextMenuHandlers\\\\New set to disabled_ while HKLM still points at the native handler.",
+      "A comment confirms the problem on stable v0.101.2362.0.",
+      "The issue was last updated on 2026-09-12T16:24:09Z."
     ],
+    "inferences": [
+      "PowerToys is mutating the per-user handler in a way that shadows the native Explorer implementation used by both the menu and Ctrl+Shift+N.",
+      "The failure is deterministic and tied to the hide setting itself, not to Explorer restart timing."
+    ],
+    "analysis": "The public evidence already isolates the registry mutation and makes a migration-focused fix design appropriate.",
     "initial_investigation": [
-      "Read issue discussion and current New+ registry helpers.",
-      "Reviewed the introducing change and related historical fixes."
+      "Read the live issue body, labels, and comment thread.",
+      "Compared the reported registry state with the current New+ behavior described in the issue."
     ],
-    "analysis": "The source and registry behavior identify the failure mechanism without requiring additional diagnostics.",
-    "summary": "New+ hiding the built-in menu also disables native folder creation."
+    "information_gaps": []
   },
   "design": {
     "verify": [

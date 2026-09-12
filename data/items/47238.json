@@ -3,86 +3,80 @@
   "number": 47238,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage_revalidation",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 07:33:07",
+  "generated_at": "2026-09-12T20:15:36.184Z",
+  "evaluated_at": "2026-09-12T20:15:36.184Z",
+  "source_updated_at": "2026-08-05T07:33:07Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The bounded revalidation found that current evidence is insufficient to confirm a specific fix path.",
+    "status": "reproducible",
+    "rationale": "A current public comment reproduces the elevation loop and identifies a concrete settings mismatch: PowerToys clears is_elevated but leaves run_elevated true, which forces the later UAC prompt.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The issue body describes the standard-user install, restart, and repeated UAC prompt.",
+      "A 2026 comment says setting run_elevated to false in settings.json resolves the problem.",
+      "The newer settings-sync issue #50371 treats this as a related privilege-level state problem and lists #47238 as a possible duplicate."
     ],
-    "recommended_action": "Collect a current reproduction and /bugreport diagnostics before detailed design.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 07:33:07"
+    "recommended_action": "Verify the settings write or migration path and add regression coverage before closing.",
+    "evaluated_at": "2026-09-12T20:15:36.184Z",
+    "source_updated_at": "2026-08-05T07:33:07Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "A current report and diagnostics are needed before a defensible PowerToys fix design can be selected."
+    "rationale": "The public workaround points at a specific elevation-settings persistence bug, but the exact source path still needs code verification and a regression test."
   },
   "proposed_fixes": {
-    "title": "Revalidate the current failure path",
-    "root_cause": "The available public evidence does not isolate a confirmed root cause.",
+    "title": "Synchronize run_elevated with is_elevated for standard-user launches",
+    "root_cause": "The standard-user path appears to clear only is_elevated, leaving run_elevated true so PowerToys keeps requesting an administrator account on later launches.",
     "plan": [
-      "Collect a current reproduction and diagnostic archive.",
-      "Use the evidence to identify the owning module before proposing a code change."
+      "Update the settings write or migration path so both elevation flags are false for non-admin runs.",
+      "Add a regression test for standard-user launch, restart, and relaunch without an admin prompt.",
+      "Verify that the same user settings are reused across privilege transitions."
     ],
     "verification": [
-      "Confirm the behavior on a supported current build and compare it with the collected diagnostics."
+      "PowerToys starts normally as the standard user after restart and update.",
+      "settings.json keeps run_elevated=false after the initial non-admin run."
     ],
     "confidence": {
-      "score": 30,
-      "rationale": "Multiple plausible causes remain until current evidence is supplied.",
-      "level": "red"
+      "score": 78,
+      "rationale": "A fresh public comment isolates a single mismatched flag and the manual settings tweak immediately clears the repro, but the source location was not inspected here.",
+      "level": "yellow"
     }
   },
   "issue_context": {
-    "summary": "PowerToys always starts as Administrator on standard user accounts after first run",
+    "summary": "PowerToys keeps prompting a standard user for elevation after the first run because the public evidence points to a split elevation state in settings.json.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 07:33:07",
-      "."
+      "The issue is open and has a bug report ZIP attached.",
+      "A 2026 comment names the settings keys is_elevated and run_elevated.",
+      "Setting run_elevated to false manually resolves the repro for the commenter.",
+      "A newer related issue (#50371) describes the broader elevated/non-elevated settings-sync problem and references #47238 as a possible duplicate."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "The bug is likely in the settings write or migration path used by standard-user launches.",
+      "This is reproducible public evidence, but the exact code location still needs source review."
     ],
-    "analysis": "A current diagnostic package is the smallest evidence needed to separate stale, environment-specific, and code defects.",
+    "analysis": "The symptom is concrete and the workaround is specific, so this is more than a generic info request; the remaining uncertainty is the exact code path and regression coverage.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the issue body, comments, events, and related issue 50371.",
+      "Checked the public triage summary that flagged the broader privilege-level settings sync issue as a possible duplicate context."
     ],
     "information_gaps": {
-      "evidence_type": "bugreport_zip",
-      "information": "A fresh current-version diagnostic archive captured immediately after reproducing the report.",
-      "why_needed": "To distinguish a PowerToys-owned defect from environment-specific or already-fixed behavior.",
-      "how_to_collect": "Please reproduce, then comment /bugreport immediately after the failure."
+      "evidence_type": "source_path",
+      "information": "The exact settings write or migration path that leaves run_elevated true for standard-user launches.",
+      "why_needed": "To bind a code fix and regression test to the owning module.",
+      "how_to_collect": "Inspect the settings persistence path for non-admin launches and confirm both elevation flags are updated together."
     }
   },
-  "actions": [
-    {
-      "id": "request-info-47238",
-      "type": "request_info",
-      "label": "Request fresh bug report diagnostics",
-      "primary": true,
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "number": 47238,
-        "body": "Thanks for the report. Please reproduce this on a supported current PowerToys version, then comment `/bugreport` immediately after the failure. Include the PowerToys version, Windows version, and a short numbered description of the expected and actual result."
-      }
-    },
-    {
-      "id": "approve-design-47238",
-      "type": "approve_design",
-      "label": "Approve focused triage design",
-      "primary": false,
-      "confirm": true,
-      "note": "Draft only; no upstream action was posted."
-    }
-  ]
+  "actions": [],
+  "title": "PowerToys always starts as Administrator on standard user accounts after first run",
+  "url": "https://github.com/microsoft/PowerToys/issues/47238",
+  "author": "xezrunner",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "comments": 2,
+  "confidence": "High"
 }

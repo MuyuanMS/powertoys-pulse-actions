@@ -3,45 +3,90 @@
   "number": 24106,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "owes": "maintainer",
+  "stage": "needs_reply",
+  "owes": "author",
   "pending_author": true,
-  "generated_at": "2026-09-12T18:57:53.1582396Z",
-  "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-  "source_updated_at": "08/05/2026 03:12:21",
+  "generated_at": "2026-09-12T20:15:36.185Z",
+  "evaluated_at": "2026-09-12T20:15:36.185Z",
+  "source_updated_at": "2024-11-03T20:10:17Z",
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "A maintainer-owned follow-up already asked for the missing evidence or a current-version retest. The next useful signal is the reporter's reply, not another parallel investigation.",
+    "status": "needs_information",
+    "rationale": "The repro is credible and PowerToys-owned, but the last concrete confirmation is old enough that we still need a current supported-build retest before choosing a fix path.",
     "evidence": [
-      "Live issue body, labels, assignees, comments, and activity were checked.",
-      "The selected item was revalidated against the current bounded-run freshness queue."
+      "The reporter describes a reproducible remap sequence where Alt+C/Alt+V is used for copy and paste and the Delete key fails afterward.",
+      "The reporter later confirmed the issue still occurred after a maintainer recheck, and disabling Keyboard Manager clears the symptom.",
+      "A bug report ZIP and video were attached in the thread, but the latest concrete confirmation is still from 2024."
     ],
-    "recommended_action": "A maintainer or triage automation already asked for the missing evidence or retest.",
-    "evaluated_at": "2026-09-12T18:57:53.1582396Z",
-    "source_updated_at": "08/05/2026 03:12:21"
+    "recommended_action": "Ask for a current-version retest of the remap-state bug and a fresh /bugreport if the Delete-key failure still reproduces on the latest PowerToys build.",
+    "evaluated_at": "2026-09-12T20:15:36.185Z",
+    "source_updated_at": "2024-11-03T20:10:17Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The retained judgment indicates duplicate, handled, not-actionable, or author-waiting work; no competing fix workflow is started."
+    "status": "proposed",
+    "rationale": "The public repro suggests a remapped-key state leak in Keyboard Manager, but the exact mechanism still needs a current trace before the fix can be trusted."
   },
-  "proposed_fixes": null,
+  "proposed_fixes": [
+    {
+      "title": "Reset the remapped shortcut state before the next physical key is forwarded",
+      "root_cause": "The shortcut-remap path appears to leave synthetic key state active after a copy/paste sequence, so the subsequent Delete press is interpreted with the wrong keyboard state.",
+      "plan": [
+        "Trace the Keyboard Manager shortcut-remap path that injects synthetic key events.",
+        "Verify whether the remapped modifier or chord state is cleared after the clipboard-history sequence.",
+        "Add regression coverage for a remapped copy/paste sequence followed by Delete."
+      ],
+      "verification": [
+        "Retest with the reported remap sequence, then press Delete; the Delete key should behave normally.",
+        "Confirm that disabling Keyboard Manager still removes the symptom."
+      ],
+      "confidence": {
+        "score": 46,
+        "level": "red",
+        "rationale": "The symptom fits a stale shortcut-state hypothesis, but the exact hook still needs confirmation from a current retest or code trace."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Remapped Keyboard Shortcut Causing a Problem to Other Keys: Existing Issue",
+    "summary": "After remapped copy/paste shortcuts, the next Delete keypress misbehaves, which points to a Keyboard Manager state-handling bug.",
     "known_information": [
-      "The issue is open and classified as Issue-Bug.",
-      "The live activity timestamp is ",
-      "08/05/2026 03:12:21",
-      "."
+      "The issue is open and labeled Issue-Bug and Product-Keyboard Shortcut Manager.",
+      "The reporter reproduced the failure with Alt+C and Alt+V remaps and later confirmed that it still happened in follow-up testing.",
+      "Disabling Keyboard Manager clears the Delete-key failure."
     ],
     "inferences": [
-      "The prior classification is retained conservatively until current evidence changes the decision."
+      "The failure likely comes from synthetic key-state handling rather than the target file manager or clipboard UI."
     ],
-    "analysis": "A maintainer-owned follow-up already asked for the missing evidence or a current-version retest. The next useful signal is the reporter's reply, not another parallel investigation.",
+    "analysis": "This is a real PowerToys-owned bug, but the last concrete confirmation is stale enough that a fresh current-build retest is still the best next signal before deciding on a fix path.",
     "initial_investigation": [
-      "Read the live issue metadata and available discussion.",
-      "Compared the current activity timestamp with the existing artifact."
+      "Read the issue body, maintainer follow-ups, and the reporter bug-report attachment references.",
+      "Checked for a duplicate or handled thread in the public discussion and did not find one."
     ],
-    "information_gaps": null
+    "information_gaps": [
+      {
+        "information": "A current supported-build retest of the reported remap sequence, plus a fresh /bugreport if Delete still fails.",
+        "why_needed": "This establishes whether the bug still reproduces on the current PowerToys code path and confirms the active logs.",
+        "how_to_collect": "Reproduce the Alt+C/Alt+V copy/paste sequence on the latest PowerToys build, then comment `/bugreport` immediately after the Delete-key failure if it still occurs."
+      }
+    ]
   },
-  "actions": []
+  "actions": [
+    {
+      "id": "request-retest-24106",
+      "type": "request_info",
+      "label": "Retest the remap-state bug",
+      "primary": true,
+      "comment": {
+        "target": "issue",
+        "number": 24106,
+        "body": "Thanks for the detailed repro. Please retest the reported Alt+C / Alt+V remap sequence on the latest PowerToys build, then confirm whether the Delete key still misbehaves afterward. If it still reproduces, please add a comment containing `/bugreport` immediately after the failure so we can compare the current logs with the earlier attachment."
+      }
+    },
+    {
+      "id": "approve-design-24106",
+      "type": "approve_design",
+      "label": "Approve remap-state design",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ]
 }
