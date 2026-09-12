@@ -9,18 +9,15 @@
     "status": "actionable_design",
     "rationale": "The report supplies the affected version, Store installation, Windows 11 25H2 context, and three elevation paths that all fail, so a focused runner/settings elevation investigation is justified. The exact failure boundary is still unconfirmed because the attached diagnostic was rejected by automated triage and the discussion does not show the UAC result, process token state, or runner restart log after the failure.",
     "recommended_action": "Approve the focused elevation-restart design for runner/settings diagnostics and fallback handling, while requesting one fresh failure-time diagnostic and exact elevation observations to confirm the Store/25H2 failure boundary.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "09/04/2026 13:59:42",
+    "evaluated_at": "2026-09-12T00:59:02Z",
+    "source_updated_at": "2026-09-04T13:59:42Z",
     "evidence": [
       "The reporter is on PowerToys 0.101.2362 from Microsoft Store on Windows 11 25H2.",
       "Always run as administrator is checked, but PowerToys still appears to start in user mode.",
       "Right-click Run as administrator and the in-app Restart PowerToys as administrator command do not produce an elevated session; the in-app command closes or crashes the app.",
       "The issue has Product-Settings, Issue-Bug, Needs-Triage, and Needs-Author-Feedback labels and no assignee or linked implementation.",
       "The automated triage comment reports that the uploaded PowerToysReport_2026-09-04-07-34-41.zip could not be safely analyzed because an archive entry was oversized.",
-      "Fast revalidation read the live issue body, labels, assignees, and 1 public comment(s) on 2026-09-11T14:38:05.1052603Z.",
-      "Fast revalidation read the live issue body, labels, assignees, and 1 public comment(s) on 2026-09-11T15:08:39.7870394Z.",
-      "Live issue metadata and discussion were re-read through 09/04/2026 13:59:42.",
-      "Live issue metadata and discussion were re-read through 09/04/2026 13:59:42."
+      "Scheduled Prompt #2 revalidation read the full live issue body, all 1 public comment(s), current labels, assignees, and timeline through 2026-09-04T13:59:42Z."
     ]
   },
   "fix_assessment": {
@@ -61,8 +58,7 @@
       "The in-app restart command closes or crashes PowerToys instead of yielding an elevated session.",
       "A diagnostic ZIP is attached, but the automated triage bot says it was rejected due to an oversized archive entry.",
       "No maintainer comment, assignee, linked upstream PR, or linked fork implementation currently covers issue 50380.",
-      "Fast revalidation covered live upstream activity through 09/04/2026 13:59:42.",
-      "Fast revalidation covered live upstream activity through 2026-09-04T13:59:42.0000000Z."
+      "Live upstream issue activity was reviewed through 2026-09-04T13:59:42Z."
     ],
     "inferences": [
       "The common failure is likely in the shared runner/settings elevation relaunch path rather than a single module, because persistent startup, manual launch, and Settings restart all end non-elevated from the user's perspective.",
@@ -78,25 +74,30 @@
       "Reviewed src/runner/settings_window.cpp: restart_elevation schedules schedule_restart_as_elevated(true) when the current process is not elevated, then posts quit.",
       "Reviewed src/runner/restart_elevated.cpp and src/common/utils/elevation.h: restart_if_scheduled launches the current executable with --restartedElevated using ShellExecuteEx runas through run_elevated.",
       "Reviewed src/runner/main.cpp: startup reads run_elevated, detects --dont-elevate and --restartedElevated, and deliberately runs non-elevated when --restartedElevated is present but the process token is not elevated to avoid an elevation loop.",
-      "Revalidated selected issue metadata, labels, assignees, body, and 1 public comment(s) during the scheduled bounded run.",
-      "Fast revalidation read the live issue body, labels, assignees, and 1 public comment(s) through 09/04/2026 13:59:42.",
-      "Fast revalidation read the live issue body, labels, assignees, and 1 public comment(s) through 09/04/2026 13:59:42."
+      "Re-read the full live issue body, all 1 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:54:50Z.",
+      "Re-read the full live issue body, all 1 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:54:50Z.",
+      "Re-read the full live issue body, all 1 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:56:32Z.",
+      "Re-read the full live issue body, all 1 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:56:32Z.",
+      "Re-read the full live issue body, all 1 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:59:02Z."
     ],
     "information_gaps": [
       {
         "information": "A fresh diagnostic archive captured immediately after one failed administrator-mode restart that the triage bot can analyze.",
         "why_needed": "The attached ZIP was rejected, so runner startup logs, settings state, and any ShellExecute/UAC failure evidence are unavailable.",
-        "how_to_collect": "Reproduce once, then add a comment containing /bugreport immediately after PowerToys closes, crashes, or reopens in user mode; attach the generated ZIP."
+        "how_to_collect": "Reproduce once, then add a comment containing /bugreport immediately after PowerToys closes, crashes, or reopens in user mode; attach the generated ZIP.",
+        "evidence_type": "bugreport_zip"
       },
       {
         "information": "Whether a UAC prompt appears for each path, whether it is accepted, and which PowerToys processes are elevated after the attempt.",
         "why_needed": "This separates launch denial, accepted UAC followed by non-elevated fallback, Settings-only restart failure, and incorrect UI state.",
-        "how_to_collect": "For Always run as administrator, right-click Run as administrator, and Restart PowerToys as administrator, report whether UAC appears and is accepted, then check the Elevated column in Task Manager Details for PowerToys.exe and PowerToys.Settings.exe."
+        "how_to_collect": "For Always run as administrator, right-click Run as administrator, and Restart PowerToys as administrator, report whether UAC appears and is accepted, then check the Elevated column in Task Manager Details for PowerToys.exe and PowerToys.Settings.exe.",
+        "evidence_type": "configuration_export"
       },
       {
         "information": "Whether Windows Compatibility settings, a startup entry, policy, or Store package state is forcing a particular launch path.",
         "why_needed": "Those conditions can make the same runner code behave differently and would change whether the fix belongs in PowerToys fallback handling, installer/startup registration, or user guidance.",
-        "how_to_collect": "State whether Compatibility-tab Run this program as administrator, a scheduled task/startup override, or organizational policy is configured; no account names or private policy details are needed."
+        "how_to_collect": "State whether Compatibility-tab Run this program as administrator, a scheduled task/startup override, or organizational policy is configured; no account names or private policy details are needed.",
+        "evidence_type": "configuration_export"
       }
     ]
   },
@@ -272,7 +273,7 @@
         "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50380,
-        "body": "Thanks for the detailed PowerToys 0.101.2362 Store/Windows 11 25H2 report. It already shows that Always run as administrator, right-click Run as administrator, and Restart PowerToys as administrator all leave PowerToys non-elevated or closed, but the attached diagnostic ZIP could not be analyzed because one archive entry was oversized. Please reproduce once more and immediately add a comment containing `/bugreport` so the generated ZIP captures the failed restart. Also tell us, for each of the three paths, whether a UAC prompt appears and is accepted, and then check Task Manager's Details tab with the Elevated column enabled for PowerToys.exe and PowerToys.Settings.exe. If any Compatibility-tab Run this program as an administrator setting, scheduled task/startup override, or organizational policy is involved, please mention that too without sharing account names or private policy details."
+        "body": "Thanks for the detailed PowerToys 0.101.2362 Store/Windows 11 25H2 report. The three elevation paths are clear, but the attached archive was rejected and the UAC/token outcome is unknown. Please provide:\n\n- For **Always run as administrator**, right-click **Run as administrator**, and **Restart PowerToys as administrator**, whether UAC appears and is accepted.\n- After each attempt, whether `PowerToys.exe` and `PowerToys.Settings.exe` show **Elevated = Yes** in Task Manager's Details tab.\n- Whether Compatibility-tab **Run this program as an administrator**, a scheduled task/startup override, or organizational policy is configured; do not share account names or private policy details.\n- A fresh diagnostic by adding a comment containing `/bugreport` immediately after one failed attempt.\n\nThese observations separate launch denial, accepted-UAC fallback, Settings-only restart failure, and incorrect UI state."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }
@@ -280,9 +281,9 @@
   "summary": "Administrator-mode relaunch has a plausible runner/settings failure path, but fresh analyzable diagnostics and exact token observations are needed to confirm where Store/25H2 elevation fails.",
   "schemaVersion": 5,
   "stage": "awaiting_design_approval",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "09/04/2026 13:59:42",
+  "generated_at": "2026-09-12T00:59:02Z",
+  "evaluated_at": "2026-09-12T00:59:02Z",
+  "source_updated_at": "2026-09-04T13:59:42Z",
   "title": "Administrator mode lock",
   "url": "https://github.com/microsoft/PowerToys/issues/50380",
   "labels": [
@@ -292,5 +293,6 @@
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 1
+  "comments": 1,
+  "authorAssociation": "NONE"
 }

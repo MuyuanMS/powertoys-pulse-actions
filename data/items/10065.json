@@ -6,61 +6,104 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "10/21/2022 15:46:03",
+  "author": "Combinacijus",
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Overlapping action-key ownership is a focused engine-state candidate."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Add deterministic overlap coverage before changing suppression."
+  },
+  "generated_at": "2026-09-12T01:02:28.326191Z",
+  "evaluated_at": "2026-09-12T01:02:28.326191Z",
+  "source_updated_at": "2022-10-21T15:46:03Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "The issue provides a deterministic overlap sequence and a second confirmation. Current Keyboard Manager has a complex per-shortcut started/remap state machine, making action-key overlap and pass-through suppression a focused, testable hypothesis.",
     "evidence": [
-      "Live issue body and 1 public comment(s) were read through 10/21/2022 15:46:03.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "With Win+Ctrl held, rapidly overlapping A and D causes unmodified A/D characters while slower alternating presses remap correctly.",
+      "The reporter explicitly narrowed the trigger to both action keys being down briefly, not raw speed.",
+      "Current KeyboardEventHandlers.cpp tracks started shortcuts, action-key key-up, and reset behavior separately across overlapping remaps."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "10/21/2022 15:46:03"
+    "recommended_action": "Reproduce with deterministic overlapping key events and add state-machine coverage before changing suppression logic.",
+    "evaluated_at": "2026-09-12T01:02:28.326191Z",
+    "source_updated_at": "2022-10-21T15:46:03Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No linked fix exists; the event overlap provides a concrete engine test and likely ownership boundary."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Keep overlapping action keys suppressed until each remap chord resolves",
+      "root_cause": "When a second shortcut action key arrives while another remap with the same held modifiers is still active, the state machine can resolve one mapping and pass the other physical action key through before its own remap state is established.",
+      "plan": [
+        "Create an engine test that injects Win+Ctrl down, A down, D down, A up, D up with both remaps configured.",
+        "Track suppression/ownership per physical action key rather than treating the shared modifier chord as a single active shortcut.",
+        "Release injected targets and reset each action key independently when its physical key-up arrives."
+      ],
+      "verification": [
+        "Run KeyboardManagerEngine tests for overlapping Win+Ctrl+A/D remaps.",
+        "Verify slow and overlapping sequences emit only Left/Right and never literal A/D.",
+        "Cover reversed release order and auto-repeat."
+      ],
+      "confidence": {
+        "score": 55,
+        "level": "yellow",
+        "rationale": "The event overlap is explicit, but a current engine test is needed to confirm which reset branch leaks the second key after substantial Keyboard Manager changes."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 10065: [KBM] missing shortcuts if executed fast one after another",
+    "summary": "Two remapped shortcuts sharing held modifiers can leak the second action key when the next chord begins before the first action key is fully released.",
     "known_information": [
-      "The live issue body states: ## ℹ Computer information - PowerToys version: v0.33.1 - PowerToy Utility: Keyboard Manager - Running PowerToys as Admin: Yes - Windows build number: Version 20H2 (OS Build 19042.804) ## 📝 Provide detailed reproduction steps (if any) 1. Remap shortcut Win (Left) + Ctrl (Left) + A --> Left (Arrow key) 2. Remap shortcut Win (Left) + Ctrl (Left) + D --> Right (Arrow key) 3. Open any text editor with some random text 4. Hold Ctrl + Win through the next steps 5. Slowly press A then D repeatedly curs.",
-      "The live issue has 1 public comment(s), with labels: Issue-Bug, Product-Keyboard Shortcut Manager, Priority-3, Planning-Consideration."
+      "The exact mappings and event sequence are documented.",
+      "The failure depends on A and D overlapping while Win+Ctrl remain held.",
+      "A second user reproduced the same behavior with Ctrl+A/Ctrl+E remaps."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "Shortcut state is likely being reset at chord scope rather than preserving independent ownership for simultaneously held action keys."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The original report already contains the key discriminator. A synthetic low-level input test can reproduce this without asking the reporter for generic logs.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 1 public comment(s) through 10/21/2022 15:46:03.",
-      "Latest public discussion: I remap Ctrl+A to Home and Ctrl+E to End, and I noticed this same behavior with 0.33.1.."
+      "Read the complete issue and confirmation through 2022-10-21T15:46:03Z.",
+      "Reviewed current KeyboardEventHandlers.cpp started-chord, action-key, suppression, and reset branches.",
+      "No linked fix or duplicate is present in the live timeline."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+      "id": "design-10065",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce overlapping shortcut keys",
+      "reproduce": {
+        "title": "Replay overlapping Keyboard Manager chords",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "Configure Win+Ctrl+A → Left and Win+Ctrl+D → Right",
+          "Open a text editor containing text"
+        ],
+        "setup": [],
+        "steps": [
+          "Hold Win+Ctrl.",
+          "Press A down, then D down before releasing A.",
+          "Release A, then D; repeat with the release order reversed.",
+          "Inspect both resulting cursor movement and low-level emitted key events."
+        ],
+        "expected_result": "Only Left and Right are emitted; no literal A or D reaches the editor and all modifiers release normally."
       }
     }
   ],

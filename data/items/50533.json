@@ -2,73 +2,143 @@
   "schemaVersion": 5,
   "number": 50533,
   "kind": "issue",
-  "stage": "awaiting_author",
-  "generated_at": "2026-09-11T22:43:54.3404913Z",
-  "evaluated_at": "2026-09-11T22:43:54.3404913Z",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-12T00:59:02Z",
+  "evaluated_at": "2026-09-12T00:59:02Z",
   "source_updated_at": "2026-09-11T22:03:49Z",
   "title": "[Mouse Jump] - Keyboard actions (1-9, Home, End, etc) don't appear to work after v0.101",
   "url": "https://github.com/microsoft/PowerToys/issues/50533",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The reporter indicates Mouse Jump preview keyboard shortcuts (1-9, Home, End) fail to jump the cursor in v0.101. Additional reproduction details or diagnostic logs are required to confirm if focus or key-mapping is lost.",
+    "status": "actionable_design",
+    "rationale": "The issue is independently reproduced by the author of the current Mouse Jump WinUI work: linked PR #50489 records that Escape and all number, numpad, Home/End, and arrow shortcuts fail after the v0.101 WinUI migration. Current main wires PreviewKeyDown only on a StackPanel and Image, then attempts to focus the Image; the XAML contains no focusable control. This is enough to pursue a focused keyboard-focus/routing fix without asking the reporter for generic logs.",
     "evidence": [
-      "Issue report states keyboard shortcuts 1-9, Home, End have no effect in preview window after v0.101 update.",
-      "Needs-Author-Feedback label applied."
+      "The issue reports that 1-9, Home, and End no longer move the cursor in the Mouse Jump preview after v0.101.",
+      "Open PR #50489 cross-references the issue and records failed manual checks for Escape, number-row, number-pad, Home/End, and arrow shortcuts while pointer activation still works.",
+      "The WinUI migration commit e0010c56426af2722a02357e83c08a0ab2d489cb introduced PreviewWindow.xaml and PreviewWindow.xaml.cs in v0.101.",
+      "Current PreviewWindow.InitializeWindow subscribes PreviewKeyDown on StackPanel and PreviewImage, and PreviewWindow_Activated calls PreviewImage.Focus.",
+      "Current PreviewWindow.xaml contains only a StackPanel and Image and declares no focusable input control or tab stop.",
+      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
     ],
-    "recommended_action": "Request a fresh /bugreport ZIP captured right after attempting Mouse Jump keyboard navigation."
+    "recommended_action": "Prepare a focused Mouse Jump WinUI input-routing design and reproduce it on the current build; do not request another generic diagnostic archive.",
+    "evaluated_at": "2026-09-12T00:59:02Z",
+    "source_updated_at": "2026-09-11T22:03:49Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing fix attempt specifically covers Mouse Jump preview window keyboard navigation failure in v0.101."
+    "rationale": "No linked PR fixes the keyboard regression. PR #50489 fixes preview sizing but explicitly lists these keyboard checks as failing, while current main still relies on focus and routed key events from non-interactive preview elements."
   },
   "proposed_fixes": [
     {
-      "title": "Ensure Mouse Jump preview window retains keyboard focus during preview activation",
-      "root_cause": "Mouse Jump preview window may be losing Win32 keyboard focus or input hook hooks during preview rendering after recent v0.101 updates.",
+      "title": "Give the Mouse Jump preview a reliable keyboard input target",
+      "root_cause": "The WinUI preview routes key handling through a StackPanel and Image while attempting to focus the Image. After the WinUI migration, the preview can become foreground without a reliable focused XAML element, so PreviewKeyDown never reaches the handler even though its key-to-monitor logic is intact.",
       "plan": [
-        "Inspect Mouse Jump preview form focus activation and key handling methods in MouseJump.UI.",
-        "Ensure KeyDown / KeyUp event handlers remain attached and preview window receives focus upon trigger.",
-        "Add unit/UI tests for keyboard grid navigation in Mouse Jump preview."
+        "In PreviewWindow.xaml, introduce or configure a focusable root input surface without changing pointer hit testing or the borderless overlay.",
+        "In PreviewWindow.xaml.cs, focus that surface only after the HWND is shown and activated, verify the focus call result, and centralize the key handler on the root.",
+        "Keep Escape, number row, numpad, Home/End, and Left/Right behavior unchanged once an event arrives, and add a fallback diagnostic when focus cannot be acquired.",
+        "Add focused UI coverage for keyboard activation after repeated show/hide cycles and after pointer activation."
       ],
       "verification": [
-        "Activate Mouse Jump, press numeric keys 1-9 or Home/End, and verify cursor moves to corresponding screen grid cell."
+        "On current main, open Mouse Jump and verify Escape dismisses it and number-row, numpad, Home/End, and Left/Right keys move the pointer as documented.",
+        "Repeat activation after pointer clicks, multiple monitors, mixed DPI, and multiple show/hide cycles.",
+        "Confirm PR #50489's preview sizing and pointer-click scenarios remain unaffected."
       ],
       "confidence": {
-        "score": 65,
+        "score": 82,
         "level": "yellow",
-        "rationale": "The issue report matches a preview window focus loss pattern, but log confirmation or exact focus trace is needed."
+        "rationale": "The regression boundary, failed key set, and current focus/routed-event implementation align closely, but a local focus-state trace is still needed before choosing the exact WinUI focus primitive."
       }
     }
   ],
   "issue_context": {
-    "summary": "Mouse Jump keyboard shortcuts (1-9, Home, End) are reported unresponsive in the preview window after v0.101 update.",
+    "summary": "Mouse Jump's WinUI preview opens and responds to pointer interaction, but keyboard navigation and dismissal stopped working after the v0.101 migration.",
     "known_information": [
-      "PowerToys version v0.101 (reported as v1.101) installed via GitHub release.",
-      "Mouse Utilities / Mouse Jump component affected."
+      "The regression affects number-row, numpad, Home/End, arrow, and Escape keys according to the linked PR's current manual test matrix.",
+      "Pointer clicking still moves the cursor, so preview layout and pointer handling are not generally broken.",
+      "The current window subscribes routed PreviewKeyDown handlers on its StackPanel and Image and attempts to focus the Image on activation.",
+      "The XAML declares no focusable control in the preview.",
+      "PR #50489 is open for a separate preview-size regression and explicitly does not fix this keyboard issue.",
+      "Live upstream issue activity was reviewed through 2026-09-11T22:03:49Z."
     ],
     "inferences": [
-      "The Mouse Jump preview window may not be correctly capturing WPF/Win32 keyboard focus when opened."
+      "The WinUI migration likely lost a reliable focused element or key-routing surface.",
+      "The key-to-screen selection switch is probably not the failing boundary because every handled key family fails together."
     ],
-    "analysis": "Mouse Jump relies on keyboard focus on the preview overlay window to process numeric/nav keys. If focus shifts or keyboard hooks drop, keypresses are ignored.",
+    "analysis": "The linked PR supplies stronger reproduction evidence than a new reporter diagnostic would: the preview is shown, mouse actions work, and every routed keyboard action fails. The shared failure boundary is focus/routing before PreviewWindow_PreviewKeyDown. A contained design should establish a focusable root and verify focus after the native show/activation sequence.",
     "initial_investigation": [
-      "Checked src/modules/MouseUtils/MouseJump/MouseJump.UI/ for keyboard event handler changes in v0.101."
+      "Read the complete issue, automated triage comment, labels, assignees, and cross-reference to PR #50489.",
+      "Read PR #50489's full validation matrix and confirmed that the keyboard failures are explicitly separated from its preview-size fix.",
+      "Inspected current PreviewWindow.xaml and PreviewWindow.xaml.cs on upstream main.",
+      "Reviewed the WinUI migration commit e0010c56426af2722a02357e83c08a0ab2d489cb, whose validation originally marked these keyboard scenarios passing.",
+      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic ZIP-file",
-        "why_needed": "To verify module logs and input hook status when Mouse Jump is activated.",
-        "how_to_collect": "Reproduce the issue, right-click PowerToys tray icon, select 'Report Bug' (or run BugReportTool.exe), and submit /bugreport comment."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request Mouse Jump diagnostic ZIP and focus trace",
-      "comment": {
-        "body": "Could you please reproduce the issue and run /bugreport to capture fresh diagnostics ZIP file right after attempting the Mouse Jump keyboard navigation? This will help us confirm if the preview window is losing focus or key events."
+      "id": "approve_design-50533",
+      "type": "approve_design",
+      "label": "Design Mouse Jump keyboard focus fix",
+      "primary": true,
+      "confirm": true,
+      "design": {
+        "title": "Give the Mouse Jump preview a reliable keyboard input target"
       }
+    },
+    {
+      "id": "reproduce-50533",
+      "type": "reproduce",
+      "label": "Reproduce Mouse Jump keyboard routing",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "title": "Verify WinUI preview keyboard focus and routing",
+        "module": "Mouse Jump",
+        "prerequisites": [
+          "At least two displays or virtual displays",
+          "Mouse Jump enabled"
+        ],
+        "steps": [
+          "Enable Mouse Jump on a current build with at least two displays.",
+          "Activate the preview and press Escape; reopen it after the result.",
+          "Test number-row 1-9, numpad 1-9, Home, End, Left, and Right.",
+          "Repeat after clicking the preview and after several show/hide cycles while recording which element has keyboard focus."
+        ],
+        "expected_result": "Escape dismisses the preview and each navigation key moves the pointer to the documented display without requiring a mouse click first.",
+        "version_requirement": "Current upstream main or a build containing the v0.101 WinUI migration"
+      },
+      "note": "Display-only reproduction plan; it does not post to GitHub."
     }
-  ]
+  ],
+  "author": "mikeclayton",
+  "authorAssociation": "CONTRIBUTOR",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-Mouse Utilities"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "track": "fix",
+  "pending_author": false,
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [
+      {
+        "number": 50436,
+        "url": "https://github.com/microsoft/PowerToys/issues/50436",
+        "relationship": "separate Mouse Jump preview sizing regression fixed by PR #50489"
+      }
+    ],
+    "related_prs": [
+      {
+        "number": 50489,
+        "url": "https://github.com/microsoft/PowerToys/pull/50489",
+        "state": "OPEN",
+        "title": "Ready for Review - [Mouse Jump] - fixing small preview image in settings ui - #50436",
+        "relationship": "independent work whose validation explicitly reproduces this keyboard regression"
+      }
+    ],
+    "covering_prs": []
+  }
 }

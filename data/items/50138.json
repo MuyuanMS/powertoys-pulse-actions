@@ -6,62 +6,85 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/26/2026 13:47:30",
+  "author": "Jordi-PAPA",
+  "confidence": "Green",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The UTF-16-to-UTF-8 transport mismatch is confirmed."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Normalize the Monaco payload and add encoding regression tests."
+  },
+  "generated_at": "2026-09-12T01:02:28.217857Z",
+  "evaluated_at": "2026-09-12T01:02:28.217857Z",
+  "source_updated_at": "2026-08-26T13:47:30Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "The attached sample begins with FF FE and nearly half its bytes are NULs. Current source re-encodes decoded text with the source encoding before passing it to a JavaScript UTF-8 decoder, directly explaining the rendered NUL boxes.",
     "evidence": [
-      "Live issue body and 2 public comment(s) were read through 08/26/2026 13:47:30.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "The attached Minimal.reg is 78 bytes, begins FF FE, and has a 0.487 NUL-byte ratio.",
+      "The issue reproduces on 0.101.2362.0 and the Windows built-in text preview decodes the same file correctly.",
+      "MonacoPreviewHandlerControl.cs base64-encodes encodingToUse.GetBytes(fileContent), while Monaco/index.html decodes the payload with decodeURIComponent/UTF-8 byte semantics."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/26/2026 13:47:30"
+    "recommended_action": "Approve a focused fix that normalizes the decoded string to UTF-8 for the Monaco transport and adds UTF-16 regression coverage.",
+    "evaluated_at": "2026-09-12T01:02:28.217857Z",
+    "source_updated_at": "2026-08-26T13:47:30Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No merged or active fix was found; attachment bytes and current source establish a narrow encoding-boundary defect."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Normalize Monaco transport bytes to UTF-8 after source decoding",
+      "root_cause": "The handler decodes the source file into a .NET string but then base64-encodes that string using the original file encoding. Monaco/index.html interprets the base64 bytes as UTF-8, so UTF-16LE NUL bytes become visible characters.",
+      "plan": [
+        "Keep BOM/charset detection for reading the source file.",
+        "Encode the resulting Unicode string with Encoding.UTF8 before base64 transport to Monaco.",
+        "Add tests using BOM-marked UTF-16LE .reg content and non-ASCII text to prove the transport round-trips without NULs or mojibake."
+      ],
+      "verification": [
+        "Decode the attached Minimal.reg and assert the Monaco payload produces “Windows Registry Editor Version 5.00” with no U+0000 characters.",
+        "Retain UTF-8, UTF-8 BOM, and legacy code-page preview tests.",
+        "Build and run Monaco preview handler unit/UI coverage."
+      ],
+      "confidence": {
+        "score": 96,
+        "level": "green",
+        "rationale": "The attachment bytes and the source/JavaScript encoding mismatch directly explain the exact symptom."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 50138: PowerToys Monaco Preview Handler displays UTF-16LE .reg files with NUL characters",
+    "summary": "The Monaco preview handler correctly reads a BOM-marked UTF-16LE .reg file into text, then re-encodes that text as UTF-16 bytes while the embedded JavaScript always decodes the base64 payload as UTF-8, exposing every UTF-16 NUL byte.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.100.2 ### Installation method GitHub ### Area(s) with issue? File Explorer: Preview Pane ### Steps to reproduce 1. Install PowerToys 0.100.2 from GitHub and enable the **Monaco Preview Handler** in PowerToys settings. 2. Create or open a `.reg` file saved by **Windows Registry Editor (Regedit)**. Such files are saved as UTF-16LE. 3. In File Explorer, enable the **Preview pane** and select the `.reg` file. 4. Observe the content displayed by the PowerToys Monaco .",
-      "The live issue has 2 public comment(s), with labels: Issue-Bug, Product-File Explorer, Needs-Triage."
+      "The attached .reg file is BOM-marked UTF-16LE and reproduces on 0.101.2362.0.",
+      "UTF-8 input and the Windows built-in preview handler display correctly.",
+      "The current handler decodes through CharsetDetector/StreamReader, then base64-encodes using the detected source encoding."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "The source decoding succeeds; corruption is introduced by using source-encoding bytes in a transport whose JavaScript decoder assumes UTF-8."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The byte-level attachment check and both ends of the transport agree: UTF-16 NUL bytes are intentionally preserved in base64 and then misinterpreted by the JavaScript decoder.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 2 public comment(s) through 08/26/2026 13:47:30.",
-      "Latest public discussion: PowerToys 0.100.2 reported that it was up to date. The Settings home page showed “You’re up to date” and “Last checked: Today at 01:27”, so the application did not offer me the 0.101.2362.0 update. Nevertheless, I manually updated PowerToys to 0.101.2362.0 and tested the issue in my administrator session. I confirm that the issue still reproduces on PowerToys 0.101.2362.0: the Monaco Preview Handl."
+      "Read the full body and both comments through 2026-08-26T13:47:30Z.",
+      "Downloaded the public reproduction ZIP; Minimal.reg begins with FF FE and contains 38 NUL bytes out of 78.",
+      "Reviewed src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandlerControl.cs and src/Monaco/index.html at commit 33e4ef46e5db77a256818a917d65103c9b7398fa.",
+      "No linked fix or duplicate is present in the live timeline."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
-      }
+      "id": "design-50138",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
     }
   ],
   "title": "PowerToys Monaco Preview Handler displays UTF-16LE .reg files with NUL characters",

@@ -6,61 +6,105 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "10/24/2022 21:30:26",
+  "author": "jason-wihardja",
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Bidirectional modifier swaps need current engine coverage."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Model physical and logical modifier lifetimes explicitly."
+  },
+  "generated_at": "2026-09-12T01:02:28.432371Z",
+  "evaluated_at": "2026-09-12T01:02:28.432371Z",
+  "source_updated_at": "2022-10-24T21:30:26Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "A maintainer reproduced Win+M and the reporter supplied diagnostics plus additional concrete cases. The pattern points to physical and remapped modifier state being mixed when OS-level shortcuts are evaluated.",
     "evidence": [
-      "Live issue body and 7 public comment(s) were read through 10/24/2022 21:30:26.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "Maintainer reproduced Alt(left)→Win(left) causing physical Alt+M not to invoke Win+M, while a direct Alt+M→Win+M shortcut works.",
+      "Win+W becomes Game Bar behavior and pen-generated Win+F18–F20 are observed as Alt after the swap.",
+      "Current Keyboard Manager has special Win-key and lower-level modifier reset paths, confirming modifier identity is handled asymmetrically."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "10/24/2022 21:30:26"
+    "recommended_action": "Reproduce on current code and design explicit physical-to-logical modifier state for single-key swaps across OS and synthetic-device input.",
+    "evaluated_at": "2026-09-12T01:02:28.432371Z",
+    "source_updated_at": "2022-10-24T21:30:26Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No linked fix establishes current coverage; the reproduced modifier-composition failure supports a focused plan."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Separate physical modifier identity from remapped logical modifier state",
+      "root_cause": "Bidirectional Win/Alt single-key remaps can suppress or restore physical modifier events in an order that leaves Windows shell shortcut detection seeing the original modifier for some synthetic or system-handled chords.",
+      "plan": [
+        "Add engine tests for simultaneous Win→Alt and Alt→Win mappings with M, W, and F18–F20 action keys.",
+        "Track the logical modifier produced by each physical modifier until its matching key-up, including injected device shortcuts.",
+        "Apply consistent Win-specific dummy/suppression handling without rewriting unrelated modifier state."
+      ],
+      "verification": [
+        "Run KeyboardManagerEngine tests for swapped modifiers and direct shortcut remaps.",
+        "Verify physical Alt+M invokes Win+M and physical Win+W behaves as Alt+W under the configured swap.",
+        "Verify pen-generated Win+F18–F20 are transformed consistently and all modifiers release."
+      ],
+      "confidence": {
+        "score": 61,
+        "level": "yellow",
+        "rationale": "The behavior is reproducible and the state boundary is clear, but current code has changed substantially since 0.58 and requires a fresh engine-level reproduction."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 18119: \"Win + M\" shortcut doesn't work after I remap Win -> Alt and Alt -> Win",
+    "summary": "Swapping left Win and left Alt as single-key remaps breaks some Windows-key combinations and causes synthetic device shortcuts such as pen Win+F18–F20 to be observed as Alt combinations.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.58.0 ### Running as admin - [ ] Yes ### Area(s) with issue? Keyboard Manager ### Steps to reproduce I'm using Logitech MX keys for Mac, and I don't quite like how the Win key is now next to the space key. So, I swap the keys. 1. Remap Win -> Alt 2. Remap Alt -> Win After I done this, pressing Win+M to minimize windows by physically pressing Alt+M doesn't do anything. But if I turn off keyboard manager (with the remap configurations still there), then I press Win.",
-      "The live issue has 7 public comment(s), with labels: Issue-Bug, Product-Keyboard Shortcut Manager, Priority-2, Needs-Team-Response, Status-Reproducible."
+      "The reporter uses a Mac-layout Logitech keyboard and swaps Win and Alt.",
+      "A maintainer reproduced the Win+M failure.",
+      "A direct shortcut remap works around Win+M, and explicit Alt+F18–F20 remaps work around pen shortcuts.",
+      "A bug report archive was attached in 2022."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "Single-key remap state is not consistently applied to shell-consumed or device-generated chords."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The direct shortcut workaround shows the target chord can be injected; the defect is in composing other keys with two simultaneously swapped modifiers.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 7 public comment(s) through 10/24/2022 21:30:26.",
-      "Latest public discussion: Here it is [PowerToysReport_2022-06-15-21-42-27.zip](https://github.com/microsoft/PowerToys/files/8910404/PowerToysReport_2022-06-15-21-42-27.zip). By the way, I figured out what went wrong with the surface pen. So, messing around with it, I discovered that the pen sends Win+F20 for single click, Win+F19 for double click and Win+F18 for click and hold. These three no longer work because under the ."
+      "Read the full body and seven comments through 2022-10-24T21:30:26Z.",
+      "Reviewed current KeyboardEventHandlers.cpp modifier special cases and reset paths.",
+      "No linked fix or duplicate is present in the timeline, and the issue remains labeled Status-Reproducible."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+      "id": "design-18119",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce swapped Win and Alt chords",
+      "reproduce": {
+        "title": "Verify logical modifier composition",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "Configure Win(left) → Alt(left) and Alt(left) → Win(left)",
+          "Open ordinary desktop windows; optionally connect a pen that emits Win+F18–F20"
+        ],
+        "setup": [],
+        "steps": [
+          "Press physical Alt(left)+M and verify Windows minimizes all windows.",
+          "Press physical Win(left)+W and record the logical shortcut observed.",
+          "If available, trigger pen F18–F20 shortcuts and inspect emitted modifiers.",
+          "Release all keys and verify no modifier remains logically pressed."
+        ],
+        "expected_result": "Every chord uses the remapped logical modifier consistently and key-up restores neutral state."
       }
     }
   ],

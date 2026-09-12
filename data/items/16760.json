@@ -6,62 +6,84 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "01/18/2023 16:33:46",
+  "author": "bersbersbers",
+  "confidence": "Green",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The current AutoSuggestBox receives an unfiltered MRU list."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Filter suggestions and preserve explicit dismissal."
+  },
+  "generated_at": "2026-09-12T01:02:28.538802Z",
+  "evaluated_at": "2026-09-12T01:02:28.538802Z",
+  "source_updated_at": "2023-01-18T16:33:46Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "Current XAML and initialization code directly confirm the behavior: SearchMRU is populated with every non-empty history entry and assigned as the AutoSuggestBox ItemsSource without filtering.",
     "evidence": [
-      "Live issue body and 1 public comment(s) were read through 01/18/2023 16:33:46.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "The screenshot/report shows unrelated history such as “tonga” while typing “cou.”",
+      "Current MainWindow.xaml binds SearchMRU directly to the AutoSuggestBox ItemsSource.",
+      "MainWindow::InitAutoComplete appends every stored MRU string with no prefix or fuzzy filtering."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "01/18/2023 16:33:46"
+    "recommended_action": "Approve a focused design to filter MRU suggestions by current search text and make dismissal behavior non-obstructive.",
+    "evaluated_at": "2026-09-12T01:02:28.538802Z",
+    "source_updated_at": "2023-01-18T16:33:46Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No existing fix filters the displayed MRU list; current source directly matches the reported behavior."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Filter PowerRename MRU suggestions before presenting them",
+      "root_cause": "The AutoSuggestBox receives the entire persisted search MRU as its ItemsSource. Because the list is not filtered by current Text, unrelated entries are displayed and normal AutoSuggestBox text changes reopen the popup.",
+      "plan": [
+        "Maintain a full MRU store but expose a filtered observable list based on the current search text, using case-insensitive prefix or contains semantics agreed with UX.",
+        "On TextChanged, update suggestions without changing the user’s text or selection; preserve explicit dismissal until the next meaningful query or focus transition.",
+        "Keep the existing autocomplete-enabled setting and MRU persistence behavior."
+      ],
+      "verification": [
+        "Add UI coverage that “cou” does not offer unrelated “tonga” and does offer matching history.",
+        "Verify Escape closes suggestions without altering the search and typing can intentionally reopen only with matching items.",
+        "Verify disabling autocomplete shows no history and rename preview updates normally."
+      ],
+      "confidence": {
+        "score": 94,
+        "level": "green",
+        "rationale": "The unfiltered ItemsSource is directly visible in current source and precisely matches the reported unrelated suggestions."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 16760: Power Rename Auto Complete shows entries unrelated to typed text and reopens after every keypress",
+    "summary": "PowerRename binds the search AutoSuggestBox directly to the complete MRU list, so unrelated previous terms are offered for any current input and the suggestion popup naturally reopens after each text change.",
     "known_information": [
-      "The live issue body states: I would like to point out a weird thing that no one has mentioned yet: the \"autocomplete\" dropdown shows entries which are completely irrelevant to what has been typed. Why is \"tonga\" proposed when typing \"cou\"? I find this dropdown highly distracting because it hides a lot of other UI elements (including the replacement text when I'm in the find text box). I can close it, but it will reopen upon hitting the next key. _Originally posted by @bersbersbers in https://github.com/microsoft/PowerToys/.",
-      "The live issue has 1 public comment(s), with labels: Issue-Bug, Product-PowerRename, Needs-Triage."
+      "The issue originated from #15594 but remained after that obscured-button issue was closed.",
+      "The dropdown contains unrelated prior terms and reopens after each keypress.",
+      "Current settings still include an autocomplete toggle."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "Filtering the displayed MRU resolves the correctness complaint; popup dismissal semantics may need a small UX decision."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The current implementation has no query filter between stored MRU values and displayed suggestions, providing a concrete root cause and narrow change.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 1 public comment(s) through 01/18/2023 16:33:46.",
-      "Latest public discussion: I verified again to make sure closing #15594 did not close this issue - and (as expected), it did not. In v0.572, Auto Complete still shows entries unrelated to the typed text and, when closed, reopens after every keypress.."
+      "Read the full issue and follow-up through 2023-01-18T16:33:46Z.",
+      "Reviewed PowerRename MainWindow.xaml and MainWindow.xaml.cpp at commit 33e4ef46e5db77a256818a917d65103c9b7398fa.",
+      "Verified #15594 was closed as completed, but this reporter explicitly confirmed the unrelated-entry behavior persisted afterward."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
-      }
+      "id": "design-16760",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
     }
   ],
   "title": "Power Rename Auto Complete shows entries unrelated to typed text and reopens after every keypress",

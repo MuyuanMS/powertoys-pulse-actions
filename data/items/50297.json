@@ -17,8 +17,8 @@
     "status": "needs_information",
     "rationale": "The attachment maps the laptop panel to GDI device DISPLAY3, while the report compares it with Windows Identify ordinal 1. Current code persists stable monitor paths and already retries, debounces, and conservatively reconciles topology changes. A new reassociation rule without transition evidence could move customized Dock settings to the wrong display.",
     "recommended_action": "Request a controlled laptop-only to hub-connected capture of enabled stable IDs, per-monitor toggles, bounds, and physical Dock location; then implement only a deterministic identity correlation if the failure reproduces.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "09/01/2026 19:14:48",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-09-01T19:14:48Z",
     "evidence": [
       "The upstream report has no comments, assignee, or linked implementation in its discussion.",
       "The attachment includes a screenshot, diagnostic ZIP, Command Palette logs, monitor inventory, and settings.",
@@ -26,7 +26,7 @@
       "MonitorService.FormatDisplayName formats a GDI device name as Display N when no friendly name is available.",
       "Persisted Dock configurations use MonitorInfo.StableId rather than DisplayName.",
       "The inspected code already contains retry, debounce, main-window notification forwarding, and conservative reconciliation for topology changes.",
-      "Live issue metadata and discussion were re-read through 09/01/2026 19:14:48."
+      "On 2026-09-12, the complete live body, all 0 public comment(s), labels, assignees, and link timeline were re-read through 2026-09-01T19:14:48Z."
     ]
   },
   "fix_assessment": {
@@ -76,120 +76,21 @@
       "Read the complete upstream issue and its screenshot and diagnostic archive.",
       "Inspected MonitorService, DockWindowManager, MainWindow notification flow, MonitorConfigReconciler, SettingsViewModel, and DockMultiMonitorTests.",
       "Reviewed local history and the existing topology-change implementation and tests.",
-      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) through 09/01/2026 19:14:48."
+      "Revalidated the live body, all 0 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-09-01T19:14:48Z."
     ],
     "information_gaps": [
       {
         "information": "Before-and-after enabled stable monitor identity, per-monitor Dock toggle state, monitor bounds, and physical Dock location across laptop-only to hub-connected transition.",
         "why_needed": "This distinguishes a cosmetic GDI label mismatch from an actual persisted configuration or window-target reassociation.",
-        "how_to_collect": "Enable the Dock only on the physical laptop panel; capture Windows Identify and Command Palette toggles; disconnect and reconnect the hub; capture the same data after each topology settles."
+        "how_to_collect": "Enable the Dock only on the physical laptop panel; capture Windows Identify and Command Palette toggles; disconnect and reconnect the hub; capture the same data after each topology settles.",
+        "evidence_type": "monitor_topology"
       },
       {
         "information": "Fresh diagnostic immediately after a reproduced move or enabled-monitor change.",
         "why_needed": "The supplied archive does not record the topology transition or the persisted monitor configuration at the time of failure.",
-        "how_to_collect": "Immediately after reproducing the move, add a comment containing /bugreport."
+        "how_to_collect": "Immediately after reproducing the move, add a comment containing /bugreport.",
+        "evidence_type": "bugreport_zip"
       }
-    ]
-  },
-  "design": {
-    "root_cause": "Confirmed label mismatch: MonitorService.FormatDisplayName converts the laptop's GDI device name \\\\.\\DISPLAY3 into Display 3, while Windows Identify uses a different ordinal system. Physical movement is conditional and unproven; if reproduced, the suspected defect is a topology-time reassociation of persisted DockMonitorConfig.",
-    "evidence": [
-      "Observed in issue: the Dock moves after hub connection and the laptop is shown as Display 3 versus Windows Display 1.",
-      "Observed in attachment: laptop maps to \\\\.\\DISPLAY3; active devices include DISPLAY1, DISPLAY2, DISPLAY3, DISPLAY21.",
-      "Observed in code: fallback labels are derived from GDI names; persisted configs use StableId.",
-      "Observed in code/history: current topology handling retries incomplete identity maps, debounces refresh, forwards notifications from MainWindow, and avoids ambiguous secondary fuzzy matching.",
-      "Inferred: any new production fix must be based on a captured deterministic identity relationship, not display ordinals."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs",
-        "role": "Enumerates monitor metadata and supplies stable identity and fallback labels.",
-        "symbols": [
-          "MonitorService.GetMonitors",
-          "MonitorService.NotifyMonitorsChanged",
-          "MonitorService.BuildDisplayInfoMapWithRetry",
-          "MonitorService.FormatDisplayName"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Dock/DockWindowManager.cs",
-        "role": "Debounces topology changes and synchronizes Dock windows to reconciled settings.",
-        "symbols": [
-          "DockWindowManager.OnMonitorsChanged",
-          "DockWindowManager.SyncDocksToSettingsCore",
-          "DockWindowManager.CreateDockForMonitor"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
-        "role": "Matches stable IDs, migrates legacy IDs, recovers the primary, and creates conservative defaults.",
-        "symbols": [
-          "MonitorConfigReconciler.Reconcile"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/SettingsViewModel.cs",
-        "role": "Populates the Settings monitor list and persists reconciled configurations.",
-        "symbols": [
-          "SettingsViewModel.PopulateMonitorConfigs"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DockMultiMonitorTests.cs",
-        "role": "Existing unit coverage for monitor reconciliation and topology edge cases.",
-        "symbols": [
-          "DockMultiMonitorTests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "step": 1,
-        "file": "Manual evidence capture",
-        "symbol": "Dock transition sequence",
-        "current_flow": "Topology notifications invalidate and later reconcile the monitor cache and persisted configs.",
-        "change": "Capture identity, config, toggle, bounds, and physical target before and after each settled hub transition; make no production change until the failing relationship is known.",
-        "pseudo_diff": "before = enabled configs + monitor identities; transition = disconnect/reconnect settled snapshots; after = same records; assert physical laptop target remains paired with its stable identity.",
-        "handling": "Use /bugreport immediately after a reproduced failure; never infer identity from Display N.",
-        "tests": "Controlled multi-monitor manual repro is required."
-      },
-      {
-        "step": 2,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Settings/MonitorConfigReconciler.cs",
-        "symbol": "MonitorConfigReconciler.Reconcile",
-        "current_flow": "Exact stable match, legacy GDI migration, primary-only recovery, disabled defaults for unmatched secondary monitors.",
-        "change": "Only if evidence proves it: add a unique Display Configuration identity correlation before default creation; preserve all user fields and retain ambiguity conservatively.",
-        "pseudo_diff": "exact stable ID -> legacy migration -> proven unique transition correlation; unique => move one config preserving Enabled/Side/Bands; ambiguous => retain stale config + disabled default.",
-        "handling": "No ordinal, enumeration, bounds-only, or friendly-name matching; keep immutable no-op behavior.",
-        "tests": "Add deterministic one-to-one transition and ambiguous-secondary tests to DockMultiMonitorTests."
-      },
-      {
-        "step": 3,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/Services/MonitorService.cs",
-        "symbol": "MonitorService.FormatDisplayName",
-        "current_flow": "Friendly name is preferred; otherwise GDI DISPLAY number is shown.",
-        "change": "Optional UX-only follow-up: use a neutral unavailable-identity label or explicitly document the label as a GDI identifier; do not change StableId or placement.",
-        "pseudo_diff": "friendly != empty ? friendly : \"Monitor (device identity unavailable)\"; append primary marker.",
-        "handling": "Requires UX approval and must remain display-only.",
-        "tests": "Unit-test fallback label and primary suffix."
-      }
-    ],
-    "verify": [
-      "Build the existing CmdPal ViewModels unit-test project using the repository build script; run with Visual Studio Test Explorer or vstest.console.exe, not dotnet test.",
-      "Reproduce with the Dock enabled only on the laptop panel and a hub providing multiple displays.",
-      "Verify the same stable identity, enabled setting, custom bands, side, and physical laptop Dock target after reconnect.",
-      "If it fails, preserve the transition capture and turn it into the reconciliation regression fixture before implementation."
-    ],
-    "risks": [
-      "Unsafe fuzzy matching can move customized Dock settings to the wrong monitor.",
-      "Display Configuration data can be transient during topology changes.",
-      "Changing labels may reduce familiarity without fixing placement."
-    ],
-    "alternatives": [
-      "Treat GDI numbers as Windows Identify ordinals — rejected because the attachment disproves equivalence.",
-      "Match unmatched secondary monitors by ordinal, enumeration order, bounds, or name — rejected as ambiguous and unsafe.",
-      "Add a persisted display ordinal — rejected because it is not stable identity.",
-      "Revert current retry/debounce/reconciliation behavior — rejected because it addresses the transient topology class already."
     ]
   },
   "mirror": {
@@ -217,7 +118,7 @@
       "comment": {
         "target": "issue",
         "number": 50297,
-        "body": "Thanks for the screenshot and diagnostic ZIP. The archive maps the laptop panel to the GDI device `\\\\.\\\\DISPLAY3`; that identifier is not the same numbering system shown by Windows Settings. To determine whether a placement regression remains, please enable the Dock only on the physical laptop panel, capture the per-monitor toggles and physical Dock location, disconnect and reconnect the hub, and capture the same information after each transition settles. If the enabled monitor changes or the Dock moves, please add a comment containing `/bugreport` immediately afterward."
+        "body": "Thanks for the screenshot and attached ZIP. It maps the laptop panel to GDI device `\\\\.\\\\DISPLAY3`, which is not the same numbering system shown by Windows Settings. To determine whether there is an actual placement regression, please provide:\n\n- **Topology transition comparison:** Please enable the Dock only on the physical laptop panel, capture Windows Identify, the per-monitor Dock toggles, monitor bounds, and the physical Dock location, then disconnect and reconnect the hub and capture the same information after each transition settles. This distinguishes a cosmetic GDI label mismatch from persisted configuration or target reassociation.\n- **Fresh report after a failure:** If the enabled monitor changes or the Dock moves, immediately add a comment containing `/bugreport`. The generated ZIP will capture the topology transition and persisted monitor configuration at the failure time."
       },
       "note": "Draft only; this worker does not post upstream."
     },
@@ -236,9 +137,9 @@
   ],
   "schemaVersion": 5,
   "stage": "triage_revalidated",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "09/01/2026 19:14:48",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-09-01T19:14:48Z",
   "title": "Command Pallet Multiple Displays",
   "url": "https://github.com/microsoft/PowerToys/issues/50297",
   "labels": [

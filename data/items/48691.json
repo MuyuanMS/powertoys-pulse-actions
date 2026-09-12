@@ -6,62 +6,131 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/27/2026 16:45:54",
+  "author": "maddie-j",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-08-27T16:45:54Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "reproducible",
+    "rationale": "Multiple users provide concrete Win+Space outcomes, including normal failure, success only while Start is open, and success only after a second Space. The two CmdPal hotkey implementations provide a focused maintainer reproduction matrix even though the exact failing branch is not confirmed.",
     "evidence": [
-      "Live issue body and 7 public comment(s) were read through 08/27/2026 16:45:54.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "PowerToys Run accepts Win+Space on the same machine, while Command Palette can lose the chord to the Windows input switcher.",
+      "One reporter initially succeeded by enabling the low-level keyboard hook; later reporters say the option does not help or that two Space presses are required.",
+      "MainWindow.SetupHotkey chooses between RegisterHotKey and CmdPalKeyboardService based on UseLowLevelGlobalHotkey.",
+      "The low-level KeyboardListener samples modifier state with GetAsyncKeyState, invokes on key-down, injects a dummy key-up, and swallows only the matched key-down.",
+      "Merged PR 50428 corrected the setting description but did not change hotkey behavior.",
+      "On 2026-09-12, the complete live body, all 7 public comment(s), labels, assignees, and link timeline were re-read through 2026-08-27T16:45:54Z."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/27/2026 16:45:54"
+    "recommended_action": "Run the current-main Win+Space matrix across both registration modes and capture one affected user's current settings/diagnostics before selecting the exact hook fix.",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-08-27T16:45:54Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No linked PR fixes the inconsistent Win+Space activation. A repository change is likely needed in registration-state handling or the low-level hook's complete chord suppression, but targeted reproduction must identify which path fails."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Make CmdPal Win+Space registration and low-level chord handling deterministic",
+      "root_cause": "Hypothesis: CmdPal either fails to take ownership of the OS-reserved Win+Space chord in the selected registration mode or incompletely consumes the chord, allowing the Windows input switcher and CmdPal state to diverge. The reports do not yet distinguish registration failure from low-level key sequencing.",
+      "plan": [
+        "Add focused diagnostics around SetupHotkey that record the selected mode and RegisterHotKey success/failure without logging user text.",
+        "Verify settings changes always clear the old registration and activate the selected registration path immediately.",
+        "For the confirmed low-level failure, track the matched chord through key-down and key-up and suppress only the complete registered sequence, preserving unrelated Win shortcuts.",
+        "Add regression coverage for Win+Space from the desktop, with Start open, after toggling the low-level option, and after changing keyboard layouts."
+      ],
+      "verification": [
+        "Bind CmdPal to Win+Space and confirm one chord opens it without switching the Windows input language.",
+        "Repeat with low-level hook off and on, before and after restarting CmdPal, and with Start open and closed.",
+        "Confirm default Win+Alt+Space and unrelated Windows-key shortcuts continue to work."
+      ],
+      "confidence": {
+        "score": 47,
+        "level": "red",
+        "rationale": "The ownership boundary and relevant code are clear, but conflicting user outcomes do not identify whether registration, settings refresh, modifier sampling, or key-up handling is responsible."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 48691: Cannot use 'Win + Space' when swapping from PowerToys Run to Command Palette",
+    "summary": "Command Palette inconsistently loses a user-configured Win+Space activation chord to the Windows input switcher, unlike PowerToys Run; affected users report mode-, focus-, or repeat-dependent behavior.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.100.0 ### Installation method PowerToys auto-update ### Area(s) with issue? Command Palette ### Steps to reproduce When using PowerToys Run, the command to open that I had previously set up was `Win + Space`. I can't remember if that was the default or what I set it to, but I like that it mostly match the muscle memory from opening the MacOS Spotlight Search on my work computer. This command was working just fine. However, noticing that Command Palette has been .",
-      "The live issue has 7 public comment(s), with labels: Issue-Bug, Product-PowerToys Run, Needs-Triage, Product-Command Palette."
+      "The original report used PowerToys 0.100.0 on Windows 11 Insider build 26220.8680.",
+      "PowerToys Run opened with Win+Space on the same system, but Command Palette did not.",
+      "One user succeeded after enabling the low-level hook; two later users report failure despite the option, including a double-Space workaround.",
+      "Current CmdPal has separate RegisterHotKey and low-level keyboard-hook paths."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "The Windows input switcher receives at least part of the chord when CmdPal does not fully register or suppress it.",
+      "Start-menu and double-Space differences may indicate registration timing or incomplete key-sequence consumption rather than a static unsupported shortcut."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The report is sufficiently concrete for maintainers to reproduce, but the contradictory low-level-hook outcomes make a specific patch premature. Instrumenting registration and testing the complete chord lifecycle should separate the two plausible branches.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 7 public comment(s) through 08/27/2026 16:45:54.",
-      "Latest public discussion: Having the same issue starting yesterday (Aug 26th). I've had the Command Palette set to Win + Space for a long time, but now I have to press Win + Space + Space to get the Palette to open. Rebinding to the default Win + Alt + Space works, but the shortcut is pretty wired into my muscle memory now so I'd like to keep it as Win + Space. I do have the Use low-level keyboard hook option enabled, but ."
+      "Read the complete body, all seven comments, screenshots, labels, assignees, and timeline.",
+      "Inspected MainWindow.SetupHotkey, SettingsModel.UseLowLevelGlobalHotkey, CmdPalKeyboardService::KeyboardListener, and the current Settings description.",
+      "Reviewed PR 38250, which added the low-level path for OS-reserved chords, and PR 50428, which only corrected its description."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
+        "evidence_type": "powertoys_version",
+        "information": "Exact current PowerToys version for a machine that still needs two Space presses or still opens the Windows input switcher.",
+        "why_needed": "The reports span older builds and the latest discussion does not identify the affected CmdPal implementation revision.",
+        "how_to_collect": "Report the version shown in PowerToys About and retest on the latest stable release."
+      },
+      {
+        "evidence_type": "configuration_export",
+        "information": "CmdPal activation shortcut, low-level hook state, fullscreen/busy suppression settings, and active Windows keyboard layouts.",
+        "why_needed": "These values select the registration path and can explain whether Windows still owns Win+Space.",
+        "how_to_collect": "Share the relevant CmdPal activation settings and list the active keyboard layouts; remove unrelated personal configuration."
       },
       {
         "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
+        "information": "Fresh diagnostics captured immediately after one failed Win+Space attempt and any successful second attempt.",
+        "why_needed": "Registration and activation logs can distinguish a missing hotkey registration from a callback or summon failure.",
+        "how_to_collect": "Reproduce the single-press failure, then immediately add a comment containing /bugreport before restarting PowerToys."
       }
     ]
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+      "id": "approve-design-48691",
+      "type": "approve_design",
+      "label": "Approve CmdPal Win+Space hook investigation",
+      "design": {
+        "title": "Make OS-reserved CmdPal shortcuts deterministic"
       }
+    },
+    {
+      "id": "reproduce-48691",
+      "type": "reproduce",
+      "label": "Reproduce CmdPal Win+Space registration modes",
+      "reproduce": {
+        "module": "Command Palette",
+        "version_requirement": "Current main or latest stable PowerToys",
+        "prerequisites": [
+          "At least two Windows keyboard layouts so Win+Space has an OS action.",
+          "Command Palette enabled and PowerToys Run disabled."
+        ],
+        "steps": [
+          "Set Command Palette activation to Win+Space with the low-level hook disabled; restart CmdPal and press Win+Space once from the desktop.",
+          "Repeat with Start open and record whether CmdPal or the input switcher appears.",
+          "Enable the low-level hook, restart CmdPal, and repeat single-press and double-Space attempts.",
+          "Toggle the setting once more without restarting and repeat to test re-registration."
+        ],
+        "expected": "One Win+Space chord opens Command Palette and does not switch the Windows input language in the supported low-level mode."
+      }
+    },
+    {
+      "id": "request-info-48691",
+      "type": "request_info",
+      "label": "Request current CmdPal shortcut capture",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 48691,
+        "body": "Thanks for the detailed Win+Space comparisons, including the Start-menu and double-Space behavior. PowerToys Run worked on the original machine, while later reports differ on whether the low-level hook or a second Space press helps. Could an affected user provide:\n\n1. **Current version:** Please retest on the latest stable release and report the PowerToys version shown in About. This identifies which Command Palette activation implementation is affected.\n2. **Activation configuration:** Please share the Command Palette shortcut, low-level keyboard hook state, fullscreen/busy suppression settings, and active Windows keyboard layouts. These settings determine whether Windows or Command Palette owns Win+Space and which registration path runs.\n3. **Fresh diagnostics:** Please reproduce one failed single Win+Space press, then immediately add a comment containing `/bugreport` before restarting PowerToys. This will distinguish failed hotkey registration from a low-level-hook or summon-sequencing failure."
+      },
+      "note": "Draft only; no upstream comment is posted."
     }
   ],
   "title": "Cannot use 'Win + Space' when swapping from PowerToys Run to Command Palette",

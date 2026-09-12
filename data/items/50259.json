@@ -20,8 +20,8 @@
     "status": "needs_information",
     "rationale": "The visible warning is expected while the Settings session is elevated, but the report does not prove whether that session remains elevated after a full exit and normal restart. Without that distinction, a code design could weaken an intentional WinUI drag-and-drop safeguard instead of addressing a proven startup-elevation defect.",
     "recommended_action": "Reproduce after a full tray exit/restart, checking the newly launched Settings session specifically; request /bugreport only if it remains elevated.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/31/2026 01:01:24",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-08-31T01:01:24Z",
     "evidence": [
       "The body reports PowerToys 0.101.2362 installed with WinGet and quotes the Mouse Without Borders elevated drag-and-drop restriction message.",
       "The reporter states disabling the Run as administrator toggle did not restore layout editing, but no full tray-exit/restart check of the Settings session's elevation or diagnostic archive is present.",
@@ -29,7 +29,7 @@
       "The source comment points to a WinUI elevated-drag crash workaround; this makes the layout lock intentional while elevated.",
       "Related Issue 27092 requests easier restart into non-admin mode or elevated layout support, but it is an open enhancement with no linked fix or owner for this report.",
       "Independent adversary review found no blocking objection to an evidence-limited reproduce and request-information outcome.",
-      "Live issue metadata and discussion were re-read through 08/31/2026 01:01:24."
+      "On 2026-09-12, the complete live body, all 1 public comment(s), labels, assignees, and link timeline were re-read through 2026-08-31T01:01:24Z."
     ]
   },
   "fix_assessment": {
@@ -59,107 +59,22 @@
       "src/runner/general_settings.cpp records process elevation, while src/runner/main.cpp reads the Run as administrator preference during startup.",
       "The existing bug-report tool collects settings, logs, GPO state, and Compatibility flags for PowerToys executables.",
       "Independent adversary review found the evidence-limited outcome sound; it required checking the Settings session rather than an arbitrary PowerToys child process.",
-      "Fast revalidation read the live issue body, labels, assignees, and 1 public comment(s) through 08/31/2026 01:01:24."
+      "Revalidated the live body, all 1 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-08-31T01:01:24Z."
     ],
     "information_gaps": [
       {
         "information": "Whether the newly launched Settings session remains elevated after fully exiting from the tray, confirming no PowerToys processes remain, and restarting normally.",
         "why_needed": "Distinguishes the active elevated Settings session from a persistent startup/elevation defect.",
-        "how_to_collect": "Exit PowerToys from the tray, verify no PowerToys processes remain in Task Manager, start PowerToys normally with Run as administrator disabled, open Settings, and report whether Settings still identifies itself as elevated and whether PowerToys.exe and PowerToys.Settings.exe are elevated."
+        "how_to_collect": "Exit PowerToys from the tray, verify no PowerToys processes remain in Task Manager, start PowerToys normally with Run as administrator disabled, open Settings, and report whether Settings still identifies itself as elevated and whether PowerToys.exe and PowerToys.Settings.exe are elevated.",
+        "evidence_type": "install_scope"
       },
       {
         "information": "A fresh diagnostic archive and elevation mechanism details if Settings remains elevated after that clean restart.",
         "why_needed": "The archive records startup configuration, settings, GPO state, and Compatibility flags needed to separate configuration, policy, and startup paths.",
-        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport and attach the generated ZIP. State whether a Compatibility-tab Run this program as an administrator override, scheduled task, or organizational policy is configured."
+        "how_to_collect": "Immediately after reproducing, add a comment containing /bugreport and attach the generated ZIP. State whether a Compatibility-tab Run this program as an administrator override, scheduled task, or organizational policy is configured.",
+        "evidence_type": "bugreport_zip"
       }
     ]
-  },
-  "design": {
-    "status": "needs_information",
-    "root_cause": "Not established. The confirmed mechanism is an intentional guard: the view model sets each device tile's CanDragDrop to false when the active Settings session is elevated because elevated WinUI drag-and-drop can crash. Whether the report reflects an unexpected persistent-elevation startup path is unproven.",
-    "evidence": [
-      {
-        "kind": "observed",
-        "detail": "The issue reports the exact elevated drag-and-drop warning after the reporter disabled Run as administrator, but has no diagnostic archive or post-restart elevation observation."
-      },
-      {
-        "kind": "observed",
-        "detail": "MouseWithoutBordersViewModel.cs reads GeneralSettingsConfig.IsElevated, sets CanDragDrop to !IsElevated, and shows the warning only for an enabled elevated session."
-      },
-      {
-        "kind": "observed",
-        "detail": "MouseWithoutBordersPage.xaml binds AllowDrop and CanDrag to CanDragDrop; the source comments document the elevated WinUI crash risk."
-      },
-      {
-        "kind": "observed",
-        "detail": "runner/general_settings.cpp records process elevation, while runner/main.cpp reads the Run as administrator preference during startup."
-      },
-      {
-        "kind": "inferred",
-        "detail": "A setting change cannot lower the token of the already running process; a clean restart is the discriminating test."
-      }
-    ],
-    "affected_files": [
-      {
-        "path": "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
-        "role": "Builds device-layout view models and applies the elevated-session drag-and-drop guard.",
-        "symbols": [
-          "MouseWithoutBordersViewModel.IsElevated",
-          "MouseWithoutBordersViewModel.DeviceViewModel.CanDragDrop",
-          "MouseWithoutBordersViewModel.ShowInfobarCannotDragDropAsAdmin"
-        ]
-      },
-      {
-        "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/MouseWithoutBordersPage.xaml",
-        "role": "Binds device tiles' AllowDrop and CanDrag properties to the view-model guard.",
-        "symbols": [
-          "Device layout Border bindings"
-        ]
-      },
-      {
-        "path": "src/runner/general_settings.cpp",
-        "role": "Records the running process elevation state consumed by Settings.",
-        "symbols": [
-          "General settings elevation initialization"
-        ]
-      },
-      {
-        "path": "src/runner/main.cpp",
-        "role": "Reads the persisted Run as administrator preference for a later launch.",
-        "symbols": [
-          "Runner startup elevation path"
-        ]
-      }
-    ],
-    "implementation_steps": [],
-    "verify": [
-      "Exit PowerToys from the tray and verify no PowerToys processes remain.",
-      "With Run as administrator disabled, start PowerToys normally, open Settings and Mouse Without Borders, and record whether the Settings session is elevated.",
-      "Try moving a layout device: it must be enabled only when Settings is not elevated; the guard must remain active when it is elevated.",
-      "If the fresh Settings session is unexpectedly elevated, reproduce once more and collect /bugreport immediately with Compatibility, scheduled-task, and policy details."
-    ],
-    "risks": [
-      "Bypassing the current guard would re-enable a documented WinUI elevated drag-and-drop crash path.",
-      "Treating the persisted preference as proof of the active token state could diagnose an intentional state transition as a product bug."
-    ],
-    "alternatives": [
-      {
-        "option": "Remove the elevated drag-and-drop restriction.",
-        "rejected_because": "It does not establish or repair the claimed persistent elevation and knowingly re-enables the documented crash condition."
-      },
-      {
-        "option": "Design a restart-to-non-elevated UI change now.",
-        "rejected_because": "That is related enhancement scope represented by Issue 27092, not a confirmed fix for this report."
-      }
-    ],
-    "adversary": {
-      "rounds": 1,
-      "verdict": "No blocking objections.",
-      "non_blocking_notes": [
-        "Check the active Settings session explicitly, not only a persisted preference or another PowerToys child process.",
-        "Request explicit Compatibility, scheduled-task, and policy evidence with any diagnostic archive."
-      ]
-    }
   },
   "actions": [
     {
@@ -173,7 +88,7 @@
         "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50259,
-        "body": "Thanks for the clear PowerToys 0.101.2362 report and exact Mouse Without Borders warning. The layout editor intentionally disables WinUI drag-and-drop while the running Settings session is elevated, and turning off the setting does not lower an already-running process. Please fully exit PowerToys from the tray, confirm in Task Manager that no PowerToys processes remain, restart normally with `Run as administrator` disabled, open Settings, and tell us whether Settings still identifies itself as elevated; please also report the elevation state of PowerToys.exe and PowerToys.Settings.exe. If the newly started Settings session is still elevated, reproduce the locked layout once and then add a comment containing `/bugreport` immediately so the generated ZIP captures that startup state. Please also mention whether a Compatibility-tab Run this program as an administrator override, scheduled task, or organizational policy could be forcing elevation."
+        "body": "Thanks for the clear PowerToys 0.101.2362 report and exact Mouse Without Borders warning. The layout editor intentionally disables WinUI drag-and-drop while the running Settings session is elevated, and turning off the setting does not lower an already-running process. Please provide:\n\n- **Clean-restart elevation result:** Please fully exit PowerToys from the tray, confirm in Task Manager that no PowerToys processes remain, restart normally with `Run as administrator` disabled, open Settings, and report whether Settings still identifies itself as elevated and whether `PowerToys.exe` and `PowerToys.Settings.exe` are elevated. This distinguishes the existing elevated session from a persistent startup defect.\n- **Startup diagnostics if still elevated:** If the newly started Settings session remains elevated, reproduce the locked layout once, then immediately add a comment containing `/bugreport` and attach the generated ZIP. Please also state whether a Compatibility-tab **Run this program as an administrator** override, scheduled task, or organizational policy is configured. This lets maintainers separate settings, compatibility, policy, and startup-path causes."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     },
@@ -210,9 +125,9 @@
   "summary": "Mouse Without Borders intentionally disables layout drag-and-drop while the active Settings session is elevated; a fresh Settings-session elevation check and, if needed, targeted diagnostics are required before a code fix can be designed.",
   "schemaVersion": 5,
   "stage": "triage_revalidated",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/31/2026 01:01:24",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-08-31T01:01:24Z",
   "title": "[Mouse Without Borders] Impossible to run without elevated privileges, Impossible to change layout",
   "url": "https://github.com/microsoft/PowerToys/issues/50259",
   "labels": [

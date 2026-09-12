@@ -2,66 +2,84 @@
   "schemaVersion": 5,
   "number": 49037,
   "kind": "issue",
-  "track": "fix",
+  "track": "triage",
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/27/2026 22:52:24",
+  "author": "ZL114514",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-08-27T22:52:24Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "rationale": "The original 0.100.2 report describes Alt interception during a non-drag click, and merged PR 49121 later changed Grab and Move specifically to pass modifier clicks through when no drag occurs. The later confirmation does not state its PowerToys version or whether that fix is present.",
     "evidence": [
-      "Live issue body and 1 public comment(s) were read through 08/27/2026 22:52:24.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "The reporter says holding either Alt key while clicking PowerShell's drop-down prevents PowerShell from receiving Alt+click.",
+      "A second user reports the same interception while Alt-dragging files to the desktop, where Windows should create shortcuts.",
+      "GrabAndMove::KeyboardProc deliberately absorbs Alt when shouldAbsorbAlt is enabled and replays it when no drag is consumed.",
+      "Merged PR 49121 changed the pending-click path so Alt/Win click and right-click pass through when no drag begins; earlier PRs 47052 and 47261 addressed stuck/replayed modifier state.",
+      "On 2026-09-12, the complete live body, all 1 public comment(s), labels, assignees, and link timeline were re-read through 2026-08-27T22:52:24Z."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/27/2026 22:52:24"
+    "recommended_action": "Ask both scenarios to be retested on the current release with the Alt-absorption setting recorded before deciding whether the merged click-passthrough fix is sufficient.",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-08-27T22:52:24Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "existing_fix",
+    "rationale": "Merged PR 49121 directly implements modifier-click passthrough for the code path described by the issue, while PRs 47052 and 47261 harden related Alt state handling. Current-version verification is still missing.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/49121",
+      "https://github.com/microsoft/PowerToys/pull/47261",
+      "https://github.com/microsoft/PowerToys/pull/47052"
+    ]
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Live revalidation of Issue 49037: Alt key conflict in Grab and Move with Powershell",
+    "summary": "Grab and Move can consume Alt from ordinary application or desktop clicks, preventing PowerShell split-pane clicks and Alt-drag shortcut creation.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.100.2 ### Installation method PowerToys auto-update ### Area(s) with issue? Grab And Move ### Steps to reproduce click the downside arrow button in Powershell and holding Alt key (left and right both produced) ### ✔️ Expected Behavior alt key shouldn't block the powershell alt listener and i can still use alt+click to open split window ### ❌ Actual Behavior <img width=\"1034\" height=\"742\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/4c25d9fa-50a3-4.",
-      "The live issue has 1 public comment(s), with labels: Issue-Bug, Needs-Triage, Product-Grab And Move."
+      "The original report used PowerToys 0.100.2 and reproduced with both left and right Alt in PowerShell.",
+      "A later commenter reproduced a related Alt-drag failure on the Windows desktop but did not provide a PowerToys version.",
+      "Current source exposes a shouldAbsorbAlt option and a low-level keyboard hook that may swallow and replay Alt.",
+      "PR 49121 merged a dedicated no-drag modifier-click passthrough path after the original report."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "The original PowerShell case is likely covered by PR 49121 if the click does not cross the drag threshold.",
+      "The desktop Alt-drag case may be intentional Grab and Move activation or a remaining threshold/state bug, depending on pointer movement and the current setting."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "Existing merged work overlaps the exact input path, so starting a competing design would be premature. A current-version, setting-specific comparison will determine whether to close as handled or investigate drag-threshold and replay state further.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 1 public comment(s) through 08/27/2026 22:52:24.",
-      "Latest public discussion: Grab and Move conflicts with dragging files to the windows desktop causing Alt key to be ignored. Files are always moved instead of shortcuts created. So the issue is not just with PowerShell."
+      "Read the complete issue body, both user reports, labels, assignees, and timeline.",
+      "Inspected GrabAndMove::KeyboardProc, ReplayAbsorbedModifier, ReplayPendingClick, and the ShouldAbsorbAlt setting in current source.",
+      "Reviewed merged PRs 47052, 47261, and 49121 and their validation descriptions."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
+        "evidence_type": "powertoys_version",
+        "information": "Whether both PowerShell Alt+click and desktop Alt-drag still fail on the latest stable release.",
+        "why_needed": "The original version predates later modifier click/replay changes, and the second report does not name a version.",
+        "how_to_collect": "Update to the latest stable release, record the version, and repeat both scenarios."
       },
       {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
+        "evidence_type": "configuration_export",
+        "information": "Grab and Move activation modifier and the 'Prevent Alt from activating the window menu' setting during each test.",
+        "why_needed": "These settings select whether the low-level hook absorbs and replays Alt.",
+        "how_to_collect": "Report whether Alt or Windows is selected and whether the Alt-absorption checkbox is enabled."
       }
     ]
   },
   "actions": [
     {
+      "id": "request-info-49037",
       "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
+      "label": "Confirm current Grab and Move Alt behavior",
+      "primary": true,
+      "confirm": true,
       "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
-      }
+        "target": "issue",
+        "number": 49037,
+        "body": "Thanks for documenting both the PowerShell Alt+click case and the desktop Alt-drag case. Grab and Move's modifier handling changed in PR #49121, with related modifier-state fixes in PRs #47052 and #47261. Could you provide:\n\n- **Current behavior:** Please retest both scenarios on the latest stable PowerToys release and report the exact version. This shows whether the merged passthrough already covers either failure.\n- **Grab and Move configuration:** Please report whether Alt or Windows is selected as the activation modifier and whether **Prevent Alt from activating the window menu after a drag or resize operation** is enabled during each test. This identifies whether any remaining failure is in Alt absorption, replay, or drag-threshold state handling."
+      },
+      "note": "Draft only; no upstream comment is posted."
     }
   ],
   "title": "Alt key conflict in Grab and Move with Powershell",

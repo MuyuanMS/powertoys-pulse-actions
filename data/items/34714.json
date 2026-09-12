@@ -6,61 +6,82 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/27/2026 05:08:42",
+  "author": "ATAMANCZ",
+  "confidence": "Low",
+  "status": {
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "The canonical stuck-Ctrl issue needs a failure-time trace and exact mappings."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Request failure-time Ctrl diagnostics",
+    "reason": "Capture state before any recovery action clears it."
+  },
+  "generated_at": "2026-09-12T01:02:28.113489Z",
+  "evaluated_at": "2026-09-12T01:02:28.113489Z",
+  "source_updated_at": "2026-08-27T05:08:42Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "rationale": "Multiple current confirmations establish a real intermittent state bug, but the trigger is not deterministic and differs between local and RDP scenarios. A failure-time diagnostic plus the exact remap set is needed to distinguish stale modifier bookkeeping from RDP/focus transitions.",
     "evidence": [
-      "Live issue body and 15 public comment(s) were read through 08/27/2026 05:08:42.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "Reports span 0.84.0 through 0.100.2 and several machines.",
+      "On-screen keyboard input is also affected, while Keyboard Manager-defined Ctrl remaps can continue to work.",
+      "Issues 35404, 45897, 41668, 34523, 35836, and 39705 were closed as duplicates of this issue."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/27/2026 05:08:42"
+    "recommended_action": "Request a current failure-time /bugreport archive, exported remap configuration, and precise RDP/focus transition state.",
+    "evaluated_at": "2026-09-12T01:02:28.113489Z",
+    "source_updated_at": "2026-08-27T05:08:42Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "rationale": "The failure is clearly in the Keyboard Manager path, but public evidence does not isolate the state transition sufficiently to choose a safe code change."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Live revalidation of Issue 34714: keyboard manager steals completely CTRL after few hours of running",
+    "summary": "Keyboard Manager intermittently leaves Ctrl visible to its hook but ineffective for normal application shortcuts; toggling Keyboard Manager, leaving the keyboard idle, or changing RDP focus can temporarily recover it.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.84.0 ### Installation method PowerToys auto-update ### Running as admin None ### Area(s) with issue? Keyboard Manager ### Steps to reproduce keys CTRL+ F8-F12 assigned as multimedia shortcuts (play, next, prev, volume). Then work few hours with PC. ### ✔️ Expected Behavior not affected keys ### ❌ Actual Behavior affected CTRL, after few hours no application responds to (left) CTRL. Only power-toys created shortcut still works. ### Other Software _No response_.",
-      "The live issue has 15 public comment(s), with labels: Issue-Bug, Product-Keyboard Shortcut Manager, Needs-Triage."
+      "Ctrl shortcuts degrade to plain letters after minutes or hours; restarting or toggling Keyboard Manager restores them.",
+      "A current reporter reproduces on 0.100.2 with Windows 11 and RDP full-screen transitions.",
+      "Keyboard Manager mappings such as Ctrl+H can still execute while ordinary Ctrl shortcuts fail."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "The engine may retain an inconsistent physical/logical Ctrl state after a focus, RDP, or swallowed-event transition.",
+      "Different reports may share a state-cleanup failure even though their immediate triggers differ."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The issue is the canonical target for several duplicate stuck-modifier reports. Current code has several modifier reset paths, so a trace captured while the state is broken is more discriminating than another generic description.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 15 public comment(s) through 08/27/2026 05:08:42.",
-      "Latest public discussion: This happened to me today. CTRL+ any other key was failing sometime. Exiting PowerToys has solved the issue immediately.."
+      "Read the complete 15-comment discussion through 2026-08-27T05:08:42Z.",
+      "Verified six later issues were explicitly closed as duplicates of #34714.",
+      "Reviewed current KeyboardEventHandlers.cpp modifier reset and state cleanup paths, including recent stuck-modifier fixes; the latest report postdates those fixes."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh diagnostic archive captured while Ctrl shortcuts are failing, before toggling Keyboard Manager or leaving/re-entering RDP.",
+        "why_needed": "It can correlate the failure with hook state, module restarts, focus/session transitions, and the current build.",
+        "how_to_collect": "While the failure is present, add a comment containing /bugreport before restarting or toggling PowerToys."
       },
       {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
+        "evidence_type": "configuration_export",
+        "information": "The exact Keyboard Manager remap set in effect on the affected machine.",
+        "why_needed": "The active source/target modifiers determine which state machine and cleanup branch must be inspected.",
+        "how_to_collect": "Export or screenshot the Keyboard Manager mappings, redacting unrelated text-expansion contents if any."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the failure immediately follows an RDP full-screen transition, unlock, sleep/wake, elevated window, or ordinary local typing.",
+        "why_needed": "This separates session/focus event loss from a purely local shortcut-sequencing bug.",
+        "how_to_collect": "When it next occurs, note the immediately preceding transition and whether the on-screen keyboard Ctrl key changes state."
       }
     ]
   },
   "actions": [
     {
       "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
+      "label": "Request failure-time Ctrl diagnostics",
       "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+        "body": "Thanks for the current-version confirmations and the RDP sequence already documented. The remaining gap is the exact state at the moment Ctrl stops reaching normal applications. Please provide:\n- A comment containing `/bugreport` while the failure is still present, before toggling Keyboard Manager, leaving RDP, or restarting PowerToys.\n- The exact Keyboard Manager remaps active at that time (an export or screenshots are sufficient).\n- Whether the last transition was RDP full-screen/windowed, lock/unlock, sleep/wake, an elevated window, or ordinary local typing, and what the on-screen keyboard shows for Ctrl.\nThese details will distinguish stale modifier bookkeeping from a lost session/focus key-up event."
       }
     }
   ],

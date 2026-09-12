@@ -4,16 +4,16 @@
   "track": "fix",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The two-monitor report clearly distinguishes normal Chrome from saved Chrome PWAs during activation.",
+    "rationale": "The two-monitor reproduction distinguishes ordinary Chrome from three saved Chrome PWAs. Current main shows the concrete ambiguity: Workspaces uses PWA IDs only when resolution succeeds, allows empty-ID browser fallback in GetNearestWindow, and ignores PWA identity in processWindow. The existing design remains valid after correcting its stale file paths and matching symbols.",
     "recommended_action": "Approve stricter stable-identity matching.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "09/02/2026 16:49:44",
+    "evaluated_at": "2026-09-12T00:59:02Z",
+    "source_updated_at": "2026-09-02T16:49:44Z",
     "evidence": [
       "Workspace contains Google Chat, Calendar, and Gmail PWAs.",
       "A normal Chrome window is moved as if it were a saved PWA.",
       "The missing PWA launches over that window.",
       "No linked fix exists.",
-      "Live issue metadata and discussion were re-read through 09/02/2026 16:49:44."
+      "Scheduled Prompt #2 revalidation read the full live issue body, all 0 public comment(s), current labels, assignees, and timeline through 2026-09-02T16:49:44Z."
     ]
   },
   "fix_assessment": {
@@ -23,7 +23,7 @@
   "proposed_fixes": [
     {
       "title": "Match workspace applications by stable PWA identity",
-      "root_cause": "The existing-window matcher likely falls back to generic Chrome process/title data shared by normal browser windows and PWAs.",
+      "root_cause": "Workspaces can identify a browser PWA only when PwaHelper resolves a non-empty PWA application ID from the window AUMID. The existing-window matcher permits a name-or-path match when both saved and observed pwaAppId values are empty, and the newly launched-window matcher compares only name/path. Those fallback paths can let an ordinary Chrome window satisfy a saved Chrome PWA slot.",
       "plan": [
         "Trace PwaApp/PwaHelper and WorkspaceService matching.",
         "Prefer AppUserModelId or shortcut identity and reject generic Chrome for PWA slots.",
@@ -33,9 +33,9 @@
         "Activate a workspace with normal Chrome present and confirm it remains untouched while missing PWAs launch."
       ],
       "confidence": {
-        "score": 82,
+        "score": 84,
         "level": "yellow",
-        "rationale": "The PWA/browser distinction is explicit; exact fallback code needs confirmation."
+        "rationale": "Current matching code exposes both ambiguous fallback paths and directly matches the symptom, but the report lacks the saved workspace PWA IDs needed to prove which branch fired."
       }
     }
   ],
@@ -44,7 +44,8 @@
     "known_information": [
       "The report uses a two-monitor setup and PowerToys 0.99.1.",
       "Saved entries are Google PWAs.",
-      "Expected behavior is to leave normal Chrome untouched."
+      "Expected behavior is to leave normal Chrome untouched.",
+      "Live upstream issue activity was reviewed through 2026-09-02T16:49:44Z."
     ],
     "inferences": [
       "Matching is insufficiently identity-specific.",
@@ -52,20 +53,23 @@
     ],
     "analysis": "The acceptance criterion is preserving unrelated windows, so conservative matching is required.",
     "initial_investigation": [
-      "Relevant paths are WorkspacesCsharpLibrary/Data/PwaApp.cs, PwaHelper.cs, WorkspaceService.cs, and launcher MainViewModel.cs.",
-      "No duplicate, linked PR, or fork fix found.",
-      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) through 09/02/2026 16:49:44."
+      "Read the complete issue body, labels, assignees, and timeline.",
+      "Inspected current WindowArranger::GetNearestWindow and processWindow matching logic.",
+      "Inspected current native PwaHelper identity resolution and its unit-test surface.",
+      "Corrected stale lowercase and non-owning file paths from the prior design.",
+      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
     ],
     "information_gaps": [
       {
         "information": "The affected Chrome and PWA versions plus the saved workspace configuration or a short recording showing each window before and after activation.",
         "why_needed": "It confirms which PWA identity is available to the matcher and distinguishes an identity fallback from an incorrectly captured workspace record.",
-        "how_to_collect": "On the current release, record the Chrome version, launch two saved PWAs and one normal Chrome window, activate the workspace, and attach a short recording or screenshots that show the window titles and positions before and after."
+        "how_to_collect": "On the current release, record the Chrome version, launch two saved PWAs and one normal Chrome window, activate the workspace, and attach a short recording or screenshots that show the window titles and positions before and after.",
+        "evidence_type": "powertoys_version"
       }
     ]
   },
   "design": {
-    "root_cause": "Generic Chrome matching allows an ordinary browser window to satisfy a saved PWA slot.",
+    "root_cause": "Workspaces can identify a browser PWA only when PwaHelper resolves a non-empty PWA application ID from the window AUMID. The existing-window matcher permits a name-or-path match when both saved and observed pwaAppId values are empty, and the newly launched-window matcher compares only name/path. Those fallback paths can let an ordinary Chrome window satisfy a saved Chrome PWA slot.",
     "evidence": [
       "Observed: ordinary Chrome moves.",
       "Observed: missing PWA then launches.",
@@ -73,83 +77,96 @@
     ],
     "affected_files": [
       {
-        "path": "src/modules/workspaces/WorkspacesCsharpLibrary/Data/PwaApp.cs",
-        "purpose": "Stores PWA identity.",
+        "path": "src/modules/Workspaces/WorkspacesWindowArranger/WindowArranger.cpp",
+        "purpose": "Matches existing and newly launched windows to saved workspace applications.",
         "symbols": [
-          "PwaApp"
+          "WindowArranger::GetNearestWindow",
+          "WindowArranger::processWindow"
         ]
       },
       {
-        "path": "src/modules/workspaces/WorkspacesCsharpLibrary/PwaHelper.cs",
-        "purpose": "Resolves launch identity.",
+        "path": "src/modules/Workspaces/WorkspacesLib/PwaHelper.cpp",
+        "purpose": "Resolves Chrome and Edge PWA IDs and names from window/package identity.",
         "symbols": [
-          "PwaHelper"
+          "Utils::PwaHelper::GetChromeAppId",
+          "Utils::PwaHelper::GetEdgeAppId",
+          "Utils::PwaHelper::SearchPwaName"
         ]
       },
       {
-        "path": "src/modules/workspaces/Workspaces.ModuleServices/WorkspaceService.cs",
-        "purpose": "Matches and moves windows.",
+        "path": "src/modules/Workspaces/WorkspacesLib/PwaHelper.h",
+        "purpose": "Declares the PWA identity resolver used by the arranger.",
         "symbols": [
-          "WorkspaceService"
+          "Utils::PwaHelper"
         ]
       },
       {
-        "path": "src/modules/workspaces/WorkspacesLauncherUI/ViewModels/MainViewModel.cs",
-        "purpose": "Launches missing apps.",
+        "path": "src/modules/Workspaces/WorkspacesLib.UnitTests/PwaHelperTests.cpp",
+        "purpose": "Provides native coverage for PWA identity extraction.",
         "symbols": [
-          "MainViewModel"
+          "PwaHelperTests"
         ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/modules/workspaces/WorkspacesCsharpLibrary/PwaHelper.cs",
+        "file": "src/modules/Workspaces/WorkspacesWindowArranger/WindowArranger.cpp",
         "symbols": [
-          "PwaHelper"
+          "WindowArranger::GetNearestWindow",
+          "WindowArranger::processWindow"
         ],
-        "current_behavior": "PWA resolution can share a browser executable with normal Chrome.",
-        "change": "Expose stable AppUserModelId/shortcut identity and disallow generic-browser fallback for PWA records.",
-        "code_block": "return window.AppUserModelId == pwa.AppUserModelId\n+ || (pwa.IsGenericBrowserApp && window.ExecutablePath == pwa.ExecutablePath);",
+        "current_behavior": "GetNearestWindow accepts name-or-path equality plus pwaAppId equality, including the ambiguous empty/empty case; processWindow matches newly observed windows by name or path without checking PWA identity.",
+        "change": "When the saved workspace entry represents a PWA, require a successfully resolved, exact PWA application ID before an existing or newly observed browser window can satisfy it. Never treat an ordinary Chrome/Edge window with an empty PWA ID as that PWA.",
+        "code_block": "if (app.IsPwa()) {\n    auto observedId = ResolvePwaId(window, appData, pwaHelper);\n    if (!observedId || *observedId != app.pwaAppId) continue;\n} else if (!NameOrPathMatches(app, appData)) {\n    continue;\n}",
         "edge_cases": [
-          "Migrate old records without identity.",
-          "Keep ordinary browser entries valid."
+          "Do not reject ordinary saved Chrome/Edge browser windows.",
+          "Keep multiple PWAs from the same browser distinct.",
+          "Do not move a fallback browser window when PWA identity extraction fails."
         ],
         "tests": [
-          "Unit-test PWA and normal Chrome as non-equal."
+          "Saved Gmail PWA does not match normal Chrome.",
+          "Saved Gmail and Calendar PWAs match their own windows.",
+          "Ordinary saved Chrome continues to match ordinary Chrome."
         ]
       },
       {
         "order": 2,
-        "file": "src/modules/workspaces/Workspaces.ModuleServices/WorkspaceService.cs",
+        "file": "src/modules/Workspaces/WorkspacesLib/PwaHelper.cpp",
         "symbols": [
-          "WorkspaceService"
+          "Utils::PwaHelper::GetChromeAppId",
+          "Utils::PwaHelper::GetEdgeAppId",
+          "Utils::PwaHelper::SearchPwaName"
         ],
-        "current_behavior": "Candidate may be moved before identity is proven.",
-        "change": "Filter candidates through stable identity; otherwise launch the missing PWA.",
-        "code_block": "var match = windows.FirstOrDefault(w => matcher.Matches(w, app));\n+if(match is not null) MoveToWorkspace(match); else Launch(app);",
+        "current_behavior": "PWA identity extraction may return no ID, after which callers can fall back to generic browser identity.",
+        "change": "Return explicit unresolved identity and diagnostic context for PWA candidates so the arranger can refuse an ambiguous generic-browser fallback while still launching the missing PWA.",
+        "code_block": "auto pwaId = ResolvePwaId(windowAumid);\nif (!pwaId) { LogUnresolvedPwa(windowAumid, processPath); return std::nullopt; }\nreturn pwaId;",
         "edge_cases": [
-          "Ignore stale HWNDs.",
-          "Never move a candidate on title alone."
+          "Malformed or missing AUMID.",
+          "Chrome and Edge profile-specific PWAs.",
+          "PWA updates that retain app ID but change title."
         ],
         "tests": [
-          "Service test leaves normal Chrome and launches the PWA."
+          "Known Chrome and Edge AUMIDs resolve stable IDs.",
+          "Unknown AUMID remains unresolved instead of becoming generic browser identity."
         ]
       },
       {
         "order": 3,
-        "file": "src/modules/workspaces/WorkspacesEditorUITest/WorkspacesLauncherTest.cs",
+        "file": "src/modules/Workspaces/WorkspacesLib.UnitTests/PwaHelperTests.cpp",
         "symbols": [
-          "WorkspacesLauncherTest"
+          "PwaHelperTests"
         ],
-        "current_behavior": "No normal-Chrome/PWA coexistence fixture.",
-        "change": "Add it with cleanup and explicit position assertions.",
-        "code_block": "CreateRegularChromeWindow(); ActivateWorkspace();\n+AssertWindowUnmoved(chrome); AssertPwaLaunched(missing);",
+        "current_behavior": "Current tests do not cover coexistence of two browser PWAs with a normal browser window during workspace matching.",
+        "change": "Add identity and matching fixtures for Gmail, Calendar, and normal Chrome, including an unresolved-AUMID case.",
+        "code_block": "Assert.IsFalse(Matches(savedGmailPwa, normalChrome));\nAssert.IsTrue(Matches(savedGmailPwa, gmailPwa));",
         "edge_cases": [
-          "Use test-owned identities."
+          "Two PWAs share chrome.exe.",
+          "Window titles change after navigation.",
+          "One PWA is not running at activation."
         ],
         "tests": [
-          "Run workspace launcher tests."
+          "Run WorkspacesLib unit tests and a two-monitor end-to-end workspace activation."
         ]
       }
     ],
@@ -182,16 +199,17 @@
       "comment": {
         "target": "issue",
         "number": 50339,
-        "body": "Thanks for the clear two-monitor reproduction. The behavior indicates that a normal Chrome window can satisfy a saved PWA slot, but the saved identity and capture details are needed to verify the matcher fallback. Please share the Chrome version and a short recording or screenshots from the current release showing two saved PWAs and one normal Chrome window before and after workspace activation, including the relevant window titles and positions."
+        "body": "Thanks for the clear two-monitor reproduction. The behavior indicates that a normal Chrome window can satisfy a saved PWA slot, but the saved identity and capture details are needed to verify the matcher fallback. Please share the Chrome version and a short recording or screenshots from the current release showing two saved PWAs and one normal Chrome window before and after workspace activation, including the relevant window titles and positions.",
+        "repository": "microsoft/PowerToys"
       },
       "note": "Draft only; no upstream comment is posted."
     }
   ],
   "schemaVersion": 5,
   "stage": "awaiting_design_approval",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "09/02/2026 16:49:44",
+  "generated_at": "2026-09-12T00:59:02Z",
+  "evaluated_at": "2026-09-12T00:59:02Z",
+  "source_updated_at": "2026-09-02T16:49:44Z",
   "title": "Workspaces incorrectly moves main chrome window instead of PWA app",
   "url": "https://github.com/microsoft/PowerToys/issues/50339",
   "labels": [
@@ -199,5 +217,8 @@
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0
+  "comments": 0,
+  "author": "KKhanhH",
+  "authorAssociation": "NONE",
+  "pending_author": false
 }

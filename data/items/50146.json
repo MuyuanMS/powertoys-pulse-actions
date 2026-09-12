@@ -6,61 +6,75 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/26/2026 18:35:03",
+  "author": "meta-ed",
+  "confidence": "Low",
+  "status": {
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "The attached archive does not cover the latest overnight disappearance."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Request matched overnight crash evidence",
+    "reason": "Match logs and Event Viewer to the actual failure timestamp."
+  },
+  "generated_at": "2026-09-12T01:02:28.113489Z",
+  "evaluated_at": "2026-09-12T01:02:28.113489Z",
+  "source_updated_at": "2026-08-26T18:35:03Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "rationale": "The report contains a diagnostic archive and environment details, but automated analysis referenced older ITaskFolder errors rather than the 2026-08-25/26 failure. A matched post-failure archive and Windows crash event are needed to identify whether the runner crashed, was terminated, or failed after a session/power transition.",
     "evidence": [
-      "Live issue body and 2 public comment(s) were read through 08/26/2026 18:35:03.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "The machine remained logged in and did not reboot; PowerToys and FancyZones were absent the next morning.",
+      "A diagnostic archive was attached, but the reporter says the most recent occurrence was later than the dates highlighted by automated triage.",
+      "Current runner code uses Task Scheduler ITaskFolder APIs for startup registration, but public evidence does not connect those calls to the latest disappearance."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/26/2026 18:35:03"
+    "recommended_action": "Request diagnostics and Event Viewer details captured immediately after the next overnight disappearance.",
+    "evaluated_at": "2026-09-12T01:02:28.113489Z",
+    "source_updated_at": "2026-08-26T18:35:03Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "rationale": "A code fix cannot be selected until the process exit mechanism and timestamp are matched to current diagnostics."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Live revalidation of Issue 50146: PowerToys often absent from system tray first thing in the morning",
+    "summary": "The PowerToys runner sometimes exits or becomes unavailable overnight without a reboot, removing the tray icon and disabling modules. The supplied archive predates the latest occurrence.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version v0.101.2262 ### Installation method PowerToys auto-update ### Area(s) with issue? General ### Steps to reproduce Leave the computer logged in and idle overnight. PowerToys is often absent in the morning from the system tray, and features such as fancyzones don't work. There is no error dialog. I have verified that no system reboots are occurring that could explain the issue. ### ✔️ Expected Behavior _No response_ ### ❌ Actual Behavior _No response_ ### Upload Bug .",
-      "The live issue has 2 public comment(s), with labels: Issue-Bug, Needs-Triage, Needs-Team-Response, Product-General."
+      "PowerToys 0.101.2262 system install ran elevated on Windows 11 25H2.",
+      "The computer was left logged in overnight with sleep disabled on AC; no reboot was observed.",
+      "The attached archive contains older recurring ITaskFolder COM errors, while the latest reported failure occurred overnight 2026-08-25/26."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "The tray disappearance could be a runner crash, external termination, session transition, or restart failure; the stale diagnostic timestamps do not distinguish them."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The report already supplies broad environment data, so asking for generic steps again would not help. The decisive evidence is a timestamp-matched runner log/crash event captured before PowerToys is restarted.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 2 public comment(s) through 08/26/2026 18:35:03.",
-      "Latest public discussion: In light of the automated triage looking at failures on dates 2026-08-17 and 2026-08-10. The most recent occurrence was actually overnight 2026-08-[25..26] local calendar time.."
+      "Read the full body and both comments through 2026-08-26T18:35:03Z.",
+      "Reviewed current runner auto_start_helper.cpp, where ITaskFolder failures can occur, but found no evidence tying that path to the latest incident.",
+      "No linked issue, PR, assignee, or confirmed crash signature appears in the live timeline."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic archive captured immediately after the tray icon and modules disappear overnight.",
+        "why_needed": "It will provide logs covering the actual failure window instead of older unrelated timestamps.",
+        "how_to_collect": "Before restarting PowerToys, add a comment containing /bugreport; if the tray UI cannot open, run BugReportTool.exe from the PowerToys installation folder."
       },
       {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
+        "evidence_type": "event_viewer",
+        "information": "Windows Event Viewer Application entries for PowerToys processes at the exact disappearance time, including faulting module and exception code.",
+        "why_needed": "This distinguishes a crash from task/session termination or startup-registration noise.",
+        "how_to_collect": "In Event Viewer, export or copy the Application Error/.NET Runtime entries whose timestamps match the disappearance."
       }
     ]
   },
   "actions": [
     {
       "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
+      "label": "Request matched overnight crash evidence",
       "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+        "body": "Thank you for the attached report and for clarifying that the latest disappearance occurred overnight 2026-08-25/26, not on the older dates highlighted by automated triage. The next occurrence needs evidence from that same failure window. Please provide:\n- A comment containing `/bugreport` before restarting PowerToys; if the tray/settings UI is unavailable, run `BugReportTool.exe` from the PowerToys installation folder.\n- Any Event Viewer **Windows Logs → Application** entries at the disappearance time for PowerToys processes, including the faulting module and exception code.\nThis will determine whether the runner crashed, was terminated during a session/power transition, or only failed its scheduled-task check."
       }
     }
   ],

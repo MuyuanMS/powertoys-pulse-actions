@@ -6,62 +6,84 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "10/21/2022 14:45:04",
+  "author": "htcfreek",
+  "confidence": "Green",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The plugin trusts net.exe exit rather than the final service state."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Use SCM state and accurate outcome reporting."
+  },
+  "generated_at": "2026-09-12T01:02:28.326191Z",
+  "evaluated_at": "2026-09-12T01:02:28.326191Z",
+  "source_updated_at": "2022-10-21T14:45:04Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "The issue was reproduced by a maintainer, who found the behavior specific to the net.exe path and reported that ServiceController did not trigger the same restart. Current source still shells out to net and treats exit code 0 as success without waiting for ServiceController.Status.",
     "evidence": [
-      "Live issue body and 2 public comment(s) were read through 10/21/2022 14:45:04.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "Maintainer reproduced with Windows Search and Windows Update services and identified immediate restart after net.exe.",
+      "A second user confirmed on 0.63.",
+      "Current ServiceHelper.ChangeStatus launches elevated net start/stop and shows success solely from process exit code."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "10/21/2022 14:45:04"
+    "recommended_action": "Approve a design to perform service operations through an elevated ServiceController path and report only the verified final status.",
+    "evaluated_at": "2026-09-12T01:02:28.326191Z",
+    "source_updated_at": "2022-10-21T14:45:04Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No existing fix covers the unchanged command-exit versus final-state bug."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Verify and control service state instead of trusting net.exe exit",
+      "root_cause": "ServiceHelper.ChangeStatus interprets a successful `net stop` process exit as a stopped service without observing its post-command ServiceController status; for affected services the SCM immediately returns them to running.",
+      "plan": [
+        "Move start/stop/restart into the existing elevated execution boundary using ServiceController or an equivalent SCM API.",
+        "Wait with a bounded timeout for the requested ServiceControllerStatus and refresh the result afterward.",
+        "Report “stopped” only if the final state is Stopped; otherwise explain that Windows restarted or rejected the transition."
+      ],
+      "verification": [
+        "Unit-test final-state classification for stopped, restarted, timeout, and access-denied outcomes using a service abstraction.",
+        "Manually test Windows Search and Windows Update on a disposable machine with recovery/start triggers noted.",
+        "Verify UAC cancellation and restart preserve accurate notifications."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The maintainer reproduction and unchanged net.exe/exit-code implementation directly identify the false-success mechanism."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 9531: [PT Run][Service Plugin] Stopping services not working",
+    "summary": "The Service plugin reports a successful stop when `net stop` exits successfully even if Windows immediately restarts the service, so the notification describes the command result rather than the observed final service state.",
     "known_information": [
-      "The live issue body states: <!-- **Important: When reporting BSODs or security issues, DO NOT attach memory dumps, logs, or traces to Github issues**. Instead, send dumps/traces to secure@microsoft.com, referencing this GitHub issue. --> ## ℹ Computer information - PowerToys version: 0.31.2 - PowerToy Utility: PT Run > Service Plugin - Running PowerToys as Admin: No - Windows build number: 20H2 (19042.*) ## 📝 Provide detailed reproduction steps (if any) 1. Open PT Run 2. Type `!Windows Search` 3. Press `enter` and accept .",
-      "The live issue has 2 public comment(s), with labels: Issue-Bug, Product-PowerToys Run, Run-Plugin."
+      "The plugin can display “Service is stopped” while the service remains running.",
+      "The issue was reproduced for wsearch and wuauserv.",
+      "Current code uses `net`/`cmd`, waits for process exit, and maps exit code 0 directly to a success notification."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "SCM status verification is required even if the implementation retains net.exe; ServiceController is the cleaner control path suggested by the maintainer."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The code still implements the exact mechanism identified in the discussion, so this is an implementation-ready design candidate rather than an information request.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 2 public comment(s) through 10/21/2022 14:45:04.",
-      "Latest public discussion: Still reproducible on v0.63."
+      "Read the full body and both comments through 2022-10-21T14:45:04Z.",
+      "Reviewed ServiceHelper.cs at commit 33e4ef46e5db77a256818a917d65103c9b7398fa; ChangeStatus uses elevated net.exe and never waits for the final service state.",
+      "Issue #8968 remains open for related UAC improvement; #30574 tracks UI feedback but does not implement this correctness fix."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
-      }
+      "id": "design-9531",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
     }
   ],
   "title": "[PT Run][Service Plugin] Stopping services not working",

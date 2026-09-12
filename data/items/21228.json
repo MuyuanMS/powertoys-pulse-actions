@@ -6,61 +6,75 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "10/22/2022 16:54:44",
+  "author": "alishtamimi",
+  "confidence": "Low",
+  "status": {
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "Canvas coordinate semantics and the exact display transition are missing."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Request Canvas resolution behavior details",
+    "reason": "Choose the expected scaling model before proposing code."
+  },
+  "generated_at": "2026-09-12T01:02:28.326191Z",
+  "evaluated_at": "2026-09-12T01:02:28.326191Z",
+  "source_updated_at": "2022-10-22T16:54:44Z",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "rationale": "The author answered that the layout is Canvas, which narrows ownership, but the missing monitor transition and acceptance rule are necessary to decide whether this is a scaling bug or a feature request for fixed physical coordinates.",
     "evidence": [
-      "Live issue body and 4 public comment(s) were read through 10/22/2022 16:54:44.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "PowerToys 0.63; Canvas layout; same physical monitor changes screen size.",
+      "The only requested clarification was answered with “Canvas.”",
+      "No screenshots, resolutions, DPI values, monitor topology, linked work, or current-version confirmation are present."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "10/22/2022 16:54:44"
+    "recommended_action": "Request the exact resolution/DPI transition and desired Canvas coordinate behavior on a current release.",
+    "evaluated_at": "2026-09-12T01:02:28.326191Z",
+    "source_updated_at": "2022-10-22T16:54:44Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "rationale": "The current report does not define whether preserving pixels, proportions, or work-area-relative placement is correct, so no safe code fix can be selected."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Live revalidation of Issue 21228: Change screen size for the same monitor",
+    "summary": "A Canvas FancyZones layout changes zone geometry when the same monitor switches resolution, but the report does not specify the before/after resolutions, DPI scaling, or whether fixed pixels versus proportional scaling is desired.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.63 ### Running as admin - [X] Yes ### Area(s) with issue? FancyZones ### Steps to reproduce When I change screen size for the same monitor Fancy zones change their size accordingly which is very annoying ### ✔️ Expected Behavior Give the option or stop automatically change fancy zones size and position when I change the screen size for the same MONITOR ### ❌ Actual Behavior _No response_ ### Other Software _No response_.",
-      "The live issue has 4 public comment(s), with labels: Issue-Bug, Product-FancyZones, Needs-Triage, Needs-Team-Response."
+      "The issue concerns a Canvas layout on one physical monitor.",
+      "FancyZones changes zone size/position after a screen-size change.",
+      "The author finds the automatic adjustment undesirable."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "The behavior may be intentional work-area scaling rather than corruption; the desired invariant is not stated."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "A bug fix could break users who expect Canvas zones to scale with the work area. Exact geometry and expected coordinate semantics are the decision-making evidence.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 4 public comment(s) through 10/22/2022 16:54:44.",
-      "Latest public discussion: CANVAS @SeraphimaZykova."
+      "Read the full body and all four comments through 2022-10-22T16:54:44Z.",
+      "Confirmed there are no linked issues/PRs or assignees in the live timeline.",
+      "Reviewed current FancyZones work-area and app-zone history paths; monitor/work-area identity is part of layout selection."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
+        "evidence_type": "monitor_topology",
+        "information": "The exact original and changed resolutions, Windows scaling percentages, monitor count/order, and whether the work area changed because of taskbar placement.",
+        "why_needed": "These values determine whether FancyZones scaled correctly, selected a different work area, or lost monitor identity.",
+        "how_to_collect": "Reply with before/after resolution and scaling for each monitor and note any docking/undocking or taskbar change."
       },
       {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether Canvas zones should retain absolute pixel coordinates, preserve their proportions, or restore a separate saved layout per resolution.",
+        "why_needed": "Each expectation requires a different product behavior and migration rule.",
+        "how_to_collect": "Describe the desired coordinates for one example zone before and after the resolution change, preferably with two screenshots."
       }
     ]
   },
   "actions": [
     {
       "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
+      "label": "Request Canvas resolution behavior details",
       "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+        "body": "Thanks for confirming that this uses a Canvas layout. To distinguish a layout-scaling defect from a request for fixed coordinates, could you please provide:\n- The exact before/after resolution and Windows scaling percentage for the monitor, plus any other connected monitors, docking change, or taskbar change.\n- One example zone’s position/size before and after the change (screenshots are fine).\n- Which behavior you expect: fixed pixel coordinates, proportional scaling, or a separately remembered Canvas layout for each resolution.\nPlease also confirm whether the same behavior still occurs on a current PowerToys release."
       }
     }
   ],

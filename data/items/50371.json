@@ -6,17 +6,14 @@
     "status": "needs_information",
     "rationale": "The newly attached diagnostic confirms that both elevated and non-elevated PowerToys sessions occurred, but it captures only one final configuration snapshot. It cannot establish whether elevation used another Windows account, whether settings actually moved or reset, or which write/read operation caused the reported change.",
     "recommended_action": "Request the elevation-account detail and a controlled before/after reproduction that distinguishes settings reset from switching Windows user profiles.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "09/04/2026 05:14:21",
+    "evaluated_at": "2026-09-12T00:59:02Z",
+    "source_updated_at": "2026-09-04T05:14:21Z",
     "evidence": [
       "The reporter supplied a PowerToys diagnostic archive after the triage request.",
       "The archive's final settings.json has is_elevated and run_elevated set to true.",
       "The runner log records a non-elevated start before later configuration dispatch, while the archive does not contain a before/after pair of settings snapshots.",
       "Open issue 47238 documents a related standard-user UAC scenario where another administrator account's profile can be used and run_elevated must be distinguished from is_elevated.",
-      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T14:38:05.1052603Z.",
-      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T15:08:39.7870394Z.",
-      "Live issue metadata and discussion were re-read through 09/04/2026 05:14:21.",
-      "Live issue metadata and discussion were re-read through 09/04/2026 05:14:21."
+      "Scheduled Prompt #2 revalidation read the full live issue body, all 2 public comment(s), current labels, assignees, and timeline through 2026-09-04T05:14:21Z."
     ]
   },
   "fix_assessment": {
@@ -32,8 +29,7 @@
       "The archive's settings.json records is_elevated=true and run_elevated=true.",
       "The archive's runner log contains a non-elevated runner start before later settings activity.",
       "No assignee or linked implementation is present on the issue.",
-      "Fast revalidation covered live upstream activity through 09/04/2026 05:14:21.",
-      "Fast revalidation covered live upstream activity through 2026-09-04T05:14:21.0000000Z."
+      "Live upstream issue activity was reviewed through 2026-09-04T05:14:21Z."
     ],
     "inferences": [
       "If the UAC prompt used a different administrator Windows account, different per-user settings would be expected and would not by itself show a synchronization defect.",
@@ -45,20 +41,24 @@
       "Reviewed src/runner/main.cpp, where startup reads run_elevated and chooses elevated or non-elevated restart behavior.",
       "Reviewed src/runner/settings_window.cpp, which documents that elevated modules and non-elevated Settings can read different user directories.",
       "Reviewed related open issue 47238, including its report that run_elevated remaining true can cause repeated UAC elevation for a standard Windows account.",
-      "Revalidated selected issue metadata, labels, assignees, body, and 2 public comment(s) during the scheduled bounded run.",
-      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) through 09/04/2026 05:14:21.",
-      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) through 09/04/2026 05:14:21."
+      "Re-read the full live issue body, all 2 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:54:50Z.",
+      "Re-read the full live issue body, all 2 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:54:50Z.",
+      "Re-read the full live issue body, all 2 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:56:32Z.",
+      "Re-read the full live issue body, all 2 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:56:32Z.",
+      "Re-read the full live issue body, all 2 public comment(s), labels, assignees, and link/state timeline on 2026-09-12T00:59:02Z."
     ],
     "information_gaps": [
       {
         "information": "Whether the UAC prompt was approved with the same Windows account that originally configured PowerToys, or with a different administrator account.",
         "why_needed": "This separates expected per-user configuration isolation from a failure to preserve one user's settings.",
-        "how_to_collect": "State the account relationship in a comment; do not include account names."
+        "how_to_collect": "State the account relationship in a comment; do not include account names.",
+        "evidence_type": "configuration_export"
       },
       {
         "information": "A controlled before/after result showing one named setting, the values of is_elevated and run_elevated, and whether the setting changes after Restart as administrator and after one reboot.",
         "why_needed": "It identifies whether the failure occurs at elevation, startup, or update and provides an acceptance case for a scoped fix.",
-        "how_to_collect": "Use the same Windows account, choose one setting with a visible non-default value, record the three requested values before and after each step, and attach a fresh /bugreport archive immediately after the failing transition."
+        "how_to_collect": "Use the same Windows account, choose one setting with a visible non-default value, record the three requested values before and after each step, and attach a fresh /bugreport archive immediately after the failing transition.",
+        "evidence_type": "bugreport_zip"
       }
     ]
   },
@@ -67,15 +67,19 @@
       "type": "request_info",
       "label": "Request elevation and settings-transition evidence",
       "comment": {
-        "body": "Thanks for attaching the diagnostic archive. It shows both non-elevated and elevated PowerToys activity, but it contains only the final settings snapshot, so it cannot yet tell whether a different Windows account was used for the UAC prompt or where a setting changed. Please confirm whether the UAC prompt used the same Windows account that originally configured PowerToys (no account names needed). Then, using that same account, choose one setting with a visible non-default value and record its value plus `is_elevated` and `run_elevated` before and after Restart as administrator and one reboot. If it changes, reproduce once more and add a comment containing `/bugreport` immediately after the failing transition. That comparison will distinguish a per-user profile switch from an elevation, startup, or update persistence defect."
-      }
+        "body": "Thanks for attaching the diagnostic archive. It shows both non-elevated and elevated PowerToys activity, but only one final settings snapshot, so it cannot tell whether Windows switched user profiles or when a setting changed. Please provide:\n\n- Whether the UAC prompt was approved with the same Windows account that originally configured PowerToys; do not include account names.\n- Using that same account, choose one visible non-default setting and record its value plus `is_elevated` and `run_elevated` before and after **Restart as administrator** and one reboot.\n- If the value changes, add a comment containing `/bugreport` immediately after that transition.\n\nThis comparison will separate expected per-user configuration isolation from an elevation, startup, or persistence defect.",
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50371
+      },
+      "note": "Draft only; no upstream comment is posted."
     }
   ],
   "schemaVersion": 5,
   "stage": "triage_revalidated",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "09/04/2026 05:14:21",
+  "generated_at": "2026-09-12T00:59:02Z",
+  "evaluated_at": "2026-09-12T00:59:02Z",
+  "source_updated_at": "2026-09-04T05:14:21Z",
   "title": "Settings not synced between elevated and non-levated runs; configs reset after restart / update",
   "url": "https://github.com/microsoft/PowerToys/issues/50371",
   "labels": [
@@ -85,5 +89,8 @@
     "Product-General"
   ],
   "assignees": [],
-  "comments": 2
+  "comments": 2,
+  "author": "W2514",
+  "authorAssociation": "NONE",
+  "pending_author": false
 }

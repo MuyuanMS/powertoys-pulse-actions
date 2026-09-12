@@ -6,61 +6,105 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/26/2026 09:24:41",
+  "author": "ReginaldTang",
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "A shell-peek visibility transition likely leaves Run state inconsistent."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Capture the Win+, event order and make hide idempotent."
+  },
+  "generated_at": "2026-09-12T01:02:28.217857Z",
+  "evaluated_at": "2026-09-12T01:02:28.217857Z",
+  "source_updated_at": "2026-08-26T09:24:41Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "The report includes a short deterministic sequence and video. Current Run UI relies on WPF deactivation/visibility transitions without an explicit shell desktop-peek path, making a visibility state race plausible and suitable for focused reproduction.",
     "evidence": [
-      "Live issue body and 0 public comment(s) were read through 08/26/2026 09:24:41.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "PowerToys 0.100.2 from the Store; open Run, press Win+,, observe a ghost window.",
+      "The reporter notes Command Palette closes correctly under the same shortcut.",
+      "PowerLauncher MainWindow handles Deactivated and IsVisibleChanged and hides through MainViewModel, but no Win+, shell-peek-specific handling was found."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/26/2026 09:24:41"
+    "recommended_action": "Reproduce under Win+, trace activation/visibility events, then make shell peek collapse Run through the normal hide path.",
+    "evaluated_at": "2026-09-12T01:02:28.217857Z",
+    "source_updated_at": "2026-08-26T09:24:41Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No merged fix was found; the current visibility state machine provides a focused hypothesis that requires message-order validation."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Collapse PowerToys Run when shell desktop peek deactivates it",
+      "root_cause": "Win+, can temporarily move focus/desktop composition without producing the same activation sequence as an ordinary foreground-window change, allowing the WPF frame to remain visible after Run state has otherwise deactivated.",
+      "plan": [
+        "Instrument the existing MainWindow Deactivated/IsVisibleChanged and MainViewModel.Hide transitions during Win+,.",
+        "Route the shell-peek/deactivation sequence through one idempotent hide operation that closes the Run surface and resets result/activation state.",
+        "Add an integration/UI regression test or extracted state-machine test for a visible launcher losing activation through desktop peek."
+      ],
+      "verification": [
+        "Open Run, press and release Win+,, and verify no frame or hit-test surface remains.",
+        "Repeat with Win+D, Alt+Tab, Escape, and normal focus loss to ensure existing hide behavior remains."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The UI event surface is identified, but the exact Windows message/order produced by Win+, has not yet been captured."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 50133: Ghost PowerToys Run window when using Win+, while PowerToys Run is open",
+    "summary": "While PowerToys Run is visible, invoking the Windows Win+, desktop-peek shortcut can leave a non-interactive Run frame visible instead of fully hiding the launcher.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.100.2 ### Installation method Microsoft Store ### Area(s) with issue? PowerToys Run ### Steps to reproduce 1. Open PowerToys Run 2. Press Win+, (Does not apply to Win+d) ### ✔️ Expected Behavior PowerToys Run closes (like CmdPal) ### ❌ Actual Behavior A ghost PowerToys run window stays open https://github.com/user-attachments/assets/6104b167-cc9a-4e71-b624-9ac5be75d02b ### Upload Bug Report ZIP-file _No response_ ### Additional Information _No response_ ### Othe.",
-      "The live issue has 0 public comment(s), with labels: Issue-Bug, Needs-Triage."
+      "The sequence is two steps and includes a recording.",
+      "The ghost occurs with PowerToys Run open and does not occur with Command Palette.",
+      "Run currently uses WPF visibility binding plus deactivation callbacks to hide."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "Win+, likely follows a shell-specific activation/composition path that leaves visibility and launcher state out of sync."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "A current local reproduction can capture the exact WPF/window messages and turn the plausible visibility race into a narrow fix without requiring more reporter evidence.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 0 public comment(s) through 08/26/2026 09:24:41.",
-      "Latest public discussion: No public comments.."
+      "Read the complete live issue through 2026-08-26T09:24:41Z.",
+      "Reviewed PowerLauncher/MainWindow.xaml(.cs) and ViewModel/MainViewModel.cs visibility/deactivation handling at commit 33e4ef46e5db77a256818a917d65103c9b7398fa.",
+      "Searched upstream for another PowerToys Run ghost-window report tied to Win+, and found no duplicate."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+      "id": "design-50133",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Win+, ghost window",
+      "reproduce": {
+        "title": "Trace Run visibility during desktop peek",
+        "module": "PowerToys Run",
+        "version_requirement": "Current development build on Windows 11",
+        "prerequisites": [
+          "PowerToys Run enabled",
+          "Win+, available as the Windows desktop-peek shortcut"
+        ],
+        "setup": [
+          "Enable window/message tracing for the PowerLauncher main window if available."
+        ],
+        "steps": [
+          "Open PowerToys Run.",
+          "Press and release Win+,.",
+          "Check whether the launcher frame, shadow, or hit-test surface remains after the desktop returns.",
+          "Repeat with Command Palette and with Win+D as controls."
+        ],
+        "expected_result": "PowerToys Run fully collapses with no residual visible or interactive window."
       }
     }
   ],

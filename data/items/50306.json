@@ -9,8 +9,8 @@
     "status": "reproducible",
     "rationale": "The report gives a precise expected/actual pair and a concrete target, but the supplied diagnostic does not prove whether the picker selected U+300D or whether WeChat transformed correctly emitted Unicode input.",
     "recommended_action": "Run the controlled current-version comparison and collect only the evidence that separates selection/index state from target/IME transformation.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "09/02/2026 02:17:27",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-09-02T02:17:27Z",
     "evidence": [
       "The issue reports U+300D `」` becoming U+300C `「` in WeChat Desktop on PowerToys 0.100.2.",
       "The diagnostic shows Quick Accent enabled with Pinyin and usage sorting; usage data contains both U+300C and U+300D.",
@@ -18,7 +18,7 @@
       "PowerAccent commits the selected string through a backspace followed by tagged KEYEVENTF_UNICODE SendInput.",
       "The keyboard-service log records navigation/hide events but not the selected code point.",
       "The related older selection report makes an adjacent-selection defect plausible, but does not establish that it affects this report.",
-      "Live issue metadata and discussion were re-read through 09/02/2026 02:17:27."
+      "On 2026-09-12, the complete live body, all 0 public comment(s), labels, assignees, and link timeline were re-read through 2026-09-02T02:17:27Z."
     ]
   },
   "fix_assessment": {
@@ -68,208 +68,28 @@
       "Read the attached diagnostic in memory: Quick Accent settings, usage data, and the 2026-09-02 keyboard-service log were examined.",
       "Inspected current CharacterMappings, PowerAccent selection/commit flow, WindowsFunctions.Insert, tests, and recent PowerAccent history.",
       "Reviewed the related wrong-selection report as alternative evidence only.",
-      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) through 09/02/2026 02:17:27."
+      "Revalidated the live body, all 0 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-09-02T02:17:27Z."
     ],
     "information_gaps": [
       {
         "information": "Whether the current picker visibly selects U+300D and passes U+300D to the commit boundary.",
         "why_needed": "Without this, a target compatibility fix could mask a selection/index defect.",
-        "how_to_collect": "Enable Unicode descriptions, select U+300D, and capture the picker plus the resulting character; repeat on the current release."
+        "how_to_collect": "Enable Unicode descriptions, select U+300D, and capture the picker plus the resulting character; repeat on the current release.",
+        "evidence_type": "screenshot_image"
       },
       {
         "information": "Same-session U+300D results in WeChat, Notepad, and literal clipboard paste.",
         "why_needed": "This separates Quick Accent/SendInput behavior from WeChat or IME composition behavior.",
-        "how_to_collect": "Use the same keyboard layout and IME mode, repeat U+300C/U+300D/U+300E/U+300F, and paste literal `」` into the same WeChat field."
+        "how_to_collect": "Use the same keyboard layout and IME mode, repeat U+300C/U+300D/U+300E/U+300F, and paste literal `」` into the same WeChat field.",
+        "evidence_type": "behavior_confirmation"
       },
       {
         "information": "Exact WeChat version/install channel and active Windows input method/punctuation mode.",
         "why_needed": "The target control and IME state may determine whether the transformation occurs.",
-        "how_to_collect": "Record WeChat About details and the Windows input-language/IME state during reproduction."
+        "how_to_collect": "Record WeChat About details and the Windows input-language/IME state during reproduction.",
+        "evidence_type": "other_software"
       }
     ]
-  },
-  "design": {
-    "status": "draft_needs_reproduction",
-    "root_cause": "Not yet proven. Candidate A is a picker/index snapshot defect in PowerAccent.ProcessNextChar or the UI handoff, causing the adjacent U+300C to be committed. Candidate B is target/IME transformation of the correctly selected U+300D after WindowsFunctions.Insert emits KEYEVENTF_UNICODE input.",
-    "evidence": [
-      {
-        "kind": "observed",
-        "detail": "src/modules/poweraccent/PowerAccent.Common/CharacterMappings.cs, Language.PI / LetterKey.VK_COMMA, orders `「` immediately before `」`."
-      },
-      {
-        "kind": "observed",
-        "detail": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs, SendInputAndHideToolbar reads _characters[_selectedIndex] and calls WindowsFunctions.Insert(selected, true)."
-      },
-      {
-        "kind": "observed",
-        "detail": "src/modules/poweraccent/PowerAccent.Core/Tools/WindowsFunctions.cs, Insert sends tagged backspace then KEYEVENTF_UNICODE key-down/up pairs."
-      },
-      {
-        "kind": "observed",
-        "detail": "The supplied 0.100.2 diagnostic log records toolbar navigation and hide events but no selected index/code point; usage data records both corner-bracket code points."
-      },
-      {
-        "kind": "inferred",
-        "detail": "The identical visible symptom can result from adjacent selection or target-side transformation, so the fallback branch is not yet justified."
-      }
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/poweraccent/PowerAccent.Common/CharacterMappings.cs",
-        "role": "Pinyin character data",
-        "symbols": [
-          "CharacterMappings.All",
-          "Language.PI",
-          "LetterKey.VK_COMMA"
-        ]
-      },
-      {
-        "path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs",
-        "role": "toolbar data, navigation, and commit",
-        "symbols": [
-          "PrepareCharacters",
-          "GetCharacters",
-          "ProcessNextChar",
-          "SendInputAndHideToolbar"
-        ]
-      },
-      {
-        "path": "src/modules/poweraccent/PowerAccent.Core/Tools/WindowsFunctions.cs",
-        "role": "backspace and Unicode injection",
-        "symbols": [
-          "WindowsFunctions.Insert"
-        ]
-      },
-      {
-        "path": "src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs",
-        "role": "selection display handoff",
-        "symbols": [
-          "PowerAccent_OnSelectCharacter",
-          "Selector.SetSelectedIndex"
-        ]
-      },
-      {
-        "path": "src/modules/poweraccent/PowerAccent.Common.UnitTests/CharacterMappingsTests.cs",
-        "role": "mapping/order invariants",
-        "symbols": [
-          "GetCharacters_SortsOutput_AccordingToDisplayOrder",
-          "GetCharacters_AllLanguagesCachedResult_IsConsistent"
-        ]
-      },
-      {
-        "path": "src/modules/poweraccent/PowerAccent.UITests/PowerAccentEndToEndTests.cs",
-        "role": "picker and insertion e2e coverage",
-        "symbols": [
-          "PowerAccentEndToEndTests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "step": 1,
-        "path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs",
-        "symbols": [
-          "ProcessNextChar",
-          "SendInputAndHideToolbar"
-        ],
-        "current_flow": "Navigation mutates _selectedIndex; UI receives an index/character event; commit later re-reads the mutable index and emits that array element after deleting the base character.",
-        "change": "First prove the commit-boundary value using a test seam or bounded diagnostic event. Keep a single selected-character snapshot for display and commit within one toolbar generation; do not add broad user-text logging.",
-        "pseudo_diff": "- WindowsFunctions.Insert(_characters[_selectedIndex], true)\n+ var selected = _characters[_selectedIndex];\n+ commitObserver?.Invoke(selected); // test/diagnostic seam only\n+ WindowsFunctions.Insert(selected, true)",
-        "edge_handling": "Preserve ForceReset, display cancellation, usage-frequency update, and UI-thread ordering. Reject stale callbacks after CancelToolbar and avoid exposing arbitrary user text in logs.",
-        "tests": [
-          "Deterministic Pinyin punctuation navigation with usage sorting on/off",
-          "Assert picker description, selected value, and committed value all identify U+300D"
-        ]
-      },
-      {
-        "step": 2,
-        "path": "src/modules/poweraccent/PowerAccent.UITests/PowerAccentEndToEndTests.cs",
-        "symbols": [
-          "PowerAccentEndToEndTests"
-        ],
-        "current_flow": "Existing tests cover UI behavior but do not establish a WeChat-versus-neutral-target code-point comparison for this report.",
-        "change": "Add or document a focused test/manual matrix for U+300C/U+300D/U+300E/U+300F in Notepad and WeChat, plus literal clipboard paste, under identical IME state.",
-        "pseudo_diff": "+ AssertPickerUnicode(\"U+300D\");\n+ AssertCommitValue(\"」\");\n+ AssertTargetText(notepad, \"」\");\n+ AssertTargetText(wechat, \"」\");\n+ AssertClipboardPaste(wechat, \"」\");",
-        "edge_handling": "Record WeChat version, installation channel, IME/punctuation mode, current PowerToys version, and whether the issue is target-only. Do not make CI depend on proprietary WeChat unless an existing harness supports it.",
-        "tests": [
-          "Current-release reproduction",
-          "Neutral-target and clipboard control",
-          "Repeat with usage sorting and Pinyin-only settings"
-        ]
-      },
-      {
-        "step": 3,
-        "path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs; src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml.cs",
-        "symbols": [
-          "ProcessNextChar",
-          "SendInputAndHideToolbar",
-          "PowerAccent_OnSelectCharacter"
-        ],
-        "current_flow": "The UI stores its own selected index while the core stores another mutable index; usage sorting changes the displayed array before navigation.",
-        "change": "If commit-boundary evidence is U+300C when U+300D is visibly selected, use one immutable per-generation item snapshot or a validated index/value handoff so description, visual selection, and commit cannot diverge.",
-        "pseudo_diff": "- OnSelectCharacter(index, character) -> UI index only\n+ selection = new SelectionSnapshot(generation, index, character)\n+ UI renders selection.character\n+ commit validates generation and commits selection.character",
-        "edge_handling": "Handle cancellation, focus loss, delayed reveal, wrap-around, Shift navigation, and usage-sorted arrays without reindexing a stale snapshot.",
-        "tests": [
-          "Regression for selecting U+300D after repeated navigation",
-          "Delayed reveal/cancellation does not commit stale item",
-          "Wrap-around and Shift navigation remain unchanged"
-        ]
-      },
-      {
-        "step": 4,
-        "path": "src/modules/poweraccent/PowerAccent.Core/Tools/WindowsFunctions.cs and target-policy/settings owner to be discovered only after reproduction",
-        "symbols": [
-          "WindowsFunctions.Insert"
-        ],
-        "current_flow": "Unicode SendInput is the default insertion mechanism and deletes the base character first when back=true.",
-        "change": "Only if selection is proven correct and WeChat alone transforms input, add an explicit opt-in, narrowly scoped clipboard-paste compatibility path. Prepare clipboard before deletion, bound contention retries, restore prior clipboard where possible, send balanced Ctrl+V, and fail without deleting text if preparation/paste cannot complete.",
-        "pseudo_diff": "if (compatibilityPolicy.UseClipboardForForegroundTarget()) {\n  if (!clipboard.TryPrepare(selected, out restore)) return;\n  if (!SendPasteAndRestore(restore)) return;\n} else {\n  WindowsFunctions.Insert(selected, back: true);\n}",
-        "edge_handling": "Protect clipboard ownership, focus changes, elevation boundaries, surrogate pairs, cancellation, and modifier key-up. Do not introduce a universal fallback or unverified WeChat heuristic.",
-        "tests": [
-          "Clipboard contention and failure do not lose the base character",
-          "Clipboard restored when possible",
-          "Default SendInput path remains unchanged"
-        ]
-      }
-    ],
-    "tests": [
-      "Existing PowerAccent.Common.UnitTests and PowerAccent.Core.UnitTests projects; use their existing test runner conventions.",
-      "PowerAccent.UITests/PowerAccentEndToEndTests.cs for deterministic picker/insertion behavior where environment permits.",
-      "Manual controlled WeChat/Notepad/paste matrix is required because the report target is proprietary and current logs lack emitted-code-point telemetry."
-    ],
-    "verification": [
-      "Build the affected PowerAccent project(s) with the existing repository build workflow; discover the exact configuration command during implementation rather than inventing one.",
-      "Run the existing PowerAccent unit tests with Visual Studio Test Explorer or vstest.console.exe; do not use dotnet test.",
-      "Reproduce on the current release with Unicode descriptions visible, select U+300D, and capture the result.",
-      "Compare Notepad, WeChat, and literal clipboard paste, then accept only a fix branch whose commit-boundary and target evidence agree."
-    ],
-    "risks": [
-      "Selection snapshot changes can regress usage sorting, wrap-around, Shift navigation, delayed reveal, or focus cancellation.",
-      "Clipboard fallback can overwrite or race with clipboard managers, fail across elevation boundaries, and leave text/modifier state inconsistent.",
-      "WeChat behavior may vary by version or IME mode, so an application heuristic could be brittle."
-    ],
-    "alternatives": [
-      {
-        "option": "Swap or reorder U+300C/U+300D in CharacterMappings",
-        "decision": "rejected",
-        "reason": "Both mappings are present and the report does not prove an adjacent selection; changing semantic order would mask the real cause."
-      },
-      {
-        "option": "Always use clipboard paste",
-        "decision": "rejected",
-        "reason": "It changes behavior for every target and creates clipboard/focus/elevation risks."
-      },
-      {
-        "option": "Unconditional WeChat heuristic",
-        "decision": "rejected",
-        "reason": "No target-specific transformation has been proven and target/version conditions are unknown."
-      }
-    ],
-    "confidence": {
-      "score": 48,
-      "level": "red",
-      "rationale": "The code path is confirmed, but the causal branch remains unresolved without controlled current-version evidence."
-    }
   },
   "mirror": {
     "kind": "issue",
@@ -338,16 +158,16 @@
       "comment": {
         "target": "issue",
         "number": 50306,
-        "body": "Thanks for the report and diagnostic archive. It confirms Quick Accent was enabled, but it does not show whether the picker selected U+300D or whether the change happens only in WeChat. Please retest on the current PowerToys release and share the exact WeChat version/install channel and active Windows input method or punctuation mode; a short recording or screenshots showing the picker Unicode description for U+300D followed by results in WeChat and Notepad; and whether pasting literal `」` into that same WeChat field remains unchanged. No additional bug-report ZIP is needed unless the behavior changes."
+        "body": "Thanks for the report and attached archive. It confirms Quick Accent was enabled, but it does not show whether the picker selected U+300D or whether the transformation occurs only in WeChat. Please retest on the current PowerToys release and provide:\n\n- **Picker selection evidence:** Please enable Unicode descriptions and share a short recording or screenshots showing U+300D selected in the picker and the resulting character. This determines whether the wrong character is selected before insertion or transformed afterward.\n- **Same-session target comparison:** Please repeat U+300C, U+300D, U+300E, and U+300F in WeChat and Notepad, then paste a literal `」` into the same WeChat field and report the result. This separates Quick Accent/SendInput behavior from WeChat or IME composition behavior.\n- **Target environment:** Please report the exact WeChat version and install channel plus the active Windows input method and punctuation mode. These details identify target-control or IME-specific conditions that may cause the transformation."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ],
   "schemaVersion": 5,
   "stage": "triage_revalidated",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "09/02/2026 02:17:27",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-09-02T02:17:27Z",
   "title": "quick accent inserts `」` as `「` in the wechat desktop app",
   "url": "https://github.com/microsoft/PowerToys/issues/50306",
   "labels": [

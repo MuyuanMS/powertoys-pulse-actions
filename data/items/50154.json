@@ -6,61 +6,107 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/27/2026 06:19:22",
+  "author": "snarum",
+  "confidence": "Red",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Rider-specific window enumeration needs a focused process/owner identity trace."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Reproduce and capture Rider window identity before finalizing grouping."
+  },
+  "generated_at": "2026-09-12T01:02:28.113489Z",
+  "evaluated_at": "2026-09-12T01:02:28.113489Z",
+  "source_updated_at": "2026-08-27T06:19:22Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "The report is specific and current enough for maintainer reproduction. Current Window Hopper code groups candidates by the exact resolved process image path, so Rider windows split across host processes or represented by owned/tool windows are a plausible, testable cause.",
     "evidence": [
-      "Live issue body and 1 public comment(s) were read through 08/27/2026 06:19:22.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "PowerToys 0.101.2362 stable; multiple Rider windows; several tested shortcuts; Window Hopper works in other applications.",
+      "Current AltWindowCycle.cpp resolves the foreground process image and keeps only eligible windows with the same process key.",
+      "No duplicate, assignee, or linked implementation was found in the live issue timeline."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/27/2026 06:19:22"
+    "recommended_action": "Reproduce with multiple Rider projects and inspect each top-level window process/owner before designing process-family grouping.",
+    "evaluated_at": "2026-09-12T01:02:28.113489Z",
+    "source_updated_at": "2026-08-27T06:19:22Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No merged or active fix was found for the identified current code path; the focused plan should be validated before implementation."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Group Rider frames by application identity when exact process paths differ",
+      "root_cause": "Window Hopper currently filters eligible windows by exact resolved process image path; Rider may expose project frames through different host processes or ownership relationships, leaving the same-process candidate set empty.",
+      "plan": [
+        "Capture HWND, owner, process path, AppUserModelID, and eligibility for two Rider project windows.",
+        "Introduce a narrowly scoped application-identity/grouping key only where exact process identity is insufficient.",
+        "Add AltWindowCycleLogic tests for multiple eligible frames across a recognized application group while preserving process isolation for unrelated apps."
+      ],
+      "verification": [
+        "Run AltWindowCycle unit tests.",
+        "Launch two Rider project windows and verify thumbnails appear and cycling remains within Rider.",
+        "Verify ordinary Win32, UWP, elevated, owned, cloaked, and tool windows retain current filtering."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The exact-process filter is confirmed, but Rider window topology has not yet been captured, so the grouping hypothesis remains below even odds."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 50154: Windows Hopper keyboard shortcut does not work in Rider.",
+    "summary": "Window Hopper opens for other applications but shows no sibling Rider windows when invoked from a Rider window.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version and release channel 0.101.2362 stable ### Installation method WinGet ### Area(s) with issue? Window Hopper ### Steps to reproduce Will not switch windows in Rider. Have tried multiple different key combinations last one being shift+ctrl+alt+page down. Works fine in other apps. 1: open multiple Riders 2: click window hopper shortcut 3: notice no window thumbnails ### ✔️ Expected Behavior Should switch between Rider windows. ### ❌ Actual Behavior window thumbnails d.",
-      "The live issue has 1 public comment(s), with labels: Issue-Bug, Needs-Triage, Product-Window Hopper."
+      "Reporter tested multiple Window Hopper shortcuts on PowerToys 0.101.2362 stable.",
+      "The failure is Rider-specific; the shortcut works in other applications.",
+      "Current Window Hopper selects eligible windows whose resolved process image path matches the foreground window."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "Rider may use more than one process identity or an ownership arrangement rejected by the current eligibility filter.",
+      "A local HWND/process capture is needed before choosing an application-grouping rule."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The symptom is scoped to candidate enumeration rather than global shortcut registration because the same shortcut works elsewhere. The exact process-key comparison is the first discriminating code path to test.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 1 public comment(s) through 08/27/2026 06:19:22.",
-      "Latest public discussion: <!-- powertoys-ai-triage:canonical:v1 --> <!-- powertoys-ai-triage:input-sha256:d6c0f01bb5966c8a36a32a6082f32e5479b2cc8a8f6426dfd092ea99829ff7c7 --> ## 🧭 Triage summary ### 🛠️ For the PowerToys team **🧩 Window Hopper** · **🐞 Bug** · **📦 PowerToys `0.101.2362`** Window Hopper keyboard shortcut fails to display window thumbnails when switching between multiple Rider instances, though it works c."
+      "Read the complete issue and comment through 2026-08-27T06:19:22Z.",
+      "Reviewed src/modules/AltWindowCycle/AltWindowCycle.cpp and AltWindowCycleLogic.h at commit 33e4ef46e5db77a256818a917d65103c9b7398fa; candidate selection uses resolved process paths and filters invisible, cloaked, owned, and tool windows.",
+      "Searched the upstream issue tracker for Window Hopper and Rider; no separate duplicate was found."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+      "id": "design-50154",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Rider window enumeration",
+      "reproduce": {
+        "title": "Capture why Rider windows are excluded",
+        "module": "Window Hopper",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "JetBrains Rider with two projects in separate top-level windows",
+          "Window Hopper enabled with a non-conflicting shortcut"
+        ],
+        "setup": [
+          "Record each Rider window title and whether it belongs to the same or a different rider64.exe process."
+        ],
+        "steps": [
+          "Focus one Rider window.",
+          "Invoke Window Hopper and record whether the overlay appears.",
+          "Use a window-inspection tool or debugger to record HWND, owner HWND, process ID/path, visibility, cloaked state, and tool-window style for both Rider frames.",
+          "Repeat with two windows from a simple Win32 app as a control."
+        ],
+        "expected_result": "Both Rider windows are eligible and displayed, or the captured identity/eligibility difference identifies the precise filter that removes them."
       }
     }
   ],

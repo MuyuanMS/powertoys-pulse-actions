@@ -3,65 +3,250 @@
   "number": 34491,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage_revalidated",
+  "stage": "awaiting_design_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/27/2026 23:48:00",
+  "author": "callmeTayyy",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-08-27T23:48:00Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "The report is reproducible and current source confirms the dominant cost: every SVG request starts a new renderer process and creates a fresh WebView2 environment before capturing one thumbnail.",
     "evidence": [
-      "Live issue body and 8 public comment(s) were read through 08/27/2026 23:48:00.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "The reporter measures roughly two seconds per thumbnail after clearing the cache and observes one PowerToys.SvgThumbnailProvider.exe/WebView2 workload per SVG.",
+      "The latest technical comment independently identifies per-file WebView2 creation and disposal as the bottleneck and discusses renderer alternatives.",
+      "Current SvgThumbnailProviderCpp::GetThumbnail writes a temporary SVG, starts PowerToys.SvgThumbnailProvider.exe, waits for it to exit, and then reads a BMP result.",
+      "Current SvgThumbnailProvider.GetThumbnailImpl constructs a new WebView2 and CoreWebView2Environment, captures one preview, and disposes the browser.",
+      "On 2026-09-12, the complete live body, all 8 public comment(s), labels, assignees, and link timeline were re-read through 2026-08-27T23:48:00Z."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/27/2026 23:48:00"
+    "recommended_action": "Approve a persistent per-user SVG renderer broker design, then benchmark it against a representative SVG corpus before implementation is accepted.",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-08-27T23:48:00Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No linked fix removes the per-thumbnail process and WebView2 initialization path; a repository change can directly address the confirmed overhead."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Reuse a persistent SVG thumbnail renderer instead of launching WebView2 per file",
+      "root_cause": "The native thumbnail COM handler launches a one-shot managed process for each file, and that process creates and tears down a WebView2 environment for one capture. Explorer therefore pays process startup, WebView2 startup, and profile cleanup for every thumbnail.",
+      "plan": [
+        "Replace the one-shot command-line handoff with a per-user named-pipe request to a lazily started renderer broker.",
+        "Keep one WebView2 environment alive in the broker and serialize bounded thumbnail render requests through reusable rendering state.",
+        "Return encoded bitmap data or a uniquely named output file with request IDs, timeouts, cancellation, and cleanup so Explorer callers cannot hang.",
+        "Preserve the existing script/resource blocking, SVG preprocessing, transparency, size limits, and process isolation.",
+        "Add unit and integration performance coverage for many SVGs, concurrent requests, renderer restart, malformed SVG, and fidelity-sensitive content."
+      ],
+      "verification": [
+        "Clear the Windows thumbnail cache and time generation for at least 100 representative SVGs before and after the change.",
+        "Confirm renderer process count remains bounded and WebView2 initialization is reused across requests.",
+        "Compare output for text, CSS, gradients, filters, foreignObject, transparency, malformed files, and oversized SVGs.",
+        "Kill the broker mid-request and verify the native handler times out, restarts it, and does not block Explorer."
+      ],
+      "confidence": {
+        "score": 82,
+        "level": "yellow",
+        "rationale": "The per-request startup mechanism is confirmed in current source and matches the measured symptom; the remaining uncertainty is the safest broker lifetime/IPC design and fidelity/performance target."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 34491: Abysmal performance from SVG Thumbnail Provider",
+    "summary": "SVG thumbnails are generated correctly but very slowly in large folders because each file launches a dedicated renderer and initializes WebView2 for one capture.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.83.0 ### Installation method GitHub ### Running as admin Yes ### Area(s) with issue? File Explorer: Thumbnail preview ### Steps to reproduce - Clear your cached thumbnails using Windows' Disk Cleanup - Open a folder with a large amount of SVG files (>100) - Observe the speed of thumbnail creation My bug report log: [PowerToysReport_2024-08-29-18-54-31.zip](https://github.com/user-attachments/files/16806487/PowerToysReport_2024-08-29-18-54-31.zip) ### ✔️ Expected.",
-      "The live issue has 8 public comment(s), with labels: Issue-Bug, Product-File Explorer, Needs-Triage."
+      "The reporter reproduced after clearing the thumbnail cache with more than 100 SVG files and observed about two seconds per thumbnail.",
+      "The report includes before/after recordings, hardware details, a bug report, and the observation that many renderer/WebView2 processes are created.",
+      "Current source launches PowerToys.SvgThumbnailProvider.exe once per thumbnail and waits synchronously for its output.",
+      "The managed renderer creates and disposes WebView2 for each request while blocking external resource loads."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "Reusing renderer state should remove most startup overhead without changing SVG fidelity.",
+      "Replacing WebView2 outright may improve performance further, but renderer compatibility and new dependency costs require separate product approval."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The public reproduction and source agree on a concrete performance mechanism. A persistent isolated broker is narrower than changing rendering engines and retains the existing security/fidelity model, but it needs concurrency, timeout, lifecycle, and corpus validation.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 8 public comment(s) through 08/27/2026 23:48:00.",
-      "Latest public discussion: Well, I had some time to kill so I've taken a look into this... Every single SVG will invoke the provider which in turn creates a new WebView2, renders the SVG, generates an image of the render, and finally discards the WebView2 instance - and this is where the problem lies, because WebView2 is quite heavy! Some alternatives provided by Claude: > 1. Direct2D's built-in SVG renderer (ID2D1DeviceCon."
+      "Read the complete issue body, all eight comments, linked similar issues, labels, assignees, and timeline.",
+      "Inspected src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProvider.cpp, SvgThumbnailProvider/Program.cs, SvgThumbnailProvider/SvgThumbnailProvider.cs, and existing provider unit tests.",
+      "Reviewed history showing prior SVG CPU, hang, WebView2 disposal, rendering, and transparency fixes; none removes the one-process/one-environment-per-thumbnail architecture."
     ],
     "information_gaps": [
       {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
+        "evidence_type": "sample_file",
+        "information": "A small public-safe corpus representing the SVG features and file sizes that must retain rendering fidelity.",
+        "why_needed": "It defines the compatibility gate for broker reuse and prevents a performance fix from silently changing text, CSS, filters, transparency, or embedded-content rendering.",
+        "how_to_collect": "Upload or link the smallest non-sensitive sample set through the GitHub web UI, including any files whose output differs from SvgSee."
       },
       {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
+        "evidence_type": "powertoys_version",
+        "information": "A current-release benchmark for the same folder after clearing the thumbnail cache.",
+        "why_needed": "It confirms the magnitude remains current and supplies a baseline for the acceptance threshold.",
+        "how_to_collect": "Record the current PowerToys version, file count, total generation time, and approximate renderer process count after clearing the thumbnail cache."
       }
+    ]
+  },
+  "design": {
+    "root_cause": "Explorer's native SVG thumbnail handler launches and waits for a separate managed renderer for every file; that one-shot process creates a new WebView2 environment/control, captures one image, disposes it, and exits.",
+    "evidence": [
+      "SvgThumbnailProviderCpp::GetThumbnail performs ShellExecuteEx and WaitForSingleObject for each request.",
+      "Program.Main accepts one file and size, renders one bitmap, and exits.",
+      "SvgThumbnailProvider.GetThumbnailImpl constructs WebView2 and calls CoreWebView2Environment.CreateAsync for each request."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProvider.cpp",
+        "purpose": "Native Explorer COM handler and current one-shot renderer process client.",
+        "symbols": [
+          "SvgThumbnailProvider::GetThumbnail"
+        ]
+      },
+      {
+        "path": "src/modules/previewpane/SvgThumbnailProvider/Program.cs",
+        "purpose": "Managed renderer entry point that currently handles one command-line request.",
+        "symbols": [
+          "Program.Main"
+        ]
+      },
+      {
+        "path": "src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.cs",
+        "purpose": "WebView2 initialization, SVG loading, capture, resizing, and cleanup.",
+        "symbols": [
+          "SvgThumbnailProvider.GetThumbnailImpl",
+          "SvgThumbnailProvider.GetThumbnail"
+        ]
+      },
+      {
+        "path": "src/modules/previewpane/UnitTests-SvgThumbnailProvider/SvgThumbnailProviderTests.cs",
+        "purpose": "Existing SVG rendering and bitmap correctness coverage.",
+        "symbols": [
+          "SvgThumbnailProviderTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProvider.cpp",
+        "symbols": [
+          "SvgThumbnailProvider::GetThumbnail"
+        ],
+        "current_behavior": "Each COM request writes a temporary SVG, launches a renderer process, waits indefinitely, and reads a temporary BMP.",
+        "change": "Send a request ID, SVG path/content reference, and requested size to a per-user broker over a secured named pipe. Start the broker only when unavailable, use a bounded timeout, and return failure without hanging Explorer.",
+        "code_block": "request = { id, svgPath, size }\nconnect_or_start_broker()\nsend(request)\nresponse = wait_with_timeout(id)\nif response.ok: load_bitmap(response.path)\nfinally: cleanup_request_files(id)",
+        "edge_cases": [
+          "Concurrent Explorer requests",
+          "Broker crash or stale pipe",
+          "Caller cancellation",
+          "Temporary-file cleanup",
+          "Per-user isolation"
+        ],
+        "tests": [
+          "Native client timeout/restart test",
+          "Concurrent request ID routing test",
+          "Malformed response and missing bitmap test"
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/previewpane/SvgThumbnailProvider/Program.cs",
+        "symbols": [
+          "Program.Main"
+        ],
+        "current_behavior": "The process parses one command-line request, renders one thumbnail, saves one BMP, and exits.",
+        "change": "Run a broker loop with a single-instance boundary, an idle shutdown timer, request validation, serialized render dispatch, and graceful restart behavior.",
+        "code_block": "acquire_single_instance()\ninitialize_renderer_once()\nwhile request = pipe.read(timeout=idle_timeout):\n    validate(request)\n    render_and_reply(request)\nshutdown_after_idle()",
+        "edge_cases": [
+          "Two clients racing to start the broker",
+          "Session shutdown",
+          "Idle cleanup",
+          "Version mismatch after update"
+        ],
+        "tests": [
+          "Single-instance race test",
+          "Idle shutdown test",
+          "Restart after forced termination test"
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.cs",
+        "symbols": [
+          "SvgThumbnailProvider.GetThumbnailImpl",
+          "SvgThumbnailProvider.GetThumbnail"
+        ],
+        "current_behavior": "Every render creates a WebView2 control and environment, then disposes the control after one capture.",
+        "change": "Initialize the CoreWebView2Environment once per broker lifetime, serialize or safely pool rendering controls, reset navigation/content between requests, and retain all existing resource-blocking and size/fidelity behavior.",
+        "code_block": "environment ??= await CreateEnvironmentAsync()\nawait renderGate.WaitAsync()\ntry { reset_surface(); navigate(svg); return capture(size); }\nfinally { clear_request_state(); renderGate.Release(); }",
+        "edge_cases": [
+          "Navigation failure",
+          "Oversized SVG",
+          "Transparent background",
+          "External resource request",
+          "WebView2 process failure"
+        ],
+        "tests": [
+          "Sequential reuse test",
+          "Failure recovery test",
+          "Transparency and aspect-ratio regression tests"
+        ]
+      },
+      {
+        "order": 4,
+        "file": "src/modules/previewpane/UnitTests-SvgThumbnailProvider/SvgThumbnailProviderTests.cs",
+        "symbols": [
+          "SvgThumbnailProviderTests"
+        ],
+        "current_behavior": "Tests cover individual rendering results but not multi-file startup cost or broker lifecycle.",
+        "change": "Add representative corpus correctness tests and a bounded performance/integration test that verifies many requests reuse one renderer lifetime.",
+        "code_block": "render(corpus, cold_cache)\nassert process_starts <= expected_bound\nassert elapsed < accepted_threshold\nassert pixels_match_baselines",
+        "edge_cases": [
+          "Slow CI machines",
+          "WebView2 runtime availability",
+          "Non-deterministic timing"
+        ],
+        "tests": [
+          "Use generous regression thresholds and separate fidelity assertions from timing assertions"
+        ]
+      }
+    ],
+    "verify": [
+      "Build the SVG thumbnail provider projects for x64 Release using the repository build scripts.",
+      "Run Preview.SvgThumbnailProvider.UnitTests and the File Explorer add-ons UI thumbnail checks.",
+      "Clear the thumbnail cache and generate thumbnails for a 100+ SVG corpus while measuring elapsed time and renderer/WebView2 process count.",
+      "Verify Explorer remains responsive when the broker is killed, restarted, or given malformed/oversized SVG input."
+    ],
+    "risks": [
+      "A persistent broker expands lifecycle and IPC complexity and must not let Explorer wait indefinitely.",
+      "Reusing WebView2 state can leak content, cookies, or navigation state between files unless each request is reset and external resources remain blocked.",
+      "Parallel Explorer demand must be bounded to avoid memory spikes while still improving throughput."
+    ],
+    "alternatives": [
+      "Replace WebView2 with resvg or SkiaSharp; potentially faster, but adds compatibility, dependency, packaging, and licensing review.",
+      "Cache only CoreWebView2Environment inside the current executable; rejected because the one-shot process exits after every file.",
+      "Use Direct2D as a fast path; rejected as the sole renderer because unsupported SVG text/CSS/filter features would reduce fidelity."
     ]
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+      "id": "approve-design-34491",
+      "type": "approve_design",
+      "label": "Approve persistent SVG renderer design",
+      "design": {
+        "title": "Reuse one isolated SVG renderer across thumbnail requests"
       }
+    },
+    {
+      "id": "request-info-34491",
+      "type": "request_info",
+      "label": "Request current SVG corpus benchmark",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 34491,
+        "body": "Thanks for the detailed benchmark, recordings, and analysis of the per-file WebView2 startup cost. The report already establishes the likely startup bottleneck; these remaining details will set current performance and fidelity gates:\n\n- **Current benchmark:** Please retest the same folder on the latest stable PowerToys release after clearing the thumbnail cache, and report the PowerToys version, SVG count, total generation time, and approximate PowerToys.SvgThumbnailProvider/WebView2 process count. This confirms the current magnitude and provides an acceptance baseline.\n- **Representative SVG corpus:** Please upload or link the smallest public-safe sample set covering any text, CSS, filters, transparency, embedded content, or file sizes that must render identically. This lets maintainers verify that renderer reuse improves speed without changing output fidelity."
+      },
+      "note": "Draft only; no upstream comment is posted."
     }
   ],
   "title": "Abysmal performance from SVG Thumbnail Provider",

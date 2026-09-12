@@ -27,15 +27,15 @@
     "status": "needs_information",
     "rationale": "No linked pull request, assignment, duplicate designation, or fork implementation covers this report. The screenshot confirms the Alt-absorption setting is enabled, and current code intentionally swallows Alt keydown and replays it later; that explains the observed delayed event but not the reported shortcut failure. No diagnostic archive, foreground application, window mode, or event sequence identifies a defective state transition.",
     "recommended_action": "Use the display-only reproduction plan to distinguish expected configured absorption from a shortcut-breaking transition. Do not propose a source change until that sequence is captured.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/29/2026 14:06:50",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-08-29T14:06:50Z",
     "evidence": [
       "The reporter identifies Grab and Move enablement as the condition that correlates with the symptom and reports that disabling it removes the problem.",
       "The attached image shows the setting that blocks Alt from interacting with a window menu after drag or resize enabled.",
       "The issue has one automated triage comment, no assignee, no linked pull request, and no diagnostic archive.",
       "src/modules/GrabAndMove/GrabAndMove/main.cpp:KeyboardProc saves and swallows Alt keydown when g_shouldAbsorbAlt is enabled, then replays the modifier through ReplayAbsorbedModifier on another key or Alt keyup.",
       "Related Issue 50248 reports key-up-only trigger-key behavior and includes diagnostics; Issue 49037 reports separate Alt interception conflicts, but neither proves the transition in this report.",
-      "Live issue metadata and discussion were re-read through 08/29/2026 14:06:50."
+      "On 2026-09-12, the complete live body, all 1 public comment(s), labels, assignees, and link timeline were re-read through 2026-08-29T14:06:50Z."
     ]
   },
   "fix_assessment": {
@@ -86,82 +86,28 @@
       "Downloaded and inspected the related Issue 50248 diagnostic archive, including GrabAndMove settings and logs; it uses Win as the activation modifier and does not provide a trace for this report's Alt scenario.",
       "Inspected src/modules/GrabAndMove/GrabAndMove/main.cpp, including KeyboardProc, ReplayAbsorbedModifier, pending click handling, modifier replay, and foreground-state reset.",
       "Searched current upstream related issue and pull-request traces, local history, and MuyuanMS/PowerToys issue and pull-request traces; no concrete existing fix or Issue 50236 mirror was found.",
-      "Fast revalidation read the live issue body, labels, assignees, and 1 public comment(s) through 08/29/2026 14:06:50."
+      "Revalidated the live body, all 1 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-08-29T14:06:50Z."
     ],
     "information_gaps": [
       {
         "information": "A reproducible input and focus sequence, including whether Alt is combined with mouse input or a window switch.",
         "why_needed": "It selects between the hook's normal non-Alt-key replay, pending interaction handling, and foreground-reset paths.",
-        "how_to_collect": "Use the reproduce plan to record the order of Alt, mouse buttons, other keys, and foreground changes immediately before failure."
+        "how_to_collect": "Use the reproduce plan to record the order of Alt, mouse buttons, other keys, and foreground changes immediately before failure.",
+        "evidence_type": "repro_steps"
       },
       {
         "information": "The affected executable and window mode, plus whether the symptom remains after disabling the Alt-absorption option.",
         "why_needed": "It separates expected configured behavior from fullscreen, focus, or application-specific input handling.",
-        "how_to_collect": "Record the application name and window mode; repeat the same sequence with the option enabled and disabled."
+        "how_to_collect": "Record the application name and window mode; repeat the same sequence with the option enabled and disabled.",
+        "evidence_type": "other_software"
       },
       {
         "information": "A diagnostic report captured immediately after a successful reproduction.",
         "why_needed": "It provides the active module configuration and runtime context needed to correlate the failing sequence with the hook state machine.",
-        "how_to_collect": "Immediately after reproducing, add a comment containing `/bugreport`."
+        "how_to_collect": "Immediately after reproducing, add a comment containing `/bugreport`.",
+        "evidence_type": "bugreport_zip"
       }
     ]
-  },
-  "design": {
-    "status": "needs_information",
-    "converged": false,
-    "root_cause": "Unconfirmed. Current evidence proves intentional configured Alt-keydown absorption, not the transition that causes the reported shortcut failure.",
-    "evidence": [
-      {
-        "kind": "observed",
-        "detail": "The attached screenshot enables the Alt-absorption option."
-      },
-      {
-        "kind": "observed",
-        "detail": "KeyboardProc swallows Alt keydown under g_shouldAbsorbAlt and ReplayAbsorbedModifier later injects the saved event."
-      },
-      {
-        "kind": "inferred",
-        "detail": "A defective stale-state or focus-transition path is possible but not established."
-      }
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
-        "role": "Owns the low-level keyboard hook and modifier absorption/replay state.",
-        "symbols": [
-          "KeyboardProc",
-          "ReplayAbsorbedModifier",
-          "g_shouldAbsorbAlt",
-          "g_altAbsorbed",
-          "g_pendingModifierReplayed"
-        ]
-      }
-    ],
-    "implementation_steps": [],
-    "verify": [
-      "First reproduce and capture the missing transition evidence.",
-      "Do not change source until an observed failing branch produces the shortcut loss.",
-      "A later fix must preserve normal Grab and Move drag, resize, and modifier-click behavior."
-    ],
-    "risks": [
-      "Prematurely disabling absorption can regress the documented modifier-plus-mouse feature.",
-      "Incorrect replay changes can create duplicate or mismatched synthetic keyboard events."
-    ],
-    "alternatives": [
-      {
-        "option": "Treat delayed Alt delivery as the defect and remove absorption.",
-        "decision": "Rejected because the enabled setting and current implementation intentionally produce deferred delivery."
-      }
-    ],
-    "adversary": {
-      "rounds": 0,
-      "sign_off": "Not converged. A design cannot pass independent review until evidence identifies the branch that loses shortcut behavior.",
-      "blocking_objections": [
-        "The observed delayed Alt keydown is compatible with documented configured behavior.",
-        "No application, window mode, or input/focus sequence ties the shortcut failure to a specific hook-state transition."
-      ],
-      "non_blocking_notes": []
-    }
   },
   "actions": [
     {
@@ -217,16 +163,16 @@
         "target": "issue",
         "repository": "microsoft/PowerToys",
         "number": 50236,
-        "body": "The shown Alt absorption option intentionally delays Alt keydown, but the shortcut failure needs a specific hook transition before a code change is safe. Please provide the affected application and window mode, the exact order of Alt, mouse buttons, other keys, and focus changes, and whether the same sequence fails with Alt absorption disabled. After a successful reproduction, add a comment containing `/bugreport` immediately."
+        "body": "Thanks for the screenshot showing Alt absorption enabled. That option intentionally delays Alt keydown, but the shortcut failure still needs a specific hook transition before a safe code change can be selected. Please provide:\n\n- **Exact input sequence:** Please list the order of Alt, mouse buttons, other keys, and foreground changes immediately before the failure, including whether Alt is combined with a drag or window switch. This selects the normal replay, pending-interaction, or foreground-reset path.\n- **Application and setting comparison:** Please name the affected executable and window mode, then repeat the same sequence with Alt absorption enabled and disabled. This separates configured behavior from application-specific or fullscreen input handling.\n- **Fresh PowerToys report:** Immediately after a successful reproduction, add a comment containing `/bugreport`. The generated ZIP provides the active module configuration and runtime context needed to correlate the sequence with hook state."
       },
       "note": "Draft only; no upstream comment is posted without explicit approval."
     }
   ],
   "schemaVersion": 5,
   "stage": "triage_revalidated",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/29/2026 14:06:50",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-08-29T14:06:50Z",
   "title": "PowerToys运行时ALT键松发BUG问题：Alt 物理按下不触发，物理松开立刻触发按下与松开",
   "url": "https://github.com/microsoft/PowerToys/issues/50236",
   "labels": [

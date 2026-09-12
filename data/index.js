@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-12T06:46:50.6212600+08:00",
+  "generated_at": "2026-09-12T09:35:24.9616070+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 165,
+    "open_prs": 166,
     "open_issues": 12630,
     "community": 11784,
-    "artifacts": 437
+    "artifacts": 426
   },
   "impact": {
-    "as_of": "2026-09-12T06:46:50.6212600+08:00",
+    "as_of": "2026-09-12T09:35:24.9616070+08:00",
     "issues_helped": 10,
     "prs_iterated": 20,
     "constructive_comments_posted": 3,
@@ -235,7 +235,6 @@ window.BOARD_INDEX = {
     50143,
     25285,
     24880,
-    50133,
     24283,
     23724,
     23160,
@@ -246,8 +245,6 @@ window.BOARD_INDEX = {
     50465,
     8054,
     21642,
-    21393,
-    21350,
     21228,
     21174,
     21082,
@@ -256,7 +253,6 @@ window.BOARD_INDEX = {
     20890,
     50451,
     20312,
-    20153,
     20036,
     20008,
     19821,
@@ -264,7 +260,6 @@ window.BOARD_INDEX = {
     19041,
     18866,
     18475,
-    18119,
     17589,
     16845,
     16762,
@@ -319,7 +314,6 @@ window.BOARD_INDEX = {
     50355,
     50351,
     50349,
-    50340,
     50339,
     50325,
     50317,
@@ -384,7 +378,6 @@ window.BOARD_INDEX = {
     50160,
     50159,
     50156,
-    50154,
     50152,
     50149,
     50148,
@@ -395,7 +388,6 @@ window.BOARD_INDEX = {
     50138,
     50137,
     50131,
-    50130,
     50127,
     50125,
     50121,
@@ -442,9 +434,7 @@ window.BOARD_INDEX = {
     47693,
     47446,
     10942,
-    10065,
     46362,
-    9661,
     9531,
     45630,
     45453,
@@ -496,7 +486,6 @@ window.BOARD_INDEX = {
     38604,
     2191,
     38530,
-    38513,
     2151,
     1890,
     1837,
@@ -537,6 +526,40 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-50534",
+      "kind": "pr",
+      "number": 50534,
+      "url": "https://github.com/microsoft/PowerToys/pull/50534",
+      "title": "[UITests][NewPlus] Add UI tests",
+      "author": "khmyznikov",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-New+"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-11T23:12:54Z",
+      "updated_at": "2026-09-12T00:06:31Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-50532",
       "kind": "pr",
@@ -1088,7 +1111,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-10T23:49:03Z",
-      "updated_at": "2026-09-11T19:04:20Z",
+      "updated_at": "2026-09-12T00:42:30Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -29340,7 +29363,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage_revalidated",
+      "stage": "awaiting_design_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -108679,14 +108702,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
@@ -120607,8 +120627,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Close mixed report and split accessibility request"
       },
       "labels": [
         "Issue-Bug",
@@ -125004,14 +125024,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Keyboard Shortcut Manager",
@@ -125303,14 +125320,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Always On Top",
@@ -126814,8 +126828,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Close as handled by current shortcut"
       },
       "labels": [
         "Issue-Bug",
@@ -131894,14 +131908,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-PowerToys Run",
@@ -139478,14 +139489,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Keyboard Shortcut Manager",
@@ -144620,8 +144628,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -146847,8 +146855,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Reclassify as a PowerRename enhancement"
       },
       "labels": [
         "Issue-Bug",
@@ -153493,8 +153501,8 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": "awaiting_author",
+      "track": "fix",
+      "stage": "triage_revalidated",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -153624,19 +153632,16 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": "fix",
-      "stage": "triage_revalidated",
+      "track": "triage",
+      "stage": "awaiting_author",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -156189,8 +156194,8 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "triage",
-      "stage": "not_actionable",
+      "track": "fix",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -156257,7 +156262,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "triage_revalidated",
+      "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/05/2026 08:23:09",
@@ -156265,10 +156270,7 @@ window.BOARD_INDEX = {
       "agent_status": "fix",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
@@ -157138,7 +157140,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "triage",
-      "stage": "triage_revalidated",
+      "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/03/2026 20:09:40",
@@ -157146,10 +157148,7 @@ window.BOARD_INDEX = {
       "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Author-Feedback",
@@ -157311,18 +157310,18 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "triage_revalidated",
+      "track": "triage",
+      "stage": "duplicate",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/03/2026 12:54:22",
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Close as duplicate of the canonical WPF crash"
       },
       "labels": [
         "Issue-Bug",
@@ -157720,18 +157719,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -158377,7 +158373,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "triage",
-      "stage": "awaiting_design_approval",
+      "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -159175,19 +159171,16 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "triage_revalidated",
+      "track": "triage",
+      "stage": "awaiting_author",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
@@ -160709,8 +160702,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -162217,19 +162210,16 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
-      "stage": "triage_revalidated",
+      "track": "triage",
+      "stage": "maintainer_owned",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/11/2026 09:09:03",
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -162693,14 +162683,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -162971,8 +162958,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Close as duplicate of #19690"
       },
       "labels": [
         "Issue-Bug",
@@ -163072,8 +163059,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Explain installer scope conflict"
       },
       "labels": [
         "Issue-Bug",
@@ -163169,8 +163156,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -163427,14 +163414,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-FancyZones",
@@ -163533,8 +163517,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Close as duplicate of #27612"
       },
       "labels": [
         "Issue-Bug",
@@ -163905,8 +163889,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Close as duplicate of #27945"
       },
       "labels": [
         "Issue-Bug",
@@ -188481,13 +188465,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": "fix",
+      "track": "triage",
       "stage": "triage_revalidated",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
@@ -208864,8 +208848,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -253569,14 +253553,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Keyboard Shortcut Manager",
@@ -264337,14 +264318,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-FancyZones",
@@ -267372,8 +267350,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "approve_design",
+        "label": "Start fixing"
       },
       "labels": [
         "Issue-Bug",
@@ -315900,8 +315878,8 @@ window.BOARD_INDEX = {
       "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Close as handled by #12996 and #13618"
       },
       "labels": [
         "Issue-Bug",
@@ -344485,8 +344463,8 @@ window.BOARD_INDEX = {
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Close as fixed by #37930"
       },
       "labels": [
         "Issue-Bug",
@@ -376569,18 +376547,18 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": "fix",
-      "stage": "triage_revalidated",
+      "track": "triage",
+      "stage": "not_actionable",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
-      "agent_status": "fix",
+      "agent_status": "triage",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
+        "type": "post_comment",
+        "label": "Explain how to restore GPU and Network bands"
       },
       "labels": [
         "Issue-Bug",
@@ -394046,18 +394024,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "fix",
-      "stage": "awaiting_design_approval",
+      "stage": "triage_revalidated",
       "owes": "author",
       "pending_author": true,
       "waiting_since": "09/03/2026 01:14:35",
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Keyboard Shortcut Manager",

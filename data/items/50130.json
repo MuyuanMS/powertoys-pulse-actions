@@ -6,61 +6,106 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/26/2026 09:09:04",
+  "author": "Chrisch-Tea",
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The mid-drag Shift transition contradicts current expected behavior and tests."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Reproduce the release state ordering and strengthen final-snap coverage."
+  },
+  "generated_at": "2026-09-12T01:02:28.217857Z",
+  "evaluated_at": "2026-09-12T01:02:28.217857Z",
+  "source_updated_at": "2026-08-26T09:09:04Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "The report is a complete current-version regression scenario. Current source has a DraggingState Shift latch and UI tests that explicitly expect mid-drag Shift to hide zones, so the next step is to reproduce the release behavior against that state machine and fix the event-order gap.",
     "evidence": [
-      "Live issue body and 1 public comment(s) were read through 08/26/2026 09:09:04.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "Notepad reproduces on 0.101.2362 after update; Shift held before drag works, Shift pressed during drag does not.",
+      "Current FancyZones UI tests specify that, with shiftDrag=false, pressing Shift during a drag deactivates zones.",
+      "DraggingState receives Shift through raw input and derives snapping from Shift XOR secondary-mouse state."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/26/2026 09:09:04"
+    "recommended_action": "Run the existing mid-drag Shift test against the release-equivalent build and fix whichever raw-input/drop transition leaves snapping active.",
+    "evaluated_at": "2026-09-12T01:02:28.217857Z",
+    "source_updated_at": "2026-08-26T09:09:04Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No merged fix was found for this mid-drag regression; current code and tests identify a narrow state-ordering boundary."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Apply mid-drag Shift state before the final snap decision",
+      "root_cause": "The live 0.101 build appears to reach MoveSizeEnd with stale snapping state when Shift changes after drag start, despite the intended raw-input state transition and regression-test expectation.",
+      "plan": [
+        "Reproduce using the exact shiftDrag=false sequence and capture DraggingState::SetShiftState, UpdateDraggingState, and MoveSizeEnd ordering.",
+        "Ensure a Shift make received during an active drag updates snapping/overlay state before the mouse-up snap decision.",
+        "Strengthen DragWindowTests so the assertion verifies the final app-zone history after pressing Shift mid-drag, not only visual state."
+      ],
+      "verification": [
+        "Run FancyZones DragWindowTests for shiftDrag=false and mid-drag Shift.",
+        "Verify Shift before drag and Shift during drag both exclude the window, while no Shift still snaps.",
+        "Repeat with non-primary mouse switching enabled and disabled."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The intended state machine and regression test are present, but a release-build reproduction is needed to locate whether input delivery, state update, or final drop ordering fails."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 50130: FancyZones exclude by pressing shift during drag no longer working",
+    "summary": "With “hold Shift to activate zones” disabled, pressing Shift after a drag starts should temporarily disable snapping, but 0.101.2362 still snaps on drop.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version v0.101.2362.0 ### Installation method Other (please specify in \"Steps to Reproduce\") ### Area(s) with issue? FancyZones ### Steps to reproduce Installation/Update via Patch my PC to v0.101.2362.0 Configure FancyZones zones, un-tick \"hold shift to enable zones\" Start dragging a window (notepad.exe) you don't want to fill a zone without pressing shift **While dragging** press shift and then let go of primary mouse button to set window down ### ✔️ Expected Behavior W.",
-      "The live issue has 1 public comment(s), with labels: Issue-Bug, Product-FancyZones, Needs-Triage."
+      "The issue is on current 0.101.2362 and states the previous build did not fail.",
+      "The setting “hold shift to enable zones” is off.",
+      "Shift before drag excludes correctly; only a Shift transition during the drag is missed."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "The failure is likely event ordering or state propagation rather than configuration parsing."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "The before-drag control proves the setting is loaded and Shift inversion is understood. Comparing mid-drag raw-input and MoveSizeEnd timing is the shortest path to a defensible fix.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 1 public comment(s) through 08/26/2026 09:09:04.",
-      "Latest public discussion: <!-- powertoys-ai-triage:canonical:v1 --> <!-- powertoys-ai-triage:input-sha256:22ce619709dd1d767f16791263290113a3c4e180f080c0c79304c0a40a121b3b --> ## 🧭 Triage summary ### 🛠️ For the PowerToys team **🧩 FancyZones** · **🐞 Bug** · **📦 PowerToys `0.101.2362.0`** FancyZones shift\\-key exclusion fails when shift is pressed during a window drag operation; the window incorrectly snaps to a zone des."
+      "Read the full issue and automated triage comment through 2026-08-26T09:09:04Z.",
+      "Reviewed DraggingState.cpp, FancyZones.cpp, and current FancyZones UI tests; the tests explicitly describe and assert mid-drag Shift deactivation.",
+      "Reviewed merged PR #49926 for drag-start re-seeding; that fix addresses stale state at drag start, not this reported mid-drag transition."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+      "id": "design-50130",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce mid-drag Shift exclusion",
+      "reproduce": {
+        "title": "Verify the FancyZones Shift transition at drop",
+        "module": "FancyZones",
+        "version_requirement": "0.101.2362 and current development build",
+        "prerequisites": [
+          "Set “Hold Shift key to activate zones while dragging” off",
+          "Configure a visible zone layout",
+          "Use a normal Notepad window"
+        ],
+        "setup": [],
+        "steps": [
+          "Begin dragging Notepad without holding Shift and confirm zones are active.",
+          "While continuing the same drag, press and hold Shift.",
+          "Release the primary mouse button while Shift remains held.",
+          "Inspect whether the window snapped and whether app-zone-history recorded a zone.",
+          "Repeat with Shift held before starting the drag as a control."
+        ],
+        "expected_result": "Both Shift timings exclude the window from snapping; app-zone-history is unchanged for the excluded drop."
       }
     }
   ],

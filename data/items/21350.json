@@ -6,61 +6,105 @@
   "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "10/24/2022 12:30:52",
+  "author": "Wionsito",
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Border position can lag shell-managed snap geometry."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Trace WinEvents during Snap Layout and update the live frame."
+  },
+  "generated_at": "2026-09-12T01:02:28.326191Z",
+  "evaluated_at": "2026-09-12T01:02:28.326191Z",
+  "source_updated_at": "2022-10-24T12:30:52Z",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The live report and discussion do not yet provide enough reproducible or diagnostic evidence for a safe implementation-grade fix design.",
+    "status": "actionable_design",
+    "rationale": "The clarified steps and screenshot define a reproducible event-order problem. Current Always On Top code updates borders on location-change and move-size-end WinEvents, so missed or coalesced location notifications during the shell snap interaction are a plausible target.",
     "evidence": [
-      "Live issue body and 3 public comment(s) were read through 10/24/2022 12:30:52.",
-      "No confirmed root cause is established by the public evidence reviewed."
+      "The reporter clarified: pin a window, drag it into a Windows 11 preset, keep holding, and observe the border at the old size/position.",
+      "Current AlwaysOnTop.cpp subscribes to EVENT_OBJECT_LOCATIONCHANGE and EVENT_SYSTEM_MOVESIZEEND and calls WindowBorder::UpdateBorderPosition.",
+      "No linked fix or duplicate is present."
     ],
-    "recommended_action": "Request the exact version/channel, numbered reproduction, and a failure-time /bugreport archive.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "10/24/2022 12:30:52"
+    "recommended_action": "Reproduce on current Windows 11 and harden border updates during shell snap preview/move-size transitions.",
+    "evaluated_at": "2026-09-12T01:02:28.326191Z",
+    "source_updated_at": "2022-10-24T12:30:52Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys code fix is not yet applicable because the current report lacks the evidence needed to identify and validate an owning code path."
+    "status": "proposed",
+    "rationale": "No linked fix exists; current event subscriptions provide a focused but not yet confirmed cause."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Keep the topmost border synchronized during Snap Layout resizing",
+      "root_cause": "The shell’s snap-preview/move loop can change the visible frame without delivering a usable location-change update to the border window until move-size end, leaving the overlay at stale bounds during the gesture.",
+      "plan": [
+        "Trace WinEvent ordering and DWM extended-frame bounds during a Snap Layout drag.",
+        "Coalesce location updates onto the module thread and refresh from the current DWM frame whenever the tracked window geometry changes during the move loop.",
+        "Add a UI regression that checks the border surrounds the live frame before and after snap completion."
+      ],
+      "verification": [
+        "Pin a resizable window and drag it through each Windows 11 snap preset while holding the drag.",
+        "Confirm the border follows intermediate and final bounds without lag or orphaning.",
+        "Run Always On Top UI tests for resize, maximize, virtual desktop, and border style changes."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The subscribed events and stale-bound symptom align, but current Windows behavior must be reproduced to identify the missing or delayed notification."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Live revalidation of Issue 21350: Always On Top Window Border Looks Weird When Adapting The Window Size Using On Top Windows 22H2 Presets",
+    "summary": "During a Windows 11 Snap Layout drag, the Always On Top border can remain at the pinned window’s old bounds until the move/resize operation finishes.",
     "known_information": [
-      "The live issue body states: ### Microsoft PowerToys version 0.63.0 ### Installation method Windows Store ### Running as admin - [X] Yes ### Area(s) with issue? Always on Top ### Steps to reproduce ![image](https://user-images.githubusercontent.com/82771944/196840576-55c1b968-8aa1-49dc-8cc5-af912d1aae20.png) ### ✔️ Expected Behavior Adaptative window border ### ❌ Actual Behavior ![image](https://user-images.githubusercontent.com/82771944/196840542-c4e50e2a-4145-46d5-b3f4-672544c17074.png) ### Other Software _No response_.",
-      "The live issue has 3 public comment(s), with labels: Issue-Bug, Product-Always On Top, Needs-Triage, Needs-Team-Response."
+      "The report targets PowerToys 0.63 on Windows 11 22H2 Snap Layout presets.",
+      "The stale border is visible while the drag remains active.",
+      "The current implementation already updates on location-change and move-size-end events."
     ],
     "inferences": [
-      "The available public record does not yet establish a confirmed root cause.",
-      "A repository fix should not be proposed until the missing reproduction and diagnostic evidence are supplied."
+      "A shell-managed snap transition may coalesce or delay the event used to position the separate border window."
     ],
-    "analysis": "The issue was re-read from the live body and discussion. The evidence is not sufficient for an implementation-grade fix design, so the honest next step is a specific evidence request rather than a fabricated root-cause plan.",
+    "analysis": "Because the border is a separate window, it must follow the tracked DWM frame throughout the shell interaction. Event tracing, not more reporter prose, is the next useful step.",
     "initial_investigation": [
-      "Read the live issue body, labels, assignees, and 3 public comment(s) through 10/24/2022 12:30:52.",
-      "Latest public discussion: > @Wionsito, could you please clarify steps to reproduce, expected behavior and actual behavior? /needinfo I don't really know how to explain it really well cuz my English isn't good, but I'll try Steps to reproduce: -Put the window in always on top -Select a window and move it to the top -Move The Window to a Size Preset and Don't Stop Pressing -Now the always on top window border should be on th."
+      "Read the complete issue and all three comments through 2022-10-24T12:30:52Z.",
+      "Reviewed AlwaysOnTop.cpp and WindowBorder.cpp event subscriptions and SetWindowPos updates.",
+      "No duplicate, assignee, or implementation link appears in the timeline."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered reproduction steps including the exact PowerToys version, install channel, and expected versus actual result.",
-        "why_needed": "The current public record is insufficient to identify an owning code path or distinguish a product defect from environment-specific behavior.",
-        "how_to_collect": "Reply with the exact version/channel and numbered steps that reproduce the behavior."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh diagnostic ZIP captured immediately after reproducing, when the failure is still present.",
-        "why_needed": "The diagnostic context may identify the failing component and avoid a speculative repository change.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing and before restarting PowerToys."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "type": "request_info",
-      "label": "Request version, repro steps, and failure-time diagnostics",
-      "comment": {
-        "body": "Thanks for the information already provided in the issue. The current public record still does not identify the exact failing path. Please provide: 1) the exact PowerToys version and install channel plus numbered reproduction steps and expected versus actual behavior; and 2) comment /bugreport immediately after reproducing, before restarting PowerToys, so the diagnostic state can distinguish the affected component. This evidence is needed to decide whether a repository fix is applicable and where it belongs."
+      "id": "design-21350",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce stale snap border",
+      "reproduce": {
+        "title": "Trace Always On Top border during Snap Layout",
+        "module": "Always On Top",
+        "version_requirement": "Current development build on Windows 11",
+        "prerequisites": [
+          "Enable Always On Top border",
+          "Use a resizable desktop window",
+          "Enable Windows 11 Snap Layouts"
+        ],
+        "setup": [],
+        "steps": [
+          "Pin the window with Always On Top.",
+          "Drag it to the top edge until Snap Layout presets appear.",
+          "Hover or select a preset while continuing to hold the pointer.",
+          "Observe border bounds during preview and after releasing the window."
+        ],
+        "expected_result": "The border continuously surrounds the current visible frame and never remains at the old bounds."
       }
     }
   ],

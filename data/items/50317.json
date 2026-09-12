@@ -6,203 +6,104 @@
   "pending_author": false,
   "author": "ReginaldTang",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The stable-to-Insider transition is a concrete packaging scenario and a repository fix may be applicable, but no package identity/version data or reproduction log is attached.",
-    "recommended_action": "Run the controlled stable-to-Insider reproduction and compare package identity, family name, registration, and upgrade metadata; use the proposed packaging design only if the identity change is confirmed.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "09/02/2026 05:44:46",
+    "status": "needs_information",
+    "rationale": "The screenshot establishes that Microsoft Store no longer recognizes PowerToys after moving from Store stable to Insider, but it does not provide the installed package identity or establish whether that channel transition is intended to remain Store-owned. Current installer code uses the Store sparse package family name, while developer packages can use a different family. The prior detailed design included a directory as an affected file and overclaimed a package-identity root cause, so it was removed.",
+    "recommended_action": "Request the installed package identity and launch/upgrade state, then use the existing maintainer reproduction plan to distinguish identity mismatch from intended Insider-channel behavior.",
+    "evaluated_at": "2026-09-12T00:59:02Z",
+    "source_updated_at": "2026-09-02T05:44:46Z",
     "evidence": [
       "The report says an Insider 0.101.2432 build was installed from Microsoft Store.",
       "The Store subsequently shows PowerToys as not installed.",
       "The issue has no comments, assignee, duplicate, or linked fix.",
       "Installer code contains a sparse Package Identity MSIX registration path, while Store recognition depends on package identity and registration.",
-      "Live issue metadata and discussion were re-read through 09/02/2026 05:44:46."
+      "Scheduled Prompt #2 revalidation read the full live issue body, all 0 public comment(s), current labels, assignees, and timeline through 2026-09-02T05:44:46Z."
     ]
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No existing fix attempt is linked; the installer/package-identity code is applicable, but the report does not prove whether the Insider package identity changed intentionally or registration is incomplete."
+    "status": "not_applicable",
+    "rationale": "A code fix is not yet applicable because the report does not show which package family is installed or whether Store recognition is a supported invariant for Insider builds."
   },
-  "proposed_fixes": [
-    {
-      "title": "Preserve Store-recognizable package identity across Insider upgrades",
-      "root_cause": "Hypothesis: the Insider package or sparse package registration presents a package identity/version/channel combination that Microsoft Store does not associate with the stable product, or the upgrade leaves the sparse identity registration incomplete. The report does not yet distinguish identity mismatch from an intentional preview-channel limitation.",
-      "plan": [
-        "Reproduce from Store stable to Insider and record Package Full Name, Family Name, application identity, install location, and Store page state before and after.",
-        "Inspect the Insider and stable manifests/build variables and the installer InstallPackageIdentityMSIXCA registration path for changes to package family, publisher, identity, or upgrade behavior.",
-        "If the identity should remain compatible, keep the stable Store identity and version-compatible registration across the channel transition; if Insider is intentionally a separate product, document the limitation instead of changing identity unsafely.",
-        "Add packaging validation that compares identity fields and verifies upgrade/registration behavior for stable-to-Insider and Insider-to-stable transitions."
-      ],
-      "verification": [
-        "Install Store stable, confirm Store recognizes it, install the current Insider build, restart Store, and verify the page still recognizes the installed product.",
-        "Inspect package identity and registration before and after; confirm no unrelated package is removed or orphaned.",
-        "Verify rollback or upgrade back to stable remains supported."
-      ],
-      "confidence": {
-        "score": 44,
-        "level": "red",
-        "rationale": "Package identity is the likely boundary, but the issue provides only a screenshot and no before/after identity data."
-      }
-    }
-  ],
+  "proposed_fixes": [],
   "issue_context": {
     "summary": "After updating to an Insider PowerToys build, Microsoft Store offers installation instead of recognizing PowerToys as installed.",
     "known_information": [
       "The affected build is 0.101.2432 Insider and the installation method is Microsoft Store.",
       "The symptom follows an update to the Insider release.",
       "The issue has no comments, attachments, assignee, or linked remediation.",
-      "The installer contains explicit sparse Package Identity MSIX install/uninstall custom actions."
+      "The installer contains explicit sparse Package Identity MSIX install/uninstall custom actions.",
+      "Live upstream issue activity was reviewed through 2026-09-02T05:44:46Z."
     ],
     "inferences": [
       "A package family, publisher, identity, version, or registration transition may be outside the Store's expected upgrade relationship.",
       "The behavior could instead be an intentional separation of Insider and stable Store products."
     ],
-    "analysis": "A controlled package inspection can decide whether this is a fixable registration regression or expected channel behavior. The design therefore names the exact installer boundary but keeps confidence red until identity evidence exists.",
+    "analysis": "The Store screenshot is real evidence, but package identity is the decision boundary. The repository documents that Store builds use Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe while locally built packages can use another family. Without the installed identity and channel policy, changing installer identity would risk breaking upgrade and Store ownership.",
     "initial_investigation": [
-      "Reviewed the complete issue body, labels, timeline state, and absence of linked work.",
-      "Inspected installer Package Identity MSIX registration and uninstall code in CustomAction.cpp and Product.wxs.",
-      "Searched related Store/package identity reports and found no direct linked fix for this issue.",
-      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) through 09/02/2026 05:44:46."
+      "Read the complete issue body, screenshot reference, labels, assignees, and timeline.",
+      "Inspected the current sparse-package identity documentation and installer custom action.",
+      "Confirmed the installer references Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe for Store-distributed identity, while development packages may use another family.",
+      "Searched current issues and found no separate confirmed duplicate or covering pull request.",
+      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
     ],
     "information_gaps": [
       {
-        "information": "Stable and Insider Package Full Name, Family Name, publisher, version, and registration state.",
-        "why_needed": "Determines whether Store recognition failed because identity changed or because registration/upgrade state is incomplete.",
-        "how_to_collect": "On a test machine, record Get-AppxPackage and Store state before stable-to-Insider installation and after restarting Microsoft Store."
+        "evidence_type": "install_scope",
+        "information": "The PackageFullName, PackageFamilyName, publisher, version, and install location shown for PowerToys after the Insider update.",
+        "why_needed": "These values distinguish a different package identity from incomplete sparse-package registration.",
+        "how_to_collect": "Run `Get-AppxPackage Microsoft.PowerToys.SparseApp | Select Name,PackageFullName,PackageFamilyName,Publisher,InstallLocation` and paste the non-sensitive output."
       },
       {
-        "information": "Whether Insider and stable are intended to share Store ownership.",
-        "why_needed": "Avoids changing package identity when the preview channel is intentionally a separate Store product.",
-        "how_to_collect": "Confirm the supported channel transition and expected Store behavior in the current release/packaging documentation."
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether PowerToys still launches, appears in Installed apps, and can return to the stable Store build while the Store page shows Install.",
+        "why_needed": "This establishes the practical impact and whether the channel transition is unsupported, registration-only, or a broken upgrade.",
+        "how_to_collect": "Report those three outcomes after restarting Microsoft Store; do not uninstall before collecting them."
       }
-    ]
-  },
-  "design": {
-    "root_cause": "Unconfirmed. The leading hypothesis is a Store package identity or sparse-registration mismatch introduced during the stable-to-Insider transition; a controlled package comparison is required before calling it a defect.",
-    "evidence": [
-      "[Observed] Store recognition is lost after installing an Insider build over the existing installation.",
-      "[Observed] No diagnostic package metadata or maintainer discussion is attached.",
-      "[Observed] Installer code installs a sparse Package Identity MSIX using the product's install folder and removes it through a fixed package family path.",
-      "[Inferred] Package identity, registration, or supported channel relationship is the correct investigation boundary."
-    ],
-    "affected_files": [
-      {
-        "path": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp",
-        "purpose": "Installs and uninstalls sparse Package Identity MSIX registration.",
-        "symbols": [
-          "InstallPackageIdentityMSIXCA",
-          "UninstallPackageIdentityMSIXCA"
-        ]
-      },
-      {
-        "path": "installer/PowerToysSetupVNext/Product.wxs",
-        "purpose": "Schedules Package Identity installation and removal during MSI install/upgrade.",
-        "symbols": [
-          "InstallPackageIdentityMSIX",
-          "UninstallPackageIdentityMSIX"
-        ]
-      },
-      {
-        "path": "installer",
-        "purpose": "Contains the stable/Insider manifest and packaging inputs whose identity fields must be compared.",
-        "symbols": [
-          "Package Identity MSIX manifest/build variables"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp; installer/PowerToysSetupVNext/Product.wxs",
-        "symbols": [
-          "InstallPackageIdentityMSIXCA",
-          "UninstallPackageIdentityMSIXCA",
-          "InstallPackageIdentityMSIX"
-        ],
-        "current_behavior": "The installer registers a sparse package during installation and removes the fixed sparse package family during uninstall; the issue's channel transition has not been validated here.",
-        "change": "After identity comparison, preserve compatible package identity and ensure upgrade registration is applied whenever the existing installation is upgraded, not only on a fresh install, while retaining per-user/machine scope handling.",
-        "code_block": "before = identity + registration + Store state\\ninstall Insider\\nafter = identity + registration + Store state\\nif identity should be shared: keep Name/Publisher/Family and register on upgrade\\nelse: classify as expected channel behavior and do not alter identity",
-        "edge_cases": [
-          "Stable and Insider may intentionally use different package identities.",
-          "Per-user and machine package registration must remain isolated.",
-          "Uninstall must not remove a package belonging to another channel or user.",
-          "Do not claim Store ownership when the Store product is intentionally separate."
-        ],
-        "tests": [
-          "Validate manifest identity fields for both channels.",
-          "Run stable-to-Insider and Insider-to-stable package registration tests on a Windows test machine.",
-          "Verify Store recognition after Store restart."
-        ]
-      }
-    ],
-    "verify": [
-      "Record package identity and Store state before and after the controlled transition.",
-      "Run the narrowest existing installer/package validation command discovered during implementation.",
-      "Confirm Store recognizes the installed product when identities are intended to be shared, or document the intentional limitation when they are not."
-    ],
-    "risks": [
-      "Changing package identity can strand installed packages or break Store updates for existing users.",
-      "Sparse package registration is tied to install scope and DACL behavior; careless changes can affect shell integration and uninstall."
-    ],
-    "alternatives": [
-      "Tell users to uninstall/reinstall; rejected as it does not fix a compatible identity/registration regression.",
-      "Force Store cache refresh only; rejected because the symptom may be package identity or registration, not Store UI cache.",
-      "Treat Insider as always separate; retained as an explicit alternative until supported channel semantics are confirmed."
     ]
   },
   "actions": [
     {
-      "id": "approve-design-50317",
-      "type": "approve_design",
-      "label": "Approve Store package-identity design",
-      "design": {
-        "title": "Preserve Store-recognizable package identity across Insider upgrades"
-      }
-    },
-    {
-      "id": "request-info-50317",
+      "id": "request_info-50317",
       "type": "request_info",
-      "label": "Request Store package transition evidence",
+      "label": "Request Insider package identity and Store state",
+      "primary": true,
       "confirm": true,
       "comment": {
         "target": "issue",
+        "repository": "microsoft/PowerToys",
         "number": 50317,
-        "body": "Thanks for reporting the Store recognition change after the 0.101.2432 Insider update. This can result from a package identity or sparse-registration transition, but the screenshot alone cannot distinguish that from an intentional channel separation. Please record the Package Full Name, Package Family Name, publisher, version, and registration state from `Get-AppxPackage` before and after updating a Store stable installation to Insider, then restart Microsoft Store and report its PowerToys page state. Please also confirm whether the supported Insider channel is expected to share Store ownership with stable."
+        "body": "Thanks for the screenshot showing that Microsoft Store no longer recognizes PowerToys after the Insider update. To distinguish a different package identity from incomplete Store registration, please provide:\n\n1. The output of `Get-AppxPackage Microsoft.PowerToys.SparseApp | Select Name,PackageFullName,PackageFamilyName,Publisher,InstallLocation` after the Insider update.\n2. Whether PowerToys still launches, still appears in **Installed apps**, and can switch back to the stable Store build while the Store page shows **Install**.\n\nPlease restart Microsoft Store before checking, and do not uninstall PowerToys until these values are recorded."
       },
       "note": "Draft only; no upstream comment is posted."
     },
     {
       "id": "reproduce-50317",
       "type": "reproduce",
-      "label": "Reproduce Insider Store identity issue",
-      "primary": true,
+      "label": "Reproduce Insider Store identity transition",
+      "primary": false,
       "confirm": true,
       "reproduce": {
+        "title": "Compare package identity across stable-to-Insider transition",
         "module": "Installer / Microsoft Store",
         "prerequisites": [
-          "A Windows test environment with Microsoft Store access.",
-          "A clean stable Store PowerToys installation."
+          "Disposable Windows test environment with Microsoft Store access"
         ],
         "steps": [
-          "Install PowerToys from Microsoft Store and record package identity and Store recognition.",
-          "Install the current Insider build over it.",
-          "Restart Microsoft Store and open the PowerToys page.",
-          "Record package identity, registration, and whether Store recognizes the installation.",
-          "If possible, upgrade back to stable and repeat the checks."
+          "Install the current PowerToys stable release from Microsoft Store and record package identity and Store ownership.",
+          "Select the Insider update channel and install the offered Insider build.",
+          "Restart Microsoft Store and compare Store page state, Installed apps, PowerToys launch, and package identity.",
+          "Attempt the supported return-to-stable path and record whether Store ownership is restored."
         ],
-        "expected_result": "If stable and Insider are intended to share the product, Store continues to recognize the installed package; otherwise the supported preview-channel limitation is confirmed.",
-        "setup_requirements": [
-          "Record installer type, architecture, stable version, Insider version, Package Full Name, Family Name, publisher, and install scope."
-        ],
-        "version_requirement": "Use the current Store stable release followed by the current Insider build."
-      }
+        "expected_result": "If the channels are intended to share Store ownership, the package family remains associated and Store continues to show the product installed; otherwise the test documents the supported channel limitation.",
+        "version_requirement": "Current Store stable followed by current Insider"
+      },
+      "note": "Display-only reproduction plan; it does not post to GitHub."
     }
   ],
   "schemaVersion": 5,
-  "stage": "awaiting_design_approval",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "09/02/2026 05:44:46",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-12T00:59:02Z",
+  "evaluated_at": "2026-09-12T00:59:02Z",
+  "source_updated_at": "2026-09-02T05:44:46Z",
   "title": "Insider PowerToys version tricks the Microsoft store into thinking that PowerToys is not installed",
   "url": "https://github.com/microsoft/PowerToys/issues/50317",
   "labels": [
@@ -210,5 +111,6 @@
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0
+  "comments": 0,
+  "authorAssociation": "NONE"
 }

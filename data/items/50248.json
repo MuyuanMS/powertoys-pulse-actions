@@ -20,8 +20,8 @@
     "status": "needs_information",
     "rationale": "The report and diagnostic archive establish that Grab and Move is enabled in Win-modifier mode when keyboard key-down events become unavailable in a fullscreen foreground context. The archive records only normal module initialization on the occurrence date. Without the affected executable, presentation mode, event sequence, and recovery boundary, the evidence cannot select a hook path or support a safe implementation design.",
     "recommended_action": "Request only the occurrence-specific foreground and input-transition evidence. Do not approve a fix design, mark this as a duplicate, or request a replacement diagnostic archive unless configuration changes or a maintainer identifies a log needed for the confirmed path.",
-    "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-    "source_updated_at": "08/30/2026 09:43:25",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-08-30T09:43:25Z",
     "evidence": [
       "The reporter states that Alt+Tab, Win+Space, and the Start-menu Win key fail after the condition occurs, while an online keyboard tester receives key-up but not key-down events.",
       "The report says normal shortcuts work again on the desktop or after clicking outside a non-maximized window, but supplies no exact reproduction sequence or foreground executable.",
@@ -29,7 +29,7 @@
       "The occurrence-date Grab and Move module log contains normal logger initialization and process launch, with no hook failure, foreground application, or input-state entry.",
       "src/modules/GrabAndMove/GrabAndMove/main.cpp installs low-level keyboard and mouse hooks and a foreground WinEvent callback; the callback clears modifier, pending-interaction, and held-key state only after a non-own foreground change and an asynchronous check finds the configured modifier physically released.",
       "The historical Grab and Move recovery change explicitly addressed foreground transitions that can lose key-up notifications. Open Issue 47337 and Issue 47802 describe broader shortcut interference, while Issue 49704 describes a different Win-release behavior; none proves the fullscreen-specific sequence here.",
-      "Live issue metadata and discussion were re-read through 08/30/2026 09:43:25."
+      "On 2026-09-12, the complete live body, all 0 public comment(s), labels, assignees, and link timeline were re-read through 2026-08-30T09:43:25Z."
     ]
   },
   "fix_assessment": {
@@ -60,47 +60,28 @@
       "Inspected src/modules/GrabAndMove/GrabAndMove/main.cpp, including KeyboardProc, MouseProc, WinEventProc, modifier replay, and stale-interaction reset state.",
       "Reviewed the related historical recovery change and the current open reports Issue 47337, Issue 47802, and Issue 49704.",
       "Checked MuyuanMS/PowerToys for existing Issue 50248 mirror issues and pull requests before creating the single fork-side trace.",
-      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) through 08/30/2026 09:43:25."
+      "Revalidated the live body, all 0 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-08-30T09:43:25Z."
     ],
     "information_gaps": [
       {
         "information": "The exact foreground application executable and whether it is exclusive fullscreen, borderless fullscreen, or windowed.",
         "why_needed": "This determines whether the defect follows a specific application, presentation mode, exclusion setting, or a generic Grab and Move hook path.",
-        "how_to_collect": "On the next occurrence, record the executable or application name and its presentation mode before changing focus."
+        "how_to_collect": "On the next occurrence, record the executable or application name and its presentation mode before changing focus.",
+        "evidence_type": "other_software"
       },
       {
         "information": "The immediate modifier, mouse, and focus sequence before keyboard key-down stops being delivered.",
         "why_needed": "This maps the failure to an absorbed modifier, pending drag or resize, replay, or foreground-reset transition.",
-        "how_to_collect": "Record whether Win or Alt was held, whether either mouse button was pressed or released, and whether a focus switch, Alt+Tab, or game transition occurred immediately beforehand."
+        "how_to_collect": "Record whether Win or Alt was held, whether either mouse button was pressed or released, and whether a focus switch, Alt+Tab, or game transition occurred immediately beforehand.",
+        "evidence_type": "repro_steps"
       },
       {
         "information": "The first action that restores keyboard key-down events.",
         "why_needed": "This distinguishes a module-state recovery from a foreground-application or process-lifetime recovery.",
-        "how_to_collect": "During the next occurrence, try leaving the foreground context, disabling Grab and Move, exiting PowerToys, and restarting the application separately; report the first action that works."
+        "how_to_collect": "During the next occurrence, try leaving the foreground context, disabling Grab and Move, exiting PowerToys, and restarting the application separately; report the first action that works.",
+        "evidence_type": "behavior_confirmation"
       }
     ]
-  },
-  "design": {
-    "status": "needs_information",
-    "root_cause": "Not established.",
-    "evidence": [
-      "The available diagnostic evidence does not contain an input-state trace or a reproducible foreground transition."
-    ],
-    "affected_files": [],
-    "implementation_steps": [],
-    "verify": [
-      "Obtain the three recorded occurrence-specific facts before selecting an implementation path."
-    ],
-    "risks": [
-      "Changing hook recovery without a confirmed sequence can synthesize or suppress modifier behavior for physically held keys and regress normal drag or resize interaction."
-    ],
-    "alternatives": [
-      "Do not treat the report as a duplicate of the broader shortcut-interference reports until the fullscreen-specific context is compared."
-    ],
-    "adversary": {
-      "status": "not_run",
-      "rationale": "No implementation design exists to review; the missing evidence blocks an independent design-convergence loop."
-    }
   },
   "mirror": {
     "kind": "issue",
@@ -118,7 +99,7 @@
       "comment": {
         "target": "issue",
         "number": 50248,
-        "body": "Thanks for the screenshot and diagnostic archive. It confirms that Grab and Move is enabled with Win as its activation modifier, but the occurrence log only shows normal module startup. To identify whether this is a Grab and Move hook-state problem or game-specific input capture, please report the exact game or application executable and whether it was exclusive fullscreen, borderless fullscreen, or windowed. On the next occurrence, please also note whether Win or Alt was held, whether a mouse action, focus switch, or Alt+Tab happened immediately before input stopped, and which first action restores it: leaving that foreground context, disabling Grab and Move, exiting PowerToys, or restarting the application. A replacement diagnostic archive is not needed unless the configuration has changed.",
+        "body": "Thanks for the screenshot and attached archive. It confirms that Grab and Move is enabled with Win as its activation modifier, while the occurrence log records only normal module startup. On the next occurrence, please provide:\n\n- **Foreground application:** Please report the exact executable and whether it was exclusive fullscreen, borderless fullscreen, or windowed. This determines whether the defect follows a specific application, presentation mode, exclusion, or generic hook path.\n- **Immediate input sequence:** Please note whether Win or Alt was held and whether a mouse action, focus switch, Alt+Tab, or game transition occurred immediately before key-down input stopped. This maps the failure to modifier absorption, pending drag/resize, replay, or foreground-reset state.\n- **First recovery action:** Please try leaving the foreground context, disabling Grab and Move, exiting PowerToys, and restarting the application separately, then report the first action that restores key-down events. This distinguishes module-state recovery from foreground-application or process-lifetime recovery.",
         "repository": "microsoft/PowerToys"
       },
       "note": "Draft only; no upstream comment is posted without explicit approval.",
@@ -129,9 +110,9 @@
   "summary": "The supplied archive verifies the configuration but not a failing input path; a concrete fix design is deferred until the fullscreen application, transition sequence, and recovery boundary are known.",
   "schemaVersion": 5,
   "stage": "triage_revalidated",
-  "generated_at": "2026-09-11T18:33:58.8399416Z",
-  "evaluated_at": "2026-09-11T18:33:58.8399416Z",
-  "source_updated_at": "08/30/2026 09:43:25",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-08-30T09:43:25Z",
   "title": "Grab and Move softlocking its trigger key when window is foreground",
   "url": "https://github.com/microsoft/PowerToys/issues/50248",
   "labels": [
