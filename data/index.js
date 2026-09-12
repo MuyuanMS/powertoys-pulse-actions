@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-12T18:56:08.9215924+08:00",
+  "generated_at": "2026-09-12T20:39:56.1316762+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 166,
-    "open_issues": 12633,
+    "open_prs": 167,
+    "open_issues": 12632,
     "community": 11787,
     "artifacts": 574
   },
   "impact": {
-    "as_of": "2026-09-12T18:56:08.9215924+08:00",
+    "as_of": "2026-09-12T20:39:56.1316762+08:00",
     "issues_helped": 10,
     "prs_iterated": 20,
     "constructive_comments_posted": 3,
@@ -674,6 +674,40 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-50539",
+      "kind": "pr",
+      "number": 50539,
+      "url": "https://github.com/microsoft/PowerToys/pull/50539",
+      "title": "WIP - [Mouse Jump] - add new (unused) library code as a prerequisite for #50462, #50464",
+      "author": "mikeclayton",
+      "state": "open",
+      "is_draft": true,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Mouse Jump"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-12T10:57:12Z",
+      "updated_at": "2026-09-12T11:29:09Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-50535",
       "kind": "pr",
@@ -394621,43 +394655,6 @@ window.BOARD_INDEX = {
       "created_at": "2025-04-03T06:04:36Z",
       "updated_at": "2026-04-18T15:09:51Z",
       "comments": 0,
-      "priority": null
-    },
-    {
-      "id": "issue-38509",
-      "kind": "issue",
-      "number": 38509,
-      "url": "https://github.com/microsoft/PowerToys/issues/38509",
-      "title": "CmdPal: file search only searching c drive",
-      "author": "JotWaraich",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Author-Feedback",
-        "Priority-2",
-        "Product-Command Palette",
-        "CmdPal-Inbox Extensions"
-      ],
-      "assignees": [
-        "jiripolasek"
-      ],
-      "created_at": "2025-04-03T05:19:11Z",
-      "updated_at": "2026-03-16T12:13:13Z",
-      "comments": 9,
       "priority": null
     },
     {
