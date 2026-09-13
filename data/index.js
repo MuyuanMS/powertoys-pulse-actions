@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-14T05:53:37.9220943+08:00",
+  "generated_at": "2026-09-14T06:19:32.7530251+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 167,
-    "open_issues": 12635,
-    "community": 11796,
+    "open_issues": 12636,
+    "community": 11797,
     "artifacts": 1120
   },
   "impact": {
-    "as_of": "2026-09-14T05:53:37.9220943+08:00",
+    "as_of": "2026-09-14T06:19:32.7530251+08:00",
     "issues_helped": 10,
     "prs_iterated": 18,
     "constructive_comments_posted": 3,
@@ -154494,6 +154494,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50555",
+      "kind": "issue",
+      "number": 50555,
+      "url": "https://github.com/microsoft/PowerToys/issues/50555",
+      "title": "Command Palette Dock does not appear correctly with custom taskbar position",
+      "author": "iqnite",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-13T21:57:23Z",
+      "updated_at": "2026-09-13T21:57:23Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-50554",
       "kind": "issue",
       "number": 50554,
@@ -159301,8 +159333,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-13T05:58:48Z",
-      "comments": 69,
+      "updated_at": "2026-09-13T22:03:10Z",
+      "comments": 70,
       "priority": null
     },
     {
