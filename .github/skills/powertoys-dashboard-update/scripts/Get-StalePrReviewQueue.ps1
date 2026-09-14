@@ -118,6 +118,26 @@ function Test-HasApplicableReviewAction {
     return $false
 }
 
+function Test-HasLegacyReviewActionStage {
+    param($Artifact)
+    if (-not $Artifact) {
+        return $false
+    }
+
+    $reviewActions = @($Artifact.actions | Where-Object {
+        $_.type -in @('post_review', 'request_changes') -and $_.review
+    })
+    if ($reviewActions.Count -eq 0) {
+        return $false
+    }
+
+    return [string]$Artifact.stage -in @(
+        'request_changes',
+        'review_drafted',
+        'converged_draft_ready'
+    )
+}
+
 function Test-IsHoldState {
     param($Artifact)
     if (-not $Artifact) {
@@ -187,6 +207,7 @@ foreach ($pr in $pullRequests) {
     }
 
     $hasApplicableReview = Test-HasApplicableReviewAction $artifact $liveHead
+    $hasLegacyReviewActionStage = Test-HasLegacyReviewActionStage $artifact
     $reviewHead = if ($artifact) {
         $reviewAction = @($artifact.actions | Where-Object {
             $_.type -in @('post_review', 'request_changes') -and $_.review
@@ -206,6 +227,9 @@ foreach ($pr in $pullRequests) {
     }
     if (-not $hasApplicableReview) {
         $reasons.Add('missing_current_review_action')
+    }
+    if ($hasLegacyReviewActionStage) {
+        $reasons.Add('legacy_review_action_stage')
     }
     if ([string]::IsNullOrWhiteSpace($artifactHead)) {
         $reasons.Add('missing_artifact_head_sha')
