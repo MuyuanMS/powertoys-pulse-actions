@@ -2,29 +2,205 @@
   "number": 50190,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T02:39:37.6922892Z",
-  "evaluated_at": "09/13/2026 16:00:54",
+  "generated_at": "2026-09-14T15:00:00Z",
+  "evaluated_at": "2026-09-14T15:00:00Z",
   "source_updated_at": "2026-09-09T03:43:11+08:00",
   "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
   "title": "CmdPal: Icons (10/n) - Add generated swatch and Unicode initials icons",
   "url": "https://github.com/microsoft/PowerToys/pull/50190",
-  "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "Current live head a425885a8937ff349dbaa93666d57d4548ca0219 requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
+  "fork_pr": {
+    "number": 513,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/513"
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "fork_branch": "pr-iterate/50190-v2",
+  "summary": "Current-head maintainer action drafted: request robust initials failure classification, retry-safe transient rendering behavior, and deterministic coverage for generated initials icons.",
+  "status": {
+    "glyph": "post",
+    "label": "Review drafted",
+    "detail": "Fork Copilot review converged with zero new published comments and zero unresolved threads. The exact upstream head passed the affected-project Debug validation, but the converged review fixes are not present in the upstream head and require maintainer approval as general review notes."
+  },
+  "next_action": {
+    "glyph": "post",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "The companion request is pinned to the current upstream head. Recheck freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
+  },
+  "proposed_comments": [
+    {
+      "id": "classify-initials-renderer-failures",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Distinguish invalid initials protocols from transient renderer failures",
+      "body": "### Distinguish invalid initials protocols from transient renderer failures\n\n**Severity:** `high`\n\nThe generated-initials path should reject malformed protocol data without converting renderer or device failures into a cached permanent fallback. A transient `Win2D`/font/device failure can recover on a later attempt, so caching that failure leaves a stale fallback in the icon pipeline and prevents retry. Please keep parser-level invalid-input handling separate from renderer exceptions, propagate transient rendering failures to the retry-aware caller, and add regression coverage for both cases.",
+      "out_of_diff_reason": "The behavior spans protocol parsing, renderer failure propagation, cache policy, and tests; no single current RIGHT-side diff range safely expresses the coordinated change.",
+      "outOfDiffReason": "The behavior spans protocol parsing, renderer failure propagation, cache policy, and tests; no single current RIGHT-side diff range safely expresses the coordinated change.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The converged fork loop added separate handling for malformed UTF-16/protocol input and transient initials-renderer failures, while the exact upstream head still contains the single failure path."
+      }
+    },
+    {
+      "id": "avoid-caching-transient-initials-failures",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Do not permanently cache recoverable initials rendering failures",
+      "body": "### Do not permanently cache recoverable initials rendering failures\n\n**Severity:** `high`\n\nWhen initials rendering fails because the current graphics or font environment is temporarily unavailable, the failure should remain retryable instead of being materialized as a durable negative result. Otherwise an icon that could render after the environment recovers stays on the fallback path for the lifetime of the cached source. Please preserve the existing fallback for genuinely invalid protocols while allowing transient renderer failures to reach the retry path, with a regression test that exercises a failed attempt followed by a successful retry.",
+      "out_of_diff_reason": "The required cache and retry semantics involve multiple icon-loader layers and a stateful test sequence, so this cannot be represented safely by one localized current diff suggestion.",
+      "outOfDiffReason": "The required cache and retry semantics involve multiple icon-loader layers and a stateful test sequence, so this cannot be represented safely by one localized current diff suggestion.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 91,
+        "rationale": "The fork review branch specifically changed negative-result caching and transient-failure propagation, and the exact upstream head validation confirms those changes are fork-only."
+      }
+    },
+    {
+      "id": "make-generated-initials-tests-deterministic",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Keep generated-initials tests independent of the graphics environment",
+      "body": "### Keep generated-initials tests independent of the graphics environment\n\n**Severity:** `medium`\n\nThe generated-initials protocol tests should verify the path and protocol behavior without depending on installed fonts, Win2D device state, or an interactive graphics environment. Inject the deterministic initials-path generation used by the test seam, and retain a separate production-rendering path for end-to-end behavior. This keeps the unit suite stable while still covering the real renderer failure and retry behavior in focused tests.",
+      "out_of_diff_reason": "This is a coordinated test-seam and production-path change across the protocol implementation and unit tests, not a safe one-hunk replacement.",
+      "outOfDiffReason": "This is a coordinated test-seam and production-path change across the protocol implementation and unit tests, not a safe one-hunk replacement.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 86,
+        "rationale": "The converged fork branch introduced deterministic path-generation injection and corresponding test changes, while the live upstream head still uses environment-dependent generated-initials coverage."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50190",
+      "type": "request_changes",
+      "label": "Request changes with general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50190,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
+        "pr": 50190,
+        "body_prefix": "Thanks for adding generated swatch and Unicode initials icons. Before merging, please separate malformed protocol handling from transient initials-renderer failures, avoid permanently caching recoverable rendering failures so retries remain possible, and make the generated-initials unit coverage deterministic without depending on the installed graphics/font environment. Please include focused regression coverage for invalid input, transient failure followed by retry, and the deterministic test seam."
+      },
+      "note": "Companion-only review: posts separate general PR conversation comments. Do not post without explicit approval and a final upstream freshness check."
+    }
+  ],
+  "safe_actions": [
+    {
+      "id": "request-changes-50190",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "head_pinned": "a425885a8937ff349dbaa93666d57d4548ca0219"
+    },
+    {
+      "id": "hold-review-50190",
+      "upstream_write": false,
+      "approval_required": false
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.PowerToys\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\build.cmd"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "Microsoft.CmdPal.UI Debug x64 output",
+        "Microsoft.CmdPal.Ext.PowerToys Debug x64 output",
+        "Microsoft.CmdPal.UI.UnitTests Debug x64 output"
+      ],
+      "warnings": [
+        "Pre-existing CsWinRT1028 warning in src\\common\\ManagedCommon\\HotkeySettingsControlHook.cs"
+      ]
+    },
+    "fork_head": {
+      "head_sha": "3b6e01ae7a0b6c5059f4f46413bad312333e3afb",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.PowerToys\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\build.cmd"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "Microsoft.CmdPal.UI Debug x64 output",
+        "Microsoft.CmdPal.Ext.PowerToys Debug x64 output",
+        "Microsoft.CmdPal.UI.UnitTests Debug x64 output"
+      ],
+      "warnings": []
+    },
+    "suggestionPatch": {
+      "result": "not_applicable",
+      "appliedItemIds": [],
+      "minimalRangesReviewed": true,
+      "commands": [],
+      "reason": "Draft is companion-only/general notes; no apply-ready suggestion blocks were emitted."
+    }
+  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and exercise generated swatch and Unicode initials icons from providers that load icons asynchronously.",
+    "Verify malformed initials protocols fall back without crashing, transient rendering failures can be retried after the graphics/font environment recovers, and valid initials render consistently.",
+    "Run the focused Microsoft.CmdPal.UI.UnitTests suite and confirm the generated-initials tests do not depend on installed fonts or an interactive graphics device."
+  ],
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
+    "base_sha": "038fe03e2cf7f6ef52b7b313b574d5f4555f1cc0",
+    "commit_count": 10,
+    "changed_file_count": 22,
+    "issue_comment_count": 0,
+    "review_comment_count": 0,
+    "review_count": 0,
+    "reported_checks": {
+      "license_cla": "success",
+      "power_toys_ci": "success",
+      "dependency_review": "success",
+      "pr_intake": "success",
+      "telemetry_pr_check": "success"
+    }
+  },
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-14T02:39:37.6922892Z"
+    "phase": "converged_draft_ready",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-14T15:00:00Z",
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "Existing fork Copilot reviews were consumed; the latest review on the matching fork head returned zero new published comments.",
+    "upstream_head_validation": "passed",
+    "draft_type": "current_head_request_changes_general_notes",
+    "advancement_evidence": [
+      "Resumed durable review branch pr-iterate/50190-v2 and fork PR 513 without re-mirroring.",
+      "Live upstream head remains a425885a8937ff349dbaa93666d57d4548ca0219.",
+      "Consumed the existing completed Copilot review on fork head 3b6e01ae7a0b6c5059f4f46413bad312333e3afb before considering another request.",
+      "Latest fork Copilot review reported zero new published comments.",
+      "Fork Copilot unresolved thread count is zero.",
+      "Fork-head Debug validation passed for build essentials, runner/settings, CmdPal UI, CmdPal PowerToys extension, and CmdPal UI unit tests.",
+      "Exact upstream-head Debug validation passed for the same affected build chain with one pre-existing CsWinRT1028 warning and zero errors.",
+      "The remaining findings are companion-only current-head request-changes notes; no upstream write occurred."
+    ]
   },
   "freshness": {
-    "queued_at": "09/13/2026 16:00:54",
-    "checkpoint_at": "2026-09-14T02:39:37.6922892Z"
+    "headRefOid": "a425885a8937ff349dbaa93666d57d4548ca0219",
+    "updatedAt": "2026-09-09T03:43:11+08:00",
+    "latestCopilotReviewAt": "2026-09-09T16:25:53Z",
+    "latestForkCommitAt": "2026-09-09T16:12:02Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-14T15:00:00Z"
   }
 }
