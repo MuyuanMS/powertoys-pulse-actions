@@ -1,35 +1,187 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-50497",
   "number": 50497,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T07:08:12.4598Z",
-  "evaluated_at": "09/12/2026 22:57:35",
+  "generated_at": "2026-09-14T12:25:00Z",
+  "evaluated_at": "2026-09-14T12:25:00Z",
   "source_updated_at": "2026-09-10T18:55:13Z",
   "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c",
   "title": "[Shortcut Guide] Robustness improvements for index generation",
   "url": "https://github.com/microsoft/PowerToys/pull/50497",
+  "author": "daverayment",
+  "authorAssociation": "CONTRIBUTOR",
+  "isCommunity": true,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "summary": "The fork review loop converged after addressing two concurrency findings. The current upstream head still starts manifest copying and index generation before registering the single Shortcut Guide instance, so concurrent launches can read a temporarily locked manifest and overwrite a complete index with incomplete data.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Fork PR 780 head 6f8073c5594d10a5a98f4f4645c97f75afa0fc55: fixed the concurrent index replacement race, built ShortcutGuide.IndexYmlGenerator successfully, replied to and resolved the prior Copilot finding, then requested a fresh Copilot review. One immediate review check found no new submission; do not poll further. Unresolved Copilot threads: 0."
+    "glyph": "review",
+    "label": "Current-head review drafted",
+    "detail": "Upstream head bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c is live and fully validated. The latest fork Copilot review returned zero new comments and zero unresolved threads; one current-head blocking inline request remains."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-14T07:08:12.4598Z"
+  "next_action": {
+    "glyph": "post",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "The inline request is pinned to the current upstream head. Recheck freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
   },
-  "freshness": {
-    "queued_at": "09/11/2026 03:13:20",
-    "checkpoint_at": "2026-09-14T07:08:12.4598Z"
+  "actions": [
+    {
+      "id": "request-changes-50497",
+      "type": "request_changes",
+      "label": "Request changes with inline concurrency finding",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Inline review action pinned to the current upstream head. Mandatory: revalidate the upstream head and activity snapshot, validate the review payload, and require explicit maintainer approval before publishing.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50497,
+        "pullRequest": 50497,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c"
+      }
+    }
+  ],
+  "proposed_comments": [
+    {
+      "id": "serialize-shortcut-guide-manifest-startup",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Serialize manifest copy and index generation across launches",
+      "body": "### Serialize manifest copy and index generation across launches\n\n**Severity:** `high`\n\nTreating every `IOException` as a malformed manifest can publish an incomplete index during normal concurrent startup. `ShortcutGuide.Ui/Program.cs` starts copying and generation before registering the single application instance, so another launch can be writing a valid manifest while this process sees a sharing violation, skips that file, and becomes the last writer. Register the application instance before starting the copy/generation thread, or add an interprocess lock around the copy-and-generation sequence, so transient sharing failures cannot permanently omit valid shortcuts.",
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ManifestIndexGenerator.cs",
+      "line": 83,
+      "start_line": 82,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The latest fork Copilot pass independently identified this race on the current review tree; moving single-instance registration ahead of startup work fixed it in the fork, and the exact upstream head builds successfully before the proposed change."
+      }
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted current-head request-changes review for explicit maintainer approval",
+    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
+    "Hold or edit the inline note without changing upstream labels, review state, or PR state",
+    "Rerun the fork review loop if the upstream head changes"
+  ],
+  "phase0": {
+    "author": "daverayment",
+    "author_association": "CONTRIBUTOR",
+    "bar": "community contributor; full process review applied",
+    "disposition": "Proceed",
+    "owes_after_posting": "author",
+    "gates_tripped": [],
+    "note": "The PR is open and non-draft, the CLA and visible CI checks passed, and the change includes focused generator tests. No separate process ask is required.",
+    "evidence": [
+      "The PR description and changed files document the generator robustness work and automated coverage.",
+      "Dependency review, PR intake, telemetry, PowerToys CI, and license/CLA checks are successful.",
+      "The upstream head and discussion were unchanged during this review run."
+    ]
+  },
+  "source_activity": {
+    "captured_at": "2026-09-14T12:25:00Z",
+    "state": "OPEN",
+    "draft": false,
+    "mergeable": true,
+    "mergeable_state": "CLEAN",
+    "upstream_updated_at": "2026-09-10T18:55:13Z",
+    "upstream_head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c",
+    "commit_count": 3,
+    "changed_file_count": 5,
+    "issue_comment_count": 0,
+    "latest_issue_comment_at": null,
+    "review_count": 3,
+    "latest_review_at": "2026-09-10T18:20:01Z",
+    "review_comment_count": 2,
+    "latest_review_comment_at": "2026-09-10T18:20:01Z",
+    "unresolved_review_thread_count": 0,
+    "checks": {
+      "total": 10,
+      "successful": 10,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "names": [
+        "dependency-review",
+        "pr-intake",
+        "detect-telemetry-events",
+        "PowerToys CI",
+        "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
+        "PowerToys CI (Build arm64 Build Release_arm64)",
+        "PowerToys CI (Build arm64 Resolve affected UI test projects)",
+        "PowerToys CI (Build x64 Build Release_x64)",
+        "PowerToys CI (Build x64 Resolve affected UI test projects)",
+        "license/cla"
+      ]
+    }
   },
   "fork_pr": {
     "number": 780,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/780"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/780",
+    "state": "OPEN",
+    "head_sha": "05c97e02c7cd78a292b2ce590e5cd6160d0d6209",
+    "base_sha": "7d7468a2e",
+    "changed_files": 6,
+    "checks": "passed"
   },
-  "fork_branch": "pr-iterate/50497-v2"
+  "fork_branch": "pr-iterate/50497-v2",
+  "copilot_review": {
+    "latest_submitted_at": "2026-09-14T12:15:22Z",
+    "latest_commit_id": "05c97e02c7cd78a292b2ce590e5cd6160d0d6209",
+    "latest_new_comments": 0,
+    "published_inline_comments": 0,
+    "unresolved_threads": 0,
+    "review_count": 5,
+    "policy_note": "The outstanding fork Copilot review was consumed before drafting. It reviewed the latest fork head, generated zero new published comments, and all prior Copilot threads were replied to and resolved."
+  },
+  "verification": {
+    "result": "passed",
+    "checks": [
+      "The fork review tree built successfully with PowerToys essentials, ShortcutGuide.IndexYmlGenerator, and ShortcutGuide.Ui; the standard build emitted only a pre-existing CsWinRT warning.",
+      "The exact upstream head bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c built successfully with the same projects after clearing inherited GIT_CONFIG_* variables.",
+      "The exact upstream head has no whitespace errors, and the fork thread audit reports zero unresolved Copilot threads."
+    ],
+    "upstream_head": {
+      "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
+        "<PowerToysCheckout>\\src\\modules\\ShortcutGuide\\ShortcutGuide.IndexYmlGenerator\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\ShortcutGuide\\ShortcutGuide.Ui\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ]
+    }
+  },
+  "test_instructions": [
+    "Launch the built x64/Debug/PowerToys.exe.",
+    "Start Shortcut Guide twice in rapid succession or trigger two launches while the first process is copying manifests.",
+    "Verify that the generated index contains every valid bundled shortcut and that no valid manifest is omitted because of a transient sharing violation.",
+    "Verify that only the registered current Shortcut Guide instance starts the copy-and-generation sequence."
+  ],
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-14T12:25:00Z",
+    "resume_action": "awaiting_review_approval",
+    "fork_pr": 780,
+    "fork_branch": "pr-iterate/50497-v2",
+    "fork_head_sha": "05c97e02c7cd78a292b2ce590e5cd6160d0d6209",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed"
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-14T12:25:00Z",
+    "source_updated_at": "2026-09-10T18:55:13Z",
+    "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c"
+  }
 }

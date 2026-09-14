@@ -1,35 +1,121 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-50485",
   "number": 50485,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T08:24:48.677882Z",
-  "evaluated_at": "09/12/2026 18:29:10",
+  "generated_at": "2026-09-14T12:47:00Z",
+  "evaluated_at": "2026-09-14T12:47:00Z",
   "source_updated_at": "2026-09-11T18:42:19Z",
   "head_sha": "c80f075e69e2ea7a987a0c0016cdcbe337c8e1c0",
   "title": "CmdPal: Prevent failing event handlers from blocking updates",
   "url": "https://github.com/microsoft/PowerToys/pull/50485",
+  "author": "jiripolasek",
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "High",
+  "summary": "The fresh fork Copilot loop converged after identifying that two lifecycle-aware pages did not remove disconnected RPC subscribers. The upstream head still lacks those unsubscribe callbacks, so two current-head inline review comments are drafted for maintainer approval.",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "Existing fork Copilot result consumed: latest review is newer than fork head, no outstanding request, and zero unresolved threads. Exact upstream head c80f075e69e2ea7a987a0c0016cdcbe337c8e1c0 is validated; however, the fork head b51d7bc037de3f9f398e8904c5f9239260464aba contains follow-up event-dispatch cleanup not present in upstream, so this PR cannot be claimed as review_ready without rebasing or removing fork-only changes."
+    "glyph": "📝",
+    "label": "Review ready — two inline findings drafted",
+    "detail": "Fork PR 765 received a fresh Copilot pass with two valid findings, both fixed and resolved on the fork. The exact upstream head and CmdPal Toolkit build passed; the upstream-facing fixes remain pending approval as inline comments."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "Two current-head inline comments explain the missing lifecycle-aware unsubscribe callbacks. Nothing is posted upstream without explicit maintainer approval and a final freshness check."
+  },
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "remove-disconnected-performance-subscribers",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/OnLoadStaticPage.cs",
+      "line": 124,
+      "side": "RIGHT",
+      "title": "Remove disconnected lifecycle subscribers",
+      "body": "When a subscriber throws RPC_E_DISCONNECTED or RPC_S_SERVER_UNAVAILABLE, this call does not provide an unsubscribe callback, so the dead handler remains in InternalItemsChanged and is retried on every update. Please pass a lifecycle-aware callback such as `handler => ItemsChanged -= handler` so the page can transition to the correct unloaded state when its last live subscriber disappears."
+    },
+    {
+      "id": "remove-disconnected-time-date-subscribers",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TimeDate/Pages/OnLoadDynamicListPage.cs",
+      "line": 91,
+      "side": "RIGHT",
+      "title": "Remove disconnected lifecycle subscribers",
+      "body": "This lifecycle-aware page also omits the unsubscribe callback, so disconnected RPC handlers remain in InternalItemsChanged and are retried on every notification. Please pass `handler => ItemsChanged -= handler` to remove the dead subscriber through the event accessor and keep the load count and Loaded/Unloaded transitions accurate."
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50485",
+      "type": "post_review",
+      "label": "Post the two inline review comments",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "COMMENT",
+        "pr": 50485,
+        "head_sha": "c80f075e69e2ea7a987a0c0016cdcbe337c8e1c0"
+      },
+      "note": "Refresh the upstream head, checks, comments, reviews, and threads; validate the pinned payload; and require explicit approval before posting."
+    }
+  ],
+  "safe_actions": [
+    "Present the two drafted inline comments for explicit maintainer approval",
+    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
+    "Hold the review without changing labels, review state, or PR state",
+    "Re-run synchronization, Copilot convergence, builds, and tests after material upstream activity"
+  ],
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-14T08:24:48.677882Z"
+    "phase": "review_ready",
+    "checkpoint_at": "2026-09-14T12:47:00Z",
+    "fork_pr": 765,
+    "fork_branch": "pr-iterate/50485-v2",
+    "fork_reviewed_head_sha": "dc07fc8640c14d39970db6d0fb72d471f44da497",
+    "latest_copilot_review_at": "2026-09-14T12:38:49Z",
+    "copilot_final": "fresh review returned zero published comments after fixes",
+    "unresolved_copilot_threads": 0
   },
-  "freshness": {
-    "queued_at": "09/13/2026 16:00:53",
-    "checkpoint_at": "2026-09-14T08:24:48.677882Z"
+  "validation": {
+    "upstream_head": {
+      "head_sha": "c80f075e69e2ea7a987a0c0016cdcbe337c8e1c0",
+      "result": "passed",
+      "configuration": "x64 Debug",
+      "builds": [
+        "build-essentials",
+        "Microsoft.CommandPalette.Extensions.Toolkit"
+      ],
+      "runner": "PowerToys.exe produced"
+    },
+    "fork_review_tree": {
+      "head_sha": "dc07fc8640c14d39970db6d0fb72d471f44da497",
+      "result": "passed",
+      "builds": [
+        "build-essentials",
+        "Microsoft.CommandPalette.Extensions.Toolkit"
+      ]
+    }
   },
   "fork_pr": {
     "number": 765,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/765"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/765",
+    "state": "OPEN",
+    "head_sha": "dc07fc8640c14d39970db6d0fb72d471f44da497",
+    "base_sha": "071c25e115e8097117e26f6fcfe9901301307f7a"
   },
-  "fork_branch": "pr-iterate/50485-v2"
+  "fork_branch": "pr-iterate/50485-v2",
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
+  }
 }
