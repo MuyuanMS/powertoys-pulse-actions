@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-14T21:27:52.4388654+08:00",
+  "generated_at": "2026-09-14T21:42:21.9279650+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1201
   },
   "impact": {
-    "as_of": "2026-09-14T21:27:52.4388654+08:00",
+    "as_of": "2026-09-14T21:42:21.9279650+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -2886,15 +2886,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 3,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with CmdPal lifecycle findings"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -155040,7 +155043,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-13T01:39:27Z",
-      "updated_at": "2026-09-14T12:54:28Z",
+      "updated_at": "2026-09-14T13:04:09Z",
       "comments": 2,
       "priority": null
     },
