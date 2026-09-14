@@ -68,8 +68,27 @@ function Test-HasApplicableReviewAction {
         return $false
     }
 
+    # A stale checkpoint must not masquerade as a concluded clean review.
+    # review_ready is valid only after the workflow has left all resumable
+    # phases and its upstream-head validation is pinned to the live head.
+    if ($Artifact.needs_revalidation -eq $true -or
+        [string]$Artifact.workflow.phase -in @(
+            'queued',
+            'mirroring',
+            'review_requested',
+            'waiting_copilot',
+            'reviewing_findings',
+            'building',
+            'review_in_progress'
+        )) {
+        return $false
+    }
+
     if ([string]$Artifact.stage -eq 'review_ready' -and @($Artifact.proposed_comments).Count -eq 0) {
-        return $true
+        $validation = $Artifact.validation.upstream_head
+        return $null -ne $validation -and
+            [string]$validation.head_sha -eq $LiveHead -and
+            [string]$validation.result -eq 'passed'
     }
 
     foreach ($action in @($Artifact.actions)) {
@@ -81,9 +100,6 @@ function Test-HasApplicableReviewAction {
             if ($reviewHead -eq $LiveHead) {
                 return $true
             }
-        }
-        if ($action.type -eq 'hold' -and [string]$Artifact.stage -eq 'review_ready') {
-            return $true
         }
     }
 
