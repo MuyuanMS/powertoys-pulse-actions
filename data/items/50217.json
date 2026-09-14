@@ -1,30 +1,180 @@
 {
+  "schemaVersion": 3,
   "number": 50217,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T09:01:32.9358437Z",
-  "evaluated_at": "08/28/2026 23:05:34",
-  "source_updated_at": "2026-09-11T13:29:24+08:00",
+  "generated_at": "2026-09-14T14:45:00Z",
+  "evaluated_at": "2026-09-14T14:45:00Z",
+  "source_updated_at": "2026-09-11T05:29:24Z",
   "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
   "title": "fix(file-locksmith): isolate handle enumeration",
   "url": "https://github.com/microsoft/PowerToys/pull/50217",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Fork review branch still sits on stale head 25f7819176e4caaf7cf4f9d3708b45b40f7ab107 while the live upstream PR head is 36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd; the existing Copilot review is invalidated by a head mismatch and no maintainer action was posted. No upstream write was made."
+    "glyph": "!",
+    "label": "Review drafted",
+    "detail": "The fork review loop converged with 0 new published comments on the latest Copilot review and 0 unresolved Copilot threads. The exact live upstream head builds successfully; six companion findings remain drafted for maintainer approval.",
+    "upstream_public_writes": 0
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Review and approve, edit, or skip the drafted current-head request-changes action.",
+  "proposed_comments": [
+    {
+      "id": "50217-worker-response-validation",
+      "kind": "companion",
+      "title": "Validate the complete worker response before accepting it",
+      "severity": "high",
+      "confidence": {
+        "score": 93,
+        "rationale": "The current upstream response parser can accept structurally incomplete process entries, while the converged review tree adds validation for required fields and malformed protocol cases."
+      },
+      "body": "The worker response parser should validate the complete JSON contract before returning results. A syntactically valid response can still omit the PID or contain null/non-string values in nested process data, which can make the UI accept incomplete results or fail later while formatting them. Reject malformed structured output explicitly and keep executable-level coverage for malformed requests and responses.",
+      "out_of_diff_reason": "The correction spans the response model, parser validation, and executable-level tests; no single current upstream diff range is a safe independently applicable replacement.",
+      "outOfDiffReason": "The correction spans the response model, parser validation, and executable-level tests; no single current upstream diff range is a safe independently applicable replacement.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50217-direct-cli-timeout",
+      "kind": "companion",
+      "title": "Keep direct CLI enumeration bounded",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "The upstream direct CLI path still performs synchronous native enumeration without the finite containment and timeout behavior used by the worker path."
+      },
+      "body": "The existing direct CLI command path can still block indefinitely during native handle enumeration, even though the new UI worker path advertises a finite timeout. Apply the same containment and timeout contract to direct CLI execution, or route that mode through the isolated worker, so callers cannot hang forever on the kernel query.",
+      "out_of_diff_reason": "This requires coordinating command-mode dispatch, worker lifetime, and timeout/error reporting rather than changing one isolated line.",
+      "outOfDiffReason": "This requires coordinating command-mode dispatch, worker lifetime, and timeout/error reporting rather than changing one isolated line.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50217-worker-cleanup-races",
+      "kind": "companion",
+      "title": "Make cancellation and worker cleanup race-safe",
+      "severity": "high",
+      "confidence": {
+        "score": 95,
+        "rationale": "The upstream cleanup path waits indefinitely and does not fully cover process-exit races, assignment failure, or caller cancellation; these cases were addressed and tested in the converged review tree."
+      },
+      "body": "Cancellation and timeout cleanup must remain bounded even when the worker exits concurrently with termination. The cleanup path should handle failed job assignment without orphaning a suspended process, tolerate the benign process-exit race around Kill, and bound all waits before returning a timeout or cancellation result. Please add regression coverage for caller cancellation and the direct containment path.",
+      "out_of_diff_reason": "The safe fix spans native process creation/assignment, managed cancellation cleanup, and multiple failure-path tests; a single inline replacement would be incomplete.",
+      "outOfDiffReason": "The safe fix spans native process creation/assignment, managed cancellation cleanup, and multiple failure-path tests; a single inline replacement would be incomplete.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50217-pipe-drain",
+      "kind": "companion",
+      "title": "Drain redirected output before accepting worker completion",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "The upstream pipe-reading logic can observe process exit between reads and return before final JSON bytes are drained; the converged review tree adds explicit draining and tests."
+      },
+      "body": "A worker can write its final JSON and exit after the last peek/read pass but before the parent checks process state. Returning the buffer at that point can drop the final bytes and intermittently turn a successful query into malformed output. Drain the redirected pipes through broken-pipe completion after the process exits, and preserve the full response before parsing it.",
+      "out_of_diff_reason": "The fix changes the native pipe-read state machine and its synchronization with process completion, so it is not safe as a one-range suggestion.",
+      "outOfDiffReason": "The fix changes the native pipe-read state machine and its synchronization with process completion, so it is not safe as a one-range suggestion.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50217-invalid-utf8",
+      "kind": "companion",
+      "title": "Treat invalid UTF-8 as a rejected worker request",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "The upstream conversion to HSTRING occurs before the malformed-request catch path, so invalid UTF-8 can escape as an unhandled exception instead of returning the documented failure code."
+      },
+      "body": "Invalid UTF-8 on the worker stdin is another malformed request and should follow the same explicit rejection path as invalid JSON. The UTF-8-to-HSTRING conversion currently occurs outside the guarded parsing flow, so malformed bytes can terminate the worker through an unhandled exception instead of returning the documented exit code. Include conversion and parsing in the same error boundary and keep a real-worker regression test.",
+      "out_of_diff_reason": "The correction requires moving the conversion into the parsing error boundary and adding an executable-level test; neither change is independently represented by a safe single-line replacement.",
+      "outOfDiffReason": "The correction requires moving the conversion into the parsing error boundary and adding an executable-level test; neither change is independently represented by a safe single-line replacement.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50217-inherited-handles",
+      "kind": "companion",
+      "title": "Restrict the worker to the intended inherited handles",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The upstream CreateProcess call enables broad handle inheritance, while the converged review tree restricts inheritance to the redirected standard handles needed by the worker."
+      },
+      "body": "The worker is created with unrestricted handle inheritance, so it can retain unrelated inheritable handles from the UI process while a blocked query is being cleaned up. That undermines the finite-lifetime guarantee and can keep resources alive unexpectedly. Use an extended startup configuration with an explicit handle list containing only the redirected standard handles required by the worker.",
+      "out_of_diff_reason": "This requires coordinated native startup-structure, attribute-list lifetime, and CreateProcess flag changes; a partial inline edit could leave handle inheritance or cleanup invalid.",
+      "outOfDiffReason": "This requires coordinated native startup-structure, attribute-list lifetime, and CreateProcess flag changes; a partial inline edit could leave handle inheritance or cleanup invalid.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50217",
+      "type": "request_changes",
+      "label": "Request changes with general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Companion-only review: posts six separate general PR conversation comments. The findings require coordinated lifecycle, protocol, and test changes and are not safely click-to-apply. Nothing has been posted.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50217,
+        "pullRequest": 50217,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
+        "body_prefix": "The worker isolation change needs a few reliability fixes before this can be merged."
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "src\\modules\\FileLocksmith\\FileLocksmithCLI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\FileLocksmith\\FileLocksmithUI\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "detail": "Exact live upstream head built successfully in <PowerToysCheckout> with POWERTOYS_DISABLE_SPECTRE=1 after clearing inherited GIT_CONFIG_* variables."
+    },
+    "fork_review": {
+      "fork_pr": 527,
+      "fork_branch": "pr-iterate/50217",
+      "head_sha": "25f7819176e4caaf7cf4f9d3708b45b40f7ab107",
+      "result": "passed",
+      "latest_copilot_review": "2026-09-10T14:20:41Z",
+      "latest_review_new_comments": 0,
+      "unresolved_threads": 0,
+      "detail": "Converged fork review tree built successfully; targeted File Locksmith UI and CLI tests passed 23/23."
+    },
+    "test_results": {
+      "result": "passed",
+      "count": 23,
+      "passed": 23,
+      "failed": 0,
+      "command": "vstest.console.exe x64\\Debug\\tests\\FileLocksmithUI.UnitTests\\FileLocksmithUI.UnitTests.dll x64\\Debug\\tests\\FileLocksmithCLI\\FileLocksmithCLI.UnitTests.dll /Platform:x64 /Logger:Console"
+    },
+    "fork_only_delta": {
+      "result": "accounted",
+      "detail": "Review-only fixes are represented by the six companion findings; unrelated base-refresh commits are not treated as upstream author changes."
+    }
+  },
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-14T09:01:32.9358437Z"
+    "phase": "review_drafted",
+    "copilot": "Latest completed Copilot review on fork PR 527 returned 0 new published comments; unresolved Copilot threads: 0.",
+    "validation": "Exact upstream head and converged fork review tree both built; targeted File Locksmith tests passed 23/23.",
+    "fork_pr": 527,
+    "fork_branch": "pr-iterate/50217",
+    "fork_head_sha": "25f7819176e4caaf7cf4f9d3708b45b40f7ab107",
+    "fork_only_delta": "Six review-fix themes remain against the live upstream head; no unexplained public action is being posted automatically."
   },
   "freshness": {
     "queued_at": "09/14/2026 02:39:34",
-    "checkpoint_at": "2026-09-14T09:01:32.9358437Z"
-  }
+    "checkpoint_at": "2026-09-14T14:45:00Z"
+  },
+  "fork_pr": {
+    "number": 527,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/527",
+    "state": "OPEN",
+    "head_sha": "25f7819176e4caaf7cf4f9d3708b45b40f7ab107"
+  },
+  "fork_branch": "pr-iterate/50217"
 }
