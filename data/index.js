@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-14T20:00:30.5574068+08:00",
+  "generated_at": "2026-09-14T20:23:19.4397729+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 165,
-    "open_issues": 12636,
+    "open_issues": 12637,
     "community": 11796,
     "artifacts": 1202
   },
   "impact": {
-    "as_of": "2026-09-14T20:00:30.5574068+08:00",
+    "as_of": "2026-09-14T20:23:19.4397729+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -2080,15 +2080,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post inline review finding"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -2103,11 +2106,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 776,
+        "fork_number": 800,
         "fork_title": "[PR 50502] CmdPal: fix display configuration query to preserve monitor identity",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50502-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/776"
+        "fork_branch": "pr-iterate/50502-v3",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/800"
       }
     },
     {
@@ -4682,15 +4685,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 421,
-        "fork_title": "[PR 50027] Fix WinUI title-bar startup crash in CJK environments",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50027",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/421"
-      }
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50020",
@@ -154507,6 +154502,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50563",
+      "kind": "issue",
+      "number": 50563,
+      "url": "https://github.com/microsoft/PowerToys/issues/50563",
+      "title": "Screenshot When an External Display Is Connected",
+      "author": "toruha159-cyber",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-14T12:08:44Z",
+      "updated_at": "2026-09-14T12:11:20Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-50562",
       "kind": "issue",
       "number": 50562,
@@ -159579,8 +159605,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-14T01:42:43Z",
-      "comments": 71,
+      "updated_at": "2026-09-14T12:14:02Z",
+      "comments": 72,
       "priority": null
     },
     {
@@ -159592,7 +159618,7 @@ window.BOARD_INDEX = {
       "author": "jiripolasek",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": null,
