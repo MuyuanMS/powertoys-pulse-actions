@@ -1,30 +1,185 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50185",
   "number": 50185,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T02:39:43.946869Z",
-  "evaluated_at": "09/13/2026 16:00:53",
-  "source_updated_at": "2026-09-09T03:43:11+08:00",
+  "generated_at": "2026-09-14T16:25:14.2350426Z",
+  "evaluated_at": "2026-09-14T16:25:14.2350426Z",
+  "source_updated_at": "2026-09-09T03:43:11Z",
   "head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
   "title": "CmdPal: Icons (5/n) - Move icon conversion helpers from C++ to C#",
   "url": "https://github.com/microsoft/PowerToys/pull/50185",
+  "state": "OPEN",
+  "draft": false,
+  "summary": "The current upstream head still contains three correctness and performance issues found during the resumed review: native icon indexes above Int32.MaxValue can wrap into accepted negative indexes, the System.Drawing conversion path does not reliably preserve transparent icon pixels, and each binary icon conversion allocates large temporary buffers instead of pooling them. A clean candidate based on the exact upstream head contains the fixes and regression coverage, and the affected builds plus 16 targeted icon tests passed.",
+  "confidence": "High",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "Current live head 24e1caeba67bc6d8f278af9676df98584ed2f58c requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
+    "glyph": "ACTION",
+    "label": "Current-head request-changes draft ready",
+    "detail": "Findings are pinned to upstream head 24e1caeba67bc6d8f278af9676df98584ed2f58c. The previous divergent fork review was preserved and closed fork-side; clean fork PR 808 contains only the four PR-specific fixes. Fresh Copilot review on the corrected fork was unavailable, so local review fallback was used; the clean candidate built successfully and passed 16 targeted icon tests.",
+    "upstream_public_writes": false
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Request changes with three current-head findings",
+    "reason": "After explicit maintainer approval, recheck the live upstream head, checks, comments, reviews, and merge state, then publish the prepared request-changes review. No write has been made to microsoft/PowerToys."
+  },
+  "needs_revalidation": true,
+  "proposed_comments": [
+    {
+      "id": "reject-icon-index-overflow",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Reject icon indexes that overflow Int32",
+      "body": "### Reject icon indexes that overflow Int32\n\n**Severity:** `high`\n\n`ParseNativeIconIndex` currently accepts the parsed unsigned value and casts it to `int`, so an index above `Int32.MaxValue` can wrap into a negative value and be treated as a valid binary icon reference. A malformed or untrusted icon path can therefore select an unintended resource instead of taking the invalid-icon fallback. Reject values above `Int32.MaxValue` before the cast and keep boundary coverage for `2147483647`, `2147483648`, and `-2147483648`.",
+      "out_of_diff_reason": "The fix and its boundary tests span the parser and parser-test files, so this is recorded as a coordinated general review note rather than a single safe one-line suggestion.",
+      "outOfDiffReason": "The fix and its boundary tests span the parser and parser-test files, so this is recorded as a coordinated general review note rather than a single safe one-line suggestion.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "The overflow is directly visible in the current unsigned-to-signed cast, and the exact-head candidate adds the guard and boundary cases while passing the targeted parser tests."
+      }
+    },
+    {
+      "id": "preserve-binary-icon-transparency",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve transparency when materializing binary icons",
+      "body": "### Preserve transparency when materializing binary icons\n\n**Severity:** `high`\n\nThe current `System.Drawing.Icon` to `Bitmap` conversion does not reliably preserve the source icon's transparent pixels when the result is copied into a premultiplied `SoftwareBitmap`. Icons with masks can therefore render with opaque or black backgrounds in Command Palette. Render and inspect the icon mask explicitly, preserve transparent pixels, and premultiply only when needed; add an assertion that an extracted shell icon contains both transparent and visible pixels.",
+      "out_of_diff_reason": "The correction replaces the native bitmap materialization path and adds pixel-level regression coverage, so it is not safe as one localized apply-ready replacement.",
+      "outOfDiffReason": "The correction replaces the native bitmap materialization path and adds pixel-level regression coverage, so it is not safe as one localized apply-ready replacement.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current conversion path uses System.Drawing cloning before copying pixels into a premultiplied bitmap; the exact-head candidate's explicit mask reconstruction passed the binary icon test with transparent and visible pixels."
+      }
+    },
+    {
+      "id": "pool-binary-icon-conversion-buffers",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Pool temporary buffers used by binary icon conversion",
+      "body": "### Pool temporary buffers used by binary icon conversion\n\n**Severity:** `medium`\n\nBinary icon conversion allocates sizeable pixel arrays for every icon request, which adds avoidable GC pressure on the icon-loading path where many icons can be materialized during list virtualization. Rent the black and white pixel buffers from `ArrayPool<byte>` and return every rented buffer from the cleanup path, including failed native-resource creation or draw operations. Keep the conversion-content regression test so pooling cannot hide an incomplete or stale buffer.",
+      "out_of_diff_reason": "The allocation change is coupled to the new native bitmap cleanup path and the conversion-content test, so it is recorded as a coordinated general review note.",
+      "outOfDiffReason": "The allocation change is coupled to the new native bitmap cleanup path and the conversion-content test, so it is recorded as a coordinated general review note.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current implementation allocates conversion buffers per request, while the exact-head candidate pools both buffers and returns them in finally blocks; the affected project and targeted tests pass."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50185",
+      "type": "request_changes",
+      "label": "Request changes with general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Companion-only review: posts separate general PR conversation comments. This is a drafted maintainer action only. Recheck the live upstream head, checks, comments, reviews, and merge state immediately before publication; no write has been made to microsoft/PowerToys.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50185,
+        "head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the managed icon-conversion work. Before this can merge, please reject overflowing native icon indexes, preserve transparency when materializing binary icons, and pool the temporary conversion buffers with complete cleanup. The exact-head candidate fixes for these findings and regression coverage passed the affected builds and 16 targeted icon tests."
+      }
+    }
+  ],
+  "fork_pr": {
+    "number": 808,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/808",
+    "head_sha": "5c0750301e8f52495644cdfa88b865a795681aba"
+  },
+  "fork_branch": "pr-iterate/50185-v2",
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-14T02:39:43.946869Z"
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-14T16:25:14.2350426Z",
+    "reviewed_upstream_head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
+    "fork_pr": 808,
+    "fork_head_sha": "5c0750301e0a4b8c5fb727da5bd61c90fd2da7a",
+    "latest_copilot_review_at": null,
+    "latest_copilot_new_comments": null,
+    "unresolved_copilot_threads": 0,
+    "copilot_status": "unavailable-on-corrected-fork",
+    "local_review_fallback": true,
+    "resume_action": "maintainer-approval-or-freshness-recheck",
+    "build_result": "passed"
+  },
+  "review_fixes": [
+    {
+      "summary": "Reject native icon indexes above Int32.MaxValue and add parser boundary coverage."
+    },
+    {
+      "summary": "Materialize binary icons with explicit mask handling so transparent pixels and premultiplied alpha are preserved."
+    },
+    {
+      "summary": "Pool binary icon conversion buffers and return all native and managed resources on every exit path."
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
+      "result": "not_clean",
+      "validated_at": "2026-09-14T16:25:14.2350426Z",
+      "scope": "Exact upstream PR head before candidate fixes; findings are intentionally proposed against this tree."
+    },
+    "suggestion_candidate": {
+      "base_head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
+      "candidate_head_sha": "5c0750301e8f52495644cdfa88b865a795681aba",
+      "result": "passed",
+      "builds": [
+        "PowerToys build essentials restore/build (runner and Settings, x64 Debug)",
+        "Microsoft.Terminal.UI.vcxproj (x64 Debug)",
+        "Microsoft.CmdPal.UI.csproj (x64 Debug)",
+        "Microsoft.CmdPal.UI.UnitTests.csproj (x64 Debug)"
+      ],
+      "tests": [
+        {
+          "suite": "Microsoft.CmdPal.UI.UnitTests",
+          "filter": "FullyQualifiedName~IconPath",
+          "result": "passed",
+          "passed": 16,
+          "failed": 0
+        }
+      ],
+      "files": [
+        "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconPathParser.cs",
+        "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconPathConverter.cs",
+        "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconPathParserTests.cs",
+        "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconPathConverterTests.cs"
+      ],
+      "notes": [
+        "Inherited GIT_CONFIG_* variables were cleared before restore/build because an empty injected value breaks vcpkg registry initialization.",
+        "The Settings build emitted one existing CsWinRT1028 warning and zero errors.",
+        "The first dotnet test wrapper resolved an invalid AnyCPU output path; the built x64 test assembly was rerun directly with dotnet vstest and passed 16 tests."
+      ]
+    }
+  },
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The upstream head remains reviewable but is not clean: the clean candidate based on the exact upstream tree contains three validated findings and four PR-specific fix commits. The corrected fork build and targeted tests passed. Copilot review was requested after the corrected fork head was created but no completed review or outstanding request was available, so the local review fallback was used. The appropriate terminal state is a current-head maintainer action rather than review_ready.",
+    "evidence": [
+      "The live upstream review head is 24e1caeba67bc6d8f278af9676df98584ed2f58c.",
+      "The previous divergent fork state was preserved on the legacy local branch and its fork PR was closed without any upstream write.",
+      "Clean fork PR 808 contains only the four PR-50185-specific fixes and has head 5c0750301e0a4b8c5fb727da5bd61c90fd2da7a.",
+      "The corrected candidate built essentials, the native CmdPal interface, the managed CmdPal UI, and the CmdPal unit-test project with zero errors.",
+      "The built test assembly passed all 16 targeted IconPath tests.",
+      "No review, comment, commit, label, assignment, CI trigger, merge, close, or cross-reference write was made to microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a final freshness check, publish the drafted request-changes review."
   },
   "freshness": {
-    "queued_at": "09/13/2026 16:00:53",
-    "checkpoint_at": "2026-09-14T02:39:43.946869Z"
+    "evaluated_at": "2026-09-14T16:25:14.2350426Z",
+    "head_sha": "24e1caeba67bc6d8f278af9676df98584ed2f58c",
+    "status": "fresh-at-draft-time"
   }
 }
