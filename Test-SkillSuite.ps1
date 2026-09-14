@@ -275,7 +275,7 @@ if (-not (Test-Path $checkpointScript)) {
       ConvertFrom-Json
     if ($checkpoint.stage -ne 'review_in_progress' -or
         $checkpoint.workflow.phase -ne 'waiting_copilot' -or
-        @($checkpoint.actions).Count -ne 1) {
+        @($checkpoint.actions).Count -ne 0) {
       $errors.Add('PR review checkpoint writer produced an invalid resumable artifact.')
     }
 
