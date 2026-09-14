@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-14T18:59:02.6818663+08:00",
+  "generated_at": "2026-09-14T19:12:14.0734733+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 165,
-    "open_issues": 12637,
-    "community": 11797,
+    "open_issues": 12636,
+    "community": 11796,
     "artifacts": 1202
   },
   "impact": {
-    "as_of": "2026-09-14T18:59:02.6818663+08:00",
+    "as_of": "2026-09-14T19:12:14.0734733+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -1607,7 +1607,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 799,
+        "fork_title": "[PR 50530] perf(settings-ui): streamline Home module row templates",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50530",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/799"
+      }
     },
     {
       "id": "pr-50529",
@@ -1765,8 +1773,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -261785,37 +261793,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-03-18T11:02:10Z",
       "updated_at": "2026-08-05T10:11:49Z",
       "comments": 4,
-      "priority": null
-    },
-    {
-      "id": "issue-46222",
-      "kind": "issue",
-      "number": 46222,
-      "url": "https://github.com/microsoft/PowerToys/issues/46222",
-      "title": "Command Palette Dock - Multi Monitor env",
-      "author": "AngeloCresta",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-18T10:43:02Z",
-      "updated_at": "2026-03-18T10:53:03Z",
-      "comments": 2,
       "priority": null
     },
     {
