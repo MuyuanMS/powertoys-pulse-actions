@@ -1,35 +1,133 @@
 {
+  "schemaVersion": 3,
   "number": 50487,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-09-14T08:58:27.3054956Z",
-  "evaluated_at": "09/11/2026 03:13:20",
-  "source_updated_at": "2026-09-10T21:38:16+08:00",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "generated_at": "2026-09-14T12:26:00Z",
+  "evaluated_at": "2026-09-14T12:26:00Z",
+  "source_updated_at": "2026-09-10T13:38:16Z",
   "head_sha": "952d380886abf321658ee61be75ea04b27f597d2",
   "title": "CmdPal: Fix item subscription races during cleanup (part 1)",
   "url": "https://github.com/microsoft/PowerToys/pull/50487",
   "status": {
-    "glyph": "...",
-    "label": "Reviewing findings",
-    "detail": "Current live upstream head 952d380886abf321658ee61be75ea04b27f597d2 is not yet matched by fork review #754 at 790ce3b5d416a01db7be5c5ec108d53a03587c55; one unresolved Copilot thread remains, so the review remains in progress and not review-ready."
+    "glyph": "review",
+    "label": "Current-head review drafted",
+    "detail": "The saved fork review loop converged on fork PR 754 head 4854a104b57740e52231ad38fa56720258ea880b. The fresh Copilot pass returned zero published comments and the fork has zero unresolved Copilot threads. Fork-only lifecycle fixes remain absent from the live upstream head, so a maintainer-approved review action is drafted."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-14T08:58:27.3054956Z"
+  "next_action": {
+    "glyph": "post",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "Revalidate the live upstream head and activity snapshot before any maintainer-approved publication. Nothing has been posted upstream."
   },
-  "freshness": {
-    "queued_at": "09/11/2026 03:13:20",
-    "checkpoint_at": "2026-09-14T08:58:27.3054956Z"
-  },
+  "proposed_comments": [
+    {
+      "id": "coordinate-command-item-cleanup-publication",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Coordinate cleanup with every CommandItemViewModel publication path",
+      "body": "### Coordinate cleanup with every CommandItemViewModel publication path\n\n**Severity:** `high`\n\nThe cleanup gate needs to linearize with all state publication, not only the initial callback checks. The current implementation still allows an in-flight initialization, property callback, derived-attribute update, or synthetic context-item update to resume after cleanup has won and repopulate the cleaned view model or raise follow-on notifications. Please coordinate the lifecycle transition with the guarded publication sections (or use an equivalent linearizable commit protocol), and cover the late-callback cases with lifecycle tests.",
+      "out_of_diff_reason": "The required correction spans several existing publication and cleanup sections across CommandItemViewModel, CommandViewModel, ListItemViewModel, and related subscription code; the current upstream diff does not provide one safe RIGHT-side anchor for the coordinated change.",
+      "outOfDiffReason": "The required correction spans several existing publication and cleanup sections across CommandItemViewModel, CommandViewModel, ListItemViewModel, and related subscription code; the current upstream diff does not provide one safe RIGHT-side anchor for the coordinated change.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 93,
+        "rationale": "The converged fork loop found and fixed multiple reproducible cleanup/publication races across the changed view-models; the exact upstream head builds, while the fork-only lifecycle tests exercise the missing coordination."
+      }
+    },
+    {
+      "id": "discard-stale-command-context-callback",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Discard stale command callbacks before publishing the synthetic context item",
+      "body": "### Discard stale command callbacks before publishing the synthetic context item\n\n**Severity:** `high`\n\nTwo overlapping Command-changed callbacks can capture different extension command models. Before publishing the default context item, validate under the publication lock that the captured command model is still the model owned by the current CommandViewModel; otherwise discard the stale callback. Without that identity check, the synthetic item can retain model B while borrowing command C, and invoking it can send the current command with stale context.",
+      "out_of_diff_reason": "The identity check belongs inside the coordinated publication block, but the current upstream diff does not expose a stable RIGHT-side range for this fork-only correction.",
+      "outOfDiffReason": "The identity check belongs inside the coordinated publication block, but the current upstream diff does not expose a stable RIGHT-side range for this fork-only correction.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "This is the exact unresolved Copilot race consumed during resume and fixed in fork commit 4854a104b; the fresh follow-up Copilot review then returned zero published comments."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50487",
+      "type": "request_changes",
+      "label": "Request changes with general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Companion-only review: posts separate general PR conversation comments. Mandatory: revalidate the upstream head and activity snapshot, validate the pinned review payload, and require explicit maintainer approval before publishing.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50487,
+        "pullRequest": 50487,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "952d380886abf321658ee61be75ea04b27f597d2",
+        "body_prefix": "The cleanup changes need one more lifecycle pass before approval. Please coordinate cleanup with every state-publication path and discard stale command callbacks so cleaned view models cannot be repopulated or paired with an obsolete command model."
+      }
+    }
+  ],
   "fork_pr": {
     "number": 754,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/754"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/754",
+    "state": "OPEN",
+    "head_sha": "4854a104b57740e52231ad38fa56720258ea880b",
+    "branch": "pr-iterate/50487"
   },
-  "fork_branch": "pr-iterate/50487"
+  "fork_branch": "pr-iterate/50487",
+  "copilot_review": {
+    "latest_submitted_at": "2026-09-14T12:15:05Z",
+    "latest_commit_id": "4854a104b57740e52231ad38fa56720258ea880b",
+    "latest_new_comments": 0,
+    "published_inline_comments": 0,
+    "unresolved_threads": 0,
+    "review_count": 10,
+    "policy_note": "The existing review request was consumed before any new request. The fresh review on the updated fork head returned zero published comments; suppressed candidates were not treated as blockers after the loop round limit."
+  },
+  "validation": {
+    "live_head_match": true,
+    "fork_head": "4854a104b57740e52231ad38fa56720258ea880b",
+    "build": {
+      "result": "passed",
+      "tree": "fork review tree at fork PR 754 head",
+      "commands": [
+        "Visual Studio MSBuild.exe src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj /t:Build /p:Configuration=Debug /p:Platform=x64",
+        "vstest.console.exe x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.dll /Platform:x64"
+      ]
+    },
+    "upstream_head": {
+      "head_sha": "952d380886abf321658ee61be75ea04b27f597d2",
+      "result": "passed",
+      "detail": "Exact upstream head built after native package restore with PowerToys build-essentials.cmd and the targeted CmdPal ViewModels unit-test project using Visual Studio MSBuild. The build completed with exit code 0."
+    },
+    "copilot_review": {
+      "result": "passed",
+      "submitted": true,
+      "submitted_at": "2026-09-14T12:15:05Z",
+      "prior_unresolved_threads": 1,
+      "unresolved_threads_after": 0
+    },
+    "git_status": "clean"
+  },
+  "workflow": {
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-14T12:26:00Z",
+    "resume_action": "awaiting_review_approval",
+    "fork_pr": 754,
+    "fork_branch": "pr-iterate/50487",
+    "fork_head_sha": "4854a104b57740e52231ad38fa56720258ea880b",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed"
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-14T12:26:00Z",
+    "source_updated_at": "2026-09-10T13:38:16Z",
+    "head_sha": "952d380886abf321658ee61be75ea04b27f597d2"
+  }
 }
