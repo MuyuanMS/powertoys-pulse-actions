@@ -1,12 +1,26 @@
 {
+  "schemaVersion": 5,
   "number": 50218,
   "kind": "pr",
   "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
+  "generated_at": "2026-09-14T14:39:09.895488Z",
+  "evaluated_at": "2026-09-14T14:39:09.895488Z",
   "source_updated_at": "2026-08-28T21:21:07Z",
   "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
   "title": "fix(common): handle packaged context menu servicing shutdown",
   "url": "https://github.com/microsoft/PowerToys/pull/50218",
+  "state": "OPEN",
+  "draft": false,
+  "summary": "The live upstream head matches the reviewed PR head. The resumed fork Copilot loop is converged with zero unresolved threads, and three current-head companion findings remain drafted for maintainer approval.",
+  "status": {
+    "glyph": "⚠️",
+    "label": "Blocking review drafted",
+    "detail": "The current upstream head 1e2e18d8725145d012d0b0d55e4ed5251febba51 has three validated companion review notes. No upstream-public write was made."
+  },
+  "next_action": "Approve or edit the drafted request-changes review; recheck the upstream head before publishing.",
   "confidence": "High",
   "phase0": {
     "author": "crutkas",
@@ -17,73 +31,24 @@
     "note": "The author is a member, so community-contributor process asks do not apply. CLA and automated intake checks passed.",
     "evidence": [
       "The live upstream head is 1e2e18d8725145d012d0b0d55e4ed5251febba51.",
-      "The author association is MEMBER."
+      "The author association is MEMBER.",
+      "Upstream dependency review, PR intake, telemetry, PowerToys CI, architecture checks, and license/cla checks completed successfully."
     ]
   },
   "judgment": {
     "status": "review_drafted",
     "rationale": "The current-head review found a retry-safety issue in lifecycle initialization, missing direct activity-drain coverage, and missing privacy documentation for new telemetry events. Fork review threads are resolved and native compile/link validation passed.",
     "recommended_action": "Review the three drafted general comments and post only after explicit approval and a freshness check.",
-    "evaluated_at": "2026-08-28T22:06:40.2993539Z",
-    "source_updated_at": "2026-08-28T21:21:07Z",
     "evidence": [
       "A failed or timed-out monitor initialization can complete INIT_ONCE before a servicing target exists, making later activation use invalid lifecycle state.",
       "The added test covers idle WM_CLOSE shutdown but not activity admission, drain, rejection, or grace-period behavior.",
       "Four new ServicingWindowInitialization telemetry events are absent from DATA_AND_PRIVACY.md.",
-      "All fork review threads were resolved and the final audit found zero unresolved Copilot threads.",
-      "Relevant native projects compile and link successfully.",
-      "The Explorer-driven UI test was blocked by non-interactive foreground setup before reaching the servicing assertions.",
-      "No review, comment, label, state change, or other mutation was made on microsoft/PowerToys."
+      "The latest fork Copilot review on cc07865f18082dd39ad8ae63f3429984e80ae479 returned zero new published comments.",
+      "The fork Copilot thread audit reports zero unresolved threads.",
+      "The x64 Debug essentials build, four affected native context-menu projects, and FileLocksmith.UITests compile/link validation passed after clearing invalid inherited GIT_CONFIG_* variables.",
+      "Context-menu package creation was not rerun because the shared MSIX output was locked by concurrent PowerToys activity; source compilation passed with package pre/post events disabled.",
+      "No review, comment, label, assignment, state change, CI trigger, merge, close, or other mutation was made on microsoft/PowerToys."
     ]
-  },
-  "verification": {
-    "result": "passed_with_environment_limitation",
-    "configuration": "x64 Debug",
-    "builds": [
-      "tools\\build\\build-essentials.cmd",
-      "File Locksmith context-menu projects",
-      "PowerRename context-menu projects",
-      "Image Resizer context-menu projects",
-      "New+ context-menu projects",
-      "FileLocksmith.UITests compile/link"
-    ],
-    "tests": [
-      {
-        "suite": "Fork Copilot thread audit",
-        "result": "passed",
-        "unresolved": 0
-      },
-      {
-        "suite": "FileLocksmith.ContextMenu.ServicingShutdown",
-        "result": "environment_blocked",
-        "detail": "Explorer foreground stabilization failed before servicing assertions in the non-interactive desktop."
-      }
-    ],
-    "build_note": "Package pre-build was disabled because MakeAppx outputs were locked; the changed native code compiled and linked."
-  },
-  "upstream_pr": {
-    "number": 50218,
-    "url": "https://github.com/microsoft/PowerToys/pull/50218",
-    "state": "OPEN",
-    "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
-    "updated_at": "2026-08-28T21:21:07Z"
-  },
-  "workflow": {
-    "phase": "review_drafted",
-    "checkpoint_at": "2026-08-28T22:06:40.2993539Z",
-    "unresolved_copilot_threads": 0
-  },
-  "stage": "review_drafted",
-  "owes": "maintainer",
-  "status": {
-    "glyph": "⚠️",
-    "label": "Blocking review drafted",
-    "detail": "Three current-head general review notes are ready for maintainer selection."
-  },
-  "next_action": {
-    "glyph": "▶",
-    "label": "Review request-changes draft",
-    "reason": "Recheck the upstream head and obtain explicit approval before posting."
   },
   "proposed_comments": [
     {
@@ -93,6 +58,7 @@
       "title": "Make lifecycle initialization retry-safe",
       "body": "### Make lifecycle initialization retry-safe\n\n**Severity:** `high`\n\nIf the monitor thread times out or the wait fails, the current code stores the monitor and completes `INIT_ONCE` before a servicing window is known to exist. A later activation can then accept activity against a monitor with no shutdown target, and concurrent failed retries can race on the shared initialization result. Please keep the result synchronization-safe, commit the monitor only after the initialization event confirms success, and leave failed attempts retryable.",
       "in_diff": false,
+      "out_of_diff_reason": "The finding concerns the lifecycle initialization design across the new shared helper and cannot be represented as one safe, independently applicable replacement on the current upstream diff.",
       "disposition": "proposed",
       "confidence": {
         "score": 93,
@@ -106,6 +72,7 @@
       "title": "Add direct coverage for activity-drain shutdown",
       "body": "### Add direct coverage for activity-drain shutdown\n\n**Severity:** `medium`\n\nThe new UI test proves an idle surrogate exits on `WM_CLOSE`, but it does not exercise the helper's core admission and drain contract. Please add focused coverage that an operation admitted before shutdown delays termination up to the grace period, new activity is rejected after shutdown starts, and releasing the last active operation lets shutdown proceed.",
       "in_diff": false,
+      "out_of_diff_reason": "The requested coverage spans shared lifecycle state transitions and a test harness/process-lifetime setup, so it is not safe to encode as one current-diff inline suggestion.",
       "disposition": "proposed",
       "confidence": {
         "score": 86,
@@ -119,6 +86,7 @@
       "title": "Document the new telemetry events",
       "body": "### Document the new telemetry events\n\n**Severity:** `medium`\n\nThis change adds four new `*_ServicingWindowInitialization` telemetry events, but `DATA_AND_PRIVACY.md` still lists only the existing events. Please document these events, or confirm in the PR that they are intentionally covered by an existing entry, so the privacy documentation stays aligned with the emitted telemetry.",
       "in_diff": false,
+      "out_of_diff_reason": "DATA_AND_PRIVACY.md is not part of the current PR diff, so the documentation request has no current RIGHT-side inline anchor.",
       "disposition": "proposed",
       "confidence": {
         "score": 95,
@@ -134,7 +102,7 @@
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "General review notes — no inline suggestions. Explicit approval and freshness recheck are required before posting.",
+      "note": "Companion-only general review notes without inline items. Explicit approval and a freshness recheck are required before posting.",
       "review": {
         "pr": 50218,
         "pullRequest": 50218,
@@ -145,7 +113,76 @@
       }
     }
   ],
-  "generated_at": "2026-08-28T22:06:40.2993539Z",
-  "evaluated_at": "2026-08-28T22:06:40.2993539Z",
-  "summary": "The current-head review contains three general notes covering retry-safe lifecycle initialization, activity-drain regression coverage, and telemetry privacy documentation."
+  "fork_pr": {
+    "number": 526,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/526",
+    "head_sha": "cc07865f18082dd39ad8ae63f3429984e80ae479"
+  },
+  "fork_branch": "pr-iterate/50218-v2",
+  "validation": {
+    "fork_head": {
+      "head_sha": "cc07865f18082dd39ad8ae63f3429984e80ae479",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
+        "<PowerToysCheckout>\\tools\\build\\build.ps1 /p:PreBuildEventUseInBuild=false /p:PostBuildEventUseInBuild=false (src\\modules\\FileLocksmith\\FileLocksmithContextMenu)",
+        "<PowerToysCheckout>\\tools\\build\\build.ps1 /p:PreBuildEventUseInBuild=false /p:PostBuildEventUseInBuild=false (src\\modules\\imageresizer\\ImageResizerContextMenu)",
+        "<PowerToysCheckout>\\tools\\build\\build.ps1 /p:PreBuildEventUseInBuild=false /p:PostBuildEventUseInBuild=false (src\\modules\\powerrename\\PowerRenameContextMenu)",
+        "<PowerToysCheckout>\\tools\\build\\build.ps1 /p:PreBuildEventUseInBuild=false /p:PostBuildEventUseInBuild=false (src\\modules\\NewPlus\\NewShellExtensionContextMenu)",
+        "<PowerToysCheckout>\\tools\\build\\build.ps1 (src\\modules\\FileLocksmith\\Tests\\FileLocksmith.UITests)"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "Changed native context-menu project outputs",
+        "FileLocksmith.UITests compile/link output"
+      ],
+      "notes": [
+        "Inherited GIT_CONFIG_* variables were cleared before restore/build because an empty injected value breaks vcpkg registry initialization.",
+        "The ordinary context-menu build command reached MakeAppx but package creation failed with 0x80070020 because the shared MSIX output was locked; compile validation passed with package pre/post events disabled."
+      ]
+    },
+    "upstream_head": {
+      "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
+      "result": "not_run",
+      "notes": [
+        "This is a findings-bearing companion-only review, not a clean review_ready result; no apply-ready suggestion patch required exact-head candidate validation.",
+        "Upstream required checks are successful and the live head was rechecked before artifact generation."
+      ]
+    }
+  },
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "previous_phase": "review_drafted",
+    "checkpoint_at": "2026-09-14T14:39:09.895488Z",
+    "fork_pr": 526,
+    "fork_branch": "pr-iterate/50218-v2",
+    "fork_head_sha": "cc07865f18082dd39ad8ae63f3429984e80ae479",
+    "reviewed_upstream_head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
+    "latest_copilot_review_at": "2026-09-10T16:47:41Z",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "Existing matching-head Copilot review consumed; latest review returned zero published comments.",
+    "upstream_head_validation": "not_run_for_companion_only_findings",
+    "fork_head_validation": "passed",
+    "build_result": "passed_with_package_lock_limitation",
+    "advancement_evidence": [
+      "Resumed existing fork PR 526 and branch pr-iterate/50218-v2 without re-mirroring or requesting duplicate Copilot review.",
+      "The live upstream head remains exactly 1e2e18d8725145d012d0b0d55e4ed5251febba51, matching the drafted action.",
+      "The existing Copilot review was consumed after inspecting submitted reviews; no new request was created.",
+      "Fork Copilot unresolved thread count is zero.",
+      "Recreated the missing local local checkout at <PowerToysCheckout> and rebuilt the fork head.",
+      "Cleared invalid inherited GIT_CONFIG_* environment entries so vcpkg restore and build essentials completed.",
+      "Compiled all four changed native context-menu projects and FileLocksmith.UITests successfully.",
+      "No upstream-public write was performed."
+    ]
+  },
+  "freshness": {
+    "headRefOid": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
+    "updatedAt": "2026-08-28T21:21:07Z",
+    "latestCopilotReviewAt": "2026-09-10T16:47:41Z",
+    "latestForkCommitAt": "2026-09-10T16:42:37Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-14T14:39:09.895488Z"
+  },
+  "zero_upstream_public_writes": true
 }
