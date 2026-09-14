@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-14T20:52:49.4942255+08:00",
+  "generated_at": "2026-09-14T21:04:46.8451106+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 165,
     "open_issues": 12637,
     "community": 11796,
-    "artifacts": 1202
+    "artifacts": 1201
   },
   "impact": {
-    "as_of": "2026-09-14T20:52:49.4942255+08:00",
+    "as_of": "2026-09-14T21:04:46.8451106+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -546,7 +546,6 @@ window.BOARD_INDEX = {
     30692,
     50554,
     50550,
-    50546,
     50523,
     50518,
     50516,
@@ -1653,7 +1652,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-11T20:18:59Z",
-      "updated_at": "2026-09-11T20:19:37Z",
+      "updated_at": "2026-09-14T12:48:21Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -2796,7 +2795,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_ready",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -155026,14 +155025,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -155041,7 +155037,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-13T01:39:27Z",
-      "updated_at": "2026-09-13T13:57:03Z",
+      "updated_at": "2026-09-14T12:54:28Z",
       "comments": 2,
       "priority": null
     },
