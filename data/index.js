@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-14T21:42:21.9279650+08:00",
+  "generated_at": "2026-09-14T22:02:52.1168699+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 165,
-    "open_issues": 12637,
-    "community": 11796,
-    "artifacts": 1201
+    "open_issues": 12636,
+    "community": 11795,
+    "artifacts": 1200
   },
   "impact": {
-    "as_of": "2026-09-14T21:42:21.9279650+08:00",
+    "as_of": "2026-09-14T22:02:52.1168699+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -556,7 +556,6 @@ window.BOARD_INDEX = {
     50484,
     50483,
     50481,
-    49677,
     50477,
     50476,
     50471,
@@ -1653,7 +1652,7 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-09-11T20:18:59Z",
       "updated_at": "2026-09-14T12:48:21Z",
-      "comments": 0,
+      "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2934,15 +2933,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 5,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post current-head review requests"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3098,15 +3100,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "dependencies",
         "github_actions",
@@ -3142,8 +3147,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3512,11 +3517,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 530,
+        "fork_number": 805,
         "fork_title": "[PR 50222] Update MSBuildCache to 0.1.340-preview",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50222",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/530"
+        "fork_branch": "pr-iterate/50222-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/805"
       }
     },
     {
@@ -156246,22 +156251,19 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-08-05T02:00:54Z",
-      "updated_at": "2026-08-05T02:00:54Z",
-      "comments": 0,
+      "updated_at": "2026-09-14T13:56:39Z",
+      "comments": 1,
       "priority": null,
       "mirror": {
         "kind": "issue",
@@ -261376,37 +261378,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-03-18T13:45:13Z",
       "updated_at": "2026-03-18T14:03:57Z",
       "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-46236",
-      "kind": "issue",
-      "number": 46236,
-      "url": "https://github.com/microsoft/PowerToys/issues/46236",
-      "title": "Maintain the dock display when a full-screen application is not running in the foreground.",
-      "author": "huoyan1231",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-18T13:27:44Z",
-      "updated_at": "2026-03-18T13:35:13Z",
-      "comments": 2,
       "priority": null
     },
     {
