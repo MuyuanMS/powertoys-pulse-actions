@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-14T15:44:37.7361856+08:00",
+  "generated_at": "2026-09-14T15:56:33.9684304+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1201
   },
   "impact": {
-    "as_of": "2026-09-14T15:44:37.7361856+08:00",
+    "as_of": "2026-09-14T15:56:33.9684304+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -1543,8 +1543,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -5760,7 +5760,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_ready",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
