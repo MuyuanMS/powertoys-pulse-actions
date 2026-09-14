@@ -57,6 +57,18 @@ function Get-Artifact {
     return Get-Content $path -Raw | ConvertFrom-Json
 }
 
+function Test-HasNewerActivity {
+    param($Artifact, [string]$LiveUpdatedAt)
+    if (-not $Artifact -or
+        [string]::IsNullOrWhiteSpace([string]$Artifact.source_updated_at) -or
+        [string]::IsNullOrWhiteSpace($LiveUpdatedAt)) {
+        return $false
+    }
+
+    return [datetimeoffset]::Parse($LiveUpdatedAt).ToUniversalTime() -gt
+        [datetimeoffset]::Parse([string]$Artifact.source_updated_at).ToUniversalTime()
+}
+
 function Test-HasApplicableReviewAction {
     param($Artifact, [string]$LiveHead)
     if (-not $Artifact) {
@@ -162,13 +174,13 @@ foreach ($pr in $pullRequests) {
     if ($pr.isDraft) {
         continue
     }
-    if (Test-IsHoldState $artifact) {
-        continue
-    }
-
     $artifactHead = if ($artifact) { [string]$artifact.head_sha } else { '' }
     $liveHead = [string]$pr.headRefOid
-    if (Test-IsTerminalBlocker $artifact $liveHead) {
+    $hasNewerActivity = Test-HasNewerActivity $artifact ([string]$pr.updatedAt)
+    if ((Test-IsHoldState $artifact) -and -not $hasNewerActivity) {
+        continue
+    }
+    if ((Test-IsTerminalBlocker $artifact $liveHead) -and -not $hasNewerActivity) {
         continue
     }
 
@@ -202,6 +214,15 @@ foreach ($pr in $pullRequests) {
     if (-not [string]::IsNullOrWhiteSpace($reviewHead) -and $reviewHead -ne $liveHead) {
         $reasons.Add('new_commits_since_proposed_review')
     }
+    if ($hasNewerActivity -and $artifactHead -eq $liveHead) {
+        if (Test-IsHoldState $artifact) {
+            $reasons.Add('new_activity_after_author_wait')
+        } elseif (Test-IsTerminalBlocker $artifact $liveHead) {
+            $reasons.Add('new_activity_after_blocker')
+        } elseif ($hasApplicableReview) {
+            $reasons.Add('new_discussion_on_reviewed_head')
+        }
+    }
 
     if ($reasons.Count -eq 0) {
         continue
@@ -216,6 +237,11 @@ foreach ($pr in $pullRequests) {
         artifact_stage = if ($artifact) { [string]$artifact.stage } else { '' }
         artifact_head_sha = $artifactHead
         proposed_review_head_sha = $reviewHead
+        work_type = if ($reasons -contains 'new_discussion_on_reviewed_head') {
+            'context_revalidation'
+        } else {
+            'full_review'
+        }
         reasons = $reasons.ToArray()
     })
 }
