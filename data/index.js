@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-14T10:50:24.7588597+08:00",
+  "generated_at": "2026-09-14T12:24:36.5847979+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,15 +85,15 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 167,
+    "open_prs": 166,
     "open_issues": 12637,
-    "community": 11798,
-    "artifacts": 1205
+    "community": 11797,
+    "artifacts": 1204
   },
   "impact": {
-    "as_of": "2026-09-14T10:50:24.7588597+08:00",
+    "as_of": "2026-09-14T12:24:36.5847979+08:00",
     "issues_helped": 10,
-    "prs_iterated": 18,
+    "prs_iterated": 17,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
@@ -221,7 +221,6 @@ window.BOARD_INDEX = {
     45972,
     45581,
     44624,
-    43741,
     41656,
     41003,
     36253,
@@ -1959,7 +1958,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 795,
+        "fork_title": "[PR 50509] [Power Display] Preserve profiles across unavailable monitors and capabilities",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50509",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/795"
+      }
     },
     {
       "id": "pr-50508",
@@ -2639,8 +2646,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-08T05:22:47Z",
-      "updated_at": "2026-09-14T01:13:47Z",
-      "comments": 1,
+      "updated_at": "2026-09-14T04:01:38Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -8030,40 +8037,6 @@ window.BOARD_INDEX = {
         "fork_branch": "pr-iterate/44624",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/593"
       }
-    },
-    {
-      "id": "pr-43741",
-      "kind": "pr",
-      "number": 43741,
-      "url": "https://github.com/microsoft/PowerToys/pull/43741",
-      "title": "feat(AdvancedPaste): add PasteAsKeystrokes format and functionality",
-      "author": "tonur",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "awaiting_author",
-      "owes": "author",
-      "pending_author": true,
-      "waiting_since": "2026-08-05T18:17:56.0000000Z",
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Advanced Paste"
-      ],
-      "assignees": [],
-      "created_at": "2025-11-20T10:37:39Z",
-      "updated_at": "2026-08-06T02:23:43Z",
-      "comments": 15,
-      "priority": 10,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "DIRTY"
     },
     {
       "id": "pr-41656",
