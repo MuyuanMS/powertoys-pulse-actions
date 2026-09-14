@@ -2,34 +2,112 @@
   "number": 50488,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T09:03:38.0487166Z",
-  "evaluated_at": "09/14/2026 02:14:41",
+  "generated_at": "2026-09-14T09:35:00Z",
+  "evaluated_at": "2026-09-14T09:35:00Z",
   "source_updated_at": "2026-09-10T02:03:05+08:00",
   "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
   "title": "feat(mouseutils): add haptic feedback to Cursor Wrap",
   "url": "https://github.com/microsoft/PowerToys/pull/50488",
-  "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "Resuming durable fork review PR #752 at create-local checkout; existing Copilot reviews consumed, exact upstream-head validation pending."
+  "fork": {
+    "pr": 752,
+    "branch": "pr-iterate/50488"
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "summary": "Fork review converged with zero unresolved Copilot threads, but the upstream head still needs fixes for device changes, monitor topology/input routing, and delayed edge-window delivery.",
+  "next_action": "Maintainer review of the drafted current-head request-changes action.",
+  "verify": [
+    "Live upstream head remains 31212e026476a80d0158ac73cd1fcdfe5bd8417a.",
+    "Exact upstream head built successfully with build-essentials.cmd and CursorWrap.vcxproj in x64 Debug.",
+    "Applying the validated focused fix set to the exact upstream head built CursorWrap.vcxproj successfully.",
+    "The converged fork review branch built CursorWrap.vcxproj successfully.",
+    "Fork PR #752 has three Copilot reviews and zero unresolved Copilot threads; the latest review had zero new published inline comments."
+  ],
+  "proposed_comments": [
+    {
+      "id": "haptic-device-refresh",
+      "title": "Refresh haptic availability after device or display changes",
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "The changed code samples IsHapticDevicePresent only during event-thread startup, while the existing display/device notification path does not refresh this state."
+      },
+      "kind": "companion",
+      "out_of_diff_reason": "The fix must coordinate haptic state refresh, notification handling, and pending-wrap cleanup across the listener lifecycle; no single localized replacement is independently safe.",
+      "outOfDiffReason": "The fix must coordinate haptic state refresh, notification handling, and pending-wrap cleanup across the listener lifecycle; no single localized replacement is independently safe.",
+      "body": "The haptic manager and `m_hapticDevicePresent` flag are initialized only once when the listener thread starts. If a compatible mouse is connected or reconnects afterward, Cursor Wrap continues to use the stale `false` value and never defers wraps for haptic feedback until the utility is restarted. Refresh the haptic manager and device-presence state from the existing debounced device/display notification path, and clear any pending wrap when haptics become unavailable.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "haptic-monitor-edge-routing",
+      "title": "Route haptic input for the actual monitor edge",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "The new windows are created only around the virtual-screen bounding rectangle, but Cursor Wrap computes destinations from individual monitor topology and supports indented outer edges."
+      },
+      "kind": "companion",
+      "out_of_diff_reason": "Correcting this requires a coordinated replacement of the four-window geometry and the wrap-point routing path, so a single click-to-apply range would be unsafe.",
+      "outOfDiffReason": "Correcting this requires a coordinated replacement of the four-window geometry and the wrap-point routing path, so a single click-to-apply range would be unsafe.",
+      "body": "These four windows cover only the virtual screen's bounding rectangle. In staggered or L-shaped multi-monitor layouts, Cursor Wrap can wrap across an outer edge that is not part of that rectangle, so `WindowFromPoint` does not find one of these windows and the haptic path is skipped or routed inconsistently. Create the input target for the actual wrap point/edge segment derived from the monitor topology rather than relying on the virtual-desktop perimeter.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "haptic-window-input-interception",
+      "title": "Avoid permanently intercepting ordinary edge input",
+      "severity": "high",
+      "confidence": {
+        "score": 91,
+        "rationale": "The changed windows are shown topmost for the entire hook lifetime, so they participate in hit testing even when no wrap is pending."
+      },
+      "kind": "companion",
+      "out_of_diff_reason": "The safe fix changes window creation, visibility, and pending-wrap completion together; a one-range suggestion could leave the input lifecycle inconsistent.",
+      "outOfDiffReason": "The safe fix changes window creation, visibility, and pending-wrap completion together; a one-range suggestion could leave the input lifecycle inconsistent.",
+      "body": "These topmost layered windows remain visible for the whole hook lifetime and therefore participate in hit testing at the outermost pixel. When Ctrl/Shift activation is not satisfied, the hook passes the event through, but the edge window can still become the pointer target and prevent the underlying application or shell from receiving ordinary edge input. Keep the routing window hidden except for an actual pending wrap, or otherwise preserve non-wrap input delivery.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "haptic-timeout-preserves-wrap",
+      "title": "Preserve wrapping if the edge window misses the mouse message",
+      "severity": "high",
+      "confidence": {
+        "score": 96,
+        "rationale": "The changed hook returns before SetCursorPos whenever deferral succeeds, but the current implementation has no timeout or fallback if WM_MOUSEMOVE is delayed or never delivered."
+      },
+      "kind": "companion",
+      "out_of_diff_reason": "The timeout requires a new timer, timer cleanup, and a second completion entry point; it is not safe as a single-line replacement.",
+      "outOfDiffReason": "The timeout requires a new timer, timer cleanup, and a second completion entry point; it is not safe as a single-line replacement.",
+      "body": "Once deferral succeeds, the hook returns before calling `SetCursorPos`, and completion depends entirely on a subsequent `WM_MOUSEMOVE` reaching the edge window. If that message is delayed, filtered, or never generated, `m_hasPendingWrap` remains set and the cursor does not wrap at all. Add a short timeout that completes the pending cursor transition first and treats haptic playback as optional, preserving Cursor Wrap's existing behavior even when routing fails.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "type": "request_changes",
+      "label": "Request changes with general review notes",
+      "note": "Companion-only review: posts separate general PR conversation comments. Drafted current-head maintainer action with four companion findings; each fix spans coordinated lifecycle changes and is not safely click-to-apply; nothing has been posted.",
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50488,
+        "pr": 50488,
+        "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
+        "body_prefix": "The haptic routing needs a few reliability fixes before this can be merged."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Maintainer action drafted",
+    "detail": "Current upstream head is validated; four coordinated findings remain and a request-changes action is available for approval."
+  },
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-14T09:03:38.0487166Z"
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-14T09:35:00Z"
   },
   "freshness": {
     "queued_at": "09/14/2026 02:14:41",
-    "checkpoint_at": "2026-09-14T09:03:38.0487166Z"
-  },
-  "fork_pr": {
-    "number": 752,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/752"
-  },
-  "fork_branch": "pr-iterate/50488"
+    "checkpoint_at": "2026-09-14T09:35:00Z"
+  }
 }
