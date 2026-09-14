@@ -1,35 +1,184 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-50020",
   "number": 50020,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "url": "https://github.com/microsoft/PowerToys/pull/50020",
+  "title": "Add plain text fallback support to peek",
+  "authorAssociation": "NONE",
+  "isCommunity": true,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T07:27:41.3626796Z",
-  "evaluated_at": "09/13/2026 16:00:53",
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "generated_at": "2026-09-14T09:10:00Z",
+  "evaluated_at": "2026-09-14T09:10:00Z",
   "source_updated_at": "2026-09-09T21:30:08Z",
   "head_sha": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
-  "title": "Add plain text fallback support to peek",
-  "url": "https://github.com/microsoft/PowerToys/pull/50020",
+  "summary": "The fork review loop converged with a fresh zero-comment Copilot review and zero unresolved fork threads. The exact upstream head is unchanged and the remaining fork-only correctness and coverage fixes are drafted as a current-head request-changes action.",
   "status": {
-    "glyph": "...",
-    "label": "Reviewing findings",
-    "detail": "Consumed Copilot review 2026-09-10T01:09:58Z on fork PR 745; zero published comments and zero unresolved Copilot threads. Exact upstream head 425fcebe5ff2374c05d87dc5ce60643c63eb5a5c passed build-essentials, Peek.FilePreviewer, and Peek.FilePreviewer.UnitTests. Fork-only fixes remain absent upstream, so draft a current-head request_changes action for persisted-size clamping, bounded charset detection/BOM-less Unicode handling, truthful memory-safety text, accessible NumberBox naming, settings serialization coverage, and fallback integration setup/coverage."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 745 has eight Copilot review passes; the latest pass at 2026-09-10T01:09:58Z returned zero published comments and zero unresolved threads. Exact upstream head 425fcebe5ff2374c05d87dc5ce60643c63eb5a5c passed the recorded build-essentials, Peek.FilePreviewer, and Peek.FilePreviewer.UnitTests validation. No upstream write has occurred."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-14T07:27:41.3626796Z"
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The draft asks for six current-head correctness, accessibility, documentation, and regression-coverage updates. It is pinned to the live upstream head and has not been posted."
+  },
+  "needs_revalidation": false,
+  "source": {
+    "repository": "microsoft/PowerToys",
+    "headRefOid": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
+    "updatedAt": "2026-09-09T21:30:08Z"
   },
   "freshness": {
-    "queued_at": "09/13/2026 16:00:53",
-    "checkpoint_at": "2026-09-14T07:27:41.3626796Z"
+    "headRefOid": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
+    "updatedAt": "2026-09-09T21:30:08Z",
+    "latestCopilotReviewAt": "2026-09-10T01:09:58Z",
+    "latestForkCommitAt": "2026-09-10T01:06:09Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-14T09:10:00Z"
   },
-  "fork_pr": {
-    "number": 745,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/745"
+  "proposed_comments": [
+    {
+      "id": "persisted-size-clamping",
+      "kind": "companion",
+      "title": "Clamp persisted preview-size values",
+      "severity": "medium",
+      "body": "### Clamp persisted preview-size values\n\n**Severity:** `medium`\n\nPlease validate the persisted maximum-preview-size value when loading settings, not only when converting the value for a read. A hand-edited or older settings file can otherwise restore an invalid value and bypass the UI's intended bounds; clamp or reject it at the settings boundary and add coverage for invalid persisted values.",
+      "outOfDiffReason": "The required settings-boundary assertion and its regression case are not safely represented by one current upstream diff anchor.",
+      "confidence": {
+        "score": 88,
+        "rationale": "The fork fix and its dedicated regression test directly demonstrate that persisted values can bypass the UI range unless the load boundary enforces the invariant."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "bounded-charset-and-unicode",
+      "kind": "companion",
+      "title": "Preserve charset detection and BOM-less Unicode fallback",
+      "severity": "high",
+      "body": "### Preserve charset detection and BOM-less Unicode fallback\n\n**Severity:** `high`\n\nPlease ensure the bounded read path does not make charset detection depend only on a short prefix: legacy encodings can become distinguishable after that prefix and then decode later characters incorrectly. The binary heuristic must also recognize plausible BOM-less UTF-16 and UTF-32 text before rejecting NUL-containing content, with regression coverage for both cases.",
+      "outOfDiffReason": "The finding spans the detector stream, text classification heuristic, and multiple encoding cases; no single current RIGHT-side range is a safe independently applicable replacement.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The issue was reproduced by successive fork Copilot passes and fixed with bounded full-stream detection plus explicit BOM-less Unicode tests."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "truthful-memory-documentation",
+      "kind": "companion",
+      "title": "Make the memory-behavior documentation truthful",
+      "severity": "medium",
+      "body": "### Make the memory-behavior documentation truthful\n\n**Severity:** `medium`\n\nPlease correct the comment that says the whole file is never held in memory at once. Decoding is chunked, but the complete decoded text is still accumulated for the downstream renderer, so the comment should describe the actual bounded-read and buffered-result behavior rather than implying constant-memory rendering.",
+      "outOfDiffReason": "This is a documentation correction coupled to the read-path design and is not emitted as a standalone suggestion because the safe wording depends on the final buffering contract.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The implementation appends decoded chunks to a StringBuilder and materializes the complete result before rendering."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "numberbox-accessibility",
+      "kind": "companion",
+      "title": "Name the new NumberBox for screen readers",
+      "severity": "medium",
+      "body": "### Name the new NumberBox for screen readers\n\n**Severity:** `medium`\n\nPlease bind `AutomationProperties.Name` on the new NumberBox to the existing maximum-preview-size header (following the accessibility pattern used by neighboring Settings controls). Without an accessible name, screen-reader users who tab to the field cannot identify what the value controls.",
+      "outOfDiffReason": "The exact XAML anchor moved during the fork review iterations; keep this as a coordinated accessibility request rather than risk a stale line-targeted suggestion.",
+      "confidence": {
+        "score": 92,
+        "rationale": "The current control has no explicit accessible name, while the associated header already provides the correct user-facing label."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "settings-serialization-coverage",
+      "kind": "companion",
+      "title": "Cover settings backward compatibility and round trips",
+      "severity": "medium",
+      "body": "### Cover settings backward compatibility and round trips\n\n**Severity:** `medium`\n\nPlease add serialization coverage proving that an older settings document without the new property keeps the 10 MB default and that a configured value survives a JSON round trip. This protects existing users when the persisted Settings UI schema gains the new preview-size field.",
+      "outOfDiffReason": "The coverage belongs with the persisted Settings UI schema and cannot be reduced to one safe inline replacement in the current PR diff.",
+      "confidence": {
+        "score": 90,
+        "rationale": "The new persisted field changes the settings schema, and the requested cases directly cover missing-property compatibility and configured-value persistence."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "fallback-integration-coverage",
+      "kind": "companion",
+      "title": "Keep end-to-end fallback coverage deterministic",
+      "severity": "medium",
+      "body": "### Keep end-to-end fallback coverage deterministic\n\n**Severity:** `medium`\n\nPlease retain an integration-level test through the factory-to-preview fallback path for text, binary, and oversized files, and create the required Peek temporary directory explicitly so the test passes on a clean account. Unit tests alone do not prove that an unrecognized file reaches the intended preview or that binary and oversized inputs still take the information-preview path.",
+      "outOfDiffReason": "This request covers setup and multiple factory outcomes, so it is intentionally a companion note rather than a multi-file inline patch.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The fork validation showed the clean-account setup requirement and exercised the three distinct fallback outcomes through the factory."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
+      "result": "passed",
+      "commands": [
+        "dotnet build PowerToys.slnx --configuration Debug --no-restore",
+        "dotnet test src/modules/peek/Peek.FilePreviewer.UnitTests/Peek.FilePreviewer.UnitTests.csproj --configuration Debug --no-restore"
+      ]
+    }
   },
-  "fork_branch": "pr-iterate/50020-v4"
+  "workflow": {
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-14T09:10:00Z",
+    "previous_phase": "reviewing_findings",
+    "advancement_evidence": [
+      "Consumed existing fork Copilot review before requesting no duplicate review.",
+      "Latest fork review is on fork head 9c95c8f90ddf9c0884af593fcd101870f08eaa05.",
+      "Latest fork review returned zero published comments.",
+      "Unresolved fork Copilot thread count is zero.",
+      "Live upstream head remains 425fcebe5ff2374c05d87dc5ce60643c63eb5a5c.",
+      "Exact upstream-head validation is recorded as passed."
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-changes-50020",
+      "type": "request_changes",
+      "label": "Request changes with six current-head review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50020,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
+        "body": "Thanks for the plain-text fallback work and the added bounded-read tests. Before merge, please address the six current-head items in this review: enforce the preview-size invariant when loading persisted settings; preserve accurate bounded charset detection and recognize BOM-less UTF-16/UTF-32 before the binary heuristic; make the memory-behavior comment match the actual buffered result; give the new NumberBox an accessible name; add settings backward-compatibility and JSON round-trip coverage; and keep deterministic factory-to-preview integration coverage for text, binary, and oversized files on clean accounts."
+      },
+      "note": "Current-head request-changes draft only. No upstream write has occurred; explicit maintainer approval and the safe publisher are required before posting."
+    }
+  ],
+  "safe_actions": [
+    {
+      "id": "request-changes-50020",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "validator_required": "Test-ReviewData.ps1",
+      "head_pinned": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c"
+    },
+    {
+      "id": "hold-review-50020",
+      "upstream_write": false,
+      "approval_required": false
+    }
+  ]
 }
