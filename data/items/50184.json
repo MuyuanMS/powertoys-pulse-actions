@@ -1,35 +1,177 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50184",
   "number": 50184,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T10:21:50.8865768Z",
-  "evaluated_at": "09/13/2026 16:00:53",
-  "source_updated_at": "2026-09-09T03:43:11+08:00",
+  "generated_at": "2026-09-14T11:15:00Z",
+  "evaluated_at": "2026-09-14T11:15:00Z",
+  "source_updated_at": "2026-09-09T03:43:11Z",
   "head_sha": "0e513d04ab42ab02efe0884a2be1059644bbb575",
   "title": "CmdPal: Icons (4/n) - Prioritize live icon requests and load glyphs directly",
   "url": "https://github.com/microsoft/PowerToys/pull/50184",
+  "state": "OPEN",
+  "draft": false,
+  "summary": "The current upstream head still contains three correctness issues found by the converged fork review: XamlRoot event subscriptions can duplicate and stale unload handling can invalidate a rebound control; ETW-only diagnostics do not record speculative deferrals because they bypass the current-session accessor; and completion can retain the demand worker reserve, stranding accepted speculative work during shutdown. A candidate patch containing all three fixes and a regression test was applied to the exact upstream head and passed the targeted build and tests.",
+  "confidence": "High",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Fork Copilot review is converged at fork PR 498; building the exact durable review head and then validating the upstream head."
+    "glyph": "ACTION",
+    "label": "Current-head request-changes draft ready",
+    "detail": "Findings are pinned to upstream head 0e513d04ab42ab02efe0884a2be1059644bbb575. Fork PR 498 converged with zero new Copilot comments and zero unresolved threads; the exact-head candidate build and 65 targeted icon tests passed."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-14T10:21:50.8865768Z"
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Request changes with three current-head findings",
+    "reason": "After explicit maintainer approval, recheck the live upstream head and activity, then publish the prepared request-changes review."
   },
-  "freshness": {
-    "queued_at": "09/13/2026 16:00:53",
-    "checkpoint_at": "2026-09-14T10:21:50.8865768Z"
-  },
+  "needs_revalidation": true,
+  "proposed_comments": [
+    {
+      "id": "track-xamlroot-subscription-and-stale-unload",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep IconBox XamlRoot subscriptions and stale unload handling consistent",
+      "body": "### Keep IconBox XamlRoot subscriptions and stale unload handling consistent\n\n**Severity:** `high`\n\nIn `IconBox.OnLoaded` and `OnUnloaded` (around lines 190-221), subscribe through a tracked XamlRoot: unsubscribe the previously tracked root before subscribing to a new one, clear the tracked root on unload, and treat any loaded, in-bounds unload as stale even when `_activeRequestDemand` is already null. Otherwise repeated load cycles can duplicate `Changed` callbacks, unsubscribe the wrong root after a root transition, or invalidate a rebound control after its request has completed.",
+      "out_of_diff_reason": "The correction spans IconBox loaded/unloaded lifecycle state and event subscription ownership; it cannot be expressed safely as one current RIGHT-side inline suggestion.",
+      "outOfDiffReason": "The correction spans IconBox loaded/unloaded lifecycle state and event subscription ownership; it cannot be expressed safely as one current RIGHT-side inline suggestion.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current code subscribes directly on every load, removes the handler from the current rather than tracked root, and gates the stale-unload guard on an active request. The exact-head candidate correction builds successfully and is covered by the existing IconBox lifecycle behavior."
+      }
+    },
+    {
+      "id": "record-etw-only-speculative-deferrals",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Use the current diagnostics session accessor for ETW-only listeners",
+      "body": "### Use the current diagnostics session accessor for ETW-only listeners\n\n**Severity:** `medium`\n\n`BeginSpeculativeDispatchDeferral` currently reads `_activeSession` directly, while the rest of the diagnostics lifecycle uses `GetCurrentSession()` and `IsCurrentSession(...)`. That bypasses the ETW-only session path, so speculative-deferral measurements are missing whenever an external ETW listener activates diagnostics without a text report. Use the current-session accessor here and keep the measurement validity check aligned with the same session identity rules.",
+      "out_of_diff_reason": "The fix must stay aligned with the diagnostics session identity rules and related tests, so it is recorded as a companion request rather than a single-line patch.",
+      "outOfDiffReason": "The fix must stay aligned with the diagnostics session identity rules and related tests, so it is recorded as a companion request rather than a single-line patch.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The accessor mismatch is visible in the current head and the exact-head candidate passed the ETW listener and speculative measurement tests."
+      }
+    },
+    {
+      "id": "release-demand-reserve-on-completion",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Release the demand reserve when completion drains speculative work",
+      "body": "### Release the demand reserve when completion drains speculative work\n\n**Severity:** `high`\n\n`Complete()` currently closes demand admission but leaves `_workerSlotsReservedForDemand` active. If accepted speculative work remains queued and all available workers are counted against that reserve, `CanDispatchNextWorkItem()` can refuse to dispatch the remaining speculative items and shutdown can wait indefinitely. Once completion is requested, stop reserving a worker for future demand and stop recording reserve deferrals so accepted speculative work can drain. Add a regression test for completion with a two-worker queue and queued speculative work.",
+      "out_of_diff_reason": "The change requires coordinated queue-completion logic and regression coverage, so it is not safe as one localized apply-ready suggestion.",
+      "outOfDiffReason": "The change requires coordinated queue-completion logic and regression coverage, so it is not safe as one localized apply-ready suggestion.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 99,
+        "rationale": "The deadlock condition is directly exercised by the candidate regression test CompletionReleasesDemandReserveToDrainSpeculativeWork, which passed along with the full 65-test icon filter."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50184",
+      "type": "request_changes",
+      "label": "Request changes with general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Companion-only review: posts separate general PR conversation comments. This is a drafted maintainer action only. Recheck the live upstream head, checks, comments, reviews, and merge state immediately before publication; no write has been made to microsoft/PowerToys.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50184,
+        "head_sha": "0e513d04ab42ab02efe0884a2be1059644bbb575",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the icon-loading work. Before this can merge, please address the IconBox XamlRoot lifecycle and stale-unload handling, preserve speculative-deferral diagnostics for ETW-only sessions, and release the demand worker reserve during completion so accepted speculative work can drain. The exact-head candidate fixes for these findings and a shutdown regression test passed the targeted validation."
+      }
+    }
+  ],
   "fork_pr": {
     "number": 498,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/498"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/498",
+    "head_sha": "b789892675538bcb24a6bc51792ea4940fb34f04"
   },
-  "fork_branch": "pr-iterate/50184"
+  "fork_branch": "pr-iterate/50184",
+  "workflow": {
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-14T11:15:00Z",
+    "reviewed_upstream_head_sha": "0e513d04ab42ab02efe0884a2be1059644bbb575",
+    "fork_pr": 498,
+    "fork_head_sha": "b789892675538bcb24a6bc51792ea4940fb34f04",
+    "latest_copilot_review_at": "2026-09-09T02:36:20Z",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "resume_action": "maintainer-approval-or-freshness-recheck",
+    "build_result": "passed"
+  },
+  "review_fixes": [
+    {
+      "summary": "Track and idempotently manage IconBox XamlRoot subscriptions, and preserve rebound controls on stale unload."
+    },
+    {
+      "summary": "Use the current diagnostics session accessor for ETW-only speculative-dispatch measurements."
+    },
+    {
+      "summary": "Release the demand reserve during completion and add CompletionReleasesDemandReserveToDrainSpeculativeWork regression coverage."
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "0e513d04ab42ab02efe0884a2be1059644bbb575",
+      "result": "passed",
+      "validated_at": "2026-09-14T11:10:00Z",
+      "scope": "Exact upstream PR head, before candidate changes"
+    },
+    "suggestion_candidate": {
+      "base_head_sha": "0e513d04ab42ab02efe0884a2be1059644bbb575",
+      "result": "passed",
+      "builds": [
+        "PowerToys build essentials restore/build (runner and Settings, x64 Debug)",
+        "Microsoft.CmdPal.UI.UnitTests.csproj (x64 Debug)"
+      ],
+      "tests": [
+        {
+          "suite": "Microsoft.CmdPal.UI.UnitTests",
+          "filter": "FullyQualifiedName~Icon",
+          "result": "passed",
+          "passed": 65,
+          "failed": 0
+        }
+      ],
+      "files": [
+        "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs",
+        "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnostics.cs",
+        "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadQueue.cs",
+        "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconLoadQueueTests.cs"
+      ],
+      "notes": [
+        "Inherited GIT_CONFIG_* variables were cleared before restore/build because an empty injected value breaks vcpkg registry initialization.",
+        "The Settings build emitted one pre-existing CsWinRT warning and zero errors."
+      ]
+    }
+  },
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The upstream head remains reviewable but is not clean: the converged fork review identified three correctness issues that are absent from the upstream tree. The exact-head candidate patch and regression test passed, so the appropriate terminal state is a current-head maintainer action rather than review_ready.",
+    "evidence": [
+      "The live review head used for the draft is 0e513d04ab42ab02efe0884a2be1059644bbb575.",
+      "Fork PR 498's latest Copilot review returned zero new comments and the fork has zero unresolved Copilot threads.",
+      "The exact upstream head build essentials passed with zero errors.",
+      "The exact-head candidate built successfully and passed 65 targeted icon tests.",
+      "No review, comment, commit, label, or other write was made to microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a final freshness check, publish the drafted request-changes review."
+  },
+  "freshness": {
+    "evaluated_at": "2026-09-14T11:15:00Z",
+    "head_sha": "0e513d04ab42ab02efe0884a2be1059644bbb575",
+    "status": "fresh-at-draft-time"
+  }
 }
