@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-15T01:09:32.9775943+08:00",
+  "generated_at": "2026-09-15T01:47:13.9404971+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 165,
-    "open_issues": 12639,
-    "community": 11798,
-    "artifacts": 1198
+    "open_issues": 12638,
+    "community": 11797,
+    "artifacts": 1197
   },
   "impact": {
-    "as_of": "2026-09-15T01:09:32.9775943+08:00",
+    "as_of": "2026-09-15T01:47:13.9404971+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -545,7 +545,6 @@ window.BOARD_INDEX = {
     30692,
     50554,
     50550,
-    50523,
     50518,
     50516,
     50515,
@@ -4272,15 +4271,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request the current-head compilation fix"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -4357,14 +4359,14 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_drafted",
+      "stage": "awaiting_review_approval",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 5,
+      "proposed_open": 6,
       "primary_action": {
         "type": "request_changes",
         "label": "Request changes with process ask and 5 code suggestions"
@@ -4447,15 +4449,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 4,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with four current-head fixes"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -81010,8 +81015,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-09-26T03:37:17Z",
-      "updated_at": "2026-09-13T22:50:57Z",
-      "comments": 441,
+      "updated_at": "2026-09-14T17:28:54Z",
+      "comments": 442,
       "priority": null
     },
     {
@@ -154543,6 +154548,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50568",
+      "kind": "issue",
+      "number": 50568,
+      "url": "https://github.com/microsoft/PowerToys/issues/50568",
+      "title": "[CmdPal Dock] Bands disappear from secondary monitor after Modern Standby",
+      "author": "obsidience",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-14T17:25:03Z",
+      "updated_at": "2026-09-14T17:34:09Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-50567",
       "kind": "issue",
       "number": 50567,
@@ -154605,8 +154643,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-14T15:56:05Z",
-      "updated_at": "2026-09-14T16:03:21Z",
-      "comments": 1,
+      "updated_at": "2026-09-14T17:23:21Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -155565,8 +155603,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -155577,8 +155615,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-11T14:51:59Z",
-      "updated_at": "2026-09-11T14:58:02Z",
-      "comments": 1,
+      "updated_at": "2026-09-14T17:37:57Z",
+      "comments": 3,
       "priority": null
     },
     {
@@ -261126,37 +261164,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-46247",
-      "kind": "issue",
-      "number": 46247,
-      "url": "https://github.com/microsoft/PowerToys/issues/46247",
-      "title": "command pallet dock - multiple screens",
-      "author": "ed-ferreira",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-18T17:26:14Z",
-      "updated_at": "2026-03-18T17:30:39Z",
-      "comments": 2,
-      "priority": null
-    },
-    {
       "id": "issue-46246",
       "kind": "issue",
       "number": 46246,
@@ -261289,38 +261296,6 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-03-18T16:16:15Z",
       "updated_at": "2026-04-30T08:35:20Z",
-      "comments": 3,
-      "priority": null
-    },
-    {
-      "id": "issue-46242",
-      "kind": "issue",
-      "number": 46242,
-      "url": "https://github.com/microsoft/PowerToys/issues/46242",
-      "title": "Feature Request: Auto-hide option for Command Palette Dock",
-      "author": "Voxie111",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate",
-        "duplicate"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-18T16:02:21Z",
-      "updated_at": "2026-03-18T17:04:40Z",
       "comments": 3,
       "priority": null
     },

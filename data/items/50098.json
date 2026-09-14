@@ -1,30 +1,219 @@
 {
+  "schemaVersion": 5,
   "number": 50098,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T02:39:49.4300028Z",
-  "evaluated_at": "09/07/2026 05:55:00",
-  "source_updated_at": "2026-09-04T03:24:52+08:00",
+  "generated_at": "2026-09-15T01:34:00Z",
+  "evaluated_at": "2026-09-15T01:34:00Z",
+  "source_updated_at": "2026-09-03T19:24:52Z",
   "head_sha": "a98a4508a180e32a8a79489aa94980ba10a6a59f",
   "title": "CmdPal: Fix clipboard history details image previews",
   "url": "https://github.com/microsoft/PowerToys/pull/50098",
+  "state": "OPEN",
+  "draft": false,
+  "summary": "The upstream head is current and the exact Clipboard History project plus its unit-test project build successfully. The resumed fork loop converged with a fresh zero-comment Copilot review and zero unresolved Copilot threads; four fork-only correctness fixes remain absent from the upstream head and are drafted as a current-head request-changes action.",
+  "confidence": "High",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Current live head a98a4508a180e32a8a79489aa94980ba10a6a59f requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
+    "glyph": "ACTION",
+    "label": "Current-head request-changes draft ready",
+    "detail": "Upstream head a98a4508a180e32a8a79489aa94980ba10a6a59f is unchanged. Fork PR 682 converged at 0d7cf295d3a91f6a7c93be529df6b137013f835c with zero new Copilot comments and zero unresolved Copilot threads. No upstream write has occurred."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Request changes with four current-head fixes",
+    "reason": "After explicit maintainer approval, recheck the live head, activity, checks, and review state, then publish the prepared REQUEST_CHANGES review through the approved-review publisher. No write has been made to microsoft/PowerToys."
+  },
+  "proposed_comments": [
+    {
+      "id": "gate-clipboard-load-until-page-requested",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Gate clipboard history loads until the page is requested",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current event handler starts a complete history read and image-cache write on every clipboard change even though the provider constructs the page before the user opens it. The converged fork added an explicit page-requested gate while preserving a dirty flag for the first page load."
+      },
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.ClipboardHistory/Pages/ClipboardHistoryListPage.cs",
+      "line": 55,
+      "start_line": 55,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Gate clipboard history loads until the page is requested\n\n**Severity:** `high`\n\nThe provider subscribes this page to `Clipboard.HistoryChanged` during construction, so this handler starts `GetHistoryItemsAsync`, image decoding, and disk-cache writes for every clipboard change even when the user has never opened Clipboard History. Track whether the page has been requested and keep the event handler to a cheap dirty-mark until then; the first `GetItems()` call should still load the latest history.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-image-fallback-when-cache-fails",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Preserve the image preview when disk caching fails",
+      "confidence": {
+        "score": 97,
+        "rationale": "CacheImageAsync catches failures and returns no success signal, but the caller assigns ImagePath before the cache attempt. The fork fix only publishes the path after a successful write and retains the stream-backed hero image when caching is unavailable."
+      },
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.ClipboardHistory/Pages/ClipboardHistoryListPage.cs",
+      "line": 105,
+      "start_line": 104,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve the image preview when disk caching fails\n\n**Severity:** `high`\n\n`CacheImageAsync` swallows write failures, but `ImagePath` is assigned before the call. A failed or incomplete cache therefore leaves a non-null path that `DetailsMarkdownHelper` renders, while `ClipboardListItem` does not create a `HeroImage` fallback; the image details pane can become blank. Publish `ImagePath` only after a confirmed cache write, or preserve the existing stream-backed preview whenever caching fails.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "queue-reload-during-active-load",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Queue a reload when a request arrives during an active load",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current method returns immediately when loadInFlight.Set fails without recording the new request. The fork fix records reloadRequested under synchronization, preventing a request during a failed or active load from being lost."
+      },
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.ClipboardHistory/Pages/ClipboardHistoryListPage.cs",
+      "line": 243,
+      "start_line": 241,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Queue a reload when a request arrives during an active load\n\n**Severity:** `high`\n\nWhen `loadInFlight.Set()` returns false, this method exits without recording that the caller still needs a refresh. If `GetItems()` or a clipboard event arrives while a load is active—especially while a failed load is about to clear `hasLoadedOnce`—the trailing request can be lost and the page remains stale until another clipboard event. Set `reloadRequested` while observing the in-flight state, then start the trailing load from the completion path.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "serialize-dispose-and-worker-start",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Serialize disposal with starting the clipboard worker",
+      "confidence": {
+        "score": 96,
+        "rationale": "Dispose and StartClipboardHistoryLoad currently read and write the lifecycle flags without a shared synchronization boundary. The converged fork rechecks disposal immediately before setting loading state and starting the STA thread, and performs cleanup after the in-flight state is released."
+      },
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.ClipboardHistory/Pages/ClipboardHistoryListPage.cs",
+      "line": 272,
+      "start_line": 254,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Serialize disposal with starting the clipboard worker\n\n**Severity:** `high`\n\n`loadInFlight` is set before this method, but `Dispose()` can win the race before `SetLoadingState(true)` and `thread.Start()`. The worker can then start after the page has been disposed, update loading state, perform clipboard/cache work, and leave cleanup dependent on an unsynchronized flag read. Recheck `disposed` while holding the same synchronization used for the in-flight transition immediately before starting the worker, clear the in-flight state when disposal wins, and run deferred cache cleanup after the worker exits.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50098",
+      "type": "request_changes",
+      "label": "Request changes with four current-head fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50098,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "a98a4508a180e32a8a79489aa94980ba10a6a59f",
+        "body": "Thanks for the clipboard-history preview work and the asynchronous loading improvements. Before merge, please address four current-head correctness items: defer event-driven history loads until the page is requested; preserve the stream-backed image preview when disk caching fails; queue reloads that arrive during an active load; and serialize disposal with starting the STA worker so disposed pages cannot start new work or race cache cleanup."
+      },
+      "note": "Current-head request-changes draft only. Explicit maintainer approval, a final freshness check, and the approved-review publisher are required before any upstream write."
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
+    "Revalidate the live head, checks, comments, reviews, and merge state before publication",
+    "Hold the review without changing labels, review state, or PR state",
+    "Do not post any review, comment, label, assignment, CI trigger, merge, or other action to microsoft/PowerToys"
+  ],
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-14T02:39:49.4300028Z"
+    "phase": "converged_draft_ready",
+    "previous_phase": "queued",
+    "checkpoint_at": "2026-09-15T01:34:00Z",
+    "reviewed_upstream_head_sha": "a98a4508a180e32a8a79489aa94980ba10a6a59f",
+    "fork_pr": 682,
+    "fork_head_sha": "0d7cf295d3a91f6a7c93be529df6b137013f835c",
+    "fork_branch": "pr-iterate/50098-v3",
+    "latest_copilot_review_at": "2026-09-07T05:50:52Z",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "resume_action": "maintainer-approval-or-freshness-recheck",
+    "advancement_evidence": [
+      "Consumed the existing fork Copilot review result and unresolved-thread state before requesting no duplicate review.",
+      "Resumed the durable fork branch pr-iterate/50098-v3 and fork PR 682 without clobbering prior commits.",
+      "The latest fork Copilot review on 0d7cf295d3a91f6a7c93be529df6b137013f835c returned zero new comments.",
+      "The fork has zero unresolved Copilot-authored review threads; four unresolved Advanced Security spelling threads are unrelated to the Copilot loop.",
+      "The live upstream head remains a98a4508a180e32a8a79489aa94980ba10a6a59f.",
+      "The exact upstream head and the exact upstream Clipboard History unit-test project built successfully.",
+      "The converged fork Clipboard History project built successfully after dependency restore."
+    ]
+  },
+  "fork_pr": {
+    "number": 682,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/682",
+    "state": "OPEN",
+    "head_sha": "0d7cf295d3a91f6a7c93be529df6b137013f835c",
+    "base_branch": "review-base-50098",
+    "branch": "pr-iterate/50098-v3"
+  },
+  "phase0": {
+    "authorAssociation": "MEMBER",
+    "disposition": "Proceed",
+    "processGates": "Skipped for member author; upstream required checks are green and no community-contributor process ask is required."
+  },
+  "validation": {
+    "upstream_head": {
+      "head_sha": "a98a4508a180e32a8a79489aa94980ba10a6a59f",
+      "result": "passed",
+      "commands": [
+        "build-essentials.cmd with POWERTOYS_DISABLE_SPECTRE=1",
+        "Microsoft.CmdPal.Ext.ClipboardHistory build.cmd",
+        "Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests build.cmd"
+      ],
+      "validated_at": "2026-09-15T01:34:00Z",
+      "notes": [
+        "The build environment required clearing inherited GIT_CONFIG_* variables because an empty injected value breaks vcpkg registry initialization.",
+        "No repository files were changed for this workaround."
+      ]
+    },
+    "fork_head": {
+      "head_sha": "0d7cf295d3a91f6a7c93be529df6b137013f835c",
+      "result": "passed",
+      "commands": [
+        "build-essentials.cmd with POWERTOYS_DISABLE_SPECTRE=1",
+        "Microsoft.CmdPal.Ext.ClipboardHistory build.cmd"
+      ],
+      "validated_at": "2026-09-15T01:34:00Z",
+      "notes": [
+        "The fork build completed with one pre-existing CsWinRT warning and no errors."
+      ]
+    }
+  },
+  "copilot_review": {
+    "latest_submitted_at": "2026-09-07T05:50:52Z",
+    "latest_commit_id": "0d7cf295d3a91f6a7c93be529df6b137013f835c",
+    "latest_new_comments": 0,
+    "unresolved_threads": 0,
+    "policy_note": "The existing fork review was consumed before any new request. No duplicate request was made because the latest result is current for the converged fork head."
   },
   "freshness": {
-    "queued_at": "09/14/2026 02:15:07",
-    "checkpoint_at": "2026-09-14T02:39:49.4300028Z"
+    "status": "fresh",
+    "head_sha": "a98a4508a180e32a8a79489aa94980ba10a6a59f",
+    "source_updated_at": "2026-09-03T19:24:52Z",
+    "evaluated_at": "2026-09-15T01:34:00Z"
+  },
+  "test_instructions": [
+    "Launch the already-built PowerToys executable from the validated x64 Debug checkout.",
+    "Open CmdPal Clipboard History and verify text details preserve multiline content while image details render a downscaled preview capped at 200 px.",
+    "Exercise clipboard changes before opening Clipboard History, then open the page and verify the latest history is loaded without unnecessary background image-cache work beforehand.",
+    "While a history load is active, trigger another clipboard update and verify the newest snapshot is eventually displayed; close or dispose the provider during a load and verify no new worker starts after disposal."
+  ],
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The live upstream head is current and the converged fork review is clean, but four validated fork-only lifecycle, caching, and reload corrections are absent from the upstream tree. Each is anchored to a current RIGHT-side diff range and drafted as an author-facing request-changes comment.",
+    "evidence": [
+      "The live upstream review head is a98a4508a180e32a8a79489aa94980ba10a6a59f and updatedAt is 2026-09-03T19:24:52Z.",
+      "Fork PR 682's latest Copilot review is on 0d7cf295d3a91f6a7c93be529df6b137013f835c and returned zero new comments.",
+      "The fork has zero unresolved Copilot-authored threads.",
+      "The converged fork delta contains the page-request gate, cache-failure fallback, active-load reload queue, and disposal/start synchronization fixes.",
+      "The exact upstream Clipboard History project and its unit-test project built successfully.",
+      "The converged fork Clipboard History project built successfully.",
+      "No review, comment, label, assignment, CI trigger, merge, closure, cross-reference, or other public write was made to microsoft/PowerToys."
+    ],
+    "recommended_action": "After explicit maintainer approval and a final freshness check, publish the drafted REQUEST_CHANGES review through the approved-review publisher."
   }
 }

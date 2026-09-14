@@ -2,11 +2,11 @@
   "number": 50114,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T12:24:40.877+08:00",
-  "evaluated_at": "2026-09-02T12:24:40.877+08:00",
+  "generated_at": "2026-09-14T17:14:55.4161838Z",
+  "evaluated_at": "2026-09-14T17:14:55.4161838Z",
   "source_updated_at": "2026-08-25T15:01:46Z",
   "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
   "title": "Disable cursor wrap on the top edge of monitors when in an RDP session.",
@@ -25,7 +25,9 @@
   "proposed_comments": [
     {
       "id": "context-50114-visual-evidence-ci",
-      "kind": "context",
+      "kind": "companion",
+      "disposition": "proposed",
+      "out_of_diff_reason": "The visual-evidence and upstream-CI requests concern PR process and live checks rather than a single changed source line.",
       "type": "comment",
       "title": "Add visual evidence and address failed CI",
       "severity": "medium",
@@ -44,7 +46,7 @@
         "score": 98,
         "rationale": "The production CursorWrap project currently compiles MonitorTopologyTests.cpp even though that file includes Visual Studio CppUnitTest headers and test-only classes."
       },
-      "body": "### Keep the unit-test source out of the production DLL\n\n**Severity:** `high`\n\n`MonitorTopologyTests.cpp` is included in the production CursorWrap DLL project. That source depends on `CppUnitTest.h`, so the release build can fail to resolve test-only headers; even if it compiled, the test class should not ship in the module binary. Keep the source only in the dedicated CursorWrap unit-test project.\n\n```suggestion\n    <ClCompile Include=\"trace.cpp\" />\n```",
+      "body": "### Keep the unit-test source out of the production DLL\n\n**Severity:** `high`\n\n`MonitorTopologyTests.cpp` is included in the production CursorWrap DLL project. That source depends on `CppUnitTest.h`, so the release build can fail to resolve test-only headers; even if it compiled, the test class should not ship in the module binary. Keep the source only in the dedicated CursorWrap unit-test project.",
       "in_diff": true,
       "disposition": "proposed",
       "path": "src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj",
@@ -61,7 +63,7 @@
         "score": 95,
         "rationale": "At a top-left or top-right corner, removing only the Top candidate leaves Left or Right available, so vertical movement can still wrap sideways instead of being blocked."
       },
-      "body": "### Block vertical movement at suppressed top corners\n\n**Severity:** `high`\n\nAt a top-left or top-right corner, suppressing only the `Top` candidate still leaves the side edge in the candidate list. When the pointer is moving upward, `PrioritizeEdgeByDirection` can then fall back to that side candidate and wrap sideways instead of keeping the RDP connection bar reachable. Detect the suppressed top-corner case before collecting side candidates, return no edge for vertical or unknown movement, and still allow horizontal movement to wrap through the side edge.\n\n```suggestion\n    // At corners, multiple edges may match - collect all candidates and try each\n    // to find one with a valid wrap destination\n    std::vector<EdgeType> candidateEdges;\n    const bool topEdgeSuppressed =\n        (wrapMode == WrapMode::Both || wrapMode == WrapMode::VerticalOnly) &&\n        cursorPos.y <= monitorRect.top + edgeThreshold &&\n        suppressTopEdgeAtGlobalTop &&\n        IsMonitorAtGlobalTop(monitor);\n\n    // At a suppressed top corner, vertical or unknown movement must not fall back to\n    // a horizontal candidate. Horizontal movement still wraps through the side edge.\n    if (topEdgeSuppressed &&\n        (direction == nullptr ||\n         (direction->dx == 0 && direction->dy == 0) ||\n         !direction->IsPrimarilyHorizontal()))\n    {\n        return false;\n    }\n\n    // Left edge - only if mode allows horizontal wrapping\n    if ((wrapMode == WrapMode::Both || wrapMode == WrapMode::HorizontalOnly) &&\n        cursorPos.x <= monitorRect.left + edgeThreshold)\n    {\n        auto it = m_edgeMap.find({monitorIndex, EdgeType::Left});\n        if (it != m_edgeMap.end() && it->second.isOuter)\n        {\n            candidateEdges.push_back(EdgeType::Left);\n        }\n    }\n\n    // Right edge - only if mode allows horizontal wrapping\n    if ((wrapMode == WrapMode::Both || wrapMode == WrapMode::HorizontalOnly) &&\n        cursorPos.x >= monitorRect.right - 1 - edgeThreshold)\n    {\n        auto it = m_edgeMap.find({monitorIndex, EdgeType::Right});\n        if (it != m_edgeMap.end())\n        {\n            if (it->second.isOuter)\n            {\n                candidateEdges.push_back(EdgeType::Right);\n            }\n            // Debug: Log why right edge isn't outer\n            else\n            {\n                Logger::trace(L\"IsOnOuterEdge: Monitor {} right edge is NOT outer (inner edge)\", monitorIndex);\n            }\n        }\n    }\n\n    // Top edge - only if mode allows vertical wrapping\n    if ((wrapMode == WrapMode::Both || wrapMode == WrapMode::VerticalOnly) &&\n        cursorPos.y <= monitorRect.top + edgeThreshold)\n    {\n        // In a Remote Desktop session the topmost row of the virtual desktop hosts the RDP\n        // connection bar. Suppressing the top-edge wrap only for the monitor(s) at the very\n        // top of the vertical stack keeps that bar reachable, while monitors that merely have\n        // an outer top edge lower down continue to wrap normally.\n        if (!topEdgeSuppressed)\n        {\n            auto it = m_edgeMap.find({monitorIndex, EdgeType::Top});\n            if (it != m_edgeMap.end() && it->second.isOuter)\n            {\n                candidateEdges.push_back(EdgeType::Top);\n            }\n        }\n    }\n```",
+      "body": "### Block vertical movement at suppressed top corners\n\n**Severity:** `high`\n\nAt a top-left or top-right corner, suppressing only the `Top` candidate still leaves the side edge in the candidate list. When the pointer is moving upward, `PrioritizeEdgeByDirection` can then fall back to that side candidate and wrap sideways instead of keeping the RDP connection bar reachable. Detect the suppressed top-corner case before collecting side candidates, return no edge for vertical or unknown movement, and still allow horizontal movement to wrap through the side edge.",
       "in_diff": true,
       "disposition": "proposed",
       "path": "src/modules/MouseUtils/CursorWrap/MonitorTopology.cpp",
@@ -78,7 +80,7 @@
         "score": 93,
         "rationale": "The added topology tests cover straight edges and lower monitors, but they do not exercise the top-corner fallback that currently allows upward movement to wrap sideways."
       },
-      "body": "### Cover suppressed top-corner direction handling\n\n**Severity:** `medium`\n\nThe new tests cover global-top suppression for straight top edges, but they miss the corner case where side candidates remain available. Add coverage for upward, unknown, and horizontal movement at a suppressed top corner so the intended behavior is locked down.\n\n```suggestion\n\t\t}\n\n\t\tTEST_METHOD(SuppressedTopCorner_BlocksVerticalAndUnknownMovement)\n\t\t{\n\t\t\tMonitorTopology topology;\n\t\t\tauto monitor = MakeMonitor(1, 0, 0, 1920, 1080, true);\n\t\t\ttopology.Initialize({ monitor });\n\n\t\t\tconst POINT topLeft = { monitor.rect.left, monitor.rect.top };\n\t\t\tEdgeType edge{};\n\t\t\tCursorDirection upward = { 0, -10 };\n\t\t\tAssert::IsFalse(\n\t\t\t\ttopology.IsOnOuterEdge(monitor.hMonitor, topLeft, edge, WrapMode::Both, &upward, true),\n\t\t\t\tL\"Upward movement at a suppressed top corner must not wrap sideways.\");\n\t\t\tAssert::IsFalse(\n\t\t\t\ttopology.IsOnOuterEdge(monitor.hMonitor, topLeft, edge, WrapMode::Both, nullptr, true),\n\t\t\t\tL\"Unknown movement at a suppressed top corner must not wrap sideways.\");\n\n\t\t\tCursorDirection left = { -10, 0 };\n\t\t\tAssert::IsTrue(\n\t\t\t\ttopology.IsOnOuterEdge(monitor.hMonitor, topLeft, edge, WrapMode::Both, &left, true),\n\t\t\t\tL\"Horizontal movement at a suppressed top corner should still wrap through the side edge.\");\n\t\t\tAssert::IsTrue(edge == EdgeType::Left);\n\t\t}\n```",
+      "body": "### Cover suppressed top-corner direction handling\n\n**Severity:** `medium`\n\nThe new tests cover global-top suppression for straight top edges, but they miss the corner case where side candidates remain available. Add coverage for upward, unknown, and horizontal movement at a suppressed top corner so the intended behavior is locked down.",
       "in_diff": true,
       "disposition": "proposed",
       "path": "src/modules/MouseUtils/CursorWrap/UnitTests/MonitorTopologyTests.cpp",
@@ -95,7 +97,7 @@
         "score": 94,
         "rationale": "set_config writes this field on the runner thread while MouseHookProc reads it on the hook thread, matching the existing reason m_hookActive is atomic."
       },
-      "body": "### Synchronize the live RDP suppression setting\n\n**Severity:** `medium`\n\n`set_config` updates this option on the runner thread while `MouseHookProc` reads it on the separate low-level mouse hook thread. A plain `bool` makes live settings changes a C++ data race. Store the setting atomically, matching the existing hook-thread state pattern, and read it with a relaxed load in the hook path.\n\n```suggestion\n    std::atomic_bool m_suppressTopEdgeWrapInRemoteSession = false; // Default to false; keeps the RDP connection bar reachable\n```\n\n> Also update the hook read to `m_suppressTopEdgeWrapInRemoteSession.load(std::memory_order_relaxed)` where `suppressTopEdgeWrap` is computed.",
+      "body": "### Synchronize the live RDP suppression setting\n\n**Severity:** `medium`\n\n`set_config` updates this option on the runner thread while `MouseHookProc` reads it on the separate low-level mouse hook thread. A plain `bool` makes live settings changes a C++ data race. Store the setting atomically, matching the existing hook-thread state pattern, and read it with a relaxed load in the hook path. Also update the hook read to `m_suppressTopEdgeWrapInRemoteSession.load(std::memory_order_relaxed)` where `suppressTopEdgeWrap` is computed.",
       "in_diff": true,
       "disposition": "proposed",
       "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
@@ -112,7 +114,7 @@
         "score": 94,
         "rationale": "This is the paired hook-thread read for the setting made atomic above; without it the code will not compile after changing the field type."
       },
-      "body": "### Read the RDP suppression setting atomically in the hook\n\n**Severity:** `medium`\n\nAfter the setting is made atomic, the hook path should read the current value explicitly. A relaxed load is enough here because the flag is a standalone setting and the hook only needs a current boolean value without ordering other data.\n\n```suggestion\n                bool suppressTopEdgeWrap = g_cursorWrapInstance->m_suppressTopEdgeWrapInRemoteSession.load(std::memory_order_relaxed) &&\n```\n\n> Apply this together with the field-type suggestion above.",
+      "body": "### Read the RDP suppression setting atomically in the hook\n\n**Severity:** `medium`\n\nAfter the setting is made atomic, the hook path should read the current value explicitly. A relaxed load is enough here because the flag is a standalone setting and the hook only needs a current boolean value without ordering other data. Apply this together with the field-type change above.",
       "in_diff": true,
       "disposition": "proposed",
       "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
@@ -156,9 +158,33 @@
     "evaluated_at": "2026-09-02T12:24:40.877+08:00",
     "source_updated_at": "2026-08-25T15:01:46Z"
   },
+  "validation": {
+    "upstream_head": {
+      "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+      "result": "not_run",
+      "detail": "Live upstream head and all proposed inline coordinates were revalidated against the current GitHub PR diff. No exact upstream-tree build was run in this worker."
+    },
+    "fork_review_tree": {
+      "head_sha": "13da307495323132951df02ca2b108dccfc34217",
+      "result": "passed",
+      "builds": [
+        "src/modules/MouseUtils/CursorWrap built successfully with tools/build/build.cmd",
+        "CursorWrap.UnitTests built successfully and vstest.console.exe passed 7 tests"
+      ]
+    }
+  },
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-09-02T12:24:40.877+08:00",
+    "phase": "awaiting_review_approval",
+    "previous_phase": "review_drafted",
+    "checkpoint_at": "2026-09-14T17:14:55.4161838Z",
+    "advancement_evidence": [
+      "Revalidated the live upstream head 620ae8838d2257594d617891ecbe9f4ae3f03a2a; it is unchanged.",
+      "Revalidated the current upstream changed-file set and inline RIGHT-side anchors.",
+      "Consumed the existing fork Copilot result; latest review returned zero new comments and unresolved Copilot thread count is zero.",
+      "Preserved fork PR 452 and branch pr-iterate/50114 without restarting the trace.",
+      "Removed unvalidated apply-ready suggestion blocks rather than claiming exact-patch validation that was not performed.",
+      "No public write was made to microsoft/PowerToys."
+    ],
     "queued_head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
     "reviewed_upstream_head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
     "fork_pr": 452,
