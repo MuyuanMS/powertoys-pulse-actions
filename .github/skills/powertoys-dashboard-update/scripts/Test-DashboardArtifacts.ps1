@@ -130,11 +130,44 @@ foreach ($path in @($paths)) {
 
   if ($artifact.kind -eq 'pr' -and $artifact.track -eq 'review') {
     Require-Text $artifact.head_sha 'head_sha' $prefix
+    $resumablePhases = @(
+      'queued',
+      'mirroring',
+      'review_requested',
+      'waiting_copilot',
+      'reviewing_findings',
+      'building',
+      'review_in_progress'
+    )
 
     $proposedComments = @(
       $artifact.proposed_comments |
         Where-Object { $_.disposition -eq 'proposed' }
     )
+    $reviewActions = @(
+      $artifact.actions |
+        Where-Object { $_.type -in @('post_review', 'request_changes') }
+    )
+    $approveActions = @(
+      $artifact.actions |
+        Where-Object { $_.type -eq 'approve' }
+    )
+    if ([string]$artifact.workflow.phase -in $resumablePhases -and
+        ($reviewActions.Count -gt 0 -or $approveActions.Count -gt 0)) {
+      $errors.Add("$prefix resumable review phase must not expose a concluded review action")
+    }
+    if ($artifact.stage -eq 'review_ready' -and
+        ($proposedComments.Count -gt 0 -or $reviewActions.Count -gt 0)) {
+      $errors.Add("$prefix stage review_ready requires zero proposed comments and no post_review/request_changes action")
+    }
+    if ($artifact.stage -eq 'review_ready' -and
+        ([string]$artifact.validation.upstream_head.head_sha -ne [string]$artifact.head_sha -or
+         [string]$artifact.validation.upstream_head.result -ne 'passed')) {
+      $errors.Add("$prefix stage review_ready requires passing validation of the exact upstream head")
+    }
+    if ($approveActions.Count -gt 0 -and $artifact.stage -ne 'review_ready') {
+      $errors.Add("$prefix approve action is only valid at review_ready")
+    }
     $inlineComments = @(
       $proposedComments |
         Where-Object {
@@ -164,10 +197,9 @@ foreach ($path in @($paths)) {
       Require-Text $comment.confidence.rationale 'proposed_comments[].confidence.rationale' $prefix
     }
 
-    $reviewAction = @(
-      $artifact.actions |
-        Where-Object { $_.type -eq 'post_review' }
-    ) | Select-Object -First 1
+    $reviewAction = $reviewActions | Where-Object {
+      $_.type -eq 'post_review'
+    } | Select-Object -First 1
     if ($reviewAction -and $reviewAction.review.event -and $reviewAction.review.event -ne 'COMMENT') {
       $errors.Add("$prefix post_review action must use review event COMMENT")
     }

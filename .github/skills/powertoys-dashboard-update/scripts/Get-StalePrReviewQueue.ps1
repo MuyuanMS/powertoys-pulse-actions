@@ -145,12 +145,14 @@ function Test-IsTerminalBlocker {
         return $false
     }
 
-    $blockers = @($Artifact.blockers | Where-Object { $null -ne $_ })
-    if ($blockers.Count -eq 0) {
+    $terminalBlockers = @($Artifact.blockers | Where-Object {
+        $null -ne $_ -and $_.terminal -eq $true
+    })
+    if ($terminalBlockers.Count -eq 0) {
         return $false
     }
 
-    foreach ($blocker in $blockers) {
+    foreach ($blocker in $terminalBlockers) {
         if ([string]::IsNullOrWhiteSpace([string]$blocker.detail) -or
             [string]::IsNullOrWhiteSpace([string]$blocker.remediation)) {
             return $false

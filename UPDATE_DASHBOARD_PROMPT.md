@@ -84,6 +84,10 @@ rules. In particular:
   designs with the same checkpoint and publish guarantees;
 - preserve and resume existing fork work instead of duplicating it;
 - validate all newly processed artifacts and scan generated JSON for secrets;
+- run targeted PR-state checks before publication: reject under-validated
+  `review_ready`, mismatched validation heads, resumable stages that expose
+  concluded review actions, terminal blockers without `terminal: true`, and
+  stale-queue entries that lose `work_type` or machine-readable reasons;
 - regenerate `data/index.json`, `data/index.js`, and per-number artifacts;
 - publish completed review artifacts incrementally and finish the run with
   unfinished PRs queued/running; require a zero stale queue only when
@@ -97,6 +101,11 @@ rules. In particular:
 - commit and push only action-artifact data to the artifact repository;
 - synchronize those artifacts into PowerToys Pulse with
   `scripts/sync-triage-artifacts.mjs`, then lint/build Pulse;
+- verify Pulse copied the just-published feed rather than an older snapshot:
+  compare the synchronized index's `generated_at`, artifact count, and source
+  dashboard commit/version with the published source, and fail the run on any
+  mismatch. The sync source must be `MuyuanMS/powertoys-pulse-actions`, never
+  the retired `powertoys-triage-board`;
 - publish or dispatch the approved Pulse preview/Pages workflow. Treat Pulse as
   the user-facing dashboard and this skills repository's `data/` directory as
   its artifact transport, not as the final preview.

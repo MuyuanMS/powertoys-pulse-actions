@@ -196,6 +196,11 @@ default run budget instead of trying to drain an arbitrarily large review queue:
   backed by an allowed PR action from the taxonomy above, explicitly marked as
   pending author feedback, or shown as queued/internal status without a
   clickable Pulse action.
+- enforce these invariants with targeted automated checks: reject
+  under-validated `review_ready`, validation pinned to a different head,
+  resumable phases exposing concluded review actions, changed heads hidden by a
+  newer `generated_at`, invalidated author-wait/blocker exemptions, and queue
+  entries missing `work_type` or machine-readable reasons.
 
 `POWERTOYS_DASHBOARD_DRAIN_QUEUE=1` is an exceptional operator-requested mode.
 Drain mode intentionally removes the PR selection limit, issue design cap, and
@@ -993,6 +998,13 @@ node .\scripts\sync-triage-artifacts.mjs
 npm run lint
 npm run build
 ```
+
+The Pulse sync must use the canonical `MuyuanMS/powertoys-pulse-actions` feed,
+never the retired triage-board URL. It must persist or print a verifiable source
+marker containing the synchronized index `generated_at`, artifact count, and
+dashboard commit/version. Compare that marker with the just-published source
+before claiming Pulse is current; a successful build against an older copied
+`public\triage` snapshot is a failed dashboard update.
 
 If local dependency installation is blocked, push the Pulse feature branch to
 the authorized private validation repository and require its validation
