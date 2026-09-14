@@ -42,13 +42,37 @@ rules. In particular:
   stop cleanly before the run deadline;
 - when a worker reaches a cloud Copilot wait, checkpoint that stage and release
   the slot instead of polling; resume it in the next scheduler pass;
+- before selecting new PRs, identify carryovers that were selected in the
+  previous scheduled run but still have no maintainer action. Reserve the first
+  review slots for those carryovers, oldest unchanged checkpoint first. In
+  particular, keep PRs 50020, 50472, 49963, 50497, and 50495 in the carryover
+  set until each becomes action-ready, is legitimately waiting on the author,
+  or has a current terminal blocker with exact manual remediation;
+- enforce run-over-run liveness for every selected carryover. A selected PR
+  must move to a later concrete phase, produce a current allowed maintainer
+  action, become legitimately author-waiting, or record a new external wait
+  that was actually requested during this run. Updating `generated_at`,
+  `source_updated_at`, status text, or republishing the same `queued`,
+  `waiting_copilot`, or generic `review_in_progress` phase is not progress;
+- resume from the recorded phase rather than restarting it. For `queued` or
+  `mirroring`, perform the next fork setup/synchronization step. For
+  `waiting_copilot`, inspect the existing fork PR's latest Copilot review and
+  unresolved threads first; consume a completed review immediately, and only
+  request another review when the prior request is absent or was invalidated
+  by a new head. Never overwrite a more advanced checkpoint with a generic
+  queue artifact;
+- if a carryover cannot advance, preserve its full fork trace and exact phase,
+  explain the concrete external or technical blocker, and report the run as
+  blocked/partially complete rather than successful. The completion report
+  must list every selected carryover's previous phase, final phase, and
+  evidence of advancement;
 - publish the fresh inventory before launching review workers and leave
   unselected PRs explicitly queued for later scheduled runs;
 - checkpoint every durable PR stage locally and push refreshed JSON after two
   transitions, eight minutes in normal mode, five minutes in drain mode, or a
   completed review, whichever comes first;
 - give every new or changed bug issue a lightweight explicit judgment and,
-  when actionable, schema-version-4 display-only issue context summarizing the
+  when actionable, schema-version-5 display-only issue context summarizing the
   discussion, known facts, qualified inferences, Copilot analysis, initial
   investigation, and exact information gaps;
 - make every request-info draft issue-specific: acknowledge useful evidence

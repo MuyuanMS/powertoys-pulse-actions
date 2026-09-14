@@ -161,6 +161,25 @@ default run budget instead of trying to drain an arbitrarily large review queue:
 - treat cloud-review waiting as a persisted queue stage, not an active worker:
   request the review, checkpoint `waiting_copilot`, return the worker slot, and
   inspect the result on the next scheduler pass;
+- build a carryover set before selecting new PRs: any PR selected by the
+  previous scheduled run that still has no maintainer action remains ahead of
+  newly queued work, ordered by the oldest unchanged checkpoint;
+- enforce run-over-run liveness for selected carryovers. A carryover advances
+  only when it moves to a later concrete workflow phase, produces a current
+  allowed maintainer action, becomes legitimately author-waiting, or records a
+  new external wait that was actually requested during this run. Rewriting
+  timestamps, status text, or the same `queued`, `waiting_copilot`, or generic
+  `review_in_progress` phase is not progress;
+- resume the exact saved phase and never replace a more advanced checkpoint
+  with a generic queue artifact. `queued` and `mirroring` must perform their
+  next fork setup/synchronization step; `waiting_copilot` must inspect the
+  existing fork PR review and unresolved threads before requesting anything,
+  consume a completed review immediately, and request again only when the
+  prior request is absent or invalidated by a new upstream head;
+- if a selected carryover cannot advance, preserve its fork trace and precise
+  phase, publish the concrete blocker or external wait, and report the run as
+  blocked/partially complete rather than successful. Completion reporting must
+  show each carryover's previous phase, final phase, and advancement evidence;
 - never let a PR worker launch another subagent; the worker performs its review
   directly and may use external GitHub Copilot review as required;
 - give each worker the exact UTC deadline from the run plan and require it to
