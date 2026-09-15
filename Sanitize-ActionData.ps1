@@ -26,6 +26,18 @@ function Convert-PublicValue {
     return $null
   }
 
+  function Test-ActionableCompanionBody {
+    param([string]$Body)
+
+    foreach ($section in @('Affected code', 'Problem', 'Why it matters', 'Suggested change', 'Verification')) {
+      if ($Body -notmatch ('(?im)^\*\*' + [regex]::Escape($section) + ':\*\*')) {
+        return $false
+      }
+    }
+    return $Body -match '(?is)\*\*Affected code:\*\*.*?`[^`\r\n]+`.*?\*\*Problem:\*\*' -and
+      $Body -match '(?ims)\*\*Suggested change:\*\*.+?(?:^\s*(?:[-*]|\d+\.)\s+\S|```(?!suggestion)\w*)'
+  }
+
   if ($Value -is [string]) {
     return $Value `
       -replace 'C:\\PowerToys-[^\\]+\\', '<PowerToysCheckout>\' `
@@ -123,11 +135,26 @@ function Get-PublicActions {
         if ([string]::IsNullOrWhiteSpace([string]$comment.out_of_diff_reason)) {
           $invalidReviewReasons.Add("PR $($Artifact.number) companion comment $id is missing out_of_diff_reason")
         }
+        if (-not (Test-ActionableCompanionBody -Body ([string]$comment.body))) {
+          $invalidReviewReasons.Add("PR $($Artifact.number) companion comment $id is not an implementation-ready general comment")
+        }
         if (-not [string]::IsNullOrWhiteSpace([string]$comment.path) -or
             -not [string]::IsNullOrWhiteSpace([string]$comment.line) -or
             -not [string]::IsNullOrWhiteSpace([string]$comment.start_line) -or
             [string]$comment.body -match '(?i)```suggestion') {
           $invalidReviewReasons.Add("PR $($Artifact.number) companion comment $id contains inline location or suggestion data")
+        }
+      }
+      $companionKeys = @{}
+      foreach ($comment in @($proposedComments | Where-Object { $_.kind -eq 'companion' })) {
+        $normalizedTitle = ([string]$comment.title).Trim().ToLowerInvariant()
+        $normalizedBody = [regex]::Replace(([string]$comment.body).Trim().ToLowerInvariant(), '\s+', ' ')
+        foreach ($key in @("title:$normalizedTitle", "body:$normalizedBody")) {
+          if ($companionKeys.ContainsKey($key)) {
+            $invalidReviewReasons.Add("PR $($Artifact.number) has duplicate companion findings $($companionKeys[$key]) and $($comment.id)")
+          } else {
+            $companionKeys[$key] = [string]$comment.id
+          }
         }
       }
     }

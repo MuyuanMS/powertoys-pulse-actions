@@ -54,6 +54,22 @@ function Require-Date {
   }
 }
 
+function Test-CompanionCommentBody {
+  param([string]$Body, [string]$Prefix, [string]$Id)
+
+  foreach ($section in @('Affected code', 'Problem', 'Why it matters', 'Suggested change', 'Verification')) {
+    if ($Body -notmatch ('(?im)^\*\*' + [regex]::Escape($section) + ':\*\*')) {
+      $script:errors.Add("$Prefix companion comment '$Id' must contain an **${section}:** section")
+    }
+  }
+  if ($Body -notmatch '(?is)\*\*Affected code:\*\*.*?`[^`\r\n]+`.*?\*\*Problem:\*\*') {
+    $script:errors.Add("$Prefix companion comment '$Id' must name at least one repository path or symbol in backticks")
+  }
+  if ($Body -notmatch '(?ims)\*\*Suggested change:\*\*.+?(?:^\s*(?:[-*]|\d+\.)\s+\S|```(?!suggestion)\w*)') {
+    $script:errors.Add("$Prefix companion comment '$Id' must provide concrete implementation steps or an illustrative code block")
+  }
+}
+
 function Test-FixConfidence {
   param($Confidence, [string]$Prefix)
 
@@ -197,10 +213,24 @@ foreach ($path in @($paths)) {
       }
       if ($comment.kind -eq 'companion') {
         Require-Text $comment.out_of_diff_reason 'proposed_comments[].out_of_diff_reason' $prefix
+        Require-Text $comment.body 'proposed_comments[].body' $prefix
+        Test-CompanionCommentBody ([string]$comment.body) $prefix ([string]$comment.id)
         if (-not [string]::IsNullOrWhiteSpace([string]$comment.path) -or
             [int]$comment.line -gt 0 -or
             [int]$comment.start_line -gt 0) {
           $errors.Add("$prefix companion comment '$($comment.id)' cannot contain inline coordinates")
+        }
+      }
+      $companionKeys = @{}
+      foreach ($comment in @($proposedComments | Where-Object { $_.kind -eq 'companion' })) {
+        $normalizedTitle = ([string]$comment.title).Trim().ToLowerInvariant()
+        $normalizedBody = [regex]::Replace(([string]$comment.body).Trim().ToLowerInvariant(), '\s+', ' ')
+        foreach ($key in @("title:$normalizedTitle", "body:$normalizedBody")) {
+          if ($companionKeys.ContainsKey($key)) {
+            $errors.Add("$prefix has duplicate companion findings '$($companionKeys[$key])' and '$($comment.id)'; consolidate overlapping author guidance")
+          } else {
+            $companionKeys[$key] = [string]$comment.id
+          }
         }
       }
     }

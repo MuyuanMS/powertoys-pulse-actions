@@ -163,7 +163,12 @@ files. Classify every public item as:
 - **`inline`** — explanatory prose with zero or one apply-ready suggestion,
   targeting the current RIGHT-side diff.
 - **`companion`** — readable review-body guidance only when no current
-  RIGHT-side anchor exists. Include a concrete `outOfDiffReason`.
+  RIGHT-side anchor exists. Include a concrete `outOfDiffReason`. The body must
+  contain `Affected code`, `Problem`, `Why it matters`, `Suggested change`, and
+  `Verification` sections. Name repository paths and symbols, describe ordered
+  implementation steps, and include illustrative pseudo-code when it makes the
+  intended control flow clearer. It must stand alone as a prompt the author can
+  give to Copilot without access to the review fork.
 - **obsolete** — omit it from `publicPayload`; keep any audit note under `internalEvidence`.
 
 Do not group localized, apply-ready fixes into a companion item merely because
@@ -174,6 +179,10 @@ mandatory line-mapping pass against the live head: try a safe apply-ready
 suggestion first, otherwise emit exact inline prose, otherwise use a companion
 with `outOfDiffReason`. If no inline item is possible, label the approval
 action clearly as general review notes with no inline suggestions.
+Before emission, merge overlapping companion findings by root cause and
+implementation. One underlying fix should produce one coherent author-facing
+comment, not separate comments for each module, symptom, or suppressed review
+observation unless those changes are independently actionable.
 
 Store author-facing text only in `publicPayload`. Store fork links, worktrees, build evidence, internal thread URLs, and convergence notes only in `internalEvidence`. Never concatenate internal evidence into a public body.
 

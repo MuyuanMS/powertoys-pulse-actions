@@ -645,7 +645,7 @@ if (-not (Test-Path $artifactValidator)) {
     $generalOnly.proposed_comments[0].PSObject.Properties.Remove('path')
     $generalOnly.proposed_comments[0].PSObject.Properties.Remove('line')
     $generalOnly.proposed_comments[0].PSObject.Properties.Remove('side')
-    $generalOnly.proposed_comments[0].body = '### Coordinate the cross-file lifetime change`n`n**Severity:** `medium``n`nThis concern spans unchanged ownership and shutdown paths, so please align the lifetime contract before applying a localized edit.'
+    $generalOnly.proposed_comments[0].body = "### Coordinate the cross-file lifetime change`n`n**Severity:** ``medium```n`n**Affected code:**`n- ``src/Manager.cpp`` — ``Manager::Stop```n- ``src/Worker.cpp`` — ``Worker::Close```n`n**Problem:** The owner can return before the worker releases its endpoint.`n`n**Why it matters:** Restarting can retain a stale handle and lose the next command.`n`n**Suggested change:**`n1. Make ``Manager::Stop`` transfer shutdown to the worker before returning.`n2. Make ``Worker::Close`` release the endpoint exactly once.`n`n**Verification:** Add a stop-after-exit regression test and confirm a subsequent restart accepts its first command."
     $generalOnly.proposed_comments[0] |
       Add-Member -NotePropertyName out_of_diff_reason -NotePropertyValue 'The required ownership change spans unchanged files and has no current RIGHT-side anchor.'
     $generalOnly.actions[0].label = 'Post general review notes'
@@ -654,6 +654,45 @@ if (-not (Test-Path $artifactValidator)) {
     $generalOnly | ConvertTo-Json -Depth 10 |
       Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
     & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
+
+    $terseGeneral = $generalOnly | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+    $terseGeneral.proposed_comments[0].body = "### Coordinate the cross-file lifetime change`n`n**Severity:** ``medium```n`nPlease align the lifetime contract."
+    $terseGeneral | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a terse companion comment.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    & $actionSanitizer -DataPath (Join-Path $artifactRoot 'data') 3>$null | Out-Null
+    $sanitizedTerseGeneral = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw |
+      ConvertFrom-Json
+    if ($sanitizedTerseGeneral.stage -ne 'review_in_progress' -or
+        -not $sanitizedTerseGeneral.needs_revalidation -or
+        @($sanitizedTerseGeneral.actions | Where-Object {
+          $_.type -in @('post_review', 'request_changes')
+        }).Count -gt 0) {
+      $errors.Add('Sanitizer did not fail closed for a terse companion comment.')
+    }
+
+    $duplicateGeneral = $generalOnly | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+    $duplicateComment = $duplicateGeneral.proposed_comments[0] | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+    $duplicateComment.id = 'duplicate-general'
+    $duplicateGeneral.proposed_comments = @($duplicateGeneral.proposed_comments) + @($duplicateComment)
+    $duplicateGeneral | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted duplicate companion comments.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
 
     $misleadingLabel = $generalOnly
     $misleadingLabel.actions[0].label = 'Post inline suggestion'

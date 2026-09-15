@@ -81,7 +81,7 @@ $reviewData = [pscustomobject]@{
                         }
                         title = 'Add regression coverage'
                         outOfDiffReason = 'The required test belongs in an unchanged test file outside the current PR diff.'
-                        body = "### Add regression coverage`n`n**Severity:** ``medium```n`nPlease add a regression test that verifies the persisted value during upgrade."
+                        body = "### Add regression coverage`n`n**Severity:** ``medium```n`n**Affected code:**`n- ``src/Test.Tests.cs`` — ``UpgradePreservesValue```n`n**Problem:** The persisted upgrade path has no regression coverage.`n`n**Why it matters:** A later edit can silently change the meaning of saved values.`n`n**Suggested change:**`n1. Deserialize the previous numeric value.`n2. Assert that it maps to the established member.`n`n**Verification:** Run the focused test project and confirm the upgrade test passes."
                     }
                 )
             }
@@ -188,6 +188,18 @@ $errors = @(Test-ReviewDataDocument -Document $invalid)
 Assert-True (($errors -join "`n") -match 'must include outOfDiffReason') 'Companion findings must explain why they cannot be inline.'
 
 $invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].publicPayload.items[1].body = "### Add regression coverage`n`n**Severity:** ``medium```n`nPlease add a regression test."
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'Affected code|Suggested change|Verification') 'Terse companion findings must fail.'
+
+$invalid = Copy-JsonObject $reviewData
+$duplicate = Copy-JsonObject $invalid.prs[0].publicPayload.items[1]
+$duplicate.id = 'duplicate-companion'
+$invalid.prs[0].publicPayload.items += $duplicate
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'duplicate companion findings') 'Duplicate companion findings must be consolidated.'
+
+$invalid = Copy-JsonObject $reviewData
 $invalid.prs[0].publicPayload.items[1] | Add-Member -NotePropertyName path -NotePropertyValue 'src/Test.cs'
 $invalid.prs[0].publicPayload.items[1] | Add-Member -NotePropertyName line -NotePropertyValue 2
 $errors = @(Test-ReviewDataDocument -Document $invalid)
@@ -274,7 +286,7 @@ Assert-True (($errors -join "`n") -match 'does not match') 'Decision hash mismat
 $plan = Get-ApprovedReviewPlan -ReviewData $reviewData -Decision $decisions.prs[0]
 $serializedPlan = $plan | ConvertTo-Json -Depth 20
 Assert-True ($plan.comments.Count -eq 1) 'The plan should contain the selected inline comment.'
-Assert-True ($plan.body -match 'regression test') 'The plan should include the selected companion note.'
+Assert-True ($plan.body -match 'upgrade test') 'The plan should include the selected companion note.'
 Assert-True ($serializedPlan -notmatch 'example/PowerToys|C:\\\\Internal') 'Internal evidence must never enter the public plan.'
 
 $unicodeBody = 'Use [\x0C\x85] rather than control characters in the regex source.'
