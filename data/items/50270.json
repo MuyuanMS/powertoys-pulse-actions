@@ -1,20 +1,81 @@
 {
-  "schemaVersion": 5,
   "number": 50270,
   "kind": "issue",
   "track": "fix",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report confirms silent exits but does not prove whether Runner crashed, exited cleanly, lost only its tray icon, or was terminated externally.",
+    "recommended_action": "Request process-level crash/exit evidence before selecting a behavioral fix.",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-08-31T23:35:24Z",
+    "evidence": [
+      "The user reports random exits in 0.100.2 and supplied a diagnostic archive.",
+      "The triage comment reports malformed JSON for several module settings, but the raw archive was discarded.",
+      "The user confirms there are no deterministic reproduction steps.",
+      "On 2026-09-12, the complete live body, all 2 public comment(s), labels, assignees, and link timeline were re-read through 2026-08-31T23:35:24Z.",
+      "Related open issue 50169 reports the same Runner disappearance while Command Palette remains active; a maintainer added Runner diagnostics and requested a fresh report from preview 0.101.2512.0, which was uploaded on 2026-09-11."
+    ]
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "Release crash-observability hardening is plausible but is not a confirmed fix for this incident.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "PowerToys disappears silently at random, while dependent features stop working; the failing process and termination mode remain unknown.",
+    "known_information": [
+      "PowerToys runs per-user and non-elevated on Windows 10.0.26200.0.",
+      "The issue includes a report archive and a later statement that no steps reproduce it.",
+      "Automated triage identified malformed JSON errors for multiple module settings.",
+      "Related issue 50169 is the active maintainer investigation for the same Runner-exit pattern and now has fresh 0.101.2512.0 diagnostics."
+    ],
+    "inferences": [
+      "Malformed settings may contribute, but could also be incidental.",
+      "Command Palette may be independent of Runner, so its continued availability does not identify the surviving process."
+    ],
+    "analysis": "The correct next step is to correlate Runner lifetime, crash markers, event logs, module lifecycle, and update/restart activity before changing module isolation or settings handling.",
+    "initial_investigation": [
+      "Inspected runner/main.cpp, unhandled exception handling, settings JSON loading, module lifecycle, restart management, and tray paths.",
+      "Found release diagnostics and exception coverage insufficient to establish a cause, but no safe issue-specific behavior fix.",
+      "Revalidated the live body, all 2 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-08-31T23:35:24Z.",
+      "Reviewed linked issue 50169 through its 2026-09-11 diagnostic upload; it confirms active observability work but not a root cause or fix."
+    ],
+    "information_gaps": [
+      {
+        "information": "Runner process lifetime, exit code, and Windows Error Reporting/Event Viewer evidence at the failure time.",
+        "why_needed": "Distinguishes crash, clean exit, external termination, and tray-only failure.",
+        "how_to_collect": "Reproduce if possible, then immediately comment /bugreport and include the exact local timestamp.",
+        "evidence_type": "event_viewer"
+      },
+      {
+        "information": "Whether Command Palette remains in a separate process and which modules were enabled.",
+        "why_needed": "Separates Runner failure from an individual module or shell component.",
+        "how_to_collect": "Record Task Manager process names/PIDs and the enabled module list immediately after the failure.",
+        "evidence_type": "behavior_confirmation"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-50270",
+      "type": "request_info",
+      "label": "Request crash correlation evidence",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50270,
+        "body": "Thanks for confirming that the exit is random and has no fixed reproduction steps. The existing report shows malformed settings JSON, but it does not establish whether Runner crashed, exited cleanly, or only lost its tray icon. If the failure occurs again, please provide:\n\n- **Crash correlation:** Immediately add a comment containing `/bugreport`, include the exact local failure time, and share any matching Windows Error Reporting or Event Viewer entry. This distinguishes a crash, clean exit, external termination, and tray-only failure.\n- **Remaining processes and modules:** Please record whether Command Palette remains as a separate process, the relevant process names/PIDs, and which PowerToys modules were enabled. This separates Runner failure from an individual module or shell component."
+      }
+    }
+  ],
+  "schemaVersion": 5,
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-08-31T23:35:24Z",
   "title": "PowerToys silently crashing",
   "url": "https://github.com/microsoft/PowerToys/issues/50270",
-  "generated_at": "2026-09-09T10:33:13.5242917Z",
-  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
-  "source_updated_at": "2026-08-31T23:35:24Z",
-  "summary": "Another random-exit report now overlaps the active umbrella issue, with one extra clue: malformed settings JSON was seen in runner logs.",
-  "next_action": "Draft a duplicate-handling comment that preserves the malformed-settings clue while consolidating the investigation under Issue 50169.",
-  "confidence": {
-    "score": 89,
-    "level": "green",
-    "rationale": "The symptom overlaps Issue 50169, and the current thread still lacks a module-specific repro or owner distinct from the umbrella investigation."
-  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
@@ -22,61 +83,6 @@
     "Product-General"
   ],
   "assignees": [],
-  "linked_work": [
-    {
-      "relation": "cross_referenced",
-      "kind": "issue",
-      "number": 50169,
-      "state": "open",
-      "title": "PowerToys randomly exits",
-      "url": "https://github.com/microsoft/PowerToys/issues/50169",
-      "created_at": "2026-09-04T15:37:59Z"
-    }
-  ],
-  "comment_count": 2,
-  "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "This issue is best treated as part of the open random-exit umbrella, not as an independent bug family.",
-    "evidence": [
-      "The tray/runner exits silently while multiple PowerToys features stop working.",
-      "Issue 50169 reports the same runner-exit symptom with Command Palette still alive.",
-      "This thread was later cross-referenced from Issue 50169.",
-      "The automated triage extracted malformed JSON load failures for several module settings files, which is useful evidence but not a different ownership track."
-    ],
-    "recommended_action": "Consolidate under Issue 50169 and explicitly carry forward the malformed-settings lead from this report."
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "The issue contributes evidence to the active umbrella investigation but does not yet justify a separate fix design.",
-    "existing_fix_urls": []
-  },
-  "issue_context": {
-    "summary": "This thread is another random PowerToys exit where the runner disappears in normal use; the current issue adds a possible corrupted-settings clue but still matches the umbrella investigation.",
-    "known_information": [
-      "The issue was filed against PowerToys 0.100.2 on Windows 11 build 26200.",
-      "The reporter notices the problem when Light Switch and Peek stop responding and the tray icon is missing.",
-      "A PowerToys diagnostic ZIP was attached.",
-      "The author later confirmed there are no reliable reproduction steps because the exit appears random."
-    ],
-    "inferences": [
-      "Malformed settings JSON could be one trigger within the broader random-exit family, but it does not narrow this thread to a separate module owner yet.",
-      "The active work should happen in the umbrella tracker that is already collecting preview-build evidence and added logging."
-    ],
-    "analysis": "The artifact should preserve the useful settings-corruption observation while still converging the actionable maintainer work onto Issue 50169.",
-    "initial_investigation": [
-      "Issue 50169 is the active random-exit thread with maintainer responses and planned extra runner logging.",
-      "The automated triage captured malformed JSON errors for several module settings files, suggesting one plausible runner-start or settings-load failure mode.",
-      "No direct linked PR or assignee marks this issue as a separate implementation track."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "type": "post_comment",
-      "label": "Point to active random-exit tracker",
-      "comment": {
-        "body": "Thanks for the bug report and the follow-up. This still looks like the same random runner-exit family tracked in Issue 50169, so I would consolidate the investigation there rather than split it across multiple threads. One useful detail from this report is that the automated triage spotted malformed settings JSON while loading several modules, so that clue should travel with any future `/bugreport` or preview-build retest results added to Issue 50169."
-      }
-    }
-  ]
+  "comments": 2,
+  "author": "KKire"
 }

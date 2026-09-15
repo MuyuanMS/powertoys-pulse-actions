@@ -1,258 +1,208 @@
 {
-  "schemaVersion": 5,
-  "id": "pr-50253",
+  "schemaVersion": 3,
   "number": 50253,
   "kind": "pr",
   "track": "review",
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T10:16:53.9863057Z",
-  "evaluated_at": "2026-09-10T10:16:53.9863057Z",
+  "generated_at": "2026-09-14T15:48:39.5814498Z",
+  "evaluated_at": "2026-09-14T15:48:39.5814498Z",
   "source_updated_at": "2026-09-01T15:30:25Z",
-  "head_sha": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
-  "title": "[Advanced Paste][PowerDisplay] Move from own IPC implementation to the one from PowerToys.interop",
   "url": "https://github.com/microsoft/PowerToys/pull/50253",
-  "repository": "microsoft/PowerToys",
+  "title": "[Advanced Paste][PowerDisplay] Move from own IPC implementation to the one from PowerToys.interop",
   "author": "noraa-junker",
   "authorAssociation": "COLLABORATOR",
-  "isCommunity": false,
-  "isMine": false,
   "state": "OPEN",
   "draft": false,
+  "head_sha": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
   "confidence": "High",
-  "processVerdict": "proceed",
-  "summary": "The unchanged current upstream head still needs three coordinated IPC fixes: retain and dispose the managed endpoints while ordering PowerDisplay startup safely, preserve commands while a child pipe is starting, and release IPC/process resources when disabling after a child has exited. The review-fix candidate rebuilt successfully and the targeted delayed-peer regression passed.",
+  "summary": "The resumed fork review rebuilt the current upstream change and the latest Copilot pass produced no new published comments, but seven suppressed current-head findings remain around IPC delivery-result coverage, unauthenticated managed receivers, and startup handshake failure handling.",
   "status": {
-    "glyph": "READY",
-    "label": "Review ready — three general findings drafted",
-    "detail": "Pinned to upstream head 2497e4e5fbbdba4e53fe4bb7e21a0df588789e40. The final requested Copilot review returned zero published comments, zero Copilot threads remain unresolved, all affected Debug x64 targets rebuilt, and the targeted IPC regression passed 1/1."
+    "glyph": "⚠️",
+    "label": "Current-head request-changes approval needed",
+    "detail": "Seven validated current-head companion findings are drafted after fork-side review and builds; no upstream action has been posted."
   },
   "next_action": {
-    "glyph": "REVIEW",
-    "label": "Review the drafted request-changes action",
-    "reason": "The three companion findings are current-head general review notes. Publishing requires explicit maintainer approval and a final freshness check."
+    "glyph": "▶",
+    "label": "Approve current-head request-changes follow-up",
+    "reason": "Review the seven validated current-head findings and recheck upstream freshness before any maintainer-facing post."
   },
-  "needs_revalidation": false,
-  "blockers": [],
-  "proposed_comments": [
-    {
-      "id": "retain-dispose-managed-ipc-and-order-powerdisplay-startup",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Retain and dispose the managed IPC endpoints",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Retain and dispose the managed IPC endpoints\n\n**Severity:** `high`\n\nBoth applications still keep `TwoWayPipeMessageIPCManaged` only in a local variable, so the wrapper can be collected after startup and neither shutdown path can call `Dispose()`, which is what deletes the native IPC object. Retain the endpoint as an application field and dispose it during the existing shutdown path. In PowerDisplay, create and assign the main window before starting IPC so an immediately delivered first command cannot be discarded while `_mainWindow` is still null.",
-      "confidence": {
-        "score": 99,
-        "rationale": "The current code uses local wrappers, the WinRT Close implementation deletes the native pointer, and PowerDisplay's callback explicitly no-ops while _mainWindow is null."
-      },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
-    },
-    {
-      "id": "retain-cold-start-messages-until-pipe-exists",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Do not drop commands while the child pipe is starting",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Do not drop commands while the child pipe is starting\n\n**Severity:** `high`\n\nThe old implementation did not return until the child connected, but the shared sender removes a queued message and returns when `CreateFile` reports `ERROR_FILE_NOT_FOUND`. A hotkey or profile command issued during child startup can therefore be lost. Retain and retry that queued message until the peer pipe appears or IPC is ended, and add a deterministic regression test that waits until the missing-pipe attempt has occurred before creating the peer.",
-      "confidence": {
-        "score": 99,
-        "rationale": "The shared send loop returns on ERROR_FILE_NOT_FOUND after the queue has already popped the message; a deterministic native test reproduces and verifies the corrected behavior."
-      },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
-    },
-    {
-      "id": "release-ipc-after-child-already-exited",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Release IPC when disabling an already-stopped child",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Release IPC when disabling an already-stopped child\n\n**Severity:** `medium`\n\nIf either child exits before its module is disabled, `refresh()` sees both the desired and observed running states as false and returns before cleanup. That leaves the signaled process handle and the shared IPC queue workers retained while the disabled module remains loaded. Close the stale process handle and reset the IPC endpoint before taking this early-return path in both process managers.",
-      "confidence": {
-        "score": 97,
-        "rationale": "The early equality return precedes every handle and IPC reset, and the stopped process handle remains nonzero even though is_process_running() is false."
-      },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50253",
-      "type": "request_changes",
-      "label": "Request changes with three general review notes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Three companion findings will be posted as separate general PR conversation comments. Do not publish without explicit maintainer approval and a final upstream freshness check.",
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pr": 50253,
-        "pullRequest": 50253,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
-        "body_prefix": "Please address the three coordinated IPC lifecycle and delivery concerns described in the separate general review notes before merging."
-      }
-    }
-  ],
   "phase0": {
     "author": "noraa-junker",
     "author_association": "COLLABORATOR",
     "bar": "collaborator-authored; process nags skipped",
     "disposition": "Proceed",
-    "who_owes_next": "Maintainer review decision",
     "gates_tripped": [],
     "note": "The change is an internal IPC migration. CLA, intake, dependency, telemetry, and all required Azure build checks pass; no visual evidence or author-facing process request is appropriate.",
     "evidence": [
       "The live upstream head is 2497e4e5fbbdba4e53fe4bb7e21a0df588789e40.",
       "The author association is COLLABORATOR.",
-      "PowerToys CI, x64 Release, arm64 Release, Command Palette Toolkit SDK, dependency review, telemetry detection, CLA, and PR intake checks are successful.",
-      "The intake result reports that visual evidence is not needed."
+      "license/cla, pr-intake, dependency-review, detect-telemetry-events, aggregate PowerToys CI, x64 Release, arm64 Release, and Command Palette Toolkit SDK build are successful.",
+      "The intake bot reports that visual evidence is not needed.",
+      "The empty issue and validation template fields are not process gates for a collaborator."
     ]
   },
   "judgment": {
-    "status": "request_changes",
-    "rationale": "The current managed wrappers are local and not disposed, PowerDisplay can accept callbacks before its window exists, the shared sender can drop a command before the child pipe exists, and the process managers can retain stale handles and IPC workers after a child exits.",
+    "status": "awaiting_review_approval",
+    "rationale": "The fork-side implementation builds and the latest Copilot review has zero new published inline comments, but suppressed findings identify delivery-result/test gaps, unauthenticated managed input endpoints, and false-success startup handling that require maintainer review.",
+    "recommended_action": "Approve or revise the current-head request-changes action only after a final upstream freshness check.",
+    "evaluated_at": "2026-09-14T15:48:39.5814498Z",
+    "source_updated_at": "2026-09-01T15:30:25Z",
     "evidence": [
-      "Advanced Paste and PowerDisplay create TwoWayPipeMessageIPCManaged as local variables while Dispose/Close is the native deletion path.",
-      "PowerDisplay starts IPC before assigning its main window, and its callback discards work while that window is null.",
-      "The shared send loop can dequeue a message and return on ERROR_FILE_NOT_FOUND before the child pipe server is ready.",
-      "Both process managers can return on the disabled/already-stopped path before releasing the signaled process handle and IPC endpoint.",
-      "The final requested Copilot review was submitted after the recorded request, covered the final validated candidate commit, produced zero published comments, and left zero unresolved Copilot threads."
-    ],
-    "recommended_action": "After explicit approval and a final current-head freshness check, submit the pinned REQUEST_CHANGES action and its three separate general PR conversation comments.",
-    "evaluated_at": "2026-09-10T10:16:53.9863057Z",
-    "source_updated_at": "2026-09-01T15:30:25Z"
+      "Fork PR 804 head 16db64a6a72b70505aa937cc728da15641fe3106 was built for CommonUtils, Advanced Paste, PowerDisplay, and WorkspacesLib.",
+      "Latest Copilot review submitted for the exact fork head with zero new published inline comments and seven suppressed findings.",
+      "No upstream microsoft/PowerToys review, comment, label, assignment, CI trigger, merge, close, or cross-reference was performed."
+    ]
   },
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "upstream_updated_at": "2026-09-01T15:30:25Z",
-    "upstream_head_sha": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
-    "issue_comment_count": 1,
-    "review_count": 1,
-    "review_comment_count": 2,
-    "review_decision": "REVIEW_REQUIRED",
-    "merge_state": "MERGEABLE",
-    "reported_checks": {
-      "status": "passed",
-      "failed": 0,
-      "pending": 0,
-      "passed": [
-        "PowerToys CI",
-        "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
-        "PowerToys CI (Build arm64 Build Release_arm64)",
-        "PowerToys CI (Build arm64 Resolve affected UI test projects)",
-        "PowerToys CI (Build x64 Build Release_x64)",
-        "PowerToys CI (Build x64 Resolve affected UI test projects)",
-        "dependency-review",
-        "detect-telemetry-events",
-        "license/cla",
-        "pr-intake"
-      ],
-      "summary": "All reported current-head checks are successful."
-    }
-  },
-  "freshness": {
-    "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-10T10:16:53.9863057Z",
-    "checked_at": "2026-09-10T10:16:53.9863057Z",
-    "head_sha": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
-    "source_updated_at": "2026-09-01T15:30:25Z"
-  },
-  "workflow": {
-    "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-10T10:16:53.9863057Z",
-    "reviewed_upstream_head": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
-    "final_candidate_head": "15ebc33b50deac0cba1f47757c72ae0783cbde44",
-    "fresh_review_request_at": "2026-09-01T17:09:45Z",
-    "fresh_review_submitted_at": "2026-09-01T17:12:58Z",
-    "fresh_copilot_result": {
-      "status": "zero_published_comments",
-      "completed_reviews": 1,
-      "published_comments": 0
-    },
-    "unresolved_copilot_threads": 0,
-    "duplicate_review_request_issued": false,
-    "build_result": "passed",
-    "upstream_writes": []
-  },
-  "validation": {
-    "status": "passed",
-    "configuration": "Debug x64",
-    "validated_tree": "review_fix_candidate",
-    "validated_candidate_head": "15ebc33b50deac0cba1f47757c72ae0783cbde44",
+  "verification": {
+    "result": "passed",
+    "configuration": "x64 Debug",
     "builds": [
-      {
-        "name": "PowerToys essentials",
-        "result": "passed"
-      },
-      {
-        "name": "UnitTests-CommonUtils",
-        "result": "passed"
-      },
-      {
-        "name": "AdvancedPasteModuleInterface",
-        "result": "passed"
-      },
-      {
-        "name": "AdvancedPaste",
-        "result": "passed"
-      },
-      {
-        "name": "PowerDisplayModuleInterface",
-        "result": "passed"
-      },
-      {
-        "name": "PowerDisplay",
-        "result": "passed"
-      }
+      "UnitTests-CommonUtils",
+      "AdvancedPasteModuleInterface",
+      "AdvancedPaste",
+      "PowerDisplayModuleInterface",
+      "WorkspacesLib",
+      "WorkspacesLib.UnitTests"
     ],
     "tests": [
       {
-        "name": "SendWaitsForOutputPipeCreation",
+        "suite": "Patch validation",
+        "command": "git diff --check",
+        "result": "passed"
+      },
+      {
+        "suite": "Fresh fork Copilot review",
         "result": "passed",
-        "passed": 1,
-        "failed": 0,
-        "skipped": 0
+        "latest_review_at": "2026-09-14T15:47:39Z",
+        "latest_review_commit": "16db64a6a72b70505aa937cc728da15641fe3106",
+        "new_published_comments": 0,
+        "unresolved_threads": 0
       }
     ],
-    "outputs": {
-      "powerToysExe": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe"
+    "manual_test_instructions": [
+      "Add focused send_and_wait success and timeout tests before treating the review as converged.",
+      "Review managed IPC receiver authentication and establish a bounded startup handshake/failure signal for both modules."
+    ],
+    "build_environment_note": "Malformed inherited GIT_CONFIG_* variables were removed only for build and git subprocesses."
+  },
+  "freshness": {
+    "checked_at": "2026-09-14T15:48:39.5814498Z",
+    "head_sha": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
+    "head_matches_reviewed": true,
+    "upstream_updated_at": "2026-09-01T15:30:25Z",
+    "issue_comment_count": 1,
+    "review_comment_count": 2,
+    "review_count": 1,
+    "all_required_checks_green": true
+  },
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-14T15:48:39.5814498Z",
+    "live_upstream_head": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
+    "old_artifact_head": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40",
+    "fork_head": "16db64a6a72b70505aa937cc728da15641fe3106",
+    "current_head_copilot_rounds": 7,
+    "copilot_result": "Latest exact-head review produced zero new published comments but seven suppressed findings remain.",
+    "unresolved_copilot_threads": 0
+  },
+  "fork": {
+    "owner": "MuyuanMS",
+    "repo": "MuyuanMS/PowerToys",
+    "pr": 804,
+    "branch": "pr-iterate/50253-v3",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/804",
+    "head_sha": "16db64a6a72b70505aa937cc728da15641fe3106"
+  },
+  "proposed_comments": [
+    {
+      "id": "cover-send-and-wait-result",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Cover synchronous IPC delivery results",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "Add focused bounded tests for send_and_wait success, timeout, and failed delivery so shutdown behavior cannot regress silently.",
+      "out_of_diff_reason": "Suppressed Copilot finding is preserved as a maintainer-review action; no public inline range is being posted."
     },
-    "notes": [
-      "The full affected Debug x64 build chain completed successfully.",
-      "The targeted delayed-peer IPC regression passed 1/1.",
-      "git diff --check passed for the review-fix candidate.",
-      "The first build attempt encountered malformed inherited GIT_CONFIG_* variables; removing only those inherited variables allowed the clean retry to pass.",
-      "No new build or review round began after the normal-run cutoff."
-    ]
-  },
-  "checks": {
-    "status": "passed",
-    "failed": 0,
-    "pending": 0,
-    "passed": [
-      "PowerToys CI",
-      "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
-      "PowerToys CI (Build arm64 Build Release_arm64)",
-      "PowerToys CI (Build arm64 Resolve affected UI test projects)",
-      "PowerToys CI (Build x64 Build Release_x64)",
-      "PowerToys CI (Build x64 Resolve affected UI test projects)",
-      "dependency-review",
-      "detect-telemetry-events",
-      "license/cla",
-      "pr-intake"
-    ]
-  },
-  "safe_actions": [
-    "Present the drafted request-changes action for explicit maintainer approval.",
-    "Post nothing upstream until the pinned head, conversation, checks, and review state are revalidated.",
-    "Repeat the review loop and validation after any material upstream update."
+    {
+      "id": "authenticate-managed-ipc-receivers",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Authenticate managed IPC receivers",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "Both managed IPC endpoints currently start unauthenticated duplex input servers. Preserve client-only behavior or authenticate callers before accepting module commands.",
+      "out_of_diff_reason": "Suppressed Copilot finding is preserved as a maintainer-review action; no public inline range is being posted."
+    },
+    {
+      "id": "establish-startup-handshake",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Establish a bounded startup handshake",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "Do not report Advanced Paste or PowerDisplay startup success before the child output pipe is available or a bounded failure signal is recorded; otherwise startup commands can be lost and unusable processes remain marked running.",
+      "out_of_diff_reason": "Suppressed Copilot finding is preserved as a maintainer-review action; no public inline range is being posted."
+    },
+    {
+      "id": "propagate-workspaces-delivery-result",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Propagate Workspaces IPC delivery results",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "The WorkspacesLib duplicate transport currently reports queue idleness rather than successful write delivery. Propagate write failure into send_and_wait before callers use its boolean result.",
+      "out_of_diff_reason": "Suppressed Copilot finding is preserved as a maintainer-review action; no public inline range is being posted."
+    },
+    {
+      "id": "cover-ipc-timeout-failure",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Test bounded IPC timeout and failure paths",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "Add deterministic tests for a delayed peer and an unavailable or ended peer, including the false result and bounded completion behavior.",
+      "out_of_diff_reason": "Suppressed Copilot finding is preserved as a maintainer-review action; no public inline range is being posted."
+    },
+    {
+      "id": "avoid-unauthenticated-advanced-paste-input",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Protect the Advanced Paste input endpoint",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "The managed Advanced Paste endpoint accepts duplex input without caller authentication; use a client-only input path or enforce the expected caller policy.",
+      "out_of_diff_reason": "Suppressed Copilot finding is preserved as a maintainer-review action; no public inline range is being posted."
+    },
+    {
+      "id": "avoid-unauthenticated-powerdisplay-input",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Protect the PowerDisplay input endpoint",
+      "in_diff": false,
+      "disposition": "proposed",
+      "body": "The managed PowerDisplay endpoint accepts duplex input without caller authentication; use a client-only input path or enforce the expected caller policy.",
+      "out_of_diff_reason": "Suppressed Copilot finding is preserved as a maintainer-review action; no public inline range is being posted."
+    }
   ],
-  "upstream_writes": [],
-  "dashboard_modified": false
+  "actions": [
+    {
+      "id": "request-changes-50253-current-head",
+      "type": "request_changes",
+      "label": "Request changes with 7 current-head companion comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Draft only. No upstream public write has been made. Explicit approval and final current-head freshness check are required. If approved, this companion-only action posts separate general PR comments rather than inline comments.",
+      "review": {
+        "pr": 50253,
+        "pullRequest": 50253,
+        "repository": "microsoft/PowerToys",
+        "event": "REQUEST_CHANGES",
+        "head_sha": "2497e4e5fbbdba4e53fe4bb7e21a0df588789e40"
+      }
+    }
+  ]
 }

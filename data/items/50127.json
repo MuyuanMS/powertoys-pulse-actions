@@ -3,113 +3,76 @@
   "number": 50127,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "generated_at": "2026-09-09T15:05:16.279Z",
-  "evaluated_at": "2026-09-09T15:05:16.279Z",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "jincechen",
+  "confidence": "High",
+  "status": {
+    "glyph": "✅",
+    "label": "Duplicate or handled",
+    "detail": "The remapped-modifier variant belongs in canonical issue #27612."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Close as duplicate of #27612",
+    "reason": "Avoid parallel implementation work."
+  },
+  "generated_at": "2026-09-12T01:02:28.113489Z",
+  "evaluated_at": "2026-09-12T01:02:28.113489Z",
   "source_updated_at": "2026-08-27T03:30:39Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50127",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The symptom belongs to the established Advanced Paste stuck-modifier family already tracked in #27612; #38028, #43220, #42471, #45685, and #46874 were closed into that chain. A separate implementation plan here would duplicate the canonical work.",
+    "evidence": [
+      "The reporter isolates the failure to Advanced Paste plus Caps Lock-to-Ctrl remapping and clears it by pressing the involved modifiers again.",
+      "Issue #27612 remains open for modifier keys left logically pressed after Paste as Plain Text.",
+      "Several closely matching Advanced Paste sticky-modifier reports were explicitly closed as duplicates of #27612."
+    ],
+    "recommended_action": "Close this report as a focused duplicate of #27612 while preserving its Keyboard Manager remap variant as evidence there.",
+    "evaluated_at": "2026-09-12T01:02:28.113489Z",
+    "source_updated_at": "2026-08-27T03:30:39Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys fix may be needed, but it is already owned by the open canonical issue #27612; this artifact should not create a competing plan."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Advanced Paste can leave Shift logically pressed after Caps Lock is remapped to Ctrl and the user invokes Ctrl+Shift+V through that remap.",
+    "known_information": [
+      "PowerToys 0.100.2 on Windows 11; Caps Lock is remapped to Ctrl.",
+      "Invoking Advanced Paste with physical Caps Lock+Shift+V can leave Shift logically pressed.",
+      "Disabling Advanced Paste while keeping the remap prevents the symptom."
+    ],
+    "inferences": [
+      "Advanced Paste modifier release/restore interacts with remapped modifier state, but the exact failing event order is not established here."
+    ],
+    "analysis": "The report adds a valuable remapped-Caps-Lock variant, but the user-visible failure and recovery are the same stuck-modifier defect already centralized under #27612.",
+    "initial_investigation": [
+      "Read the full issue and automated triage comment through 2026-08-27T03:30:39Z.",
+      "Verified #27612 is open and describes modifiers remaining logically pressed after Paste as Plain Text.",
+      "Verified #38028 and #43220 were closed as duplicates of #27612; #42471, #45685, and #46874 converge on the same chain.",
+      "Reviewed current AdvancedPasteModuleInterface modifier release/restore sequence; the 0.100.2 report postdates that logic."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Close as duplicate of #27612",
+      "comment": {
+        "body": "Thanks for documenting the Caps Lock → Ctrl variant and for isolating it to Advanced Paste. This is the same stuck-modifier failure family tracked in #27612, which remains open; related reports #38028, #43220, #42471, #45685, and #46874 have been consolidated there. I suggest closing this issue as a duplicate of #27612 and carrying this remapped-modifier reproduction into that thread so the fix covers both physical and Keyboard Manager-generated modifier input."
+      }
+    }
+  ],
   "title": "Advanced Paste can leave Shift stuck with Caps Lock → Ctrl remap",
+  "url": "https://github.com/microsoft/PowerToys/issues/50127",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Advanced Paste"
   ],
   "assignees": [],
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report isolates the bug to the interaction between Advanced Paste and a Caps Lock → Ctrl remap, and Advanced Paste explicitly releases and restores modifiers using GetAsyncKeyState before and after injected input.",
-    "evidence": [
-      "Disabling Advanced Paste removes the problem while keeping the remap.",
-      "The trigger is the exact Ctrl+Shift+V flow that Advanced Paste handles.",
-      "AdvancedPasteModuleInterface/dllmain.cpp releases and restores Ctrl/Shift/Win/Alt via GetAsyncKeyState and SendInput."
-    ],
-    "recommended_action": "Approve a design pass around modifier-state capture and pair it with a maintainer-side repro on the remapped hotkey.",
-    "evaluated_at": "2026-09-09T15:05:16.279Z",
-    "source_updated_at": "2026-08-27T03:30:39Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No linked fix currently covers modifier-state mismatch between Advanced Paste injection and remapped modifier keys.",
-    "existing_fix_urls": []
-  },
-  "issue_context": {
-    "summary": "Advanced Paste can leave Shift logically pressed after Ctrl+Shift+V when Keyboard Manager remaps Caps Lock to Ctrl.",
-    "known_information": [
-      "The issue reproduces only when Advanced Paste is enabled.",
-      "The physical combination is Caps Lock + Shift + V.",
-      "Pressing Caps Lock + Shift again clears the stuck state."
-    ],
-    "inferences": [
-      "The fault likely sits in logical modifier restore, not clipboard content handling.",
-      "A remapped modifier makes post-injection GetAsyncKeyState a poor proxy for logical state."
-    ],
-    "analysis": "The owning code is narrow and the module interaction is already isolated, so the issue is ready for an actionable design plus maintainer repro.",
-    "initial_investigation": [
-      "Reviewed the issue body and related duplicate references.",
-      "Reviewed AdvancedPasteModuleInterface/dllmain.cpp and confirmed the send/copy path explicitly releases and restores modifiers via GetAsyncKeyState and SendInput."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve design for Issue 50127",
-      "confirm": true,
-      "comment": {
-        "body": "Approve a focused Advanced Paste modifier-state design pass for Issue 50127."
-      }
-    },
-    {
-      "id": "rp50127",
-      "type": "reproduce",
-      "label": "Reproduce Caps→Ctrl stuck-Shift path",
-      "note": "Validate modifier cleanup with a remapped Ctrl source.",
-      "reproduce": {
-        "module": "Advanced Paste + Keyboard Manager",
-        "version": "PowerToys 0.100.2 or newer current main build",
-        "prerequisites": [
-          "Enable Advanced Paste.",
-          "Map Caps Lock to Ctrl in Keyboard Manager.",
-          "Open an app where Shift-click behavior is easy to see."
-        ],
-        "steps": [
-          "Press the physical Caps Lock + Shift + V combination so Advanced Paste handles Ctrl+Shift+V.",
-          "Complete a plain-text paste.",
-          "Immediately click in another app and check whether Shift remains logically pressed.",
-          "Press and release Caps Lock + Shift again to confirm the issue clears the same way the reporter described."
-        ],
-        "expected_result": "Advanced Paste should dismiss without leaving Shift or Ctrl logically held.",
-        "attachments": []
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Capture and restore logical modifiers explicitly for Advanced Paste",
-      "root_cause": "Advanced Paste infers which modifiers to release and restore from live physical key state. With Caps Lock remapped to Ctrl, physical keys and logical modifier state can diverge, leaving Shift logically down after the paste flow completes.",
-      "plan": [
-        "Capture the triggering modifier state once at activation instead of recomputing it after injection.",
-        "Differentiate synthetic release/restore events from the user’s original logical modifiers when a remapped modifier is involved.",
-        "Add a cleanup path that guarantees Shift/Ctrl are not left logically pressed after dismissal."
-      ],
-      "verification": [
-        "Reproduce with Caps Lock mapped to Ctrl and verify Ctrl+Shift+V no longer leaves Shift logically down.",
-        "Verify the normal Win+Shift+V flow still works."
-      ],
-      "confidence": {
-        "score": 66,
-        "level": "yellow",
-        "rationale": "The interaction is tightly scoped to modifier injection, but the final cleanup strategy still needs validation."
-      }
-    }
-  ],
-  "design_decision": {
-    "status": "queued",
-    "reason": "Actionable design retained without full expansion."
-  },
-  "confidence": {
-    "score": 66,
-    "level": "yellow",
-    "rationale": "Code path is narrow; exact cleanup fix still needs validation."
-  }
+  "comments": 1
 }

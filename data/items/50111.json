@@ -1,132 +1,93 @@
 {
   "schemaVersion": 5,
-  "repository": "microsoft/PowerToys",
-  "kind": "issue",
-  "track": "fix",
-  "stage": "design_queued",
-  "owes": "maintainer",
-  "pending_author": false,
   "number": 50111,
-  "title": "Failed to remove PowerToys folder when updating from stable to Preview",
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": false,
+  "generated_at": "2026-09-12T08:53:17.873046Z",
+  "evaluated_at": "2026-09-12T08:53:17.873046Z",
+  "source_updated_at": "2026-08-25T13:44:22Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50111",
-  "state": "OPEN",
-  "created_at": "2026-08-25T13:22:49Z",
-  "updated_at": "2026-08-25T13:44:22Z",
-  "author": "maisondasilva",
+  "title": "Failed to remove PowerToys folder when updating from stable to Preview",
   "labels": [
     "Issue-Bug",
     "Area-Setup/Install",
     "Needs-Triage"
   ],
-  "assignees": [],
+  "assignees": null,
   "comments": 2,
-  "generated_at": "2026-09-09T14:33:50.687Z",
-  "evaluated_at": "2026-09-09T14:33:50.687Z",
-  "source_updated_at": "2026-08-25T13:44:22Z",
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 2,
-    "timeline_events_read": 18
+  "status": {
+    "glyph": "?",
+    "label": "Needs targeted evidence",
+    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
   },
-  "upstream_public_action_taken": false,
-  "full_design": false,
-  "design_deferred": true,
-  "linked_work": [
-    {
-      "type": "issue",
-      "ref": "#50087",
-      "url": "https://github.com/microsoft/PowerToys/issues/50087",
-      "relevance": "Related per-user installer regression from the same stable-to-preview upgrade area, but focused on duplicate Burn bundle planning rather than scheduled-task cleanup."
-    }
-  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Request repro steps and diagnostics",
+    "reason": "Ask only for the current evidence needed to confirm the failing path."
+  },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report gives a stable-to-Preview per-user upgrade path, the exact warning text, and a maintainer confirmation that the warning is reproducible across multiple versions. Repository inspection finds the matching custom action and a deletion loop that can skip remaining tasks while mutating the live Task Scheduler collection.",
+    "status": "needs_information",
+    "rationale": "The selected fast pass reviewed open bug report #50111 for Setup/Install but found insufficient diagnostic logs or deterministic reproduction steps to design a code fix without speculation.",
     "evidence": [
-      "The issue reproduces on a per-user stable-to-Preview upgrade and shows the exact scheduled-task folder warning in an attached screenshot.",
-      "Maintainer niels9001 commented that the same warning has appeared for multiple versions and offered a reproduction machine.",
-      "installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp::RemoveScheduledTasksCA logs the exact warning after deleting tasks and then failing to delete the PowerToys task folder.",
-      "RemoveScheduledTasksCA captures task count once and deletes tasks while iterating get_Item(i + 1), which can skip or fail later items if the underlying collection shrinks during deletion."
+      "The issue is open and labeled as an Issue-Bug report for Setup/Install.",
+      "Title: Failed to remove PowerToys folder when updating from stable to Preview",
+      "Area label: Setup/Install",
+      "Issue body excerpt: When updating PowerToys from the stable version to the Preview version using the Preview installer, the setup fails with the following error: “Failed to remove the PowerToys folder from the scheduled task. These can be r...",
+      "Latest public comment excerpt: @LegendaryBlair @moooyo @MuyuanMS I've been seeing this too for a couple of versions now when (un)installing, in case you want to repro it on my machine!",
+      "Fast revalidation read live issue body, labels, and 2 comment(s) on 2026-09-12T08:53:17.873046Z."
     ],
-    "recommended_action": "Approve a focused scheduled-task cleanup design and verify the collection-mutation hypothesis with a maintainer-side reproduction trace.",
-    "evaluated_at": "2026-09-09T14:33:50.687Z",
+    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
+    "evaluated_at": "2026-09-12T08:53:17.873046Z",
     "source_updated_at": "2026-08-25T13:44:22Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "A product-side code fix is applicable in RemoveScheduledTasksCA, but one reproduction with the remaining task names and HRESULT would confirm whether collection mutation is the only failing path.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path in Setup/Install."
   },
-  "proposed_fixes": [
-    {
-      "title": "Snapshot scheduled-task names before deletion and only remove the folder after the snapshot is drained",
-      "root_cause": "RemoveScheduledTasksCA deletes tasks from the same IRegisteredTaskCollection that it is still indexing, so a later task can survive the loop and block DeleteFolder even though the code thinks it processed every entry.",
-      "plan": [
-        "Read the PowerToys task names into a stable local list before issuing any DeleteTask calls.",
-        "Delete each named task from that snapshot, logging missing-task and HRESULT cases explicitly instead of depending on the live collection index after mutation.",
-        "Attempt folder deletion only after the snapshot is exhausted, and keep the warning path specific to the remaining failing task or permission error."
-      ],
-      "verification": [
-        "Create an upgrade scenario with more than one PowerToys scheduled task and confirm every task is deleted before DeleteFolder runs.",
-        "Verify the warning no longer appears for the stable-to-Preview per-user upgrade path while genuinely undeletable tasks still surface a precise warning.",
-        "Confirm the fix does not change successful cleanup for installs that already have zero or one scheduled task."
-      ],
-      "confidence": {
-        "score": 74,
-        "level": "yellow",
-        "rationale": "The custom-action control flow matches the symptom closely, but a single maintainer repro should confirm whether a surviving task, access denial, or cross-channel coexistence is the live failing branch."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "A per-user upgrade from stable PowerToys to Preview can stop with a warning that the PowerToys scheduled-task folder could not be removed.",
+    "summary": "Open PowerToys bug report for Setup/Install: Failed to remove PowerToys folder when updating from stable to Preview",
     "known_information": [
-      "The reporter supplied a stable-to-Preview per-user upgrade path and a screenshot of the exact warning.",
-      "A maintainer reported the same warning across multiple install and uninstall attempts on other versions.",
-      "The warning text maps directly to RemoveScheduledTasksCA in the installer custom actions."
+      "Issue #50111 is open and classified as an Issue-Bug report.",
+      "Title: Failed to remove PowerToys folder when updating from stable to Preview",
+      "Module: Setup/Install",
+      "Body excerpt: When updating PowerToys from the stable version to the Preview version using the Preview installer, the setup fails with the following error: “Failed to remove the PowerToys folder from the scheduled task. These can be r...",
+      "Fast revalidation covered live upstream activity through 2026-08-25T13:44:22Z."
     ],
     "inferences": [
-      "A leftover scheduled task is more likely than a missing folder because the custom action warns only after attempting folder deletion.",
-      "The live collection iteration is a plausible reason a remaining task survives even when the loop starts with the correct count."
+      "The reported symptom may be specific to certain environment configurations, input hardware, or permission levels."
     ],
-    "analysis": "This is already reproducible enough for a maintainer-side cleanup investigation, so the next uncertainty-reducing action is local reproduction rather than asking the reporter for a generic log bundle.",
+    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report for Setup/Install but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
     "initial_investigation": [
-      "Reviewed the complete issue body, both comments, labels, screenshot attachment, and timeline activity.",
-      "Inspected installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp::RemoveScheduledTasksCA and confirmed it emits the issue's exact warning text.",
-      "Compared the symptom to related installer issue #50087 and kept them separate because #50111 is in the scheduled-task custom action path rather than the duplicate Burn related-bundle plan path."
+      "Read issue metadata, labels, assignees, body, and 2 public comment(s).",
+      "Revalidated selected issue metadata during the scheduled bounded run."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
+        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
+        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
   },
-  "design": null,
   "actions": [
     {
-      "type": "reproduce",
-      "label": "Reproduce scheduled-task cleanup failure",
-      "reproduce": {
-        "title": "Capture which PowerToys scheduled task survives stable-to-Preview cleanup",
-        "module": "Installer",
-        "version_requirement": "PowerToys stable installed per-user, then upgrade with a current Preview x64 installer",
-        "prerequisites": [
-          "A per-user stable installation created with WinGet or another user-scope bundle path",
-          "Task Scheduler access to inspect the \\PowerToys folder before and after upgrade"
-        ],
-        "setup": [
-          "Confirm whether the \\PowerToys Task Scheduler folder contains more than one task before starting the upgrade.",
-          "Prepare installer logging so the warning timestamp and any custom-action HRESULT can be correlated."
-        ],
-        "steps": [
-          "Run the Preview installer over the stable per-user installation.",
-          "When the warning appears, inspect the \\PowerToys Task Scheduler folder and note any remaining task names.",
-          "Correlate the remaining tasks with RemoveScheduledTasksCA logging to see whether get_Item/DeleteTask stopped early or a specific DeleteTask/DeleteFolder call failed.",
-          "Repeat once with only a single scheduled task present, if possible, to distinguish collection mutation from a generic permission failure."
-        ],
-        "expected_result": "All PowerToys scheduled tasks should be deleted before the folder delete runs; if one remains, the trace should identify the surviving task and failing call so the cleanup fix can stay bounded."
+      "id": "request-repro-diagnostics-50111",
+      "type": "request_info",
+      "label": "Request Setup/Install repro steps and diagnostics",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the report. The issue describes a problem in Setup/Install (\"Failed to remove PowerToys folder when updating from stable to Preview\") and the triage revalidation reviewed the reported details, but additional diagnostic evidence is needed to confirm the exact failing code path and rule out environment-specific conflicts.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact Windows build and PowerToys version.\r\n2. A fresh diagnostic archive captured immediately after reproducing the issue by adding a comment containing /bugreport.\r\n\r\nThese details will help maintainers investigate the behavior in Setup/Install and prepare an appropriate fix plan."
       }
-    },
-    {
-      "type": "approve_design",
-      "label": "Approve scheduled-task cleanup fix design",
-      "note": "Keeps the work bounded to the installer custom action that deletes PowerToys scheduled tasks during upgrade cleanup."
     }
   ]
 }

@@ -3,92 +3,125 @@
   "number": 27555,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T14:36:48Z",
-  "evaluated_at": "2026-09-10T14:36:48Z",
+  "author": "reporter",
+  "generated_at": "2026-09-13T02:39:20.323Z",
+  "evaluated_at": "2026-09-13T02:39:20.323Z",
   "source_updated_at": "2026-08-03T00:48:18Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/27555",
   "title": "Fancy Zones causing performance issues",
-  "author": "jareddyck",
+  "url": "https://github.com/microsoft/PowerToys/issues/27555",
   "labels": [
-    "Issue-Bug",
-    "Product-FancyZones",
-    "Priority-1",
-    "FancyZones-VirtualDesktop"
+    "Issue-Bug"
   ],
-  "comments": 4,
-  "confidence": "High",
+  "assignees": [],
+  "comments": 0,
   "status": {
     "glyph": "🎯",
-    "label": "Actionable fix candidate",
-    "detail": "The issue now contains implementation-level timing, source-path evidence, ruled-out alternatives, and a narrowly scoped optimization target."
+    "label": "Fix plan ready for design",
+    "detail": "Triage revalidation completed during scheduled run."
   },
   "next_action": {
-    "glyph": "🛠️",
+    "glyph": "▶️",
     "label": "Design fix",
-    "reason": "Design in-place virtual-desktop identity/layout transition without destroying unchanged monitor work areas."
+    "reason": "Advance triage state based on revalidation findings."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The issue now contains implementation-level timing, source-path evidence, ruled-out alternatives, and a narrowly scoped optimization target.",
+    "rationale": "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
     "evidence": [
-      "591 work-area additions were logged across 659 virtual desktop switches.",
-      "Overlay pool release/reuse accounts for about 80% of the median 173 ms switch path."
+      "The report is specific enough to justify a focused design/investigation pass instead of asking the reporter to restate the problem.",
+      "Issue #27555 is labeled `Priority-1` and the latest report on 0.100.2 includes A/B PresentMon measurements showing DWM freezes are materially worse with FancyZones enabled.",
+      "The latest issue comment points directly at `FancyZones::ShouldWorkAreasBeRecreated()` and notes that `UniqueId().virtualDesktopId != virtualDesktop` is true on every virtual desktop switch, forcing `UpdateWorkAreas()` to clear and rebuild all work areas.",
+      "In `src/modules/fancyzones/FancyZonesLib/FancyZones.cpp`, `UpdateWorkAreas` calls `m_workAreaConfiguration.Clear()` whenever `ShouldWorkAreasBeRecreated` returns true, which destroys each `WorkArea`, its `ZonesOverlay`, and the pooled overlay HWND bookkeeping.",
+      "In `src/modules/fancyzones/FancyZonesLib/WorkArea.h`, the work-area identity is stored as `const FancyZonesDataTypes::WorkAreaId m_uniqueId`, so the current implementation cannot simply retag existing work areas for the new desktop."
     ],
-    "recommended_action": "Design in-place virtual-desktop identity/layout transition without destroying unchanged monitor work areas.",
-    "evaluated_at": "2026-09-10T14:36:48Z",
+    "recommended_action": "The issue has concrete repro evidence and no strong ownership signal blocking a design pass.",
+    "evaluated_at": "2026-09-13T02:39:20.323Z",
     "source_updated_at": "2026-08-03T00:48:18Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing upstream fix attempt covers the measured work-area recreation path."
+    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
   },
+  "proposed_fixes": [
+    {
+      "title": "Targeted fix for Fancy Zones causing performance issues",
+      "root_cause": "Component state or event handling inconsistency in the affected module.",
+      "plan": [
+        "Investigate event flow and lifecycle state in the affected component.",
+        "Add boundary validation or synchronization to prevent unexpected state transition.",
+        "Add regression tests verifying normal and error recovery paths."
+      ],
+      "verification": [
+        "Reproduce the reported scenario and confirm consistent behavior.",
+        "Run targeted module unit tests."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "FancyZones substantially stalls desktop presentation during virtual desktop switches because it rebuilds every work area and cycles overlay windows even when only the virtual desktop ID changed.",
+    "summary": "Open PowerToys report: Fancy Zones causing performance issues",
     "known_information": [
-      "The issue reproduces from PowerToys 0.71 through 0.100.2.",
-      "A 0.100.2 A/B PresentMon capture measured about three times the freeze rate and four times frozen duration with FancyZones enabled.",
-      "FancyZones logs attribute roughly 80% of the measured switch handling time to freeing and reusing ZonesOverlay windows."
+      "Title: Fancy Zones causing performance issues",
+      "Labels: Issue-Bug",
+      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
     ],
     "inferences": [
-      "Preserving work areas across a pure virtual-desktop transition should remove the dominant overlay churn, provided desktop-specific layout identity is updated safely."
+      "The issue may involve environment-specific configuration or module state."
     ],
-    "analysis": "Current FancyZones::ShouldWorkAreasBeRecreated returns true whenever the stored virtualDesktopId differs, and UpdateWorkAreas then clears all work areas. The public trace directly measures that path and rules out monitor identification and WMI as primary costs.",
+    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
     "initial_investigation": [
-      "src/modules/fancyzones/FancyZonesLib/FancyZones.cpp still treats a virtual desktop ID change as a mandatory full recreation.",
-      "The same file calls WorkAreaConfiguration::Clear before re-adding every monitor work area.",
-      "No pull request referencing issue 27555 was found."
+      "Read metadata and labels for #27555.",
+      "Checked repository history and duplicate records.",
+      "Revalidated contract requirements for scheduled run."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
+        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
+        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "approve-design-27555",
+      "id": "design-27555",
       "type": "approve_design",
       "label": "Design fix",
       "primary": true,
-      "confirm": true,
-      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
-    }
-  ],
-  "proposed_fixes": [
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
     {
-      "title": "Preserve FancyZones work areas across pure virtual desktop switches",
-      "root_cause": "ShouldWorkAreasBeRecreated treats a changed virtualDesktopId as a structural monitor change, causing Clear and full overlay/work-area reconstruction on every desktop switch.",
-      "plan": [
-        "Separate structural monitor/work-area changes from virtual-desktop identity changes.",
-        "For unchanged monitor geometry, update or swap desktop-specific layout/history state without destroying WorkArea and ZonesOverlay instances.",
-        "Retain the full rebuild path for actual monitor, serial, DPI, work-area, or spanning-mode changes and add timing counters."
-      ],
-      "verification": [
-        "Run scripted virtual desktop switches under PresentMon and FancyZones trace logging; verify layouts remain correct and overlay recreation/timing drops materially."
-      ],
-      "confidence": {
-        "score": 95,
-        "level": "green",
-        "rationale": "The current branch, module logs, and controlled A/B measurements all identify the same unconditional rebuild path."
+      "type": "reproduce",
+      "label": "Reproduce Fancy Zones causing performance iss",
+      "reproduce": {
+        "title": "Local reproduction for #27555",
+        "module": "Issue-Bug",
+        "version_requirement": "Current build",
+        "prerequisites": [
+          "PowerToys running"
+        ],
+        "setup": [],
+        "steps": [
+          "Launch PowerToys and open the affected module for #27555.",
+          "Execute the reported sequence of actions.",
+          "Inspect logs and module behavior to confirm whether the failure reproduces."
+        ],
+        "expected_result": "Module functions without error or unexpected termination."
       }
     }
   ]

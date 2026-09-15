@@ -1,33 +1,115 @@
 {
+  "schemaVersion": 5,
   "number": 49176,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+  "generated_at": "2026-09-13T07:15:33.04657Z",
+  "evaluated_at": "2026-09-13T07:15:33.046Z",
   "source_updated_at": "2026-07-07T11:07:58Z",
   "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+    "glyph": "▶",
+    "label": "Reproduce and verify",
+    "detail": "The report supplies a concrete two-PC Excel clipboard sequence and a diagnostic ZIP, but no linked fix or confirmed failing code path."
   },
   "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
+    "glyph": "▶",
+    "label": "Reproduce cross-PC Excel clipboard behavior",
+    "reason": "Confirm whether Mouse Without Borders changes the clipboard format preference and whether the effect persists after the transfer."
   },
-  "actions": [],
-  "confidence": "High",
+  "actions": [
+    {
+      "id": "approve-design-49176",
+      "type": "approve_design",
+      "label": "Design clipboard-format fix",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Approve a focused fork-side investigation after reproducing the clipboard format transition."
+    },
+    {
+      "id": "reproduce-49176",
+      "type": "reproduce",
+      "label": "Reproduce Excel cell clipboard conversion",
+      "primary": true,
+      "reproduce": {
+        "title": "Reproduce spreadsheet cells becoming pictures",
+        "module": "Mouse Without Borders",
+        "version_requirement": "PowerToys 0.100.2 or a current build",
+        "prerequisites": [
+          "Two PCs connected through Mouse Without Borders.",
+          "Excel or WPS Spreadsheet installed on both PCs."
+        ],
+        "steps": [
+          "Open workbooks on both PCs and copy a cell range from PC 1 to PC 2.",
+          "Paste on PC 2, then copy and paste cells within the same sheet, another sheet, and another workbook.",
+          "Repeat in the opposite direction and record whether any paste inserts an image instead of editable cells.",
+          "During reproduction, inspect the available clipboard formats before and after the cross-PC transfer."
+        ],
+        "expected_result": "Spreadsheet cell ranges paste as editable cells across PCs and continue to paste as editable cells locally."
+      }
+    }
+  ],
+  "confidence": {
+    "score": 62,
+    "level": "yellow",
+    "rationale": "The sequence and environments are specific, but the responsible clipboard-format transition is not yet confirmed."
+  },
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "reproducible",
+    "rationale": "The issue gives concrete Windows versions, Office applications, two-PC setup, numbered steps, and a public diagnostic attachment. That is enough for maintainer-side reproduction, but not enough to claim a root cause.",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "PowerToys 0.100.2 on Windows 10 22H2 and Windows 11 25H2 with Mouse Without Borders.",
+      "Copying spreadsheet cells between the connected PCs is followed by cells pasting as pictures, including later same-PC paste operations.",
+      "The issue includes a public MouseWithoutBorders.zip diagnostic attachment.",
+      "No comments, assignee, closing PR, or other concrete linked fix is present."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
+    "recommended_action": "Reproduce with Excel or WPS on two connected PCs and inspect the clipboard formats before and after the cross-PC transfer.",
+    "evaluated_at": "2026-09-13T07:15:33.046Z",
     "source_updated_at": "2026-07-07T11:07:58Z"
-  }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys clipboard-transfer change may be applicable, but the failing format-selection boundary must be confirmed before implementation."
+  },
+  "issue_context": {
+    "summary": "After copying spreadsheet cells between two Mouse Without Borders-connected PCs, later pastes can insert pictures instead of editable cells, even within the same workbook.",
+    "known_information": [
+      "Upstream title: MWB: Copy&PasteBetweenExcelCellsBecomePictures.",
+      "Live labels: Issue-Bug, Needs-Triage, Product-Mouse Without Borders.",
+      "The report was last updated at 2026-07-07T11:07:58Z and has 0 public comment(s).",
+      "Reported facts: ### Microsoft PowerToys version 0.100.2 ### Installation method Microsoft Store ### Area(s) with issue? Mouse Without Borders ### Steps to reproduce 1. Connect PC 1 and PC 2 via Mouse Without Borders. 2. Open Microsoft Excel or WPS Excel on both PC 1 and PC 2. 3. Copy cells in xlsx files between PC 1 and PC 2. 4. On either PC, Copy cells within a worksheet or between worksheets or between workbooks. ### ✔️ Expected B"
+    ],
+    "inferences": [
+      "Mouse Without Borders may leave a rendered image format preferred on the clipboard after cross-PC synchronization; this is not confirmed."
+    ],
+    "analysis": "The report is sufficiently specific for a controlled two-machine reproduction. Maintainer-side clipboard-format inspection is the discriminating next step; requesting more reporter evidence would duplicate the supplied steps and diagnostics.",
+    "initial_investigation": [
+      "Read the complete live body, labels, assignees, comments, closing references, and public diagnostic link.",
+      "Confirmed there are no comments, assignees, closing pull requests, or other linked implementation attempts."
+    ],
+    "information_gaps": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve spreadsheet cell clipboard formats across Mouse Without Borders transfer",
+      "root_cause": "Mouse Without Borders may restore or prioritize a rendered image clipboard format after a cross-PC spreadsheet transfer instead of preserving the native spreadsheet formats; this is an unconfirmed hypothesis.",
+      "plan": [
+        "Reproduce the two-PC Excel/WPS sequence and enumerate clipboard formats before transfer, after remote paste, and during the later local paste.",
+        "Trace the Mouse Without Borders clipboard serialization and restoration path only after the format change is observed.",
+        "Adjust format ordering or restoration lifetime at the confirmed boundary and add a focused regression check for native spreadsheet cell paste."
+      ],
+      "verification": [
+        "Repeat the reported cross-PC and subsequent same-PC paste sequence in Excel and WPS and verify cells remain editable cells rather than images.",
+        "Verify ordinary text, image, and file clipboard transfers still behave correctly."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The symptom strongly implicates clipboard format selection after MWB transfer, but reproduction is needed to identify the exact boundary."
+      }
+    }
+  ]
 }

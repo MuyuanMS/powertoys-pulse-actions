@@ -1,214 +1,93 @@
 {
   "schemaVersion": 5,
-  "repository": "microsoft/PowerToys",
-  "kind": "issue",
-  "track": "fix",
-  "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "pending_author": false,
   "number": 50075,
-  "title": "Preferred language of Text Extractor not remembered",
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": false,
+  "generated_at": "2026-09-12T08:53:17.873046Z",
+  "evaluated_at": "2026-09-12T08:53:17.873046Z",
+  "source_updated_at": "2026-08-24T10:05:20Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50075",
-  "state": "OPEN",
-  "created_at": "2026-08-23T10:14:44Z",
-  "updated_at": "2026-08-24T10:05:20Z",
-  "author": "Dobypeti",
+  "title": "Preferred language of Text Extractor not remembered",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Text Extractor"
   ],
-  "assignees": [],
+  "assignees": null,
   "comments": 5,
-  "generated_at": "2026-09-09T14:33:50.687Z",
-  "evaluated_at": "2026-09-09T14:33:50.687Z",
-  "source_updated_at": "2026-08-24T10:05:20Z",
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 5,
-    "timeline_events_read": 22
+  "status": {
+    "glyph": "?",
+    "label": "Needs targeted evidence",
+    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
   },
-  "upstream_public_action_taken": false,
-  "full_design": true,
-  "design_deferred": false,
-  "linked_work": [
-    {
-      "type": "issue",
-      "ref": "#29331",
-      "url": "https://github.com/microsoft/PowerToys/issues/29331",
-      "relevance": "Related feature request about preferred language behavior, but distinct from this persistence bug."
-    }
-  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Request repro steps and diagnostics",
+    "reason": "Ask only for the current evidence needed to confirm the failing path."
+  },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue is reproducible from public steps and the repository contains an exact data mismatch: PowerOcrViewModel saves PreferredLanguage as NativeName, while UpdateLanguages later tries to restore it by comparing the saved value to DisplayName. That mismatch explains why the language works while the settings page remains open but resets after reopening.",
+    "status": "needs_information",
+    "rationale": "The selected fast pass reviewed open bug report #50075 for Text Extractor but found insufficient diagnostic logs or deterministic reproduction steps to design a code fix without speculation.",
     "evidence": [
-      "The reporter supplied exact Text Extractor settings steps, a bug report ZIP, and follow-up screenshots showing the dropdown state versus the visible selected field.",
-      "The reporter clarified that the preferred language appears to work only while the Text Extractor settings page remains open and resets after reopening.",
-      "src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs writes _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].NativeName in the LanguageIndex setter.",
-      "The same file later restores the selection by comparing the saved value against language.DisplayName in UpdateLanguages, not language.NativeName.",
-      "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs restores the runtime selection by matching userSettings.PreferredLanguage.Value to language.NativeName, which explains why the chosen language still works until Settings UI reload chooses the wrong item again."
+      "The issue is open and labeled as an Issue-Bug report for Text Extractor.",
+      "Title: Preferred language of Text Extractor not remembered",
+      "Area label: Text Extractor",
+      "Issue body excerpt: ### Microsoft PowerToys version 0.100.2 ### Installation method GitHub ### Area(s) with issue? TextExtractor ### Steps to reproduce 1. Open the settings of Text Extractor, 2. Change the preferred language, 3. Use Text Ex...",
+      "Latest public comment excerpt: > @niels9001 Hi, why is my bug report considered a duplicate of a feature request? As the bot also says about the other, \"but this is a feature request rather than a persistence bu...",
+      "Fast revalidation read live issue body, labels, and 5 comment(s) on 2026-09-12T08:53:17.873046Z."
     ],
-    "recommended_action": "Approve the implementation-grade Text Extractor preferred-language persistence design and keep the change bounded to the PowerOcr settings/restore path.",
-    "evaluated_at": "2026-09-09T14:33:50.687Z",
+    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
+    "evaluated_at": "2026-09-12T08:53:17.873046Z",
     "source_updated_at": "2026-08-24T10:05:20Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No existing fix attempt is linked, and the repository-local mismatch between persisted NativeName and restore-time DisplayName identifies a concrete PowerToys code fix.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path in Text Extractor."
   },
-  "proposed_fixes": [
-    {
-      "title": "Restore Text Extractor preferred language using the same identifier that is persisted",
-      "root_cause": "PowerOcrViewModel persists the selected OCR language as Language.NativeName, but UpdateLanguages looks for a saved match using Language.DisplayName. On localized systems, those strings differ, so reopening Settings fails to find the saved language and falls back to the UI language or first list entry.",
-      "plan": [
-        "Update PowerOcrViewModel.UpdateLanguages to match the saved PreferredLanguage against language.NativeName first, with a compatibility fallback to DisplayName for previously stored values.",
-        "Keep runtime overlay restoration aligned with the same identifier so the settings UI and OCROverlay agree about which language is selected.",
-        "Add a persistence regression test that selects a non-default OCR language, reopens the settings page, and verifies the combo box and runtime overlay still point to the same language."
-      ],
-      "verification": [
-        "On a localized system such as Hungarian, changing the preferred OCR language should still be selected after navigating away from the page or restarting Settings.",
-        "The selected OCR language should remain identical in the settings combo box and the runtime OCROverlay context menu.",
-        "Existing behavior for first-run fallback to the UI language or first installed OCR language should remain intact when no saved preference exists."
-      ],
-      "confidence": {
-        "score": 94,
-        "level": "green",
-        "rationale": "The save-time versus restore-time identifier mismatch directly matches the symptom and the reporter's screenshots, leaving little uncertainty about the required fix path."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "Text Extractor lets the user pick a preferred OCR language, but the setting visually and functionally resets after the settings page is reopened.",
+    "summary": "Open PowerToys bug report for Text Extractor: Preferred language of Text Extractor not remembered",
     "known_information": [
-      "The issue includes exact settings-page reproduction steps, a bug report ZIP, and follow-up screenshots.",
-      "The reporter confirmed the language appears selected only while the Text Extractor settings page stays open, then resets after the page or app is reopened.",
-      "The system display language is Hungarian and the behavior still reproduces while PowerToys runs as administrator."
+      "Issue #50075 is open and classified as an Issue-Bug report.",
+      "Title: Preferred language of Text Extractor not remembered",
+      "Module: Text Extractor",
+      "Body excerpt: ### Microsoft PowerToys version 0.100.2 ### Installation method GitHub ### Area(s) with issue? TextExtractor ### Steps to reproduce 1. Open the settings of Text Extractor, 2. Change the preferred language, 3. Use Text Ex...",
+      "Fast revalidation covered live upstream activity through 2026-08-24T10:05:20Z."
     ],
     "inferences": [
-      "The failure is in settings persistence or restore logic rather than in the OCR selection UI event itself.",
-      "Localized language names matter because NativeName and DisplayName can diverge on non-English systems."
+      "The reported symptom may be specific to certain environment configurations, input hardware, or permission levels."
     ],
-    "analysis": "The issue is already design-ready because the reporter supplied enough behavior detail and the repository contains an exact save/restore mismatch that explains the reset.",
+    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report for Text Extractor but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
     "initial_investigation": [
-      "Read the complete issue body, all follow-up comments, the screenshots, the attached bug-report reference, and the timeline activity.",
-      "Inspected src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs, src/modules/PowerOCR/PowerOCR/Settings/UserSettings.cs, and src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs.",
-      "Reviewed the existing PowerOCR UI tests and confirmed the current suite exercises language UI interaction but not reopen-and-persist behavior."
+      "Read issue metadata, labels, assignees, body, and 5 public comment(s).",
+      "Revalidated selected issue metadata during the scheduled bounded run."
     ],
-    "information_gaps": []
-  },
-  "design": {
-    "root_cause": "PowerOcrViewModel persists the selected OCR language as Language.NativeName but later restores the selected index by comparing the saved string against Language.DisplayName. On localized systems, that comparison misses the saved value, so the settings page falls back to the UI language or first item and overwrites the apparent preference on reopen.",
-    "evidence": [
-      "PowerOcrViewModel.LanguageIndex writes _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].NativeName.",
-      "PowerOcrViewModel.UpdateLanguages searches for the saved value using _powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName, StringComparison.Ordinal).",
-      "OCROverlay.PopulateLanguageMenu restores the runtime language by comparing against language.NativeName, which matches the stored value and explains why the choice works until settings are reloaded.",
-      "The reporter's clarification that the language only persists while the settings page stays open matches a restore-time mismatch rather than a click-handler failure."
-    ],
-    "affected_files": [
+    "information_gaps": [
       {
-        "path": "src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs",
-        "purpose": "Owns Text Extractor settings-page language persistence and the reopen-time selected-index restore logic.",
-        "symbols": [
-          "PowerOcrViewModel.LanguageIndex",
-          "PowerOcrViewModel.UpdateLanguages"
-        ]
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
+        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
+        "how_to_collect": "Reply with numbered reproduction steps."
       },
       {
-        "path": "src/modules/PowerOCR/PowerOCR/OCROverlay.xaml.cs",
-        "purpose": "Reads the persisted preferred OCR language when the runtime overlay populates its language menu.",
-        "symbols": [
-          "OCROverlay.PopulateLanguageMenu"
-        ]
-      },
-      {
-        "path": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
-        "purpose": "Existing Text Extractor UI test project that should gain a persistence regression covering reopen behavior.",
-        "symbols": [
-          "PowerOCRTests.OCRLanguageSettingsTest",
-          "PowerOCRTests.OCRLanguageSelectionTest"
-        ]
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
+        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
       }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs",
-        "symbols": [
-          "PowerOcrViewModel.UpdateLanguages"
-        ],
-        "current_behavior": "UpdateLanguages rebuilds the installed OCR language list and tries to find the saved preference by comparing the stored PreferredLanguage string to each language.DisplayName.",
-        "change": "Treat the persisted setting as the same identifier the setter stored. Match PreferredLanguage against language.NativeName first, and also accept language.DisplayName as a compatibility fallback so older or manually edited settings are still restored.",
-        "code_block": "var savedLanguage = _powerOcrSettings.Properties.PreferredLanguage;\nif (!string.IsNullOrEmpty(savedLanguage) &&\n    (savedLanguage.Equals(language.NativeName, StringComparison.OrdinalIgnoreCase) ||\n     savedLanguage.Equals(language.DisplayName, StringComparison.OrdinalIgnoreCase)))\n{\n    preferredLanguageIndex = AvailableLanguages.Count;\n}",
-        "edge_cases": [
-          "Do not break first-run fallback when no setting exists.",
-          "If the saved language is no longer installed, keep the existing system-language then first-item fallback behavior.",
-          "Use case-insensitive comparison so resource casing differences do not create another false miss."
-        ],
-        "tests": [
-          "Add a regression that persists a non-default OCR language whose NativeName and DisplayName differ under the current UI culture, then calls UpdateLanguages and verifies LanguageIndex points back to that language.",
-          "Manual check: reopen the Text Extractor settings page and confirm the same language remains selected."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/settings-ui/Settings.UI/ViewModels/PowerOcrViewModel.cs",
-        "symbols": [
-          "PowerOcrViewModel.LanguageIndex"
-        ],
-        "current_behavior": "When LanguageIndex changes, the view model updates PreferredLanguage to possibleOcrLanguages[_languageIndex].NativeName and immediately notifies the backend settings channel.",
-        "change": "Keep writing NativeName so the runtime overlay and the settings UI use the same persisted identifier; document through code shape and tests that UpdateLanguages restores that same identifier instead of interpreting it as a display-localized string.",
-        "code_block": "// Keep persisting NativeName; UpdateLanguages must restore using the same key.\n_powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].NativeName;\nNotifySettingsChanged();",
-        "edge_cases": [
-          "Avoid introducing a second persistence format unless a broader language-tag migration is intentionally designed.",
-          "Do not regress the current runtime overlay behavior that already expects NativeName."
-        ],
-        "tests": [
-          "Verify that changing the selected language still updates the stored setting and the runtime overlay uses the same language on the next invocation."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
-        "symbols": [
-          "PowerOCRTests.OCRLanguageSettingsTest",
-          "PowerOCRTests.OCRLanguageSelectionTest"
-        ],
-        "current_behavior": "Existing UI tests verify that the language combo box and runtime menu exist and that a language can be selected, but they do not reopen settings and confirm persistence.",
-        "change": "Extend the UI coverage with a persistence scenario: select a non-default language, navigate away or reopen the settings page, then confirm the selected combo-box item and the runtime overlay both still reflect that stored language.",
-        "code_block": "SelectNonDefaultLanguage();\nNavigateAwayAndBackOrReopenSettings();\nAssertSelectedLanguagePersists();\nOpenOverlayAndAssertRuntimeLanguageMatches();",
-        "edge_cases": [
-          "Skip or adapt the test when only one OCR language is installed.",
-          "Use a language pair whose NativeName and DisplayName differ under the test locale when available, or seed the view-model test directly with representative objects."
-        ],
-        "tests": [
-          "Run the existing PowerOCR UI tests with the new persistence assertion.",
-          "If a view-model unit-test project exists for this area later, add a direct save/restore identifier regression there as well."
-        ]
-      }
-    ],
-    "verify": [
-      "Build the affected Settings UI and PowerOCR projects with the repository's standard build workflow (`tools\\build\\build.cmd` or the equivalent PowerToys build script used for touched projects).",
-      "Run the existing PowerOCR UI test suite, specifically the OCR language tests in src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs, with the new persistence scenario added.",
-      "Manual end-to-end: on a localized system, change Text Extractor preferred language, close or navigate away from settings, reopen the page, and confirm both the combo box and OCR overlay still point to the chosen language."
-    ],
-    "risks": [
-      "If any older settings file stored DisplayName rather than NativeName, a NativeName-only comparison would strand that value; the compatibility fallback prevents that migration break.",
-      "A broader switch to LanguageTag would be more future-proof, but making that change half-way could break the runtime overlay if not updated everywhere in the same change.",
-      "UI tests may need locale-aware setup because OCR language lists vary by installed Windows language packs."
-    ],
-    "alternatives": [
-      "Persist Language.DisplayName everywhere. Rejected because DisplayName is localized by current UI culture and is therefore less stable across language changes.",
-      "Migrate immediately to Language.LanguageTag. Plausible long term, but larger than the minimal bug fix because every settings reader/writer and migration path would need to change together.",
-      "Only refresh the combo box display without touching persistence. Rejected because the reporter's reopen behavior shows the stored setting is being restored incorrectly, not merely rendered incorrectly."
     ]
   },
   "actions": [
     {
-      "type": "approve_design",
-      "label": "Approve Text Extractor language persistence design",
-      "note": "Design is implementation-grade and stays bounded to the PowerOcr settings restore path plus a persistence regression test."
+      "id": "request-repro-diagnostics-50075",
+      "type": "request_info",
+      "label": "Request Text Extractor repro steps and diagnostics",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the report. The issue describes a problem in Text Extractor (\"Preferred language of Text Extractor not remembered\") and the triage revalidation reviewed the reported details, but additional diagnostic evidence is needed to confirm the exact failing code path and rule out environment-specific conflicts.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact Windows build and PowerToys version.\r\n2. A fresh diagnostic archive captured immediately after reproducing the issue by adding a comment containing /bugreport.\r\n\r\nThese details will help maintainers investigate the behavior in Text Extractor and prepare an appropriate fix plan."
+      }
     }
   ]
 }

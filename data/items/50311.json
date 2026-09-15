@@ -1,87 +1,201 @@
 {
-  "schemaVersion": 5,
   "number": 50311,
   "kind": "issue",
-  "track": "fix",
+  "track": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "GISer-Qiu",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report is too sparse to prove the failing activation layer, but repository inspection identifies a plausible shortcut-to-overlay path and a concrete low-confidence fix direction.",
+    "recommended_action": "Request activation details and a fresh diagnostic while investigating the shortcut parsing/registration and overlay process handoff.",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-09-02T03:40:59Z",
+    "evidence": [
+      "The report names TextExtractor, PowerToys 0.101.2362, Windows NT 10.0.26200.0, a per-user non-elevated installation, and zh-Hans-HK locale.",
+      "The reproduction and expected behavior fields contain only 无; there is no observed behavior, configured shortcut, comment, attachment, or diagnostic.",
+      "PowerOCRModuleInterface parses the activation hotkey and starts PowerToys.PowerOCR.exe; KeyboardMonitor compares pressed keys and launches overlays.",
+      "No assignee, duplicate, linked PR, or maintainer diagnosis is present.",
+      "On 2026-09-12, the complete live body, all 0 public comment(s), labels, assignees, and link timeline were re-read through 2026-09-02T03:40:59Z."
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt is linked and a repository code change may apply, but the missing shortcut and symptom details make the root cause unconfirmed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Text Extractor shortcut registration and overlay launch robust to configured-key state",
+      "root_cause": "Hypothesis: the configured activation shortcut is not being recognized or the PowerOCR process is not launched/signaled for this user, possibly due to settings parsing, global-hook key naming, or a startup failure. The issue does not identify which branch fails.",
+      "plan": [
+        "Capture the configured shortcut and exact visible response, then inspect logs for hotkey registration, PowerToys.PowerOCR.exe launch, and overlay activation.",
+        "Compare the stored activation shortcut produced by PowerOCRModuleInterface::parse_hotkey with KeyboardMonitor.SetActivationKeys and the key names returned by Helper.GetKeyName.",
+        "Fix only the confirmed mismatch or process/event failure; preserve custom shortcuts, modifier ordering, per-user install behavior, and the single PowerOCR instance contract.",
+        "Add focused tests for shortcut parsing/key normalization and an activation smoke test for the overlay process."
+      ],
+      "verification": [
+        "Configure the reported shortcut, trigger it while Text Extractor is enabled, and verify the selection overlay appears.",
+        "Test the default and one custom shortcut, including modifier order and release/retrigger.",
+        "Verify a launch failure is logged and surfaced rather than silently returning."
+      ],
+      "confidence": {
+        "score": 31,
+        "level": "red",
+        "rationale": "The relevant symbols are identified, but the issue supplies no actual symptom beyond the title and no configured shortcut."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Text Extractor shortcut problem is reported in Chinese, but the issue provides no configured shortcut, observed response, activation comparison, or diagnostic.",
+    "known_information": [
+      "The affected feature is TextExtractor on PowerToys 0.101.2362.",
+      "The environment is Windows NT 10.0.26200.0, .NET 10.0.11, per-user, non-elevated, stable channel, zh-Hans-HK.",
+      "The issue has no comments, attachments, assignee, or linked remediation."
+    ],
+    "inferences": [
+      "Possible failure layers include shortcut configuration/parsing, global keyboard-hook recognition, PowerToys.PowerOCR.exe startup, or overlay invocation.",
+      "Locale may be incidental; no evidence currently ties it to OCR startup."
+    ],
+    "analysis": "The source gives a specific, testable activation chain, so a low-confidence design is more useful than a generic log request. Exact user evidence is still required before selecting a code branch.",
+    "initial_investigation": [
+      "Reviewed the complete live issue body and the absence of discussion or linked work.",
+      "Inspected PowerOCRModuleInterface::parse_hotkey, enable, on_hotkey, and launch_process.",
+      "Inspected PowerOCR.Keyboard.KeyboardMonitor.SetActivationKeys and Hook_KeyboardPressed.",
+      "Reviewed existing PowerOCR UI test coverage for hotkey activation.",
+      "Revalidated the live body, all 0 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-09-02T03:40:59Z."
+    ],
+    "information_gaps": [
+      {
+        "information": "Configured Text Extractor shortcut and exact response when pressed.",
+        "why_needed": "Distinguishes key parsing/registration from process or overlay startup.",
+        "how_to_collect": "Provide a screenshot of the shortcut setting and describe any notification, cursor change, overlay, or complete lack of response.",
+        "evidence_type": "keyboard_layout"
+      },
+      {
+        "information": "Whether Text Extractor can be started from Settings or another activation surface.",
+        "why_needed": "Separates the global shortcut path from PowerOCR process/overlay failure.",
+        "how_to_collect": "Enable Text Extractor and try its available Settings/manual activation path on the same machine.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Fresh diagnostics captured immediately after reproducing.",
+        "why_needed": "Logs can distinguish shortcut conflicts, process launch errors, and overlay startup exceptions.",
+        "how_to_collect": "Immediately after reproducing, comment /bugreport and attach the generated ZIP.",
+        "evidence_type": "bugreport_zip"
+      }
+    ]
+  },
+  "design": {
+    "root_cause": "Unconfirmed. The leading hypothesis is a mismatch or failure in the configured shortcut-to-PowerOCR overlay activation chain; no evidence identifies whether the failure occurs before on_hotkey, in launch_process, or after the invoke event.",
+    "evidence": [
+      "[Observed] The issue contains no reproduction or actual behavior beyond the title.",
+      "[Observed] PowerOCRModuleInterface parses a stored activation shortcut, exposes it to the runner, launches PowerToys.PowerOCR.exe, and signals an invoke event.",
+      "[Observed] KeyboardMonitor independently normalizes configured key names and launches overlays from a global keyboard hook.",
+      "[Inferred] Comparing these two activation paths is the narrowest useful investigation boundary."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/PowerOCR/PowerOCRModuleInterface/dllmain.cpp",
+        "purpose": "Parses the configured shortcut, exposes it to the runner, starts PowerOCR, and handles hotkey events.",
+        "symbols": [
+          "PowerOCR::parse_hotkey",
+          "PowerOCR::launch_process",
+          "PowerOCR::on_hotkey",
+          "PowerOCR::get_hotkeys"
+        ]
+      },
+      {
+        "path": "src/modules/PowerOCR/PowerOCR/Keyboard/KeyboardMonitor.cs",
+        "purpose": "Recognizes configured global key combinations and launches OCR overlays.",
+        "symbols": [
+          "KeyboardMonitor.SetActivationKeys",
+          "KeyboardMonitor.Hook_KeyboardPressed"
+        ]
+      },
+      {
+        "path": "src/modules/PowerOCR/PowerOCR-UITests/PowerOCRTests.cs",
+        "purpose": "Provides existing UI activation coverage.",
+        "symbols": [
+          "PowerOCRTests hotkey activation tests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/PowerOCR/PowerOCRModuleInterface/dllmain.cpp; src/modules/PowerOCR/PowerOCR/Keyboard/KeyboardMonitor.cs",
+        "symbols": [
+          "PowerOCR::parse_hotkey",
+          "PowerOCR::on_hotkey",
+          "PowerOCR::launch_process",
+          "KeyboardMonitor.SetActivationKeys",
+          "KeyboardMonitor.Hook_KeyboardPressed"
+        ],
+        "current_behavior": "The native module parses shortcut JSON and exposes a Hotkey to the runner; the managed process independently splits and sorts setting key names, then launches the overlay on a matching global-hook sequence.",
+        "change": "Use the captured shortcut and logs to correct the confirmed normalization, registration, process, or event mismatch. Keep one canonical representation or an explicit conversion boundary and log failed process startup.",
+        "code_block": "stored shortcut -> native Hotkey -> runner on_hotkey -> PowerOCR process/event\\nstored shortcut -> KeyboardMonitor normalized keys -> global hook -> overlay\\nconfirmed mismatch: normalize once at boundary; confirmed launch failure: return/log explicit failure",
+        "edge_cases": [
+          "Custom modifier combinations and key-name casing must remain supported.",
+          "Do not trigger repeatedly while keys are held.",
+          "Preserve per-user process lifetime and the single-instance mutex.",
+          "Do not swallow unrelated keyboard input when activation does not match."
+        ],
+        "tests": [
+          "Unit-test parsing/normalization for default and custom shortcuts.",
+          "Extend existing PowerOCR UI activation coverage for a retrigger and process-start failure where feasible.",
+          "Manually test zh-Hans-HK and an English locale only if locale-specific evidence emerges."
+        ]
+      }
+    ],
+    "verify": [
+      "Capture the configured shortcut and reproduce with Text Extractor enabled.",
+      "Run the existing PowerOCR targeted test project or the narrowest discovered module test command.",
+      "Confirm default/custom shortcut activation opens the selection overlay and that failures produce diagnostic logs."
+    ],
+    "risks": [
+      "Changing global-hook matching can affect all Text Extractor shortcut configurations.",
+      "Changing process/event lifetime can leave a stale PowerOCR instance or break disable/re-enable behavior."
+    ],
+    "alternatives": [
+      "Change the default shortcut; rejected because the configured shortcut is unknown and the default may not be the failing case.",
+      "Request only a bug report; rejected as the sole outcome because the activation chain and existing tests provide a concrete low-confidence direction.",
+      "Assume locale is causal; rejected because no locale-specific evidence is present."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-50311",
+      "type": "approve_design",
+      "label": "Approve Text Extractor activation design",
+      "design": {
+        "title": "Make Text Extractor shortcut activation observable and robust"
+      }
+    },
+    {
+      "id": "request-info-50311",
+      "type": "request_info",
+      "label": "Request Text Extractor activation evidence",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50311,
+        "body": "Thanks for reporting the Text Extractor shortcut problem on PowerToys 0.101.2362. The report identifies the environment but does not yet separate shortcut registration from PowerOCR process or overlay startup. Please provide:\n\n- **Shortcut and response:** Please share a screenshot of the configured Text Extractor shortcut and describe exactly what happens when you press it, including no response, a notification, cursor change, or selection overlay. This distinguishes key parsing or registration from later activation stages.\n- **Alternate activation result:** Please confirm whether Text Extractor can be started from Settings or another available activation surface on the same machine. This separates the global-shortcut path from PowerOCR process or overlay failure.\n- **Fresh PowerToys report:** Immediately after reproducing, add a comment containing `/bugreport` and attach the generated ZIP. This provides the logs needed to distinguish shortcut conflicts, process launch errors, and overlay startup exceptions."
+      },
+      "note": "Draft only; no upstream comment is posted."
+    }
+  ],
+  "schemaVersion": 5,
+  "stage": "awaiting_design_approval",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-09-02T03:40:59Z",
   "title": "我无法通过快捷键使用文本提取器",
   "url": "https://github.com/microsoft/PowerToys/issues/50311",
-  "generated_at": "2026-09-09T10:33:13.5242917Z",
-  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
-  "source_updated_at": "2026-09-02T03:40:59Z",
-  "summary": "The Text Extractor shortcut is reported as unusable, but the issue does not yet say which shortcut is configured or what failure mode occurs when it is pressed.",
-  "next_action": "Request the exact shortcut, observable result, and a fresh bug report after reproducing the hotkey failure.",
-  "confidence": {
-    "score": 38,
-    "level": "red",
-    "rationale": "The report is too sparse to distinguish a disabled/conflicting hotkey from a failure starting the OCR overlay process."
-  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "linked_work": [],
-  "comment_count": 0,
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The issue is missing the exact hotkey configuration and observable behavior needed to identify whether the problem is in shortcut handling or overlay launch.",
-    "evidence": [
-      "The body gives no reproduction steps and no actual-behavior description beyond “cannot use the shortcut.”",
-      "Text Extractor activates through get_hotkeys() and a separate OCR overlay process, so both hotkey and process-launch failures are plausible.",
-      "No bug report ZIP or screenshot is attached."
-    ],
-    "recommended_action": "Ask for the configured shortcut, exact observed result, and a fresh bug report captured immediately after reproducing."
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A code-fix path cannot be scoped until the team knows whether the shortcut never fires or whether the OCR overlay fails after launch.",
-    "existing_fix_urls": []
-  },
-  "issue_context": {
-    "summary": "The report says the Text Extractor hotkey cannot be used, but it currently lacks the minimum behavior detail needed for triage.",
-    "known_information": [
-      "The issue was filed against PowerToys 0.101.2362 on Windows 11 build 26200.",
-      "PowerToys is running as a non-elevated per-user install.",
-      "The report does not state whether the shortcut is the default or a custom binding."
-    ],
-    "inferences": [
-      "The problem could be a shortcut conflict, a disabled feature, or a failure launching the OCR overlay process after the hotkey is accepted.",
-      "The quickest discriminator is a precise description of what happens when the key is pressed, plus a fresh bug report."
-    ],
-    "analysis": "Text Extractor’s module interface and separate OCR process mean the team needs one clear branch point before starting code investigation: does the hotkey fire, and if so, what fails next?",
-    "initial_investigation": [
-      "Text Extractor exposes its activation key through get_hotkeys() in src/modules/PowerOCR/PowerOCRModuleInterface/dllmain.cpp.",
-      "The module launches PowerToys.PowerOCR.exe and signals it through shared events once the hotkey fires.",
-      "No linked work, assignee, or duplicate marker was found on the issue."
-    ],
-    "information_gaps": [
-      {
-        "evidence_type": "behavior_confirmation",
-        "information": "Whether the configured shortcut is the default Text Extractor shortcut or a custom shortcut, and whether PowerToys shows any shortcut conflict for it.",
-        "why_needed": "This distinguishes a bad binding or conflict from a runtime launch problem.",
-        "how_to_collect": "Please open Text Extractor settings and state the configured shortcut and whether PowerToys shows a conflict warning."
-      },
-      {
-        "evidence_type": "repro_steps",
-        "information": "Short numbered steps and the exact visible result when the shortcut is pressed.",
-        "why_needed": "The team needs to know whether nothing happens, the overlay flashes, or an error is shown.",
-        "how_to_collect": "Please provide 2-4 numbered steps and describe the exact result after pressing the shortcut."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing the shortcut failure.",
-        "why_needed": "The logs are needed to see whether the hotkey fired and whether the OCR process launched or failed.",
-        "how_to_collect": "Please reproduce the issue once more and then add a comment containing `/bugreport` immediately afterward."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "type": "request_info",
-      "label": "Confirm Text Extractor hotkey and diagnostics",
-      "comment": {
-        "body": "Thanks for reporting that the Text Extractor shortcut does not open.\n\n**Needed**\n1. Please confirm the exact shortcut configured for Text Extractor (default or custom) and whether PowerToys shows any shortcut-conflict warning for it.\n2. Please provide short numbered steps and the exact result when you press the shortcut (for example: nothing happens, a flash appears, an error dialog appears, etc.).\n3. Please reproduce the failure once more and then add a comment containing `/bugreport` immediately afterward.\n\nThis will distinguish a shortcut/binding problem from a failure launching the OCR overlay."
-      }
-    }
-  ]
+  "comments": 0
 }

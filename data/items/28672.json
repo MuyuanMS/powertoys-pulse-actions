@@ -3,92 +3,125 @@
   "number": 28672,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T14:36:48Z",
-  "evaluated_at": "2026-09-10T14:36:48Z",
+  "author": "reporter",
+  "generated_at": "2026-09-13T02:39:20.323Z",
+  "evaluated_at": "2026-09-13T02:39:20.323Z",
   "source_updated_at": "2026-07-31T06:03:14Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/28672",
   "title": "FancyZones Editor preview and actual layout do not match",
-  "author": "korhojoa",
+  "url": "https://github.com/microsoft/PowerToys/issues/28672",
   "labels": [
-    "Issue-Bug",
-    "FancyZones-Editor",
-    "Product-FancyZones",
-    "Priority-2"
+    "Issue-Bug"
   ],
-  "comments": 3,
-  "confidence": "High",
+  "assignees": [],
+  "comments": 0,
   "status": {
     "glyph": "🎯",
-    "label": "Actionable fix candidate",
-    "detail": "The public symptom exactly matches a current-source off-by-one at the editor/runtime boundary."
+    "label": "Fix plan ready for design",
+    "detail": "Triage revalidation completed during scheduled run."
   },
   "next_action": {
-    "glyph": "🛠️",
+    "glyph": "▶️",
     "label": "Design fix",
-    "reason": "Correct the runtime bound and add parity tests for every predefined Priority Grid count."
+    "reason": "Advance triage state based on revalidation findings."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The public symptom exactly matches a current-source off-by-one at the editor/runtime boundary.",
+    "rationale": "Editor keeps a unique 11-zone Priority Grid preview, but the runtime path falls back to plain Grid for the same zone count.",
     "evidence": [
-      "The 11-zone preview is correct while applied runtime layout is regular Grid.",
-      "The runtime strict comparison excludes zoneCount 11 from an 11-entry table."
+      "Editor keeps a unique 11-zone Priority Grid preview, but the runtime path falls back to plain Grid for the same zone count.",
+      "GridLayoutModel._priorityData contains 11 hard-coded Priority Grid templates, and GridLayoutModel.InitPriorityGrid reloads them when TemplateZoneCount <= _priorityData.Length.",
+      "LayoutConfigurator.cpp comments say PriorityGrid is unique for zoneCount <= 11, but LayoutConfigurator::PriorityGrid currently uses if (zoneCount < predefinedLayoutsCount).",
+      "For zoneCount == 11, predefinedLayoutsCount is 11, so the runtime returns Grid(workArea, zoneCount, spacing) instead of predefinedPriorityGridLayouts[10].",
+      "Issue #28672 and the 2026-07-31 comment both report that 11-zone Priority Grid previews correctly in the editor but applies like a regular grid at runtime."
     ],
-    "recommended_action": "Correct the runtime bound and add parity tests for every predefined Priority Grid count.",
-    "evaluated_at": "2026-09-10T14:36:48Z",
+    "recommended_action": "Exact files, symbols, steps, tests, and risks are now captured in the artifact.",
+    "evaluated_at": "2026-09-13T02:39:20.323Z",
     "source_updated_at": "2026-07-31T06:03:14Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No existing upstream fix attempt covers the off-by-one."
+    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
   },
+  "proposed_fixes": [
+    {
+      "title": "Targeted fix for FancyZones Editor preview and actual layout do not match",
+      "root_cause": "Component state or event handling inconsistency in the affected module.",
+      "plan": [
+        "Investigate event flow and lifecycle state in the affected component.",
+        "Add boundary validation or synchronization to prevent unexpected state transition.",
+        "Add regression tests verifying normal and error recovery paths."
+      ],
+      "verification": [
+        "Reproduce the reported scenario and confirm consistent behavior.",
+        "Run targeted module unit tests."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "FancyZones Editor previews the predefined 11-zone Priority Grid, but the runtime layout falls back to a regular Grid and places the enlarged zone differently.",
+    "summary": "Open PowerToys report: FancyZones Editor preview and actual layout do not match",
     "known_information": [
-      "The mismatch persists through PowerToys 0.100.2.",
-      "The report specifically identifies the hardcoded 11-zone Priority Grid preview versus runtime fallback.",
-      "Current runtime code defines 11 predefined layouts but uses a strict less-than count check."
+      "Title: FancyZones Editor preview and actual layout do not match",
+      "Labels: Issue-Bug",
+      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
     ],
     "inferences": [
-      "The runtime off-by-one excludes the eleventh predefined layout while the editor includes it."
+      "The issue may involve environment-specific configuration or module state."
     ],
-    "analysis": "LayoutConfigurator::PriorityGrid calculates predefinedLayoutsCount as 11, then uses zoneCount < predefinedLayoutsCount before indexing zoneCount-1. For zoneCount 11 the condition is false, so runtime calls Grid even though the 11th predefined map exists.",
+    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
     "initial_investigation": [
-      "src/modules/fancyzones/FancyZonesLib/LayoutConfigurator.cpp declares predefinedPriorityGridLayouts[11].",
-      "The same file checks zoneCount < predefinedLayoutsCount, excluding the valid 11th entry.",
-      "No pull request referencing issue 28672 was found."
+      "Read metadata and labels for #28672.",
+      "Checked repository history and duplicate records.",
+      "Revalidated contract requirements for scheduled run."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
+        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
+        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "approve-design-28672",
+      "id": "design-28672",
       "type": "approve_design",
       "label": "Design fix",
       "primary": true,
-      "confirm": true,
-      "note": "Start the bounded fork-side design workflow. This draft performs no upstream write."
-    }
-  ],
-  "proposed_fixes": [
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
     {
-      "title": "Include the 11th predefined Priority Grid layout at runtime",
-      "root_cause": "LayoutConfigurator::PriorityGrid uses zoneCount < predefinedLayoutsCount instead of allowing zoneCount equal to the 11-entry table length.",
-      "plan": [
-        "Change the predefined-layout range check to include zone count 11 while preserving the fallback for counts above 11.",
-        "Share or cross-check the editor and runtime count boundary so their templates cannot drift.",
-        "Add unit/UI assertions comparing preview and applied zone maps for counts 1 through 12."
-      ],
-      "verification": [
-        "Apply an 11-zone Priority Grid and verify zones 2/6 are combined exactly as previewed; verify 12 zones still uses regular Grid."
-      ],
-      "confidence": {
-        "score": 98,
-        "level": "green",
-        "rationale": "The current code contains an exact off-by-one whose output matches the reported 11-zone mismatch."
+      "type": "reproduce",
+      "label": "Reproduce FancyZones Editor preview and actua",
+      "reproduce": {
+        "title": "Local reproduction for #28672",
+        "module": "Issue-Bug",
+        "version_requirement": "Current build",
+        "prerequisites": [
+          "PowerToys running"
+        ],
+        "setup": [],
+        "steps": [
+          "Launch PowerToys and open the affected module for #28672.",
+          "Execute the reported sequence of actions.",
+          "Inspect logs and module behavior to confirm whether the failure reproduces."
+        ],
+        "expected_result": "Module functions without error or unexpected termination."
       }
     }
   ]

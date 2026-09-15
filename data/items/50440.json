@@ -1,135 +1,98 @@
 {
   "schemaVersion": 5,
-  "kind": "issue",
   "number": 50440,
-  "title": "The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)",
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": false,
+  "generated_at": "2026-09-11T15:08:39.7870394Z",
+  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
+  "source_updated_at": "2026-09-11T11:04:13Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50440",
-  "generated_at": "2026-09-09T10:28:38.042Z",
-  "evaluated_at": "2026-09-09T10:28:38.042Z",
-  "source_updated_at": "2026-09-08T14:31:55Z",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The report is reproducible enough to justify a focused persistence/startup investigation, but the supplied diagnostic analysis found no exception signature and does not distinguish settings write loss from module startup reconciliation.",
-    "recommended_action": "Collect one targeted reproduction with before/after general settings evidence, then validate the LightSwitch state transition through settings persistence and Runner startup.",
-    "evidence": [
-      {
-        "fact": "The reporter says LightSwitch can turn itself off on stable 0.101.2362 without user action and supplied a diagnostic report.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50440"
-      },
-      {
-        "fact": "Automated analysis found no matching crash or error signature, so a silent state or initialization path remains possible rather than proven.",
-        "source": "https://github.com/microsoft/PowerToys/issues/50440#issuecomment-5571883843"
-      },
-      {
-        "fact": "The current code reads and writes GeneralSettingsConfig.Enabled.LightSwitch in the LightSwitch settings view model; Runner applies enabled module settings during startup.",
-        "source": "https://github.com/microsoft/PowerToys/tree/main/src/settings-ui/Settings.UI/ViewModels"
-      }
-    ]
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No complete fix is present. The most supportable next step is instrumentation and persistence validation around the existing LightSwitch setting flow."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Trace and harden LightSwitch enabled-state persistence",
-      "root_cause": "The symptom is consistent with an unconfirmed divergence between the persisted GeneralSettingsConfig.Enabled.LightSwitch value and the Runner/module state.",
-      "plan": [
-        "Add narrowly scoped diagnostic logging around LightSwitch enabled-state reads, writes, and Runner application, excluding private settings values beyond the boolean state.",
-        "Reproduce across a settings refresh, Runner restart, and update-adjacent startup to identify the first transition to false.",
-        "Fix the identified write or initialization path and preserve the existing explicit user-disable behavior."
-      ],
-      "verification": [
-        "Unit or integration coverage proves a true enabled value survives serialization, reload, and Runner startup.",
-        "A regression reproduction no longer disables LightSwitch without an explicit user action.",
-        "A clean startup still honors an intentionally disabled LightSwitch."
-      ],
-      "confidence": {
-        "score": 58,
-        "level": "yellow",
-        "rationale": "The code path is identifiable, but the supplied evidence does not yet identify the failing transition."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "LightSwitch is reported to become disabled spontaneously on a non-elevated per-user stable installation.",
-    "known_information": [
-      "Version 0.101.2362, GitHub installation, Windows build 26200, per-user and non-elevated.",
-      "The issue includes a diagnostic report and a subsequent author comment offering help.",
-      "No public code change or linked PR was identified as fixing this behavior.",
-      "The reporter clarified that the failure happens every few days rather than during upgrades."
-    ],
-    "inferences": [
-      "The missing error signature suggests a silent settings persistence or startup reconciliation path.",
-      "The exact transition may occur during a settings write, Runner restart, update, or module initialization."
-    ],
-    "analysis": "Compare the persisted enabled state before and after the observed disablement and trace whether the Runner or Settings UI writes the changed value.",
-    "initial_investigation": [
-      "src/settings-ui/Settings.UI/ViewModels/LightSwitchViewModel.cs",
-      "src/settings-ui/Settings.UI/SettingsXAML/Views/LightSwitchPage.xaml.cs",
-      "src/runner/settings_window.cpp",
-      "src/runner/main.cpp"
-    ],
-    "information_gaps": [
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh PowerToys diagnostic ZIP captured immediately after LightSwitch is found disabled again.",
-        "why_needed": "The next recurrence needs current logs around the exact moment the running module or settings state changed.",
-        "how_to_collect": "As soon as the feature is found disabled again, add a comment containing /bugreport before re-enabling it."
-      },
-      {
-        "evidence_type": "behavior_confirmation",
-        "information": "Whether PowerToys restarted, updated, resumed from sleep, or was simply running normally between the last known-good and disabled states.",
-        "why_needed": "This separates a write/persistence problem from a startup or resume application problem.",
-        "how_to_collect": "Reply with the approximate time the setting last worked and whether restart, update, sleep/resume, or sign-in occurred before it turned off."
-      },
-      {
-        "evidence_type": "configuration_export",
-        "information": "Whether the persisted LightSwitch enabled value itself changed to false when the bug occurred.",
-        "why_needed": "This distinguishes a bad saved state from a live-state divergence.",
-        "how_to_collect": "If safe to inspect locally, compare the LightSwitch enabled value before re-enabling it and describe only whether it was true or false."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "type": "request_info",
-      "label": "Request LightSwitch disablement trace",
-      "comment": {
-        "body": "Thanks for confirming that this happens every few days and not only during upgrades. The remaining question is whether LightSwitch is actually being saved as disabled, or whether the running module is only interpreting it as disabled after a restart or resume path.\n\n**Needed**\n1. Please add a comment containing `/bugreport` immediately after you notice LightSwitch turned off, before you re-enable it.\n2. Please include the approximate time of the event and confirm whether PowerToys had restarted, updated, resumed from sleep, or had simply been running normally since the last known-good state.\n3. If it is safe to inspect locally, please confirm whether the saved LightSwitch enabled value itself had become `false` before you turned it back on.\n\nThis will distinguish a bad persisted setting from a startup or resume path that is reading the saved state incorrectly."
-      }
-    },
-    {
-      "type": "approve_design",
-      "label": "Approve LightSwitch persistence investigation design",
-      "note": "Keeps the proposed fix bounded to the GeneralSettings/Runner enabled-state path."
-    }
-  ],
-  "repository": "microsoft/PowerToys",
-  "track": "fix",
-  "state": "OPEN",
-  "created_at": "2026-09-07T13:58:22Z",
-  "updated_at": "2026-09-08T14:31:55Z",
-  "author": "FrankLiWright",
+  "title": "The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-LightSwitch"
   ],
-  "assignees": [],
-  "comments": 5,
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 5,
-    "timeline_events_read": 14
+  "assignees": null,
+  "comments": 6,
+  "status": {
+    "glyph": "?",
+    "label": "Needs targeted evidence",
+    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
   },
-  "upstream_public_action_taken": false,
-  "design": null,
-  "full_design": false,
-  "design_deferred": true,
-  "confidence": {
-    "score": 58,
-    "level": "yellow",
-    "rationale": "The persistence/startup path is clear, but the public evidence still does not identify whether the false state is written or only observed later."
-  }
+  "next_action": {
+    "glyph": "?",
+    "label": "Request repro steps and diagnostics",
+    "reason": "Ask only for the current evidence needed to confirm the failing path."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The selected fast pass found an open bug report but not enough current public evidence to identify a specific PowerToys code fix without speculation.",
+    "evidence": [
+      "The issue is open and labeled as an Issue-Bug report.",
+      "Title: The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)",
+      "Area label: Product-LightSwitch",
+      "Issue body excerpt: ### Microsoft PowerToys version and release channel 0.101.2362 ### Installation method GitHub ### Area(s) with issue? Light Switch, General ### Steps to reproduce The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch) ### ✔️ Expected Behavior the switch Light Switch should be always on if i turned it on previo...",
+      "Latest public comment excerpt: Noticed that not only Light Switch, many other function can be closed unexpectedly. they're always closed at the same time.",
+      "Fast revalidation read the live issue body, labels, assignees, and 6 public comment(s) on 2026-09-11T14:37:38.0214846Z.",
+      "Fast revalidation read the live issue body, labels, assignees, and 6 public comment(s) on 2026-09-11T14:38:05.1052603Z.",
+      "Fast revalidation read the live issue body, labels, assignees, and 6 public comment(s) on 2026-09-11T15:08:39.7870394Z."
+    ],
+    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
+    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
+    "source_updated_at": "2026-09-11T11:04:13Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path."
+  },
+  "issue_context": {
+    "summary": "Open PowerToys bug report for Product-LightSwitch: The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)",
+    "known_information": [
+      "The issue is open and labeled as an Issue-Bug report.",
+      "Title: The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)",
+      "Area label: Product-LightSwitch",
+      "Issue body excerpt: ### Microsoft PowerToys version and release channel 0.101.2362 ### Installation method GitHub ### Area(s) with issue? Light Switch, General ### Steps to reproduce The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch) ### ✔️ Expected Behavior the switch Light Switch should be always on if i turned it on previo...",
+      "Latest public comment excerpt: Noticed that not only Light Switch, many other function can be closed unexpectedly. they're always closed at the same time.",
+      "Fast revalidation covered live upstream activity through 09/11/2026 11:04:13.",
+      "Fast revalidation covered live upstream activity through 2026-09-11T11:04:13.0000000Z."
+    ],
+    "inferences": [
+      "The symptom may be PowerToys-specific, but the current public evidence is insufficient to choose a code change safely."
+    ],
+    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
+    "initial_investigation": [
+      "Read issue metadata, labels, assignees, body, and 6 public comment(s).",
+      "Checked selected dashboard artifact freshness and contract requirements before publishing.",
+      "Revalidated selected issue metadata, labels, assignees, body, and 6 public comment(s) during the scheduled bounded run."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
+        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
+        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-repro-diagnostics-50440",
+      "type": "request_info",
+      "label": "Request repro steps and diagnostics",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the report. The current issue identifies the affected behavior (\"The app sometimes forgets (disable) certain features that users have enabled (for example, lightswitch)\") and the dashboard revalidation saw the public labels/comments, but it still does not contain enough current diagnostic evidence to distinguish a PowerToys code defect from environment- or configuration-specific behavior.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact PowerToys version and Windows version.\r\n2. A fresh diagnostic archive captured immediately after reproducing it by adding a comment containing /bugreport.\r\n\r\nThose details will let maintainers confirm the failing path for Product-LightSwitch and decide whether this should move to a concrete fix design."
+      }
+    }
+  ]
 }

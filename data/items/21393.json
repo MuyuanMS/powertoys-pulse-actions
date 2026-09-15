@@ -3,118 +3,118 @@
   "number": 21393,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:05:21Z",
-  "evaluated_at": "2026-09-10T12:05:21Z",
-  "source_updated_at": "2022-10-25T09:50:04Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/21393",
-  "title": "Keyboard Manager: Shift Keys have no effect when combined with Remapped NumPad keys",
   "author": "rChaz58",
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The canonical numpad/Shift issue needs a current regression test."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Verify whether later numpad fixes cover this exact composition."
+  },
+  "generated_at": "2026-09-12T01:02:28.432371Z",
+  "evaluated_at": "2026-09-12T01:02:28.432371Z",
+  "source_updated_at": "2022-10-25T09:50:04Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report is a precise modifier-specific repro and later issue #22843 was closed as its duplicate. Current code contains explicit numpad-origin and Shift handling added after the report, so a current regression test can determine whether the historical defect is already covered or still needs a modifier-composition fix.",
+    "evidence": [
+      "NumPad6→Right moves the caret, but Shift+NumPad6 does not select text; Ctrl+NumPad6 works.",
+      "Issue #22843 was explicitly closed as a duplicate of #21393.",
+      "Merged PRs #28097 and #35890 added distinct numpad identities and Shift/numpad state handling, but neither closed this issue."
+    ],
+    "recommended_action": "Add the exact Shift+remapped-numpad regression test on current code, then either close as covered or fix modifier preservation.",
+    "evaluated_at": "2026-09-12T01:02:28.432371Z",
+    "source_updated_at": "2022-10-25T09:50:04Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "Existing numpad fixes are related but do not explicitly establish that this source-to-target modifier composition is covered."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve held Shift when emitting a remapped numpad navigation key",
+      "root_cause": "Shift changes the virtual-key identity produced by numpad navigation keys, and remap normalization can consume the Shift transition or emit the arrow without carrying the held modifier to the target application.",
+      "plan": [
+        "Create an engine test for NumPad6→Right with Shift held before and after NumPad6 key-down.",
+        "Normalize numpad-origin identity for lookup without clearing unrelated held modifiers.",
+        "Ensure injected Right uses the correct extended-key flag while physical Shift remains visible to the target until release."
+      ],
+      "verification": [
+        "Verify Shift+NumPad6 selects text exactly like Shift+Right.",
+        "Verify Ctrl+NumPad6 continues to move by word.",
+        "Run numpad-origin, NumLock on/off, left/right Shift, and key-up ordering tests."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The report and duplicate are specific and current code shows this special-case area, but later numpad fixes may already cover part of the scenario."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "When a numpad key is remapped to an arrow key, holding physical Shift does not extend text selection as Shift+physical-arrow does; Ctrl combinations continue to work.",
+    "known_information": [
+      "PowerToys 0.63; NumPad6 is remapped to Right.",
+      "Both left and right Shift are ignored with the remapped key, while Ctrl works.",
+      "The editor itself has difficulty recording Shift+numpad combinations."
+    ],
+    "inferences": [
+      "Shift-driven numpad virtual-key translation is colliding with remap lookup or modifier preservation."
+    ],
+    "analysis": "The current engine now tracks numpad origin explicitly, making a focused regression test cheap and decisive; no reporter diagnostics are needed first.",
+    "initial_investigation": [
+      "Read the full issue through 2022-10-25T09:50:04Z and its linked duplicate history.",
+      "Verified #22843 was closed as duplicate of #21393.",
+      "Reviewed merged #28097, #35890, and current KeyboardEventHandlers.cpp numpad-origin logic."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-21393",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Shift with remapped numpad",
+      "reproduce": {
+        "title": "Test numpad modifier preservation",
+        "module": "Keyboard Manager",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "Enable Num Lock as appropriate for NumPad6",
+          "Configure NumPad6 → Right",
+          "Open a text editor with a line of text"
+        ],
+        "setup": [],
+        "steps": [
+          "Place the caret before text.",
+          "Hold left Shift and press NumPad6; repeat with right Shift.",
+          "Repeat with physical Right as a control.",
+          "Repeat with Ctrl+NumPad6 and with Num Lock toggled."
+        ],
+        "expected_result": "Shift+NumPad6 selects text like Shift+Right, Ctrl behavior remains correct, and no modifier sticks."
+      }
+    }
+  ],
+  "title": "Keyboard Manager: Shift Keys have no effect when combined with Remapped NumPad keys",
+  "url": "https://github.com/microsoft/PowerToys/issues/21393",
   "labels": [
     "Issue-Bug",
     "Product-Keyboard Shortcut Manager",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comment_count": 0,
-  "summary": "Shift does not modify NumPad6 remapped to Right, while Ctrl with the same remap works.",
-  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-  "confidence": {
-    "score": 82,
-    "level": "yellow",
-    "rationale": "The report isolates Shift-specific behavior; the exact drop point still needs tracing."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
-    "evidence": [
-      "Shift+physical Right selects text.",
-      "Shift+remapped NumPad6 only moves.",
-      "Ctrl+remapped NumPad6 works."
-    ],
-    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-    "evaluated_at": "2026-09-10T12:05:21Z",
-    "source_updated_at": "2022-10-25T09:50:04Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
-  },
-  "issue_context": {
-    "summary": "Shift does not modify NumPad6 remapped to Right, while Ctrl with the same remap works.",
-    "known_information": [
-      "Both left and right Shift are affected.",
-      "The shortcut editor also has difficulty capturing Shift+numpad."
-    ],
-    "inferences": [
-      "Numpad normalization may consume or reorder Shift before remap output."
-    ],
-    "analysis": "The Shift-versus-Ctrl matrix isolates a focused conversion path.",
-    "initial_investigation": [
-      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
-      "Found no current assignee or completed linked implementation that conclusively resolves this report."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-21393",
-      "type": "approve_design",
-      "label": "Approve numpad modifier preservation design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design_summary": "Preserve Shift when a remapped numpad key emits navigation.",
-      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
-    },
-    {
-      "id": "reproduce-21393",
-      "type": "reproduce",
-      "label": "Reproduce Shift+numpad remap loss",
-      "primary": false,
-      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
-      "reproduce": {
-        "title": "Use Shift with NumPad6 remapped to Right",
-        "module": "Keyboard Manager",
-        "version_requirement": "Current stable PowerToys release",
-        "prerequisites": [
-          "Current stable PowerToys",
-          "Keyboard with numpad",
-          "Text editor"
-        ],
-        "setup": [
-          "Map NumPad6 to Right."
-        ],
-        "steps": [
-          "Try Shift+physical Right.",
-          "Try Shift+NumPad6.",
-          "Try Ctrl+NumPad6.",
-          "Repeat with NumLock and both Shift keys."
-        ],
-        "expected_result": "Shift+remapped NumPad6 should select like Shift+physical Right."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Preserve Shift when a remapped numpad key emits navigation.",
-      "root_cause": "The numpad-to-navigation path strips or resolves Shift before emitting the remapped arrow.",
-      "plan": [
-        "Trace raw numpad, NumLock, and modifier state.",
-        "Preserve Shift without duplicating native numpad semantics.",
-        "Test modifiers, NumLock states, and both remap modes."
-      ],
-      "verification": [
-        "Compare Shift/Ctrl with physical and remapped Right.",
-        "Verify across NumLock on/off."
-      ],
-      "confidence": {
-        "score": 82,
-        "level": "yellow",
-        "rationale": "The report isolates Shift-specific behavior; the exact drop point still needs tracing."
-      }
-    }
-  ]
+  "comments": 0
 }

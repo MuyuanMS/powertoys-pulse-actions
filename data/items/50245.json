@@ -1,119 +1,164 @@
 {
-  "schemaVersion": 3,
-  "id": "pr-50245",
+  "schemaVersion": 5,
   "number": 50245,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
-  "owes": "none",
-  "pending_author": false,
-  "generated_at": "2026-09-07T05:31:00Z",
-  "evaluated_at": "2026-09-07T05:31:00Z",
-  "source_updated_at": "2026-09-05T03:21:10Z",
-  "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
-  "title": "feat(grabandmove): snap windows to screen edges and corners while dragging",
   "url": "https://github.com/microsoft/PowerToys/pull/50245",
+  "title": "feat(grabandmove): snap windows to screen edges and corners while dragging",
   "author": "jjamesmartiin",
-  "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
-  "isCommunity": true,
-  "isMine": false,
+  "authorAssociation": "CONTRIBUTOR",
   "state": "OPEN",
   "draft": false,
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "summary": "The current-head review passed Phase 0, fork Copilot convergence, targeted Grab and Move validation, and final fork checks. No upstream review comment is proposed.",
+  "generated_at": "2026-09-14T14:15:00Z",
+  "evaluated_at": "2026-09-14T14:15:00Z",
+  "source_updated_at": "2026-09-05T11:21:10+08:00",
+  "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
+  "summary": "The existing fork review converged at c4f2e32c910af4d91ea7c7f9380612e4c4043bfe with zero published Copilot comments on the latest pass and zero unresolved Copilot threads. Comparing those fixes with the unchanged upstream head leaves four current-head correctness and responsiveness findings around hook-thread placement, destination-monitor maximization and restore bounds, DPI-aware snap placement, and bounded focus restoration.",
   "status": {
-    "glyph": "OK",
-    "label": "Review complete - no findings",
-    "detail": "The upstream head remains 822df246301569b3194dfdcbaab666aa0a7a0a84. The latest fork Copilot pass returned zero new comments and all fork Copilot threads are resolved."
+    "glyph": "ACTION",
+    "label": "Current-head request-changes draft ready",
+    "detail": "Upstream remains pinned to 822df246301569b3194dfdcbaab666aa0a7a0a84. Fork PR 681 is converged at c4f2e32c910af4d91ea7c7f9380612e4c4043bfe with zero unresolved Copilot threads and a fresh zero-published-comment review. Exact upstream-head essentials, GrabAndMoveModuleInterface, and GrabAndMove Debug builds passed; no upstream action has been posted.",
+    "upstream_public_writes": 0
   },
   "next_action": {
-    "glyph": "OK",
-    "label": "No upstream action proposed",
-    "reason": "The current-head review found no actionable code or process issues. The maintainer can merge the upstream PR when ready."
+    "glyph": "ACTION",
+    "label": "Request changes with four current-head review notes",
+    "reason": "After explicit maintainer approval, recheck the live upstream head and activity, then publish the prepared request-changes review."
   },
-  "proposed_comments": [],
-  "actions": [],
-  "needs_revalidation": false,
-  "phase0": {
-    "author": "jjamesmartiin",
-    "author_association": "FIRST_TIME_CONTRIBUTOR",
-    "bar": "community contributor; Phase 0 checked",
-    "disposition": "Proceed",
-    "owes": "maintainer",
-    "gates_tripped": [],
-    "note": "The PR links the directly corresponding issue, documents manual validation, includes screenshots and a recording, and keeps follow-up FancyZones and Snap Assist work out of scope. CLA, intake, and telemetry checks pass; the missing external Azure build is expected for an external-fork PR and is not treated as a failure.",
-    "evidence": [
-      "The PR adds configurable edge and corner snapping plus the related Settings UI and localization.",
-      "The description links issue 47598 and documents side, corner, and top-edge validation.",
-      "The upstream license/cla, detect-telemetry-events, and final pr-intake checks succeeded.",
-      "The author supplied visual evidence and manual validation details."
-    ]
-  },
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
-    "updated_at": "2026-09-05T03:21:10Z",
-    "issue_comment_count": 2,
-    "review_count": 0,
-    "review_decision": "REVIEW_REQUIRED",
-    "reported_checks": {
-      "total": 3,
-      "failing": 0,
-      "pending": 0,
-      "note": "Reported upstream checks are pr-intake, detect-telemetry-events, and CLA; full Azure Pipelines was not auto-run for the external fork."
+  "proposed_comments": [
+    {
+      "id": "queue-snap-work-outside-low-level-hook",
+      "kind": "companion",
+      "title": "Queue snap placement outside the low-level mouse hook",
+      "severity": "high",
+      "body": "### Queue snap placement outside the low-level mouse hook\n\n**Severity:** `high`\n\nThe release handler performs snap work directly from the `WH_MOUSE_LL` callback, including recalculating overlay metrics and moving or maximizing an arbitrary cross-process window. If that target is busy or hung, these operations can exceed `LowLevelHooksTimeout` and Windows may silently remove GrabAndMove's mouse hook. Post a snap request to the module's message window and perform the placement there, while carrying the release-time rectangle so the final snap does not depend on the throttled preview state.",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction requires coordinating the button-up hook path, a queued request payload, and the message-window handler; it is not safely represented by one localized current-diff replacement.",
+      "outOfDiffReason": "The correction requires coordinating the button-up hook path, a queued request payload, and the message-window handler; it is not safely represented by one localized current-diff replacement.",
+      "confidence": {
+        "score": 99,
+        "rationale": "The upstream release path visibly performs cross-process snap operations from the low-level hook, while the converged fork fix moves that sequence to the message window and preserves the release-time rectangle."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "maximize-on-snap-destination-and-preserve-restore-bounds",
+      "kind": "companion",
+      "title": "Maximize on the selected monitor without overwriting restore bounds",
+      "severity": "high",
+      "body": "### Maximize on the selected monitor without overwriting restore bounds\n\n**Severity:** `high`\n\nThe maximize branch discards the `targetRect` selected from the release point and maximizes the window according to its current monitor, so a cross-monitor drag can maximize on the source monitor instead of the previewed destination. The placement sequence also needs to preserve the release-time normal rectangle and convert it to the appropriate workspace coordinates before selecting the destination monitor; otherwise restoring the maximized window can jump to a stale or taskbar-offset position. Use a two-stage placement that first selects the destination monitor and then maximizes without replacing the user's normal bounds.",
+      "in_diff": false,
+      "out_of_diff_reason": "The fix spans monitor selection, WINDOWPLACEMENT normal-position preservation, tool-window coordinate handling, and the maximize operation; a single safe apply-ready range would be misleading.",
+      "outOfDiffReason": "The fix spans monitor selection, WINDOWPLACEMENT normal-position preservation, tool-window coordinate handling, and the maximize operation; a single safe apply-ready range would be misleading.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current maximize path ignores the computed target rectangle, and the converged fork review added destination-monitor placement plus release-time restore-coordinate handling to address the resulting cross-monitor and restore-position failures."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "recompute-snap-bounds-after-dpi-transition",
+      "kind": "companion",
+      "title": "Recompute side and corner snap bounds after moving monitors",
+      "severity": "medium",
+      "body": "### Recompute side and corner snap bounds after moving monitors\n\n**Severity:** `medium`\n\nSide and corner snaps measure the window's invisible-frame margins before moving it to the destination monitor, then issue one asynchronous move using those source-monitor measurements. With per-monitor DPI or a `WM_DPICHANGED` response, the non-client margins can change during the transition and the visible frame can miss the previewed half or quarter. Use destination-aware, two-pass placement and recalculate the final bounds after the window reaches the target monitor.",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction depends on sequencing the destination move, DPI transition, margin measurement, and final placement; it cannot be reduced to one independently safe current-diff line.",
+      "outOfDiffReason": "The correction depends on sequencing the destination move, DPI transition, margin measurement, and final placement; it cannot be reduced to one independently safe current-diff line.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current code measures overlay margins before the asynchronous destination move, and the converged fork review retained destination-aware two-pass placement as the fix for per-monitor-DPI behavior."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "bound-delayed-focus-restoration",
+      "kind": "companion",
+      "title": "Bound delayed focus restoration after asynchronous maximize",
+      "severity": "medium",
+      "body": "### Bound delayed focus restoration after asynchronous maximize\n\n**Severity:** `medium`\n\nWhen maximizing asynchronously, focus restoration must wait until the target is actually maximized, but the retry state needs a bounded lifetime and must be cleared when the target cannot complete. Otherwise a hung or nonconforming target can leave a timer running indefinitely, and an unconditional foreground restore can steal focus from an application the user activated while the snap was completing. Cap the retries and restore the previous foreground window only when the snap target is still the foreground window.",
+      "in_diff": false,
+      "out_of_diff_reason": "The fix spans timer state, asynchronous completion detection, retry cleanup, and foreground-window validation; it is not safe as one localized suggestion.",
+      "outOfDiffReason": "The fix spans timer state, asynchronous completion detection, retry cleanup, and foreground-window validation; it is not safe as one localized suggestion.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The upstream asynchronous maximize path lacks the bounded focus-restoration state added by the converged fork, and the Copilot loop identified both indefinite retry and stale-focus-stealing risks."
+      },
+      "disposition": "proposed"
     }
-  },
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50245",
+      "type": "request_changes",
+      "label": "Request changes with four current-head review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Draft only. This companion-only review posts separate general PR comments. Explicit maintainer approval and the safe publisher are required before posting. No write has been made to microsoft/PowerToys.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50245,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
+        "body_prefix": "Thanks for adding edge and corner snapping to Grab And Move. Before merge, please address the hook-thread placement, destination-monitor maximize and restore bounds, DPI-aware snap placement, and bounded focus-restoration issues described below."
+      }
+    }
+  ],
   "fork_pr": {
     "number": 681,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/681",
     "state": "OPEN",
     "head_sha": "c4f2e32c910af4d91ea7c7f9380612e4c4043bfe",
-    "checks": "passed"
+    "branch": "pr-iterate/50245-v3"
   },
   "fork_branch": "pr-iterate/50245-v3",
-  "copilot_review": {
-    "latest_submitted_at": "2026-09-07T05:28:32Z",
-    "latest_commit_id": "c4f2e32c910af4d91ea7c7f9380612e4c4043bfe",
-    "latest_new_comments": 0,
-    "published_inline_comments": 0,
-    "unresolved_threads": 0,
-    "review_count": 7,
-    "suppressed_comments": 1,
-    "policy_note": "The latest freshly requested Copilot review covered all changed files and found no new published issues; historical fork threads were replied to and resolved."
-  },
-  "verification": {
-    "result": "passed",
-    "scope": "Grab and Move edge and corner snapping",
-    "checks": [
-      "The fork review head c4f2e32c910af4d91ea7c7f9380612e4c4043bfe matches fork PR 681.",
-      "The rebased fork diff passed git diff --check.",
-      "PowerToys build essentials completed successfully after clearing unrelated GIT_CONFIG environment variables.",
-      "The GrabAndMove Debug project built successfully after the final review fixes.",
-      "The fork PR checks passed.",
-      "The latest Copilot review returned zero new published comments and zero unresolved threads."
-    ]
-  },
-  "testInstructions": [
-    "Launch the x64 Debug PowerToys executable produced by the build.",
-    "Enable Grab and Move and the Snap windows to screen edges setting, then drag a resizable window to the left and right edges, each corner, and the top edge.",
-    "Verify the preview and release result match for half, quarter, and maximize targets, including a background window and a second monitor.",
-    "Restore a maximized window and confirm it returns to its release-time position without stealing focus from a newer foreground window.",
-    "Disable Snap windows to screen edges and confirm normal Grab and Move behavior remains unchanged."
-  ],
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-09-07T05:31:00Z",
-    "resume_action": "none",
+    "phase": "converged_draft_ready",
+    "previous_phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-14T14:15:00Z",
+    "reviewed_upstream_head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
     "fork_pr": 681,
-    "fork_branch": "pr-iterate/50245-v3",
     "fork_head_sha": "c4f2e32c910af4d91ea7c7f9380612e4c4043bfe",
+    "latest_copilot_review_at": "2026-09-07T05:28:32Z",
+    "latest_copilot_new_comments": 0,
     "unresolved_copilot_threads": 0,
+    "resume_action": "maintainer-approval-or-freshness-recheck",
     "build_result": "passed"
   },
+  "validation": {
+    "upstream_head": {
+      "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
+      "result": "passed",
+      "validated_at": "2026-09-14T14:14:00Z",
+      "scope": "Exact upstream PR head before any proposed author changes",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "src\\modules\\GrabAndMove\\GrabAndMoveModuleInterface\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\GrabAndMove\\GrabAndMove\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "artifacts": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe"
+      ],
+      "notes": [
+        "POWERTOYS_DISABLE_SPECTRE=1 was set.",
+        "Inherited GIT_CONFIG_* variables were cleared before restore/build.",
+        "All three commands exited 0; the Settings build emitted no build errors."
+      ]
+    }
+  },
   "freshness": {
-    "queued_at": "2026-09-07T02:09:53.3625831Z",
-    "checkpoint_at": "2026-09-07T05:31:00Z"
+    "status": "fresh-at-draft-time",
+    "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
+    "source_updated_at": "2026-09-05T11:21:10+08:00",
+    "latestCopilotReviewAt": "2026-09-07T05:28:32Z",
+    "latestForkCommitAt": "2026-09-07T05:24:27Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-14T14:15:00Z"
   }
 }

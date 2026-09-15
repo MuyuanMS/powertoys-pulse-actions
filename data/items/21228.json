@@ -3,15 +3,83 @@
   "number": 21228,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:05:21Z",
-  "evaluated_at": "2026-09-10T12:05:21Z",
-  "source_updated_at": "2022-10-22T16:54:44Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/21228",
-  "title": "Change screen size for the same monitor",
   "author": "alishtamimi",
+  "confidence": "Low",
+  "status": {
+    "glyph": "❓",
+    "label": "Needs specific evidence",
+    "detail": "Canvas coordinate semantics and the exact display transition are missing."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Request Canvas resolution behavior details",
+    "reason": "Choose the expected scaling model before proposing code."
+  },
+  "generated_at": "2026-09-12T01:02:28.326191Z",
+  "evaluated_at": "2026-09-12T01:02:28.326191Z",
+  "source_updated_at": "2022-10-22T16:54:44Z",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The author answered that the layout is Canvas, which narrows ownership, but the missing monitor transition and acceptance rule are necessary to decide whether this is a scaling bug or a feature request for fixed physical coordinates.",
+    "evidence": [
+      "PowerToys 0.63; Canvas layout; same physical monitor changes screen size.",
+      "The only requested clarification was answered with “Canvas.”",
+      "No screenshots, resolutions, DPI values, monitor topology, linked work, or current-version confirmation are present."
+    ],
+    "recommended_action": "Request the exact resolution/DPI transition and desired Canvas coordinate behavior on a current release.",
+    "evaluated_at": "2026-09-12T01:02:28.326191Z",
+    "source_updated_at": "2022-10-22T16:54:44Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current report does not define whether preserving pixels, proportions, or work-area-relative placement is correct, so no safe code fix can be selected."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A Canvas FancyZones layout changes zone geometry when the same monitor switches resolution, but the report does not specify the before/after resolutions, DPI scaling, or whether fixed pixels versus proportional scaling is desired.",
+    "known_information": [
+      "The issue concerns a Canvas layout on one physical monitor.",
+      "FancyZones changes zone size/position after a screen-size change.",
+      "The author finds the automatic adjustment undesirable."
+    ],
+    "inferences": [
+      "The behavior may be intentional work-area scaling rather than corruption; the desired invariant is not stated."
+    ],
+    "analysis": "A bug fix could break users who expect Canvas zones to scale with the work area. Exact geometry and expected coordinate semantics are the decision-making evidence.",
+    "initial_investigation": [
+      "Read the full body and all four comments through 2022-10-22T16:54:44Z.",
+      "Confirmed there are no linked issues/PRs or assignees in the live timeline.",
+      "Reviewed current FancyZones work-area and app-zone history paths; monitor/work-area identity is part of layout selection."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "The exact original and changed resolutions, Windows scaling percentages, monitor count/order, and whether the work area changed because of taskbar placement.",
+        "why_needed": "These values determine whether FancyZones scaled correctly, selected a different work area, or lost monitor identity.",
+        "how_to_collect": "Reply with before/after resolution and scaling for each monitor and note any docking/undocking or taskbar change."
+      },
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether Canvas zones should retain absolute pixel coordinates, preserve their proportions, or restore a separate saved layout per resolution.",
+        "why_needed": "Each expectation requires a different product behavior and migration rule.",
+        "how_to_collect": "Describe the desired coordinates for one example zone before and after the resolution change, preferably with two screenshots."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "request_info",
+      "label": "Request Canvas resolution behavior details",
+      "comment": {
+        "body": "Thanks for confirming that this uses a Canvas layout. To distinguish a layout-scaling defect from a request for fixed coordinates, could you please provide:\n- The exact before/after resolution and Windows scaling percentage for the monitor, plus any other connected monitors, docking change, or taskbar change.\n- One example zone’s position/size before and after the change (screenshots are fine).\n- Which behavior you expect: fixed pixel coordinates, proportional scaling, or a separately remembered Canvas layout for each resolution.\nPlease also confirm whether the same behavior still occurs on a current PowerToys release."
+      }
+    }
+  ],
+  "title": "Change screen size for the same monitor",
+  "url": "https://github.com/microsoft/PowerToys/issues/21228",
   "labels": [
     "Issue-Bug",
     "Product-FancyZones",
@@ -19,102 +87,5 @@
     "Needs-Team-Response"
   ],
   "assignees": [],
-  "comment_count": 4,
-  "summary": "A Canvas FancyZones layout reportedly changes zone size and position when the same physical monitor changes resolution.",
-  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-  "confidence": {
-    "score": 58,
-    "level": "yellow",
-    "rationale": "Canvas is confirmed, but current behavior and desired geometry policy need validation."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
-    "evidence": [
-      "The reporter confirmed Canvas layout.",
-      "The request concerns one monitor changing screen size."
-    ],
-    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-    "evaluated_at": "2026-09-10T12:05:21Z",
-    "source_updated_at": "2022-10-22T16:54:44Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
-  },
-  "issue_context": {
-    "summary": "A Canvas FancyZones layout reportedly changes zone size and position when the same physical monitor changes resolution.",
-    "known_information": [
-      "PowerToys 0.63 was elevated.",
-      "Exact resolutions and scaling are absent."
-    ],
-    "inferences": [
-      "Canvas geometry may be rescaled against work-area dimensions while the reporter expects stable or per-resolution geometry."
-    ],
-    "analysis": "Current reproduction must establish the intended persistence policy before full design.",
-    "initial_investigation": [
-      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
-      "Found no current assignee or completed linked implementation that conclusively resolves this report."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-21228",
-      "type": "approve_design",
-      "label": "Approve Canvas resolution-persistence design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design_summary": "Preserve intentional Canvas geometry when one monitor changes resolution.",
-      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
-    },
-    {
-      "id": "reproduce-21228",
-      "type": "reproduce",
-      "label": "Reproduce Canvas layout resizing",
-      "primary": false,
-      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
-      "reproduce": {
-        "title": "Change resolution using a Canvas layout",
-        "module": "FancyZones",
-        "version_requirement": "Current stable PowerToys release",
-        "prerequisites": [
-          "Current stable PowerToys",
-          "One monitor with two resolutions",
-          "Custom Canvas layout"
-        ],
-        "setup": [
-          "Record monitor identity, resolution, scaling, and zone rectangles."
-        ],
-        "steps": [
-          "Apply the layout.",
-          "Change resolution.",
-          "Record geometry.",
-          "Switch back and compare."
-        ],
-        "expected_result": "FancyZones should follow a documented deterministic persistence rule."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Preserve intentional Canvas geometry when one monitor changes resolution.",
-      "root_cause": "Canvas geometry is likely persisted relative to a display work area and rescaled when resolution changes.",
-      "plan": [
-        "Inspect layout identity and rectangle persistence across two resolutions.",
-        "Define an explicit proportional, absolute, or per-resolution policy.",
-        "Test resolution and work-area transitions."
-      ],
-      "verification": [
-        "Record zone rectangles at two resolutions.",
-        "Verify the chosen policy survives restart and switching back."
-      ],
-      "confidence": {
-        "score": 58,
-        "level": "yellow",
-        "rationale": "Canvas is confirmed, but current behavior and desired geometry policy need validation."
-      }
-    }
-  ]
+  "comments": 4
 }

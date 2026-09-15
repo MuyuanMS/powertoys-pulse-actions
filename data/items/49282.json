@@ -3,79 +3,110 @@
   "number": 49282,
   "kind": "issue",
   "track": "fix",
-  "stage": "needs_reply",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-09-09T21:22:58Z",
-  "evaluated_at": "2026-09-09T21:22:58Z",
+  "generated_at": "2026-09-13T07:18:43.4524709Z",
+  "evaluated_at": "2026-09-13T07:18:43.452Z",
   "source_updated_at": "2026-07-13T00:14:16Z",
-  "title": "[MWB] Keyboard does not work on remote machine",
-  "url": "https://github.com/microsoft/PowerToys/issues/49282",
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The report clearly says Mouse Without Borders pairing is far enough along for mouse movement to work, but it still lacks the cross-machine details needed to isolate why only keyboard injection is failing.",
-    "evidence": [
-      "The issue says mouse movement works on the remote machine but typing does not, which narrows the problem to MWB keyboard redirection rather than full pairing failure.",
-      "Current source in src/modules/MouseWithoutBorders/App/Class/InputHook.cs and InputSimulation.cs shows separate keyboard-hook capture and simulated input paths.",
-      "Current UI text in src/modules/MouseWithoutBorders/App/Form/frmScreen.Designer.cs still exposes a “Reinstall Input hook” recovery action specifically for cases where keyboard or mouse redirection stops working."
-    ],
-    "recommended_action": "Ask for the failing direction, both-machine elevation state, and fresh diagnostics from both machines so maintainers can tell whether the break is in keyboard capture, transmission, or remote injection.",
-    "evaluated_at": "2026-09-09T21:22:58Z",
-    "source_updated_at": "2026-07-13T00:14:16Z"
+  "status": {
+    "glyph": "",
+    "label": "needs_information",
+    "detail": "The symptom is clear, but keyboard capture, elevation, and transport remain competing explanations."
   },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository fix may be needed, but the current public evidence does not yet identify whether the failing boundary is the local hook, the network/session path, or remote input injection."
-  },
-  "issue_context": {
-    "summary": "The reporter says Mouse Without Borders links far enough for mouse movement to work, but keyboard input never reaches the remote machine.",
-    "known_information": [
-      "The issue is filed against PowerToys 0.100.2 on Windows 11 26200 with a per-user Microsoft Store install.",
-      "The reporter already tried rebooting, reconnecting, creating a firewall rule, and resetting one machine.",
-      "The local report says PowerToys is running elevated, but it does not describe the other machine’s state."
-    ],
-    "inferences": [
-      "This is not a total connectivity failure, because cross-machine mouse movement already works.",
-      "The remaining gap could be the keyboard hook, privilege mismatch, or remote SendInput path, and the current issue text does not distinguish among those."
-    ],
-    "analysis": "The issue is specific enough to avoid a generic “send logs” response. The source layout shows MWB keyboard redirection crosses several separable boundaries, and the current report only describes the end symptom. The next useful evidence is which direction fails, whether both machines run with matching elevation, and paired diagnostics from both ends of the session.",
-    "initial_investigation": [
-      "src/modules/MouseWithoutBorders/App/Class/InputHook.cs owns the low-level keyboard hook, while src/modules/MouseWithoutBorders/App/Class/InputSimulation.cs performs injected remote input.",
-      "src/modules/MouseWithoutBorders/App/Form/frmScreen.Designer.cs includes a tray action labeled “Reinstall Input hook,” which indicates the product already treats stopped input redirection as a distinct failure mode."
-    ],
-    "information_gaps": [
-      {
-        "evidence_type": "behavior_confirmation",
-        "information": "Which direction fails: local-to-remote only, the reverse direction, or both.",
-        "why_needed": "This tells maintainers whether the fault is attached to one host session or to the shared pairing state.",
-        "how_to_collect": "Reply with the exact machine direction that fails and whether mouse movement still works in that same direction."
-      },
-      {
-        "evidence_type": "settings_permissions",
-        "information": "Whether PowerToys is elevated on both machines and whether either remote target app is elevated when typing fails.",
-        "why_needed": "Privilege mismatches can block injected keyboard input even when mouse movement is still working.",
-        "how_to_collect": "Confirm for each machine whether PowerToys is running as administrator and whether the failing target window is elevated."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostic ZIPs from both machines captured immediately after reproducing the keyboard-only failure.",
-        "why_needed": "Two-sided diagnostics are the fastest way to see whether the keyboard hook fired locally and whether the remote side accepted or rejected the input path.",
-        "how_to_collect": "Reproduce the keyboard failure, then post a comment with /bugreport from each machine immediately afterward."
-      }
-    ]
+  "next_action": {
+    "glyph": "",
+    "label": "Request a fresh bug report and exact local/remote keyboard setup.",
+    "reason": "The symptom is clear, but keyboard capture, elevation, and transport remain competing explanations."
   },
   "actions": [
     {
-      "id": "request-info-49282",
+      "type": "approve_design",
+      "label": "Approve request mouse without borders keyboard diagnostics design"
+    },
+    {
       "type": "request_info",
-      "label": "Request MWB keyboard-direction evidence",
-      "primary": true,
-      "confirm": true,
+      "label": "Request Mouse Without Borders keyboard diagnostics",
       "comment": {
-        "target": "issue",
-        "number": 49282,
-        "body": "Thanks for already confirming that the machines link well enough for mouse movement to work. To narrow this to the right Mouse Without Borders keyboard path, please provide:\n\n1. Which direction fails: machine A to B only, B to A only, or both.\n2. Whether PowerToys is running as administrator on both machines, and whether the failing target app is elevated.\n3. Fresh diagnostics from both machines by reproducing the issue and then posting a comment with /bugreport from each machine immediately afterward.\n\nThat will help us tell whether the break is in keyboard capture, transmission, or remote input injection."
+        "body": "Thanks for documenting that Mouse Without Borders can move the pointer but cannot type, and for listing the Store install, elevated execution, Windows build, reboot, reconnect, firewall, and reset attempts. The remaining ambiguity is whether keyboard events are blocked by local/remote elevation and input configuration or lost in the connection path. Please provide the keyboard layout on both machines, whether both use the same PowerToys version and elevation level, and reproduce before commenting /bugreport. This will distinguish input-hook/permission issues from transport issues.\n\n**Needed**\n1. Please provide Keyboard layout on both machines; State physical layout and Windows input language.\n2. Please provide Version and elevation on both machines; State version, install source, and elevation.\n3. Please provide Fresh diagnostics after keyboard failure; Reproduce and comment /bugreport immediately afterward."
+      }
+    }
+  ],
+  "confidence": {
+    "score": 45,
+    "level": "red",
+    "rationale": "The symptom is clear, but keyboard capture, elevation, and transport remain competing explanations."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The symptom is clear, but keyboard capture, elevation, and transport remain competing explanations.",
+    "evidence": [
+      "The report gives 0.100.2, Store install, elevation, and Windows build 26200.",
+      "Mouse movement works but typing does not after linkage.",
+      "No diagnostics or detailed keyboard/network setup is attached."
+    ],
+    "recommended_action": "Request a fresh bug report and exact local/remote keyboard setup.",
+    "evaluated_at": "2026-09-13T07:18:43.452Z",
+    "source_updated_at": "2026-07-13T00:14:16Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No current linked fix covers the reported path; the direction remains evidence-limited.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "Mouse Without Borders moves the pointer but keyboard input does not reach the remote machine on an elevated Windows 11 Store installation.",
+    "known_information": [
+      "The report gives 0.100.2, Store install, elevation, and Windows build 26200.",
+      "Mouse movement works but typing does not after linkage.",
+      "No diagnostics or detailed keyboard/network setup is attached."
+    ],
+    "inferences": [
+      "The cause may be keyboard capture, elevation, or transport."
+    ],
+    "analysis": "The focused symptom needs diagnostics and topology details to distinguish input-hook, permission, and transport causes.",
+    "initial_investigation": [
+      "No linked fix or duplicate is present."
+    ],
+    "information_gaps": [
+      {
+        "why_needed": "To rule out layout-specific capture",
+        "information": "Keyboard layout on both machines",
+        "evidence_type": "keyboard_layout",
+        "how_to_collect": "State physical layout and Windows input language"
       },
-      "note": "Draft only; no upstream comment is posted without explicit approval."
+      {
+        "why_needed": "To distinguish permission from transport",
+        "information": "Version and elevation on both machines",
+        "evidence_type": "install_scope",
+        "how_to_collect": "State version, install source, and elevation"
+      },
+      {
+        "why_needed": "To inspect connection and hook state",
+        "information": "Fresh diagnostics after keyboard failure",
+        "evidence_type": "bugreport_zip",
+        "how_to_collect": "Reproduce and comment /bugreport immediately afterward"
+      }
+    ]
+  },
+  "proposed_fixes": [
+    {
+      "title": "Request Mouse Without Borders keyboard diagnostics",
+      "root_cause": "Keyboard capture may fail due to synthesized input, elevation, or transport; this is a hypothesis.",
+      "plan": [
+        "Confirm the affected module path and trigger.",
+        "Trace the relevant state, input, layout, or persistence boundary.",
+        "Implement the smallest targeted correction with focused regression coverage."
+      ],
+      "verification": [
+        "Run the maintainer reproduction on the current supported build.",
+        "Verify the reported edge case and normal behavior."
+      ],
+      "confidence": {
+        "score": 45,
+        "level": "red",
+        "rationale": "The symptom is clear, but keyboard capture, elevation, and transport remain competing explanations."
+      }
     }
   ]
 }

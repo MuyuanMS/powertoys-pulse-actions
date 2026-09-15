@@ -1,129 +1,90 @@
 {
   "schemaVersion": 5,
-  "repository": "microsoft/PowerToys",
-  "kind": "issue",
-  "track": "fix",
   "number": 50476,
-  "title": "DSC App resource does not immediately apply Keyboard Manager enabled state and documentation input structure appears inconsistent",
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": false,
+  "generated_at": "2026-09-11T15:08:39.7870394Z",
+  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
+  "source_updated_at": "2026-09-09T07:45:26Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50476",
-  "state": "OPEN",
-  "created_at": "2026-09-09T07:45:26Z",
-  "updated_at": "2026-09-09T07:45:26Z",
-  "author": "ShimYama",
+  "title": "DSC App resource does not immediately apply Keyboard Manager enabled state and documentation input structure appears inconsistent",
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
-  "assignees": [],
+  "assignees": null,
   "comments": 0,
-  "generated_at": "2026-09-09T10:28:38.042Z",
-  "evaluated_at": "2026-09-09T10:28:38.042Z",
-  "source_updated_at": "2026-09-09T07:45:26Z",
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 0,
-    "timeline_events_read": 2
+  "status": {
+    "glyph": "?",
+    "label": "Needs targeted evidence",
+    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
   },
-  "upstream_public_action_taken": false,
-  "full_design": false,
-  "design_deferred": true,
-  "confidence": {
-    "score": 73,
-    "level": "yellow",
-    "rationale": "The immediate-apply gap and the documentation mismatch are both directly visible in current code, but the runtime fix crosses DSC and Runner notification boundaries."
+  "next_action": {
+    "glyph": "?",
+    "label": "Request repro steps and diagnostics",
+    "reason": "Ask only for the current evidence needed to confirm the failing path."
   },
-  "linked_work": [
-    {
-      "type": "issue",
-      "ref": "#38233",
-      "url": "https://github.com/microsoft/PowerToys/issues/38233",
-      "relevance": "Broader DSC/Keyboard Manager deployment request; this issue is the concrete enabled-state bug."
-    }
-  ],
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue body already demonstrates the bug end-to-end: App settings persistence changes immediately, but the running Keyboard Manager engine only updates after restarting PowerToys. Current source shows why: the DSC App resource saves GeneralSettings to disk, while the Settings UI path separately sends OutGoingGeneralSettings IPC to the running app. The generated documentation and samples also hide the Enabled map that the live resource actually accepts.",
+    "status": "needs_information",
+    "rationale": "The selected fast pass found an open bug report but not enough current public evidence to identify a specific PowerToys code fix without speculation.",
     "evidence": [
-      "The reporter supplies a working get/test/set reproduction using PowerToys.DSC.exe against the App module.",
-      "SettingsFunctionData.SaveSettings only serializes settings to disk through SettingsUtils and does not notify the running process.",
-      "KeyboardManagerViewModel.Enabled sends an OutGoingGeneralSettings payload after changing GeneralSettingsConfig.Enabled.KeyboardManager.",
-      "GeneralSettings.Enabled is marked with CmdConfigureIgnore, and the DSC schema/sample generators exclude ignored properties."
+      "The issue is open and labeled as an Issue-Bug report.",
+      "Title: DSC App resource does not immediately apply Keyboard Manager enabled state and documentation input structure appears inconsistent",
+      "Issue body excerpt: ### Microsoft PowerToys version and release channel v0.101.2362 ### Installation method GitHub ### Area(s) with issue? Keyboard Manager ### Steps to reproduce Locate PowerToys.DSC.exe in the PowerToys installation directory. Check the Keyboard Manager enabled state: ```powershell $ptdsc = \"<local-path> Files\\PowerToys\\PowerToys.DSC.exe\" $current = & $ptdsc get...",
+      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) on 2026-09-11T15:08:39.7870394Z."
     ],
-    "recommended_action": "Approve a bounded design that adds runtime propagation for App enabled-state changes and aligns DSC documentation/samples with the actual GeneralSettings contract."
+    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
+    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
+    "source_updated_at": "2026-09-09T07:45:26Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "A PowerToys code fix is directly applicable in the DSC App resource and its generators; there is no existing linked implementation covering either the runtime propagation gap or the inconsistent documentation.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path."
   },
-  "proposed_fixes": [
-    {
-      "title": "Propagate App-module enabled-state changes to Runner and stop documenting a mismatched input shape",
-      "root_cause": "The DSC App resource persists GeneralSettings but does not send the same general-settings IPC notification the Settings UI uses, so module enablement changes remain dormant until PowerToys restarts. Separately, the documentation generators hide the Enabled property even though the resource deserializer accepts it.",
-      "plan": [
-        "Detect enabled-module changes in the App resource path and emit the same OutGoingGeneralSettings-style notification used by Settings UI toggles after persistence succeeds.",
-        "Update DSC schema/sample/documentation generation so App resource examples describe the actual GeneralSettings enabled map instead of steering users toward an ineffective properties.Enabled structure.",
-        "Add tests that lock the serialized App input shape and verify the runtime path no longer requires a restart for Keyboard Manager enablement."
-      ],
-      "verification": [
-        "Repeat the exact get/test/set sequence from the issue and confirm Keyboard Manager becomes active without restarting PowerToys.",
-        "Confirm disabling Keyboard Manager through the same App resource path also stops the running module.",
-        "Regenerate DSC documentation/examples and verify they show the actual enabled-state input contract for the App resource."
-      ],
-      "confidence": {
-        "score": 73,
-        "level": "yellow",
-        "rationale": "The persistence-vs-notification split is explicit in current source, but the best implementation seam still needs maintainer-side validation."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "The DSC App settings resource can persist Keyboard Manager enabled-state changes, but the running PowerToys instance does not apply them until restart, and the documented input structure does not match the live App resource behavior.",
+    "summary": "Open PowerToys bug report for the affected PowerToys module: DSC App resource does not immediately apply Keyboard Manager enabled state and documentation input structure appears inconsistent",
     "known_information": [
-      "The reporter provided a concrete PowerShell reproduction using PowerToys.DSC.exe get/test/set for the App module.",
-      "Changing the full current object under settings.enabled.\"Keyboard Manager\" correctly changes the persisted value.",
-      "Restarting PowerToys makes the persisted setting take effect, proving the data is saved even though the live module state is stale."
+      "The issue is open and labeled as an Issue-Bug report.",
+      "Title: DSC App resource does not immediately apply Keyboard Manager enabled state and documentation input structure appears inconsistent",
+      "Issue body excerpt: ### Microsoft PowerToys version and release channel v0.101.2362 ### Installation method GitHub ### Area(s) with issue? Keyboard Manager ### Steps to reproduce Locate PowerToys.DSC.exe in the PowerToys installation directory. Check the Keyboard Manager enabled state: ```powershell $ptdsc = \"<local-path> Files\\PowerToys\\PowerToys.DSC.exe\" $current = & $ptdsc get...",
+      "Fast revalidation covered live upstream activity through 2026-09-09T07:45:26.0000000Z."
     ],
     "inferences": [
-      "The bug is in runtime propagation, not in basic JSON persistence for the App settings object.",
-      "Documentation drift is likely caused by generator logic that treats GeneralSettings.Enabled as hidden even though deserialization still accepts it."
+      "The symptom may be PowerToys-specific, but the current public evidence is insufficient to choose a code change safely."
     ],
-    "analysis": "The report is already deterministic and self-contained, so a maintainer reproduce action is more useful than asking for logs.",
+    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
     "initial_investigation": [
-      "Reviewed the complete issue body and labels; there are no follow-up comments or competing fix links.",
-      "Inspected src/dsc/v3/PowerToys.DSC/DSCResources/SettingsResource.cs, SettingsFunctionData`1.cs, KeyboardManagerViewModel.cs, GeneralSettings.cs, and the DSC generator sources."
+      "Read issue metadata, labels, assignees, body, and 0 public comment(s).",
+      "Checked selected dashboard artifact freshness and contract requirements before publishing.",
+      "Revalidated selected issue metadata, labels, assignees, body, and 0 public comment(s) during the scheduled bounded run."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
+        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
+        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
   },
-  "design": null,
   "actions": [
     {
-      "type": "reproduce",
-      "label": "Reproduce DSC Keyboard Manager apply gap",
-      "reproduce": {
-        "title": "Verify App-resource enabled-state persistence versus live application state",
-        "module": "DSC / Keyboard Manager",
-        "version_requirement": "PowerToys v0.101.2362 or current main with PowerToys.DSC.exe",
-        "prerequisites": [
-          "Keyboard Manager currently disabled",
-          "PowerToys running normally",
-          "PowerToys.DSC.exe available from the installation directory"
-        ],
-        "setup": [
-          "Capture the current App settings object with PowerToys.DSC.exe get --resource settings --module App."
-        ],
-        "steps": [
-          "Prepare a modified copy that sets settings.enabled.\"Keyboard Manager\" to true.",
-          "Run PowerToys.DSC.exe test and confirm _inDesiredState is false when Keyboard Manager is disabled.",
-          "Run set with the same JSON and inspect both the persisted App settings and the live Keyboard Manager state before and after restarting PowerToys."
-        ],
-        "expected_result": "After the fix, the live Keyboard Manager state should change immediately after set, and the documentation/examples should match the accepted input shape."
+      "id": "request-repro-diagnostics-50476",
+      "type": "request_info",
+      "label": "Request repro steps and diagnostics",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the report. The current issue identifies the affected behavior (\"DSC App resource does not immediately apply Keyboard Manager enabled state and documentation input structure appears inconsistent\") and the dashboard revalidation saw the public labels/comments, but it still does not contain enough current diagnostic evidence to distinguish a PowerToys code defect from environment- or configuration-specific behavior.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact PowerToys version and Windows version.\r\n2. A fresh diagnostic archive captured immediately after reproducing it by adding a comment containing /bugreport.\r\n\r\nThose details will let maintainers confirm the failing path for the affected PowerToys module and decide whether this should move to a concrete fix design."
       }
-    },
-    {
-      "type": "approve_design",
-      "label": "Approve DSC App-state propagation design",
-      "note": "Covers both the live enabled-state application gap and the documentation contract mismatch."
     }
   ]
 }

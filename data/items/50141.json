@@ -3,74 +3,74 @@
   "number": 50141,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "generated_at": "2026-09-09T15:05:16.279Z",
-  "evaluated_at": "2026-09-09T15:05:16.279Z",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "sunbohong",
+  "confidence": "High",
+  "status": {
+    "glyph": "ℹ️",
+    "label": "No bug fix proposed",
+    "detail": "The installer is correctly blocking a per-user/all-users scope conflict."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Explain installer scope conflict",
+    "reason": "Use one consistent installation scope."
+  },
+  "generated_at": "2026-09-12T01:02:28.217857Z",
+  "evaluated_at": "2026-09-12T01:02:28.217857Z",
   "source_updated_at": "2026-08-26T13:15:33Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50141",
-  "title": "can't update",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage"
-  ],
-  "assignees": [],
   "judgment": {
     "status": "not_actionable",
-    "rationale": "The pasted installer log already explains the failure: the reporter ran the per-user installer while an all-users PowerToys installation was still present, and the bootstrapper intentionally blocks that combination.",
+    "rationale": "The installer log explicitly reports a per-machine PowerToys 0.65 installation and the supported cross-scope safeguard: uninstall the all-users version before installing the per-user package. This is expected installer behavior, not an update failure in PowerToys code.",
     "evidence": [
-      "The issue body includes error 0x81f40001 and the explicit all-users conflict message.",
-      "The log shows DetectedPowerToysVersion = 0.65.0 and the launched package is PowerToysUserSetup-0.101.2362.0-x64.exe.",
-      "installer/PowerToysSetupVNext/PowerToys.wxs contains the exact blocking condition and message."
+      "The log detects DetectedPowerToysVersion 0.65.0 and a related per-user bundle 0.74.1.0.",
+      "The attempted package is PowerToysUserSetup-0.101.2362.0-x64.exe.",
+      "Burn returns 0x81f40001 with the explicit message that PowerToys is already installed for all users."
     ],
-    "recommended_action": "Post a maintainer clarification about uninstalling the all-users install first or using the matching all-users installer.",
-    "evaluated_at": "2026-09-09T15:05:16.279Z",
+    "recommended_action": "Explain the installation-scope conflict and the supported remediation.",
+    "evaluated_at": "2026-09-12T01:02:28.217857Z",
     "source_updated_at": "2026-08-26T13:15:33Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "The current evidence points to expected installer behavior, not a missing code fix.",
-    "existing_fix_urls": []
+    "rationale": "The installer intentionally blocks mixing per-user and all-users installations; remediation is to remove the conflicting scope or use the matching machine-wide installer."
   },
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "This is an installer usage mismatch: a per-user PowerToys installer was launched while an older all-users installation was still registered.",
+    "summary": "The per-user 0.101 installer refuses to run because an older all-users PowerToys installation is detected.",
     "known_information": [
-      "Existing all-users PowerToys 0.65.0 install detected.",
-      "Attempted package is the per-user UserSetup executable.",
-      "The bootstrapper emitted the explicit all-users conflict message in the issue body itself."
+      "Windows 10 build 19045 is reported.",
+      "The log shows an existing all-users PowerToys 0.65 installation.",
+      "The attempted update uses the per-user installer."
     ],
     "inferences": [
-      "The next maintainer response should explain the supported upgrade path, not start engineering work.",
-      "If the reporter wants a per-user install, the machine-wide installation must be removed first."
+      "Residual registration for older 0.74.1 may also exist, but the explicit blocking condition is the all-users installation."
     ],
-    "analysis": "The issue already contains the decisive log line and the exact WiX condition that generated it, so the correct action is an explanatory comment.",
+    "analysis": "The failure message already identifies the cause. Requesting diagnostics would add no value; the maintainer action is a precise configuration explanation.",
     "initial_investigation": [
-      "Reviewed the full installer log embedded in the issue.",
-      "Reviewed installer/PowerToysSetupVNext/PowerToys.wxs and confirmed the exact all-users-vs-per-user condition."
+      "Read the complete installer log in the live issue body through 2026-08-26T13:15:33Z.",
+      "No comments, assignees, linked issues, or PRs are present.",
+      "The failing condition and remediation are emitted directly by the installer."
     ],
     "information_gaps": []
   },
   "actions": [
     {
-      "id": "pc50141",
       "type": "post_comment",
-      "label": "Explain per-user installer block",
-      "note": "Clarifies supported installer usage.",
-      "confirm": true,
+      "label": "Explain installer scope conflict",
       "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 50141,
-        "body": "The pasted bootstrapper log already shows the failing condition: the per-user installer detected an existing all-users PowerToys installation (0.65.0) and intentionally blocked that combination with error 0x81f40001. A maintainer response should explain that the next step is to uninstall the existing all-users installation first or use the matching all-users installer package instead of the per-user UserSetup executable."
+        "body": "The log shows that `PowerToysUserSetup-0.101.2362.0-x64.exe` is a per-user installer, while PowerToys 0.65 is still registered as installed for all users. Mixing those installation scopes is intentionally blocked. Please uninstall the existing all-users installation first and then install the per-user package, or install the matching machine-wide package instead. If Apps & features no longer lists the old installation, use the documented installer cleanup/troubleshooting path for the stale registration rather than repeatedly launching the user installer."
       }
     }
   ],
-  "design_decision": {
-    "status": "not_applicable",
-    "reason": "Expected installer behavior; no code fix selected."
-  },
-  "confidence": {
-    "score": 94,
-    "level": "green",
-    "rationale": "The decisive bootstrapper message is already in the issue body and installer source."
-  }
+  "title": "can't update",
+  "url": "https://github.com/microsoft/PowerToys/issues/50141",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0
 }

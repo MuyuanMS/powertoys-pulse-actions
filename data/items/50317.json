@@ -1,87 +1,116 @@
 {
-  "schemaVersion": 5,
   "number": 50317,
   "kind": "issue",
-  "track": "fix",
-  "title": "Insider PowerToys version tricks the Microsoft store into thinking that PowerToys is not installed",
-  "url": "https://github.com/microsoft/PowerToys/issues/50317",
-  "generated_at": "2026-09-09T10:33:13.5242917Z",
-  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
-  "source_updated_at": "2026-09-02T05:44:46Z",
-  "summary": "The Store page says PowerToys is not installed after an Insider build update, but the issue does not yet show whether the preview arrived through PowerToys’ GitHub updater or a Store-specific path.",
-  "next_action": "Request the exact Insider update path and screenshots that distinguish a Store/UI mismatch from a PowerToys cross-channel update bug.",
-  "confidence": {
-    "score": 47,
-    "level": "red",
-    "rationale": "The cross-channel updater path is plausible, but the report has not yet established how the Insider build replaced the Store-tracked installation state."
-  },
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage"
-  ],
-  "assignees": [],
-  "linked_work": [],
-  "comment_count": 0,
+  "track": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "ReginaldTang",
   "judgment": {
     "status": "needs_information",
-    "rationale": "The current report does not identify whether the Insider build came from PowerToys itself, from a downloaded installer, or from a Store-managed path.",
+    "rationale": "The screenshot establishes that Microsoft Store no longer recognizes PowerToys after moving from Store stable to Insider, but it does not provide the installed package identity or establish whether that channel transition is intended to remain Store-owned. Current installer code uses the Store sparse package family name, while developer packages can use a different family. The prior detailed design included a directory as an affected file and overclaimed a package-identity root cause, so it was removed.",
+    "recommended_action": "Request the installed package identity and launch/upgrade state, then use the existing maintainer reproduction plan to distinguish identity mismatch from intended Insider-channel behavior.",
+    "evaluated_at": "2026-09-12T00:59:02Z",
+    "source_updated_at": "2026-09-02T05:44:46Z",
     "evidence": [
-      "The issue title and screenshot say Microsoft Store thinks PowerToys is not installed after updating to 0.101.2432 Insider.",
-      "The installation method is marked Microsoft Store, but the body does not describe how the Insider build was obtained.",
-      "Current updater code uses GitHub release selection and can diverge from Store-facing state when release channels change."
-    ],
-    "recommended_action": "Ask for the exact update path and current UI screenshots before deciding whether this is a PowerToys updater bug or expected Store behavior after leaving the Store package path."
+      "The report says an Insider 0.101.2432 build was installed from Microsoft Store.",
+      "The Store subsequently shows PowerToys as not installed.",
+      "The issue has no comments, assignee, duplicate, or linked fix.",
+      "Installer code contains a sparse Package Identity MSIX registration path, while Store recognition depends on package identity and registration.",
+      "Scheduled Prompt #2 revalidation read the full live issue body, all 0 public comment(s), current labels, assignees, and timeline through 2026-09-02T05:44:46Z."
+    ]
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A repo-side fix cannot be scoped until the team knows how the Insider build replaced or bypassed the Store-managed installation state.",
-    "existing_fix_urls": []
+    "rationale": "A code fix is not yet applicable because the report does not show which package family is installed or whether Store recognition is a supported invariant for Insider builds."
   },
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "The report is about installation identity, not launch or runtime behavior: after moving to an Insider build, Microsoft Store shows PowerToys as not installed.",
+    "summary": "After updating to an Insider PowerToys build, Microsoft Store offers installation instead of recognizing PowerToys as installed.",
     "known_information": [
-      "The issue was filed against 0.101.2432 Insider and marked as a Microsoft Store installation.",
-      "The body includes a Store screenshot but no further text description.",
-      "There are no follow-up comments, linked PRs, or assignees."
+      "The affected build is 0.101.2432 Insider and the installation method is Microsoft Store.",
+      "The symptom follows an update to the Insider release.",
+      "The issue has no comments, attachments, assignee, or linked remediation.",
+      "The installer contains explicit sparse Package Identity MSIX install/uninstall custom actions.",
+      "Live upstream issue activity was reviewed through 2026-09-02T05:44:46Z."
     ],
     "inferences": [
-      "If the Insider build was installed through PowerToys’ GitHub-based updater, the Store package identity may have been replaced or bypassed.",
-      "If the Insider build came from a Store-managed channel instead, the bug likely sits in store-registration state rather than release selection."
+      "A package family, publisher, identity, version, or registration transition may be outside the Store's expected upgrade relationship.",
+      "The behavior could instead be an intentional separation of Insider and stable Store products."
     ],
-    "analysis": "The issue needs one exact branching fact: how the Insider build was installed. Without it, the team cannot tell whether to investigate Store package identity or PowerToys channel switching.",
+    "analysis": "The Store screenshot is real evidence, but package identity is the decision boundary. The repository documents that Store builds use Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe while locally built packages can use another family. Without the installed identity and channel policy, changing installer identity would risk breaking upgrade and Store ownership.",
     "initial_investigation": [
-      "The updater code under src/common/updating is GitHub-release driven and shares the same general channel boundary as Issue 50267.",
-      "The issue currently has no duplicate marker or linked work to narrow it further.",
-      "No public evidence yet shows whether Installed Apps and the Store page disagree, or whether only the Store page is affected."
+      "Read the complete issue body, screenshot reference, labels, assignees, and timeline.",
+      "Inspected the current sparse-package identity documentation and installer custom action.",
+      "Confirmed the installer references Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe for Store-distributed identity, while development packages may use another family.",
+      "Searched current issues and found no separate confirmed duplicate or covering pull request.",
+      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
     ],
     "information_gaps": [
       {
-        "evidence_type": "behavior_confirmation",
-        "information": "How the Insider build was installed: in-app updater, downloaded installer, or Store-driven update.",
-        "why_needed": "This determines whether the problem is a PowerToys cross-channel update bug or Store package-state behavior.",
-        "how_to_collect": "Please describe exactly what you clicked or installed before the Store started showing PowerToys as not installed."
-      },
-      {
-        "evidence_type": "screenshot_image",
-        "information": "Current screenshots of PowerToys About and the Microsoft Store page for PowerToys.",
-        "why_needed": "They confirm the installed build/channel and the exact Store-facing mismatch state.",
-        "how_to_collect": "Open PowerToys About and the Store page, take screenshots, and upload them through the GitHub issue web UI."
+        "evidence_type": "install_scope",
+        "information": "The PackageFullName, PackageFamilyName, publisher, version, and install location shown for PowerToys after the Insider update.",
+        "why_needed": "These values distinguish a different package identity from incomplete sparse-package registration.",
+        "how_to_collect": "Run `Get-AppxPackage Microsoft.PowerToys.SparseApp | Select Name,PackageFullName,PackageFamilyName,Publisher,InstallLocation` and paste the non-sensitive output."
       },
       {
         "evidence_type": "behavior_confirmation",
-        "information": "Whether Windows Settings > Installed apps still lists PowerToys after the Insider update.",
-        "why_needed": "This distinguishes a Store-only UI mismatch from a broader package-registration/state problem.",
-        "how_to_collect": "Please check Installed apps and report whether PowerToys still appears there."
+        "information": "Whether PowerToys still launches, appears in Installed apps, and can return to the stable Store build while the Store page shows Install.",
+        "why_needed": "This establishes the practical impact and whether the channel transition is unsupported, registration-only, or a broken upgrade.",
+        "how_to_collect": "Report those three outcomes after restarting Microsoft Store; do not uninstall before collecting them."
       }
     ]
   },
   "actions": [
     {
+      "id": "request_info-50317",
       "type": "request_info",
-      "label": "Confirm Insider update path",
+      "label": "Request Insider package identity and Store state",
+      "primary": true,
+      "confirm": true,
       "comment": {
-        "body": "Thanks for the screenshot. To determine whether this is a PowerToys update-channel bug or a Microsoft Store package-state mismatch, please provide:\n\n**Needed**\n1. Please confirm how the Insider build was installed: from a PowerToys in-app update prompt, a downloaded installer, or a Store-driven update.\n2. Please upload current screenshots of **PowerToys > About** and the **Microsoft Store** PowerToys page.\n3. Please confirm whether **Windows Settings > Installed apps** still lists PowerToys after the Insider update.\n\nThis will show whether PowerToys left the Store-managed install path, or whether the Store is misreporting a still-managed installation."
-      }
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50317,
+        "body": "Thanks for the screenshot showing that Microsoft Store no longer recognizes PowerToys after the Insider update. To distinguish a different package identity from incomplete Store registration, please provide:\n\n1. The output of `Get-AppxPackage Microsoft.PowerToys.SparseApp | Select Name,PackageFullName,PackageFamilyName,Publisher,InstallLocation` after the Insider update.\n2. Whether PowerToys still launches, still appears in **Installed apps**, and can switch back to the stable Store build while the Store page shows **Install**.\n\nPlease restart Microsoft Store before checking, and do not uninstall PowerToys until these values are recorded."
+      },
+      "note": "Draft only; no upstream comment is posted."
+    },
+    {
+      "id": "reproduce-50317",
+      "type": "reproduce",
+      "label": "Reproduce Insider Store identity transition",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "title": "Compare package identity across stable-to-Insider transition",
+        "module": "Installer / Microsoft Store",
+        "prerequisites": [
+          "Disposable Windows test environment with Microsoft Store access"
+        ],
+        "steps": [
+          "Install the current PowerToys stable release from Microsoft Store and record package identity and Store ownership.",
+          "Select the Insider update channel and install the offered Insider build.",
+          "Restart Microsoft Store and compare Store page state, Installed apps, PowerToys launch, and package identity.",
+          "Attempt the supported return-to-stable path and record whether Store ownership is restored."
+        ],
+        "expected_result": "If the channels are intended to share Store ownership, the package family remains associated and Store continues to show the product installed; otherwise the test documents the supported channel limitation.",
+        "version_requirement": "Current Store stable followed by current Insider"
+      },
+      "note": "Display-only reproduction plan; it does not post to GitHub."
     }
-  ]
+  ],
+  "schemaVersion": 5,
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-12T00:59:02Z",
+  "evaluated_at": "2026-09-12T00:59:02Z",
+  "source_updated_at": "2026-09-02T05:44:46Z",
+  "title": "Insider PowerToys version tricks the Microsoft store into thinking that PowerToys is not installed",
+  "url": "https://github.com/microsoft/PowerToys/issues/50317",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "authorAssociation": "NONE"
 }

@@ -4,87 +4,93 @@
   "kind": "issue",
   "track": "fix",
   "stage": "awaiting_design_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-09T10:28:38.042Z",
-  "evaluated_at": "2026-09-09T10:28:38.042Z",
+  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
   "source_updated_at": "2026-09-08T03:04:48Z",
-  "title": "CmdPal: ListItemViewModel.AccessibleName is not used",
   "url": "https://github.com/microsoft/PowerToys/issues/50346",
+  "title": "CmdPal: ListItemViewModel.AccessibleName is not used",
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The view model constructs and raises property changes for a combined Title and Subtitle accessibility name, while the item templates expose only Title. The new maintainer reply supports proceeding with the confirmed cleanup rather than leaving the unused accessibility property unresolved.",
+    "rationale": "The maintained accessibility property has exact unused and binding sites.",
     "evidence": [
-      "ListItemViewModel.InitializeProperties and FetchProperty invoke UpdateAccessibleName after initial, Title, and Subtitle updates.",
-      "UpdateAccessibleName assigns the combined Title and Subtitle string and raises AccessibleName.",
-      "ListItemsView row, small-grid, medium-grid, and gallery item containers bind AutomationProperties.Name to Title rather than AccessibleName.",
-      "The issue author reported the maintained-but-unused property from a current development build.",
-      "On 2026-09-08 a PowerToys member replied positively to fixing the issue; there is no linked competing fix."
+      "AccessibleName is updated in ListItemViewModel.",
+      "List and grid templates bind automation names to Title instead.",
+      "No duplicate or existing fix covers this symbol.",
+      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T14:38:05.1052603Z.",
+      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T15:08:39.7870394Z."
     ],
-    "recommended_action": "Approve the focused template-binding and UI Automation regression-test design.",
-    "evaluated_at": "2026-09-08T04:10:49Z",
+    "recommended_action": "Approve the accessibility binding design.",
+    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
     "source_updated_at": "2026-09-08T03:04:48Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No open or merged change is linked to the issue. The current source demonstrates a concrete unused accessibility property and a small, repository-local correction."
+    "rationale": "No existing fix attempt binds AccessibleName to the focusable list/grid containers.",
+    "existing_fix_urls": []
   },
   "proposed_fixes": [
     {
-      "title": "Bind Command Palette item automation names to AccessibleName",
-      "root_cause": "ListItemViewModel computes and notifies AccessibleName as the item's combined title and subtitle, but ListItemsView binds the interactive item templates' AutomationProperties.Name to Title. Consequently the maintained combined label is never exposed to UI Automation.",
+      "title": "Use AccessibleName for CmdPal result items",
+      "root_cause": "The view model computes AccessibleName but templates and focusable containers expose Title or content-derived names to UI Automation.",
       "plan": [
-        "Replace only interactive row and grid item-container AutomationProperties.Name bindings with AccessibleName.",
-        "Preserve existing section-header, separator, AutomationId, title, and subtitle visual bindings.",
-        "Add focused UI Automation assertions for initial and updated Title/Subtitle values in every affected presentation."
+        "Format AccessibleName without trailing separators.",
+        "Bind list and grid item templates or containers to AccessibleName.",
+        "Cover virtualization and property updates with unit and UI Automation tests."
       ],
       "verification": [
-        "Inspect UI Automation names for a row and each grid presentation with both title and subtitle.",
-        "Change a title and subtitle through the extension object and confirm the exposed name changes.",
-        "Confirm empty subtitles do not create a duplicate or misleading announcement."
+        "Accessibility tooling reports the combined title/subtitle for focused list and grid results."
       ],
       "confidence": {
-        "score": 90,
+        "score": 91,
         "level": "green",
-        "rationale": "The producer and consumer paths are directly present in current source, and the new maintainer activity indicates the observed dead binding should be corrected. The remaining implementation work is localized regression coverage."
+        "rationale": "Search identified the sole property definition and all template binding sites."
       }
     }
   ],
   "issue_context": {
-    "summary": "Command Palette maintains an accessibility label combining a list item's title and subtitle but currently exposes only the title through its item templates. A maintainer's new reply supports fixing that confirmed mismatch.",
+    "summary": "CmdPal spends effort maintaining an accessible result name but does not expose it on the focusable result controls.",
     "known_information": [
-      "The issue is open with Issue-Bug, Needs-Triage, and Product-Command Palette labels.",
-      "The reporter identified AccessibleName in ListItemViewModel as maintained but unused.",
-      "Current source updates AccessibleName after initialization and after title or subtitle property changes.",
-      "Current list and grid templates bind AutomationProperties.Name to Title.",
-      "The only substantive new activity is a PowerToys member reply encouraging the proposed fix."
+      "The issue names ListItemViewModel.AccessibleName.",
+      "AccessibleName is built from Title and Subtitle.",
+      "The report was filed against a development build.",
+      "List and grid views are the affected result surfaces.",
+      "Fast revalidation covered live upstream activity through 09/08/2026 03:04:48.",
+      "Fast revalidation covered live upstream activity through 2026-09-08T03:04:48.0000000Z."
     ],
     "inferences": [
-      "The combined accessibility label is likely intended to make subtitle context available to assistive technologies.",
-      "The existing concatenation may need normalization for an empty subtitle, but that does not change the confirmed unused-binding defect."
+      "The container automation peer, not only inner text, should receive the binding.",
+      "Empty subtitles should not create a trailing comma."
     ],
-    "analysis": "This is a concrete accessibility wiring defect rather than a report requiring diagnostics. The new member response resolves the prior question of whether the maintained property should be used. The design keeps the change confined to interactive item containers and requires UI Automation coverage so visual template behavior and non-item announcements are not changed inadvertently.",
+    "analysis": "Binding the existing property preserves the intended accessibility design and makes updates flow through the existing property notification path.",
     "initial_investigation": [
-      "Read the complete live issue body, both comments, labels, assignees, and project context; no project item, assignee, duplicate, or linked fix is present.",
-      "Reviewed ListItemViewModel.InitializeProperties, FetchProperty, and UpdateAccessibleName at the live repository revision.",
-      "Reviewed ListItemsView.xaml and confirmed the row, small-grid, medium-grid, and gallery item templates use Title for AutomationProperties.Name.",
-      "Searched the Command Palette source for AccessibleName and found the view-model producer but no matching template consumer."
+      "Inspected ListItemViewModel.cs and ListItemsView.xaml templates.",
+      "Confirmed no competing fix or duplicate.",
+      "Fork mirror Issue 639 contains the detailed design and adversary approval.",
+      "Revalidated selected issue metadata, labels, assignees, body, and 2 public comment(s) during the scheduled bounded run."
     ],
     "information_gaps": []
   },
   "design": {
-    "root_cause": "AccessibleName is a maintained view-model property but is not consumed by the interactive ListItemsView templates; those templates expose Title alone as AutomationProperties.Name.",
+    "root_cause": "ListItemViewModel.AccessibleName is maintained but ListItemsView templates set AutomationProperties.Name from Title, leaving the combined accessible string unused.",
     "evidence": [
-      "ListItemViewModel.UpdateAccessibleName sets AccessibleName and calls UpdateProperty.",
-      "The Title and Subtitle cases in FetchProperty each call UpdateAccessibleName.",
-      "The four interactive ListItemsView item-template containers bind AutomationProperties.Name to Title.",
-      "The live issue discussion contains maintainer support for applying the fix."
+      "[Observed] AccessibleName is updated on title/subtitle changes.",
+      "[Observed] List and grid templates use Title for automation naming.",
+      "[Inferred] Recycled containers need explicit binding/clearing to avoid stale names."
     ],
     "affected_files": [
       {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml",
-        "purpose": "Defines the interactive row, small-grid, medium-grid, and gallery containers that publish item automation metadata.",
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListItemViewModel.cs",
+        "purpose": "Computes accessible result labels.",
         "symbols": [
+          "ListItemViewModel.AccessibleName",
+          "UpdateAccessibleName"
+        ]
+      },
+      {
+        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml",
+        "purpose": "Defines list/grid result templates.",
+        "symbols": [
+          "ItemsList",
+          "ItemsGrid",
           "ListItemSingleRowViewModelTemplate",
           "SmallGridItemViewModelTemplate",
           "MediumGridItemViewModelTemplate",
@@ -92,129 +98,96 @@
         ]
       },
       {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListItemViewModel.cs",
-        "purpose": "Builds and notifies the accessibility label consumed by the templates.",
+        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "purpose": "Tests accessible-name formatting and updates.",
         "symbols": [
-          "ListItemViewModel.AccessibleName",
-          "ListItemViewModel.FetchProperty",
-          "ListItemViewModel.UpdateAccessibleName"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.UITests/ListItemsViewTests.cs",
-        "purpose": "Add or extend focused UI Automation coverage for list-item presentation templates.",
-        "symbols": [
-          "ListItemsViewTests"
+          "AccessibleName tests"
         ]
       }
     ],
     "implementation_steps": [
       {
         "order": 1,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml",
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListItemViewModel.cs",
         "symbols": [
-          "ListItemSingleRowViewModelTemplate",
-          "SmallGridItemViewModelTemplate",
-          "MediumGridItemViewModelTemplate",
-          "GalleryGridItemViewModelTemplate"
+          "UpdateAccessibleName"
         ],
-        "current_behavior": "Each interactive item container names itself from Title even though its data context supplies a maintained AccessibleName.",
-        "change": "Change the four interactive AutomationProperties.Name bindings from Title to AccessibleName. Do not modify section-header or separator templates because they are not command items and have different announcement semantics.",
-        "code_block": "<!-- In each interactive item container -->\n- AutomationProperties.Name=\"{x:Bind Title}\"\n+ AutomationProperties.Name=\"{x:Bind AccessibleName}\"",
+        "current_behavior": "Title and Subtitle are concatenated with a separator even when one is empty.",
+        "change": "Join only non-empty parts and notify once.",
+        "code_block": "AccessibleName = string.Join(\", \", new[] { Title, Subtitle }.Where(p => !string.IsNullOrWhiteSpace(p)));\\nUpdateProperty(nameof(AccessibleName));",
         "edge_cases": [
-          "Keep AutomationId bindings unchanged.",
-          "Do not alter visual title/subtitle bindings.",
-          "Verify the combined value is understandable when Subtitle is empty; normalize UpdateAccessibleName only if the test demonstrates a trailing delimiter is announced."
+          "Null and whitespace values should produce an empty or single-part name.",
+          "Preserve notification behavior for virtualization and refresh."
         ],
         "tests": [
-          "UI Automation name assertion for one row and each of the three grid templates.",
-          "Regression assertion that section headers and separators retain their existing automation behavior."
+          "Initial title/subtitle formatting.",
+          "Title and subtitle changes.",
+          "Empty and whitespace subtitle cases."
         ]
       },
       {
         "order": 2,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListItemViewModel.cs",
+        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml",
         "symbols": [
-          "ListItemViewModel.UpdateAccessibleName",
-          "ListItemViewModel.FetchProperty"
+          "ItemsList",
+          "ItemsGrid",
+          "all item templates"
         ],
-        "current_behavior": "The method concatenates Title, comma, and Subtitle and raises a property notification whenever either source field changes.",
-        "change": "Retain the notification path; add a whitespace-aware combined-label form only if UI Automation validation shows that an empty subtitle yields an audible dangling delimiter. Ensure the emitted value remains a single accessible name, not a duplicate of child text.",
-        "code_block": "AccessibleName = string.IsNullOrWhiteSpace(Subtitle)\n    ? Title\n    : $\"{Title}, {Subtitle}\";\nUpdateProperty(nameof(AccessibleName));",
+        "current_behavior": "AutomationProperties.Name is bound to Title or inferred from content.",
+        "change": "Bind the accessible name on every result template and, if needed, the focusable recycled container.",
+        "code_block": "- AutomationProperties.Name=\"{x:Bind Title, Mode=OneWay}\"\\n+ AutomationProperties.Name=\"{x:Bind AccessibleName, Mode=OneWay}\"",
         "edge_cases": [
-          "Title or Subtitle can change after the container is realized.",
-          "A null or blank subtitle must not erase a nonblank title.",
-          "Do not fold tags or details into this change without accessibility-product direction."
+          "Clear names for separators/non-interactive items.",
+          "Use item source explicitly when handling recycled containers.",
+          "Keep tooltips and visual title text unchanged."
         ],
         "tests": [
-          "Property-change test for title-only, subtitle-only, and title-plus-subtitle list items.",
-          "UI Automation assertion after a runtime title or subtitle update."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI.UITests/ListItemsViewTests.cs",
-        "symbols": [
-          "ListItemsViewTests"
-        ],
-        "current_behavior": "The focused regression surface does not prove that the view-model accessibility label reaches the platform automation peer.",
-        "change": "Create test data with distinct title and subtitle text, load it in row and grid modes, obtain the interactive item's UI Automation peer, and assert its Name includes the combined label exactly once. Mutate the subtitle and wait for the automation property update.",
-        "code_block": "var item = CreateListItem(title: \"GPU\", subtitle: \"48%\");\nvar peer = await ShowAndFindAutomationPeerAsync(item, layout);\nAssert.AreEqual(\"GPU, 48%\", peer.Name);\nitem.Subtitle = \"52%\";\nAssert.AreEqual(\"GPU, 52%\", await peer.WaitForNameAsync());",
-        "edge_cases": [
-          "Avoid asserting framework-owned container names that vary by WinUI version.",
-          "Run on an STA UI test host and await dispatcher completion after extension property changes.",
-          "Cover virtualized grid realization without relying on a fixed item index."
-        ],
-        "tests": [
-          "Focused row, small-grid, medium-grid, and gallery automation-name cases.",
-          "Focused dynamic-title and dynamic-subtitle update cases."
+          "UI Automation finds combined names after virtualization and after result refresh."
         ]
       }
     ],
     "verify": [
-      "Build the CmdPal UI project using the repository's existing x64 Debug workflow.",
-      "Run the focused ListItemsView UI Automation tests.",
-      "Use Narrator or Inspect to confirm a title-plus-subtitle item is announced once with both fields and an item with no subtitle has no dangling punctuation."
+      "Build CmdPal view-model and UI tests with the existing build scripts.",
+      "Run targeted tests with vstest.console.exe.",
+      "Use Accessibility Insights or UIA Verify on list, small grid, medium grid, and gallery results and confirm the focused item exposes Title, Subtitle."
     ],
     "risks": [
-      "Some extensions may already duplicate subtitle text in Title, producing redundant speech after the correction.",
-      "Changing template bindings in only one presentation would create inconsistent accessibility across layouts.",
-      "Unconditional concatenation can expose a trailing delimiter for empty subtitles."
+      "Changing container names can affect automation clients; this is the intended contract and is limited to result items.",
+      "Template-only binding may not cover every automation peer, so container binding should be used where required."
     ],
     "alternatives": [
-      "Delete AccessibleName and retain Title-only names. Rejected because the existing update logic shows an intended richer label and the maintainer response supports fixing its use.",
-      "Bind a separate child element's name instead of the interactive container. Rejected because keyboard focus and invocation target the item container."
+      "Removing AccessibleName wastes existing accessibility work.",
+      "Binding only inner text may leave the focusable peer unchanged."
     ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 639,
+    "fork_title": "[Issue 50346] CmdPal ListItemViewModel AccessibleName is not used",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/639"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "No blocking objections; approve design.",
+    "notes": "Virtualization coverage is required."
   },
   "actions": [
     {
       "type": "approve_design",
-      "label": "Approve CmdPal accessible-name binding design",
-      "note": "Start fork-side implementation only after explicit design approval."
+      "label": "Approve design for Issue 50346",
+      "mirror_issue": 639,
+      "comment": {
+        "body": "Approve the fork-side CmdPal accessibility design for Issue 50346."
+      }
     }
   ],
-  "repository": "microsoft/PowerToys",
-  "state": "OPEN",
-  "created_at": "2026-09-03T07:00:54Z",
-  "updated_at": "2026-09-08T03:04:48Z",
-  "author": "jiripolasek",
+  "generated_at": "2026-09-11T15:08:39.7870394Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Command Palette"
   ],
-  "assignees": [],
-  "comments": 2,
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 2,
-    "timeline_events_read": 7
-  },
-  "upstream_public_action_taken": false,
-  "full_design": true,
-  "confidence": {
-    "score": 90,
-    "level": "green",
-    "rationale": "Current source shows the dead accessibility binding directly and the maintainer response supports fixing it."
-  }
+  "assignees": null,
+  "comments": 2
 }

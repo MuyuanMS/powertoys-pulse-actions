@@ -1,103 +1,238 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "number": 50397,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-08T04:35:52.486Z",
-  "evaluated_at": "2026-09-08T04:35:52.486Z",
-  "source_updated_at": "2026-09-08T02:45:00Z",
+  "generated_at": "2026-09-14T14:02:00Z",
+  "evaluated_at": "2026-09-14T14:02:00Z",
+  "source_updated_at": "2026-09-08T10:45:00+08:00",
   "head_sha": "9e013857d8cde094832b1ef0e19ce2134112ebfd",
-  "title": "CmdPal: Move static list filtering to background work",
+  "title": "CmdPal: filter static pages in the background",
   "url": "https://github.com/microsoft/PowerToys/pull/50397",
-  "summary": "The current upstream head has a converged clean fork review. The final Copilot pass reviewed all seven changed files, generated zero new comments, and left zero unresolved Copilot threads. Required CmdPal Debug x64 builds passed and the focused filtering and superseding-gate suite passed 48/48.",
+  "summary": "The fork review loop was resumed, rebased onto the live upstream head, and converged after a fresh Copilot pass. The exact upstream head still lacks five validated correctness fixes for pointer activation, publication cost, deferred secondary activation, force-first selection synchronization, and IsInteractive snapshot invalidation. A current-head review with five requests is drafted and awaits explicit approval.",
   "status": {
-    "glyph": "ok",
-    "label": "Review ready",
-    "detail": "The current-head fork review is clean with zero proposed comments and zero unresolved Copilot threads. Final Common, ViewModels, UI, and unit-test builds passed; targeted tests passed 48/48; no upstream review was posted."
+    "glyph": "post",
+    "label": "Review drafted — five requests",
+    "detail": "Upstream head 9e013857d8cde094832b1ef0e19ce2134112ebfd is current. Fork PR 803 at ce40d15a51409420960cf4806fb70e3283eee33c has a fresh zero-comment Copilot pass and zero unresolved threads; five fork-only fixes remain as maintainer approval actions."
   },
-  "next_action": {
-    "glyph": "▶",
-    "label": "Approve clean review after authorization",
-    "reason": "The artifact is pinned to the live upstream head and the fork-side review loop converged cleanly. An authorized maintainer may approve after the final freshness check; no upstream action was submitted automatically."
-  },
-  "actions": [
+  "next_action": "Review and approve, edit, or hold the drafted current-head review.",
+  "proposed_comments": [
     {
-      "id": "approve-review-50397",
-      "type": "approve",
-      "label": "Approve clean review",
-      "primary": true,
-      "confirm": true,
-      "note": "The review is pinned to the current upstream head and has no author-facing findings. Require explicit authorization and a final upstream freshness check before publishing."
+      "id": "50397-preserve-pointer-activation-target",
+      "kind": "inline",
+      "title": "Preserve the explicitly clicked activation target",
+      "severity": "high",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml.cs",
+      "side": "RIGHT",
+      "line": 218,
+      "in_diff": true,
+      "body": "### Preserve the explicitly clicked activation target\n\n**Severity:** `high`\n\nPointer activation currently routes through the selection command, so a click during background filtering can be deferred without retaining the item that the user actually clicked. When the filter publishes, the pending activation can then run the newly selected item instead of the clicked command. Keep pointer activation separate from selection-based Enter deferral and validate the explicit target after publication.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current view invokes the generated selection command for both pointer paths, and the converged fork added an explicit-target activation path that preserves and validates the clicked item."
+      }
+    },
+    {
+      "id": "50397-use-linear-filter-publication-update",
+      "kind": "inline",
+      "title": "Use the hash-assisted collection update",
+      "severity": "high",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListViewModel.cs",
+      "side": "RIGHT",
+      "line": 802,
+      "in_diff": true,
+      "body": "### Use the hash-assisted collection update\n\n**Severity:** `high`\n\nThe two-argument `InPlaceUpdateList` overload performs a forward scan for each newly visible item. For largely disjoint consecutive queries this leaves the publication step with quadratic UI-thread work and many collection notifications, so the typing stall this change is intended to remove can still occur while publishing results. Use the hash-assisted or equivalent linear/bulk update overload for this background-filter publication path.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current call selects the scan-based overload, while the converged fork explicitly switched to the overload that returns the hash/update result and avoids repeated remaining-list scans."
+      }
+    },
+    {
+      "id": "50397-retry-deferred-secondary-activation",
+      "kind": "inline",
+      "title": "Retry secondary activation after selection hydration",
+      "severity": "medium",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListViewModel.cs",
+      "side": "RIGHT",
+      "line": 1171,
+      "in_diff": true,
+      "body": "### Retry secondary activation after selection hydration\n\n**Severity:** `medium`\n\nA confirmed static selection can still have an uninitialized item when Ctrl+Enter is pressed quickly. In that case `SecondaryCommand` is null and this path simply drops the activation, even though the existing hydration callback can replay a targeted pending activation. Queue the specific item when its selection initialization is incomplete so the command is retried after hydration.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current command lookup is immediate and has no pending path for a null secondary command; the fork fix adds a targeted pending activation guarded by SelectionInitialized."
+      }
+    },
+    {
+      "id": "50397-confirm-force-first-selection",
+      "kind": "inline",
+      "title": "Do not confirm a stale force-first selection",
+      "severity": "high",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListViewModel.cs",
+      "side": "RIGHT",
+      "line": 842,
+      "in_diff": true,
+      "body": "### Do not confirm a stale force-first selection\n\n**Severity:** `high`\n\nMembership alone is not enough when a force-first refresh reorders overlapping results: the view can report the previous first item while bindings are catching up, and this method then confirms the new filter version and releases deferred Enter against the wrong command. Preserve the force-first expectation through completion and require the selected item to match the current first interactive result before confirming the version.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current predicate accepts any interactive member, while the converged fork tracks the expected first interactive item and rejects a stale renderer selection."
+      }
+    },
+    {
+      "id": "50397-invalidate-interactive-snapshot",
+      "kind": "inline",
+      "title": "Invalidate static snapshots when interactivity changes",
+      "severity": "medium",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListViewModel.cs",
+      "side": "RIGHT",
+      "line": 929,
+      "in_diff": true,
+      "body": "### Invalidate static snapshots when interactivity changes\n\n**Severity:** `medium`\n\nAn item's command or section can change `IsInteractive`, but the static-filter snapshot currently stores only title, subtitle, and error state. The notification handler therefore sees an interaction-only change as unchanged and leaves the expected force-first item stale, which can block deferred Enter indefinitely. Include `IsInteractive` in the snapshot state and refilter when that property changes.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The upstream handler and snapshot omit the same property; the converged fork adds it to both paths and the final Copilot review returned zero further comments."
+      }
     }
   ],
-  "proposed_comments": [],
-  "judgment": {
-    "status": "review_clean",
-    "rationale": "The change is scoped to CmdPal static filtering, selection synchronization, activation deferral, and the superseding async gate. The fork-side Copilot loop converged after addressing pointer-target preservation, publication complexity, deferred secondary activation, force-first selection ordering, and interaction-state snapshot invalidation.",
-    "evidence": [
-      "Live upstream head is 9e013857d8cde094832b1ef0e19ce2134112ebfd and source_updated_at is 2026-09-08T02:45:00Z.",
-      "Fork PR 710 on pr-iterate/50397-v2 reached head 3c92169a0ea5ee0430341eb8915d4a9f4e40369d.",
-      "The latest fresh Copilot review completed at 2026-09-08T04:01:01Z, reviewed all seven changed files, generated zero new comments, and left zero unresolved threads.",
-      "CmdPal Common, ViewModels, UI, and ViewModels unit-test Debug x64 builds passed.",
-      "The targeted StaticPageFiltering and SupersedingAsyncGate suite passed 48/48."
-    ],
-    "recommended_action": "Approve only after explicit authorization and a live upstream freshness check.",
-    "evaluated_at": "2026-09-08T04:35:52.486Z",
-    "source_updated_at": "2026-09-08T02:45:00Z"
+  "actions": [
+    {
+      "id": "post-review-50397",
+      "type": "post_review",
+      "label": "Post current-head review requests",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50397,
+        "pullRequest": 50397,
+        "event": "COMMENT",
+        "head_sha": "9e013857d8cde094832b1ef0e19ce2134112ebfd"
+      },
+      "note": "Revalidate the upstream head, checks, comments, reviews, and threads; validate the pinned payload; and obtain explicit approval before publishing."
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted current-head review for explicit maintainer approval",
+    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
+    "Hold or edit any request without changing upstream labels, review state, or PR state",
+    "Rerun the fork review loop if the upstream head changes"
+  ],
+  "phase0": {
+    "author": "michaeljolley",
+    "author_association": "MEMBER",
+    "bar": "repository member; process review nags skipped",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "The member-authored PR is atomic and described. Phase 0 community-contributor gates are skipped; the drafted actions contain only current-head code findings."
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "9e013857d8cde094832b1ef0e19ce2134112ebfd",
+    "updated_at": "2026-09-08T02:45:00Z",
+    "commit_count": 5,
+    "changed_file_count": 7,
+    "additions": 2435,
+    "deletions": 176,
+    "review_decision": "CHANGES_REQUESTED",
+    "mergeable_state": "DIRTY",
+    "reported_checks": {
+      "total": 0,
+      "successful": 0,
+      "failing": 0,
+      "pending": 0,
+      "note": "No upstream checks were used as a blocking input for this worker checkpoint."
+    }
   },
   "fork_pr": {
-    "number": 710,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/710",
+    "number": 803,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/803",
     "state": "OPEN",
-    "branch": "pr-iterate/50397-v2",
-    "head_sha": "3c92169a0ea5ee0430341eb8915d4a9f4e40369d"
+    "head_sha": "ce40d15a51409420960cf4806fb70e3283eee33c",
+    "base_sha": "f0a196cf493568839bf2b434ffa897287cef592f",
+    "changed_file_count": 7
+  },
+  "fork_branch": "pr-iterate/50397-v3",
+  "copilot_review": {
+    "latest_submitted_at": "2026-09-14T13:52:55Z",
+    "latest_commit_id": "ce40d15a51409420960cf4806fb70e3283eee33c",
+    "latest_new_comments": 0,
+    "unresolved_threads": 0,
+    "review_count": 2,
+    "policy_note": "The prior current-head Copilot finding was fixed, replied to, and resolved on the fork. The latest fresh pass generated zero published comments."
+  },
+  "verification": {
+    "result": "passed",
+    "summary": "The converged fork built PowerToys essentials and all CmdPal solution filters in x64 Debug. After the final scheduler-continuation fix, the affected common library and common unit-test project rebuilt successfully; targeted SupersedingAsyncGate and static-filtering tests passed 64/64.",
+    "builds": [
+      "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
+      "<PowerToysCheckout>\\src\\modules\\cmdpal\\tools\\build\\build.cmd",
+      "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.Common\\..\\..\\..\\..\\tools\\build\\build.cmd",
+      "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Common.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
+    ],
+    "tests": [
+      {
+        "suite": "Microsoft.CmdPal.Common.UnitTests filtered SupersedingAsyncGate",
+        "result": "passed",
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "Microsoft.CmdPal.UI.ViewModels.UnitTests filtered static filtering",
+        "result": "passed",
+        "passed": 48,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "fork_head": {
+      "head_sha": "ce40d15a51409420960cf4806fb70e3283eee33c",
+      "result": "passed",
+      "exe": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe"
+    },
+    "upstream_head": {
+      "head_sha": "9e013857d8cde094832b1ef0e19ce2134112ebfd",
+      "result": "not_applicable",
+      "detail": "The drafted items are explanatory review requests without apply-ready suggestion blocks; no synthetic suggestion candidate was built. The live upstream head was used for all paths and line anchors."
+    },
+    "suggestionPatch": {
+      "result": "not_applicable",
+      "appliedItemIds": [],
+      "minimalRangesReviewed": true,
+      "commands": [],
+      "reason": "All five drafted items are prose-only inline requests; no apply-ready suggestion block is included."
+    },
+    "environment_note": "The build required clearing inherited GIT_CONFIG_* variables for vcpkg and setting POWERTOYS_DISABLE_SPECTRE=1; no repository files were changed for either workaround."
   },
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-09-08T04:35:52.486Z",
-    "copilot_rounds": 4,
-    "copilot_latest_review_at": "2026-09-08T04:01:01Z",
-    "copilot_result": "clean_zero_published_comments",
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-14T14:02:00Z",
+    "resume_action": "await_explicit_review_approval",
+    "fork_pr": 803,
+    "fork_branch": "pr-iterate/50397-v3",
+    "fork_head_sha": "ce40d15a51409420960cf4806fb70e3283eee33c",
     "unresolved_copilot_threads": 0,
-    "local_validation": "completed"
+    "copilot_review": {
+      "submitted_at": "2026-09-14T13:52:55Z",
+      "commit_id": "ce40d15a51409420960cf4806fb70e3283eee33c",
+      "published_comments": 0
+    },
+    "build_result": "passed",
+    "previous_phase": "review_in_progress"
   },
   "freshness": {
-    "checkpoint_at": "2026-09-08T04:35:52.486Z",
-    "live_upstream_head": "9e013857d8cde094832b1ef0e19ce2134112ebfd",
-    "live_source_updated_at": "2026-09-08T02:45:00Z"
-  },
-  "build_evidence": {
-    "status": "passed",
-    "configuration": "x64 Debug",
-    "commands": [
-      "tools\\build\\build-essentials.cmd",
-      "tools\\build\\build.cmd for Microsoft.CmdPal.Common",
-      "tools\\build\\build.cmd for Microsoft.CmdPal.UI.ViewModels",
-      "tools\\build\\build.cmd for Microsoft.CmdPal.UI",
-      "tools\\build\\build.cmd for Microsoft.CmdPal.UI.ViewModels.UnitTests"
-    ],
-    "tests": {
-      "status": "passed",
-      "suite": "FullyQualifiedName~StaticPageFiltering|FullyQualifiedName~SupersedingAsyncGate",
-      "passed": 48,
-      "failed": 0,
-      "skipped": 0
-    },
-    "notes": [
-      "Inherited GIT_CONFIG_* variables were cleared before builds.",
-      "POWERTOYS_DISABLE_SPECTRE=1 was used.",
-      "The final validation completed against fork head 3c92169a0ea5ee0430341eb8915d4a9f4e40369d."
-    ]
-  },
-  "copilot": {
-    "latest_review_at": "2026-09-08T04:01:01Z",
-    "new_comments": 0,
-    "unresolved_threads": 0,
-    "reviewed_files": 7
-  },
-  "upstream_writes": false,
-  "dashboard_modified": false
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-14T14:02:00Z",
+    "source_updated_at": "2026-09-08T02:45:00Z",
+    "head_sha": "9e013857d8cde094832b1ef0e19ce2134112ebfd"
+  }
 }

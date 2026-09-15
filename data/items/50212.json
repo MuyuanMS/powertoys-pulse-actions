@@ -1,20 +1,18 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 4,
   "id": "pr-50212",
   "number": 50212,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "post_review",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T07:16:54.597524Z",
-  "evaluated_at": "2026-09-10T07:16:54.597524Z",
-  "source_updated_at": "2026-09-08T23:00:12Z",
+  "generated_at": "2026-09-07T10:26:59.6063785Z",
+  "evaluated_at": "2026-09-07T10:26:59.6063785Z",
+  "source_updated_at": "2026-09-07T08:30:50Z",
   "head_sha": "266618cf30c62f2d008d67d3209b7e11de5a0195",
-  "fork_head_sha": "001262e8b805dc914d8b18dd3b24df852e073cf5",
   "title": "[PowerAccent] Hide stuck accent toolbar when focus leaves the window",
   "url": "https://github.com/microsoft/PowerToys/pull/50212",
-  "repository": "microsoft/PowerToys",
   "author": "amail80",
   "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
   "isCommunity": true,
@@ -26,19 +24,69 @@
     "Ready for review"
   ],
   "confidence": "High",
-  "processVerdict": "proceed",
-  "summary": "The prior current-head review checkpoint and live fork review were inspected before any new request. No Copilot request is outstanding: the latest review covers the exact fork head, has zero published comments, and leaves zero unresolved Copilot threads. The refreshed Debug x64 Quick Accent build and all 55 focused tests pass. Two current-upstream-head findings remain drafted for approval: foreground cancellation can rearm a still-held owner key, and a changed comment violates the repository spelling rule.",
+  "processVerdict": "ask",
+  "summary": "The author applied the prior foreground-event ordering review on the current upstream head. Fresh fork review found that foreground cancellation can immediately rearm from a still-held key and can leave that letter suppressed if an elevated transition loses key-up; the converged fork fix handles both cases and corrects one spelling-rule violation. The final Copilot pass produced zero new comments, all fork threads are resolved, the full Power Accent Debug chain builds, and 55 targeted tests pass. The author still owes the video or screenshot requested by the upstream maintainer.",
   "status": {
-    "glyph": "📝",
-    "label": "Review complete — request changes awaiting approval",
-    "detail": "Pinned to upstream head 266618cf30c62f2d008d67d3209b7e11de5a0195. Fork review convergence, exact two-file scope, full targeted Debug builds, and 55 focused tests are current."
+    "glyph": "ACTION",
+    "label": "Review comments ready; visual evidence pending",
+    "detail": "Upstream remains at 266618cf30c62f2d008d67d3209b7e11de5a0195. Fork PR 697 is at b2f3bd8e4ed435725cb9c288649dac361748542b, the final fresh Copilot review generated zero new comments, all fork review threads are resolved, fork spelling checks pass, the targeted Debug module chain builds, and 55/55 tests pass."
   },
   "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted request-changes review",
-    "reason": "The current implementation can reopen the toolbar from an auto-repeat after focus cancellation, and the changed callback comment still triggers the spelling rule."
+    "glyph": "ACTION",
+    "label": "Wait for visual evidence, then consider posting 2 review items",
+    "reason": "The latest upstream activity is a maintainer request for a video or screenshot proving the fix. After the author responds, recheck the upstream head and post the preserved current-head review only if both findings remain applicable."
   },
   "needs_revalidation": false,
+  "phase0": {
+    "verdict": "ask",
+    "disposition": "Ask",
+    "author": "amail80",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "bar": "full community-contributor Phase 0",
+    "owes_after_post": "author",
+    "processAsks": [
+      "Provide the video or screenshot already requested by the upstream maintainer to demonstrate that the stuck toolbar is dismissed."
+    ],
+    "summary": "The CLA, intake, and telemetry checks pass; the linked bug and discussion support the focused recovery scope; the single author commit is attributable and the two-file change is atomic. The author documented local validation, and no competing open PR was found. The latest maintainer comment explicitly requests visual proof, so the author owes the next process action. Azure Pipelines has not run, which is expected for an external-fork PR and is not treated as a failure.",
+    "gateEvidence": {
+      "P1_cla": {
+        "status": "pass",
+        "evidence": "license/cla completed successfully on the current head."
+      },
+      "P2_demo": {
+        "status": "ask",
+        "evidence": "The latest upstream comment, at 2026-09-07T08:30:50Z, asks the author to provide a video or screenshot proving the fix works. No response or visual evidence has been added since."
+      },
+      "P3_author_validation": {
+        "status": "not_triggered",
+        "evidence": "The author documented deterministic reproduction, several weeks of local use, normal Quick Accent validation, and a clean local build. The current checks do not indicate an unchecked submission."
+      },
+      "P4_ci": {
+        "status": "pass_with_external_build_not_run",
+        "evidence": "PR intake, telemetry detection, and CLA pass. The Azure Pipelines build has not been triggered; PowerToys does not automatically run it for external-fork PRs."
+      },
+      "P5_provenance": {
+        "status": "pass",
+        "evidence": "The current PR contains one commit attributed to the author, and no copied-work or misattribution signal was found."
+      },
+      "P6_duplicate": {
+        "status": "pass",
+        "evidence": "The PR targets linked issue 31988. Searches for that issue and the stuck Quick Accent behavior found no competing open implementation."
+      },
+      "P7_scope": {
+        "status": "pass",
+        "evidence": "The 63-line additive change is confined to KeyboardListener.cpp and KeyboardListener.h and addresses one foreground-cancellation behavior."
+      },
+      "P8_draft": {
+        "status": "pass",
+        "evidence": "The PR is open, mergeable, and not a draft."
+      },
+      "P9_template": {
+        "status": "pass",
+        "evidence": "The description includes a summary, linked closing issue, root-cause analysis, scope, behavioral trade-offs, and detailed validation."
+      }
+    }
+  },
   "proposed_comments": [
     {
       "id": "suppress-cancelled-owner-until-release",
@@ -47,13 +95,11 @@
       "title": "Keep the cancelled owner key suppressed until release",
       "confidence": {
         "score": 97,
-        "rationale": "ForceReset deterministically clears the active owner while its physical key may remain held, so the next repeat enters the new-gesture path. The missed-key-up case also requires physical-state cleanup to avoid permanent suppression."
+        "rationale": "ForceReset deterministically clears letterPressed while the physical key may remain held, so the next repeat enters the new-gesture path. The inverse missed-key-up case can also make naive suppression permanent; both paths follow directly from the changed callback and existing key handlers."
       },
+      "body": "### Keep the cancelled owner key suppressed until release\n\n**Severity:** `medium`\n\n`ForegroundEventProc` calls `ForceReset()`, which clears the owner letter. If that physical key is still held after focus moves, its next auto-repeat is treated as a new gesture and can reopen the toolbar in the destination window, undoing the cancellation. Track the foreground-cancelled owner separately, swallow its repeat key-downs until release, and clear stale suppression when `GetAsyncKeyState` shows the key is already up (including on a later foreground notification), so a key-up missed while crossing an elevated process cannot permanently disable that letter.",
       "in_diff": false,
-      "body": "### Keep the cancelled owner key suppressed until release\n\n**Severity:** `medium`\n\n`ForegroundEventProc` calls `ForceReset()`, which clears the owner letter even when that physical key is still held. Its next auto-repeat key-down can therefore be treated as a new gesture and reopen the toolbar in the newly focused application, undoing the cancellation. Please retain the cancelled owner separately, swallow repeat key-downs until release, and clear stale suppression when `GetAsyncKeyState` shows that the key is already up so a key-up missed across an elevated-process transition cannot permanently disable that letter.",
-      "disposition": "proposed",
-      "outOfDiffReason": "The safe correction requires coordinated state and control-flow edits in the unchanged OnKeyDown and OnKeyUp regions plus a new class member in KeyboardListener.h, as well as changing the newly added foreground callback. No single current RIGHT-side diff range contains a self-contained apply-ready replacement.",
-      "out_of_diff_reason": "The safe correction requires coordinated state and control-flow edits in the unchanged OnKeyDown and OnKeyUp regions plus a new class member in KeyboardListener.h, as well as changing the newly added foreground callback. No single current RIGHT-side diff range contains a self-contained apply-ready replacement."
+      "disposition": "proposed"
     },
     {
       "id": "punctuate-otherwise-comment",
@@ -62,230 +108,123 @@
       "title": "Add the comma required by the spelling rule",
       "confidence": {
         "score": 100,
-        "rationale": "The current RIGHT-side line contains the exact punctuation pattern rejected by the repository spelling rule; adding the comma is the accepted localized correction."
+        "rationale": "The fork check-spelling workflow reported this exact current-diff line as a forbidden pattern and passed after the comma was added."
       },
       "path": "src/modules/poweraccent/PowerAccentKeyboardService/KeyboardListener.cpp",
-      "startLine": 468,
       "line": 468,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Add the comma required by the spelling rule\n\n**Severity:** `low`\n\nThe repository spelling rule flags `Otherwise cancel` and requires a comma after the introductory adverb. Adding it keeps this changed line clear of the check-spelling failure.\n\n```suggestion\n    // and events for the window associated with this toolbar. Otherwise, cancel the\n```",
+      "body": "### Add the comma required by the spelling rule\n\n**Severity:** `low`\n\nThe repository spelling rule flags `Otherwise cancel` and requires a comma after the introductory adverb. Adding it keeps the current diff clear of that check-spelling failure.\n\n```suggestion\n    // and events for the window associated with this toolbar. Otherwise, cancel the\n```",
       "disposition": "proposed"
     }
   ],
   "actions": [
     {
-      "id": "request-changes-50212-current-head",
-      "type": "request_changes",
-      "label": "Request the two fixes on the current upstream head",
+      "id": "post-review-50212",
+      "type": "post_review",
+      "label": "Post 2 current-head review items",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "One apply-ready RIGHT-side inline suggestion and one coordinated companion note are pinned to the current upstream head. Require explicit maintainer approval and a final freshness check before publishing.",
+      "note": "One inline suggestion and one general review note. The upstream maintainer's visual-evidence request remains unanswered; recheck the upstream head and conversation before publication.",
       "review": {
-        "repository": "microsoft/PowerToys",
         "pr": 50212,
         "pullRequest": 50212,
-        "event": "REQUEST_CHANGES",
+        "repository": "microsoft/PowerToys",
         "head_sha": "266618cf30c62f2d008d67d3209b7e11de5a0195",
-        "body_prefix": "Thanks for adding the requested recording and addressing the earlier foreground-notification feedback. Two follow-ups remain before merge: preserve the cancelled owner key until physical release, and correct the spelling-rule punctuation in the callback comment."
+        "event": "COMMENT",
+        "body_prefix": "Thanks for applying the foreground-notification ordering fix. A current-head review found one remaining held-key state issue in the cancellation path, plus a small spelling-rule correction."
       }
     }
   ],
-  "safe_actions": [
-    "Present the drafted request-changes review for explicit maintainer approval.",
-    "Post nothing upstream until the pinned head, conversation, checks, and review threads are revalidated.",
-    "Repeat the fork review loop and validation after any material upstream update."
-  ],
-  "blockers": [],
-  "phase0": {
-    "author": "amail80",
-    "author_association": "FIRST_TIME_CONTRIBUTOR",
-    "bar": "full community-contributor process review",
-    "disposition": "Proceed",
-    "who_owes_next": "Maintainer review decision",
-    "gates_tripped": [],
-    "processAsks": [],
-    "note": "The author supplied the requested recording, the PR is open and non-draft, the scope is atomic, and CLA/intake/telemetry checks pass. No additional author-facing process request is warranted.",
-    "evidence": [
-      "The latest author activity is the requested recording at 2026-09-08T22:42:18Z.",
-      "license/cla, pr-intake, and detect-telemetry-events pass on the current head.",
-      "The PR links the reported stuck-toolbar behavior and documents manual validation.",
-      "The maintainer explicitly agreed to skip adding a new test harness for this callback."
-    ]
-  },
-  "judgment": {
-    "status": "request_changes",
-    "rationale": "The foreground callback resets the active owner while the physical key can remain held, allowing a later auto-repeat to start another gesture in the newly focused application. The newly added callback comment also contains a punctuation form rejected by the repository spelling rule.",
-    "evidence": [
-      "Upstream PR 50212 remains open at head 266618cf30c62f2d008d67d3209b7e11de5a0195, updated 2026-09-08T23:00:12Z.",
-      "The existing post-request Copilot state was inspected before considering another request; requested reviewers are empty because the review already completed.",
-      "The latest Copilot review was submitted at 2026-09-09T06:35:06Z on exact fork head 001262e8b805dc914d8b18dd3b24df852e073cf5 with zero published comments.",
-      "Fork PR 697 has zero unresolved Copilot threads and exactly the two upstream changed paths.",
-      "The cross-session Debug x64 essentials and Quick Accent project chain rebuilt successfully.",
-      "PowerAccent.Common.UnitTests and PowerAccent.Core.UnitTests passed 55 of 55 tests.",
-      "git diff --check passes and the local checkout is clean.",
-      "The inline punctuation suggestion targets current RIGHT-side line 468.",
-      "No review, comment, label, close, merge, or other mutation was made to microsoft/PowerToys."
-    ],
-    "recommended_action": "After explicit approval and a final freshness check, submit the pinned REQUEST_CHANGES review with the coordinated held-key note and line-468 punctuation suggestion.",
-    "evaluated_at": "2026-09-10T07:16:54.597524Z",
-    "source_updated_at": "2026-09-08T23:00:12Z"
-  },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "upstream_updated_at": "2026-09-08T23:00:12Z",
+    "upstream_updated_at": "2026-09-07T08:30:50Z",
     "upstream_head_sha": "266618cf30c62f2d008d67d3209b7e11de5a0195",
-    "upstream_base_sha": "ae52732c3d694f53bddce983da8c01112d81853b",
     "changed_file_count": 2,
-    "additions": 63,
-    "deletions": 0,
-    "issue_comment_count": 10,
+    "issue_comment_count": 9,
     "review_count": 1,
     "review_comment_count": 3,
-    "unresolved_review_threads": 1,
-    "unresolved_copilot_threads": 0,
+    "unresolved_review_thread_count": 2,
+    "unresolved_review_thread_note": "The two unresolved threads are outdated comments from the prior maintainer review; the author applied those changes in the current head.",
     "reported_checks": {
-      "status": "passed",
-      "total": 3,
-      "successful": 3,
-      "failed": 0,
+      "failing": 0,
       "pending": 0,
-      "checks": [
-        "license/cla",
-        "pr-intake",
-        "detect-telemetry-events"
-      ]
-    },
-    "note": "The one unresolved upstream thread is an earlier maintainer suggestion that the author incorporated into the current head; no unresolved upstream Copilot thread exists."
+      "summary": "PR intake, telemetry detection, and license/CLA pass. No Azure Pipelines build is reported on the external-fork PR."
+    }
   },
   "fork_pr": {
     "number": 697,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/697",
-    "state": "OPEN",
+    "base": "main",
     "branch": "pr-iterate/50212-v3",
-    "base_branch": "main",
-    "base_sha": "2f01e6d004b4c4a8dede52156ef239961d71bd32",
-    "head_sha": "001262e8b805dc914d8b18dd3b24df852e073cf5",
-    "upstream_head_sha": "266618cf30c62f2d008d67d3209b7e11de5a0195",
-    "upstream_file_count": 2,
-    "fork_file_count": 2,
-    "upstream_scope_covered": true,
-    "scope_difference": {
-      "missing_files": [],
-      "review_fix_extra_files": []
-    }
+    "head_sha": "b2f3bd8e4ed435725cb9c288649dac361748542b",
+    "supersedes": 517
   },
   "fork_branch": "pr-iterate/50212-v3",
-  "workflow": {
-    "drain": "scheduled normal update",
-    "phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-10T07:16:54.597524Z",
-    "resume_action": "await_explicit_approval",
-    "copilot_rounds_completed": 7,
-    "latest_copilot_review_id": 5150601348,
-    "latest_copilot_review_at": "2026-09-09T06:35:06Z",
-    "latest_copilot_review_head": "001262e8b805dc914d8b18dd3b24df852e073cf5",
-    "latest_copilot_published_comments": 0,
-    "unresolved_copilot_threads": 0,
-    "outstanding_copilot_request": false,
-    "local_validation": "completed"
+  "fork": {
+    "owner": "MuyuanMS",
+    "repo": "MuyuanMS/PowerToys",
+    "pr": 697,
+    "branch": "pr-iterate/50212-v3",
+    "head_sha": "b2f3bd8e4ed435725cb9c288649dac361748542b",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/697"
   },
-  "validation": {
-    "status": "passed",
-    "configuration": "Debug x64",
+  "workflow": {
+    "phase": "awaiting_author",
+    "checkpoint_at": "2026-09-07T10:26:59.6063785Z",
+    "queued_head_sha": "266618cf30c62f2d008d67d3209b7e11de5a0195",
+    "reviewed_upstream_head_sha": "266618cf30c62f2d008d67d3209b7e11de5a0195",
+    "fork_head_sha": "b2f3bd8e4ed435725cb9c288649dac361748542b",
+    "copilot_review_id": 5130810437,
+    "latest_copilot_review_at": "2026-09-07T10:21:07Z",
+    "latest_review_commit": "b2f3bd8e4ed435725cb9c288649dac361748542b",
+    "copilot_requests": 4,
+    "final_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "unresolved_fork_review_threads": 0,
+    "resume_action": "revalidate-after-author-response",
+    "completed": [
+      "Resumed the durable fork review state and refreshed it for the new upstream head without overwriting the prior review history.",
+      "Created fork PR 697 on pr-iterate/50212-v3 after fork branch protection correctly rejected a force-push to the stale protected branch; closed superseded fork PR 517.",
+      "Completed full community-contributor Phase 0 against the current description, linked issue, complete conversation, review threads, labels, and checks.",
+      "Processed the fresh Copilot test request as superseded by the upstream maintainer's explicit decision to skip that unavailable native-test harness.",
+      "Fixed and resolved the fork spelling finding.",
+      "Fixed the held-key rearm bug and the missed-key-up stale-suppression edge found during fresh Copilot iteration.",
+      "Requested a final fresh Copilot review on the final fork head; it generated zero new comments and every fork review thread is resolved.",
+      "Completed the full targeted Debug build chain and 55 existing Power Accent unit tests without writing to microsoft/PowerToys."
+    ],
+    "environment_note": "The first essentials attempt exposed an inherited empty GIT_CONFIG_VALUE_2 environment value; setting it to false allowed the standard build scripts to run. The final Debug build completed with one pre-existing CsWinRT1028 warning in ManagedCommon and no errors."
+  },
+  "revalidation": {
+    "completed_at": "2026-09-07T10:26:59.6063785Z",
+    "result": "targeted_debug_builds_and_tests_passed_review_converged",
+    "configuration": "x64 Debug",
+    "code_validation_head_sha": "b2f3bd8e4ed435725cb9c288649dac361748542b",
+    "final_fork_head_sha": "b2f3bd8e4ed435725cb9c288649dac361748542b",
     "builds": [
-      {
-        "name": "build-essentials",
-        "result": "passed"
-      },
-      {
-        "name": "PowerAccentModuleInterface.vcxproj",
-        "result": "passed"
-      },
-      {
-        "name": "PowerAccentKeyboardService.vcxproj",
-        "result": "passed"
-      },
-      {
-        "name": "PowerAccent.UI.csproj",
-        "result": "passed"
-      },
-      {
-        "name": "PowerAccent.Common.UnitTests.csproj",
-        "result": "passed"
-      },
-      {
-        "name": "PowerAccent.Core.UnitTests.csproj",
-        "result": "passed"
-      }
+      "PowerToys essentials Debug x64",
+      "PowerAccentModuleInterface Debug x64",
+      "PowerAccentKeyboardService Debug x64",
+      "PowerAccent.UI Debug x64",
+      "PowerAccent.Common.UnitTests Debug x64",
+      "PowerAccent.Core.UnitTests Debug x64"
     ],
     "tests": [
-      {
-        "name": "PowerAccent.Common.UnitTests and PowerAccent.Core.UnitTests",
-        "result": "passed",
-        "passed": 55,
-        "failed": 0,
-        "skipped": 0,
-        "runner": "vstest.console.exe"
-      },
-      {
-        "name": "Patch validation",
-        "result": "passed",
-        "command": "git diff --check"
-      }
+      "20/20 PowerAccent.Common.UnitTests passed",
+      "35/35 PowerAccent.Core.UnitTests passed"
     ],
-    "outputs": [
+    "artifacts": [
       "PowerToys.exe",
       "PowerToys.PowerAccentModuleInterface.dll",
-      "PowerToys.PowerAccent.Common.UnitTests.dll",
-      "PowerToys.PowerAccent.Core.UnitTests.dll"
+      "PowerToys.PowerAccentKeyboardService.dll",
+      "PowerToys.PowerAccent.exe"
     ],
-    "diff_check": "passed",
-    "notes": [
-      "POWERTOYS_DISABLE_SPECTRE=1 was used.",
-      "The settings build emitted recurring ANTLR token-recognition noise but completed with zero errors.",
-      "The existing fork head and final Copilot review remained unchanged during the cross-session rebuild."
+    "fork_checks": [
+      "Check Spelling passed",
+      "check-spelling passed",
+      "PR intake passed"
     ]
-  },
-  "test_instructions": [
-    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-    "Enable Quick Accent and hold a supported letter to display the accent toolbar.",
-    "While the toolbar is visible, switch focus to another application and verify the toolbar dismisses without inserting an accent.",
-    "Keep the owner letter held across the focus switch and verify auto-repeat does not reopen the toolbar; release it, then verify a fresh press can open the toolbar normally.",
-    "Repeat across a normal and elevated application boundary to check missed-release cleanup."
-  ],
-  "copilot": {
-    "fork_pr": 697,
-    "review_rounds_completed": 7,
-    "unresolved_threads": 0,
-    "latest_completed_review_at": "2026-09-09T06:35:06Z",
-    "latest_completed_review_head": "001262e8b805dc914d8b18dd3b24df852e073cf5",
-    "latest_completed_review_published_comments": 0,
-    "fresh_review_status": "clean_current_head",
-    "outstanding_request": false,
-    "converged": true
-  },
-  "freshness": {
-    "status": "fresh_current_head_request_changes_drafted",
-    "evaluated_at": "2026-09-10T07:16:54.597524Z",
-    "upstream_head_sha": "266618cf30c62f2d008d67d3209b7e11de5a0195",
-    "source_updated_at": "2026-09-08T23:00:12Z",
-    "fork_head_sha": "001262e8b805dc914d8b18dd3b24df852e073cf5",
-    "fork_review_submitted_at": "2026-09-09T06:35:06Z",
-    "exact_scope_verified": true
-  },
-  "upstream_writes": {
-    "performed": false,
-    "repository": "microsoft/PowerToys",
-    "comments": 0,
-    "reviews": 0,
-    "labels": 0,
-    "closes": 0,
-    "merges": 0,
-    "detail": "No writes were made to microsoft/PowerToys."
-  },
-  "dashboard_modified": false,
-  "canonical_dashboard_identity": "<PowerToysCheckout>"
+  }
 }

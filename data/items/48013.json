@@ -1,33 +1,152 @@
 {
+  "schemaVersion": 5,
   "number": 48013,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
+  "stage": "design_ready",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-19T03:23:12.6855411Z",
-  "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-  "source_updated_at": "2026-05-20T17:30:32Z",
-  "status": {
-    "glyph": "🔗",
-    "label": "Handled elsewhere",
-    "detail": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
-  },
-  "next_action": {
-    "glyph": "👀",
-    "label": "Monitor linked or assigned work",
-    "reason": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help."
-  },
-  "actions": [],
-  "confidence": "High",
+  "generated_at": "2026-09-12T20:06:34.064Z",
+  "evaluated_at": "2026-09-12T20:06:34.064Z",
+  "source_updated_at": "2026-09-12T16:24:09Z",
   "judgment": {
-    "status": "duplicate_or_handled",
-    "rationale": "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication.",
+    "status": "actionable_design",
+    "rationale": "The New+ hide option replaces the native Windows New handler with a per-user disabled_ value, which matches the reported Ctrl+Shift+N regression.",
+    "source_updated_at": "2026-09-12T16:24:09Z",
+    "evaluated_at": "2026-09-12T20:06:34.064Z",
     "evidence": [
-      "The issue is assigned to , indicating active upstream ownership; parallel agent work would risk duplication."
+      "The issue body shows that enabling Hide the built-in \"New\" context menu immediately breaks Ctrl+Shift+N and disabling it restores the shortcut.",
+      "The body also records the HKCU disabled_ override alongside the intact HKLM handler, showing the registry mutation that causes the breakage.",
+      "A current comment confirms the bug on stable v0.101.2362.0."
     ],
-    "recommended_action": "Monitor the assigned upstream work and re-evaluate only if ownership is released or a maintainer requests help.",
-    "evaluated_at": "2026-08-19T03:23:12.6855411Z",
-    "source_updated_at": "2026-05-20T17:30:32Z"
-  }
+    "recommended_action": "Approve a fork-side migration that restores the native handler and retires the unsafe hide behavior."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix covers the regression."
+  },
+  "proposed_fixes": [
+    {
+      "verification": [
+        "Verify Ctrl+Shift+N, toolbar New Folder, and common-dialog folder creation after migration."
+      ],
+      "confidence": {
+        "rationale": "The causal registry mutation is directly visible and matches the deterministic symptom.",
+        "level": "green",
+        "score": 90
+      },
+      "root_cause": "The HKCU disabled_ override shadows the valid HKLM handler used by Explorer and common dialogs.",
+      "title": "Restore native New handler and retire unsafe suppression",
+      "plan": [
+        "Detect and restore PowerToys-owned disabled_ values.",
+        "Reset the obsolete preference and remove the unsafe toggle/GPO path.",
+        "Add migration and Explorer/common-dialog coverage."
+      ]
+    }
+  ],
+  "issue_context": {
+    "summary": "New+ hiding the built-in New context menu breaks File Explorer Ctrl+Shift+N.",
+    "known_information": [
+      "The issue is open and labeled Issue-Bug, Product-File Explorer, Product-New+, and Needs-Triage.",
+      "The reporter provides a direct reproduction: enabling Hide the built-in \"New\" context menu immediately breaks Ctrl+Shift+N, and disabling it restores the shortcut without restarting Explorer.",
+      "The report includes registry evidence showing HKCU\\\\Software\\\\Classes\\\\Directory\\\\Background\\\\shellex\\\\ContextMenuHandlers\\\\New set to disabled_ while HKLM still points at the native handler.",
+      "A comment confirms the problem on stable v0.101.2362.0.",
+      "The issue was last updated on 2026-09-12T16:24:09Z."
+    ],
+    "inferences": [
+      "PowerToys is mutating the per-user handler in a way that shadows the native Explorer implementation used by both the menu and Ctrl+Shift+N.",
+      "The failure is deterministic and tied to the hide setting itself, not to Explorer restart timing."
+    ],
+    "analysis": "The public evidence already isolates the registry mutation and makes a migration-focused fix design appropriate.",
+    "initial_investigation": [
+      "Read the live issue body, labels, and comment thread.",
+      "Compared the reported registry state with the current New+ behavior described in the issue."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "verify": [
+      "Build the affected New+ and Settings targets.",
+      "Verify Explorer and common-dialog folder creation."
+    ],
+    "alternatives": [
+      "Emulating native folder creation was rejected as fragile and unsupported."
+    ],
+    "implementation_steps": [
+      {
+        "file": "src/modules/NewPlus/NewShellExtensionContextMenu/new_utilities.h",
+        "symbols": [
+          "restore_built_in_new_if_modified_by_powertoys"
+        ],
+        "current_behavior": "Writes an invalid per-user handler value.",
+        "edge_cases": [
+          "Do not change unrelated HKCU values."
+        ],
+        "change": "Restore a saved CLSID or delete a marker-only override, and preserve unrelated values.",
+        "code_block": "if (starts_with(current, disabled_)) restore_saved_value_or_delete_marker();",
+        "order": 1,
+        "tests": [
+          "Cover marker-only, saved-CLSID, and unrelated values."
+        ]
+      },
+      {
+        "file": "src/modules/NewPlus/NewShellExtensionContextMenu/powertoys_module.cpp",
+        "symbols": [
+          "NewModule::init_settings"
+        ],
+        "current_behavior": "Reapplies the hide preference.",
+        "edge_cases": [
+          "Run even when Settings is never opened."
+        ],
+        "change": "Migrate legacy state and persist false after successful restoration.",
+        "code_block": "restore(); settings.SetHideBuiltInNew(false); settings.Save();",
+        "order": 2,
+        "tests": [
+          "Upgrade and startup migration tests."
+        ]
+      }
+    ],
+    "evidence": [
+      "Current New+ helper writes the disabled_ marker.",
+      "Reporter observes shortcut failure and immediate recovery when disabling the setting."
+    ],
+    "risks": [
+      "Users lose the unsafe hide option until a supported replacement exists."
+    ],
+    "root_cause": "HKCU disabled_ override shadows the valid HKLM native New handler.",
+    "affected_files": [
+      {
+        "purpose": "Remove unsafe mutation and migrate legacy state.",
+        "path": "src/settings-ui/Settings.UI/ViewModels/NewPlusViewModel.cs",
+        "symbols": [
+          "NewPlusViewModel.DisableBuiltInNewViaRegistry"
+        ]
+      },
+      {
+        "purpose": "Implement ownership-aware restoration.",
+        "path": "src/modules/NewPlus/NewShellExtensionContextMenu/new_utilities.h",
+        "symbols": [
+          "disable_built_in_new_via_registry",
+          "enable_built_in_new_via_registry"
+        ]
+      },
+      {
+        "purpose": "Run migration at startup.",
+        "path": "src/modules/NewPlus/NewShellExtensionContextMenu/powertoys_module.cpp",
+        "symbols": [
+          "NewModule::init_settings"
+        ]
+      }
+    ]
+  },
+  "actions": [
+    {
+      "label": "Approve safe rollback design",
+      "id": "approve-design-48013",
+      "type": "approve_design",
+      "primary": true,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
+    }
+  ]
 }

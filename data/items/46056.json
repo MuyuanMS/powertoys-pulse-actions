@@ -4,7 +4,7 @@
   "number": 46056,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "request_changes",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-07T10:19:56.5262862Z",
@@ -37,7 +37,7 @@
     "label": "Request changes with five current-head review items",
     "reason": "Post the prepared blocking review after a final upstream head and activity freshness check."
   },
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "phase0": {
     "verdict": "proceed",
     "disposition": "Proceed",
@@ -65,10 +65,9 @@
         "score": 99,
         "rationale": "The current handler can terminate its COM host on allocation failure, reports success after resolution or clipboard failures, leaks the global allocation when SetClipboardData fails, and treats local device paths beginning with two backslashes as UNC paths."
       },
-      "body": "### Make path resolution and clipboard writes reliable\n\n**Severity:** `high`\n\n`CopyAsUNCContextMenu/dllmain.cpp` currently performs allocating work inside a `noexcept` COM entry point without an exception boundary, returns `S_OK` after resolution or clipboard failures, and does not free the global allocation when `SetClipboardData` fails. Its two-backslash test also accepts local device namespaces such as `\\\\?\\C:\\...` and `\\\\.\\C:\\...` as UNC paths. Please add an exception-to-HRESULT boundary and RAII/explicit cleanup, propagate meaningful failures, distinguish normal and extended UNC paths from local device paths, and keep the `ERROR_MORE_DATA` retry bounded.",
+      "body": "### Make path resolution and clipboard writes reliable\n\n**Severity:** `high`\n\n`CopyAsUNCContextMenu/dllmain.cpp` currently performs allocating work inside a `noexcept` COM entry point without an exception boundary, returns `S_OK` after resolution or clipboard failures, and does not free the global allocation when `SetClipboardData` fails. Its two-backslash test also accepts local device namespaces such as `\\\\?\\<local-path> and `\\\\.\\<local-path> as UNC paths. Please add an exception-to-HRESULT boundary and RAII/explicit cleanup, propagate meaningful failures, distinguish normal and extended UNC paths from local device paths, and keep the `ERROR_MORE_DATA` retry bounded.",
       "in_diff": false,
-      "disposition": "proposed",
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "disposition": "proposed"
     },
     {
       "id": "fix-sparse-package-location",
@@ -81,8 +80,7 @@
       },
       "body": "### Register the sparse package against the installation root\n\n**Severity:** `high`\n\n`CopyAsUNCExt/PowerToysModule.cpp` passes the module's `WinUI3Apps` directory as the sparse package external location, but `AppxManifest.xml` authors `PowerToys.exe` and `WinUI3Apps\\PowerToys.CopyAsUNCContextMenu.dll` relative to the installation root. This resolves both paths incorrectly and prevents COM activation. Keep the MSIX URI under the module directory, but pass its parent installation directory as `ExternalLocationUri`.",
       "in_diff": false,
-      "disposition": "proposed",
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "disposition": "proposed"
     },
     {
       "id": "complete-platform-and-settings-integration",
@@ -95,8 +93,7 @@
       },
       "body": "### Align platform gating, settings navigation, and the supported menu model\n\n**Severity:** `high`\n\nThe module has no Windows 10 `IContextMenu` fallback, so the Settings card and module availability need to be explicitly gated to Windows 11. The runner's `CopyAsUNC` settings route also needs to map to `PowerPreviewPage`; otherwise opening module settings falls back to Dashboard. Finally, remove the `bool_show_extended_menu` setting and its hide condition unless a classic extended-menu handler is implemented, because the current modern-only command disappears completely when that option is enabled.",
       "in_diff": false,
-      "disposition": "proposed",
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "disposition": "proposed"
     },
     {
       "id": "complete-policy-and-build-integration",
@@ -109,8 +106,7 @@
       },
       "body": "### Complete GPO, build, signing, and installation integration\n\n**Severity:** `high`\n\nAdd the Copy as UNC policy to `PowerToys.admx` and `en-US/PowerToys.adml`, and disable the Settings toggle while that policy controls the value. Make the WIL import and `EnsureNuGetPackageBuildImports` use the version restored by `packages.config`, add deterministic `-NoProfile` resource-generation commands, ensure the MSIX is versioned and signed through the existing pipelines, and include the new DLLs/MSIX in installation verification.",
       "in_diff": false,
-      "disposition": "proposed",
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "disposition": "proposed"
     },
     {
       "id": "add-focused-tests-and-keep-scope-atomic",
@@ -123,11 +119,28 @@
       },
       "body": "### Add focused coverage and trim the repository-wide allowlist change\n\n**Severity:** `high`\n\nPlease add focused tests for direct UNC input, mapped-drive resolution, `ERROR_MORE_DATA`, local/device-path rejection, resolution failures, clipboard handoff/failures, settings serialization, and GPO-controlled state. Also reduce `.github/actions/spell-check/expect.txt` to only the Copy as UNC identifiers that genuinely need exemptions; the current repository-wide expansion suppresses unrelated spelling findings.",
       "in_diff": false,
-      "disposition": "proposed",
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
+      "disposition": "proposed"
     }
   ],
-  "actions": [],
+  "actions": [
+    {
+      "id": "request-changes-46056",
+      "type": "request_changes",
+      "label": "Request changes with five current-head review items",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The review is pinned to the current upstream head. Recheck the head, checks, comments, reviews, and merge state before publication.",
+      "review": {
+        "pr": 46056,
+        "pullRequest": 46056,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "fbb6c88b00db39fc7919c64159a1566a61dbc9b3",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the substantial work on Copy as UNC. Before this can merge, please address the shell-command reliability and path-classification issues, correct the sparse-package external location, complete the Windows/GPO/settings/build integration, add focused automated coverage, trim the unrelated spell-check allowlist expansion, and rebase the branch to resolve its current conflicts with main."
+      }
+    }
+  ],
   "source_activity": {
     "state": "OPEN",
     "draft": false,

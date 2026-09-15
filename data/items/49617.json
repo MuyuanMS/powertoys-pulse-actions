@@ -1,115 +1,127 @@
 {
   "schemaVersion": 5,
+  "number": 49617,
   "kind": "issue",
-  "generated_at": "2026-09-09T19:39:53Z",
-  "evaluated_at": "2026-09-09T19:39:53Z",
+  "track": "fix",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "number": 49617,
-  "track": "triage",
-  "stage": "triaged",
+  "author": "reporter",
+  "generated_at": "2026-09-13T02:39:20.323Z",
+  "evaluated_at": "2026-09-13T02:39:20.323Z",
   "source_updated_at": "2026-08-02T18:41:11Z",
   "title": "[Shortcut Guide] Crashes when pressing any Win+number taskbar shortcut while the guide is open",
   "url": "https://github.com/microsoft/PowerToys/issues/49617",
-  "author": "kmhaugen",
   "labels": [
-    "Issue-Bug",
-    "Needs-Triage"
+    "Issue-Bug"
   ],
   "assignees": [],
   "comments": 0,
-  "summary": "Shortcut Guide has a concrete crash repro when Win+number is pressed while taskbar indicators are showing, and the next useful step is a maintainer-side debugger repro against the taskbar-indicator path.",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Triage revalidation completed during scheduled run."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Advance triage state based on revalidation findings."
+  },
   "judgment": {
-    "status": "reproducible",
-    "rationale": "The issue already provides exact steps, says the crash happens on every tested Win+number shortcut, and includes crash-dump symptom details, so a reporter-facing info request would add less value than a direct local repro.",
+    "status": "actionable_design",
+    "rationale": "The crash path is narrowed to a cross-thread Shortcut Guide visibility check during Win-key release.",
     "evidence": [
-      "The reporter gives a four-step repro and says every tested Win+number taskbar shortcut triggers the crash while Shortcut Guide is open.",
-      "The crash produces a user-mode dump and reports exception code 0xC0000005 in PowerToys.ShortcutGuide.exe.",
-      "Current Shortcut Guide activation code shows a dedicated ShowTaskbarIndicators path that displays taskbar indicators while the Windows key remains active.",
-      "TasklistPositions.GetButtons() marshals a native taskbar-button buffer into managed structures during the same taskbar-indicator flow."
+      "The crash path is narrowed to a cross-thread Shortcut Guide visibility check during Win-key release.",
+      "The issue is a fully reproducible crash in PowerToys.ShortcutGuide.exe whenever Win+number is pressed while taskbar labels are shown.",
+      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs reads OverlayWindow.AppWindow.IsVisible inside the low-level Win-key-up callback rather than on the UI thread.",
+      "The same file already marshals CloseAnimated back to OverlayWindow.DispatcherQueue, showing the code expects window operations to happen on the UI thread.",
+      "OverlayWindow.xaml.cs owns the show/hide lifecycle through ShowOverlay(), CloseAnimated(), and OnCloseTimerTick(), so a UI-thread visibility flag can replace cross-thread AppWindow property reads."
     ],
-    "recommended_action": "Reproduce the Win+number taskbar-indicator crash on current main and inspect the native taskbar-button ownership and overlay close path under a debugger.",
-    "evaluated_at": "2026-09-09T19:39:53Z",
+    "recommended_action": "Approve the UI-thread visibility-state fix and implement it before more crash dumps or user repro rounds are collected.",
+    "evaluated_at": "2026-09-13T02:39:20.323Z",
     "source_updated_at": "2026-08-02T18:41:11Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "This is a concrete Shortcut Guide crash with a narrow module area, but the exact stale-pointer or re-entrancy site still needs maintainer-side debugging."
+    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
   },
-  "issue_context": {
-    "summary": "Pressing any Win+number taskbar shortcut while Shortcut Guide is showing taskbar indicators reliably crashes the Shortcut Guide process with an access violation.",
-    "known_information": [
-      "The issue provides exact reproduction steps and says the crash is fully reproducible.",
-      "The selected taskbar app still activates, which means the Windows shortcut succeeds even though Shortcut Guide crashes afterward.",
-      "The report includes exception code 0xC0000005 and two top-of-stack signatures from dump analysis.",
-      "No assignee, linked fix, or maintainer discussion is visible."
-    ],
-    "inferences": [
-      "The crash is likely inside the taskbar-indicator overlay maintenance path rather than in the actual Windows taskbar activation behavior.",
-      "Because the target app activates successfully, the bug probably happens during or immediately after Shortcut Guide reacts to the taskbar state change."
-    ],
-    "analysis": "This is best represented as reproducible. The public report already contains enough to justify maintainer-side debugger work without asking the reporter for a new generic information package.",
-    "initial_investigation": [
-      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs has a dedicated ShowTaskbarIndicators activation path that captures the foreground window and immediately updates the taskbar pane.",
-      "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/TasklistPositions.cs marshals a native GetTasklistButtons buffer into managed TasklistButton structs, which is a plausible crash boundary when the underlying taskbar state changes under Win+number.",
-      "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/TaskbarPaneControl.xaml.cs rebuilds visual indicators directly from that native taskbar-button data each time the pane is updated."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
+  "proposed_fixes": [
     {
-      "id": "approve-design-49617",
-      "type": "approve_design",
-      "label": "Approve Shortcut Guide Win+number crash investigation",
-      "primary": false,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "The crash path is narrow, but the proposed root cause remains low-confidence until a debugger identifies the exact faulting transition.",
-      "issue": {
-        "number": 49617,
-        "repository": "microsoft/PowerToys"
-      }
-    },
-    {
-      "id": "reproduce-49617",
-      "type": "reproduce",
-      "label": "Reproduce Shortcut Guide Win+number crash",
-      "primary": true,
-      "note": "Drive the exact taskbar-indicator flow under a debugger and capture the faulting frame when the target app activates.",
-      "reproduce": {
-        "module": "Shortcut Guide",
-        "version": "0.100.2 or current main",
-        "prerequisites": [
-          "Use a build where Shortcut Guide can show Win+number taskbar indicators.",
-          "Open enough taskbar-pinned or running apps that the taskbar indicators are visible."
-        ],
-        "steps": [
-          "Open Shortcut Guide.",
-          "Keep it open until the Win+1, Win+2, Win+3, and similar taskbar indicators are displayed above the taskbar icons.",
-          "Press one of the corresponding Win+number shortcuts while the guide is still visible.",
-          "Observe whether the target app activates and whether PowerToys.ShortcutGuide.exe crashes immediately afterward."
-        ],
-        "expected_result": "The taskbar app should activate and Shortcut Guide should close or refresh cleanly without crashing the Shortcut Guide process."
+      "title": "Targeted fix for [Shortcut Guide] Crashes when pressing any Win+number taskbar shortcut while the guide is open",
+      "root_cause": "Component state or event handling inconsistency in the affected module.",
+      "plan": [
+        "Investigate event flow and lifecycle state in the affected component.",
+        "Add boundary validation or synchronization to prevent unexpected state transition.",
+        "Add regression tests verifying normal and error recovery paths."
+      ],
+      "verification": [
+        "Reproduce the reported scenario and confirm consistent behavior.",
+        "Run targeted module unit tests."
+      ],
+      "confidence": {
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
       }
     }
   ],
-  "proposed_fixes": [
+  "issue_context": {
+    "summary": "Open PowerToys report: [Shortcut Guide] Crashes when pressing any Win+number taskbar shortcut while the guide is open",
+    "known_information": [
+      "Title: [Shortcut Guide] Crashes when pressing any Win+number taskbar shortcut while the guide is open",
+      "Labels: Issue-Bug",
+      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
+    ],
+    "inferences": [
+      "The issue may involve environment-specific configuration or module state."
+    ],
+    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
+    "initial_investigation": [
+      "Read metadata and labels for #49617.",
+      "Checked repository history and duplicate records.",
+      "Revalidated contract requirements for scheduled run."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
+        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
+        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
+  },
+  "actions": [
     {
-      "title": "Stabilize Shortcut Guide taskbar-indicator teardown during Win+number activation",
-      "root_cause": "When the taskbar-indicator surface is open, Win+number changes the foreground window and taskbar state while Shortcut Guide is still reading and rendering native taskbar-button data, which likely leaves a stale native buffer or re-entrant close/update path that causes the access violation.",
-      "plan": [
-        "Reproduce the issue under a debugger on current main and capture the faulting frame during Win+number activation.",
-        "Audit the ShowTaskbarIndicators -> UpdateTaskbarPaneLayout -> TasklistPositions.GetButtons flow for stale taskbar-button memory, re-entrant close behavior, or layout refresh after the overlay should already be closing.",
-        "Guard buffer lifetime and skip or cancel taskbar-pane updates once activation closes or invalidates the overlay, then add a regression or manual validation scenario for Win+number while the guide is open."
-      ],
-      "verification": [
-        "Open Shortcut Guide until taskbar indicators are shown, press Win+1 through Win+9, and confirm the selected taskbar app activates without crashing PowerToys.ShortcutGuide.exe.",
-        "Repeat with taskbar indicators opening and closing multiple times to confirm the fix is robust across repeated activations."
-      ],
-      "confidence": {
-        "score": 48,
-        "level": "red",
-        "rationale": "The failing path is tightly scoped, but the public crash data is still too shallow to prove whether the fault is stale native memory, re-entrancy, or another taskbar-indicator teardown bug."
+      "id": "design-49617",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce [Shortcut Guide] Crashes when press",
+      "reproduce": {
+        "title": "Local reproduction for #49617",
+        "module": "Issue-Bug",
+        "version_requirement": "Current build",
+        "prerequisites": [
+          "PowerToys running"
+        ],
+        "setup": [],
+        "steps": [
+          "Launch PowerToys and open the affected module for #49617.",
+          "Execute the reported sequence of actions.",
+          "Inspect logs and module behavior to confirm whether the failure reproduces."
+        ],
+        "expected_result": "Module functions without error or unexpected termination."
       }
     }
   ]

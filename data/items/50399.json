@@ -1,170 +1,180 @@
 {
   "schemaVersion": 5,
-  "id": "pr-50399",
   "number": 50399,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T18:16:02.9040294Z",
-  "evaluated_at": "2026-09-09T18:16:02.9040294Z",
+  "generated_at": "2026-09-14T12:45:00Z",
+  "evaluated_at": "2026-09-14T12:45:00Z",
   "source_updated_at": "2026-09-08T16:10:48Z",
   "head_sha": "778e434b4016d4d9c161151c9bf3850176f8f4e3",
   "title": "CmdPal: Stop reloading clipboard entries that haven't changed",
   "url": "https://github.com/microsoft/PowerToys/pull/50399",
-  "repository": "microsoft/PowerToys",
-  "summary": "The current upstream head remains clean: the fork review loop already fixed the five Copilot findings, the latest Copilot request returned zero new comments, no Copilot threads remain unresolved, later upstream discussion did not change the scope, and this session rebuilt the affected CmdPal module chain and reran the focused unit tests successfully.",
+  "summary": "The existing fork review loop converged after multiple fix rounds: the latest Copilot pass returned zero new comments and the fork has zero unresolved Copilot threads. The live upstream head still lacks the validated fork corrections for clipboard format precedence, teardown ordering, stale refresh reporting, stale metadata notification, and cross-thread GetItems serialization, so a current-head non-blocking review is drafted.",
   "status": {
-    "glyph": "ok",
-    "label": "Review ready",
-    "detail": "Member-authored PR; no community process gate is owed. The live upstream head still matches the head previously reviewed on the fork, later upstream comments were revalidated as non-blocking discussion only, the latest Copilot review after the last stored request had zero new comments, and local rebuild plus focused tests passed in this session."
+    "glyph": "post",
+    "label": "Review drafted",
+    "detail": "Current upstream head 778e434b4016d4d9c161151c9bf3850176f8f4e3 is live. Existing fork Copilot review was consumed without a duplicate request; latest pass has zero new comments and zero unresolved threads. Five current-head findings remain for maintainer approval."
   },
-  "next_action": {
-    "glyph": "▶",
-    "label": "Approve clean review after authorization",
-    "reason": "No author-facing findings remain for the current upstream head. Any upstream approval or comment still requires explicit authorization and a final freshness check."
-  },
-  "proposed_comments": [],
-  "actions": [
+  "next_action": "Review and approve, edit, or hold the drafted current-head review.",
+  "proposed_comments": [
     {
-      "id": "approve-review-50399",
-      "type": "approve",
-      "label": "Approve clean review",
-      "confirm": true,
-      "note": "Current-head clean review with zero proposed comments. Requires explicit authorization and a final upstream freshness check before any upstream action."
+      "id": "50399-preserve-text-first-clipboard-format",
+      "kind": "inline",
+      "title": "Preserve text-first clipboard format precedence",
+      "severity": "medium",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.ClipboardHistory/Helpers/ClipboardHistorySource.cs",
+      "side": "RIGHT",
+      "line": 97,
+      "start_line": 92,
+      "in_diff": true,
+      "body": "This now loads the bitmap even when the same clipboard item also exposes text. `ClipboardListItem` checks `IsImage` before `IsText`, so entries containing both formats change from the existing text-first behavior to image presentation and command handling. Please load the bitmap only when `text` is null so the optimization does not change the established format precedence.\n\n**Severity:** `medium`",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "The exact upstream code loads both formats and the downstream item checks image before text; the converged fork fix changes only the bitmap condition and was reviewed by Copilot."
+      }
+    },
+    {
+      "id": "50399-drain-cache-before-source-dispose",
+      "kind": "companion",
+      "title": "Drain the cache before disposing the clipboard source",
+      "severity": "medium",
+      "body": "Please dispose and drain `_cache` before disposing `_source`. A refresh may already be queued on the worker when teardown begins; releasing the source first allows that refresh to enter `ReadAsync` after the source is disposed, producing an `ObjectDisposedException` and a user-visible clipboard load failure during normal page teardown.\n\n**Severity:** `medium`",
+      "out_of_diff_reason": "The required ordering spans the asynchronous cache and source lifetime, while the current diff does not provide a safe single RIGHT-side range for the complete teardown correction.",
+      "outOfDiffReason": "The required ordering spans the asynchronous cache and source lifetime, while the current diff does not provide a safe single RIGHT-side range for the complete teardown correction.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current DisposeAsync implementation releases the source before awaiting cache disposal; the converged fork correction reverses that order and directly addresses the queued-refresh failure path."
+      }
+    },
+    {
+      "id": "50399-suppress-superseded-refresh-errors",
+      "kind": "companion",
+      "title": "Suppress errors from superseded refreshes",
+      "severity": "medium",
+      "body": "Please gate the status notification and logging with the same current-refresh check used for `_refreshFailed`. A superseded or disposed refresh can currently report a failure after a newer refresh has succeeded, leaving the user with a spurious “failed to load” status. Only the still-observed refresh should publish the error.\n\n**Severity:** `medium`",
+      "out_of_diff_reason": "The correction must coordinate the locked current-refresh test with the user-visible reporting side effects; the current diff has no safe single RIGHT-side range for that complete change.",
+      "outOfDiffReason": "The correction must coordinate the locked current-refresh test with the user-visible reporting side effects; the current diff has no safe single RIGHT-side range for that complete change.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current catch block always reports the exception, while the fork fix records a report flag only for the still-current refresh and emits status/logging conditionally."
+      }
+    },
+    {
+      "id": "50399-notify-after-concurrent-details-refresh",
+      "kind": "companion",
+      "title": "Notify consumers after concurrent metadata refresh",
+      "severity": "medium",
+      "body": "Please make the file-details refresh notification safe against a concurrent `Lazy` replacement. `IsValueCreated` can be false for the new lazy while another thread still holds and evaluates the old lazy, so this method can return without raising `PropertyChanged` and consumers can retain stale metadata. Notify unconditionally after replacing the lazy, or serialize the getter and reset operation.\n\n**Severity:** `medium`",
+      "out_of_diff_reason": "The race is split between the lazy replacement and the details getter in ClipboardListItem; no single current RIGHT-side range safely expresses the required synchronization.",
+      "outOfDiffReason": "The race is split between the lazy replacement and the details getter in ClipboardListItem; no single current RIGHT-side range safely expresses the required synchronization.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "Copilot identified the `IsValueCreated`/Details race on the converged fork, and the fork correction removes the conditional notification so concurrent consumers cannot miss the update."
+      }
+    },
+    {
+      "id": "50399-serialize-cross-thread-getitems",
+      "kind": "inline",
+      "title": "Serialize GetItems across notification threads",
+      "severity": "high",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListViewModel.cs",
+      "side": "RIGHT",
+      "line": 254,
+      "start_line": 254,
+      "in_diff": true,
+      "body": "This reentrancy check is thread-static, but `ItemsChanged` can be raised from a different background thread while the initial `GetItems` call is still executing. That permits overlapping provider calls; a provider that holds a lock while publishing the notification and waits for the publisher thread can deadlock, and the surrounding code explicitly assumes providers do not support concurrent `GetItems` calls. Track an active reservation per view-model instance under `_fetchStateLock` and defer cross-thread notifications until the active call completes; make the reservation/deferred transition atomic so no refresh can be lost or run concurrently.\n\n**Severity:** `high`",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current implementation uses `[ThreadStatic]` state, while the converged fork required several rounds to make cross-thread reservation, deferred consumption, and release atomic; the resulting zero-comment Copilot pass confirms the fork correction."
+      }
     }
   ],
-  "judgment": {
-    "status": "review_clean",
-    "rationale": "This member-authored Command Palette PR does not need community-contributor intake asks. The fork review loop converged after five actionable Copilot findings were fixed, the last stored Copilot request at 2026-09-08T04:00:56Z produced a zero-new-comment review at 2026-09-08T04:06:50Z, and the same upstream head was rebuilt and retested successfully in this session.",
-    "evidence": [
-      "Live upstream head is 778e434b4016d4d9c161151c9bf3850176f8f4e3 and the current upstream updatedAt is 2026-09-08T16:10:48Z.",
-      "Fork PR 707 on MuyuanMS/PowerToys, branch pr-iterate/50399, remains open at 8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc.",
-      "The latest stored Copilot review request is 2026-09-08T04:00:56Z, and the only Copilot review submitted afterward is the 2026-09-08T04:06:50Z COMMENTED review on commit 8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc with zero new published comments.",
-      "The fork PR currently has no pending requested reviewers and zero unresolved Copilot review threads.",
-      "This session reran build-essentials, rebuilt Microsoft.CmdPal.UI.ViewModels, Microsoft.CmdPal.UI, Microsoft.CmdPal.Ext.ClipboardHistory, CmdPalModuleInterface, and the two focused unit test projects with POWERTOYS_DISABLE_SPECTRE=1.",
-      "Focused unit tests passed: Clipboard History 100/100 and UI ViewModels 312/312.",
-      "Upstream discussion after the previous artifact consisted only of a collaborator size comment and the author response; no new upstream commits or maintainer requests changed the review outcome.",
-      "Upstream CI is green, including PowerToys CI and license/cla."
-    ],
-    "recommended_action": "Approve only after explicit authorization and a live upstream freshness check.",
-    "evaluated_at": "2026-09-09T18:16:02.9040294Z",
-    "source_updated_at": "2026-09-08T16:10:48Z"
-  },
-  "process_review": {
-    "author": "michaeljolley",
-    "author_association": "MEMBER",
-    "community_gates_applied": false,
-    "disposition": "proceed",
-    "checks": {
-      "ci": "passed",
-      "cla": "passed",
-      "demo_required": false
+  "actions": [
+    {
+      "id": "post-review-50399",
+      "type": "post_review",
+      "label": "Post current-head review findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50399,
+        "pullRequest": 50399,
+        "event": "COMMENT",
+        "head_sha": "778e434b4016d4d9c161151c9bf3850176f8f4e3"
+      },
+      "note": "Revalidate the upstream head and activity snapshot, validate the pinned review payload, and obtain explicit maintainer approval before publishing."
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "778e434b4016d4d9c161151c9bf3850176f8f4e3",
+      "result": "blocked",
+      "commands": [
+        "dotnet restore <PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests.csproj",
+        "dotnet restore <PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj",
+        "Visual Studio MSBuild x64 Debug build of the ClipboardHistory unit-test project"
+      ],
+      "detail": "Restore succeeded, but the exact-head build could not complete in this environment: the Command Palette WinRT IDL build lacked the Windows C++ projection environment and logger.vcxproj reported missing packages\\Microsoft.Windows.CppWinRT.2.0.250303.1\\build\\native\\Microsoft.Windows.CppWinRT.props."
     },
-    "notes": [
-      "Because the author association is MEMBER, the community-contributor Phase 0 asks were skipped.",
-      "The later upstream thread did not introduce any new maintainer ask or author-waiting state."
-    ]
+    "fork_review": {
+      "fork_pr": 707,
+      "fork_branch": "pr-iterate/50399",
+      "head_sha": "8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc",
+      "latest_copilot_review": {
+        "submitted_at": "2026-09-08T04:06:50Z",
+        "commit_id": "8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc",
+        "new_comments": 0
+      },
+      "unresolved_threads": 0,
+      "result": "converged",
+      "detail": "Existing fork Copilot review and all prior unresolved threads were consumed before drafting; no duplicate review request was made."
+    },
+    "suggestionPatch": {
+      "result": "not_applicable",
+      "appliedItemIds": [],
+      "minimalRangesReviewed": true,
+      "commands": [],
+      "reason": "The drafted review uses explanatory inline and companion findings; no apply-ready suggestion block is included."
+    }
+  },
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-14T12:45:00Z",
+    "fork_pr": 707,
+    "fork_branch": "pr-iterate/50399",
+    "fork_head_sha": "8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc",
+    "unresolved_copilot_threads": 0,
+    "copilot_review": {
+      "submitted_at": "2026-09-08T04:06:50Z",
+      "commit_id": "8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc",
+      "published_comments": 0
+    },
+    "build_result": "blocked_on_environment"
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-14T12:45:00Z",
+    "source_updated_at": "2026-09-08T16:10:48Z",
+    "head_sha": "778e434b4016d4d9c161151c9bf3850176f8f4e3"
   },
   "fork_pr": {
     "number": 707,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/707",
+    "state": "OPEN",
     "head_sha": "8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc"
   },
-  "fork_repo": "MuyuanMS/PowerToys",
-  "fork_branch": "pr-iterate/50399",
-  "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-09-09T18:16:02.9040294Z",
-    "resume_action": "rebuild-and-draft",
-    "last_copilot_request_at": "2026-09-08T04:00:56Z",
-    "copilot_latest_review_at": "2026-09-08T04:06:50Z",
-    "copilot_result": "clean_zero_published_comments",
-    "pending_copilot_request": false,
-    "unresolved_copilot_threads": 0,
-    "unresolved_non_copilot_threads": 3,
-    "local_validation": "completed",
-    "context_revalidated_at": "2026-09-09T18:16:02.9040294Z"
-  },
-  "freshness": {
-    "checkpoint_at": "2026-09-09T18:16:02.9040294Z",
-    "live_upstream_head": "778e434b4016d4d9c161151c9bf3850176f8f4e3",
-    "live_source_updated_at": "2026-09-08T16:10:48Z",
-    "live_fork_review_head": "8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc",
-    "upstream_head_changed_since_clean_review": false,
-    "newer_upstream_activity_revalidated": true
-  },
-  "build_evidence": {
-    "status": "passed",
-    "commands": [
-      "tools\\\\build\\\\build-essentials.cmd",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\cmdpal\\\\Microsoft.CmdPal.UI.ViewModels",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\cmdpal\\\\Microsoft.CmdPal.UI",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\cmdpal\\\\ext\\\\Microsoft.CmdPal.Ext.ClipboardHistory",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\cmdpal\\\\CmdPalModuleInterface",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\cmdpal\\\\Tests\\\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests",
-      "tools\\\\build\\\\build.cmd in src\\\\modules\\\\cmdpal\\\\Tests\\\\Microsoft.CmdPal.UI.ViewModels.UnitTests"
-    ],
-    "warnings": [
-      "CsWinRT1028 warning in src\\\\common\\\\ManagedCommon\\\\HotkeySettingsControlHook.cs during the Settings.UI build."
-    ],
-    "tests": {
-      "status": "passed",
-      "clipboard_history_unit_tests": 100,
-      "ui_viewmodels_unit_tests": 312,
-      "failed": 0
-    },
-    "modules": [
-      "PowerToys.exe",
-      "PowerToys.CmdPalModuleInterface.dll",
-      "Microsoft.CmdPal.Ext.ClipboardHistory.dll"
-    ],
-    "notes": [
-      "POWERTOYS_DISABLE_SPECTRE=1 was used.",
-      "All inherited GIT_CONFIG_* environment variables were cleared before building to avoid the empty GIT_CONFIG_VALUE_2 failure.",
-      "The build retry succeeded without code changes."
-    ]
-  },
-  "copilot": {
-    "last_requested_at": "2026-09-08T04:00:56Z",
-    "latest_review_at": "2026-09-08T04:06:50Z",
-    "latest_review_head": "8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc",
-    "latest_review_summary": "Needs a closer look; 0 new comments",
-    "new_comments": 0,
-    "unresolved_threads": 0,
-    "pending_requested_reviewers": [],
-    "reviews_after_last_request": [
-      {
-        "reviewer": "copilot-pull-request-reviewer[bot]",
-        "state": "COMMENTED",
-        "submitted_at": "2026-09-08T04:06:50Z",
-        "commit_id": "8707ecd76e6782bbbd2a69f70ec92a0bb053ebcc"
-      }
-    ],
-    "resolved_findings": [
-      "Preserved text-first clipboard format precedence in ClipboardHistorySource.cs.",
-      "Disposed and drained the cache before disposing the source in ClipboardHistoryListPage.cs.",
-      "Suppressed stale failure reporting from superseded refreshes in ClipboardHistoryListPage.cs.",
-      "Always raised Details notifications after lazy metadata reset in ClipboardListItem.cs.",
-      "Made GetItems reservation and deferred-fetch state atomic across threads in ListViewModel.cs."
-    ],
-    "unresolved_non_copilot_threads": 3,
-    "non_copilot_thread_summary": [
-      "Two GitHub Advanced Security spelling threads flag DISPATCHERQUEUE.",
-      "One GitHub Advanced Security spelling thread flags APARTMENTTYPE."
-    ]
-  },
-  "upstream_activity_since_last_artifact": {
-    "previous_artifact_evaluated_at": "2026-09-08T05:00:39.52Z",
-    "previous_artifact_source_updated_at": "2026-09-08T02:44:55Z",
-    "head_changed": false,
-    "relevant_new_activity": false,
-    "observed_events": [
-      "2026-09-08T15:44:52Z collaborator comment: \"Oof, that's heavy...\"",
-      "2026-09-08T16:10:48Z author reply noting that many added lines are tests."
-    ]
-  },
-  "upstream_writes": false,
-  "dashboard_modified": false
+  "fork_branch": "pr-iterate/50399"
 }

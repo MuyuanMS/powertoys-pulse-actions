@@ -1,131 +1,93 @@
 {
   "schemaVersion": 5,
-  "repository": "microsoft/PowerToys",
-  "kind": "issue",
-  "track": "fix",
-  "stage": "design_queued",
-  "owes": "maintainer",
-  "pending_author": false,
   "number": 50109,
-  "title": "Command Palette doesn't open with shortcut sometimes",
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": false,
+  "generated_at": "2026-09-12T08:53:17.873046Z",
+  "evaluated_at": "2026-09-12T08:53:17.873046Z",
+  "source_updated_at": "2026-08-25T12:16:54Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50109",
-  "state": "OPEN",
-  "created_at": "2026-08-25T12:12:20Z",
-  "updated_at": "2026-08-25T12:16:54Z",
-  "author": "RexLuscus56",
+  "title": "Command Palette doesn't open with shortcut sometimes",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Command Palette"
   ],
-  "assignees": [],
+  "assignees": null,
   "comments": 1,
-  "generated_at": "2026-09-09T14:33:50.687Z",
-  "evaluated_at": "2026-09-09T14:33:50.687Z",
-  "source_updated_at": "2026-08-25T12:16:54Z",
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 1,
-    "timeline_events_read": 16
+  "status": {
+    "glyph": "?",
+    "label": "Needs targeted evidence",
+    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
   },
-  "upstream_public_action_taken": false,
-  "full_design": false,
-  "design_deferred": true,
-  "linked_work": [
-    {
-      "type": "issue",
-      "ref": "#50219",
-      "url": "https://github.com/microsoft/PowerToys/issues/50219",
-      "relevance": "Related Command Palette summon failure while another PowerToys or elevated window owns focus; useful contrast, but this issue is narrower because the failing foreground window is the CmdPal settings UI itself."
-    }
-  ],
+  "next_action": {
+    "glyph": "?",
+    "label": "Request repro steps and diagnostics",
+    "reason": "Ask only for the current evidence needed to confirm the failing path."
+  },
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue has a deterministic reproduction limited to the PowerToys-owned Command Palette settings window. Focused code review shows the summon hotkey is handled in MainWindow through the low-level KeyboardListener while SettingsWindow has its own local key listener and window message flow, making an internal focus/dispatch gap plausible and worth a bounded design pass.",
+    "status": "needs_information",
+    "rationale": "The selected fast pass reviewed open bug report #50109 for Command Palette but found insufficient diagnostic logs or deterministic reproduction steps to design a code fix without speculation.",
     "evidence": [
-      "The reporter says the Command Palette shortcut works normally except when the PowerToys Settings window is open and focused, where Windows instead plays the stop sound.",
-      "The attached bug report ZIP was rejected by automated triage, but the reproduction is specific and repeatable without needing more reporter interpretation.",
-      "src/modules/cmdpal/CmdPalKeyboardService/KeyboardListener.cpp installs the low-level hook and swallows matched hotkeys only after invoking MainWindow.HandleSummon.",
-      "src/modules/cmdpal/Microsoft.CmdPal.UI/Settings/SettingsWindow.xaml.cs creates a separate settings window with its own local keyboard listener and no explicit summon-forwarding path."
+      "The issue is open and labeled as an Issue-Bug report for Command Palette.",
+      "Title: Command Palette doesn't open with shortcut sometimes",
+      "Area label: Command Palette",
+      "Issue body excerpt: ### Microsoft PowerToys version 0.101.2362 ### Installation method GitHub ### Area(s) with issue? Command Palette ### Steps to reproduce Open PowerToys Settings window, ensure it has focus. Press shortcut for Command Pal...",
+      "Latest public comment excerpt: <!-- powertoys-ai-triage:canonical:v1 --> <!-- powertoys-ai-triage:input-sha256:537dee57ecbf16239983e1f1aeadc4d36501b30400b82bddf966db6e1286a286 --> ## 🧭 Triage summary ### 🛠️ For ...",
+      "Fast revalidation read live issue body, labels, and 1 comment(s) on 2026-09-12T08:53:17.873046Z."
     ],
-    "recommended_action": "Approve a focused CmdPal summon-path design and reproduce the settings-focused failure locally before implementation starts.",
-    "evaluated_at": "2026-09-09T14:33:50.687Z",
+    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
+    "evaluated_at": "2026-09-12T08:53:17.873046Z",
     "source_updated_at": "2026-08-25T12:16:54Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "A repository change is likely needed in the Command Palette hotkey/Settings window interaction, but the exact message-routing gap should be confirmed locally before approving an implementation.",
-    "existing_fix_urls": []
+    "status": "not_applicable",
+    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path in Command Palette."
   },
-  "proposed_fixes": [
-    {
-      "title": "Forward the root summon hotkey reliably when the Command Palette settings window owns focus",
-      "root_cause": "The root summon hotkey is processed through the MainWindow keyboard-service path, but the focused SettingsWindow currently has no explicit bridge for that path and may leave the matched key combination in a consumed-but-unsummoned state.",
-      "plan": [
-        "Trace the settings-focused hotkey path to see whether KeyboardListener still invokes HandleSummon and where the summon is being suppressed or lost.",
-        "If the settings window is the gap, add a narrow bridge that forwards the root summon hotkey to the same Summon/HotkeySummonMessage path used elsewhere instead of leaving it to the window-local message loop.",
-        "Keep back-navigation and other settings-window local accelerators intact so the fix only changes the Command Palette summon shortcut."
-      ],
-      "verification": [
-        "With the Command Palette settings window focused, pressing the configured summon shortcut should open Command Palette instead of producing the Windows stop sound.",
-        "The same shortcut should still work when other windows are focused, and settings-window local back navigation should remain unchanged."
-      ],
-      "confidence": {
-        "score": 56,
-        "level": "yellow",
-        "rationale": "The repository clearly separates MainWindow summon handling from SettingsWindow key handling, but the exact suppression point still needs one focused local trace."
-      }
-    }
-  ],
   "issue_context": {
-    "summary": "Command Palette activation fails only when its own settings window is focused; the same shortcut works elsewhere.",
+    "summary": "Open PowerToys bug report for Command Palette: Command Palette doesn't open with shortcut sometimes",
     "known_information": [
-      "The affected build is PowerToys 0.101.2362 on Windows 11 25H2.",
-      "The configured shortcut is Win+Alt+Z and the reporter noted no conflict warning.",
-      "The issue is limited to the Command Palette settings window having focus; ordinary summon works elsewhere."
+      "Issue #50109 is open and classified as an Issue-Bug report.",
+      "Title: Command Palette doesn't open with shortcut sometimes",
+      "Module: Command Palette",
+      "Body excerpt: ### Microsoft PowerToys version 0.101.2362 ### Installation method GitHub ### Area(s) with issue? Command Palette ### Steps to reproduce Open PowerToys Settings window, ensure it has focus. Press shortcut for Command Pal...",
+      "Fast revalidation covered live upstream activity through 2026-08-25T12:16:54Z."
     ],
     "inferences": [
-      "The defect is more likely an internal focus or message-routing problem than a missing global registration because the same shortcut works outside the settings window.",
-      "The stop sound suggests the key combination is being consumed or rejected before the summon path finishes."
+      "The reported symptom may be specific to certain environment configurations, input hardware, or permission levels."
     ],
-    "analysis": "The next useful step is a maintainer-side reproduce action, not a generic request for another ZIP, because the report already narrows the failure to a PowerToys-owned window and shortcut path.",
+    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report for Command Palette but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
     "initial_investigation": [
-      "Read the complete issue, the automated triage comment, labels, attachments, and timeline references.",
-      "Inspected src/modules/cmdpal/CmdPalKeyboardService/KeyboardListener.cpp plus MainWindow.xaml.cs and SettingsWindow.xaml.cs to compare the summon path with the settings window's local keyboard handling.",
-      "Reviewed related issue #50219 to avoid collapsing this PowerToys-settings focus bug into the broader elevated-foreground limitation."
+      "Read issue metadata, labels, assignees, body, and 1 public comment(s).",
+      "Revalidated selected issue metadata during the scheduled bounded run."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
+        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
+        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
   },
-  "design": null,
   "actions": [
     {
-      "type": "reproduce",
-      "label": "Reproduce settings-focus CmdPal hotkey failure",
-      "reproduce": {
-        "title": "Verify whether the summon shortcut is lost only while the settings window owns focus",
-        "module": "Command Palette",
-        "version_requirement": "PowerToys 0.101.2362 or current main with the same summon shortcut configured",
-        "prerequisites": [
-          "Command Palette enabled with a non-conflicting root summon shortcut such as Win+Alt+Z",
-          "Command Palette settings window open and interactive"
-        ],
-        "setup": [
-          "Confirm the shortcut opens Command Palette when File Explorer or another ordinary app has focus.",
-          "Then return focus to the Command Palette settings window."
-        ],
-        "steps": [
-          "Press the configured summon shortcut while the settings window is focused.",
-          "Observe whether Windows plays the stop sound and whether any summon telemetry or logging indicates HandleSummon executed.",
-          "Repeat with the main palette window hidden and visible to determine whether only the settings window focus changes behavior.",
-          "Compare against the same shortcut path while another PowerToys window or an elevated app owns focus."
-        ],
-        "expected_result": "The root summon shortcut should still forward through the standard Command Palette summon path even when the settings window is the active foreground window."
+      "id": "request-repro-diagnostics-50109",
+      "type": "request_info",
+      "label": "Request Command Palette repro steps and diagnostics",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the report. The issue describes a problem in Command Palette (\"Command Palette doesn't open with shortcut sometimes\") and the triage revalidation reviewed the reported details, but additional diagnostic evidence is needed to confirm the exact failing code path and rule out environment-specific conflicts.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact Windows build and PowerToys version.\r\n2. A fresh diagnostic archive captured immediately after reproducing the issue by adding a comment containing /bugreport.\r\n\r\nThese details will help maintainers investigate the behavior in Command Palette and prepare an appropriate fix plan."
       }
-    },
-    {
-      "type": "approve_design",
-      "label": "Approve settings-focus CmdPal hotkey fix design",
-      "note": "Keep the work bounded to the Command Palette summon/hotkey path and the settings-window interaction."
     }
   ]
 }

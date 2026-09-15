@@ -3,118 +3,118 @@
   "number": 9661,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:05:21Z",
-  "evaluated_at": "2026-09-10T12:05:21Z",
-  "source_updated_at": "2022-11-02T09:43:30Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/9661",
-  "title": "Setting \"Move newly created windows to their last known zone\" is not obeyed by all apps",
   "author": "Robert-Tortorelli",
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Identity lookup and startup placement are concrete restore boundaries."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Classify failures by app identity and placement timing."
+  },
+  "generated_at": "2026-09-12T01:02:28.432371Z",
+  "evaluated_at": "2026-09-12T01:02:28.432371Z",
+  "source_updated_at": "2022-11-02T09:43:30Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Several applications are named and the issue includes a diagnostic archive. Current code retrieves last-zone history using the new window plus work-area/layout identity, which is a concrete path for app identity and creation-timing failures.",
+    "evidence": [
+      "PowerToys Settings, Teams, cmd.exe, Total Commander, Windows Terminal, and Notion were reported not to restore.",
+      "Current FancyZones::MoveToAppLastZone calls GetAppLastZoneIndexSet(window, work-area identity, layout id) and snaps only when a matching history entry is found.",
+      "Related #23003 concerned per-app control, not the underlying missed restore."
+    ],
+    "recommended_action": "Reproduce with representative app models and harden application identity/timing before designing broad allow/block behavior.",
+    "evaluated_at": "2026-09-12T01:02:28.432371Z",
+    "source_updated_at": "2022-11-02T09:43:30Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix covers the cross-application history lookup and startup-placement failure."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make last-zone restore resilient to app identity and startup placement timing",
+      "root_cause": "Some applications create replacement/top-level windows whose executable, AUMID, owner, or final bounds differ from the window recorded in app-zone history, or they apply their own placement after FancyZones restores the zone.",
+      "plan": [
+        "Trace history key creation and lookup for classic Win32, packaged, Electron, and console-hosted apps.",
+        "Use a stable application identity with documented fallback rules and defer the snap until the eligible final top-level window is ready.",
+        "Avoid repeated fighting with applications that intentionally reposition themselves, and retain exclusion rules."
+      ],
+      "verification": [
+        "Add unit tests for history lookup across HWND recreation and stable app identity.",
+        "Launch Windows Terminal, Notion, and a simple Win32 control after zoning, then verify only previously zoned eligible windows restore.",
+        "Test multi-monitor, virtual-desktop, and layout-change behavior."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The lookup path and app-dependent symptom are clear, but identity mismatch versus post-launch self-positioning must be measured per app."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "FancyZones last-zone restore works inconsistently across applications because restoration depends on matching a newly created HWND to saved application history and acting before or after the application’s own placement logic.",
+    "known_information": [
+      "Multiple unrelated application frameworks fail to return to their last zone.",
+      "The setting is enabled and manual Shift-drag records a zone.",
+      "Current restore requires both matching app history and matching work-area/layout identity."
+    ],
+    "inferences": [
+      "Failures may divide into history-key misses and applications overriding placement after FancyZones snaps."
+    ],
+    "analysis": "The cross-app list argues against one app bug, while current code exposes two testable boundaries: identity lookup and snap timing.",
+    "initial_investigation": [
+      "Read the full body and all three comments through 2022-11-02T09:43:30Z.",
+      "Reviewed FancyZones::MoveToAppLastZone and AppZoneHistory usage at commit 33e4ef46e5db77a256818a917d65103c9b7398fa.",
+      "Checked linked #23003; it was closed in favor of enhancement #28943 and does not resolve missed restoration."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-9661",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce app-specific last-zone restore",
+      "reproduce": {
+        "title": "Classify FancyZones restore failures",
+        "module": "FancyZones",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "Enable “Move newly created windows to their last known zone”",
+          "Create a stable multi-zone layout",
+          "Install representative apps such as Windows Terminal and Notion"
+        ],
+        "setup": [],
+        "steps": [
+          "Zone each test app and confirm app-zone-history records it.",
+          "Close the app completely and relaunch it.",
+          "Capture the new HWND, executable/AUMID, owner, initial bounds, and bounds after startup settles.",
+          "Compare a simple Win32 app that restores correctly."
+        ],
+        "expected_result": "Each eligible app is matched to its saved history and remains in the restored zone after its startup placement completes."
+      }
+    }
+  ],
+  "title": "Setting \"Move newly created windows to their last known zone\" is not obeyed by all apps",
+  "url": "https://github.com/microsoft/PowerToys/issues/9661",
   "labels": [
     "Issue-Bug",
     "Product-FancyZones",
     "Priority-3"
   ],
   "assignees": [],
-  "comment_count": 3,
-  "summary": "FancyZones' last-known-zone option did not restore PowerToys, Teams, Terminal, Notion, and other reported windows consistently.",
-  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-  "confidence": {
-    "score": 57,
-    "level": "yellow",
-    "rationale": "History matching is likely, but the app list may represent several causes."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
-    "evidence": [
-      "PowerToys was shown before and after reopening.",
-      "Multiple apps were named.",
-      "Notion was reconfirmed in 2022."
-    ],
-    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-    "evaluated_at": "2026-09-10T12:05:21Z",
-    "source_updated_at": "2022-11-02T09:43:30Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
-  },
-  "issue_context": {
-    "summary": "FancyZones' last-known-zone option did not restore PowerToys, Teams, Terminal, Notion, and other reported windows consistently.",
-    "known_information": [
-      "A diagnostic archive is linked.",
-      "Issue 23003 is closed but does not establish a restoration fix."
-    ],
-    "inferences": [
-      "App-zone history may fail to correlate new windows when process, window identity, or startup timing changes."
-    ],
-    "analysis": "A current stable app matrix is needed because the broad list may contain several mechanisms.",
-    "initial_investigation": [
-      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
-      "Found no current assignee or completed linked implementation that conclusively resolves this report."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-9661",
-      "type": "approve_design",
-      "label": "Approve app-zone history matching investigation",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design_summary": "Harden last-known-zone matching for changing window identities.",
-      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
-    },
-    {
-      "id": "reproduce-9661",
-      "type": "reproduce",
-      "label": "Reproduce last-known-zone mismatch",
-      "primary": false,
-      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
-      "reproduce": {
-        "title": "Reopen zoned applications",
-        "module": "FancyZones",
-        "version_requirement": "Current stable PowerToys release",
-        "prerequisites": [
-          "Current stable PowerToys",
-          "Restoration option enabled",
-          "Notion plus Notepad control"
-        ],
-        "setup": [
-          "Assign both apps to known zones and close them."
-        ],
-        "steps": [
-          "Reopen each app.",
-          "Record restoration.",
-          "Disable the option and repeat.",
-          "Repeat after restart."
-        ],
-        "expected_result": "Supported apps should restore only when the option is enabled."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Harden last-known-zone matching for changing window identities.",
-      "root_cause": "History matching misses applications whose window identity or creation lifecycle changes across launch.",
-      "plan": [
-        "Trace history lookup keys for one control and one failing app.",
-        "Harden the confirmed identity boundary without merging unrelated windows.",
-        "Test packaged, multi-window, and delayed-start apps."
-      ],
-      "verification": [
-        "Reopen a zoned failing app and inspect history matching.",
-        "Verify restoration occurs only when enabled."
-      ],
-      "confidence": {
-        "score": 57,
-        "level": "yellow",
-        "rationale": "History matching is likely, but the app list may represent several causes."
-      }
-    }
-  ]
+  "comments": 3
 }

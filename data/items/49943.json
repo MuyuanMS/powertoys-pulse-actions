@@ -1,119 +1,30 @@
 {
-  "schemaVersion": 5,
+  "number": 49943,
   "kind": "pr",
   "track": "review",
-  "number": 49943,
+  "stage": "review_in_progress",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-09-14T02:40:00.3978474Z",
+  "evaluated_at": "09/13/2026 16:00:54",
+  "source_updated_at": "2026-09-09T00:06:34+08:00",
+  "head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
   "title": "CmdPal: Shelf (5/n) - Add Alt+Shift+# shortcuts that select the shelf item",
   "url": "https://github.com/microsoft/PowerToys/pull/49943",
-  "generated_at": "2026-09-09T05:19:23.913848Z",
-  "evaluated_at": "2026-09-09T05:19:23.913848Z",
-  "source_updated_at": "2026-09-08T16:06:34Z",
-  "stage": "review_in_progress",
-  "owes": "maintainer",
-  "pending_author": true,
-  "head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
-  "summary": "The live upstream head and six-file stacked scope were revalidated. The review loop is converged with a current-head zero-comment Copilot pass and zero unresolved threads. Three current-head shortcut-routing findings are drafted as a request-changes review; the existing upstream intake request for visual evidence remains outstanding.",
   "status": {
-    "glyph": "READY",
-    "label": "Review ready — three correctness findings drafted",
-    "detail": "The review payload is pinned to the current upstream head; focused CmdPal builds and all 35 shelf resolver tests passed."
+    "glyph": "...",
+    "label": "Review in progress",
+    "detail": "Current live head bb49871e039e8ae1c3e73b7b732e70a7b65f1462 requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
   },
-  "next_action": {
-    "glyph": "REVIEW",
-    "label": "Review the drafted request-changes action",
-    "reason": "Publishing the two supported findings remains an explicit maintainer decision, and the author still owes the already-requested visual evidence."
-  },
-  "blockers": [],
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
   "actions": [],
-  "proposed_comments": [
-    {
-      "id": "stop-dispatch-after-visible-selection-chord",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Stop page-level dispatch after a visible selection chord",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
-      "start_line": 1686,
-      "line": 1702,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "body": "### Stop page-level dispatch after a visible selection chord\n\n**Severity:** `high`\n\nReturning `false` for a visible Alt+Shift+digit target lets `ShellPage_OnPreviewKeyDown` continue into command-keybinding dispatch. If the focused shelf item has an action bound to the same chord, that action can execute instead of the shortcut only moving focus. Stop this page-level path while leaving `e.Handled` unchanged so WinUI can still invoke the native access key.\n\n```suggestion\n        switch (QuickAccessShelfShortcuts.ResolveSelectionShortcut(\n            e.Key,\n            modifiers.Ctrl,\n            modifiers.Alt,\n            modifiers.Shift,\n            modifiers.Win,\n            QuickAccessShelf.VisibleItemCount,\n            isKeyTipDisplayMode: AccessKeyManager.IsDisplayModeEnabled))\n        {\n            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible:\n                // Let the matching native access key move focus to the requested shelf item.\n                return true;\n            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable:\n                // Reserve shelf selection chords even when their targets are in overflow so\n                // they cannot invoke a context shortcut on the currently focused shelf item.\n                e.Handled = true;\n                return true;\n        }\n```\n\nApply this together with the shortcut-helper update below.",
-      "confidence": {
-        "score": 98,
-        "rationale": "The current visible-target branch returns false and therefore demonstrably falls through to TryCommandKeybindingMessage; returning true without setting e.Handled preserves native access-key handling and the replacement compiled successfully."
-      }
-    },
-    {
-      "id": "recognize-selection-after-alt-key-tip-entry",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Recognize the shortcut while key-tip mode is active",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfShortcuts.cs",
-      "start_line": 31,
-      "line": 51,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "body": "### Recognize the shortcut while key-tip mode is active\n\n**Severity:** `medium`\n\nWinUI can keep access-key display mode active after Alt has been released, in which case the subsequent shifted digit arrives with `alt == false`. Requiring the modifier bit unconditionally makes the advertised selection shortcut fail for that normal key-tip sequence. Accepting active key-tip mode preserves both press orders while retaining the Ctrl, Shift, Win, and digit checks.\n\n```suggestion\n    public static bool IsSelectionShortcut(VirtualKey key, bool ctrl, bool alt, bool shift, bool win, bool isKeyTipDisplayMode = false) =>\n        (alt || isKeyTipDisplayMode) &&\n        IsSelectionAccessKey(ctrl, shift, win) &&\n        GetTopRowShortcutIndex(key) >= 0;\n\n    public static SelectionShortcutTarget ResolveSelectionShortcut(\n        VirtualKey key,\n        bool ctrl,\n        bool alt,\n        bool shift,\n        bool win,\n        int visibleItemCount,\n        bool isKeyTipDisplayMode = false)\n    {\n        if (!IsSelectionShortcut(key, ctrl, alt, shift, win, isKeyTipDisplayMode))\n        {\n            return SelectionShortcutTarget.None;\n        }\n\n        return GetTopRowShortcutIndex(key) < visibleItemCount\n            ? SelectionShortcutTarget.Visible\n            : SelectionShortcutTarget.Unavailable;\n    }\n```\n\nPlease also add focused coverage for the released-Alt/key-tip-mode path.",
-      "confidence": {
-        "score": 94,
-        "rationale": "The access-key handler already depends on WinUI key-tip routing, while the current helper accepts only the instantaneous Alt modifier; the updated helper and released-Alt regression coverage passed the focused test suite."
-      }
-    },
-    {
-      "id": "resolve-selection-before-shelf-button-source-guard",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Resolve the app-wide selection chord before the source-button guard",
-      "in_diff": false,
-      "disposition": "proposed",
-      "body": "### Resolve the app-wide selection chord before the source-button guard\n\n**Severity:** `high`\n\nThe current handler returns before checking the selection shortcut unless `OriginalSource` is already inside a shelf button. Access keys are app-wide, so Alt+Shift+digit from another focused control never reaches the new selection path. Please split the visibility check from the source-button lookup, resolve and reserve the selection chord immediately after confirming the shelf is visible, and only then require a shelf-button source for Ctrl+Enter, Ctrl+K, and item-context shortcuts.",
-      "confidence": {
-        "score": 97,
-        "rationale": "The early combined guard is directly visible immediately above the added shortcut block, and it excludes every event whose source is outside a shelf button despite the app-wide access-key contract."
-      },
-      "out_of_diff_reason": "This concern requires coordinated changes across multiple current-diff regions or files, so it cannot be safely expressed as one apply-ready inline suggestion."
-    }
-  ],
-  "phase0": {
-    "author": "jiripolasek",
-    "author_association": "COLLABORATOR",
-    "bar": "Collaborator process nags skipped except genuine current blockers",
-    "disposition": "Ask",
-    "who_owes_next": "Author for visual evidence; maintainer for the drafted code review",
-    "gates_tripped": [
-      {
-        "id": "P2",
-        "severity": "ask",
-        "detail": "This changes visible CmdPal keyboard interaction, the PR has no screenshot or recording, and the current Needs-Author-Feedback intake request asks for visual evidence."
-      }
-    ],
-    "note": "The existing automated intake comment already asks for a screenshot, GIF, or video, so no duplicate context comment is proposed. CLA, dependency review, telemetry, intake, x64 CI, and arm64 CI are successful; the PR is non-draft, atomic within its stacked Shelf series, linked to issue 49930, and has a current maintainer approval."
-  },
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "mergeable_state": "clean",
-    "review_decision": "APPROVED",
-    "head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
-    "base_sha": "7315d0e6afe1a577de0a657f689338fb4e9d7e04",
-    "changed_file_count": 6,
-    "issue_comment_count": 1,
-    "review_comment_count": 0,
-    "review_count": 4,
-    "reported_checks": {
-      "failing": 0,
-      "pending": 0,
-      "note": "The earlier cancelled intake and telemetry runs were superseded by successful runs."
-    }
+  "workflow": {
+    "phase": "review_in_progress",
+    "checkpoint_at": "2026-09-14T02:40:00.3978474Z"
   },
   "freshness": {
-    "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-09T05:19:23.913848Z",
-    "head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
-    "source_updated_at": "2026-09-08T16:06:34Z"
-  },
-  "upstream_writes": [],
-  "dashboard_modified": false,
-  "needs_revalidation": true
+    "queued_at": "09/13/2026 16:00:54",
+    "checkpoint_at": "2026-09-14T02:40:00.3978474Z"
+  }
 }

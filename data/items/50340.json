@@ -1,93 +1,117 @@
 {
-  "schemaVersion": 5,
   "number": 50340,
   "kind": "issue",
   "track": "fix",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report provides a complete differential reproduction: Alt+OEM_3 fails only for Window Hopper, while Win+OEM_3 works there and Alt+OEM_3 works in Command Palette across Chinese and US input methods. Current Window Hopper code is the AltWindowCycle module, whose default is Alt+VK_OEM_3 and whose hotkeys are dispatched through the Runner. The old design used a nonexistent src/modules/windowhopper path and has been removed.",
+    "evidence": [
+      "PowerToys 0.101.2432 Preview is running elevated on Windows 11 25H2.",
+      "Alt+backtick fails globally in Window Hopper, Win+backtick works in Window Hopper, and Alt+backtick works in Command Palette.",
+      "Microsoft Pinyin, WeChat Input Method, and US Keyboard all show the same result.",
+      "Current src/modules/AltWindowCycle/dllmain.cpp defines the default as Alt plus VK_OEM_3 and returns it through PowertoyModuleIface::get_hotkeys.",
+      "The module's on_hotkey receives a hotkey ID only after centralized Runner registration/dispatch, so registration result and dispatched key code are the next decisive evidence.",
+      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
+    ],
+    "recommended_action": "Reproduce with Runner hotkey-registration diagnostics and compare the stored VK code with the dispatched chord before designing a normalization change.",
+    "evaluated_at": "2026-09-12T00:59:02Z",
+    "source_updated_at": "2026-09-02T17:22:25Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys fix is likely in the AltWindowCycle settings/registration boundary, but current evidence does not distinguish a failed RegisterHotKey call, conflict, or VK_OEM_3 normalization mismatch."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Window Hopper Alt+backtick registration observable and layout-stable",
+      "root_cause": "The AltWindowCycle module stores Alt+VK_OEM_3 correctly, but the centralized hotkey registration or keyboard-layout normalization path may reject or transform that chord before AltWindowCycle::on_hotkey is called.",
+      "plan": [
+        "Log the parsed Window Hopper hotkey, RegisterHotKey result/error, assigned hotkey ID, and on_hotkey dispatch.",
+        "Reproduce with US and Chinese layouts and compare Alt+VK_OEM_3 with Win+VK_OEM_3.",
+        "If registration fails, surface the actual conflict and preserve the configured value; if the VK changes across layout translation, normalize the persisted physical OEM key consistently with the shared hotkey control.",
+        "Add settings and runner-dispatch regression coverage for Alt+OEM_3 and Shift+Alt+OEM_3."
+      ],
+      "verification": [
+        "Alt+backtick and Shift+Alt+backtick invoke the configured Window Hopper direction on supported layouts.",
+        "Win+backtick remains functional when configured.",
+        "A genuine OS or PowerToys conflict is reported instead of silently failing."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The differential reproduction isolates registration/dispatch, but the report lacks the registration result needed to choose failure handling versus key normalization."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Window Hopper ignores default Alt+` globally even though Command Palette accepts it and Window Hopper accepts Win+`.",
+    "known_information": [
+      "The issue has deterministic steps and tested input methods.",
+      "Win+` works for Window Hopper.",
+      "The diagnostic archive could not be analyzed.",
+      "Live upstream issue activity was reviewed through 2026-09-02T17:22:25Z."
+    ],
+    "inferences": [
+      "The defect is module-specific key normalization or registration.",
+      "Silent registration failure should become observable."
+    ],
+    "analysis": "The issue is already reproducible and has strong controls, so another reporter log request is unnecessary. Maintainers need one instrumented registration/dispatch run. The previous detailed design named a nonexistent source directory and therefore was not preserved.",
+    "initial_investigation": [
+      "Read the full issue, automated triage comment, labels, assignees, and timeline.",
+      "Inspected current src/modules/AltWindowCycle/dllmain.cpp, including DEFAULT_BACKTICK_VK, parse_hotkey, get_hotkeys, and on_hotkey.",
+      "Confirmed the module uses the centralized PowerToy hotkey interface rather than a WindowHopper-specific registration service.",
+      "Focused source review covered upstream main 71340eed47f7cf6f53b68b86a7939ad1240c3de7."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve_design-50340",
+      "type": "approve_design",
+      "label": "Design Window Hopper hotkey registration fix",
+      "primary": true,
+      "confirm": true,
+      "design": {
+        "title": "Make Window Hopper Alt+backtick registration observable and layout-stable"
+      }
+    },
+    {
+      "id": "reproduce-50340",
+      "type": "reproduce",
+      "label": "Trace Window Hopper Alt+backtick registration",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "title": "Distinguish registration failure from OEM-key normalization",
+        "module": "Window Hopper (AltWindowCycle)",
+        "prerequisites": [],
+        "steps": [
+          "Enable Window Hopper and keep the default Alt+backtick next-window shortcut.",
+          "Restart PowerToys and record the parsed modifiers/key plus the centralized hotkey registration result and error.",
+          "Press Alt+backtick and verify whether AltWindowCycle::on_hotkey is dispatched.",
+          "Repeat with Win+backtick, US keyboard, and Microsoft Pinyin or another affected layout."
+        ],
+        "expected_result": "The default Alt+VK_OEM_3 chord registers and dispatches consistently; otherwise the trace identifies the exact registration or normalization failure.",
+        "version_requirement": "Current upstream main on Windows 11"
+      },
+      "note": "Display-only reproduction plan; it does not post to GitHub."
+    }
+  ],
+  "schemaVersion": 5,
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-12T00:59:02Z",
+  "evaluated_at": "2026-09-12T00:59:02Z",
+  "source_updated_at": "2026-09-02T17:22:25Z",
   "title": "[Bug]: Window Hopper: Alt + ` hotkey fails to trigger, but works fine in Command Palette",
   "url": "https://github.com/microsoft/PowerToys/issues/50340",
-  "generated_at": "2026-09-09T10:33:13.5242917Z",
-  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
-  "source_updated_at": "2026-09-02T17:22:25Z",
-  "summary": "Window Hopper Alt+` has a credible reproduction report, but the remaining work is maintainer-side: reproduce globally under the same locale/layout conditions and capture the raw key path.",
-  "next_action": "Run the maintainer reproduction plan with zh-CN plus US layout and compare the global low-level-hook path with the in-window Command Palette path.",
-  "confidence": {
-    "score": 61,
-    "level": "yellow",
-    "rationale": "The report is detailed and narrowed to one hotkey, but the exact failing keyboard-path branch is still not proven from public evidence alone."
-  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Window Hopper"
   ],
   "assignees": [],
-  "linked_work": [],
-  "comment_count": 1,
-  "judgment": {
-    "status": "reproducible",
-    "rationale": "The issue already has enough detail to reproduce locally; the missing discriminator is in the maintainer-side keyboard event path, not in another reporter answer.",
-    "evidence": [
-      "The report provides numbered steps and shows that Alt+` fails, Win+` succeeds, and Alt+` works inside Command Palette.",
-      "AltWindowCycle defines the default backtick key as VK_OEM_3 in src/modules/AltWindowCycle/dllmain.cpp.",
-      "The reporter already tested multiple input methods and a US keyboard layout, so the remaining work is to inspect the actual global key path under the same locale mix."
-    ],
-    "recommended_action": "Reproduce under the reported locale/layout mix and log the raw global key sequence before committing to a code change."
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repo-side fix is plausible, but the exact failing branch still needs a maintainer reproduction pass to distinguish key-code, modifier, and focused-window-path behavior.",
-    "existing_fix_urls": []
-  },
-  "issue_context": {
-    "summary": "The issue isolates a single discrepancy: the default Alt+` chord does not trigger Window Hopper globally, even though an alternate Win+` chord does and the same Alt+` chord works inside Command Palette.",
-    "known_information": [
-      "The report is against preview build 0.101.2432 on Windows 11 25H2.",
-      "The reporter tested Microsoft Pinyin, WeChat Input Method, and a standard US keyboard layout.",
-      "A PowerToys diagnostic ZIP was attached."
-    ],
-    "inferences": [
-      "The issue likely lives in the global hotkey path rather than in Window Hopper’s UI logic, because the functionality works when triggered by another path.",
-      "The discrepancy may depend on how the global hook sees Alt+OEM_3 under the reported locale/layout mix."
-    ],
-    "analysis": "The report is already specific enough for a maintainer to reproduce locally and inspect the key path. Another generic reporter request would add little value compared with a direct repro pass.",
-    "initial_investigation": [
-      "AltWindowCycle is a new module introduced by PR #48281 and uses get_hotkeys() rather than GetHotkeyEx().",
-      "The module hardcodes the default backtick virtual key as VK_OEM_3 (0xC0) in src/modules/AltWindowCycle/dllmain.cpp.",
-      "The centralized low-level keyboard hook lives in src/runner/centralized_kb_hook.cpp and is the likely place to compare global behavior against the focused Command Palette path."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "type": "reproduce",
-      "label": "Reproduce Alt+` global failure",
-      "note": "The remaining uncertainty is in the maintainer-side key path, not in missing reporter evidence.",
-      "reproduce": {
-        "title": "Compare Window Hopper Alt+` globally vs inside Command Palette",
-        "module": "Window Hopper / AltWindowCycle",
-        "version_requirement": "PowerToys 0.101.2432 or newer with Window Hopper enabled",
-        "prerequisites": [
-          "Windows 11 system with Window Hopper enabled",
-          "Ability to switch between zh-CN and US keyboard layouts or IMEs"
-        ],
-        "setup": [
-          "Configure Window Hopper to its default Alt+` hotkey.",
-          "Keep a second test pass available with Win+` as the control case."
-        ],
-        "steps": [
-          "Press Alt+` globally and observe whether Window Hopper appears.",
-          "Change the hotkey to Win+` and verify that the feature triggers successfully.",
-          "Open Command Palette and test Alt+` there as a focused-window comparison path.",
-          "Repeat across the reported keyboard layouts / IMEs."
-        ],
-        "expected_result": "Window Hopper should trigger globally with Alt+` just as reliably as the control chord and the in-window Command Palette path.",
-        "attachments": [
-          {
-            "label": "Reporter bug report ZIP",
-            "url": "https://github.com/user-attachments/files/31748533/PowerToysReport_2026-09-03-01-13-08.zip"
-          }
-        ]
-      }
-    }
-  ]
+  "comments": 1,
+  "author": "cmixed",
+  "authorAssociation": "NONE",
+  "pending_author": false
 }

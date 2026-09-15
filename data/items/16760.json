@@ -3,117 +3,96 @@
   "number": 16760,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:05:21Z",
-  "evaluated_at": "2026-09-10T12:05:21Z",
-  "source_updated_at": "2023-01-18T16:33:46Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/16760",
-  "title": "Power Rename Auto Complete shows entries unrelated to typed text and reopens after every keypress",
   "author": "bersbersbers",
+  "confidence": "Green",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The current AutoSuggestBox receives an unfiltered MRU list."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Filter suggestions and preserve explicit dismissal."
+  },
+  "generated_at": "2026-09-12T01:02:28.538802Z",
+  "evaluated_at": "2026-09-12T01:02:28.538802Z",
+  "source_updated_at": "2023-01-18T16:33:46Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Current XAML and initialization code directly confirm the behavior: SearchMRU is populated with every non-empty history entry and assigned as the AutoSuggestBox ItemsSource without filtering.",
+    "evidence": [
+      "The screenshot/report shows unrelated history such as “tonga” while typing “cou.”",
+      "Current MainWindow.xaml binds SearchMRU directly to the AutoSuggestBox ItemsSource.",
+      "MainWindow::InitAutoComplete appends every stored MRU string with no prefix or fuzzy filtering."
+    ],
+    "recommended_action": "Approve a focused design to filter MRU suggestions by current search text and make dismissal behavior non-obstructive.",
+    "evaluated_at": "2026-09-12T01:02:28.538802Z",
+    "source_updated_at": "2023-01-18T16:33:46Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix filters the displayed MRU list; current source directly matches the reported behavior."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Filter PowerRename MRU suggestions before presenting them",
+      "root_cause": "The AutoSuggestBox receives the entire persisted search MRU as its ItemsSource. Because the list is not filtered by current Text, unrelated entries are displayed and normal AutoSuggestBox text changes reopen the popup.",
+      "plan": [
+        "Maintain a full MRU store but expose a filtered observable list based on the current search text, using case-insensitive prefix or contains semantics agreed with UX.",
+        "On TextChanged, update suggestions without changing the user’s text or selection; preserve explicit dismissal until the next meaningful query or focus transition.",
+        "Keep the existing autocomplete-enabled setting and MRU persistence behavior."
+      ],
+      "verification": [
+        "Add UI coverage that “cou” does not offer unrelated “tonga” and does offer matching history.",
+        "Verify Escape closes suggestions without altering the search and typing can intentionally reopen only with matching items.",
+        "Verify disabling autocomplete shows no history and rename preview updates normally."
+      ],
+      "confidence": {
+        "score": 94,
+        "level": "green",
+        "rationale": "The unfiltered ItemsSource is directly visible in current source and precisely matches the reported unrelated suggestions."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerRename binds the search AutoSuggestBox directly to the complete MRU list, so unrelated previous terms are offered for any current input and the suggestion popup naturally reopens after each text change.",
+    "known_information": [
+      "The issue originated from #15594 but remained after that obscured-button issue was closed.",
+      "The dropdown contains unrelated prior terms and reopens after each keypress.",
+      "Current settings still include an autocomplete toggle."
+    ],
+    "inferences": [
+      "Filtering the displayed MRU resolves the correctness complaint; popup dismissal semantics may need a small UX decision."
+    ],
+    "analysis": "The current implementation has no query filter between stored MRU values and displayed suggestions, providing a concrete root cause and narrow change.",
+    "initial_investigation": [
+      "Read the full issue and follow-up through 2023-01-18T16:33:46Z.",
+      "Reviewed PowerRename MainWindow.xaml and MainWindow.xaml.cpp at commit 33e4ef46e5db77a256818a917d65103c9b7398fa.",
+      "Verified #15594 was closed as completed, but this reporter explicitly confirmed the unrelated-entry behavior persisted afterward."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-16760",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    }
+  ],
+  "title": "Power Rename Auto Complete shows entries unrelated to typed text and reopens after every keypress",
+  "url": "https://github.com/microsoft/PowerToys/issues/16760",
   "labels": [
     "Issue-Bug",
     "Product-PowerRename",
     "Needs-Triage"
   ],
   "assignees": [],
-  "comment_count": 1,
-  "summary": "PowerRename autocomplete suggests unrelated strings, obscures controls, and reopens after every keypress after dismissal.",
-  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-  "confidence": {
-    "score": 76,
-    "level": "yellow",
-    "rationale": "The behavior is directly shown, but current implementation needs verification."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
-    "evidence": [
-      "Typing 'cou' suggested 'tonga'.",
-      "The popup hides replacement UI.",
-      "The behavior was reconfirmed after issue 15594 closed."
-    ],
-    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-    "evaluated_at": "2026-09-10T12:05:21Z",
-    "source_updated_at": "2023-01-18T16:33:46Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
-  },
-  "issue_context": {
-    "summary": "PowerRename autocomplete suggests unrelated strings, obscures controls, and reopens after every keypress after dismissal.",
-    "known_information": [
-      "Issue 15594 covered an obscured button, not relevance or dismissal persistence."
-    ],
-    "inferences": [
-      "Suggestions may be unfiltered history and text-change handling may ignore manual dismissal."
-    ],
-    "analysis": "The two behaviors support a combined filtering and visibility-state design.",
-    "initial_investigation": [
-      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
-      "Found no current assignee or completed linked implementation that conclusively resolves this report."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-16760",
-      "type": "approve_design",
-      "label": "Approve PowerRename autocomplete filtering design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design_summary": "Filter relevant suggestions and honor dismissal during the edit session.",
-      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
-    },
-    {
-      "id": "reproduce-16760",
-      "type": "reproduce",
-      "label": "Reproduce PowerRename autocomplete reopening",
-      "primary": false,
-      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
-      "reproduce": {
-        "title": "Dismiss autocomplete while typing",
-        "module": "PowerRename",
-        "version_requirement": "Current stable PowerToys release",
-        "prerequisites": [
-          "Current stable PowerToys",
-          "PowerRename with autocomplete history"
-        ],
-        "setup": [
-          "Open PowerRename and focus Find."
-        ],
-        "steps": [
-          "Type a prefix.",
-          "Record suggestions.",
-          "Close the popup.",
-          "Type another character.",
-          "Repeat in Replace."
-        ],
-        "expected_result": "Suggestions should be relevant and dismissal should persist until a defined reset."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Filter relevant suggestions and honor dismissal during the edit session.",
-      "root_cause": "Autocomplete is not constrained to the active prefix and reopens on text change without preserving explicit dismissal.",
-      "plan": [
-        "Filter by the current input contract.",
-        "Preserve dismissal until focus or query reset.",
-        "Add UI tests for relevance, dismissal, and obscured controls."
-      ],
-      "verification": [
-        "Verify irrelevant history is absent.",
-        "Dismiss, continue typing, and confirm the popup stays closed."
-      ],
-      "confidence": {
-        "score": 76,
-        "level": "yellow",
-        "rationale": "The behavior is directly shown, but current implementation needs verification."
-      }
-    }
-  ]
+  "comments": 1
 }

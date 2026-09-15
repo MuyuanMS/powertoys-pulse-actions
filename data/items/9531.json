@@ -3,118 +3,96 @@
   "number": 9531,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:05:21Z",
-  "evaluated_at": "2026-09-10T12:05:21Z",
-  "source_updated_at": "2022-10-21T14:45:04Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/9531",
-  "title": "[PT Run][Service Plugin] Stopping services not working",
   "author": "htcfreek",
+  "confidence": "Green",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The plugin trusts net.exe exit rather than the final service state."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Use SCM state and accurate outcome reporting."
+  },
+  "generated_at": "2026-09-12T01:02:28.326191Z",
+  "evaluated_at": "2026-09-12T01:02:28.326191Z",
+  "source_updated_at": "2022-10-21T14:45:04Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue was reproduced by a maintainer, who found the behavior specific to the net.exe path and reported that ServiceController did not trigger the same restart. Current source still shells out to net and treats exit code 0 as success without waiting for ServiceController.Status.",
+    "evidence": [
+      "Maintainer reproduced with Windows Search and Windows Update services and identified immediate restart after net.exe.",
+      "A second user confirmed on 0.63.",
+      "Current ServiceHelper.ChangeStatus launches elevated net start/stop and shows success solely from process exit code."
+    ],
+    "recommended_action": "Approve a design to perform service operations through an elevated ServiceController path and report only the verified final status.",
+    "evaluated_at": "2026-09-12T01:02:28.326191Z",
+    "source_updated_at": "2022-10-21T14:45:04Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix covers the unchanged command-exit versus final-state bug."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Verify and control service state instead of trusting net.exe exit",
+      "root_cause": "ServiceHelper.ChangeStatus interprets a successful `net stop` process exit as a stopped service without observing its post-command ServiceController status; for affected services the SCM immediately returns them to running.",
+      "plan": [
+        "Move start/stop/restart into the existing elevated execution boundary using ServiceController or an equivalent SCM API.",
+        "Wait with a bounded timeout for the requested ServiceControllerStatus and refresh the result afterward.",
+        "Report “stopped” only if the final state is Stopped; otherwise explain that Windows restarted or rejected the transition."
+      ],
+      "verification": [
+        "Unit-test final-state classification for stopped, restarted, timeout, and access-denied outcomes using a service abstraction.",
+        "Manually test Windows Search and Windows Update on a disposable machine with recovery/start triggers noted.",
+        "Verify UAC cancellation and restart preserve accurate notifications."
+      ],
+      "confidence": {
+        "score": 90,
+        "level": "green",
+        "rationale": "The maintainer reproduction and unchanged net.exe/exit-code implementation directly identify the false-success mechanism."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Service plugin reports a successful stop when `net stop` exits successfully even if Windows immediately restarts the service, so the notification describes the command result rather than the observed final service state.",
+    "known_information": [
+      "The plugin can display “Service is stopped” while the service remains running.",
+      "The issue was reproduced for wsearch and wuauserv.",
+      "Current code uses `net`/`cmd`, waits for process exit, and maps exit code 0 directly to a success notification."
+    ],
+    "inferences": [
+      "SCM status verification is required even if the implementation retains net.exe; ServiceController is the cleaner control path suggested by the maintainer."
+    ],
+    "analysis": "The code still implements the exact mechanism identified in the discussion, so this is an implementation-ready design candidate rather than an information request.",
+    "initial_investigation": [
+      "Read the full body and both comments through 2022-10-21T14:45:04Z.",
+      "Reviewed ServiceHelper.cs at commit 33e4ef46e5db77a256818a917d65103c9b7398fa; ChangeStatus uses elevated net.exe and never waits for the final service state.",
+      "Issue #8968 remains open for related UAC improvement; #30574 tracks UI feedback but does not implement this correctness fix."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-9531",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    }
+  ],
+  "title": "[PT Run][Service Plugin] Stopping services not working",
+  "url": "https://github.com/microsoft/PowerToys/issues/9531",
   "labels": [
     "Issue-Bug",
     "Product-PowerToys Run",
     "Run-Plugin"
   ],
   "assignees": [],
-  "comment_count": 2,
-  "summary": "The Run Service plugin reports a service stopped even when Windows Search or Windows Update immediately remains or becomes running.",
-  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-  "confidence": {
-    "score": 80,
-    "level": "yellow",
-    "rationale": "A maintainer identified the API distinction, but current code and service behavior need verification."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
-    "evidence": [
-      "A maintainer reproduced the behavior.",
-      "ServiceController behaved differently from net.exe.",
-      "Another user confirmed on 0.63."
-    ],
-    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-    "evaluated_at": "2026-09-10T12:05:21Z",
-    "source_updated_at": "2022-10-21T14:45:04Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
-  },
-  "issue_context": {
-    "summary": "The Run Service plugin reports a service stopped even when Windows Search or Windows Update immediately remains or becomes running.",
-    "known_information": [
-      "The operation crosses UAC.",
-      "Issue 8968 remains open but is not a completed fix."
-    ],
-    "inferences": [
-      "The plugin may trust command completion instead of the verified final service state."
-    ],
-    "analysis": "Public maintainer evidence supports a service-control API and final-state verification design.",
-    "initial_investigation": [
-      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
-      "Found no current assignee or completed linked implementation that conclusively resolves this report."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-9531",
-      "type": "approve_design",
-      "label": "Approve verified service-control design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design_summary": "Control services through the service API and report the verified final state.",
-      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
-    },
-    {
-      "id": "reproduce-9531",
-      "type": "reproduce",
-      "label": "Reproduce Service plugin false success",
-      "primary": false,
-      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
-      "reproduce": {
-        "title": "Stop and verify a service",
-        "module": "PowerToys Run",
-        "version_requirement": "Current stable PowerToys release",
-        "prerequisites": [
-          "Current stable PowerToys",
-          "Service plugin enabled",
-          "Permission to accept UAC"
-        ],
-        "setup": [
-          "Record Windows Search state in Services."
-        ],
-        "steps": [
-          "Search for Windows Search.",
-          "Choose Stop and accept UAC.",
-          "Wait for the toast.",
-          "Refresh state after several seconds."
-        ],
-        "expected_result": "The toast should match the verified service state."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Control services through the service API and report the verified final state.",
-      "root_cause": "The net.exe path treats command completion as success and does not verify whether the service reached and remained Stopped.",
-      "plan": [
-        "Use the service-control API in the elevated path.",
-        "Wait for and verify final state before success UI.",
-        "Test stoppable and auto-restarting services."
-      ],
-      "verification": [
-        "Stop Windows Search and inspect final state after the toast.",
-        "Never report Stopped when the observed state is Running."
-      ],
-      "confidence": {
-        "score": 80,
-        "level": "yellow",
-        "rationale": "A maintainer identified the API distinction, but current code and service behavior need verification."
-      }
-    }
-  ]
+  "comments": 2
 }

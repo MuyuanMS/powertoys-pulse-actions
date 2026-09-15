@@ -3,15 +3,113 @@
   "number": 20153,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:05:21Z",
-  "evaluated_at": "2026-09-10T12:05:21Z",
-  "source_updated_at": "2022-11-08T16:45:20Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/20153",
-  "title": "powertoys.powerlauncher.exe loaded all shell extensions for no reason",
   "author": "daoluong",
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "In-process shell image extraction is the likely DLL-loading boundary."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Trace the exact shell API and isolate it."
+  },
+  "generated_at": "2026-09-12T01:02:28.432371Z",
+  "evaluated_at": "2026-09-12T01:02:28.432371Z",
+  "source_updated_at": "2022-11-08T16:45:20Z",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The reporter supplied Process Explorer evidence and confirmed File Explorer add-ons are enabled. Current Run image loading calls Windows shell item/image APIs and associated-icon extraction inside PowerLauncher, a known in-process extension loading boundary.",
+    "evidence": [
+      "Process Explorer screenshots show shell-extension modules loaded in PowerToys.PowerLauncher.exe.",
+      "The reporter develops shell extensions and must stop PowerToys to update them.",
+      "Wox.Infrastructure.Image.WindowsThumbnailProvider creates IShellItem image factories and extracts associated icons in the launcher process."
+    ],
+    "recommended_action": "Reproduce with a test shell extension and design isolation or icon-loading restrictions that prevent arbitrary shell handlers from loading into PowerLauncher.",
+    "evaluated_at": "2026-09-12T01:02:28.432371Z",
+    "source_updated_at": "2022-11-08T16:45:20Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix exists; current in-process shell image APIs provide a focused likely cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate shell icon and thumbnail extraction from PowerLauncher",
+      "root_cause": "PowerToys Run resolves result imagery through shell COM and associated-icon APIs inside the launcher process, allowing registered third-party shell handlers to load into PowerLauncher and hold their DLLs.",
+      "plan": [
+        "Identify which ImageLoader paths request IconOnly, ThumbnailOnly, or associated icons for Program/File Explorer results.",
+        "Move handler-invoking extraction to a short-lived broker process or use a shell API/flag that avoids loading third-party thumbnail/preview handlers for icon-only results.",
+        "Cache only serialized bitmap output in PowerLauncher and release the broker after extraction."
+      ],
+      "verification": [
+        "Register a diagnostic shell extension and verify Process Explorer no longer shows its DLL in PowerToys.PowerLauncher.exe.",
+        "Verify icons and optional thumbnails still render for executables, links, folders, documents, and UWP apps.",
+        "Test extension update/uninstall while PowerToys Run remains active."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The in-process shell image path is confirmed, but a controlled extension trace is needed to identify which API loads the reported DLL and the least disruptive isolation boundary."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run can load third-party shell-extension DLLs while resolving result icons or thumbnails, which locks those binaries and interferes with extension deployment.",
+    "known_information": [
+      "PowerToys 0.61.1 was affected and Process Explorer screenshots were supplied.",
+      "The reporter confirms File Explorer extensions are enabled and is actively deploying shell extensions.",
+      "Current launcher image code uses IShellItemImageFactory and ExtractAssociatedIcon."
+    ],
+    "inferences": [
+      "A shell image request, rather than the File Explorer add-on module itself, is likely causing DLL activation inside PowerLauncher."
+    ],
+    "analysis": "The impact is a real process-lifetime lock on third-party binaries. A controlled provider test can pinpoint the API before selecting broker versus flag-based mitigation.",
+    "initial_investigation": [
+      "Read the complete body and four comments through 2022-11-08T16:45:20Z.",
+      "Reviewed Wox.Infrastructure/Image/ImageLoader.cs and WindowsThumbnailProvider.cs at commit 33e4ef46e5db77a256818a917d65103c9b7398fa.",
+      "No linked fix, duplicate, or assignee appears in the live timeline."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-20153",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Trace shell-extension loading",
+      "reproduce": {
+        "title": "Identify the PowerLauncher image API that loads handlers",
+        "module": "PowerToys Run",
+        "version_requirement": "Current development build",
+        "prerequisites": [
+          "A disposable registered shell icon or thumbnail handler with a distinctive module name",
+          "Process Explorer or equivalent module tracing",
+          "PowerToys Run Program/File search results"
+        ],
+        "setup": [],
+        "steps": [
+          "Start PowerToys Run and clear its image cache.",
+          "Query an item associated with the diagnostic shell extension.",
+          "Record when the extension DLL enters PowerToys.PowerLauncher.exe and which result/image path triggered it.",
+          "Disable generated thumbnails and repeat to distinguish icon-only from thumbnail loading."
+        ],
+        "expected_result": "Third-party shell handlers do not load into PowerToys.PowerLauncher.exe, or the exact loading API and result type are identified for isolation."
+      }
+    }
+  ],
+  "title": "powertoys.powerlauncher.exe loaded all shell extensions for no reason",
+  "url": "https://github.com/microsoft/PowerToys/issues/20153",
   "labels": [
     "Issue-Bug",
     "Product-PowerToys Run",
@@ -19,103 +117,5 @@
     "Needs-Triage"
   ],
   "assignees": [],
-  "comment_count": 4,
-  "summary": "PowerToys.PowerLauncher.exe loads third-party shell-extension DLLs, locking them and interfering with extension deployment.",
-  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-  "confidence": {
-    "score": 64,
-    "level": "yellow",
-    "rationale": "Loaded modules are observed, but the triggering API is not identified."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
-    "evidence": [
-      "Process Explorer screenshots show loaded extension modules.",
-      "The reporter observed update/deployment interference.",
-      "File Explorer add-ons were enabled."
-    ],
-    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-    "evaluated_at": "2026-09-10T12:05:21Z",
-    "source_updated_at": "2022-11-08T16:45:20Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
-  },
-  "issue_context": {
-    "summary": "PowerToys.PowerLauncher.exe loads third-party shell-extension DLLs, locking them and interfering with extension deployment.",
-    "known_information": [
-      "PowerToys 0.61.1 was not elevated.",
-      "The concern is retained in-process DLL loading."
-    ],
-    "inferences": [
-      "A shell enumeration, icon, or metadata API may activate registered in-process extensions."
-    ],
-    "analysis": "A current module-load stack can identify the trigger before choosing isolation.",
-    "initial_investigation": [
-      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
-      "Found no current assignee or completed linked implementation that conclusively resolves this report."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-20153",
-      "type": "approve_design",
-      "label": "Approve PowerLauncher shell-extension isolation design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design_summary": "Prevent long-lived PowerLauncher from retaining unrelated shell extensions.",
-      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
-    },
-    {
-      "id": "reproduce-20153",
-      "type": "reproduce",
-      "label": "Trace PowerLauncher shell-extension loading",
-      "primary": false,
-      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
-      "reproduce": {
-        "title": "Observe extension DLLs in PowerLauncher",
-        "module": "PowerToys Run",
-        "version_requirement": "Current stable PowerToys release",
-        "prerequisites": [
-          "Current stable PowerToys",
-          "Known third-party shell extension",
-          "Process Explorer"
-        ],
-        "setup": [
-          "Confirm whether the DLL is loaded before PowerToys Run queries."
-        ],
-        "steps": [
-          "Open Run and issue program/file queries.",
-          "Refresh modules after each query.",
-          "Record first load.",
-          "Try replacing the DLL."
-        ],
-        "expected_result": "Unrelated shell extensions should not be retained by PowerLauncher."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Prevent long-lived PowerLauncher from retaining unrelated shell extensions.",
-      "root_cause": "PowerLauncher invokes a shell API that activates and retains arbitrary registered in-process shell extensions.",
-      "plan": [
-        "Capture the first module-load stack during Run queries.",
-        "Avoid activation or isolate unavoidable shell work in a short-lived helper.",
-        "Test with a known shell extension DLL."
-      ],
-      "verification": [
-        "Identify the first query that loads the DLL.",
-        "Verify the DLL can be replaced while PowerToys remains running."
-      ],
-      "confidence": {
-        "score": 64,
-        "level": "yellow",
-        "rationale": "Loaded modules are observed, but the triggering API is not identified."
-      }
-    }
-  ]
+  "comments": 4
 }

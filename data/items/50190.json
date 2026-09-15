@@ -1,325 +1,206 @@
 {
-  "schemaVersion": 5,
-  "id": "pr-50190",
   "number": 50190,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T16:31:23.9731701Z",
-  "evaluated_at": "2026-09-09T16:31:23.9731701Z",
-  "source_updated_at": "2026-09-08T19:43:11Z",
+  "generated_at": "2026-09-14T15:00:00Z",
+  "evaluated_at": "2026-09-14T15:00:00Z",
+  "source_updated_at": "2026-09-09T03:43:11+08:00",
   "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
   "title": "CmdPal: Icons (10/n) - Add generated swatch and Unicode initials icons",
   "url": "https://github.com/microsoft/PowerToys/pull/50190",
-  "repository": "microsoft/PowerToys",
-  "author": "jiripolasek",
-  "authorAssociation": "COLLABORATOR",
-  "isCommunity": false,
-  "isMine": false,
-  "state": "OPEN",
-  "draft": false,
-  "labels": [
-    "Product-Command Palette",
-    "Ready for review"
-  ],
-  "confidence": "High",
-  "processVerdict": "proceed",
-  "summary": "Consumed the delayed Copilot result tied to the stored 2026-09-09T03:31:04.7055400Z request, rebuilt the resumed local checkout, fixed three current-head fork-side issues, replied to and resolved both published Copilot threads, and a final fresh Copilot review for fork head 3b6e01ae7a0b6c5059f4f46413bad312333e3afb returned zero published comments. The upstream head remains unchanged, the fork diff still matches the exact 22-file scope, Debug x64 validation passed, and no supported current-head finding remains to post upstream.",
+  "fork_pr": {
+    "number": 513,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/513"
+  },
+  "fork_branch": "pr-iterate/50190-v2",
+  "summary": "Current-head maintainer action drafted: request robust initials failure classification, retry-safe transient rendering behavior, and deterministic coverage for generated initials icons.",
   "status": {
-    "glyph": "ok",
-    "label": "Review clean - no comments drafted",
-    "detail": "Fork PR 513 received the consumed delayed review and two follow-up Copilot passes; the final fresh review completed at 2026-09-09T16:25:53Z for exact fork head 3b6e01ae7a0b6c5059f4f46413bad312333e3afb with zero published comments. Copilot unresolved-thread count is 0, the upstream/fork scope still matches exactly 22 files, and current Debug x64 build/test validation passed."
+    "glyph": "post",
+    "label": "Review drafted",
+    "detail": "Fork Copilot review converged with zero new published comments and zero unresolved threads. The exact upstream head passed the affected-project Debug validation, but the converged review fixes are not present in the upstream head and require maintainer approval as general review notes."
   },
-  "next_action": "Perform a final live freshness check before any maintainer decision; otherwise post nothing upstream because no supported current-head finding remains.",
-  "proposed_comments": [],
-  "actions": [],
-  "publicPayload": {
-    "comments": []
+  "next_action": {
+    "glyph": "post",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "The companion request is pinned to the current upstream head. Recheck freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
   },
-  "safe_actions": [
-    "Perform a final live freshness check before any maintainer decision.",
-    "Post nothing upstream because no supported current-head finding remains.",
-    "Re-run the review only if the upstream head, conversation, or required checks change."
+  "proposed_comments": [
+    {
+      "id": "classify-initials-renderer-failures",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Distinguish invalid initials protocols from transient renderer failures",
+      "body": "### Distinguish invalid initials protocols from transient renderer failures\n\n**Severity:** `high`\n\nThe generated-initials path should reject malformed protocol data without converting renderer or device failures into a cached permanent fallback. A transient `Win2D`/font/device failure can recover on a later attempt, so caching that failure leaves a stale fallback in the icon pipeline and prevents retry. Please keep parser-level invalid-input handling separate from renderer exceptions, propagate transient rendering failures to the retry-aware caller, and add regression coverage for both cases.",
+      "out_of_diff_reason": "The behavior spans protocol parsing, renderer failure propagation, cache policy, and tests; no single current RIGHT-side diff range safely expresses the coordinated change.",
+      "outOfDiffReason": "The behavior spans protocol parsing, renderer failure propagation, cache policy, and tests; no single current RIGHT-side diff range safely expresses the coordinated change.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The converged fork loop added separate handling for malformed UTF-16/protocol input and transient initials-renderer failures, while the exact upstream head still contains the single failure path."
+      }
+    },
+    {
+      "id": "avoid-caching-transient-initials-failures",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Do not permanently cache recoverable initials rendering failures",
+      "body": "### Do not permanently cache recoverable initials rendering failures\n\n**Severity:** `high`\n\nWhen initials rendering fails because the current graphics or font environment is temporarily unavailable, the failure should remain retryable instead of being materialized as a durable negative result. Otherwise an icon that could render after the environment recovers stays on the fallback path for the lifetime of the cached source. Please preserve the existing fallback for genuinely invalid protocols while allowing transient renderer failures to reach the retry path, with a regression test that exercises a failed attempt followed by a successful retry.",
+      "out_of_diff_reason": "The required cache and retry semantics involve multiple icon-loader layers and a stateful test sequence, so this cannot be represented safely by one localized current diff suggestion.",
+      "outOfDiffReason": "The required cache and retry semantics involve multiple icon-loader layers and a stateful test sequence, so this cannot be represented safely by one localized current diff suggestion.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 91,
+        "rationale": "The fork review branch specifically changed negative-result caching and transient-failure propagation, and the exact upstream head validation confirms those changes are fork-only."
+      }
+    },
+    {
+      "id": "make-generated-initials-tests-deterministic",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Keep generated-initials tests independent of the graphics environment",
+      "body": "### Keep generated-initials tests independent of the graphics environment\n\n**Severity:** `medium`\n\nThe generated-initials protocol tests should verify the path and protocol behavior without depending on installed fonts, Win2D device state, or an interactive graphics environment. Inject the deterministic initials-path generation used by the test seam, and retain a separate production-rendering path for end-to-end behavior. This keeps the unit suite stable while still covering the real renderer failure and retry behavior in focused tests.",
+      "out_of_diff_reason": "This is a coordinated test-seam and production-path change across the protocol implementation and unit tests, not a safe one-hunk replacement.",
+      "outOfDiffReason": "This is a coordinated test-seam and production-path change across the protocol implementation and unit tests, not a safe one-hunk replacement.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 86,
+        "rationale": "The converged fork branch introduced deterministic path-generation injection and corresponding test changes, while the live upstream head still uses environment-dependent generated-initials coverage."
+      }
+    }
   ],
-  "needs_revalidation": false,
-  "blockers": [],
-  "judgment": {
-    "status": "review_clean",
-    "rationale": "Current-head convergence was re-established after consuming the stored pending review request, applying three fork-side fix commits, resolving both published Copilot threads, and obtaining a final fresh Copilot review with zero published comments. Under the late-round suppressed-comment policy, the final previously-missed suppressed-only arc-rotation candidate does not block review_ready.",
-    "evidence": [
-      "Current upstream head remains a425885a8937ff349dbaa93666d57d4548ca0219 and the PR is OPEN, non-draft, and still labeled Ready for review.",
-      "The upstream and fork PRs each contain the same 22 changed paths with no extras or omissions.",
-      "Stored Copilot request timestamp 2026-09-09T03:31:04.7055400Z was consumed before any new request; the delayed review arrived at 2026-09-09T03:35:00Z on fork head 8ef009e619745d59d8e814ad946ff148aab1a8da.",
-      "Published Copilot findings on commits bee476ac6e31758e1d5afc0f008dd3faaf0178bd and f6c962c908ba963ca0004f94ce9ce73a0e294f93 were fixed on the fork, replied to, and resolved.",
-      "The final fresh Copilot review requested at 2026-09-09T16:15:02.8347048Z completed at 2026-09-09T16:25:53Z for fork head 3b6e01ae7a0b6c5059f4f46413bad312333e3afb with zero published comments.",
-      "Copilot unresolved-thread count is 0; the only remaining unresolved fork thread is a non-blocking github-advanced-security spell-check note about \"rasterizes\".",
-      "Debug x64 build-essentials, CmdPalModuleInterface.vcxproj, Microsoft.CmdPal.UI.csproj, and Microsoft.CmdPal.UI.UnitTests.csproj completed successfully in the resumed local checkout.",
-      "Targeted GeneratedIconProtocol and IconPathConverter tests passed 72/72, and the full Microsoft.CmdPal.UI.UnitTests assembly passed 215/215.",
-      "git diff --check passed, the local checkout is clean, and no writes were made to microsoft/PowerToys."
-    ],
-    "recommended_action": "Keep this result at review_ready with no executable upstream action unless the PR changes; any future maintainer action should start with a live freshness check.",
-    "evaluated_at": "2026-09-09T16:31:23.9731701Z",
-    "source_updated_at": "2026-09-08T19:43:11Z"
+  "actions": [
+    {
+      "id": "request-changes-50190",
+      "type": "request_changes",
+      "label": "Request changes with general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50190,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
+        "pr": 50190,
+        "body_prefix": "Thanks for adding generated swatch and Unicode initials icons. Before merging, please separate malformed protocol handling from transient initials-renderer failures, avoid permanently caching recoverable rendering failures so retries remain possible, and make the generated-initials unit coverage deterministic without depending on the installed graphics/font environment. Please include focused regression coverage for invalid input, transient failure followed by retry, and the deterministic test seam."
+      },
+      "note": "Companion-only review: posts separate general PR conversation comments. Do not post without explicit approval and a final upstream freshness check."
+    }
+  ],
+  "safe_actions": [
+    {
+      "id": "request-changes-50190",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "head_pinned": "a425885a8937ff349dbaa93666d57d4548ca0219"
+    },
+    {
+      "id": "hold-review-50190",
+      "upstream_write": false,
+      "approval_required": false
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.PowerToys\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\build.cmd"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "Microsoft.CmdPal.UI Debug x64 output",
+        "Microsoft.CmdPal.Ext.PowerToys Debug x64 output",
+        "Microsoft.CmdPal.UI.UnitTests Debug x64 output"
+      ],
+      "warnings": [
+        "Pre-existing CsWinRT1028 warning in src\\common\\ManagedCommon\\HotkeySettingsControlHook.cs"
+      ]
+    },
+    "fork_head": {
+      "head_sha": "3b6e01ae7a0b6c5059f4f46413bad312333e3afb",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.PowerToys\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\build.cmd"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "Microsoft.CmdPal.UI Debug x64 output",
+        "Microsoft.CmdPal.Ext.PowerToys Debug x64 output",
+        "Microsoft.CmdPal.UI.UnitTests Debug x64 output"
+      ],
+      "warnings": []
+    },
+    "suggestionPatch": {
+      "result": "not_applicable",
+      "appliedItemIds": [],
+      "minimalRangesReviewed": true,
+      "commands": [],
+      "reason": "Draft is companion-only/general notes; no apply-ready suggestion blocks were emitted."
+    }
   },
-  "phase0": {
-    "author": "jiripolasek",
-    "author_association": "COLLABORATOR",
-    "bar": "repository collaborator; routine community-contributor process nags skipped",
-    "disposition": "Proceed",
-    "owes": "maintainer review workflow",
-    "gates_tripped": [],
-    "note": "Routine community-contributor process asks do not apply. The PR remains open and non-draft, includes screenshot-backed technical context, and the current required CLA/dependency/telemetry/intake/x64/arm64/PowerToys CI checks are green on the live head.",
-    "evidence": [
-      "authorAssociation is COLLABORATOR.",
-      "The live labels are Product-Command Palette and Ready for review.",
-      "license/cla, dependency review, PR intake, telemetry, PowerToys CI, CmdPal SDK, and x64/arm64 Release checks are successful on the live head (11 successful checks, 0 failed, 0 pending).",
-      "No unresolved upstream review threads are present."
-    ]
-  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and exercise generated swatch and Unicode initials icons from providers that load icons asynchronously.",
+    "Verify malformed initials protocols fall back without crashing, transient rendering failures can be retried after the graphics/font environment recovers, and valid initials render consistently.",
+    "Run the focused Microsoft.CmdPal.UI.UnitTests suite and confirm the generated-initials tests do not depend on installed fonts or an interactive graphics device."
+  ],
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "upstream_updated_at": "2026-09-08T19:43:11Z",
-    "upstream_head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
-    "upstream_base_sha": "a668536f7bbf241f3c81ed74fae66e00b412d28a",
+    "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
+    "base_sha": "038fe03e2cf7f6ef52b7b313b574d5f4555f1cc0",
+    "commit_count": 10,
     "changed_file_count": 22,
-    "additions": 2017,
-    "deletions": 43,
     "issue_comment_count": 0,
-    "review_count": 1,
     "review_comment_count": 0,
-    "unresolved_review_thread_count": 0,
-    "review_decision": "REVIEW_REQUIRED",
-    "merge_state": "BLOCKED",
-    "labels": [
-      "Product-Command Palette",
-      "Ready for review"
-    ],
+    "review_count": 0,
     "reported_checks": {
-      "status": "passed",
-      "failed": 0,
-      "pending": 0,
-      "cancelled_superseded": 2,
-      "passed": 11,
-      "summary": "Latest required checks are green: PowerToys CI, x64 and arm64 Release, CmdPal SDK build, dependency review, PR intake, telemetry, and CLA."
+      "license_cla": "success",
+      "power_toys_ci": "success",
+      "dependency_review": "success",
+      "pr_intake": "success",
+      "telemetry_pr_check": "success"
     }
   },
-  "validation": {
-    "status": "passed",
-    "configuration": "Debug x64",
-    "builds": [
-      {
-        "name": "build-essentials",
-        "result": "passed",
-        "detail": "PowerToys.slnx restore, runner.vcxproj, and PowerToys.Settings.csproj succeeded. The Settings build emitted recurring token-recognition noise but exited 0."
-      },
-      {
-        "name": "CmdPalModuleInterface.vcxproj",
-        "result": "passed"
-      },
-      {
-        "name": "Microsoft.CmdPal.UI.csproj",
-        "result": "passed",
-        "detail": "Rebuilt after each fork-side fix; final current-head UI build succeeded."
-      },
-      {
-        "name": "Microsoft.CmdPal.UI.UnitTests.csproj",
-        "result": "passed",
-        "detail": "Rebuilt after each fork-side fix; final current-head test project build succeeded."
-      }
-    ],
-    "tests": [
-      {
-        "name": "GeneratedIconProtocol + IconPathConverter",
-        "result": "passed",
-        "passed": 72,
-        "failed": 0,
-        "skipped": 0
-      },
-      {
-        "name": "Microsoft.CmdPal.UI.UnitTests",
-        "result": "passed",
-        "passed": 215,
-        "failed": 0,
-        "skipped": 0
-      }
-    ],
-    "outputs": {
-      "powerToysExe": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
-      "cmdPalModuleDll": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll",
-      "cmdPalUiExe": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe",
-      "testAssembly": "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CmdPal.UI.UnitTests.dll"
-    },
-    "diff_check": "passed",
-    "notes": [
-      "POWERTOYS_DISABLE_SPECTRE=1 was used for build validation.",
-      "The local checkout needed a warmed vcpkg_installed tree and an isolated X_VCPKG_REGISTRIES_CACHE to avoid shared-registry lock contention in this environment.",
-      "Current upstream and fork PR scopes still match exactly 22 files with no extras or omissions.",
-      "Build and test logs for this drain are stored beside this artifact."
-    ],
-    "logs": [
-      "<local-artifact>",
-      "<local-artifact>",
-      "<local-artifact>",
-      "<local-artifact>",
-      "<local-artifact>",
-      "<local-artifact>"
+  "workflow": {
+    "phase": "converged_draft_ready",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-14T15:00:00Z",
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "Existing fork Copilot reviews were consumed; the latest review on the matching fork head returned zero new published comments.",
+    "upstream_head_validation": "passed",
+    "draft_type": "current_head_request_changes_general_notes",
+    "advancement_evidence": [
+      "Resumed durable review branch pr-iterate/50190-v2 and fork PR 513 without re-mirroring.",
+      "Live upstream head remains a425885a8937ff349dbaa93666d57d4548ca0219.",
+      "Consumed the existing completed Copilot review on fork head 3b6e01ae7a0b6c5059f4f46413bad312333e3afb before considering another request.",
+      "Latest fork Copilot review reported zero new published comments.",
+      "Fork Copilot unresolved thread count is zero.",
+      "Fork-head Debug validation passed for build essentials, runner/settings, CmdPal UI, CmdPal PowerToys extension, and CmdPal UI unit tests.",
+      "Exact upstream-head Debug validation passed for the same affected build chain with one pre-existing CsWinRT1028 warning and zero errors.",
+      "The remaining findings are companion-only current-head request-changes notes; no upstream write occurred."
     ]
   },
   "freshness": {
-    "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-09T16:31:23.9731701Z",
-    "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
-    "exact_scope_verified": true,
-    "fork_review_commit": "3b6e01ae7a0b6c5059f4f46413bad312333e3afb",
-    "fork_review_completed_at": "2026-09-09T16:25:53Z"
-  },
-  "freshReview": {
-    "status": "completed_clean",
-    "requested_at": "2026-09-09T16:15:02.8347048Z",
-    "latest_review_at": "2026-09-09T16:25:53Z",
-    "fork_pr": 513,
-    "fork_head": "3b6e01ae7a0b6c5059f4f46413bad312333e3afb",
-    "published_comments": 0,
-    "unresolved_threads": 0,
-    "suppressed_comments": 1,
-    "converged": true,
-    "note": "The final Copilot pass contained only a previously-missed suppressed arc-rotation candidate on unchanged code; under the late-round suppressed-comment policy it does not block convergence."
-  },
-  "copilot": {
-    "status": "clean_zero_published_comments",
-    "fork_pr": 513,
-    "reviewed_upstream_head": "a425885a8937ff349dbaa93666d57d4548ca0219",
-    "current_fork_head": "3b6e01ae7a0b6c5059f4f46413bad312333e3afb",
-    "published_threads_total": 22,
-    "threads_replied": 22,
-    "threads_resolved": 22,
-    "unresolved_threads": 0,
-    "fresh_request_at": "2026-09-09T16:15:02.8347048Z",
-    "latest_completed_review_at": "2026-09-09T16:25:53Z",
-    "latest_completed_review_commit": "3b6e01ae7a0b6c5059f4f46413bad312333e3afb",
-    "latest_completed_review_published_comments": 0,
-    "latest_completed_review_suppressed_comments": 1,
-    "converged": true,
-    "convergence_requirement": "Satisfied: the fresh review submitted after the latest push contained zero published comments and all Copilot-authored threads are resolved."
-  },
-  "threads": {
-    "copilot": {
-      "total": 22,
-      "resolved": 22,
-      "unresolved": 0
-    },
-    "github_advanced_security": {
-      "observed": 1,
-      "status": "non-blocking-open",
-      "detail": "One unresolved github-advanced-security spell-check discussion on \"rasterizes\" remains on the fork PR. It is not Copilot-authored and does not block convergence or any upstream maintainer action."
-    },
-    "upstream": {
-      "review_threads_reviewed": 0,
-      "new_writes": 0
-    }
-  },
-  "fork_pr": {
-    "repository": "MuyuanMS/PowerToys",
-    "number": 513,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/513",
-    "state": "OPEN",
-    "branch": "pr-iterate/50190-v2",
-    "base_branch": "pr-iterate/50189-v2",
-    "head_sha": "3b6e01ae7a0b6c5059f4f46413bad312333e3afb",
-    "base_sha": "a1b378bb6001122f507b6a056bdcd94d65c8397f",
-    "reviewed_upstream_head": "a425885a8937ff349dbaa93666d57d4548ca0219",
-    "file_count": 22,
-    "scope_matches_upstream": true
-  },
-  "fork_changes": {
-    "recent_commits": [
-      {
-        "sha": "3b6e01ae7a0b6c5059f4f46413bad312333e3afb",
-        "subject": "Propagate transient initials renderer failures"
-      },
-      {
-        "sha": "f6c962c908ba963ca0004f94ce9ce73a0e294f93",
-        "subject": "Avoid caching transient initials failures"
-      },
-      {
-        "sha": "bee476ac6e31758e1d5afc0f008dd3faaf0178bd",
-        "subject": "Harden generated icon materialization"
-      },
-      {
-        "sha": "8ef009e619745d59d8e814ad946ff148aab1a8da",
-        "subject": "Reconcile durable review branch with current upstream head"
-      },
-      {
-        "sha": "a8aeb65c5ca5703ccb977a6fbda6cd10cfa6ff11",
-        "subject": "Preserve missing-font initials fallback"
-      }
-    ],
-    "new_fork_writes_this_drain": [
-      "Committed bee476ac6e31758e1d5afc0f008dd3faaf0178bd (Harden generated icon materialization) and pushed it to pr-iterate/50190-v2.",
-      "Committed f6c962c908ba963ca0004f94ce9ce73a0e294f93 (Avoid caching transient initials failures) and pushed it to pr-iterate/50190-v2.",
-      "Committed 3b6e01ae7a0b6c5059f4f46413bad312333e3afb (Propagate transient initials renderer failures) and pushed it to pr-iterate/50190-v2.",
-      "Replied to Copilot thread 3970135187 and resolved PRRT_kwDOM2Pyb86guIHK.",
-      "Replied to Copilot thread 3970390020 and resolved PRRT_kwDOM2Pyb86guvqy.",
-      "Requested fresh Copilot reviews at 2026-09-09T15:17:17.1467379Z, 2026-09-09T15:44:26.4023483Z, and 2026-09-09T16:15:02.8347048Z without duplicating any outstanding request."
-    ]
-  },
-  "workflow": {
-    "phase": "review_ready",
-    "resume_action": "rebuild-and-draft",
-    "prior_review_ready_artifact": {
-      "evaluated_at": "2026-08-30T08:22:35.046961Z",
-      "head_sha": "e563f15b4241266a7502b49ea4ebf415880ef0b1",
-      "note": "Older clean review data was invalidated by the upstream head/base rewrite."
-    },
-    "prior_waiting_artifact": {
-      "evaluated_at": "2026-09-09T03:32:32.4317055Z",
-      "head_sha": "a425885a8937ff349dbaa93666d57d4548ca0219",
-      "stored_request_timestamp": "2026-09-09T03:31:04.70554Z",
-      "note": "That checkpoint deferred current-head validation until the already-requested review arrived."
-    },
-    "stored_request_timestamp": "2026-09-09T03:31:04.70554Z",
-    "consumed_existing_request": true,
-    "duplicate_request_avoided": true,
-    "final_request_timestamp": "2026-09-09T16:15:02.8347048Z",
-    "replies_posted_this_drain": 2,
-    "request_timestamps": [
-      "2026-09-09T03:31:04.70554Z",
-      "2026-09-09T15:17:17.1467379Z",
-      "2026-09-09T15:44:26.4023483Z",
-      "2026-09-09T16:15:02.8347048Z"
-    ],
-    "checkpoint_history": [
-      {
-        "at": "2026-09-09T03:31:04.70554Z",
-        "transition": "stored_request_preserved",
-        "detail": "Resumed from the existing current-head waiting artifact instead of requesting a duplicate review."
-      },
-      {
-        "at": "2026-09-09T03:35:00Z",
-        "transition": "delayed_review_consumed",
-        "detail": "Consumed the delayed review for fork head 8ef009e619745d59d8e814ad946ff148aab1a8da; it had zero published comments and three suppressed candidates."
-      },
-      {
-        "at": "2026-09-09T15:23:39Z",
-        "transition": "review_round_processed",
-        "detail": "Copilot published a transient initials-rendering caching issue on bee476ac6e31758e1d5afc0f008dd3faaf0178bd; the fork was fixed, replied to, and resolved."
-      },
-      {
-        "at": "2026-09-09T15:48:36Z",
-        "transition": "review_round_processed",
-        "detail": "Copilot published malformed UTF-16 parser handling on f6c962c908ba963ca0004f94ce9ce73a0e294f93; the fork was fixed, replied to, and resolved while preserving renderer exception propagation."
-      },
-      {
-        "at": "2026-09-09T16:25:53Z",
-        "transition": "converged_clean",
-        "detail": "The final fresh review on fork head 3b6e01ae7a0b6c5059f4f46413bad312333e3afb returned zero published comments and left zero unresolved Copilot threads."
-      }
-    ]
-  },
-  "upstreamWrites": [],
-  "upstream_writes": false,
-  "dashboard_modified": true
+    "headRefOid": "a425885a8937ff349dbaa93666d57d4548ca0219",
+    "updatedAt": "2026-09-09T03:43:11+08:00",
+    "latestCopilotReviewAt": "2026-09-09T16:25:53Z",
+    "latestForkCommitAt": "2026-09-09T16:12:02Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-14T15:00:00Z"
+  }
 }

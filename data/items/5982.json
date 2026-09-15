@@ -3,118 +3,78 @@
   "number": 5982,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:05:21Z",
-  "evaluated_at": "2026-09-10T12:05:21Z",
-  "source_updated_at": "2022-10-21T14:07:09Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/5982",
-  "title": "[KBM] Shift Right remains logically pressed in this particular scenario",
   "author": "DanCaprine",
+  "confidence": "High",
+  "status": {
+    "glyph": "✅",
+    "label": "Duplicate or handled",
+    "detail": "Merged PR #37930 covers the generic-versus-sided Shift release bug."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Close as fixed by #37930",
+    "reason": "No post-fix recurrence is recorded."
+  },
+  "generated_at": "2026-09-12T01:02:28.326191Z",
+  "evaluated_at": "2026-09-12T01:02:28.326191Z",
+  "source_updated_at": "2022-10-21T14:07:09Z",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Merged PR #37930 explicitly fixes modifier remaps that use an unsided Ctrl/Alt/Shift by tracking which physical side is pressed and releasing the correct key, matching this issue’s generic Shift versus right Shift trigger.",
+    "evidence": [
+      "The repro only occurs when the shortcut uses generic Shift, not Shift (left) or Shift (right).",
+      "Right Shift triggers the stuck state, and pressing both Shift keys clears it.",
+      "PR #37930 merged on 2025-04-14 and states that generic modifier remaps could stick because VK_SHIFT was emitted instead of the physical right Shift."
+    ],
+    "recommended_action": "Close as fixed by #37930, with a request to file a current-version regression only if the exact sequence still fails.",
+    "evaluated_at": "2026-09-12T01:02:28.326191Z",
+    "source_updated_at": "2022-10-21T14:07:09Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "PR #37930 implemented physical-side tracking for generic Ctrl/Alt/Shift remaps and correct key release, directly covering the reported mechanism.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/37930"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A generic Shift shortcut remap could leave the physical right Shift logically pressed because the engine emitted generic VK_SHIFT state rather than preserving the actual left/right modifier.",
+    "known_information": [
+      "The original issue supplied exact SHIFT+F1/F2 to F13/F14 steps and was maintainer-reproduced on 0.29.3.",
+      "The failure is specific to generic Shift combined with physical right Shift.",
+      "The merged fix describes the same generic-versus-sided modifier release mismatch."
+    ],
+    "inferences": [
+      "The historical issue should be resolved in releases containing #37930; there is no newer comment showing recurrence."
+    ],
+    "analysis": "Unlike the prior generic request-info artifact, the public fix history identifies both the failure mechanism and a merged correction.",
+    "initial_investigation": [
+      "Read all five comments and the full issue body through 2022-10-21T14:07:09Z.",
+      "Reviewed merged PR #37930 and current Keyboard Manager modifier-state code.",
+      "No post-fix recurrence is recorded on this issue."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Close as fixed by #37930",
+      "comment": {
+        "body": "This historical repro matches the modifier-side bug fixed by merged PR #37930: a shortcut configured with generic `Shift` could receive physical Right Shift but release generic `VK_SHIFT`, leaving the real modifier logically pressed. The fix tracks the physical left/right Ctrl, Alt, and Shift key and releases the matching key. I suggest closing this as fixed. If the exact SHIFT+F1/F2 sequence still fails on a current PowerToys release, please open a fresh regression report with that version and sequence."
+      }
+    }
+  ],
+  "title": "[KBM] Shift Right remains logically pressed in this particular scenario",
+  "url": "https://github.com/microsoft/PowerToys/issues/5982",
   "labels": [
     "Issue-Bug",
     "Product-Keyboard Shortcut Manager",
     "Priority-3"
   ],
   "assignees": [],
-  "comment_count": 5,
-  "summary": "Switching between two generic-Shift remapped shortcuts while holding right Shift can leave Shift logically pressed after all keys are released.",
-  "next_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-  "confidence": {
-    "score": 82,
-    "level": "yellow",
-    "rationale": "Historical isolation is strong, but the current engine is unverified."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The public report is specific enough for a bounded fix hypothesis, with current maintainer verification still required.",
-    "evidence": [
-      "Precise F13/F14 steps are supplied.",
-      "A maintainer confirmed logical Shift state on 0.29.3.",
-      "Generic Shift differs from left/right Shift mappings."
-    ],
-    "recommended_action": "Run the bounded current-version reproduction, then approve a fork-side design only if the hypothesis still holds.",
-    "evaluated_at": "2026-09-10T12:05:21Z",
-    "source_updated_at": "2022-10-21T14:07:09Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No current linked implementation conclusively covers the reported behavior; public evidence supports this bounded hypothesis."
-  },
-  "issue_context": {
-    "summary": "Switching between two generic-Shift remapped shortcuts while holding right Shift can leave Shift logically pressed after all keys are released.",
-    "known_information": [
-      "The state persists across apps.",
-      "Both Shift keys together reset it in the historical build."
-    ],
-    "inferences": [
-      "Generic and side-specific modifier ownership may become unbalanced across overlapping shortcut transitions."
-    ],
-    "analysis": "The evidence localizes modifier-state accounting, but current stable behavior must be checked.",
-    "initial_investigation": [
-      "Read the complete issue body, discussion, current labels, assignees, and public cross-references.",
-      "Found no current assignee or completed linked implementation that conclusively resolves this report."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-5982",
-      "type": "approve_design",
-      "label": "Approve generic Shift state-balancing design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design_summary": "Balance generic and side-specific Shift ownership across overlapping shortcuts.",
-      "note": "Approval would start a separate fork-side design workflow; this lightweight pass writes no code or upstream content."
-    },
-    {
-      "id": "reproduce-5982",
-      "type": "reproduce",
-      "label": "Reproduce stuck generic Shift",
-      "primary": false,
-      "note": "Maintainer-side verification only; this candidate performs no upstream write.",
-      "reproduce": {
-        "title": "Transition between overlapping generic-Shift shortcuts",
-        "module": "Keyboard Manager",
-        "version_requirement": "Current stable PowerToys release",
-        "prerequisites": [
-          "Current stable PowerToys",
-          "Key event viewer"
-        ],
-        "setup": [
-          "Map Shift+F1 to F13 and Shift+F2 to F14 using generic Shift."
-        ],
-        "steps": [
-          "Hold right Shift and press F1.",
-          "Keep Shift held, release F1 and press F2.",
-          "Release all keys.",
-          "Test typing and Win key.",
-          "Repeat with side-specific Shift."
-        ],
-        "expected_result": "No logical modifier should remain pressed."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Balance generic and side-specific Shift ownership across overlapping shortcuts.",
-      "root_cause": "The state machine conflates generic Shift matching with side-specific physical ownership and misses a release during chord transition.",
-      "plan": [
-        "Log physical and injected modifier ownership.",
-        "Balance each injected generic modifier press/release across transitions.",
-        "Add overlapping generic/side-specific Shift tests."
-      ],
-      "verification": [
-        "Run the F13/F14 sequence and confirm no stuck state.",
-        "Repeat with left, right, and side-specific mappings."
-      ],
-      "confidence": {
-        "score": 82,
-        "level": "yellow",
-        "rationale": "Historical isolation is strong, but the current engine is unverified."
-      }
-    }
-  ]
+  "comments": 5
 }

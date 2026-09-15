@@ -3,93 +3,198 @@
   "number": 50398,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-08T04:15:30.9865211Z",
-  "evaluated_at": "2026-09-08T04:15:30.9865211Z",
+  "generated_at": "2026-09-14T13:28:42.2470503Z",
+  "evaluated_at": "2026-09-14T13:28:42.2470503Z",
   "source_updated_at": "2026-09-08T02:44:58Z",
   "head_sha": "4848a1961401f3e784efab5adfedfe634420886f",
   "title": "CmdPal: Fix repeated details loading in Command Palette",
   "url": "https://github.com/microsoft/PowerToys/pull/50398",
-  "summary": "The current upstream head has a converged clean fork review. Details lifecycle generation gating, queued selection ordering, refresh failure preservation, and queued failure-state handling are fixed and covered by focused regression tests. The final Debug x64 builds passed, eight focused tests passed, the latest Copilot review returned zero new comments, and zero Copilot threads remain unresolved.",
+  "author": "michaeljolley",
+  "authorAssociation": "MEMBER",
+  "isCommunity": false,
+  "isMine": false,
+  "summary": "The resumed fork review converged after preserving nine lifecycle fixes from the prior loop and rebasing them onto the exact live upstream head. The upstream tree still lacks the coordinated safeguards for failed non-observable details refreshes, stale selection publication, and queued initialization completion.",
   "status": {
-    "glyph": "ok",
-    "label": "Review ready",
-    "detail": "The current-head fork review is clean with zero proposed comments and zero unresolved Copilot threads. Final builds and focused ViewModels tests passed; no upstream review was posted."
+    "glyph": "post",
+    "label": "Current-head review drafted",
+    "detail": "The replacement fork review PR 801 is current on upstream head 4848a1961401f3e784efab5adfedfe634420886f. Fresh Copilot review returned zero new published comments and zero unresolved threads; exact upstream and fork builds passed. Three companion findings await explicit maintainer approval."
   },
   "next_action": {
-    "glyph": "▶",
-    "label": "Approve clean review after authorization",
-    "reason": "The artifact is pinned to the live upstream head. An authorized maintainer may approve after the final freshness check; no upstream action was submitted automatically."
+    "glyph": "post",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "The request-changes action and all proposed comments are pinned to the current upstream head. Revalidate freshness and obtain explicit maintainer approval before any upstream publication."
   },
-  "proposed_comments": [],
   "actions": [
     {
-      "id": "approve-review-50398",
-      "type": "approve",
-      "label": "Approve clean review",
+      "id": "request-changes-50398",
+      "type": "request_changes",
+      "label": "Request changes with CmdPal lifecycle findings",
+      "primary": true,
       "confirm": true,
-      "note": "The review is pinned to the current upstream head and has no author-facing findings. Require explicit authorization and a final upstream freshness check before publishing."
+      "requiresApproval": true,
+      "note": "Companion-only review: posts separate general PR conversation comments. Do not post without explicit approval and a final upstream freshness check.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50398,
+        "pr": 50398,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "4848a1961401f3e784efab5adfedfe634420886f",
+        "body_prefix": "Thanks for the detailed lifecycle work and regression coverage. Before merging, please carry the remaining current-head fixes through the details refresh and selection publication paths: preserve healthy details when a non-observable refresh fails, keep stale selections from publishing after a newer selection, and ensure queued initialization completion is signaled only after preceding lifetime work and notifications drain. Please also add the new Retargets spelling to the repository allowlist."
+      }
     }
   ],
-  "judgment": {
-    "status": "review_clean",
-    "rationale": "The change is scoped to Command Palette details lifecycle behavior. The converged fork review found no actionable issue after fixes for selection ordering, stale publication, refresh graph preservation, and queued failure state.",
-    "evidence": [
-      "Live upstream head is 4848a1961401f3e784efab5adfedfe634420886f.",
-      "Fork PR 706 at 6f5fb9ccaf48d64c87b202eb2d55a70f65c3dc97 has zero unresolved Copilot review threads.",
-      "The latest Copilot review completed at 2026-09-08T03:50:16Z with zero new inline comments and approval recommended.",
-      "PowerToys Debug x64 essentials and the Command Palette ViewModels unit-test project builds passed.",
-      "Focused selection and refresh tests passed 8/8 with 0 failures."
-    ],
-    "recommended_action": "Approve only after explicit authorization and a live upstream freshness check.",
-    "evaluated_at": "2026-09-08T04:15:30.9865211Z",
-    "source_updated_at": "2026-09-08T02:44:58Z"
-  },
-  "fork_pr": {
-    "number": 706,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/706",
-    "head_sha": "6f5fb9ccaf48d64c87b202eb2d55a70f65c3dc97"
-  },
-  "fork_branch": "pr-iterate/50398-v2",
+  "proposed_comments": [
+    {
+      "id": "preserve-details-on-refresh-failure",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve healthy details when a non-observable refresh fails",
+      "body": "### Preserve healthy details when a non-observable refresh fails\n\n**Severity:** `high`\n\nWhen a reused non-observable details model is refreshed, a snapshot getter exception currently propagates through `SafeSlowInit` and cleans up the entire otherwise-healthy list item. A transient failure while reading one details property can therefore replace valid details with an error state and discard the previously usable graph. Refresh into a replacement `DetailsViewModel`, clean up only that replacement on failure, report the exception, and keep the existing details and item state intact; add a regression test for a failed refresh after successful initialization.",
+      "out_of_diff_reason": "The safe correction must coordinate DetailsViewModel replacement, ListItemViewModel error handling, cleanup ownership, and regression coverage; no single current RIGHT-side range can express the complete behavior safely.",
+      "outOfDiffReason": "The safe correction must coordinate DetailsViewModel replacement, ListItemViewModel error handling, cleanup ownership, and regression coverage; no single current RIGHT-side range can express the complete behavior safely.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The live upstream path directly reuses the existing details graph and lets snapshot exceptions reach item-level cleanup; the converged review tree contains focused replacement-state and failure-preservation coverage for this exact path."
+      }
+    },
+    {
+      "id": "serialize-selection-publication",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Guard selection publication and completion against stale lifetime work",
+      "body": "### Guard selection publication and completion against stale lifetime work\n\n**Severity:** `high`\n\nThe current selection flow checks cancellation and selection state before scheduling UI work, but an obsolete callback can still run after a newer selection publishes its details or hide message. In addition, completion can be signaled before queued lifetime notifications and a selection action behind an active initialization have drained, allowing stale details or suggestions to win the race or causing a real queued selection to be reported as failed. Keep a generation check at the actual UI publication point, read the current details inside that callback, and enqueue completion after the lifetime action and its notifications; add regression coverage for rapid reselection, queued initialization, and cleanup/failure.",
+      "out_of_diff_reason": "The fix spans ListViewModel generation tracking, UI-scheduler publication, ListItemViewModel lifetime ordering, and asynchronous regression tests; an apply-ready single-range suggestion would be incomplete and unsafe.",
+      "outOfDiffReason": "The fix spans ListViewModel generation tracking, UI-scheduler publication, ListItemViewModel lifetime ordering, and asynchronous regression tests; an apply-ready single-range suggestion would be incomplete and unsafe.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current upstream code performs the vulnerable pre-publication checks and completion signaling, while the converged fork fixes the race with generation checks at publication and queued completion sentinels plus deterministic tests."
+      }
+    },
+    {
+      "id": "allow-retargets-spelling",
+      "kind": "companion",
+      "severity": "low",
+      "title": "Allow the Retargets spelling used by the new tests",
+      "body": "### Allow the Retargets spelling used by the new tests\n\n**Severity:** `low`\n\nThe new lifecycle test text uses the valid build term `Retargets`, but the spelling check currently reports it as unrecognized. Please add `Retargets` to `.github/actions/spell-check/allow/code.txt` so the PR's validation remains clean.",
+      "out_of_diff_reason": "The spelling allowlist is outside the current PR diff, so this is a separate repository-validation note rather than an inline code suggestion.",
+      "outOfDiffReason": "The spelling allowlist is outside the current PR diff, so this is a separate repository-validation note rather than an inline code suggestion.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 99,
+        "rationale": "The existing fork Copilot review and advanced-security spelling check identified Retargets as the only unrecognized term, and the converged fork adds exactly this allowlist entry."
+      }
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted current-head request-changes review for explicit maintainer approval",
+    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
+    "Hold or edit the companion notes without changing upstream labels, review state, or PR state",
+    "Rerun the fork review loop if the upstream head changes"
+  ],
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-09-08T04:15:30.9865211Z",
-    "copilot_rounds": 6,
-    "copilot_latest_review_at": "2026-09-08T03:50:16Z",
-    "copilot_result": "clean_zero_published_comments",
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-14T13:28:42.2470503Z",
+    "resume_action": "awaiting_review_approval",
+    "fork_pr": 801,
+    "fork_branch": "pr-iterate/50398-v3",
+    "fork_head_sha": "c8057f482336d0913432da797d756e32f9c37899",
     "unresolved_copilot_threads": 0,
-    "local_validation": "completed"
+    "build_result": "passed"
   },
   "freshness": {
-    "checkpoint_at": "2026-09-08T04:15:30.9865211Z",
-    "live_upstream_head": "4848a1961401f3e784efab5adfedfe634420886f",
-    "live_source_updated_at": "2026-09-08T02:44:58Z"
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-14T13:28:42.2470503Z",
+    "source_updated_at": "2026-09-08T02:44:58Z",
+    "head_sha": "4848a1961401f3e784efab5adfedfe634420886f"
   },
-  "build_evidence": {
-    "status": "passed",
-    "lock": "<PowerToysCheckout>\\.pr-review-build.lock",
-    "commands": [
-      "tools\\build\\build-essentials.cmd",
-      "MSBuild Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj /p:Platform=x64 /p:Configuration=Debug"
-    ],
-    "tests": {
-      "status": "passed",
-      "focused_selection_and_refresh_tests": 8,
-      "failed": 0
+  "fork_pr": {
+    "number": 801,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/801",
+    "state": "OPEN",
+    "head_sha": "c8057f482336d0913432da797d756e32f9c37899"
+  },
+  "phase0": {
+    "authorAssociation": "MEMBER",
+    "disposition": "Proceed",
+    "processGates": "Skipped for member author; no process ask is required."
+  },
+  "source_activity": {
+    "captured_at": "2026-09-14T13:28:42.2470503Z",
+    "state": "OPEN",
+    "draft": false,
+    "mergeable": "CONFLICTING",
+    "mergeable_state": "DIRTY",
+    "upstream_updated_at": "2026-09-08T02:44:58Z",
+    "upstream_head_sha": "4848a1961401f3e784efab5adfedfe634420886f",
+    "commit_count": 2,
+    "changed_file_count": 13,
+    "issue_comment_count": 3,
+    "latest_issue_comment_at": "2026-09-07T21:25:26Z",
+    "review_count": 0,
+    "latest_review_at": null,
+    "review_comment_count": 0,
+    "latest_review_comment_at": null,
+    "unresolved_review_thread_count": 0,
+    "checks": {
+      "total": 10,
+      "successful": 10,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "names": [
+        "license/cla",
+        "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
+        "PowerToys CI (Build arm64 Resolve affected UI test projects)",
+        "PowerToys CI (Build arm64 Build Release_arm64)",
+        "PowerToys CI (Build x64 Build Release_x64)",
+        "PowerToys CI (Build x64 Resolve affected UI test projects)",
+        "PowerToys CI",
+        "detect-telemetry-events",
+        "pr-intake",
+        "dependency-review"
+      ]
+    }
+  },
+  "validation": {
+    "fork_head": {
+      "head_sha": "c8057f482336d0913432da797d756e32f9c37899",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd (x64 Debug): passed after clearing inherited GIT_CONFIG_* variables",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd (x64 Debug): passed"
+      ]
     },
-    "notes": [
-      "Inherited GIT_CONFIG_* variables were cleared before builds.",
-      "POWERTOYS_DISABLE_SPECTRE=1 was used.",
-      "Build completed with an existing CsWinRT1028 warning and no build errors."
-    ]
+    "upstream_head": {
+      "head_sha": "4848a1961401f3e784efab5adfedfe634420886f",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd (x64 Debug): passed after clearing inherited GIT_CONFIG_* variables",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd (x64 Debug): passed"
+      ]
+    },
+    "suggestionPatch": {
+      "result": "not_applicable",
+      "appliedItemIds": [],
+      "minimalRangesReviewed": true,
+      "commands": [],
+      "reason": "All current findings are coordinated companion requests; no apply-ready suggestion block was drafted."
+    }
   },
-  "copilot": {
-    "latest_review_at": "2026-09-08T03:50:16Z",
-    "new_comments": 0,
-    "unresolved_threads": 0
-  },
-  "upstream_writes": false,
-  "dashboard_modified": false
+  "copilot_review": {
+    "latest_submitted_at": "2026-09-14T13:06:55Z",
+    "latest_commit_id": "c8057f482336d0913432da797d756e32f9c37899",
+    "latest_new_comments": 0,
+    "published_inline_comments": 0,
+    "unresolved_threads": 0,
+    "review_count": 2,
+    "policy_note": "The prior fork Copilot review on PR 706 was consumed before the protected branch recovery. A fresh review was requested only after the replacement fork PR 801 was required; it reviewed the rebased latest fork head and returned zero new published comments."
+  }
 }

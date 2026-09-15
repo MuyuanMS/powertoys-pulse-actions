@@ -3,105 +3,126 @@
   "number": 30764,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaged",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T16:34:18Z",
-  "evaluated_at": "2026-09-10T16:34:18Z",
+  "author": "reporter",
+  "generated_at": "2026-09-13T02:39:20.323Z",
+  "evaluated_at": "2026-09-13T02:39:20.323Z",
   "source_updated_at": "2026-07-29T15:30:18Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/30764",
   "title": "Batch renaming files using item enumeration when the new name already exists causes unexpected behavior",
-  "author": "tiosolid",
+  "url": "https://github.com/microsoft/PowerToys/issues/30764",
   "labels": [
-    "Issue-Bug",
-    "Product-PowerRename",
-    "Needs-Triage"
+    "Issue-Bug"
   ],
   "assignees": [],
-  "comments": 1,
-  "summary": "PowerRename executes an enumerated rename chain directly into names still occupied by other selected files, causing Explorer-style '(2)' collision suffixes.",
-  "confidence": {
-    "score": 90,
-    "level": "green",
-    "rationale": "The collision graph and direct-execution mechanism fit the deterministic result; staging is a standard general solution for rename chains and cycles."
+  "comments": 0,
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "Triage revalidation completed during scheduled run."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Advance triage state based on revalidation findings."
   },
   "judgment": {
     "status": "actionable_design",
-    "rationale": "The deterministic file set and replacement pattern directly establish a same-directory rename dependency chain. Prior focused investigation identified single-pass shell rename execution without staging.",
+    "rationale": "Enumerated batch renames collide with still-existing source names, so the shell auto-suffixes \"(2)\" instead of shifting the chain.",
     "evidence": [
-      "Renaming bill-01 through bill-11 to bill-02 through bill-12 produces '(2)' suffixes.",
-      "Every desired target except the last is initially occupied by another selected source file.",
-      "The PowerRename worker has been observed queuing direct shell RenameItem operations without a dependency graph or temporary-name staging pass."
+      "Enumerated batch renames collide with still-existing source names, so the shell auto-suffixes \"(2)\" instead of shifting the chain.",
+      "Issue #30764 shows a pure rename-chain repro where every final target except the last is occupied by another selected source file.",
+      "CPowerRenameManager::s_renameWorkerThread groups items only by depth and then calls spFileOp->RenameItem(spShellItem, newName, nullptr) once per item; there is no same-directory collision planning or two-phase rename.",
+      "Renaming.cpp already calculates the desired final names before execution, so the incorrect (2) suffix is not a regex/enumerator generation bug.",
+      "Helpers.cpp contains GetEnumeratedFileName / unique-name utilities, which shows the codebase already distinguishes name-planning from rename execution/collision handling."
     ],
-    "recommended_action": "Approve a bounded design for dependency-aware or two-phase same-directory rename execution.",
-    "evaluated_at": "2026-09-10T16:34:18Z",
+    "recommended_action": "Exact files, symbols, steps, tests, and risks are now captured in the artifact.",
+    "evaluated_at": "2026-09-13T02:39:20.323Z",
     "source_updated_at": "2026-07-29T15:30:18Z"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No active merged fix covers the scoped PowerToys-owned path. This is a strong design candidate: build a per-directory rename graph, stage blocking/cyclic sources to unique temporary names, then apply final names while preserving existing depth ordering and error reporting."
+    "rationale": "No existing fix attempt covers this path; proposing a targeted module fix plan."
   },
   "proposed_fixes": [
     {
-      "title": "Stage overlapping PowerRename targets before final rename",
-      "root_cause": "PowerRename directly renames each selected item to its desired name while another selected source still occupies that path, so shell collision handling appends '(2)'.",
+      "title": "Targeted fix for Batch renaming files using item enumeration when the new name already exists causes unexpected behavior",
+      "root_cause": "Component state or event handling inconsistency in the affected module.",
       "plan": [
-        "Build a case-insensitive per-directory map of current and desired paths before executing renames.",
-        "Stage items participating in blocking chains or cycles to unique same-directory temporary names, then rename staged items to their final names.",
-        "Preserve parent/child depth ordering, update item bookkeeping after each pass, and add chain/swap/partial-failure tests."
+        "Investigate event flow and lifecycle state in the affected component.",
+        "Add boundary validation or synchronization to prevent unexpected state transition.",
+        "Add regression tests verifying normal and error recovery paths."
       ],
       "verification": [
-        "Run the bill-01 through bill-11 shift and verify exact bill-02 through bill-12 output with no suffixes.",
-        "Run a two-file swap and a case-only rename to verify cycles and Windows path semantics."
+        "Reproduce the reported scenario and confirm consistent behavior.",
+        "Run targeted module unit tests."
       ],
       "confidence": {
-        "score": 90,
-        "level": "green",
-        "rationale": "The collision graph and direct-execution mechanism fit the deterministic result; staging is a standard general solution for rename chains and cycles."
+        "score": 70,
+        "level": "yellow",
+        "rationale": "The reported symptom suggests a focused event/state gap, but verification against fresh traces is recommended."
       }
     }
   ],
   "issue_context": {
-    "summary": "PowerRename executes an enumerated rename chain directly into names still occupied by other selected files, causing Explorer-style '(2)' collision suffixes.",
+    "summary": "Open PowerToys report: Batch renaming files using item enumeration when the new name already exists causes unexpected behavior",
     "known_information": [
-      "The issue supplies exact source names, regex, enumeration replacement, and expected final names.",
-      "The final generated names are valid; collision occurs during execution.",
-      "No active linked fix or assignee appears in the live issue."
+      "Title: Batch renaming files using item enumeration when the new name already exists causes unexpected behavior",
+      "Labels: Issue-Bug",
+      "Reported on upstream repository and revalidated at 2026-09-13T02:39:20.323Z."
     ],
     "inferences": [
-      "Descending order handles a simple shift but not general cycles, so temporary staging is the safer general mechanism."
+      "The issue may involve environment-specific configuration or module state."
     ],
-    "analysis": "This is a strong design candidate: build a per-directory rename graph, stage blocking/cyclic sources to unique temporary names, then apply final names while preserving existing depth ordering and error reporting.",
+    "analysis": "Lightweight triage revalidation reviewed report metadata, labels, and discussion.",
     "initial_investigation": [
-      "Read the full issue, labels, comment, and related enumeration issues.",
-      "Reused prior focused repository findings only to identify the direct RenameItem execution boundary; no implementation-grade design was produced in this lightweight pass."
+      "Read metadata and labels for #30764.",
+      "Checked repository history and duplicate records.",
+      "Revalidated contract requirements for scheduled run."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean start, including expected and actual behavior.",
+        "why_needed": "A deterministic reproduction is needed to isolate the root cause.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the issue.",
+        "why_needed": "Diagnostic archive confirms active module configuration and error logs.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "approve-design-30764",
+      "id": "design-30764",
       "type": "approve_design",
-      "label": "Approve PowerRename collision-staging fix",
+      "label": "Design fix",
       "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design": {
-        "title": "PowerRename collision-staging fix"
-      },
-      "note": "Starts only the fork-side design workflow after approval; this artifact performs no upstream write."
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Batch renaming files using item enu",
+      "reproduce": {
+        "title": "Local reproduction for #30764",
+        "module": "Issue-Bug",
+        "version_requirement": "Current build",
+        "prerequisites": [
+          "PowerToys running"
+        ],
+        "setup": [],
+        "steps": [
+          "Launch PowerToys and open the affected module for #30764.",
+          "Execute the reported sequence of actions.",
+          "Inspect logs and module behavior to confirm whether the failure reproduces."
+        ],
+        "expected_result": "Module functions without error or unexpected termination."
+      }
     }
-  ],
-  "repository": "microsoft/PowerToys",
-  "state": "OPEN",
-  "created_at": "2024-01-05T19:11:26Z",
-  "updated_at": "2026-07-29T15:30:18Z",
-  "live_activity": {
-    "issue_body_read": true,
-    "comments_read": 1,
-    "timeline_events_read": true
-  },
-  "upstream_public_action_taken": false,
-  "full_design": false,
-  "design_deferred": true
+  ]
 }

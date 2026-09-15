@@ -3,116 +3,76 @@
   "number": 50116,
   "kind": "issue",
   "track": "fix",
-  "stage": "triage",
-  "generated_at": "2026-09-09T15:05:16.279Z",
-  "evaluated_at": "2026-09-09T15:05:16.279Z",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "FrenchPie",
+  "confidence": "High",
+  "status": {
+    "glyph": "✅",
+    "label": "Duplicate or handled",
+    "detail": "The setup failure belongs in the open canonical KeysNotMatched investigation."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Close as duplicate of #27945",
+    "reason": "Preserve the settings-overwrite workaround as canonical evidence."
+  },
+  "generated_at": "2026-09-12T01:02:28.217857Z",
+  "evaluated_at": "2026-09-12T01:02:28.217857Z",
   "source_updated_at": "2026-08-26T05:59:40Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50116",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The failure and workaround fall within the open KeysNotMatched reports #27945 and #26717. Keeping another independent fix plan would duplicate the canonical connection/settings investigation.",
+    "evidence": [
+      "The reporter tried generated and manual 16-character keys, setup flows, IP mapping, and reinstalling.",
+      "Editing both settings.json files while MWB is closed establishes a working connection.",
+      "Open issues #27945 and #26717 already track persistent KeysNotMatched/invalid-key setup failures."
+    ],
+    "recommended_action": "Close as duplicate of #27945 and carry the UI-overwrite workaround there.",
+    "evaluated_at": "2026-09-12T01:02:28.217857Z",
+    "source_updated_at": "2026-08-26T05:59:40Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A code fix may be required, but the open canonical KeysNotMatched issue already owns this failure family."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Mouse Without Borders rejects matching keys entered through its UI, while manually placing the same SecurityKey in both settings files works when MWB is stopped.",
+    "known_information": [
+      "PowerToys 0.101.2362 via WinGet is affected.",
+      "The same manual key works when written directly to both settings files with MWB stopped.",
+      "MWB settings use a file watcher and asynchronous SaveSettings calls around SecurityKey updates."
+    ],
+    "inferences": [
+      "A settings write/reload race is plausible, but duplicate consolidation should precede a separate design."
+    ],
+    "analysis": "The working manual-file workaround proves the network peers can agree on a key and focuses the canonical issue on UI persistence/reload rather than key validity.",
+    "initial_investigation": [
+      "Read the full issue and three comments through 2026-08-26T05:59:40Z.",
+      "Verified #27945 and #26717 remain open for KeysNotMatched/invalid key behavior.",
+      "Reviewed MouseWithoutBorders/App/Class/Setting.cs, which watches settings.json and asynchronously saves SecurityKey changes.",
+      "The maintainer requested /bugreport, but no reporter response is present."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "post_comment",
+      "label": "Close as duplicate of #27945",
+      "comment": {
+        "body": "Thanks for the detailed troubleshooting and the useful workaround. This belongs with the open Mouse Without Borders `KeysNotMatched` investigation in #27945 (with closely related setup failures also recorded in #26717). Please consolidate this report there and include the key detail that entering the same value through the UI fails, while writing the identical `SecurityKey` to both `settings.json` files with MWB stopped succeeds. That distinction focuses the existing investigation on settings persistence/reload rather than key generation or network reachability."
+      }
+    }
+  ],
   "title": "Mouse without border: KeysNotMatched",
+  "url": "https://github.com/microsoft/PowerToys/issues/50116",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Without Borders"
   ],
   "assignees": [],
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The workaround proves the same SecurityKey works when persisted manually, and the current MWB settings code has both a settings.json watcher and multiple save/reopen paths around SecurityKey updates.",
-    "evidence": [
-      "Manual settings.json editing on both machines works when MWB is closed.",
-      "The reporter says UI-driven values are overwritten.",
-      "Setting.cs watches settings.json, updates Encryption.MyKey, and reopens sockets when the key changes."
-    ],
-    "recommended_action": "Queue a fix design around serialized key persistence and request paired diagnostics from both machines.",
-    "evaluated_at": "2026-09-09T15:05:16.279Z",
-    "source_updated_at": "2026-08-26T05:59:40Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No linked fix covers the interaction between the MWB UI, PowerToys settings, and SecurityKey watcher/save path.",
-    "existing_fix_urls": []
-  },
-  "issue_context": {
-    "summary": "Mouse Without Borders rejects keys entered through its UI even though manually editing the same SecurityKey into settings.json on both machines works.",
-    "known_information": [
-      "KeysNotMatched happens with generated keys, pasted keys, and manual typing.",
-      "Manual JSON editing works when MWB is closed.",
-      "The thread suggests more than one configuration surface can write the same setting."
-    ],
-    "inferences": [
-      "The bug is more likely in live state update or save/reload logic than in the file format itself.",
-      "An install-scope or elevation mismatch could still contribute."
-    ],
-    "analysis": "This is strong enough for an actionable design because the workaround narrows the failure to the UI/persistence path. The remaining uncertainty is whether machine-scope differences also contribute.",
-    "initial_investigation": [
-      "Reviewed the issue body and workaround.",
-      "Reviewed src/modules/MouseWithoutBorders/App/Class/Setting.cs and confirmed the watcher/save/reopen flow.",
-      "Reviewed Machine.cs and SocketStuff.cs and confirmed KeysNotMatched maps to InvalidKey handling."
-    ],
-    "information_gaps": [
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh diagnostic ZIP files from both machines captured immediately after a failed key-sync attempt.",
-        "why_needed": "Paired diagnostics would show whether both peers saw the same persisted key and which side decided the key was invalid.",
-        "how_to_collect": "Please reproduce the failed setup attempt on both machines and then add /bugreport comments from both machines immediately afterward, attaching both generated ZIP files."
-      },
-      {
-        "evidence_type": "install_scope",
-        "information": "Whether both machines use the same install source/scope and whether either instance is elevated during setup.",
-        "why_needed": "An install-scope or elevation mismatch could change which settings file each side is editing.",
-        "how_to_collect": "Please reply with the install source (WinGet/Store/GitHub), user-vs-system scope, and whether PowerToys was elevated on each machine during setup."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve design for Issue 50116",
-      "confirm": true,
-      "comment": {
-        "body": "Approve a focused Mouse Without Borders design pass for Issue 50116."
-      }
-    },
-    {
-      "id": "ri50116",
-      "type": "request_info",
-      "label": "Request MWB key-sync diagnostics",
-      "confirm": true,
-      "comment": {
-        "target": "issue",
-        "repository": "microsoft/PowerToys",
-        "number": 50116,
-        "body": "Thanks for documenting the manual settings.json workaround — that is the key clue here, because it shows the file format can work when both machines end up with the same persisted key. Please provide:\n\n1. Fresh PowerToys diagnostic ZIP files from both machines captured immediately after a failed setup attempt: reproduce the KeysNotMatched problem and then add /bugreport comments from both machines right away, attaching both generated ZIP files.\n2. The install source/scope for each machine (WinGet, Store, or GitHub; user vs system) and whether either PowerToys instance was running elevated during setup.\n\nThat will confirm whether the bug is purely in the shared SecurityKey save/reload path or whether the two machines are editing different settings locations."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Serialize MWB security-key updates before reopening sockets",
-      "root_cause": "MWB appears to accept a new key through one UI path and then reread or overwrite it through another settings save/watch path before both peers share the same stable value.",
-      "plan": [
-        "Route SecurityKey changes through one normalized persistence method.",
-        "Debounce self-triggered watcher updates before reopening sockets.",
-        "Keep saved key, Encryption.MyKey, and reopened sockets in sync across both settings surfaces."
-      ],
-      "verification": [
-        "Change the key from each supported settings surface and verify both machines reconnect without manual JSON edits.",
-        "Confirm the saved SecurityKey remains identical after closing and reopening MWB and Settings."
-      ],
-      "confidence": {
-        "score": 58,
-        "level": "yellow",
-        "rationale": "Workaround strongly points at the save/reload path, but paired diagnostics would still raise confidence."
-      }
-    }
-  ],
-  "design_decision": {
-    "status": "queued",
-    "reason": "Actionable design retained without full expansion."
-  },
-  "confidence": {
-    "score": 58,
-    "level": "yellow",
-    "rationale": "The save/watch path matches the workaround, but paired logs would strengthen it."
-  }
+  "comments": 3
 }

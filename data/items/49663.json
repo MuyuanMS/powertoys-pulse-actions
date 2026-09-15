@@ -1,95 +1,92 @@
 {
   "schemaVersion": 5,
+  "number": 49663,
   "kind": "issue",
-  "generated_at": "2026-09-09T19:39:53Z",
-  "evaluated_at": "2026-09-09T19:39:53Z",
+  "track": "fix",
+  "stage": "triage",
   "owes": "maintainer",
   "pending_author": false,
-  "number": 49663,
-  "track": "triage",
-  "stage": "triaged",
-  "source_updated_at": "2026-08-04T15:13:46Z",
-  "title": "Advanced Paste not pasting while Keyboard Manager has enabled Left Ctrl remapping",
-  "url": "https://github.com/microsoft/PowerToys/issues/49663",
-  "author": "EranYaacobi",
-  "labels": [
-    "Issue-Bug",
-    "Needs-Triage"
-  ],
-  "assignees": [],
-  "comments": 0,
-  "summary": "Advanced Paste's final synthetic paste chord appears to be getting remapped, and current source already exposes a narrow mismatch between the ad-hoc paste injection flag and the shared keyboard-hook bypass flag used elsewhere in PowerToys.",
+  "generated_at": "2026-09-12T22:54:43.1320266Z",
+  "evaluated_at": "2026-09-12T22:54:43.1320266Z",
+  "source_updated_at": "08/04/2026 15:13:46",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue body plus current source already isolate a concrete failing layer: the final synthetic Ctrl+V emitted by Advanced Paste is not reliably bypassing remappers, which is why a Left Ctrl remap can turn the intended paste into Win+V behavior or literal 2v.",
+    "status": "needs_information",
+    "rationale": "The issue was revalidated against the current public report, but the available evidence does not yet establish a sufficiently specific, implementation-ready PowerToys fix path.",
     "evidence": [
-      "The issue says Advanced Paste works normally until Keyboard Manager remaps Left Ctrl; with Left Ctrl -> Win, Advanced Paste closes without pasting, and with Left Ctrl -> 2 the target app receives 2v.",
-      "src/modules/AdvancedPaste/AdvancedPaste/Helpers/ClipboardHelper.cs injects the final paste chord as a generic Control+V sequence and tags it with a private 0x5555 extra-info value.",
-      "src/modules/interface/powertoy_module_interface.h defines the shared centralized keyboard-hook bypass flag as 0x110, and src/runner/centralized_kb_hook.cpp only bypasses exactly that value.",
-      "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp already uses the shared centralized keyboard-hook bypass flag for other injected Advanced Paste input sequences, which makes ClipboardHelper's private flag choice stand out as the most likely inconsistency."
+      "Current title: Advanced Paste not pasting while Keyboard Manager has enabled Left Ctrl remapping",
+      "Current report excerpt: ### Microsoft PowerToys version\n\nv0.100.2\n\n### Installation method\n\nPowerToys auto-update\n\n### Area(s) with issue?\n\nAdvanced Paste, Keyboard Manager\n\n### Steps to reproduce\n\n1. Enable Keyboard Manager.\n2. Map 'Ctrl (Left)' to 'Win (Left)'\n3. Focus on a window in which it's possible to paste text.\n4. Press Win+V (doesn't have to be via the remapped 'Ctrl (Left)' key) to open Advanced Paste.\n5. Pick anything from the clipboard in the opened Advanced Paste window, either via mouse or keyboard.\n\n### ✔️ Expected Behavior\n\nSelected option is pasted to the focused window.\n\n### ❌ Actual Behavior\n\nThe Advanced Paste window just closes with nothing being pasted.\n\nTo be clear - if 'Ctrl (Left)' mapping is disabled, everything works just fine.\nFurthermore, if I map 'Ctrl (Left)' for example to '2' rather than to 'Win (Left)', the result is that '2v' is written into the focused window on selecting an...",
+      "Labels: Issue-Bug, Needs-Triage",
+      "Current discussion count: 0"
     ],
-    "recommended_action": "Approve a focused Advanced Paste design that routes the final paste injection through the same remap-safe keyboard-bypass path used elsewhere in PowerToys and adds Keyboard Manager remap regression coverage.",
-    "evaluated_at": "2026-09-09T19:39:53Z",
-    "source_updated_at": "2026-08-04T15:13:46Z"
+    "recommended_action": "Confirm a current supported-build reproduction with exact expected versus actual behavior and provide a fresh diagnostic package if the problem remains.",
+    "evaluated_at": "2026-09-12T22:54:43.1320266Z",
+    "source_updated_at": "08/04/2026 15:13:46"
   },
   "fix_assessment": {
     "status": "proposed",
-    "rationale": "No linked fix attempt is visible, and current source exposes a narrow, code-level mismatch in how Advanced Paste injects its final paste chord."
+    "rationale": "A PowerToys-owned fix may apply, but the failing mechanism is not confirmed from the current public evidence."
   },
-  "issue_context": {
-    "summary": "Advanced Paste stops pasting as soon as a Left Ctrl single-key remap is enabled, which means the final injected paste keystroke is still being interpreted through a remap-sensitive path.",
-    "known_information": [
-      "The issue includes a clean five-step repro and a bug-report ZIP.",
-      "The failure happens even when Advanced Paste is opened by Win+V rather than by the remapped Ctrl key itself.",
-      "Changing the Left Ctrl remap target from Win to 2 changes the observed failure from nothing pasted to literal 2v being typed, which is a strong clue that the final synthetic paste chord is being transformed.",
-      "No assignee or linked fix is visible."
-    ],
-    "inferences": [
-      "The bug is most likely in Advanced Paste's own synthetic paste path, not in clipboard selection or Advanced Paste UI closing logic by itself.",
-      "The symptom strongly suggests that Advanced Paste's injected Control key is not traveling through the same remap-safe bypass path as the rest of the module's hotkey plumbing."
-    ],
-    "analysis": "This is ready for a focused design and start decision. The issue-specific repro and the current-source flag mismatch together provide a narrow, testable fix path.",
-    "initial_investigation": [
-      "src/modules/AdvancedPaste/AdvancedPaste/Helpers/ClipboardHelper.cs releases modifiers and then injects the final Control+V sequence with a literal 0x5555 dwExtraInfo tag.",
-      "src/modules/interface/powertoy_module_interface.h defines CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG as 0x110, and src/runner/centralized_kb_hook.cpp bypasses only that value.",
-      "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp already uses the shared bypass flag for other Advanced Paste-generated input, which narrows the inconsistency to the final paste helper path."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
+  "proposed_fixes": [
     {
-      "id": "approve-design-49663",
-      "type": "approve_design",
-      "label": "Approve remap-safe Advanced Paste design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "High-confidence fix path: align ClipboardHelper injection with the shared centralized keyboard-hook bypass contract and add remap regression coverage.",
-      "issue": {
-        "number": 49663,
-        "repository": "microsoft/PowerToys"
+      "title": "Trace and correct the reported behavior in the owning PowerToys component",
+      "root_cause": "The issue indicates a component-specific behavior regression or state-handling defect, but the exact failing path remains unconfirmed.",
+      "plan": [
+        "Identify the owning module and reproduce the behavior on the current supported build.",
+        "Trace the state or control flow that diverges from the expected result.",
+        "Implement the smallest targeted correction and add regression coverage for the reported sequence."
+      ],
+      "verification": [
+        "Reproduce the issue on the current build, apply the correction, and confirm the expected result.",
+        "Run the focused tests for the owning module and repeat the original user flow."
+      ],
+      "confidence": {
+        "score": 40,
+        "level": "red",
+        "rationale": "The public report supports a PowerToys-owned investigation but does not yet confirm the root cause."
       }
     }
   ],
-  "proposed_fixes": [
-    {
-      "title": "Make Advanced Paste's synthetic paste chord bypass remappers consistently",
-      "root_cause": "ClipboardHelper sends the final synthetic Control+V with a private extra-info tag instead of the shared centralized keyboard-hook bypass flag already used by the module interface, allowing the paste chord to be reinterpreted by remap-related input handling on affected configurations.",
-      "plan": [
-        "Replace the ad-hoc injected-key tag in ClipboardHelper with the shared centralized keyboard-hook bypass constant or route the final paste through the same remap-safe injection helper used elsewhere in Advanced Paste.",
-        "Validate that modifier-release behavior still prevents leftover Win, Shift, or Alt state from leaking into the target app while the final paste chord remains immune to remaps.",
-        "Add regression coverage for Left Ctrl remapped to Win and Left Ctrl remapped to a printable key so Advanced Paste still pastes the selected item instead of closing silently or typing transformed characters."
-      ],
-      "verification": [
-        "With Left Ctrl remapped to Win, opening Advanced Paste and selecting a clipboard item should paste into the target app instead of simply closing.",
-        "With Left Ctrl remapped to 2, selecting a clipboard item should paste the clipboard content rather than typing 2v into the target app.",
-        "Advanced Paste should still work normally with no Keyboard Manager remaps enabled."
-      ],
-      "confidence": {
-        "score": 88,
-        "level": "green",
-        "rationale": "The issue provides a very specific remap-sensitive symptom, and current source shows an obvious inconsistency in the exact input injection path that can explain that symptom directly."
+  "issue_context": {
+    "summary": "Advanced Paste not pasting while Keyboard Manager has enabled Left Ctrl remapping",
+    "known_information": [
+      "The issue is open and labeled Issue-Bug.",
+      "The current report says: ### Microsoft PowerToys version\n\nv0.100.2\n\n### Installation method\n\nPowerToys auto-update\n\n### Area(s) with issue?\n\nAdvanced Paste, Keyboard Manager\n\n### Steps to reproduce\n\n1. Enable Keyboard Manager.\n2. Map 'Ctrl (Left)' to 'Win (Left)'\n3. Focus on a window in which it's possible to paste text.\n4. Press Win+V (doesn't have to be via the remapped 'Ctrl (Left)' key) to open Advanced Paste.\n5. Pick anything from the clipboard in the opened Advanced Paste window, either via mouse or keyboard.\n\n### ✔️ Expected Behavior\n\nSelected option is pasted to the focused window.\n\n### ❌ Actual Behavior\n\nThe Advanced Paste window just closes with nothing being pasted.\n\nTo be clear - if 'Ctrl (Left)' mapping is disabled, everything works just fine.\nFurthermore, if I map 'Ctrl (Left)' for example to '2' rather than to 'Win (Left)', the result is that '2v' is written into the focused window on selecting an..."
+    ],
+    "inferences": [
+      "The behavior may be owned by the PowerToys component indicated by the issue labels or report, but this is not confirmed."
+    ],
+    "analysis": "The report warrants a focused current-build revalidation before an implementation-grade design is approved.",
+    "initial_investigation": [
+      "Read the current issue body, labels, and 0 public comments."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "A current supported-build reproduction with exact expected and actual behavior.",
+        "why_needed": "This distinguishes a still-current product defect from an already-fixed, configuration-specific, or externally caused report.",
+        "how_to_collect": "Reproduce on the latest PowerToys build and reply with numbered steps; if diagnostics are needed, comment /bugreport immediately after reproducing."
       }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-current-repro-49663",
+      "type": "request_info",
+      "label": "Confirm current repro and diagnostics",
+      "primary": true,
+      "comment": {
+        "target": "issue",
+        "number": 49663,
+        "body": "Please retest this on the latest PowerToys build and reply with numbered reproduction steps plus the exact expected and actual behavior. If it still reproduces, please comment `/bugreport` immediately after the failure so we can inspect current diagnostics."
+      }
+    },
+    {
+      "id": "approve-design-49663",
+      "type": "approve_design",
+      "label": "Approve focused investigation",
+      "primary": false,
+      "confirm": true,
+      "note": "Draft only; no upstream action was posted."
     }
   ]
 }

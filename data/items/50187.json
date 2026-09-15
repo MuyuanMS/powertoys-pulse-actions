@@ -1,271 +1,241 @@
 {
   "schemaVersion": 5,
-  "id": "pr-50187",
   "number": 50187,
   "kind": "pr",
   "track": "review",
-  "stage": "review_ready",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T13:35:38.985633Z",
-  "evaluated_at": "2026-09-09T13:35:38.985633Z",
+  "generated_at": "2026-09-14T15:20:00Z",
+  "evaluated_at": "2026-09-14T15:20:00Z",
   "source_updated_at": "2026-09-08T19:43:11Z",
   "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
   "title": "CmdPal: Icons (7/n) - Split glyph caches and materialize synchronous sources directly",
   "url": "https://github.com/microsoft/PowerToys/pull/50187",
-  "repository": "microsoft/PowerToys",
-  "author": "jiripolasek",
-  "authorAssociation": "COLLABORATOR",
-  "isCommunity": false,
-  "isMine": false,
-  "state": "OPEN",
-  "draft": false,
-  "labels": [
-    "Product-Command Palette",
-    "Ready for review"
-  ],
-  "confidence": "High",
-  "processVerdict": "proceed",
-  "summary": "The durable fork state resumed cleanly from fork PR 502 and consumed the delayed Copilot result from the stored 2026-09-09T03:56:20Z request without sending a duplicate request. The current upstream head is unchanged, the converged fork head still has zero unresolved Copilot threads and zero new published comments in the fresh 2026-09-09T03:59:58Z review, and current-head Debug x64 validation now passes after restore plus manual fallback builds and 68/68 targeted and 110/110 full CmdPal UI tests.",
+  "summary": "The saved fork review was resumed at fork PR 502 without re-mirroring. Existing Copilot reviews were consumed on the matching fork head; the latest pass returned zero published comments and zero unresolved threads. The converged fork contains three review-only hunks not present in the live upstream head, so a current-head approval-gated review is drafted.",
   "status": {
-    "glyph": "ok",
-    "label": "Review clean - no comments drafted",
-    "detail": "Pinned to upstream head 5123beae1e31d295c3e3d3a85d0c113a17f83a4e at source_updated_at 2026-09-08T19:43:11Z. Fork PR 502 on head 56e58f9fa7a0360717eaff9469bba9c1165de606 already received the stored fresh Copilot review at 2026-09-09T03:59:58Z with zero new published comments and zero unresolved threads, and the current local checkout now rebuilds and tests cleanly in Debug x64."
+    "glyph": "post",
+    "label": "Review drafted — three current-head requests",
+    "detail": "Live upstream head 5123beae1e31d295c3e3d3a85d0c113a17f83a4e is unchanged. Fork Copilot converged with zero new published comments and zero unresolved threads; the exact upstream head still lacks one localized production guard and two focused test updates."
   },
-  "next_action": "Perform one final live freshness check before any maintainer decision; otherwise post nothing upstream because no supported current-head finding remains.",
-  "proposed_comments": [],
-  "actions": [],
-  "publicPayload": {
-    "comments": []
-  },
-  "safe_actions": [
-    "Perform a final live freshness check before any maintainer decision.",
-    "Post nothing upstream because no supported current-head finding remains.",
-    "Re-run the review only if the upstream head, conversation, or required checks change."
+  "next_action": "Review and approve, edit, or hold the drafted current-head review. Nothing is posted upstream without explicit approval and a final freshness check.",
+  "proposed_comments": [
+    {
+      "id": "50187-use-shared-async-materialization-predicate",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Use one predicate for binary materialization",
+      "confidence": {
+        "score": 98,
+        "rationale": "The converged fork extracted the binary SoftwareBitmap condition into RequiresAsynchronousMaterialization and uses it at the synchronous conversion branch, keeping the dispatch decision and its test contract aligned."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconPathConverter.cs",
+      "line": 115,
+      "startLine": 115,
+      "side": "RIGHT",
+      "body": "### Use one predicate for binary materialization\n\n**Severity:** `medium`\n\nKeep the binary handoff condition in one named predicate so the synchronous conversion path and the loader's dispatch decision cannot diverge as additional prepared-icon kinds are added.\n\n```suggestion\n                    if (RequiresAsynchronousMaterialization(icon))\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50187-test-synchronous-icon-source-contract",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Exercise each synchronous icon-source branch",
+      "confidence": {
+        "score": 97,
+        "rationale": "The upstream test file checks preparation kinds but does not invoke TryCreateIconSourceSynchronously for empty, URI, SVG, or glyph inputs; the converged fork adds coverage for those branches and for bitmap ownership transfer."
+      },
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconPathConverterTests.cs",
+      "line": 64,
+      "startLine": 64,
+      "side": "RIGHT",
+      "body": "### Exercise each synchronous icon-source branch\n\n**Severity:** `medium`\n\nThe current tests verify RequiresAsynchronousMaterialization only for the binary case and do not call TryCreateIconSourceSynchronously for empty, bitmap URI, SVG URI, or glyph inputs. Add focused assertions for each synchronous kind, plus the binary SoftwareBitmap transfer/ownership case, so a wrong source type or a broken synchronous branch fails the test rather than only changing a classifier result.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50187-cover-other-cache-diagnostics",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Verify the second cache partition in the report",
+      "confidence": {
+        "score": 96,
+        "rationale": "The existing diagnostic test asserts only the glyph partition; the converged fork records an Other-partition miss, insertion, and LowScore eviction and scopes assertions to each report section."
+      },
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconLoadDiagnosticsTests.cs",
+      "line": 427,
+      "startLine": 427,
+      "side": "RIGHT",
+      "body": "### Verify the second cache partition in the report\n\n**Severity:** `medium`\n\nThe test currently validates only the glyph cache section, so partition routing for Other entries and its removal-reason accounting can regress without failing. Add an Other-partition miss, entry, and LowScore removal, then scope the glyph assertions to the glyph section and assert the corresponding Other section independently.",
+      "disposition": "proposed"
+    }
   ],
-  "needs_revalidation": false,
-  "blockers": [],
-  "judgment": {
-    "status": "review_clean",
-    "rationale": "Resume state, fresh Copilot history, and current Debug x64 validation all align on a clean current head. The delayed result from the stored request timestamp was consumed instead of creating a duplicate request, the final fresh Copilot review on the converged fork head returned zero published comments, unresolved Copilot threads remain zero, and current build/test validation passed.",
-    "evidence": [
-      "Get-ReviewResumeState.ps1 reported review branch pr-iterate/50187-v2, fork PR 502, local checkout C:\\\\PowerToys-50187, resumeAction rebuild-and-draft, latest Copilot review at 2026-09-09T03:59:58Z, newest commit at 2026-09-09T03:21:56Z, and unresolvedCopilotThreads 0.",
-      "The current upstream PR head is still 5123beae1e31d295c3e3d3a85d0c113a17f83a4e, the PR remains OPEN and non-draft, and no upstream review threads or issue comments are open.",
-      "Fork PR 502 stored a Copilot review request at 2026-09-09T03:56:20Z and the resulting review landed at 2026-09-09T03:59:58Z on fork head 56e58f9fa7a0360717eaff9469bba9c1165de606 with zero new published comments; no duplicate request was sent in this drain.",
-      "Fork PR 502 has zero review threads, and the current local checkout head remains 56e58f9fa7a0360717eaff9469bba9c1165de606 with a clean git status and passing git diff --check.",
-      "Solution restore passed after clearing the bad GIT_CONFIG* environment variables that initially broke vcpkg git init.",
-      "Manual fallback builds succeeded for runner.vcxproj, CmdPalModuleInterface.vcxproj, Microsoft.CmdPal.UI.csproj, and Microsoft.CmdPal.UI.UnitTests.csproj using the seeded shared vcpkg cache from C:\\\\PowerToys.",
-      "Focused CmdPal icon/cache/materialization tests passed 68 of 68 and the full Microsoft.CmdPal.UI.UnitTests assembly passed 110 of 110.",
-      "No writes were made to microsoft/PowerToys."
-    ],
-    "recommended_action": "Keep the PR at review_ready with no drafted upstream review unless the upstream head or conversation changes; any future maintainer action should start with a live freshness check.",
-    "evaluated_at": "2026-09-09T13:35:38.985633Z",
-    "source_updated_at": "2026-09-08T19:43:11Z"
-  },
+  "actions": [
+    {
+      "id": "post-review-50187",
+      "type": "post_review",
+      "label": "Post current-head review requests",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50187,
+        "event": "COMMENT",
+        "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e"
+      },
+      "note": "Approval-gated only. Revalidate the upstream head, checks, comments, reviews, and diff anchors, then publish through Publish-ApprovedReview.ps1 only after explicit approval."
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted current-head review for explicit maintainer approval",
+    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
+    "Hold or edit the drafted requests without changing upstream labels, review state, or PR state",
+    "Rerun the fork Copilot loop if the upstream head changes"
+  ],
   "phase0": {
-    "verdict": "proceed",
-    "disposition": "Proceed",
     "author": "jiripolasek",
     "author_association": "COLLABORATOR",
-    "bar": "repository collaborator; routine community-contributor process review skipped",
-    "who_owes_next": "Maintainer review decision",
-    "owes": "maintainer",
+    "bar": "repository collaborator; community process nags skipped",
+    "disposition": "Proceed",
     "gates_tripped": [],
-    "processAsks": [],
-    "summary": "The PR is open and non-draft, collaborator-authored, still labeled Ready for review, and the current required upstream checks are green, so no process blocker remains."
-  },
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "upstream_updated_at": "2026-09-08T19:43:11Z",
-    "upstream_head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
-    "upstream_base_ref": "dev/jpolasek/f/49938-cmdpal-icon-managed-optimizations",
-    "changed_file_count": 13,
-    "additions": 409,
-    "deletions": 109,
-    "issue_comment_count": 0,
-    "review_count": 1,
-    "review_comment_count": 0,
-    "unresolved_review_thread_count": 0,
-    "review_decision": "REVIEW_REQUIRED",
-    "merge_state": "BLOCKED",
-    "labels": [
-      "Product-Command Palette",
-      "Ready for review"
-    ],
-    "reported_checks": {
-      "status": "passed",
-      "failed": 0,
-      "pending": 0,
-      "cancelled_superseded": 2,
-      "passed": 11,
-      "summary": "Latest required checks are green: PowerToys CI, the CmdPal SDK build, x64 and arm64 Release legs, dependency review, PR intake, telemetry detection, and CLA."
-    }
-  },
-  "validation": {
-    "status": "passed",
-    "configuration": "Debug x64",
-    "builds": [
-      {
-        "name": "PowerToys.slnx restore",
-        "result": "passed",
-        "detail": "MSBuild restore reported 238 of 239 projects already up to date after clearing the bad GIT_CONFIG* environment variables."
-      },
-      {
-        "name": "runner.vcxproj",
-        "result": "passed",
-        "detail": "Built via manual MSBuild fallback with explicit shared vcpkg include/lib paths and spdlogd libpath after standard build-essentials runner builds were blocked by the shared vcpkg registry lock."
-      },
-      {
-        "name": "CmdPalModuleInterface.vcxproj",
-        "result": "passed",
-        "detail": "Built via the same manual fallback toolchain against the shared patched vcpkg cache."
-      },
-      {
-        "name": "Microsoft.CmdPal.UI.csproj",
-        "result": "passed",
-        "detail": "Built successfully in Debug x64 after the native dependencies were satisfied by the manual fallback toolchain."
-      },
-      {
-        "name": "Microsoft.CmdPal.UI.UnitTests.csproj",
-        "result": "passed",
-        "detail": "Built successfully in Debug x64 with the same fallback toolchain."
-      }
-    ],
-    "tests": [
-      {
-        "name": "Focused CmdPal icon/cache/materialization tests",
-        "result": "passed",
-        "passed": 68,
-        "failed": 0,
-        "skipped": 0
-      },
-      {
-        "name": "Microsoft.CmdPal.UI.UnitTests",
-        "result": "passed",
-        "passed": 110,
-        "failed": 0,
-        "skipped": 0
-      }
-    ],
-    "outputs": {
-      "powerToysExe": "<PowerToysCheckout>\\\\x64\\\\Debug\\\\PowerToys.exe",
-      "cmdPalModuleDll": "<PowerToysCheckout>\\\\x64\\\\Debug\\\\PowerToys.CmdPalModuleInterface.dll",
-      "cmdPalUiExe": "<PowerToysCheckout>\\\\x64\\\\Debug\\\\WinUI3Apps\\\\CmdPal\\\\Microsoft.CmdPal.UI.exe",
-      "testAssembly": "<PowerToysCheckout>\\\\x64\\\\Debug\\\\WinUI3Apps\\\\CmdPal\\\\tests\\\\Microsoft.CmdPal.UI.UnitTests.dll"
-    },
-    "diff_check": "passed",
-    "notes": [
-      "POWERTOYS_DISABLE_SPECTRE=1 was used for the current-head build chain.",
-      "The standard build scripts initially hit an empty GIT_CONFIG_VALUE_2 environment variable, then the shared vcpkg registry lock at C:\\\\Users\\\\muyuanli\\\\AppData\\\\Local\\\\vcpkg\\\\registries\\\\git\\\\.vcpkg-lock; current validation completed with the documented manual MSBuild fallback and the seeded shared vcpkg cache from C:\\\\PowerToys.",
-      "The fork diff preserves all 13 upstream paths plus one fork-only regression-test file: src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconPathConverterTests.cs.",
-      "No writes were made to microsoft/PowerToys."
-    ],
-    "logs": [
-      "C:\\\\Users\\\\muyuanli\\\\.copilot\\\\session-state\\\\c7ec8ab7-6f0a-420e-b99b-16ac131cdb29\\\\files\\\\drain-prs-20260909-1516\\\\50187-restore.log",
-      "C:\\\\Users\\\\muyuanli\\\\.copilot\\\\session-state\\\\c7ec8ab7-6f0a-420e-b99b-16ac131cdb29\\\\files\\\\drain-prs-20260909-1516\\\\50187-build-runner-manual-linkfix2.log",
-      "C:\\\\Users\\\\muyuanli\\\\.copilot\\\\session-state\\\\c7ec8ab7-6f0a-420e-b99b-16ac131cdb29\\\\files\\\\drain-prs-20260909-1516\\\\50187-build-cmdpalmoduleinterface-manual.log",
-      "C:\\\\Users\\\\muyuanli\\\\.copilot\\\\session-state\\\\c7ec8ab7-6f0a-420e-b99b-16ac131cdb29\\\\files\\\\drain-prs-20260909-1516\\\\50187-build-cmdpal-ui-manual.log",
-      "C:\\\\Users\\\\muyuanli\\\\.copilot\\\\session-state\\\\c7ec8ab7-6f0a-420e-b99b-16ac131cdb29\\\\files\\\\drain-prs-20260909-1516\\\\50187-build-cmdpal-ui-unittests-manual-final.log",
-      "C:\\\\Users\\\\muyuanli\\\\.copilot\\\\session-state\\\\c7ec8ab7-6f0a-420e-b99b-16ac131cdb29\\\\files\\\\drain-prs-20260909-1516\\\\50187-test-targeted.log",
-      "C:\\\\Users\\\\muyuanli\\\\.copilot\\\\session-state\\\\c7ec8ab7-6f0a-420e-b99b-16ac131cdb29\\\\files\\\\drain-prs-20260909-1516\\\\50187-test-full.log"
-    ]
-  },
-  "freshness": {
-    "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-09T13:35:38.985633Z",
-    "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
-    "source_updated_at": "2026-09-08T19:43:11Z",
-    "review_head_sha": "56e58f9fa7a0360717eaff9469bba9c1165de606",
-    "fresh_review_completed_at": "2026-09-09T03:59:58Z",
-    "published_comments": 0,
-    "unresolved_threads": 0,
-    "head_matches_reviewed_upstream": true
-  },
-  "freshReview": {
-    "status": "completed_clean",
-    "requested_at": "2026-09-09T03:56:20Z",
-    "latest_review_at": "2026-09-09T03:59:58Z",
-    "fork_pr": 502,
-    "fork_head": "56e58f9fa7a0360717eaff9469bba9c1165de606",
-    "published_comments": 0,
-    "unresolved_threads": 0,
-    "converged": true
-  },
-  "copilot": {
-    "status": "clean_zero_published_comments",
-    "fork_pr": 502,
-    "reviewed_upstream_head": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
-    "current_fork_head": "56e58f9fa7a0360717eaff9469bba9c1165de606",
-    "review_count": 3,
-    "unresolved_threads": 0,
-    "fresh_request_at": "2026-09-09T03:56:20Z",
-    "latest_completed_review_at": "2026-09-09T03:59:58Z",
-    "latest_completed_review_commit": "56e58f9fa7a0360717eaff9469bba9c1165de606",
-    "latest_completed_review_published_comments": 0,
-    "converged": true,
-    "convergence_requirement": "Satisfied: the fresh review submitted after the stored final request contained zero published comments."
-  },
-  "threads": {
-    "copilot": {
-      "unresolved": 0,
-      "detail": "Fork PR 502 currently reports zero review threads."
-    },
-    "upstream": {
-      "review_threads_reviewed": 0,
-      "new_writes": 0
-    }
+    "note": "The collaborator-authored PR has successful CLA, dependency, intake, telemetry, and PowerToys CI checks. No process request was added."
   },
   "fork_pr": {
-    "repository": "MuyuanMS/PowerToys",
     "number": 502,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/502",
     "state": "OPEN",
-    "branch": "pr-iterate/50187-v2",
-    "base_branch": "pr-review-base/50186-for-50187-v2",
     "head_sha": "56e58f9fa7a0360717eaff9469bba9c1165de606",
-    "reviewed_upstream_head": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
-    "file_count": 14,
-    "scope_matches_upstream": false,
-    "extra_paths": [
-      "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconPathConverterTests.cs"
-    ],
-    "missing_paths": []
+    "base_sha": "b781101d3744c39c5359120453726be14e25e887"
   },
-  "fork_changes": {
-    "recent_commits": [
-      {
-        "sha": "56e58f9fa7a0360717eaff9469bba9c1165de606",
-        "subject": "Refresh review branch for current upstream head"
-      },
-      {
-        "sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
-        "subject": "Split glyph and other icon caches"
-      },
-      {
-        "sha": "317d0f081d05c9edd7e7b8cc20bb0b554d01b55c",
-        "subject": "Use synchronous icon source materialization in loader"
-      },
-      {
-        "sha": "8901b3eec2f9643222381af077331af7b7aea58c",
-        "subject": "Add synchronous icon source materialization"
-      }
-    ],
-    "new_fork_writes_this_drain": []
+  "fork_branch": "pr-iterate/50187-v2",
+  "freshness": {
+    "status": "current_head_reviewed",
+    "evaluated_at": "2026-09-14T15:20:00Z",
+    "source_updated_at": "2026-09-08T19:43:11Z",
+    "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+    "latest_copilot_review_at": "2026-09-09T03:59:58Z",
+    "latest_fork_commit_at": "2026-09-09T03:21:56Z",
+    "unresolved_fork_copilot_threads": 0
   },
-  "workflow": {
-    "phase": "review_ready",
-    "resume_action": "rebuild-and-draft",
-    "stored_request_timestamp": "2026-09-09T03:56:20Z",
-    "consumed_existing_request": true,
-    "duplicate_request_avoided": true,
-    "delayed_result_consumed": true,
-    "previous_validation": {
-      "evaluated_at": "2026-08-28T15:11:53Z",
-      "head_sha": "e6737dc6eadaa2731de6c826adea3f054620f413",
-      "summary": "Earlier durable artifact recorded a clean converged fork review with 110/110 CmdPal UI tests on the prior upstream head."
+  "copilot_review": {
+    "review_count": 3,
+    "latest_submitted_at": "2026-09-09T03:59:58Z",
+    "latest_commit_id": "56e58f9fa7a0360717eaff9469bba9c1165de606",
+    "latest_new_comments": 0,
+    "unresolved_threads": 0,
+    "policy_note": "Existing completed reviews on the matching fork head were consumed before considering another request; no duplicate request was made."
+  },
+  "verification": {
+    "result": "passed",
+    "summary": "The converged fork built PowerToys essentials, CmdPal UI, and CmdPal UI unit tests in x64 Debug. The exact upstream head was verified live and the converged fork tree is the upstream head plus the three drafted hunks. Diff whitespace validation passed.",
+    "builds": [
+      "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
+      "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+      "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
+    ],
+    "outputs": [
+      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+      "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.dll",
+      "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CmdPal.UI.UnitTests.dll"
+    ],
+    "upstream_head": {
+      "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+      "result": "passed",
+      "detail": "Live upstream head and reported checks were re-read after the fork build; the exact head is the pinned review target."
+    },
+    "suggestion_patch": {
+      "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+      "result": "passed",
+      "applied_comment_ids": [
+        "50187-use-shared-async-materialization-predicate"
+      ],
+      "minimal_ranges_reviewed": true,
+      "commands": [
+        "Materialize the one-line IconPathConverter.cs suggestion on the pinned upstream head",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "detail": "The two test requests are prose-only because they require coordinated test setup and assertions; the fork tree materializes both requested test changes and passed the same targeted builds."
+    },
+    "environment_note": "The build required POWERTOYS_DISABLE_SPECTRE=1 and clearing inherited GIT_CONFIG_* variables for vcpkg; no repository files were changed for either workaround."
+  },
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+      "result": "passed",
+      "applied_comment_ids": [
+        "50187-use-shared-async-materialization-predicate"
+      ],
+      "minimal_ranges_reviewed": true,
+      "commands": [
+        "Materialize the one-line IconPathConverter.cs suggestion on the pinned upstream head",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "detail": "The two test requests are prose-only because they require coordinated test setup and assertions; the fork tree materializes both requested test changes and passed the same targeted builds."
+    },
+    "upstream_head": {
+      "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+      "result": "passed"
     }
   },
-  "upstream_writes": false,
-  "dashboard_modified": false
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and exercise results whose icons use glyph, URI, SVG, and binary sources.",
+    "Confirm glyph and URI sources materialize immediately while binary bitmap transfer remains asynchronous.",
+    "Enable the internal icon diagnostics view, exercise both glyph and other cache partitions, and verify the report separates lookups, hits, misses, capacities, and removal reasons."
+  ],
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+    "base_sha": "b781101d3744c39c5359120453726be14e25e887",
+    "commit_count": 4,
+    "changed_file_count": 13,
+    "issue_comment_count": 0,
+    "review_comment_count": 0,
+    "review_count": 1,
+    "reported_checks": {
+      "successful": 9,
+      "cancelled_or_duplicate": 3,
+      "failing": 0,
+      "pending": 0,
+      "license_cla": "success",
+      "power_toys_ci": "success",
+      "dependency_review": "success",
+      "pr_intake": "success",
+      "telemetry_pr_check": "success"
+    }
+  },
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-14T15:20:00Z",
+    "resume_action": "await_explicit_review_approval",
+    "fork_pr": 502,
+    "fork_branch": "pr-iterate/50187-v2",
+    "fork_head_sha": "56e58f9fa7a0360717eaff9469bba9c1165de606",
+    "unresolved_copilot_threads": 0,
+    "copilot_result": "Existing fork Copilot reviews were consumed; latest matching-head review returned zero new published comments.",
+    "build_result": "passed",
+    "upstream_head_validation": "passed",
+    "fork_only_delta": [
+      "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconPathConverter.cs",
+      "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconPathConverterTests.cs",
+      "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconLoadDiagnosticsTests.cs"
+    ],
+    "advancement_evidence": [
+      "Resumed pr-iterate/50187-v2 and fork PR 502 without re-mirroring.",
+      "Live upstream head remains 5123beae1e31d295c3e3d3a85d0c113a17f83a4e.",
+      "Consumed all existing completed Copilot reviews before considering a new request.",
+      "Latest fork Copilot review returned zero new published comments.",
+      "Fork Copilot unresolved thread count is zero.",
+      "PowerToys essentials, CmdPal UI, and CmdPal UI unit-test builds passed in x64 Debug.",
+      "Three fork-only hunks were mapped to current-head approval-gated requests; no unexplained fork-only delta remains.",
+      "No upstream-public write was performed."
+    ]
+  }
 }

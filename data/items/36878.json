@@ -2,116 +2,94 @@
   "schemaVersion": 5,
   "number": 36878,
   "kind": "issue",
-  "track": "fix",
-  "stage": "design_ready",
-  "owes": "maintainer",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "author",
   "pending_author": false,
-  "generated_at": "2026-09-10T09:52:27Z",
-  "evaluated_at": "2026-09-10T09:52:27Z",
+  "generated_at": "2026-09-11T15:08:39.7870394Z",
+  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
   "source_updated_at": "2026-09-07T08:48:41Z",
   "url": "https://github.com/microsoft/PowerToys/issues/36878",
   "title": "Mouse Without Borders mouse rubberbanding with 1000hz/polling rate for mouse and keyboards",
-  "confidence": "Medium",
-  "status": {
-    "glyph": "🛠",
-    "label": "High-rate mouse coalescing design ready",
-    "detail": "Packet rate scales sharply with polling rate and every move is forwarded individually."
-  },
-  "next_action": {
-    "glyph": "🛠",
-    "label": "Review coalescing investigation",
-    "reason": "Bound redundant movement while preserving discrete input ordering."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "Reproduction and packet measurements align with the per-event send/receive path. A bounded move-only coalescing design is plausible, gated by current diagnostics.",
-    "evidence": [
-      "Rubber-banding worsens at 1000 Hz.",
-      "Packet rate rises from about 400/s at 125 Hz to about 3000/s at 1000 Hz.",
-      "Repeated clicking also reproduces on wired LAN.",
-      "Each event is sent and applied individually."
-    ],
-    "recommended_action": "Approve a move-event coalescing investigation and collect a current high-rate trace.",
-    "evaluated_at": "2026-09-10T09:52:27Z",
-    "source_updated_at": "2026-09-07T08:48:41Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The hot path is identifiable, but the safe boundary must preserve button, wheel, drag, and machine-switch ordering."
-  },
-  "proposed_fixes": [
-    {
-      "title": "Bound high-frequency remote mouse movement",
-      "root_cause": "Forwarding every high-rate move independently creates queueing and stale movement around discrete transitions.",
-      "plan": [
-        "Measure movement send, receive, and application rates.",
-        "Retain only the newest pending move per peer while a send is in flight.",
-        "Flush before button, wheel, drag, destination, or machine-switch transitions.",
-        "Add sampled diagnostics and ordering tests."
-      ],
-      "verification": [
-        "Test 125, 500, and 1000 Hz on wired and wireless networks.",
-        "Confirm smooth movement, no repeated clicks, and preserved discrete input."
-      ],
-      "confidence": {
-        "score": 72,
-        "level": "yellow",
-        "rationale": "Measurements align with the per-event path, but current traces must distinguish transport from receiver scheduling."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "Mouse Without Borders rubber-bands at 1000 Hz, with packet rate scaling steeply and repeated clicks also reported on wired LAN.",
-    "known_information": [
-      "Lower polling rates improve behavior.",
-      "About 3000 packets/s were measured at 1000 Hz.",
-      "The implementation forwards and applies every event."
-    ],
-    "inferences": [
-      "Application-side overhead is plausible and not limited to Wi-Fi.",
-      "Movement-only coalescing could help, but discrete ordering is safety-critical."
-    ],
-    "analysis": "The useful correction is a bounded movement path, not generic throttling.",
-    "initial_investigation": [
-      "Event.MouseEvent calls Common.SkSend for each event.",
-      "Receiver.ProcessPackage injects every packet.",
-      "No movement-specific coalescing boundary is visible."
-    ],
-    "information_gaps": [
-      {
-        "information": "Current version, mouse/polling rate, topology, exact symptom, and failure-time archive.",
-        "why_needed": "This distinguishes transport overload, receiver scheduling, and input injection.",
-        "how_to_collect": "Reproduce on current stable, report the environment, then comment /bugreport immediately.",
-        "evidence_type": "module_trace"
-      }
-    ]
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve bounded mouse-move coalescing investigation",
-      "design_summary": "Coalesce only redundant movement and flush before every discrete transition.",
-      "requiresApproval": true
-    },
-    {
-      "type": "request_info",
-      "label": "Request current high-polling diagnostics",
-      "comment": {
-        "body": "The packet measurements and wired-LAN reproduction are useful. Please provide:\n\n1. The current PowerToys version, mouse model, polling rate, and network topology.\n2. Whether the failure is rubber-banding, repeated clicks, or both.\n3. A fresh diagnostic archive by commenting `/bugreport` immediately after reproducing.\n\nThis will distinguish transport queueing from receiver or input-injection behavior.",
-        "repository": "microsoft/PowerToys",
-        "target": "issue",
-        "number": 36878
-      },
-      "requiresApproval": true,
-      "confirm": true
-    }
-  ],
-  "author": "Shineblind",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Mouse Without Borders"
   ],
-  "assignees": [],
-  "comments": 2
+  "assignees": null,
+  "comments": 2,
+  "status": {
+    "glyph": "?",
+    "label": "Needs targeted evidence",
+    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Request repro steps and diagnostics",
+    "reason": "Ask only for the current evidence needed to confirm the failing path."
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The selected fast pass found an open bug report but not enough current public evidence to identify a specific PowerToys code fix without speculation.",
+    "evidence": [
+      "The issue is open and labeled as an Issue-Bug report.",
+      "Title: Mouse Without Borders mouse rubberbanding with 1000hz/polling rate for mouse and keyboards",
+      "Area label: Product-Mouse Without Borders",
+      "Issue body excerpt: ### Microsoft PowerToys version 0.87.1 ### Installation method PowerToys auto-update ### Running as admin No ### Area(s) with issue? Mouse Without Borders ### Steps to reproduce Mouse Without Borders does not seem to work well with high Hz (polling rate), mouse and possibly keyboards as well. at 1000hz, my mouse gets laggy in Mouse Without Borders, but it wo...",
+      "Latest public comment excerpt: I am experiencing this with my G903, I have the two PC's on Wired LAN 1Gbps, the amount of times the mouse keeps re-clicking everything on the second pc, I have to be careful what I'm clicking on. I'm going to try dropping the polling rate, but this shouldn't be a requirement.",
+      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T15:08:39.7870394Z."
+    ],
+    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
+    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
+    "source_updated_at": "2026-09-07T08:48:41Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path."
+  },
+  "issue_context": {
+    "summary": "Open PowerToys bug report for Product-Mouse Without Borders: Mouse Without Borders mouse rubberbanding with 1000hz/polling rate for mouse and keyboards",
+    "known_information": [
+      "The issue is open and labeled as an Issue-Bug report.",
+      "Title: Mouse Without Borders mouse rubberbanding with 1000hz/polling rate for mouse and keyboards",
+      "Area label: Product-Mouse Without Borders",
+      "Issue body excerpt: ### Microsoft PowerToys version 0.87.1 ### Installation method PowerToys auto-update ### Running as admin No ### Area(s) with issue? Mouse Without Borders ### Steps to reproduce Mouse Without Borders does not seem to work well with high Hz (polling rate), mouse and possibly keyboards as well. at 1000hz, my mouse gets laggy in Mouse Without Borders, but it wo...",
+      "Latest public comment excerpt: I am experiencing this with my G903, I have the two PC's on Wired LAN 1Gbps, the amount of times the mouse keeps re-clicking everything on the second pc, I have to be careful what I'm clicking on. I'm going to try dropping the polling rate, but this shouldn't be a requirement.",
+      "Fast revalidation covered live upstream activity through 2026-09-07T08:48:41.0000000Z."
+    ],
+    "inferences": [
+      "The symptom may be PowerToys-specific, but the current public evidence is insufficient to choose a code change safely."
+    ],
+    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
+    "initial_investigation": [
+      "Read issue metadata, labels, assignees, body, and 2 public comment(s).",
+      "Checked selected dashboard artifact freshness and contract requirements before publishing.",
+      "Revalidated selected issue metadata, labels, assignees, body, and 2 public comment(s) during the scheduled bounded run."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
+        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
+        "how_to_collect": "Reply with numbered reproduction steps."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
+        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-repro-diagnostics-36878",
+      "type": "request_info",
+      "label": "Request repro steps and diagnostics",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the report. The current issue identifies the affected behavior (\"Mouse Without Borders mouse rubberbanding with 1000hz/polling rate for mouse and keyboards\") and the dashboard revalidation saw the public labels/comments, but it still does not contain enough current diagnostic evidence to distinguish a PowerToys code defect from environment- or configuration-specific behavior.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact PowerToys version and Windows version.\r\n2. A fresh diagnostic archive captured immediately after reproducing it by adding a comment containing /bugreport.\r\n\r\nThose details will let maintainers confirm the failing path for Product-Mouse Without Borders and decide whether this should move to a concrete fix design."
+      }
+    }
+  ]
 }

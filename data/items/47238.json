@@ -3,91 +3,79 @@
   "number": 47238,
   "kind": "issue",
   "track": "fix",
-  "stage": "design_ready",
+  "stage": "triage_revalidated",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T12:08:58Z",
-  "evaluated_at": "2026-09-10T12:08:58Z",
+  "generated_at": "2026-09-12T21:16:42.3469464Z",
+  "evaluated_at": "2026-09-12T21:16:42.3469464Z",
   "source_updated_at": "2026-08-05T07:33:07Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/47238",
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "A current public comment reproduces the elevation loop and identifies a concrete settings mismatch: PowerToys clears is_elevated but leaves run_elevated true, which forces the later UAC prompt.",
+    "evidence": [
+      "The issue body describes the standard-user install, restart, and repeated UAC prompt.",
+      "A 2026 comment says setting run_elevated to false in settings.json resolves the problem.",
+      "The newer settings-sync issue #50371 treats this as a related privilege-level state problem and lists #47238 as a possible duplicate."
+    ],
+    "recommended_action": "Request current-version reproduction details and targeted diagnostics before selecting a code fix.",
+    "evaluated_at": "2026-09-12T20:15:36.184Z",
+    "source_updated_at": "2026-08-05T07:33:07Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The current public evidence does not yet identify a defensible PowerToys code fix."
+  },
+  "proposed_fixes": null,
+  "issue_context": {
+    "summary": "PowerToys keeps prompting a standard user for elevation after the first run because the public evidence points to a split elevation state in settings.json.",
+    "known_information": [
+      "The issue is open and has a bug report ZIP attached.",
+      "A 2026 comment names the settings keys is_elevated and run_elevated.",
+      "Setting run_elevated to false manually resolves the repro for the commenter.",
+      "A newer related issue (#50371) describes the broader elevated/non-elevated settings-sync problem and references #47238 as a possible duplicate."
+    ],
+    "inferences": [
+      "The bug is likely in the settings write or migration path used by standard-user launches.",
+      "This is reproducible public evidence, but the exact code location still needs source review."
+    ],
+    "analysis": "The symptom is concrete and the workaround is specific, so this is more than a generic info request; the remaining uncertainty is the exact code path and regression coverage.",
+    "initial_investigation": [
+      "Read the issue body, comments, events, and related issue 50371.",
+      "Checked the public triage summary that flagged the broader privilege-level settings sync issue as a possible duplicate context."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "The exact settings write or migration path that leaves run_elevated true for standard-user launches.",
+        "why_needed": "To bind a code fix and regression test to the owning module.",
+        "how_to_collect": "Inspect the settings persistence path for non-admin launches and confirm both elevation flags are updated together."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-info-47238",
+      "type": "request_info",
+      "label": "Request current repro evidence",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 47238,
+        "body": "Please provide the current PowerToys and Windows versions, numbered reproduction steps, and a fresh /bugreport captured immediately after reproducing the issue."
+      },
+      "note": "Draft only; no upstream comment was posted."
+    }
+  ],
   "title": "PowerToys always starts as Administrator on standard user accounts after first run",
+  "url": "https://github.com/microsoft/PowerToys/issues/47238",
   "author": "xezrunner",
+  "authorAssociation": "NONE",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-General"
   ],
-  "assignees": [],
-  "comment_count": 2,
-  "summary": "A standard-user installation later requests administrator credentials because persisted elevation intent can remain enabled after the visible setting is off.",
-  "next_action": "Approve elevation-state synchronization",
-  "confidence": {
-    "score": 92,
-    "level": "green",
-    "rationale": "A direct persisted-state workaround and cross-version confirmation identify the likely state boundary."
-  },
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The settings workaround directly distinguishes persisted launch state from installer scope.",
-    "evidence": [
-      "The issue reproduces after restart or sign-in on standard-user accounts in 0.98.1 and 0.100.2.",
-      "Manually setting settings.json run_elevated to false stopped the UAC prompt.",
-      "The prompted launch uses the administrator account's settings."
-    ],
-    "recommended_action": "Approve elevation-state synchronization",
-    "evaluated_at": "2026-09-10T12:08:58Z",
-    "source_updated_at": "2026-08-05T07:33:07Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No concrete existing fix covers the reported path; the lightweight hypothesis is ready for a bounded design workflow."
-  },
-  "issue_context": {
-    "summary": "A standard-user installation later requests administrator credentials because persisted elevation intent can remain enabled after the visible setting is off.",
-    "known_information": [
-      "The issue reproduces after restart or sign-in on standard-user accounts in 0.98.1 and 0.100.2.",
-      "Manually setting settings.json run_elevated to false stopped the UAC prompt.",
-      "The prompted launch uses the administrator account's settings."
-    ],
-    "inferences": [
-      "The non-elevated setting path likely leaves stale run_elevated state."
-    ],
-    "analysis": "The settings workaround directly distinguishes persisted launch state from installer scope.",
-    "initial_investigation": [
-      "Reviewed the report, diagnostic reference, confirmations, and settings workaround."
-    ],
-    "information_gaps": []
-  },
-  "actions": [
-    {
-      "id": "approve-design-47238",
-      "type": "approve_design",
-      "label": "Approve elevation-state synchronization",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design_summary": "Synchronize persisted elevation intent",
-      "note": "Approval starts a separate fork-side design workflow; this lightweight candidate performs no code or upstream write."
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Synchronize persisted elevation intent",
-      "root_cause": "The visible setting can clear is_elevated without clearing run_elevated, so startup follows a stale elevation request.",
-      "plan": [
-        "Trace all writes of is_elevated and run_elevated.",
-        "Atomically clear run_elevated when elevated startup is disabled.",
-        "Add standard-user restart coverage."
-      ],
-      "verification": [
-        "Disable elevated startup, restart, and confirm no UAC prompt.",
-        "Confirm opting into elevation still works."
-      ],
-      "confidence": {
-        "score": 92,
-        "level": "green",
-        "rationale": "A direct persisted-state workaround and cross-version confirmation identify the likely state boundary."
-      }
-    }
-  ]
+  "comments": 2,
+  "confidence": "High"
 }

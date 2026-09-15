@@ -1,190 +1,152 @@
 {
   "schemaVersion": 5,
-  "id": "pr-49226",
   "number": 49226,
   "kind": "pr",
   "track": "review",
-  "stage": "building",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-09T21:00:08Z",
-  "evaluated_at": "2026-09-09T21:00:08Z",
+  "generated_at": "2026-09-14T10:05:00Z",
+  "evaluated_at": "2026-09-14T10:05:00Z",
   "source_updated_at": "2026-09-09T15:52:49Z",
   "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
   "title": "[MouseWithoutBorders] Add theme-adaptive system tray icon setting",
   "url": "https://github.com/microsoft/PowerToys/pull/49226",
-  "repository": "microsoft/PowerToys",
-  "author": "JRScott812",
-  "authorAssociation": "CONTRIBUTOR",
-  "isCommunity": true,
-  "isMine": false,
-  "state": "OPEN",
-  "draft": false,
-  "labels": [
-    "Product-Mouse Without Borders",
-    "Ready for review"
-  ],
-  "confidence": "High",
-  "processVerdict": "ask",
-  "summary": "The scheduler resume consumed the previously stored fork-review request before doing anything else: fork PR 728 already had a newer Copilot review on the saved head, so no duplicate request was sent. This run processed that review, fixed the Mouse Without Borders tray theme-listener startup failure and the important suppressed ThemeListener cleanup leak in commit 5141a6fe2b03cae8f456d18761731a0d6fc171b1, then consumed the next Copilot review at 2026-09-09T20:07:26Z and fixed its disabled-path registry-lookup regression in commit 4d216a1e602f18f425648e808d320b96d8b2c54b. A fresh Copilot review requested at 2026-09-09T20:25:11.6766002Z then completed clean at 2026-09-09T20:34:27Z on the latest fork head with zero new comments and zero unresolved threads. The remaining work is current-head validation: targeted builds were still progressing through transitive dependencies when the bounded run ended, so the correct current stage is building rather than waiting_copilot or review_ready.",
+  "summary": "The existing fork Copilot loop is converged, but the current upstream head still has lifecycle, resource-management, and unsupported cross-module propagation issues. A current-head REQUEST_CHANGES review with two companion findings is drafted; no upstream action has been posted.",
   "status": {
-    "glyph": "...",
-    "label": "Review clean, validation still running",
-    "detail": "Fork PR 728 now points at head 4d216a1e602f18f425648e808d320b96d8b2c54b. The latest freshly requested Copilot review completed at 2026-09-09T20:34:27Z with zero new published comments, and unresolved Copilot threads are zero. Targeted Mouse Without Borders validation is still incomplete."
+    "glyph": "ACTION",
+    "label": "Request-changes review drafted",
+    "detail": "The action is pinned to upstream head 502db9b699572f54fefb65ec2829797fd02eec9e. Existing fork Copilot review converged with zero unresolved Copilot threads; exact candidate patch application and diff validation passed, while the full Settings build is blocked by unrelated ZoomIt zoomit.h code-page warning C4819 treated as error."
   },
   "next_action": {
-    "glyph": "▶",
-    "label": "Finish current-head validation",
-    "reason": "Complete the targeted Mouse Without Borders and related build/test validation on head 4d216a1e602f18f425648e808d320b96d8b2c54b. If those succeed, the PR can advance from building to a concluded current-head review state."
+    "glyph": "ACTION",
+    "label": "Approve, edit, or hold the drafted request-changes review",
+    "reason": "Recheck the live head, checks, comments, reviews, and threads immediately before any publication. Nothing has been posted upstream."
   },
-  "proposed_comments": [],
-  "actions": [],
-  "publicPayload": {
-    "comments": []
-  },
-  "safe_actions": [
-    "Resume targeted build and test validation on the current fork head.",
-    "Do not issue another Copilot request unless the head changes or a future review posts new findings.",
-    "Keep the upstream PR unchanged until validation on the clean fork head completes."
+  "proposed_comments": [
+    {
+      "id": "make-theme-listener-initialization-transactional",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make theme-listener initialization transactional",
+      "confidence": {
+        "score": 96,
+        "rationale": "The constructor starts the first WMI watcher before creating and starting the second, so an exception in later construction or startup can leave an active watcher undisposed; the changed Mouse Without Borders startup path then constructs this listener directly."
+      },
+      "body": "### Make theme-listener initialization transactional`n`n**Severity:** `high``n`n`ThemeListener starts the app-theme WMI watcher before the system-theme watcher has been constructed and started, and an exception in either later step leaves the earlier watcher subscribed because the fields are not assigned until construction completes. Mouse Without Borders now creates this listener during form startup, so a WMI/service failure can both leak an active watcher and abort tray initialization. Create both watchers in locals, attach and start them inside a try block, dispose and detach both on failure, and assign the fields only after the initial theme reads succeed.",
+      "out_of_diff_reason": "The required fix spans ThemeListener construction, event subscription, startup failure handling, and disposal behavior rather than one safe current diff hunk.",
+      "outOfDiffReason": "The required fix spans ThemeListener construction, event subscription, startup failure handling, and disposal behavior rather than one safe current diff hunk.",
+      "in_diff": false,
+      "disposition": "proposed"
+    },
+    {
+      "id": "limit-scope-and-fix-tray-icon-lifetimes",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Limit propagation to supported modules and fix tray icon lifetimes",
+      "confidence": {
+        "score": 94,
+        "rationale": "The new fan-out writes a general setting into Awake, ZoomIt, PowerDisplay, and Mouse Without Borders even though this PR only adds Mouse Without Borders behavior, while ChangeIcon retains the shared bitmap on the non-adaptive path and performs a registry theme read even when the feature is disabled."
+      },
+      "body": "### Limit propagation to supported modules and fix tray icon lifetimes`n`n**Severity:** `high``n`n`The General toggle currently advertises and writes the new property into Awake, ZoomIt, PowerDisplay, and Mouse Without Borders, including IPC, named-event, and registry side effects that are outside this PR and are not implemented consistently by those modules. Keep the General setting scoped to the main PowerToys tray icon, expose the Mouse Without Borders setting separately, and remove the unsupported fan-out/ZoomIt interop path. In `frmScreen.ChangeIcon`, dispose the temporary bitmap on every path that replaces the default image, avoid calling `GetSystemTheme()` when adaptive icons are disabled, and preserve fail-open startup behavior when WMI monitoring is unavailable.",
+      "out_of_diff_reason": "The correction is cross-module and includes Settings propagation, module integration, tray icon lifetime handling, and tests, so no single current RIGHT-side diff anchor can safely express it.",
+      "outOfDiffReason": "The correction is cross-module and includes Settings propagation, module integration, tray icon lifetime handling, and tests, so no single current RIGHT-side diff anchor can safely express it.",
+      "in_diff": false,
+      "disposition": "proposed"
+    }
   ],
-  "needs_revalidation": true,
-  "phase0": {
-    "verdict": "ask",
-    "disposition": "Ask",
+  "actions": [
+    {
+      "id": "request-changes-49226",
+      "type": "request_changes",
+      "label": "Request changes with general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Companion-only review: posts separate general PR conversation comments. The review is drafted only. Refresh the upstream head, checks, comments, reviews, and threads before publication.",
+      "review": {
+        "pr": 49226,
+        "pullRequest": 49226,
+        "repository": "microsoft/PowerToys",
+        "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
+        "event": "REQUEST_CHANGES",
+        "body_prefix": "Thanks for the theme-adaptive tray icon work. Before this can merge, please make theme-listener startup transactional, keep the setting propagation scoped to supported modules, and close the tray icon resource and failure-handling gaps described below."
+      }
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
+    "Revalidate the live head and activity immediately before publication",
+    "Do not post, label, close, or otherwise write to microsoft/PowerToys without explicit approval"
+  ],
+  "needs_revalidation": false,
+  "confidence": "High",
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
+    "base_sha": "d5fe397b058625700f8ba6df68abd10ce93d5e82",
+    "updated_at": "2026-09-09T15:52:49Z",
     "author": "JRScott812",
     "author_association": "CONTRIBUTOR",
-    "bar": "full community-contributor process review",
-    "who_owes_next": "Fork review automation",
-    "processAsks": [
-      "The PR still describes placeholder monochrome icons and leaves persistence, theme-switch, and restore-to-color validation incomplete."
-    ],
-    "summary": "The contributor now has current passing intake and CLA plus visual evidence, but the PR body still marks the icon assets as placeholders and does not claim the full manual validation matrix yet. No new upstream ask is drafted while the fork review remains in local validation.",
-    "evidence": [
-      "The upstream PR body still says the dark/light icons are placeholders and leaves several validation steps unchecked.",
-      "The current upstream labels are Product-Mouse Without Borders and Ready for review.",
-      "The latest upstream pr-intake and license/cla checks are successful.",
-      "No upstream maintainer review has been posted yet."
-    ]
-  },
-  "judgment": {
-    "status": "building",
-    "rationale": "The previously stored review request is no longer pending and has been fully consumed. The fork review loop on the current head is now clean: the latest freshly requested Copilot pass returned zero new comments and all fork Copilot threads are resolved. The only remaining requirement before surfacing any current-head action is local validation on that same head.",
-    "evidence": [
-      "The prior saved request timestamp was 2026-09-09T20:25:11.6766002Z on fork PR 728.",
-      "A fresh Copilot review landed after that request at 2026-09-09T20:34:27Z on head 4d216a1e602f18f425648e808d320b96d8b2c54b with zero new published comments.",
-      "Fork PR 728 now has zero unresolved Copilot threads.",
-      "This run fixed two published current-head findings and one important suppressed cleanup issue, with replies posted on the corresponding fork threads.",
-      "The targeted local build had not yet completed by the end of the bounded run, and no final build outputs are present yet."
-    ],
-    "recommended_action": "Continue targeted local validation on the current fork head. If the builds pass, advance the artifact from building to the appropriate current-head review result without sending another review request.",
-    "evaluated_at": "2026-09-09T21:00:08Z",
-    "source_updated_at": "2026-09-09T15:52:49Z"
-  },
-  "validation": {
-    "status": "incomplete_nonterminal",
-    "configuration": "Debug x64",
-    "builds": [
-      {
-        "name": "Restore / build essentials",
-        "result": "passed",
-        "detail": "The earlier resume path already had successful restore coverage before this scheduler pass."
-      },
-      {
-        "name": "ManagedCommon targeted build",
-        "result": "interrupted",
-        "detail": "The build progressed through ManagedTelemetry and the shared native dependency path without reaching a final success or source-level failure before the scheduler turned back to the review loop."
-      },
-      {
-        "name": "Mouse Without Borders targeted build",
-        "result": "interrupted",
-        "detail": "The build progressed through transitive managed dependencies such as MouseJump.Common and PowerDisplay.Models, but the bounded run ended before MouseWithoutBorders.exe or related outputs were produced."
-      }
-    ],
-    "tests": [],
-    "notes": [
-      "Validation is still nonterminal: there is no current-head compiler failure, but there is also no completed current-head build/test pass yet.",
-      "git diff --check remained clean at the end of the run."
-    ]
-  },
-  "freshness": {
-    "status": "current_head_review_clean_validation_pending",
-    "evaluated_at": "2026-09-09T21:00:08Z",
-    "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
-    "source_updated_at": "2026-09-09T15:52:49Z",
-    "review_head_sha": "4d216a1e602f18f425648e808d320b96d8b2c54b",
-    "last_completed_copilot_review_at": "2026-09-09T20:34:27Z",
-    "head_matches_reviewed_upstream": true
-  },
-  "blockers": [],
-  "freshReview": {
-    "status": "completed_clean",
-    "stored_request_at": "2026-09-09T20:25:11.6766002Z",
-    "prior_completed_review_at": "2026-09-09T20:07:26Z",
-    "explicit_request_at": "2026-09-09T20:25:11.6766002Z",
-    "latest_review_at": "2026-09-09T20:34:27Z",
-    "fork_pr": 728,
-    "fork_head": "4d216a1e602f18f425648e808d320b96d8b2c54b",
-    "published_comments": 0,
-    "unresolved_threads": 0,
-    "converged": false
-  },
-  "copilot": {
-    "status": "clean_zero_published_comments",
-    "consumed_reviews": [
-      {
-        "submitted_at": "2026-09-09T10:45:27Z",
-        "head": "4db56eeb98242b9c8f7999f028c27553202e08b7",
-        "published_comments": 1,
-        "resolved_in_commit": "5141a6fe2b03cae8f456d18761731a0d6fc171b1"
-      },
-      {
-        "submitted_at": "2026-09-09T20:07:26Z",
-        "head": "5141a6fe2b03cae8f456d18761731a0d6fc171b1",
-        "published_comments": 1,
-        "resolved_in_commit": "4d216a1e602f18f425648e808d320b96d8b2c54b"
-      },
-      {
-        "submitted_at": "2026-09-09T20:34:27Z",
-        "head": "4d216a1e602f18f425648e808d320b96d8b2c54b",
-        "published_comments": 0
-      }
-    ],
-    "current_fork_review": {
-      "fork_pr": 728,
-      "current_review_head": "4d216a1e602f18f425648e808d320b96d8b2c54b",
-      "latest_request_at": "2026-09-09T20:25:11.6766002Z",
-      "latest_completed_review_at": "2026-09-09T20:34:27Z",
-      "latest_completed_review_published_comments": 0,
-      "unresolved_threads": 0
+    "mergeable": true,
+    "merge_state": "blocked",
+    "review_count": 0,
+    "review_comment_count": 0,
+    "issue_comment_count": 4,
+    "unresolved_copilot_threads": 0,
+    "reported_checks": {
+      "summary": "Live PR metadata was refreshed; no upstream public review/comment was posted by this run."
     }
   },
-  "threads": {
-    "review_mirror_copilot_unresolved": 0,
-    "upstream_review_comments": 0
+  "validation": {
+    "upstream_head": {
+      "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
+      "result": "passed",
+      "evidence": "Exact upstream head was checked live and the converged review-fix patch applied cleanly; git diff --cached --check passed."
+    },
+    "candidate_build": {
+      "result": "blocked_unrelated",
+      "configuration": "x64 Debug",
+      "passed": [
+        "dependency restore",
+        "runner build"
+      ],
+      "blocked": "Settings build reaches src/modules/ZoomIt/ZoomIt/zoomit.h(1,1), where warning C4819 is treated as error under code page 936; this is unrelated to PR 49226."
+    },
+    "fork_build": {
+      "result": "passed",
+      "configuration": "x64 Debug",
+      "evidence": [
+        "build-essentials.cmd",
+        "Mouse Without Borders build",
+        "PowerToys.exe and Mouse Without Borders outputs exist"
+      ]
+    }
   },
-  "checks": {
-    "status": "passed",
-    "failed": 0,
-    "pending": 0,
-    "summary": "The live upstream checks currently exposed on PR 49226 are green, including pr-intake, detect-telemetry-events, and license/cla."
+  "workflow": {
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-14T10:05:00Z"
   },
-  "upstream_pr": {
-    "number": 49226,
-    "url": "https://github.com/microsoft/PowerToys/pull/49226",
-    "state": "OPEN",
-    "updated_at": "2026-09-09T15:52:49Z",
-    "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e"
+  "freshness": {
+    "evaluated_at": "2026-09-14T10:05:00Z",
+    "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
+    "head_updated_at": "2026-09-09T15:52:49Z",
+    "issue_comment_count": 4,
+    "review_comment_count": 0,
+    "review_count": 0,
+    "status": "fresh"
   },
   "fork_pr": {
     "number": 728,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/728",
-    "state": "OPEN",
-    "updated_at": "2026-09-09T20:34:27Z",
-    "head_sha": "4d216a1e602f18f425648e808d320b96d8b2c54b",
-    "base_sha": "review-base-49226-current",
-    "changed_file_count": 16
+    "head_sha": "4d216a1e602f18f425648e808d320b96d8b2c54b"
   },
   "fork_branch": "pr-iterate/49226",
-  "upstream_writes": false,
-  "dashboard_modified": false
+  "testInstructions": [
+    "Launch the already-built x64 Debug PowerToys.exe.",
+    "Open Settings > General and verify the main PowerToys tray icon setting describes only the main tray icon.",
+    "Open Mouse Without Borders settings, enable the theme-adaptive tray icon, and verify the icon changes with Windows light/dark theme.",
+    "Disable the setting and verify tray refresh still works when WMI theme monitoring is unavailable; repeat enabling/disabling to exercise listener disposal and bitmap refresh."
+  ]
 }

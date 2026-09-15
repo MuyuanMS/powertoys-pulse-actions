@@ -1,114 +1,179 @@
 {
-  "schemaVersion": 5,
   "number": 50306,
   "kind": "issue",
   "track": "fix",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "brauljo",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report gives a precise expected/actual pair and a concrete target, but the supplied diagnostic does not prove whether the picker selected U+300D or whether WeChat transformed correctly emitted Unicode input.",
+    "recommended_action": "Run the controlled current-version comparison and collect only the evidence that separates selection/index state from target/IME transformation.",
+    "evaluated_at": "2026-09-12T00:53:18Z",
+    "source_updated_at": "2026-09-02T02:17:27Z",
+    "evidence": [
+      "The issue reports U+300D `」` becoming U+300C `「` in WeChat Desktop on PowerToys 0.100.2.",
+      "The diagnostic shows Quick Accent enabled with Pinyin and usage sorting; usage data contains both U+300C and U+300D.",
+      "CharacterMappings.cs contains distinct Pinyin entries for U+300C and U+300D.",
+      "PowerAccent commits the selected string through a backspace followed by tagged KEYEVENTF_UNICODE SendInput.",
+      "The keyboard-service log records navigation/hide events but not the selected code point.",
+      "The related older selection report makes an adjacent-selection defect plausible, but does not establish that it affects this report.",
+      "On 2026-09-12, the complete live body, all 0 public comment(s), labels, assignees, and link timeline were re-read through 2026-09-02T02:17:27Z."
+    ]
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked or fork-side implementation covers the issue. A conditional compatibility design is plausible, but the implementation branch must be selected after proving the committed code point and target behavior.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Disambiguate Quick Accent selection from WeChat Unicode delivery before implementing a fix",
+      "root_cause": "Unconfirmed: either stale/reordered picker selection commits the adjacent U+300C entry, or WeChat/its active IME transforms a correctly emitted U+300D Unicode synthetic-input sequence.",
+      "plan": [
+        "Select U+300D with Unicode descriptions visible and capture the value at the commit boundary.",
+        "Repeat the same selection in Notepad and compare literal clipboard paste in the same WeChat field.",
+        "If selection is wrong, make the displayed item, description, selected index, and committed string one toolbar-generation snapshot and add a regression test.",
+        "If selection is correct and only WeChat changes it, add a narrowly scoped opt-in clipboard fallback while retaining Unicode SendInput by default; protect clipboard, focus, modifier, and failure behavior."
+      ],
+      "verification": [
+        "Compare U+300C, U+300D, U+300E, and U+300F in WeChat and Notepad under the same keyboard and IME state.",
+        "Paste literal `」` into the same WeChat control.",
+        "Verify the picker description, commit-boundary value, and resulting text agree; for a fallback verify clipboard preservation and no text loss on failure."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The candidate paths fit the observed code and archive, but the issue has no neutral-target comparison or event evidence proving the selected code point."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Quick Accent reportedly changes a selected closing corner bracket into an opening corner bracket only in WeChat Desktop.",
+    "known_information": [
+      "The affected version is 0.100.2 and a diagnostic archive is attached to the upstream report.",
+      "Quick Accent is enabled with Pinyin, usage sorting, and start-selection-from-the-left enabled.",
+      "The Pinyin mapping includes U+300C and U+300D as separate entries.",
+      "The current insertion path sends a tagged backspace and UTF-16 KEYEVENTF_UNICODE key pairs.",
+      "No issue comments, assignees, linked PR, or concrete fix attempt were found."
+    ],
+    "inferences": [
+      "The target or active IME may transform Unicode synthetic input, but this is not confirmed.",
+      "A mapping typo is less likely because both code points are present; selection/handoff remains unexcluded.",
+      "A universal clipboard fallback would create avoidable clipboard and focus risks."
+    ],
+    "analysis": "The diagnostic narrows the problem to picker selection/handoff versus target delivery, not to missing mapping data. A controlled picker/neutral-target/paste comparison is required before approving a code path.",
+    "initial_investigation": [
+      "Read the full issue body, labels, timestamps, and empty comment history.",
+      "Read the attached diagnostic in memory: Quick Accent settings, usage data, and the 2026-09-02 keyboard-service log were examined.",
+      "Inspected current CharacterMappings, PowerAccent selection/commit flow, WindowsFunctions.Insert, tests, and recent PowerAccent history.",
+      "Reviewed the related wrong-selection report as alternative evidence only.",
+      "Revalidated the live body, all 0 public comment(s), labels, assignees, and link timeline on 2026-09-12; the issue source remains current through 2026-09-02T02:17:27Z."
+    ],
+    "information_gaps": [
+      {
+        "information": "Whether the current picker visibly selects U+300D and passes U+300D to the commit boundary.",
+        "why_needed": "Without this, a target compatibility fix could mask a selection/index defect.",
+        "how_to_collect": "Enable Unicode descriptions, select U+300D, and capture the picker plus the resulting character; repeat on the current release.",
+        "evidence_type": "screenshot_image"
+      },
+      {
+        "information": "Same-session U+300D results in WeChat, Notepad, and literal clipboard paste.",
+        "why_needed": "This separates Quick Accent/SendInput behavior from WeChat or IME composition behavior.",
+        "how_to_collect": "Use the same keyboard layout and IME mode, repeat U+300C/U+300D/U+300E/U+300F, and paste literal `」` into the same WeChat field.",
+        "evidence_type": "behavior_confirmation"
+      },
+      {
+        "information": "Exact WeChat version/install channel and active Windows input method/punctuation mode.",
+        "why_needed": "The target control and IME state may determine whether the transformation occurs.",
+        "how_to_collect": "Record WeChat About details and the Windows input-language/IME state during reproduction.",
+        "evidence_type": "other_software"
+      }
+    ]
+  },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 619,
+    "fork_title": "[Issue 50306] quick accent inserts `」` as `「` in the wechat desktop app",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/619"
+  },
+  "adversary": {
+    "rounds": 1,
+    "status": "blocking_objection",
+    "sign_off": "Blocking objection remains: the fallback branch is not implementation-ready until controlled evidence proves U+300D reaches the commit boundary and only WeChat/IME changes it. The design explicitly preserves the selection-fix branch and requests targeted evidence rather than claiming convergence.",
+    "non_blocking_notes": [
+      "The existing mapping and insertion symbols are exact enough for the next investigator pass."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-50306",
+      "type": "approve_design",
+      "label": "Approve Quick Accent investigation design",
+      "design": {
+        "title": "Disambiguate Quick Accent selection from WeChat Unicode delivery"
+      }
+    },
+    {
+      "id": "reproduce-50306",
+      "type": "reproduce",
+      "label": "Reproduce current WeChat punctuation insertion",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Quick Accent",
+        "version_requirement": "Current PowerToys release; compare with 0.100.2 only if needed",
+        "prerequisites": [
+          "WeChat Desktop",
+          "Notepad",
+          "Quick Accent enabled with Pinyin",
+          "Unicode descriptions visible"
+        ],
+        "setup": [
+          "Preserve the reported settings, then repeat with Pinyin only and usage sorting disabled."
+        ],
+        "steps": [
+          "Focus WeChat and select U+300D `」` in the picker.",
+          "Record the resulting character and picker description.",
+          "Repeat identically in Notepad.",
+          "Paste literal `」` into the same WeChat field.",
+          "Repeat for U+300C, U+300E, and U+300F."
+        ],
+        "expected_result": "Each explicitly selected or pasted code point remains unchanged.",
+        "attachments": [
+          {
+            "label": "Reporter diagnostic archive",
+            "url": "https://github.com/user-attachments/files/31718250/PowerToysReport_2026-09-02-10-15-48.zip"
+          }
+        ]
+      }
+    },
+    {
+      "id": "request-info-50306",
+      "type": "request_info",
+      "label": "Request current target comparison",
+      "primary": false,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50306,
+        "body": "Thanks for the report and attached archive. It confirms Quick Accent was enabled, but it does not show whether the picker selected U+300D or whether the transformation occurs only in WeChat. Please retest on the current PowerToys release and provide:\n\n- **Picker selection evidence:** Please enable Unicode descriptions and share a short recording or screenshots showing U+300D selected in the picker and the resulting character. This determines whether the wrong character is selected before insertion or transformed afterward.\n- **Same-session target comparison:** Please repeat U+300C, U+300D, U+300E, and U+300F in WeChat and Notepad, then paste a literal `」` into the same WeChat field and report the result. This separates Quick Accent/SendInput behavior from WeChat or IME composition behavior.\n- **Target environment:** Please report the exact WeChat version and install channel plus the active Windows input method and punctuation mode. These details identify target-control or IME-specific conditions that may cause the transformation."
+      },
+      "note": "Draft only; no upstream comment is posted without explicit approval."
+    }
+  ],
+  "schemaVersion": 5,
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-12T00:53:18Z",
+  "evaluated_at": "2026-09-12T00:53:18Z",
+  "source_updated_at": "2026-09-02T02:17:27Z",
   "title": "quick accent inserts `」` as `「` in the wechat desktop app",
   "url": "https://github.com/microsoft/PowerToys/issues/50306",
-  "generated_at": "2026-09-09T10:33:13.5242917Z",
-  "evaluated_at": "2026-09-09T10:33:13.5242917Z",
-  "source_updated_at": "2026-09-02T02:17:27Z",
-  "summary": "Quick Accent inserts the mirrored bracket in WeChat Desktop; the current insertion path uses raw Unicode SendInput with no IME-specific composition handling.",
-  "next_action": "Request the specific IME/layout comparison needed to decide whether the fix belongs in Quick Accent’s insertion path or in a WeChat-specific composition workaround.",
-  "confidence": {
-    "score": 54,
-    "level": "yellow",
-    "rationale": "The Unicode injection path is a plausible match, but the active IME/layout behavior still needs one discriminator from the reporter."
-  },
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
   "assignees": [],
-  "linked_work": [],
-  "comment_count": 0,
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "There is a plausible repo-side fix path in Quick Accent, but it should stay as lightweight coverage until the input-method details confirm the correct branch.",
-    "evidence": [
-      "The report is app-specific: selecting `」` through Quick Accent yields `「` in WeChat Desktop.",
-      "Quick Accent inserts characters by sending BACKSPACE followed by KEYEVENTF_UNICODE input in src/modules/poweraccent/PowerAccent.Core/Tools/WindowsFunctions.cs.",
-      "Recent Quick Accent hardening in PR #48572 improved injection hygiene and reset behavior, but did not add an IME-specific composition path."
-    ],
-    "recommended_action": "Keep a lightweight IME-aware fix candidate ready, but first ask for the exact IME/layout comparison that will distinguish a Quick Accent bug from WeChat-specific punctuation conversion."
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "A Quick Accent insertion-path change is plausible, but the exact trigger still depends on how WeChat and the active IME interpret the injected Unicode sequence.",
-    "existing_fix_urls": []
-  },
-  "issue_context": {
-    "summary": "The report is narrowly scoped: Quick Accent chooses the correct-looking bracket in its UI, but WeChat Desktop receives the mirrored character instead.",
-    "known_information": [
-      "The issue was filed against PowerToys 0.100.2 using auto-update.",
-      "The failure is specific to WeChat Desktop in the current report.",
-      "A PowerToys diagnostic ZIP was attached, but no discussion clarifies which IME/layout was active."
-    ],
-    "inferences": [
-      "The failure likely lives in the final text-insertion path rather than in Quick Accent’s candidate list, because the wrong character appears only after commit.",
-      "An active IME composition or app-specific punctuation conversion is a more likely cause than broken character mapping data."
-    ],
-    "analysis": "The repo already shows where Quick Accent synthesizes backspace and Unicode key events. The remaining uncertainty is whether WeChat is reacting to that generic insertion path or to a specific IME state.",
-    "initial_investigation": [
-      "Quick Accent’s insertion path is implemented in src/modules/poweraccent/PowerAccent.Core/Tools/WindowsFunctions.cs using SendInput with KEYEVENTF_UNICODE.",
-      "PR #48572 hardened injected-input tagging and reset behavior but did not add an IME-aware composition step.",
-      "No linked duplicate or active owner was present on the issue."
-    ],
-    "information_gaps": [
-      {
-        "evidence_type": "keyboard_layout",
-        "information": "The exact keyboard layout and IME active when `」` was selected in WeChat.",
-        "why_needed": "This determines whether the bug depends on a specific composition engine or is a generic Quick Accent punctuation regression.",
-        "how_to_collect": "Please name the active Windows keyboard layout / IME when reproducing the issue."
-      },
-      {
-        "evidence_type": "behavior_confirmation",
-        "information": "Whether the same Quick Accent choice inserts the wrong character in a plain editor such as Notepad, or only in WeChat Desktop.",
-        "why_needed": "This separates a PowerToys-wide insertion bug from a WeChat-specific input handling path.",
-        "how_to_collect": "Please try the same Quick Accent selection in Notepad and report whether the result is still wrong there."
-      },
-      {
-        "evidence_type": "gif_video",
-        "information": "A short recording of the Quick Accent selection and the resulting inserted character in WeChat.",
-        "why_needed": "It verifies the chosen candidate and the exact app-side result without relying on text description alone.",
-        "how_to_collect": "Please record the selection sequence, hide any sensitive conversations, and upload the clip through the GitHub issue web UI."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve IME-aware Quick Accent investigation",
-      "note": "Deferred from full design in this bounded batch; the artifact keeps a lightweight fix path ready."
-    },
-    {
-      "type": "request_info",
-      "label": "Confirm WeChat IME and comparison app",
-      "comment": {
-        "body": "Thanks — this is already narrow enough to investigate the insertion path. To decide whether the fix belongs in Quick Accent itself or in an app/IME-specific workaround, please provide:\n\n**Needed**\n1. Please confirm the exact Windows keyboard layout / IME that is active when you choose `」` in WeChat Desktop.\n2. Please try the same Quick Accent selection in a plain editor such as **Notepad** and say whether it still inserts `「`, or whether the problem happens only in WeChat.\n3. Please upload a short screen recording of the selection and resulting character (with any sensitive chat content hidden).\n\nThis will distinguish a general Quick Accent insertion bug from WeChat-specific punctuation conversion."
-      }
-    }
-  ],
-  "proposed_fixes": [
-    {
-      "title": "Normalize IME state before Quick Accent commits punctuation",
-      "root_cause": "Quick Accent currently replaces the typed character with BACKSPACE and then injects raw Unicode code units. If WeChat still has an active IME composition for that punctuation slot, the app can reinterpret the insertion and emit the mirrored bracket instead of the requested one.",
-      "plan": [
-        "Reproduce the issue with the reporter’s exact keyboard layout / IME and compare WeChat against a plain editor such as Notepad.",
-        "If the IME-composition branch is confirmed, commit or cancel the active composition before sending the replacement Unicode sequence, or add a focused fallback insertion path for punctuation-only inserts.",
-        "Add regression coverage around punctuation injection so the selected character is committed exactly as shown in the Quick Accent toolbar."
-      ],
-      "verification": [
-        "Use Quick Accent to pick `」` in WeChat Desktop and verify the inserted character is `」`, not `「`.",
-        "Verify the change does not regress Quick Accent insertion in a plain editor such as Notepad."
-      ],
-      "confidence": {
-        "score": 54,
-        "level": "yellow",
-        "rationale": "The SendInput path is the strongest current match, but the missing IME/layout details still matter for choosing the exact fix."
-      }
-    }
-  ],
-  "deferred_design": true,
-  "deferred_reason": "The batch used its single full-design slot on Issue 50239; this issue keeps lightweight fix coverage only."
+  "comments": 0
 }

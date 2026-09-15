@@ -4,7 +4,7 @@
   "kind": "issue",
   "track": "fix",
   "stage": "awaiting_design_approval",
-  "evaluated_at": "2026-09-09T10:17:36.337Z",
+  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
   "source_updated_at": "2026-09-08T02:59:07Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50349",
   "title": "CmdPal: App is not being properly disposed",
@@ -15,10 +15,11 @@
       "MainWindow_Closed calls SignalStopAsync without awaiting it.",
       "Environment.Exit(0) follows immediately.",
       "App owns the service provider and has a Dispose path that is bypassed.",
-      "The latest maintainer comment agrees the stop calls should return something bounded by a timeout."
+      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T14:38:05.1052603Z.",
+      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T15:08:39.7870394Z."
     ],
     "recommended_action": "Approve the App-owned bounded shutdown design.",
-    "evaluated_at": "2026-09-09T10:17:36.337Z",
+    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
     "source_updated_at": "2026-09-08T02:59:07Z"
   },
   "fix_assessment": {
@@ -52,7 +53,8 @@
       "IExtensionService.SignalStopAsync is asynchronous.",
       "App.xaml.cs owns ConfigureServices and Dispose.",
       "Multiple DI singletons implement IDisposable.",
-      "A maintainer follow-up on 2026-09-08 explicitly asked for awaited shutdown with a timeout."
+      "Fast revalidation covered live upstream activity through 09/08/2026 02:59:07.",
+      "Fast revalidation covered live upstream activity through 2026-09-08T02:59:07.0000000Z."
     ],
     "inferences": [
       "Shutdown ownership belongs at App/process scope rather than a window.",
@@ -61,7 +63,9 @@
     "analysis": "Keeping UI cleanup on the UI thread and moving process exit after bounded asynchronous shutdown addresses both missed signals and skipped container disposal while preserving the existing explicit-exit workaround.",
     "initial_investigation": [
       "Inspected MainWindow.xaml.cs, App.xaml.cs, IExtensionService, WinRTExtensionService, and ExtensionWrapper.",
-      "Reviewed local history containing a partial ProcessShutdownCoordinator pattern."
+      "Reviewed local history containing a partial ProcessShutdownCoordinator pattern.",
+      "Fork mirror Issue 642 contains the detailed design and adversary conditions.",
+      "Revalidated selected issue metadata, labels, assignees, body, and 2 public comment(s) during the scheduled bounded run."
     ],
     "information_gaps": []
   },
@@ -169,6 +173,18 @@
       "Keeping shutdown in MainWindow cannot correctly cover process-wide exit sources."
     ]
   },
+  "mirror": {
+    "kind": "issue",
+    "fork_number": 642,
+    "fork_title": "[Issue 50349] CmdPal App is not being properly disposed",
+    "fork_state": "OPEN",
+    "url": "https://github.com/MuyuanMS/PowerToys/issues/642"
+  },
+  "adversary": {
+    "rounds": 1,
+    "verdict": "No blocking objections if shutdown ownership is App-level, bounded, and idempotent.",
+    "notes": "A fire-and-forget call in MainWindow remains unacceptable."
+  },
   "actions": [
     {
       "type": "approve_design",
@@ -179,33 +195,12 @@
       }
     }
   ],
-  "generated_at": "2026-09-09T10:17:36.337Z",
+  "generated_at": "2026-09-11T15:08:39.7870394Z",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Command Palette"
   ],
-  "assignees": [],
-  "design_decision": {
-    "status": "selected",
-    "reason": "Single best implementation-grade design in this bounded batch: the bug is directly visible in source and no reporter evidence gap remains."
-  },
-  "confidence": {
-    "score": 88,
-    "level": "green",
-    "rationale": "The asynchronous call, immediate exit, App disposal path, and service registrations are directly confirmed."
-  },
-  "mirror": {
-    "repository": "MuyuanMS/PowerToys",
-    "number": 642,
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/642",
-    "status": "OPEN"
-  },
-  "adversarial_review": {
-    "rounds": 1,
-    "conclusion": "No blocking objections if shutdown ownership is App-level, idempotent, and timeout-bounded.",
-    "non_blocking_notes": [
-      "Keep UI-affine cleanup in MainWindow and service/provider cleanup in App."
-    ]
-  }
+  "assignees": null,
+  "comments": 2
 }

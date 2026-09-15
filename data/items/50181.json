@@ -1,184 +1,179 @@
 {
   "schemaVersion": 5,
-  "id": "pr-50181",
   "number": 50181,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "automation",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-10T07:19:25.6110178Z",
-  "evaluated_at": "2026-09-10T07:19:25.6110178Z",
+  "generated_at": "2026-09-14T16:04:38.264334Z",
+  "evaluated_at": "2026-09-14T16:04:38.264334Z",
   "source_updated_at": "2026-09-08T19:43:32Z",
   "head_sha": "362cf97520b8b455006dd2018c0e6e622d79d271",
   "title": "CmdPal: Icons (1/n) - Add opt-in icon loading diagnostics",
   "url": "https://github.com/microsoft/PowerToys/pull/50181",
-  "repository": "microsoft/PowerToys",
-  "author": "jiripolasek",
-  "authorAssociation": "COLLABORATOR",
-  "isCommunity": false,
-  "state": "OPEN",
-  "draft": false,
-  "processVerdict": "proceed",
-  "confidence": "High",
-  "summary": "The submitted review after the prior request was consumed. Three supported follow-ups were fixed and validated, and a fresh Copilot review was requested at 2026-09-10T07:18:27.1615659Z. The required immediate check found no submitted post-request review, so this current-head review remains resumable at waiting_copilot with no public action exposed.",
+  "summary": "The fork-side Copilot loop is converged with five review passes and zero unresolved Copilot threads. The exact upstream head still lacks five current-head correctness fixes; three are suggestion-safe and two require coordinated changes. A REQUEST_CHANGES review is drafted and awaiting explicit approval.",
   "status": {
-    "glyph": "waiting",
-    "label": "Waiting for fresh Copilot review",
-    "detail": "The validated review head is 8351a5665de5487943c36c04eb5031f6e40256c5. A fresh Copilot review was requested at 2026-09-10T07:18:27.1615659Z, and the immediate check found no newer submitted review."
+    "glyph": "📝",
+    "label": "Review ready — five requests drafted",
+    "detail": "Upstream head 362cf97520b8b455006dd2018c0e6e622d79d271 is unchanged. Fork PR 496 is converged at 8351a5665de5487943c36c04eb5031f6e40256c5; exact upstream-head candidate validation passed, but the upstream tree still needs the drafted action."
   },
   "next_action": {
-    "glyph": "waiting",
-    "label": "Consume the outstanding Copilot review",
-    "reason": "On the next scheduled run, inspect reviews submitted after 2026-09-10T07:18:27.1615659Z for review PR 496 before requesting anything else. Process any findings, or complete convergence if the review is clean."
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "Nothing may be posted upstream until explicit approval and a final freshness check."
   },
+  "actions": [
+    {
+      "id": "post-review-50181",
+      "type": "post_review",
+      "label": "Post the selected requests as REQUEST_CHANGES",
+      "primary": true,
+      "confirm": true,
+      "review": {
+        "event": "COMMENT",
+        "pr": 50181,
+        "head_sha": "362cf97520b8b455006dd2018c0e6e622d79d271",
+        "body_prefix": "Thanks for the detailed diagnostics foundation and the accompanying measurement methodology. The reported checks are green; the requests below focus on correctness of the new telemetry under failure and concurrency conditions."
+      },
+      "note": "Mandatory: refresh the upstream head, checks, comments, reviews, and threads; validate the pinned payload; and require explicit approval before publishing."
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
+    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
+    "Hold the review without changing labels, review state, or PR state"
+  ],
+  "proposed_comments": [
+    {
+      "id": "case-insensitive-shell-binary-classification",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify Windows shell extensions case-insensitively",
+      "confidence": {
+        "score": 98,
+        "rationale": "The classifier compares Windows shell extensions with StringComparison.Ordinal, while Windows file extensions are case-insensitive; the same path is therefore categorized differently based only on casing."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnostics.cs",
+      "line": 135,
+      "startLine": 133,
+      "side": "RIGHT",
+      "body": "### Classify Windows shell extensions case-insensitively\n\n**Severity:** `medium`\n\nWindows shell paths commonly contain uppercase extensions such as `APP.EXE,0`. The ordinal comparisons make those inputs fall through to `String`, so the input-kind aggregates do not describe the loader path consistently. Use the same case-insensitive extension rule as the icon loader.\n\n```suggestion\n            if (path.EndsWith(\".exe\", StringComparison.OrdinalIgnoreCase)\n                || path.EndsWith(\".dll\", StringComparison.OrdinalIgnoreCase)\n                || path.EndsWith(\".lnk\", StringComparison.OrdinalIgnoreCase))\n```"
+    },
+    {
+      "id": "record-stream-load-failures",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Record failed icon streams as failures",
+      "confidence": {
+        "score": 97,
+        "rationale": "The catch path returns null after an exception, and the caller completes the measurement afterward; without an explicit failure transition this path is counted as an empty result."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoaderService.cs",
+      "line": 247,
+      "side": "RIGHT",
+      "body": "### Record failed icon streams as failures\n\n**Severity:** `medium`\n\nWhen opening or decoding an icon stream throws, the catch below returns `null` and the later unconditional completion records the load as empty. That hides the failures this diagnostics pass is intended to measure; explicitly transition the measurement to `Failed` from that catch path while preserving the existing null-return behavior."
+    },
+    {
+      "id": "announce-diagnostics-status",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Announce diagnostics status changes",
+      "confidence": {
+        "score": 94,
+        "rationale": "The status TextBlock is updated after Start, Stop, Reset, and Copy, but no live-region setting is present in the changed markup."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Settings/InternalPage.xaml",
+      "line": 117,
+      "side": "RIGHT",
+      "body": "### Announce diagnostics status changes\n\n**Severity:** `low`\n\nThis text is the only feedback for starting, stopping, resetting, and copying a recording. Mark it as a polite live region so assistive-technology users receive those state changes without having to navigate back to the control.\n\n```suggestion\n                                AutomationProperties.LiveSetting=\"Polite\"\n                                MaxWidth=\"440\"\n```"
+    },
+    {
+      "id": "associate-winning-inflight-measurement",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Associate the winning in-flight load before publishing it",
+      "confidence": {
+        "score": 86,
+        "rationale": "The current code publishes the task through the in-flight dictionary before creating and linking its load measurement, so a fast completion or concurrent request can observe an unassociated winner and distort demand and promotion metrics."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/CachedIconSourceProvider.cs",
+      "line": 57,
+      "side": "RIGHT",
+      "body": "### Associate the winning in-flight load before publishing it\n\n**Severity:** `medium`\n\nThe winning request is inserted into the in-flight dictionary before its load measurement is created and linked. A fast worker or concurrent caller can therefore observe the task before the diagnostic association exists, inflating speculative/promotion counts and undercounting demanded work. Create the measurement and the task together, then publish one immutable in-flight record so every observer sees the same diagnostic state."
+    },
+    {
+      "id": "close-recording-admission-at-cutoff",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Close recording admission atomically at Stop",
+      "confidence": {
+        "score": 91,
+        "rationale": "Recording methods check the stop state separately from their counter mutations, while Stop captures the cutoff and report snapshots under a different synchronization boundary; a recorder can pass the check and mutate after the cutoff."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs",
+      "line": 206,
+      "side": "RIGHT",
+      "body": "### Close recording admission atomically at Stop\n\n**Severity:** `high`\n\nThe current stop check is separate from the counter and histogram mutations. A recorder can pass `IsStopped`, pause while `Stop()` captures the end timestamp, and then mutate the session while `CreateReport()` is freezing the final totals. Make stopping wait for in-progress recorders, or use one immutable synchronized snapshot, so samples cannot be admitted after the reported cutoff."
+    }
+  ],
   "phase0": {
-    "verdict": "proceed",
+    "authorAssociation": "COLLABORATOR",
     "disposition": "Proceed",
-    "author": "jiripolasek",
-    "author_association": "COLLABORATOR",
-    "bar": "repository collaborator; routine community-contributor process review skipped",
-    "who_owes_next": "Review automation",
-    "owes": "automation",
-    "gates_tripped": [],
-    "processAsks": [],
-    "summary": "The PR remains open, non-draft, collaborator-authored, mergeable, approved, and green on all reported checks."
+    "processGates": "Skipped for collaborator author; reported upstream checks are green."
   },
-  "judgment": {
-    "status": "waiting_copilot",
-    "rationale": "The previous post-request Copilot review was consumed, its supported findings were addressed and validated, and the newly requested review has not yet been submitted.",
-    "evidence": [
-      "The prior review request was recorded at 2026-09-09T09:36:43Z and Copilot submitted review 5152515494 at 2026-09-09T09:42:14Z on head 6956968ec121aef33eac1a9f3c64c31d8ac665e6.",
-      "The consumed review had zero published comments and three suppressed findings covering cached-load demand attribution, failed-stream classification, and status live-region accessibility.",
-      "Commit 8351a5665de5487943c36c04eb5031f6e40256c5 records winning cached requests before enqueue, marks caught stream failures as failed diagnostics, and adds a polite live region to the status text.",
-      "The cached-provider regression test now verifies demanded queue attribution without a speculative promotion.",
-      "Debug x64 builds passed for build-essentials, CmdPalModuleInterface, Microsoft.CmdPal.UI, and Microsoft.CmdPal.UI.UnitTests.",
-      "Microsoft.CmdPal.UI.UnitTests passed 27 of 27 tests.",
-      "The review local checkout is clean, all expected build outputs exist, and unresolved Copilot threads are zero.",
-      "A fresh Copilot review was requested at 2026-09-10T07:18:27.1615659Z; the immediate check found no submitted review after that timestamp.",
-      "No writes were made to microsoft/PowerToys."
+  "fork_pr": {
+    "number": 496,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/496",
+    "state": "OPEN",
+    "head_sha": "8351a5665de5487943c36c04eb5031f6e40256c5"
+  },
+  "fork_branch": "pr-iterate/50181",
+  "freshness": {
+    "evaluated_at": "2026-09-14T16:04:38.264334Z",
+    "head_sha": "362cf97520b8b455006dd2018c0e6e622d79d271",
+    "head_updated_at": "2026-09-08T19:43:32Z",
+    "status": "fresh",
+    "latest_copilot_review_at": "2026-09-10T07:24:21Z",
+    "unresolved_copilot_threads": 0
+  },
+  "verification": {
+    "result": "passed",
+    "summary": "Fork CmdPal UI build and exact upstream-head candidate CmdPal UI build both passed after the converged fixes were materialized; diff whitespace validation passed.",
+    "builds": [
+      "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
+      "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj"
     ],
-    "recommended_action": "Wait for and consume the already-requested Copilot review before exposing any upstream review action.",
-    "evaluated_at": "2026-09-10T07:19:25.6110178Z",
-    "source_updated_at": "2026-09-08T19:43:32Z"
+    "latest_targeted_validation": "On 2026-09-14, the affected CmdPal UI project built successfully on both the converged fork tree and the clean exact-upstream-head candidate with the converged fix patch applied.",
+    "build_note": "The environment required clearing injected GIT_CONFIG_* variables for vcpkg and setting POWERTOYS_DISABLE_SPECTRE=1; no repository files were changed for those workarounds."
   },
-  "proposed_comments": [],
-  "actions": [],
-  "publicPayload": {
-    "comments": []
-  },
-  "blockers": [],
+  "needs_revalidation": false,
+  "confidence": "High",
+  "test_instructions": [
+    "Use the affected CmdPal UI Debug build from the review checkout when reproducing icon diagnostics.",
+    "Enable icon diagnostics from the internal CmdPal settings page, exercise shell paths with mixed-case extensions, and inspect input-kind counts.",
+    "Exercise a failed stream load and confirm it is counted as Failed rather than Empty.",
+    "Start and stop recording while requests are in flight, then confirm the report does not include post-cutoff mutations."
+  ],
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "mergeable": true,
-    "mergeable_state": "clean",
-    "review_decision": "APPROVED",
     "head_sha": "362cf97520b8b455006dd2018c0e6e622d79d271",
+    "base_sha": "071c25e115e8097117e26f6fcfe9901301307f7a",
+    "commit_count": 2,
     "updated_at": "2026-09-08T19:43:32Z",
     "changed_file_count": 45,
+    "additions": 3922,
+    "deletions": 41,
     "issue_comment_count": 1,
+    "review_comment_count": 2,
     "review_count": 3,
-    "labels": [
-      "Needs-Author-Feedback",
-      "Product-Command Palette"
-    ],
     "reported_checks": {
-      "status": "passed",
-      "failed": 0,
+      "total": 6,
+      "successful": 6,
+      "failing": 0,
       "pending": 0,
-      "passed": [
-        "dependency-review",
-        "pr-intake",
-        "detect-telemetry-events",
-        "PowerToys CI",
-        "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
-        "PowerToys CI (Build arm64 Build Release_arm64)",
-        "PowerToys CI (Build arm64 Resolve affected UI test projects)",
-        "PowerToys CI (Build x64 Build Release_x64)",
-        "PowerToys CI (Build x64 Resolve affected UI test projects)",
-        "license/cla"
-      ],
-      "summary": "All reported current-head checks are complete and successful."
+      "cla": "success"
     }
-  },
-  "freshness": {
-    "status": "current_head_pending_fresh_review",
-    "evaluated_at": "2026-09-10T07:19:25.6110178Z",
-    "head_sha": "362cf97520b8b455006dd2018c0e6e622d79d271",
-    "source_updated_at": "2026-09-08T19:43:32Z",
-    "review_head": "8351a5665de5487943c36c04eb5031f6e40256c5",
-    "head_matches_reviewed_upstream": true
-  },
-  "validation": {
-    "status": "passed_pending_external_review",
-    "configuration": "Debug x64",
-    "builds": [
-      {
-        "name": "build-essentials",
-        "result": "passed"
-      },
-      {
-        "name": "CmdPalModuleInterface.vcxproj",
-        "result": "passed"
-      },
-      {
-        "name": "Microsoft.CmdPal.UI.csproj",
-        "result": "passed"
-      },
-      {
-        "name": "Microsoft.CmdPal.UI.UnitTests.csproj",
-        "result": "passed"
-      }
-    ],
-    "tests": [
-      {
-        "name": "Microsoft.CmdPal.UI.UnitTests via vstest.console",
-        "result": "passed",
-        "passed": 27,
-        "failed": 0,
-        "skipped": 0
-      }
-    ],
-    "outputs": {
-      "powerToysExeBuilt": true,
-      "cmdPalModuleInterfaceBuilt": true,
-      "cmdPalUiBuilt": true,
-      "unitTestDllBuilt": true
-    },
-    "diff_check": "passed"
-  },
-  "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-10T07:19:25.6110178Z",
-    "reviewed_upstream_head": "362cf97520b8b455006dd2018c0e6e622d79d271",
-    "review_pr": 496,
-    "review_branch": "pr-iterate/50181",
-    "current_review_head": "8351a5665de5487943c36c04eb5031f6e40256c5",
-    "consumed_review": {
-      "request_at": "2026-09-09T09:36:43Z",
-      "review_id": 5152515494,
-      "submitted_at": "2026-09-09T09:42:14Z",
-      "reviewed_head": "6956968ec121aef33eac1a9f3c64c31d8ac665e6",
-      "published_comments": 0,
-      "suppressed_findings_processed": 3
-    },
-    "fix_commit": "8351a5665de5487943c36c04eb5031f6e40256c5",
-    "fresh_review_request_at": "2026-09-10T07:18:27.1615659Z",
-    "fresh_review_immediate_check": "no_new_review_yet",
-    "unresolved_copilot_threads": 0,
-    "review_writes": [
-      "Pushed commit 8351a5665de5487943c36c04eb5031f6e40256c5 to the durable review branch.",
-      "Requested a fresh Copilot review at 2026-09-10T07:18:27.1615659Z."
-    ],
-    "upstream_writes": []
-  },
-  "test_instructions": [
-    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-    "Open Command Palette, then go to Settings > Internal > Icon loading diagnostics and start a recording session.",
-    "Exercise icon-heavy flows, including stream-backed icons, then stop the session and copy the report.",
-    "Verify failed stream loads are counted as failed, normal cached loads do not first appear speculative, and Start, Stop, Reset, and Copy status changes are announced by a screen reader."
-  ],
-  "upstream_writes": false,
-  "dashboard_modified": false
+  }
 }
