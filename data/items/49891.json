@@ -1,34 +1,79 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "id": "pr-49891",
   "number": 49891,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-01T07:35:00Z",
-  "evaluated_at": "2026-09-01T07:35:00Z",
+  "generated_at": "2026-09-15T16:31:16.4318699+08:00",
+  "evaluated_at": "2026-09-15T16:31:16.4318699+08:00",
   "source_updated_at": "2026-09-01T07:00:13Z",
-  "url": "https://github.com/microsoft/PowerToys/pull/49891",
+  "head_sha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
   "title": "perf(settings-ui): improve startup and first-frame rendering",
+  "url": "https://github.com/microsoft/PowerToys/pull/49891",
   "author": "niels9001",
   "authorAssociation": "MEMBER",
   "isCommunity": false,
   "state": "OPEN",
   "draft": false,
-  "head_sha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
   "confidence": "High",
-  "summary": "The existing fork review was refreshed for the new upstream head. A fresh Copilot pass reviewed all 12 changed files with zero new comments, all Copilot threads are resolved, and targeted local builds and 8 focused tests passed. Three current-head lifecycle and benchmark findings remain for maintainer review while upstream CI finishes.",
+  "processVerdict": "proceed",
+  "summary": "The saved fork review was resumed without re-mirroring or changing its history. The existing completed Copilot review was consumed first, the upstream head remains unchanged, all seven reported upstream checks are now green, and exact-head Debug builds passed. Three current-head lifecycle and benchmark correctness findings remain drafted for maintainer approval.",
   "status": {
-    "glyph": "!",
-    "label": "Review comments drafted",
-    "detail": "Three supported findings are pinned to upstream head a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80. Fork review convergence and local validation passed; upstream x64 and arm64 CI are still in progress."
+    "glyph": "ACTION",
+    "label": "Current-head request-changes draft ready",
+    "detail": "Fork PR 392 remains converged at 4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab with zero published comments in its latest Copilot review and zero unresolved Copilot threads. Exact upstream head a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80 and the converged fork both passed x64 Debug essentials and Settings UI builds; the fork's eight focused activation tests passed."
   },
   "next_action": {
-    "glyph": ">",
-    "label": "Review drafted comments",
-    "reason": "The comments are ready for maintainer selection. Recheck the upstream head and CI before posting."
+    "glyph": "ACTION",
+    "label": "Approve, edit, or hold the three drafted findings",
+    "reason": "After explicit maintainer approval, perform the publisher freshness check and submit the selected current-head request-changes review."
+  },
+  "needs_revalidation": false,
+  "phase0": {
+    "author": "niels9001",
+    "author_association": "MEMBER",
+    "disposition": "Proceed",
+    "processGates": "Skipped for member author; no process ask is required.",
+    "evidence": [
+      "The PR remains open and non-draft.",
+      "The license/cla check completed successfully.",
+      "Both x64 and arm64 PowerToys CI builds completed successfully."
+    ]
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
+    "base_sha": "73c47dbf75de10a1a922ea5779621bbedd558f01",
+    "updated_at": "2026-09-01T07:00:13Z",
+    "merge_state": "BLOCKED",
+    "review_decision": "REVIEW_REQUIRED",
+    "reported_checks": {
+      "total": 7,
+      "failing": 0,
+      "pending": 0,
+      "successful": 7,
+      "checks": [
+        "PowerToys CI",
+        "PowerToys CI (Build Command Palette Toolkit SDK Build SDK)",
+        "PowerToys CI (Build arm64 Build Release_arm64)",
+        "PowerToys CI (Build arm64 Resolve affected UI test projects)",
+        "PowerToys CI (Build x64 Build Release_x64)",
+        "PowerToys CI (Build x64 Resolve affected UI test projects)",
+        "license/cla"
+      ]
+    }
+  },
+  "freshness": {
+    "previous_checkpoint_at": "2026-09-01T07:35:00Z",
+    "checkpoint_at": "2026-09-15T16:31:16.4318699+08:00",
+    "checked_at": "2026-09-15T16:31:16.4318699+08:00",
+    "upstream_head": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
+    "source_updated_at": "2026-09-01T07:00:13Z",
+    "staleExpectation": "Expected fresh until the upstream head, updatedAt, checks, conversation, review state, or fork review threads change. Any such activity requires a new freshness pass before publication; the approved publisher must still perform its mandatory immediate pre-submit check."
   },
   "proposed_comments": [
     {
@@ -38,15 +83,11 @@
       "title": "Prevent losing activation callbacks from reclaiming focus",
       "confidence": {
         "score": 95,
-        "rationale": "The content-loaded callback and fallback timer can both complete after activation begins, allowing a stale callback to reactivate the window after another path has won."
+        "rationale": "The upstream content-loaded callback queues activation while the fallback callback can activate synchronously; stopping the timer and unsubscribing cannot invalidate a callback that was already queued. The converged fork adds a shared pending-state guard and passes both callback-order race tests."
       },
       "body": "### Prevent losing activation callbacks from reclaiming focus\n\n**Severity:** `medium`\n\nThe content-loaded and fallback activation paths can both outlive the activation attempt. Please ensure the losing callback is invalidated before it can call `Activate()` or reclaim focus after the winning path has completed. Add a focused race test that invokes both callbacks in either order and verifies only the winner can show or focus the Settings window.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "path": "src/settings-ui/Settings.UI/MainWindow.xaml.cs",
-      "start_line": 215,
-      "line": 244,
-      "side": "RIGHT"
+      "out_of_diff_reason": "The safe correction coordinates MainWindow event dispatch, timer cancellation, shared activation state, and new callback-order tests; no single current RIGHT-side replacement is independently safe.",
+      "disposition": "proposed"
     },
     {
       "id": "settings-benchmark-process-identity",
@@ -55,15 +96,11 @@
       "title": "Track the benchmarked Settings instance instead of any Settings process",
       "confidence": {
         "score": 99,
-        "rationale": "Hidden OOBE or other Settings processes can satisfy the current process checks and cause cleanup to restore the wrong pre-existing runner state."
+        "rationale": "The upstream snapshot records only whether any PowerToys.Settings process exists and later chooses a newly observed process by process-name presence. Hidden OOBE or other Settings processes can therefore be mistaken for the benchmark target or for the visible instance that cleanup should restore."
       },
       "body": "### Track the benchmarked Settings instance explicitly\n\n**Severity:** `medium`\n\nThe benchmark currently treats any matching Settings process as the launched window, which can confuse a hidden OOBE/What's New process with the instance under test and later restore the wrong runner state. Please capture the launched process/window identity and the exact pre-existing visible Settings instances, then use those identities for readiness checks and cleanup rather than process-name presence.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "path": "tools/performance/settings/Measure-SettingsPerformance.ps1",
-      "start_line": 359,
-      "line": 616,
-      "side": "RIGHT"
+      "out_of_diff_reason": "Correct identity tracking spans pre-run runner/window capture, each startup iteration's process discovery, readiness checks, and final restoration across the benchmark script.",
+      "disposition": "proposed"
     },
     {
       "id": "settings-benchmark-launch-failure-restore",
@@ -72,33 +109,132 @@
       "title": "Restore stopped runners when Settings launch fails",
       "confidence": {
         "score": 98,
-        "rationale": "The benchmark stops existing runners before launch, but the launch-failure path can exit without restoring them."
+        "rationale": "The upstream benchmark stops all existing runners before starting the target runner, but assigns startedTargetRunner only after Start-Process returns. If launch throws, finally skips the restoration branch and leaves the previously active runners stopped."
       },
       "body": "### Restore prior runners on launch failure\n\n**Severity:** `medium`\n\nIf launching Settings fails after the benchmark stops existing PowerToys runners, the failure path can leave the user's prior runners stopped. Please put runner restoration in failure-safe cleanup that executes for launch errors as well as successful measurements, while preserving which runner instances were originally active.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "path": "tools/performance/settings/Measure-SettingsPerformance.ps1",
-      "start_line": 378,
-      "line": 382,
-      "side": "RIGHT"
+      "out_of_diff_reason": "Failure-safe restoration requires coordinated changes to the pre-launch state capture and the finally cleanup path; a localized replacement at the Start-Process call would not preserve all prior runner states safely.",
+      "disposition": "proposed"
     }
   ],
-  "actions": [],
-  "judgment": {
-    "status": "review_drafted",
-    "rationale": "The new upstream head was mirrored into the existing fork review. The fresh final-head Copilot pass generated zero comments and zero Copilot threads remain unresolved. Targeted local validation passed, and three supported findings remain in the upstream changes.",
-    "evidence": [
-      "Upstream PR 49891 is open at a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80.",
-      "Fork PR 392 is open at 4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab with a clean 12-file review diff.",
-      "The fresh Copilot review submitted at 2026-09-01T07:30:48Z reviewed 12/12 files and generated zero new comments.",
-      "Seven stale-base Copilot comments were replied to and resolved; zero Copilot threads remain unresolved.",
-      "x64 Debug essentials, runner, Settings UI, and Settings UI unit-test builds passed.",
-      "DeferredWindowActivationTests passed 8/8 and the PowerShell benchmark script parsed successfully.",
-      "Upstream x64 and arm64 CI builds were still in progress at the final snapshot."
-    ],
-    "recommended_action": "Review the three drafted comments and wait for upstream CI to complete before any merge decision.",
-    "evaluated_at": "2026-09-01T07:35:00Z",
-    "source_updated_at": "2026-09-01T07:00:13Z"
+  "actions": [
+    {
+      "id": "request-changes-49891",
+      "type": "request_changes",
+      "label": "Request changes with three separate general PR conversation comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Companion-only review: posts three separate general PR conversation comments, not inline code comments. The fixes span coordinated lifecycle or benchmark state changes and are not safely click-to-apply. This is a drafted maintainer action only; publish solely through the approved review publisher after its mandatory freshness check.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 49891,
+        "pullRequest": 49891,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
+        "body_prefix": "Thanks for the Settings startup improvements and benchmark coverage. Before this can merge, please make the deferred activation callbacks mutually exclusive so a losing callback cannot reclaim focus, track the exact Settings process/window identities used by the benchmark, and guarantee that every previously active runner is restored even when launching the benchmark target fails."
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
+      "result": "passed",
+      "configuration": "x64 Debug",
+      "validated_at": "2026-09-15T16:31:16.4318699+08:00",
+      "commands": [
+        "<PowerToysUpstreamCheckout>\\tools\\build\\build-essentials.cmd with POWERTOYS_DISABLE_SPECTRE=1 (exit 0)",
+        "PowerShell parser validation of tools\\performance\\settings\\Measure-SettingsPerformance.ps1 (0 errors)"
+      ],
+      "outputs": [
+        "<PowerToysUpstreamCheckout>\\x64\\Debug\\PowerToys.exe was produced.",
+        "Runner build completed with 0 errors.",
+        "Settings UI build completed with 0 errors and one pre-existing CsWinRT1028 warning."
+      ]
+    },
+    "fork_head": {
+      "head_sha": "4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab",
+      "result": "passed",
+      "configuration": "x64 Debug",
+      "validated_at": "2026-09-15T16:31:16.4318699+08:00",
+      "commands": [
+        "<PowerToysReviewCheckout>\\tools\\build\\build-essentials.cmd with POWERTOYS_DISABLE_SPECTRE=1 (exit 0)",
+        "<PowerToysReviewCheckout>\\src\\settings-ui\\Settings.UI.UnitTests\\..\\..\\..\\tools\\build\\build.cmd (exit 0)",
+        "vstest.console.exe Settings.UI.UnitTests.dll /TestCaseFilter:FullyQualifiedName~DeferredWindowActivationTests (exit 0)",
+        "PowerShell parser validation of tools\\performance\\settings\\Measure-SettingsPerformance.ps1 (0 errors)"
+      ],
+      "tests": {
+        "suite": "DeferredWindowActivationTests",
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "outputs": [
+        "<PowerToysReviewCheckout>\\x64\\Debug\\PowerToys.exe was produced.",
+        "Runner and Settings UI builds completed with 0 errors.",
+        "All eight callback-order and lifecycle tests passed."
+      ]
+    },
+    "suggestionPatch": {
+      "result": "not_applicable",
+      "appliedItemIds": [],
+      "minimalRangesReviewed": true,
+      "commands": [],
+      "reason": "All three findings require coordinated multi-site lifecycle or benchmark changes and are drafted as companion requests without apply-ready suggestion blocks."
+    }
+  },
+  "internalEvidence": {
+    "validation": {
+      "upstreamHead": {
+        "headSha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
+        "result": "passed",
+        "build": "x64 Debug essentials and Settings UI"
+      },
+      "suggestionPatch": {
+        "result": "not_applicable",
+        "appliedItemIds": [],
+        "minimalRangesReviewed": true
+      }
+    },
+    "forkOnlyDelta": {
+      "accounted": true,
+      "files": [
+        "src/settings-ui/Settings.UI.UnitTests/SettingsXAML/DeferredWindowActivationTests.cs",
+        "src/settings-ui/Settings.UI/SettingsXAML/DeferredWindowActivation.cs",
+        "src/settings-ui/Settings.UI/SettingsXAML/MainWindow.xaml.cs",
+        "tools/performance/settings/Measure-SettingsPerformance.ps1"
+      ],
+      "note": "The fork-only product and test changes directly demonstrate and correct the three drafted upstream findings. The unrelated .github/workflows/issue-triage.lock.yml merge-only delta is review-base noise and is not represented as an upstream finding."
+    }
+  },
+  "workflow": {
+    "previous_phase": "review_drafted",
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-15T16:31:16.4318699+08:00",
+    "previous_checkpoint_at": "2026-09-01T07:35:00Z",
+    "resume_action": "maintainer-approval-or-freshness-recheck",
+    "fork_pr": 392,
+    "fork_branch": "pr-iterate/49891",
+    "fork_reviewed_head_sha": "4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab",
+    "reviewed_upstream_head_sha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
+    "latest_copilot_review_at": "2026-09-01T07:30:48Z",
+    "latest_copilot_review_commit_id": "4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "existing_review_consumed": true,
+    "duplicate_review_request_made": false,
+    "advancement_evidence": [
+      "Preserved the saved fork trace: fork PR 392, branch pr-iterate/49891, head 4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab.",
+      "Consumed the existing completed Copilot review before considering any new request.",
+      "Confirmed the latest Copilot review had zero published comments and zero unresolved threads.",
+      "Confirmed the upstream head remains a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80.",
+      "Confirmed all seven reported upstream checks are complete and successful.",
+      "Built the exact upstream head successfully.",
+      "Rebuilt the unchanged converged fork head successfully.",
+      "Passed all eight focused DeferredWindowActivationTests.",
+      "Revalidated all three findings against the exact current upstream source.",
+      "Added a current-head REQUEST_CHANGES action requiring explicit maintainer approval."
+    ]
   },
   "fork_pr": {
     "number": 392,
@@ -112,22 +248,14 @@
     "latest_submitted_at": "2026-09-01T07:30:48Z",
     "latest_commit_id": "4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab",
     "latest_new_comments": 0,
-    "unresolved_threads": 0
+    "published_inline_comments": 0,
+    "unresolved_threads": 0,
+    "review_count": 8,
+    "request_reused": true,
+    "note": "The durable completed review was consumed first. No new Copilot request and no polling were performed."
   },
-  "verification": {
-    "result": "passed_with_upstream_ci_pending",
-    "configuration": "x64 Debug",
-    "builds": [
-      "PowerToys essentials and runner",
-      "Settings UI",
-      "Settings UI unit tests"
-    ],
-    "tests": "DeferredWindowActivationTests passed 8/8; PowerShell parser passed.",
-    "artifact": "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe"
-  },
-  "workflow": {
-    "phase": "review_drafted",
-    "checkpoint_at": "2026-09-01T07:35:00Z"
-  },
-  "needs_revalidation": true
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, cross-references, commits, pushes, or other mutations were made to microsoft/PowerToys."
+  }
 }
