@@ -3,7 +3,7 @@
   "number": 49724,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-15T17:52:00Z",
@@ -24,9 +24,77 @@
     "reason": "Four findings are pinned to the unchanged upstream head. No upstream write has occurred."
   },
   "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "runner-cross-integrity",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Validate the Runner safely across integrity levels",
+      "path": "src/modules/peek/Peek.UI/PeekXAML/App.xaml.cs",
+      "start_line": 221,
+      "line": 221,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Validate the Runner safely across integrity levels\n\n**Severity:** `high`\n\nPeek is launched non-elevated while the supplied Runner PID can belong to an elevated `PowerToys.exe`. Managed process inspection can fail across integrity levels, causing a normal Runner launch to exit with code 2.\n\nValidate the Runner through `PROCESS_QUERY_LIMITED_INFORMATION` and `QueryFullProcessImageName`, or another Runner-owned authenticated handle path that works across integrity levels.\n\n**Verification:** Launch elevated PowerToys with non-elevated Peek and confirm the Runner PID is accepted, while unrelated and terminated processes are rejected.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current managed process inspection crosses an integrity boundary; the validated fork correction uses a limited-information native query."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "cli-termination-event-registration",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Register the termination event for CLI launches",
+      "path": "src/modules/peek/Peek.UI/PeekXAML/App.xaml.cs",
+      "start_line": 126,
+      "line": 126,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Register the termination event for CLI launches\n\n**Severity:** `high`\n\nThe successful CLI branch returns before `Constants.TerminatePeekEvent` is registered. CLI-launched Peek can therefore remain alive after the Runner disables Peek because it never receives the common termination event.\n\nDo not return after successful CLI initialization; allow the shared event-loop registration to run.\n\n**Verification:** Launch Peek through the CLI, disable or terminate Peek from the Runner, and confirm the UI process exits.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The early return directly bypasses common termination registration; the fork correction builds successfully."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "empty-cli-path",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Reject empty CLI path arguments",
+      "path": "src/modules/peek/Peek.UI/PeekXAML/App.xaml.cs",
+      "start_line": 202,
+      "line": 202,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Reject empty CLI path arguments\n\n**Severity:** `medium`\n\n`Path.GetFullPath` accepts an empty argument and resolves it to the current working directory. An empty quoted CLI argument can therefore preview the current directory instead of being rejected.\n\nReject null, empty, and whitespace-only arguments before calling `Path.GetFullPath`.\n\n**Verification:** Cover empty, whitespace-only, relative, and valid absolute paths and confirm only valid existing targets proceed.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The .NET path API's empty-string behavior is deterministic and the validated fork correction adds the required guard."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49724",
+      "type": "request_changes",
+      "label": "Request changes with three current-head Peek findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49724,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "531e116c4586dd3b54a3de7e9a27af5864587944"
+      },
+      "note": "Draft only. Three inline findings require explicit maintainer approval; no public write has occurred."
+    }
+  ],
   "workflow": {
     "phase": "review_drafted",
     "previous_phase": "review_in_progress",
