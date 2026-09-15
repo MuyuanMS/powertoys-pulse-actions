@@ -1,11 +1,12 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [string]$Dashboard,
-    [string]$ExpectedRepository = 'MuyuanMS/powertoys-pulse-actions'
+    [string]$Dashboard
 )
 
 $ErrorActionPreference = 'Stop'
+$expectedRepository = 'MuyuanMS/powertoys-pulse-actions'
+$expectedBranch = 'main'
 $Dashboard = (Resolve-Path $Dashboard).Path
 if (-not (Test-Path (Join-Path $Dashboard '.git'))) {
     throw "Dashboard path is not a Git repository: $Dashboard"
@@ -23,12 +24,22 @@ $repository = $originUrl `
     -replace '\.git$', '' `
     -replace '/$', ''
 
-if ($repository -ine $ExpectedRepository) {
-    throw "Refusing dashboard update for '$repository'. The canonical target is '$ExpectedRepository'."
+if ($repository -ine $expectedRepository) {
+    throw "Refusing dashboard update for '$repository'. The canonical target is '$expectedRepository'."
+}
+
+$branch = (& git -C $Dashboard branch --show-current 2>$null).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($branch)) {
+    throw "Refusing dashboard update from a detached HEAD. The canonical publication branch is '$expectedBranch'."
+}
+
+if ($branch -cne $expectedBranch) {
+    throw "Refusing dashboard update from branch '$branch'. The canonical publication branch is '$expectedBranch'."
 }
 
 [pscustomobject]@{
     dashboard = $Dashboard
     repository = $repository
+    branch = $branch
     origin_url = $originUrl
 }

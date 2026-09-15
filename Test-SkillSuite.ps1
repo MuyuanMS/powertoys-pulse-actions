@@ -196,6 +196,7 @@ if (-not (Test-Path $targetGuard)) {
   try {
     & $targetGuard -Dashboard $PSScriptRoot | Out-Null
     $wrongTarget = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-wrong-target-$PID"
+    $wrongBranch = Join-Path ([System.IO.Path]::GetTempPath()) "powertoys-wrong-branch-$PID"
     New-Item -ItemType Directory -Force -Path $wrongTarget | Out-Null
     & git -C $wrongTarget init --quiet
     & git -C $wrongTarget remote add origin https://github.com/MuyuanMS/powertoys-triage-board.git
@@ -207,11 +208,25 @@ if (-not (Test-Path $targetGuard)) {
         throw
       }
     }
+    New-Item -ItemType Directory -Force -Path $wrongBranch | Out-Null
+    & git -C $wrongBranch init --quiet --initial-branch feature/dashboard-preview
+    & git -C $wrongBranch remote add origin https://github.com/MuyuanMS/powertoys-pulse-actions.git
+    try {
+      & $targetGuard -Dashboard $wrongBranch | Out-Null
+      $errors.Add('Canonical dashboard target guard accepted a non-main branch.')
+    } catch {
+      if ($_.Exception.Message -notlike "Refusing dashboard update from branch*") {
+        throw
+      }
+    }
   } catch {
     $errors.Add("Canonical dashboard target validation failed: $($_.Exception.Message)")
   } finally {
     if ($wrongTarget) {
       Remove-Item $wrongTarget -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    if ($wrongBranch) {
+      Remove-Item $wrongBranch -Recurse -Force -ErrorAction SilentlyContinue
     }
   }
 }

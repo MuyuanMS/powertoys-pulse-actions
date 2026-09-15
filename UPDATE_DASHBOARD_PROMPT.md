@@ -23,9 +23,14 @@ Before starting:
    `pwsh -NoProfile -File .\\powertoys-pulse-actions\\Install-Skills.ps1`.
    Then reload skills or restart Copilot CLI before continuing.
 4. Use `https://github.com/MuyuanMS/powertoys-pulse-actions` as both the
-   skill suite and action-artifact source. Locate or clone the PowerToys Pulse
-   repository/preview branch you are authorized to update. Preserve unrelated
-   local changes in both checkouts.
+   skill suite and action-artifact source. Use a dedicated checkout whose
+   checked-out branch is exactly `main`, set `POWERTOYS_DASHBOARD_PATH` to that
+   checkout, fetch `origin`, and fast-forward it with
+   `git pull --ff-only origin main`. Abort if that checkout is dirty, detached,
+   divergent, or on any other branch; never switch or reuse a Pulse preview,
+   feature, or development checkout for action-data publication. Locate or
+   clone the separate PowerToys Pulse repository/preview branch you are
+   authorized to update. Preserve unrelated local changes in both checkouts.
 5. Verify the authenticated operator has read access to
    `microsoft/PowerToys`, write access to their PowerToys fork and the dashboard
    repository, and Microsoft project 2445 access if project synchronization is
@@ -70,7 +75,10 @@ rules. In particular:
   this run in the started email, and reply to that original email at completion
   or at the 30-minute mark if the run is still active;
 - synchronize project state when permissions are available;
-- commit and push only action-artifact data to the artifact repository;
+- immediately before committing, rerun
+  `Assert-CanonicalDashboardTarget.ps1`; commit action-artifact data only on
+  the canonical checkout's `main` branch and push explicitly with
+  `git push origin main:main`, never `git push origin HEAD`;
 - synchronize those artifacts into PowerToys Pulse with
   `scripts/sync-triage-artifacts.mjs`, then lint/build Pulse;
 - publish or dispatch the approved Pulse preview/Pages workflow. Treat Pulse as
