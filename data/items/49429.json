@@ -1,30 +1,252 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-49429",
   "number": 49429,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-09-14T02:40:16.0081946Z",
-  "evaluated_at": "09/07/2026 09:22:09",
-  "source_updated_at": "2026-09-04T09:55:44+08:00",
-  "head_sha": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
-  "title": "[CmdPal] Add tabbed pages to Command Palette",
   "url": "https://github.com/microsoft/PowerToys/pull/49429",
+  "title": "[CmdPal] Add tabbed pages to Command Palette",
+  "author": "michaeljolley",
+  "state": "OPEN",
+  "draft": false,
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "generated_at": "2026-09-15T07:46:44.8588733Z",
+  "evaluated_at": "2026-09-15T07:46:44.8588733Z",
+  "source_updated_at": "2026-09-04T01:55:44Z",
+  "head_sha": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
+  "summary": "The preserved fork review loop is converged on fork head eb2bfbe8e356c728ef2cc9f492a79d3e0c82f26e: the latest Copilot review generated zero new comments and all 19 Copilot threads are resolved. The exact upstream head builds and its 9 existing tabbed-page tests pass, while the converged review tree builds and all 18 expanded tests pass. Six current-head findings remain because the required fixes are not present upstream.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Current live head a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
+    "glyph": "DRAFT",
+    "label": "Review complete - approval required",
+    "detail": "Consumed the existing zero-comment Copilot review on fork PR 691 without issuing another request. Exact upstream head a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf and the converged fork tree both passed affected CmdPal builds; targeted tabbed-page tests passed 9/9 upstream and 18/18 on the corrected tree. No upstream write has occurred."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-14T02:40:16.0081946Z"
+  "next_action": {
+    "glyph": "DRAFT",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The draft contains one validated inline suggestion and five coordinated general review requests, pinned to the current upstream head."
+  },
+  "needs_revalidation": false,
+  "process_review": {
+    "verdict": "proceed",
+    "owes": "maintainer",
+    "detail": "The PR includes a feature recording, the CLA passes, all 10 reported checks pass, and the automated intake marked it ready for maintainer review. No Phase 0 author-facing process gate is outstanding."
+  },
+  "source": {
+    "repository": "microsoft/PowerToys",
+    "headRefOid": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
+    "updatedAt": "2026-09-04T01:55:44Z"
   },
   "freshness": {
-    "queued_at": "09/05/2026 01:05:06",
-    "checkpoint_at": "2026-09-14T02:40:16.0081946Z"
-  }
+    "status": "fresh",
+    "headRefOid": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
+    "updatedAt": "2026-09-04T01:55:44Z",
+    "checkedAt": "2026-09-15T07:46:44.8588733Z",
+    "latestCopilotReviewAt": "2026-09-07T09:11:41Z",
+    "latestForkCommitAt": "2026-09-07T09:09:32Z",
+    "unresolvedForkCopilotThreads": 0,
+    "stale_expectation": "This draft becomes stale if the upstream head, review threads, or conversation activity changes before publication. Revalidate the pinned head and activity snapshot immediately before any approved upstream review is submitted."
+  },
+  "proposed_comments": [
+    {
+      "id": "enable-horizontal-tab-strip-scrolling",
+      "kind": "inline",
+      "title": "Keep overflow tabs reachable",
+      "severity": "medium",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/TabbedPage.xaml",
+      "line": 86,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep overflow tabs reachable\n\n**Severity:** `medium`\n\nThe tab items use a horizontal panel, but the `ListView` keeps its default vertical-only scrolling behavior. When the tab titles exceed the available width, later tabs are clipped and cannot be reached; enable horizontal scrolling and disable the unused vertical axis.\n\n```suggestion\n            SelectionMode=\"Single\"\n            ScrollViewer.HorizontalScrollBarVisibility=\"Auto\"\n            ScrollViewer.HorizontalScrollMode=\"Enabled\"\n            ScrollViewer.VerticalScrollBarVisibility=\"Disabled\"\n            ScrollViewer.VerticalScrollMode=\"Disabled\"\n```",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The tab panel is explicitly horizontal and the current ListView has no horizontal scrolling settings; the literal suggestion built successfully on the pinned upstream head."
+      }
+    },
+    {
+      "id": "stable-unique-tab-identity",
+      "kind": "companion",
+      "title": "Give every tab a stable unique identity",
+      "severity": "high",
+      "body": "### Give every tab a stable unique identity\n\n**Severity:** `high`\n\nPlease add a stable `ITab.Id` contract, require IDs to be unique within a tabbed page, and use that identity consistently for selection and child caching. Falling back to the page ID, title, or array index allows duplicate or reordered tabs to inherit another tab's selection and cached child; update the toolkit, sample, SDK documentation, and host normalization together.",
+      "out_of_diff_reason": "The correction spans the public IDL contract, toolkit implementation, sample IDs, SDK documentation, and host-side duplicate normalization. No single current RIGHT-side range is an independently safe replacement.",
+      "outOfDiffReason": "The public contract and host cache semantics must change together, so this is a coordinated general review request.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current fallback identity is derived from mutable/non-unique values, and the corrected tree adds explicit IDs plus regression coverage for duplicate and missing IDs."
+      }
+    },
+    {
+      "id": "invalidate-mutated-tab-pages",
+      "kind": "companion",
+      "title": "Invalidate cached children when tab pages change",
+      "severity": "high",
+      "body": "### Invalidate cached children when tab pages change\n\n**Severity:** `high`\n\nPlease handle `ITab.Page` and identity changes and recreate cached child view models when a dynamic refresh republishes the same tab ID with a different page instance. The current cache is keyed only by the old ID, so a refreshed or mutated tab can continue rendering and querying stale extension data.",
+      "out_of_diff_reason": "The fix coordinates TabViewModel property propagation, dynamic collection refresh, cache-key tracking, child disposal, and selection restoration across multiple host methods rather than one safe inline replacement.",
+      "outOfDiffReason": "The cache invariant requires coordinated edits across the tab and tabbed-page view models.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "The stale-child path follows directly from retaining a cache entry by ID after the associated IPage instance changes, and dedicated corrected-tree tests cover both refresh and property-change cases."
+      }
+    },
+    {
+      "id": "isolate-inactive-tab-context",
+      "kind": "companion",
+      "title": "Prevent inactive tabs from publishing global UI context",
+      "severity": "high",
+      "body": "### Prevent inactive tabs from publishing global UI context\n\n**Severity:** `high`\n\nPlease gate command-bar, details, suggestion, and focus messages so only the active child can publish global shell context, then explicitly refresh the newly active child's context. Asynchronous initialization and empty-state updates from a hidden tab can otherwise overwrite the visible tab's command bar or steal search focus; tab switches must also preserve each cached child's search text instead of copying a stale container value over it.",
+      "out_of_diff_reason": "The correction spans the shared page context contract and the list, content, parameters, and tabbed-page view models. These message and activation changes are behaviorally incomplete if applied as isolated inline edits.",
+      "outOfDiffReason": "The active-child publication invariant must be enforced across all participating child view-model types.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "Several current child paths send global messenger updates unconditionally, including after asynchronous work, and the corrected tree exercises context restoration and inactive-focus suppression."
+      }
+    },
+    {
+      "id": "harden-async-tab-lifetime",
+      "kind": "companion",
+      "title": "Harden tab initialization and cleanup races",
+      "severity": "high",
+      "body": "### Harden tab initialization and cleanup races\n\n**Severity:** `high`\n\nPlease guard both initial and refresh callbacks after cleanup, await each child's async initialization task before treating initialization as complete, and serialize disposal with any in-flight initialization. Without those lifetime checks, navigating away or removing a tab while extension calls are pending can attach handlers to a disposed page, refresh context too early, or clean up a child concurrently with its initializer.",
+      "out_of_diff_reason": "The required lifetime fix spans initial population, dynamic refresh, lazy child creation, initialization completion, and cleanup sequencing. It cannot be reduced to one independently correct current diff range.",
+      "outOfDiffReason": "The race closes only when all initialization and disposal boundaries use the same lifetime rule.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 95,
+        "rationale": "The current relay-command invocation starts asynchronous work without awaiting ExecutionTask and has callbacks that can run after cleanup; the corrected tree adds disposed guards and targeted lifecycle coverage."
+      }
+    },
+    {
+      "id": "clean-up-inner-frame-navigation",
+      "kind": "companion",
+      "title": "Cleanly deactivate the inner frame",
+      "severity": "high",
+      "body": "### Cleanly deactivate the inner frame\n\n**Severity:** `high`\n\nPlease detach the previous inner page when an unsupported tab is selected, clear the inner frame back stack after tab navigation, and use the existing deferred post-navigation cleanup path instead of forcing a synchronous full GC. Collapsing the frame alone leaves the old page registered for global keyboard messages, repeated tab switches retain navigation entries indefinitely, and synchronous collection can pause the UI. Nested tabbed children should also resolve to the unsupported placeholder rather than a blank frame.",
+      "out_of_diff_reason": "The correction coordinates unsupported-child handling, view-model factory behavior, frame content/navigation cleanup, command-context restoration, and navigation-time resource release across multiple files.",
+      "outOfDiffReason": "These frame-lifetime behaviors must be changed together to avoid leaving either hidden views or blank nested content.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current frame is only collapsed, every Navigate journals a new entry, and the navigation callback forces GC; the corrected tree removes all three observable lifetime hazards."
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI.ViewModels\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "vstest.console.exe Microsoft.CmdPal.UI.ViewModels.UnitTests.dll /TestCaseFilter:FullyQualifiedName~TabbedPageViewModel"
+      ],
+      "details": "The exact upstream head passed repository essentials, the affected CmdPal view-model and UI builds, the unit-test project build, and 9/9 existing TabbedPageViewModel tests."
+    },
+    "suggestion_patch": {
+      "head_sha": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "enable-horizontal-tab-strip-scrolling"
+      ],
+      "commands": [
+        "Apply the literal enable-horizontal-tab-strip-scrolling suggestion to the clean pinned upstream tree",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "details": "The minimized insertion built successfully and git diff --check reported no errors."
+    },
+    "fork_tree": {
+      "head_sha": "eb2bfbe8e356c728ef2cc9f492a79d3e0c82f26e",
+      "result": "passed",
+      "commands": [
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI.ViewModels\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "vstest.console.exe Microsoft.CmdPal.UI.ViewModels.UnitTests.dll /TestCaseFilter:FullyQualifiedName~TabbedPageViewModel"
+      ],
+      "details": "The converged corrected tree built successfully and all 18 targeted tabbed-page tests passed."
+    },
+    "copilot_review": {
+      "result": "converged",
+      "latest_review_at": "2026-09-07T09:11:41Z",
+      "latest_review_head": "eb2bfbe8e356c728ef2cc9f492a79d3e0c82f26e",
+      "latest_review_summary": "Copilot reviewed 21 out of 21 changed files and generated no new comments.",
+      "review_count": 8,
+      "total_threads": 19,
+      "unresolved_threads": 0,
+      "duplicate_request_created": false
+    }
+  },
+  "fork_pr": {
+    "number": 691,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/691",
+    "state": "OPEN",
+    "head_sha": "eb2bfbe8e356c728ef2cc9f492a79d3e0c82f26e",
+    "branch": "pr-iterate/49429-v5"
+  },
+  "worktree": "C:\\PowerToys-49429-v5",
+  "workflow": {
+    "phase": "converged_draft_ready",
+    "checkpoint_at": "2026-09-15T07:46:44.8588733Z",
+    "previous_phase": "review_in_progress",
+    "advancement": "consumed_existing_zero_comment_review_rebuilt_both_trees_and_drafted_current_head_request_changes",
+    "advancement_evidence": [
+      "Preserved fork PR 691, branch pr-iterate/49429-v5, and fork head eb2bfbe8e356c728ef2cc9f492a79d3e0c82f26e.",
+      "Consumed the existing latest Copilot review before considering another request.",
+      "The existing latest review matches the fork head and generated zero new comments.",
+      "All 19 Copilot threads are resolved.",
+      "Exact upstream head a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf passed affected builds and 9/9 targeted tests.",
+      "The corrected tree passed affected builds and 18/18 targeted tests.",
+      "The one apply-ready suggestion was materialized on the exact upstream head and rebuilt successfully.",
+      "All remaining fork-only hunks are accounted for by the five coordinated review requests and regression evidence."
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-changes-49429",
+      "type": "request_changes",
+      "label": "Request changes with one inline suggestion and five general review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Mixed review: one validated inline suggestion plus five separate general PR comments for coordinated contract, cache, context, async-lifetime, and frame-lifetime fixes. Nothing has been posted.",
+      "review": {
+        "event": "REQUEST_CHANGES",
+        "repository": "microsoft/PowerToys",
+        "pr": 49429,
+        "pullRequest": 49429,
+        "head_sha": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
+        "body_prefix": "Thanks for the tabbed-page implementation and the thorough feature demo. Please address the six current-head findings below before merge."
+      }
+    }
+  ],
+  "safe_actions": [
+    {
+      "id": "request-changes-49429",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "validator_required": "Test-ReviewData.ps1",
+      "head_pinned": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf"
+    },
+    {
+      "id": "hold-review-49429",
+      "upstream_write": false,
+      "approval_required": false
+    }
+  ]
 }
