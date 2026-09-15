@@ -1,62 +1,147 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-49460",
   "number": 49460,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T02:20:16.1565835Z",
-  "evaluated_at": "2026-09-15T02:20:16.1565835Z",
+  "generated_at": "2026-09-15T23:20:00Z",
+  "evaluated_at": "2026-09-15T23:20:00Z",
   "source_updated_at": "2026-08-10T16:24:19Z",
   "head_sha": "cd96df15a157628cde3a94954018d3220ce435d8",
   "title": "feat(AdvancedPaste): add Paste as Rich Text option natively",
   "url": "https://github.com/microsoft/PowerToys/pull/49460",
+  "summary": "The stale short review output has been replaced with a complete current-head review. The fork loop converged after five Copilot reviews with zero unresolved threads. Three Advanced Paste correctness issues remain: a missing WinRT interop implementation, unstable format IDs, and no plain-text clipboard fallback.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Exact upstream-head AdvancedPaste validation failed: build-essentials and direct AdvancedPaste build both fail at PowerToys.Interop with LNK2019/LNK1120 because Constants.idl/Constants.h declare AdvancedPasteRichTextMessage() but upstream Constants.cpp has no implementation; the same build also stops on unrelated ZoomIt C4819 treated as error. Resume by adding the missing upstream implementation, then rebuild the exact head with the code-page warning fixed or suppressed in the environment."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 655 converged at bea9847a. The exact upstream head reproduces the missing interop linker symbol, while the corrected fork builds and passes focused Rich Text coverage."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "advancement_evidence": {
-    "previous_phase": "building",
-    "final_phase": "building",
-    "evidence": [
-      "Rechecked live upstream head cd96df15a157628cde3a94954018d3220ce435d8.",
-      "Rechecked fork PR 655 on pr-iterate/49460-v3; latest Copilot pass reported zero new comments and unresolved Copilot threads remain zero.",
-      "Ran build-essentials.cmd and the direct AdvancedPaste build against the exact upstream-head tree; both reached the same reproducible linker failure."
-    ]
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The current head does not link successfully and changes compatibility-sensitive format IDs and clipboard fallback behavior."
   },
-  "blockers": [
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
     {
-      "terminal": false,
-      "detail": "The exact upstream head declares winrt::PowerToys::Interop::implementation::Constants::AdvancedPasteRichTextMessage() in Constants.idl and Constants.h, but Constants.cpp does not define it. The AdvancedPaste validation consequently fails with LNK2019 followed by LNK1120 while linking PowerToys.Interop. The same build also stops on ZoomIt C4819 treated as an error under the active code page.",
-      "remediation": "Resume the fork review/build trace by adding the missing Constants.cpp implementation on the fork side, then rerun exact-upstream validation after the upstream head includes the corresponding implementation; separately fix or suppress the ZoomIt code-page warning in the local build environment."
+      "id": "missing-rich-text-interop-implementation",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Implement the Rich Text WinRT interop message accessor",
+      "in_diff": false,
+      "out_of_diff_reason": "The declarations and call are in the diff, but the required Constants.cpp implementation and shared constant are absent from the PR.",
+      "body": "**Affected code:** `src/common/interop/Constants.idl`, `src/common/interop/Constants.h`, `src/common/interop/Constants.cpp`, `src/common/interop/shared_constants.h`, and the Rich Text dispatch in `src/modules/AdvancedPaste/AdvancedPaste/AdvancedPasteXAML/App.xaml.cs`.\n\n**Problem:** The PR declares `AdvancedPasteRichTextMessage()` in the WinRT interop interface and calls it from Advanced Paste, but the current head does not implement that accessor in `Constants.cpp` or define the corresponding shared message constant. This leaves the generated factory method with no native symbol to link against.\n\n**Why it matters:** The focused Advanced Paste unit-test project currently fails to build with `LNK2019` for `winrt::PowerToys::Interop::implementation::Constants::AdvancedPasteRichTextMessage`. The PR is therefore not buildable as submitted.\n\n**Suggested change:**\n1. Define `ADVANCED_PASTE_RICH_TEXT_MESSAGE` as `L\"PasteRichText\"` in `shared_constants.h`.\n2. Add `Constants::AdvancedPasteRichTextMessage()` in `Constants.cpp` returning that shared constant.\n3. Append the new message alongside the existing Advanced Paste messages without changing their names.\n\n**Verification:** Rebuild `src/modules/AdvancedPaste/AdvancedPaste.UnitTests/AdvancedPaste.UnitTests.csproj` for `Debug|x64` and confirm the `PowerToys.Interop.vcxproj` link step no longer reports the missing symbol.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The exact current head reproducibly fails to link because the declared and called accessor has no implementation."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-advanced-paste-format-enum-values",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Preserve existing Advanced Paste format IDs",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
+      "side": "RIGHT",
+      "start_line": 39,
+      "line": 134,
+      "in_diff": true,
+      "body": "### Preserve existing Advanced Paste format IDs\n\n**Severity:** `high`\n\n`PasteFormats` values are emitted by Advanced Paste telemetry and can also affect persisted and action-ordering assumptions. The current head assigns `RichText = 11` while shifting existing values such as `ImageToText` and omitting the existing `FixSpellingAndGrammar` member, so historical and new telemetry can interpret the same numeric value as different actions.\n\nPlease restore every existing enum member and numeric value, then assign only Rich Text a new unused value. Keep visual ordering separate in the display-order helper instead of renumbering the compatibility-sensitive enum.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current diff visibly shifts and removes telemetry-backed enum values."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "rich-text-clipboard-text-fallback",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Preserve a plain-text fallback in the Rich Text clipboard package",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction requires coordinated changes to the data-package helper, transform call site, and focused tests.",
+      "body": "**Affected code:** `src/modules/AdvancedPaste/AdvancedPaste/Helpers/DataPackageHelpers.cs`, `src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs`, and `src/modules/AdvancedPaste/AdvancedPaste.UnitTests/ServicesTests/RichTextHelperTests.cs`.\n\n**Problem:** `CreateFromHtml()` currently puts only `StandardDataFormats.Html` on the replacement clipboard package. Because Advanced Paste replaces the system clipboard before sending paste, applications that choose plain text instead of HTML receive no readable fallback, and later text-based paste actions may no longer see a supported `Text` format.\n\n**Why it matters:** Rich Text paste should degrade gracefully in targets that do not accept HTML. Without a text fallback, users can get an empty paste or lose the original readable Markdown or plain-text representation.\n\n**Suggested change:**\n1. Change `CreateFromHtml` to accept both generated HTML and an explicit plain-text fallback.\n2. Call both `SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(html))` and `SetText(plainText)`.\n3. Update `TransformHelpers.ToRichTextAsync` to read the original clipboard text before generating HTML.\n4. Update the Rich Text test to exercise `TransformHelpers.TransformAsync(PasteFormats.RichText, ...)` and assert both formats.\n\n**Verification:** Build `AdvancedPaste.UnitTests.csproj` for `Debug|x64`, run the Rich Text test, and verify the HTML fragment contains the expected markup while the text fallback remains readable and contains no HTML tags.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The current helper sets only HTML; the corrected fork builds and its focused Rich Text test passes with both formats."
+      },
+      "disposition": "proposed"
     }
   ],
+  "actions": [
+    {
+      "id": "request-changes-49460",
+      "type": "request_changes",
+      "label": "Request three Advanced Paste Rich Text corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49460,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "cd96df15a157628cde3a94954018d3220ce435d8",
+        "body_prefix": "Thanks for iterating on the Rich Text integration. I found three remaining correctness issues on the current head: the WinRT interop accessor is declared but not implemented, the new enum value shifts existing telemetry-backed values, and the Rich Text clipboard package does not preserve a text fallback."
+      },
+      "note": "Draft only. Three current-head comments require explicit maintainer approval."
+    }
+  ],
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-15T23:20:00Z",
+    "advancement_evidence": [
+      "Replaced the old short dashboard output with three complete current-head review requests.",
+      "Consumed the existing five-review fork loop without requesting a duplicate review.",
+      "Confirmed zero new comments in the final Copilot pass and zero unresolved fork threads.",
+      "Reproduced the missing interop implementation as an exact-head LNK2019 and LNK1120 failure.",
+      "Built the corrected fork candidate and passed the focused Rich Text test."
+    ]
+  },
+  "freshness": {
+    "headRefOid": "cd96df15a157628cde3a94954018d3220ce435d8",
+    "updatedAt": "2026-08-10T16:24:19Z",
+    "latestCopilotReviewAt": "2026-09-07T07:27:37Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T23:20:00Z"
+  },
+  "fork_pr": {
+    "number": 655,
+    "repo": "MuyuanMS/PowerToys",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/655",
+    "state": "OPEN"
+  },
+  "fork_branch": "pr-iterate/49460-v3",
+  "fork_head_sha": "bea9847aeadae1dc806f1b1d08091cd8494bb85d",
   "validation": {
+    "fork_review": {
+      "result": "passed",
+      "commands": [
+        "Build AdvancedPaste.UnitTests Debug x64",
+        "Run RichTextHelperTests"
+      ],
+      "tests": {
+        "passed": 1,
+        "failed": 0
+      },
+      "details": "The corrected fork candidate builds, its focused Rich Text test passes, and the Copilot loop has zero unresolved threads."
+    },
     "upstream_head": {
       "head_sha": "cd96df15a157628cde3a94954018d3220ce435d8",
       "result": "failed",
       "commands": [
-        "POWERTOYS_DISABLE_SPECTRE=1 tools\\build\\build-essentials.cmd",
-        "POWERTOYS_DISABLE_SPECTRE=1 src\\modules\\AdvancedPaste\\AdvancedPaste\\..\\..\\..\\..\\tools\\build\\build.cmd"
+        "Build AdvancedPaste.UnitTests Debug x64"
       ],
-      "failure": "PowerToys.Interop link failed with LNK2019/LNK1120 for Constants::AdvancedPasteRichTextMessage(); the build also reported ZoomIt C4819 as an error."
+      "details": "PowerToys.Interop fails with LNK2019 and LNK1120 for Constants::AdvancedPasteRichTextMessage. The build also encounters an unrelated ZoomIt C4819 code-page warning on this host."
     }
   },
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-15T02:20:16.1565835Z"
-  },
-  "freshness": {
-    "queued_at": "09/14/2026 08:26:07",
-    "checkpoint_at": "2026-09-15T02:20:16.1565835Z"
-  },
-  "fork_pr": {
-    "number": 655,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/655"
-  },
-  "fork_branch": "pr-iterate/49460-v3"
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
