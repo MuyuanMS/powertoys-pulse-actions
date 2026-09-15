@@ -4,124 +4,146 @@
   "number": 49662,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "external",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T11:57:56.1119775Z",
-  "evaluated_at": "2026-09-15T11:57:56.1119775Z",
+  "generated_at": "2026-09-15T18:01:00Z",
+  "evaluated_at": "2026-09-15T18:01:00Z",
   "source_updated_at": "2026-09-15T07:38:27Z",
   "head_sha": "4a0943c46566bd1cfd42d2c2c7312fb97ace75b0",
   "title": "[UI] Fix abnormal blinking when keep pressing a non-modifier key or windows key when setting a new hotkey shortcut",
   "url": "https://github.com/microsoft/PowerToys/pull/49662",
+  "summary": "The current-head fork review converged with a zero-comment Copilot pass and zero unresolved threads. The exact suggestion candidate builds Settings UI successfully. Two inline suggestions and one lifecycle companion request remain for approval.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting on Copilot review",
-    "detail": "Resumed the durable review after upstream head changed from 6506202361e35cd7baacc3e06418e5466457999c to 4a0943c46566bd1cfd42d2c2c7312fb97ace75b0. The prior fork Copilot review on PR 390 had already been consumed and had zero unresolved threads, so no duplicate request was made there. Recreated the review trace on fork PR 813 / branch pr-iterate/49662-v6 with only the two current upstream PR files, fixed the still-valid repeat-key findings, passed build-essentials and the focused Settings UI Debug x64 build, and requested a fresh Copilot review before the cutoff. No fresh review arrived in the allowed immediate check."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 821 converged at f5307664a784ef79c97f687f9717ff7d4d08ae7e. The literal repeat-state and ordered-list corrections applied to the pinned upstream head and the Settings UI project built successfully."
   },
-  "next_action": "On resume, consume a Copilot review submitted after 2026-09-15T11:55:12.7880179Z for fork PR 813 head eabb2ab3ef50e87f8ef97a27b3ecf0965e44729e before making any further request. If the review is clean, validate the exact upstream head or materialize current-head suggestions for every fork-only hunk before publishing an upstream action.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-15T11:57:56.1119775Z",
-    "resumed_from_stage": "review_in_progress",
-    "resume_action": "consume-existing-review-then-current-head-rerun",
-    "request_started_at": "2026-09-15T11:55:12.7880179Z",
-    "preserved_checkpoint_trace": {
-      "previous_generated_at": "2026-09-15T15:18:06.025557+08:00",
-      "previous_head_sha": "6506202361e35cd7baacc3e06418e5466457999c",
-      "previous_recorded_fork_pr": 390,
-      "previous_recorded_fork_branch": "pr-iterate/49662-v4",
-      "previous_latest_copilot_review_at": "2026-08-19T03:47:13Z",
-      "previous_unresolved_copilot_threads": 0,
-      "superseded_fork_pr": 812,
-      "superseded_reason": "Fork PR 812 was closed because its branch ancestry included one unrelated base-diff file; fork PR 813 preserves the same head with a clean two-file diff."
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Three current-head requests are validated and no upstream write has occurred."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "skip-repeat-before-conflict-reset",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Skip repeated key-down processing before resetting conflict state",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs",
+      "start_line": 508,
+      "line": 508,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Skip repeated key-down processing before resetting conflict state\n\n**Severity:** `high`\n\nThe new key-list guard only avoids assigning the same display list. A held key still continues through conflict reset and asynchronous `CheckForConflicts` on every auto-repeat, so the conflict message can keep blinking and duplicate checks can be queued.\n\nCompare the captured modifier flags and virtual-key code with the previous key-down state immediately after `KeyEventHandler`. Return before updating `c.Keys`, clearing `HasConflict`, or checking conflicts when the state is unchanged, then cache the current state. Reset that cache on key-up and when opening the dialog as described in the companion request.\n\n```suggestion\n            if (lastKeyDownSettings != null &&\n                lastKeyDownSettings.Win == internalSettings.Win &&\n                lastKeyDownSettings.Ctrl == internalSettings.Ctrl &&\n                lastKeyDownSettings.Alt == internalSettings.Alt &&\n                lastKeyDownSettings.Shift == internalSettings.Shift &&\n                lastKeyDownSettings.Code == internalSettings.Code)\n            {\n                return;\n            }\n\n            lastKeyDownSettings = internalSettings with { };\n\n            List<object> newKeys = internalSettings.GetKeysList();\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "The repeat path visibly reaches conflict clearing and async validation; the literal correction builds on the pinned upstream head."
+      },
+      "disposition": "proposed"
     },
-    "phases": [
-      {
-        "name": "resume",
-        "status": "done",
-        "detail": "Discovered existing fork PR 390 / branch pr-iterate/49662-v4, latest Copilot review at 2026-08-19T03:47:13Z, newest fork commit at 2026-08-19T03:44:47Z, and zero unresolved Copilot threads. Upstream had since advanced to head 4a0943c46566bd1cfd42d2c2c7312fb97ace75b0, so the old action draft was stale."
+    {
+      "id": "preserve-key-list-order",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Compare shortcut keys in display order",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutDialogContentControl.xaml.cs",
+      "start_line": 149,
+      "line": 150,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Compare shortcut keys in display order\n\n**Severity:** `medium`\n\n`HashSet.SetEquals` treats two lists as equal even when their order differs. `Keys` is a display list, so an order change can be suppressed and leave the visual shortcut stale.\n\nCompare each element at the same index after the count check and return false on the first mismatch.\n\n```suggestion\n            for (int index = 0; index < currentValue.Count; index++)\n            {\n                if (!Equals(currentValue[index], newValue[index]))\n                {\n                    return false;\n                }\n            }\n\n            return true;\n```\n\n**Verification:** Exercise shortcuts whose modifier/code list changes order and confirm the visual list refreshes only when ordered values differ.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The list directly drives display while SetEquals discards ordering; the literal indexed comparison builds successfully."
       },
-      {
-        "name": "context_review",
-        "status": "done",
-        "detail": "The first-time contributor has accepted the CLA, supplied before/after recordings after maintainer request, listed manual validation steps, and the current CI/check rollup is green. No Phase 0 author ask is pending."
+      "disposition": "proposed"
+    },
+    {
+      "id": "reset-repeat-state-lifecycle",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Reset the cached repeat state with the shortcut lifecycle",
+      "in_diff": false,
+      "out_of_diff_reason": "The upstream diff does not add the repeat-state field or touch Hotkey_KeyUp and OpenDialogButton_Click, so those lifecycle edits have no safe current RIGHT-side anchor.",
+      "body": "### Reset the cached repeat state with the shortcut lifecycle\n\n**Severity:** `high`\n\n**Affected code:** `src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs`, the `ShortcutControl` fields, `Hotkey_KeyUp`, and `OpenDialogButton_Click`.\n\n**Problem:** The early-return fix needs a `lastKeyDownSettings` cache, but a cache that survives key-up or a new dialog session can suppress the first real key event in the next interaction. That can leave the previous shortcut display or conflict state active.\n\n**Why it matters:** Repeat suppression is scoped to one physical key-down sequence. It must not carry state across releases or dialog initialization, otherwise a legitimate first event can be mistaken for auto-repeat.\n\n**Suggested change:**\n1. Add a private `HotkeySettings lastKeyDownSettings` field.\n2. Cache only genuine key-down state after the repeat guard.\n3. Set `lastKeyDownSettings = null` at the end of `Hotkey_KeyUp`.\n4. Reset it at the start of `OpenDialogButton_Click` before processing the dialog's current settings.\n\n**Verification:** Open the dialog, hold and release a key, press the same key again, then reopen the dialog and repeat. Confirm the first key-down after every release or reopen runs conflict validation and only subsequent auto-repeat events are skipped.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The lifecycle reset points are deterministic and were included in the exact candidate that passed the Settings UI build."
       },
-      {
-        "name": "consume_existing_review",
-        "status": "done",
-        "detail": "Confirmed there was no pending Copilot reviewer on fork PR 390 and no unconsumed review request. Prior findings about repeated conflict checks, dependency-property setter semantics, and display-order comparison were re-evaluated against current upstream head; the setter issue is already fixed upstream, while repeated conflict checks and display-order comparison remain valid."
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49662",
+      "type": "request_changes",
+      "label": "Request changes with three current-head shortcut findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49662,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "4a0943c46566bd1cfd42d2c2c7312fb97ace75b0"
       },
-      {
-        "name": "fork_fix",
-        "status": "done",
-        "detail": "Reset the review tree to upstream head 4a0943c46566bd1cfd42d2c2c7312fb97ace75b0, added an unchanged-hotkey-state guard that returns before conflict clearing/checking on auto-repeat key-downs, reset that guard on key-up and dialog open, and changed key-list comparison to compare entries in display order instead of using HashSet.SetEquals."
-      },
-      {
-        "name": "validation",
-        "status": "done",
-        "detail": "After clearing inherited GIT_CONFIG_* variables that broke vcpkg registry initialization, build-essentials completed and the focused Settings UI Debug x64 build completed successfully. The build produced <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe."
-      },
-      {
-        "name": "fresh_review_request",
-        "status": "waiting",
-        "detail": "Created fork PR 813 from branch pr-iterate/49662-v6 with a clean two-file diff and requested copilot-pull-request-reviewer[bot] at 2026-09-15T11:55:12.7880179Z. The immediate bounded check found no submitted Copilot review, so the next run must consume that request window before any further request."
-      }
+      "note": "Draft only. Two inline suggestions and one separate implementation-ready general comment require explicit maintainer approval."
+    }
+  ],
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-15T18:01:00Z",
+    "advancement_evidence": [
+      "Consumed the current-head Copilot review and confirmed zero new comments and zero unresolved threads.",
+      "Recreated the protected-branch-safe review as fork PR 821 without losing prior findings.",
+      "Applied the literal repeat-state and ordered-list corrections to the pinned upstream head.",
+      "Built the exact Settings UI suggestion candidate successfully.",
+      "Mapped every fork-only change to an inline suggestion or implementation-ready companion request."
     ]
   },
   "freshness": {
-    "queued_at": "2026-09-15T07:38:27Z",
-    "checkpoint_at": "2026-09-15T11:57:56.1119775Z",
-    "source_updated_at": "2026-09-15T07:38:27Z",
-    "upstream_head_sha": "4a0943c46566bd1cfd42d2c2c7312fb97ace75b0",
-    "fork_head_after": "eabb2ab3ef50e87f8ef97a27b3ecf0965e44729e",
-    "review_requested_at": "2026-09-15T11:55:12.7880179Z",
-    "stale_expectation": "Expected to remain stale/actionless on the live dashboard while waiting_copilot because the fresh fork review has not been consumed and the validated fork contains fixes not present in upstream head 4a0943c46566bd1cfd42d2c2c7312fb97ace75b0. Any upstream head change or submitted fork review after the request timestamp requires re-evaluation."
+    "headRefOid": "4a0943c46566bd1cfd42d2c2c7312fb97ace75b0",
+    "updatedAt": "2026-09-15T07:38:27Z",
+    "latestCopilotReviewAt": "2026-09-15T17:05:22Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T18:01:00Z"
   },
   "fork_pr": {
-    "number": 813,
+    "number": 821,
     "repo": "MuyuanMS/PowerToys",
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/813",
-    "state": "OPEN",
-    "branch": "pr-iterate/49662-v6",
-    "head_after": "eabb2ab3ef50e87f8ef97a27b3ecf0965e44729e",
-    "review_requested_at": "2026-09-15T11:55:12.7880179Z"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/821",
+    "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/49662-v6",
+  "fork_branch": "pr-iterate/49662-v7",
+  "fork_head_sha": "f5307664a784ef79c97f687f9717ff7d4d08ae7e",
   "validation": {
-    "live_head_match": false,
-    "fork_head": "eabb2ab3ef50e87f8ef97a27b3ecf0965e44729e",
-    "upstream_head": {
+    "suggestion_patch": {
       "head_sha": "4a0943c46566bd1cfd42d2c2c7312fb97ace75b0",
-      "result": "pending_fresh_copilot_review",
-      "detail": "The preserved fork branch includes live upstream head 4a0943c46566bd1cfd42d2c2c7312fb97ace75b0 plus fork-only review fixes. Publication is invalid until the new Copilot review arrives and fork-only hunks are accounted for as current-head review items or removed."
-    },
-    "build": {
       "result": "passed",
-      "tree": "fork review tree eabb2ab3ef50e87f8ef97a27b3ecf0965e44729e",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "skip-repeat-before-conflict-reset",
+        "preserve-key-list-order"
+      ],
       "commands": [
         "tools\\build\\build-essentials.cmd",
-        "src\\settings-ui\\Settings.UI\\..\\..\\..\\tools\\build\\build.cmd"
+        "tools\\build\\build.cmd in src\\settings-ui\\Settings.UI"
       ],
-      "detail": "The runner/settings essentials and focused Settings UI Debug x64 build completed successfully after clearing inherited malformed GIT_CONFIG_* variables. Final exact-head or exact-suggestion validation remains pending after the fresh Copilot review."
+      "details": "The complete literal correction set was applied to a clean local checkout at the pinned upstream head. Settings UI built successfully."
     },
-    "copilot_review": {
-      "result": "waiting",
-      "request_started_at": "2026-09-15T11:55:12.7880179Z",
-      "latest_consumed_review_at": "2026-08-19T03:47:13Z",
-      "latest_consumed_review_head": "52a7596eef687f0346a9c95d3048f17fa2621055",
-      "requested_head": "eabb2ab3ef50e87f8ef97a27b3ecf0965e44729e",
-      "immediate_check_new_review": false,
-      "unresolved_threads": 0
-    },
-    "fork_fix": {
-      "commits": [
-        "0d158aebc5dbe32c2b42d7e0baed80aee4bd95ad",
-        "eabb2ab3ef50e87f8ef97a27b3ecf0965e44729e"
-      ],
-      "summary": "Skipped unchanged repeated key-down state before conflict reset/check work and preserved display-order equality for shortcut key visuals."
-    },
-    "git_status": "fork branch has an unstaged CRLF normalization view of ShortcutDialogContentControl.xaml.cs in the local local checkout only; the pushed fork PR head stores a minimal two-file diff and is the resumable source of truth."
+    "upstream_head": {
+      "head_sha": "4a0943c46566bd1cfd42d2c2c7312fb97ace75b0",
+      "result": "not_applicable",
+      "commands": [],
+      "details": "This is a non-clean review with current-head findings; the exact suggestion candidate was validated."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
   }
 }
