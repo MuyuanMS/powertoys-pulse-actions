@@ -2,33 +2,189 @@
   "number": 49394,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T02:40:16.9243764Z",
-  "evaluated_at": "09/04/2026 07:14:13",
-  "source_updated_at": "2026-08-06T17:22:10+08:00",
+  "generated_at": "2026-09-15T18:12:00Z",
+  "evaluated_at": "2026-09-15T18:12:00Z",
+  "source_updated_at": "2026-08-06T09:22:10Z",
   "head_sha": "480f2398f80c37eab35d068434ea53be714816d8",
   "title": "[Quick Accent] New character reference guide to show language set contents",
   "url": "https://github.com/microsoft/PowerToys/pull/49394",
+  "summary": "The fork review converged with zero new Copilot comments and zero unresolved threads. Six current-head findings remain for approval. The PR is also under an explicit maintainer UX hold and DO NOT MERGE label, so the drafted review may be held until that product decision is complete.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Current live head 480f2398f80c37eab35d068434ea53be714816d8 requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
+    "glyph": "📝",
+    "label": "Review complete — approval or hold required",
+    "detail": "Fork PR 823 converged at ba7df3e6c8b28113979e165843683b51a6572d7b. PowerAccent Common, Core, Settings UI, and the common test project build on the fork; exact upstream PowerAccent Common builds, while broader local traversal hits an unrelated ZoomIt code-page failure."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Review the six drafted findings after the UX decision",
+    "reason": "The findings are current-head and publishable after explicit approval, but maintainers may retain the existing UX hold."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "cache-unicode-name-lookups",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Cache repeated ICU Unicode-name lookups",
+      "path": "src/modules/poweraccent/PowerAccent.Common/UnicodeHelper.cs",
+      "start_line": 53,
+      "line": 53,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Cache repeated ICU Unicode-name lookups\n\n**Severity:** `medium`\n\n`GetCharacterName` crosses the native ICU boundary for every code point whenever the guide or toolbar rebuilds descriptions. Cache results by code point, including empty-name results, while preserving the ICU-unavailable fallback.\n\n**Verification:** Add coverage proving repeated lookups reuse the cached result and exercise the guide through repeated navigation.",
+      "confidence": {
+        "score": 93,
+        "rationale": "The UI-facing refresh path repeats deterministic native lookups; the converged fork cache builds successfully."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "add-unicode-helper-boundary-tests",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Add direct tests for the ICU Unicode boundary",
+      "in_diff": false,
+      "out_of_diff_reason": "The required direct test file and test cases are not present in the current upstream diff.",
+      "body": "### Add direct tests for the ICU Unicode boundary\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/poweraccent/PowerAccent.Common/UnicodeHelper.cs` and a focused test file under `src/modules/poweraccent/PowerAccent.Common.UnitTests`.\n\n**Problem:** The new native ICU boundary is tested only indirectly through Settings view-model behavior, whose fallback can hide a wrong entry point, surrogate-pair enumeration error, or decoding regression.\n\n**Why it matters:** A broken native boundary can silently display fallback glyphs instead of Unicode names while existing UI tests continue to pass.\n\n**Suggested change:**\n1. Add direct `UnicodeHelper.GetCharacterName` tests outside Settings UI.\n2. Cover a known BMP character and a supplementary-plane character.\n3. Cover a multi-code-point sequence and unnamed, control, or private-use input.\n4. Assert joined names and null fallback behavior explicitly.\n\n**Verification:** Build the PowerAccent Common unit-test project and run the new focused tests with `vstest.console.exe` on supported Windows.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The new native boundary lacks direct assertions and its fallback can mask integration defects."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "name-character-copy-buttons",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Expose Unicode descriptions to screen readers",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/PowerAccentReferenceGuidePage.xaml",
+      "start_line": 136,
+      "line": 136,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Expose Unicode descriptions to screen readers\n\n**Severity:** `medium`\n\nEach character copy button exposes only its glyph as the UI Automation name. That is unclear for many symbols and especially for combining marks rendered with a dotted circle, even though the Unicode description is already available through the tooltip.\n\nBind `AutomationProperties.Name` to the same tooltip description.\n\n**Verification:** Run an accessibility inspection and confirm each button announces the character description and copy purpose.",
+      "confidence": {
+        "score": 90,
+        "rationale": "The icon-only glyph name is not reliably intelligible, while the existing tooltip provides the intended accessible description."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "name-back-button",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Add an accessible name to the back button",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/PowerAccentReferenceGuidePage.xaml",
+      "start_line": 49,
+      "line": 49,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Add an accessible name to the back button\n\n**Severity:** `low`\n\nThe new icon-only back button has no accessible name, so assistive technology may announce only “button.” Reuse the existing localized `BackBtn` resource by assigning the corresponding `x:Uid`.\n\n**Verification:** Inspect the control with Narrator or Accessibility Insights and confirm the localized Back name is exposed.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The icon-only control has no content or automation label and the repository already has the localized resource."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "use-us-spelling-in-en-us-resource",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Use US spelling in the en-us resource",
+      "path": "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw",
+      "start_line": 3595,
+      "line": 3595,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Use US spelling in the en-us resource\n\n**Severity:** `low`\n\nThis string is under `Strings/en-us` but uses the British spelling `organised`. Change it to `organized` for locale consistency.\n\n**Verification:** Run the repository spelling check and inspect the rendered English resource.",
+      "confidence": {
+        "score": 99,
+        "rationale": "The locale is explicitly en-us and the current resource uses British spelling."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "remove-stale-unicodeinformation-metadata",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Remove stale UnicodeInformation metadata",
+      "in_diff": false,
+      "out_of_diff_reason": "NOTICE.md and .pipelines/ESRPSigning_core.json are not part of the current upstream PR diff.",
+      "body": "### Remove stale UnicodeInformation metadata\n\n**Severity:** `high`\n\n**Affected code:** `NOTICE.md` and `.pipelines/ESRPSigning_core.json`, corresponding to the removed `UnicodeInformation` package reference.\n\n**Problem:** The package is removed from project metadata while its notice entry and `UnicodeInformation.dll` signing-policy entry remain.\n\n**Why it matters:** Repository notice verification and signing metadata checks can fail or continue treating an obsolete binary as a shipped dependency.\n\n**Suggested change:**\n1. Remove the `UnicodeInformation` package entry from `NOTICE.md`.\n2. Remove the obsolete `UnicodeInformation.dll` entry from `.pipelines/ESRPSigning_core.json`.\n3. Confirm no project or packaging reference still requires the dependency.\n\n**Verification:** Run `.pipelines\\verifyNoticeMdAgainstNugetPackages.ps1 -path .\\src` and the repository notice/signing validation on a clean Windows checkout.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The dependency removal is current while both repository metadata references remain; the converged fork removes them."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49394",
+      "type": "request_changes",
+      "label": "Request changes with six Quick Accent findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49394,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "480f2398f80c37eab35d068434ea53be714816d8"
+      },
+      "note": "Draft only. Four inline findings and two separate implementation-ready general comments require explicit approval; maintainers may hold the review pending the existing UX decision."
+    }
+  ],
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-14T02:40:16.9243764Z"
+    "phase": "review_drafted",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-15T18:12:00Z",
+    "advancement_evidence": [
+      "Created protected-branch-safe fork PR 823 and preserved the review history.",
+      "Consumed the latest zero-comment Copilot review and confirmed zero unresolved threads.",
+      "Built PowerAccent Common, Core, Settings UI, and the common unit-test project on the fork.",
+      "Built exact upstream PowerAccent Common; broader local validation is blocked only by unrelated ZoomIt code-page failures.",
+      "Preserved the explicit maintainer UX hold and DO NOT MERGE state without discarding supported code findings."
+    ]
   },
   "freshness": {
-    "queued_at": "09/14/2026 02:15:34",
-    "checkpoint_at": "2026-09-14T02:40:16.9243764Z"
+    "headRefOid": "480f2398f80c37eab35d068434ea53be714816d8",
+    "updatedAt": "2026-08-06T09:22:10Z",
+    "latestCopilotReviewAt": "2026-09-15T17:27:40Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T18:12:00Z"
   },
   "fork_pr": {
-    "number": 264
+    "number": 823,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/823",
+    "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/49394-v2"
+  "fork_branch": "pr-iterate/49394-v3",
+  "fork_head_sha": "ba7df3e6c8b28113979e165843683b51a6572d7b",
+  "validation": {
+    "suggestionPatch": {
+      "head_sha": "480f2398f80c37eab35d068434ea53be714816d8",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "The findings contain no apply-ready suggestion blocks."
+    },
+    "upstreamHead": {
+      "head_sha": "480f2398f80c37eab35d068434ea53be714816d8",
+      "result": "passed",
+      "commands": [
+        "Build PowerAccent.Common"
+      ],
+      "details": "The directly affected common project builds on the exact upstream head. Broader local project traversal is blocked by an unrelated ZoomIt C4819 code-page failure; the fork affected projects build."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
