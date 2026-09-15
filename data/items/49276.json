@@ -1,57 +1,206 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-49276",
   "number": 49276,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "copilot",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T06:50:30Z",
-  "evaluated_at": "09/11/2026 12:38:30",
+  "generated_at": "2026-09-15T19:20:00Z",
+  "evaluated_at": "2026-09-15T19:20:00Z",
   "source_updated_at": "2026-09-11T10:16:12Z",
   "head_sha": "6b211d8abae7311bb22bc32f2d8f86180a12cfb6",
   "title": "[Keyboard Manager] Per-keyboard remap profiles (auto-switch + cycle hotkey)",
   "url": "https://github.com/microsoft/PowerToys/pull/49276",
+  "summary": "The current-head fork review converged with zero new Copilot comments and zero unresolved threads. Exact upstream engine, editor, and native test projects build successfully. Seven lifecycle, persistence, identity, synchronization, accessibility, and testing requests remain for approval.",
   "status": {
-    "glyph": "...",
-    "label": "Reviewing findings",
-    "detail": "Consumed the existing Copilot review for fork head 9f4869567b016d92663fb17b93ff63cd293be0b8. Addressed all 23 findings in fork commit 265a82c47c8e09eefa0dad7e17057fd972a119fa, pushed it to pr-iterate/49276-v2, replied to and resolved every thread, built the editor/native module chain, and passed 38 targeted unit tests. Requested a fresh Copilot review at 2026-09-15T06:49:44.8985396Z; the single immediate check found no submitted review, so this is a valid external wait."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 779 converged at 4cfb2abe9c28b510878055a41312d8cbe9537238. Seven implementation-ready general review comments remain."
   },
-  "next_action": "On the next resume, consume a Copilot review submitted after 2026-09-15T06:49:44.8985396Z for fork head 265a82c47c8e09eefa0dad7e17057fd972a119fa before making any further request.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "All findings are pinned to the current upstream head; no upstream write has occurred."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "raw-input-shutdown",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make raw-input and cycle-hotkey shutdown deterministic",
+      "in_diff": false,
+      "out_of_diff_reason": "The failure is a cross-component lifecycle interaction among three worker implementations.",
+      "body": "### Make raw-input and cycle-hotkey shutdown deterministic\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/RawInputWatcher.cs`, `KeyboardManagerEngineLibrary/RawInputKeyboardTracker.cpp`, and `ProfileCycleHotkey.cpp`.\n\n**Problem:** A worker can be stopped before its thread creates a USER32 message queue, or while its thread ID is published but before `PostThreadMessageW` can succeed. The caller can then join indefinitely. The engine also starts raw-input tracking when auto-switch is disabled.\n\n**Why it matters:** Keyboard Manager or its editor can hang during rapid startup/shutdown, while users who never enable auto-switch still pay global keyboard-event processing cost.\n\n**Suggested change:**\n1. Add a readiness handshake after queue or window creation and preserve an early-stop flag until readiness.\n2. Check every quit-message post and make repeated Stop or Dispose calls idempotent.\n3. Start the engine tracker only when auto-switch is enabled and stop it when disabled.\n4. Add a deterministic seam for stop-before-ready and stop-after-ready cases.\n\n**Verification:** Exercise immediate stop, stop during startup, repeated disposal, and disabled/enabled transitions; confirm every worker exits without indefinite waits.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The stop paths publish thread IDs before queue readiness and the converged fork implements readiness and early-stop handling."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "settings-transaction-atomicity",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Serialize every settings read-modify-write transaction",
+      "in_diff": false,
+      "out_of_diff_reason": "The defect spans multiple engine and editor writers and requires one shared interprocess transaction.",
+      "body": "### Serialize every settings read-modify-write transaction\n\n**Severity:** `high`\n\n**Affected code:** `KeyboardManagerEngineLibrary/KeyboardManager.cpp` and the editor `ProfileManager.cs`, `SettingsManager.cs`, and `DeviceProfileManager.cs`.\n\n**Problem:** Engine, editor, and Settings independently read, modify, and write the same JSON files. A thread-local mutex does not cover other processes. Concurrent updates can overwrite configurations, active state, or device assignments, and a transient parse failure can be written back as an empty document.\n\n**Why it matters:** Auto-switching while profiles are created, deleted, or edited can silently lose mappings or restore stale state.\n\n**Suggested change:**\n1. Use one shared interprocess primitive for every writer and hold it across read, validation, mutation, and write.\n2. Reject or retry invalid JSON instead of synthesizing an empty root.\n3. Use checked atomic replacement and preserve unrelated properties.\n4. Signal reload or cycle feedback only after replacement succeeds.\n\n**Verification:** Run concurrent auto-switch, profile lifecycle, mapping-save, and Settings writes; assert unrelated data survives and failed writes emit no success signal.",
+      "confidence": {
+        "score": 96,
+        "rationale": "Independent processes write the same documents without a common transaction boundary."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "profile-sidecar-lifecycle",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep device-profile sidecar state out of remap-profile lifecycle",
+      "in_diff": false,
+      "out_of_diff_reason": "The sidecar format, profile discovery, and deletion cleanup form one lifecycle contract across separate files.",
+      "body": "### Keep device-profile sidecar state out of remap-profile lifecycle\n\n**Severity:** `high`\n\n**Affected code:** `KeyboardManagerEditorUI/Settings/ProfileManager.cs` and `DeviceProfileManager.cs`.\n\n**Problem:** `deviceProfiles.json` lives beside remap profiles but must not be discovered or accepted as a profile name. Its nullable `cycleHotkey` serializes as `null`, while native parsing treats property presence as an object. Profile deletion must also remove assignments and surface file or metadata failures.\n\n**Why it matters:** First save can create an error-shaped sidecar, discovery can expose incompatible JSON as a profile, and deletion can leave assignments that reactivate a missing profile.\n\n**Suggested change:**\n1. Reserve and exclude the sidecar filename in discovery and validation.\n2. Omit absent nullable hotkeys or type-check before parsing.\n3. Remove assignments targeting a deleted profile in one checked transaction.\n4. Abort before metadata mutation when required file operations fail, and reload after cleanup.\n\n**Verification:** Cover first save without a hotkey, filename collisions, locked-file deletion, failed persistence, active and inactive assigned-profile deletion, and later input from a previously assigned device.",
+      "confidence": {
+        "score": 99,
+        "rationale": "The sidecar is colocated with profiles and the upstream nullable property conflicts with native parsing."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "device-identity",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve a unique physical keyboard identity consistently",
+      "in_diff": false,
+      "out_of_diff_reason": "Identity is a shared contract between managed enumeration, persistence, and native matching.",
+      "body": "### Preserve a unique physical keyboard identity consistently\n\n**Severity:** `high`\n\n**Affected code:** `KeyboardManagerEngineLibrary/KeyboardManager.cpp`, `KeyboardManagerEditorUI/Interop/RawInputDeviceEnumerator.cs`, and `DetectedKeyboard.cs`.\n\n**Problem:** Identity normalization must not discard the Raw Input instance portion shared by otherwise identical keyboard models. If editor and engine reduce devices to one hardware-prefix key, the UI merges them and the engine cannot apply distinct profiles.\n\n**Why it matters:** Two keyboards of the same model can receive the wrong profile, especially after restart or enumeration-order changes.\n\n**Suggested change:**\n1. Define one stable physical Raw Input identity retaining the instance or container component.\n2. Use that exact format for enumeration, persistence, matching, and engine lookup.\n3. Document the value as a complete identity and add fixtures with identical hardware prefixes but different instances.\n\n**Verification:** Assign different profiles to two identical keyboards, restart editor and engine, and verify each device selects only its own profile while injected input remains ignored.",
+      "confidence": {
+        "score": 94,
+        "rationale": "Both managed and native paths derive assignment keys and can collapse identical hardware models."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "editor-profile-coordination",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Keep the editor truthful during background profile changes",
+      "in_diff": false,
+      "out_of_diff_reason": "The invariant spans filesystem notifications, modal lifetime, activation failure, and mapping reload.",
+      "body": "### Keep the editor truthful during background profile changes\n\n**Severity:** `high`\n\n**Affected code:** `KeyboardManagerEditorUI/Pages/MainPage.xaml.cs` and `Settings/SettingsManager.cs`.\n\n**Problem:** A watcher that listens only for writes can miss atomic rename replacement. Profile changes can arrive while a remapping dialog is open, allowing a save into the wrong profile; treating every write as a profile change instead makes dialogs stale after unrelated updates. Failed activation can leave the picker showing the requested rather than active profile.\n\n**Why it matters:** Users can save mappings into a different profile than displayed or see an active-profile selection the engine never applied.\n\n**Suggested change:**\n1. Watch filename and rename notifications for atomic replacement.\n2. Compare the active profile before marking an edit stale and defer refresh until the modal editor closes.\n3. Reject saves only for a genuine profile change.\n4. Reload the picker after failed activation and snapshot the active profile once per mapping reload.\n\n**Verification:** Atomically replace settings while editing, update unrelated settings, force activation and persistence failures, and verify the dialog and picker always reflect disk state.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The current watcher misses rename replacement and the modal editor lacks a safe reconciliation boundary."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "autoswitch-state",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make auto-switch hysteresis and activation failure-safe",
+      "in_diff": false,
+      "out_of_diff_reason": "The correctness invariant covers multiple event paths and lock boundaries in the engine.",
+      "body": "### Make auto-switch hysteresis and activation failure-safe\n\n**Severity:** `high`\n\n**Affected code:** `KeyboardManagerEngineLibrary/KeyboardManager.cpp` and `ProfileCycleHotkey.cpp`.\n\n**Problem:** Auto-switch candidate state must reset after unmapped input, key-up, modifiers, reload, or manual changes. A requested profile must not suppress retries before write and reload succeed, and cycle selection must be recomputed under the same transaction lock used for activation.\n\n**Why it matters:** A transient write failure can permanently stop retries, stale profile lists can be selected, or a deleted profile can be reactivated by queued input.\n\n**Suggested change:**\n1. Extract deterministic policy decisions and reset candidates on every non-consecutive path and reload.\n2. Record `requestedProfile` only after successful activation.\n3. Hold the switch lock across list selection and activation and revalidate the target file under the transaction lock.\n4. Return activation success or failure and emit reload or beep feedback only on success.\n\n**Verification:** Test injected, key-up, and modifier filtering; hysteresis reset; suppression; write-failure retry; manual-cycle races; and deletion while waiting for the transaction lock.",
+      "confidence": {
+        "score": 96,
+        "rationale": "Independent cycle and auto-switch paths retain stale state around failed or concurrent activation."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "accessibility-and-tests",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Add accessible names and regression coverage for the new profile UI",
+      "in_diff": false,
+      "out_of_diff_reason": "Accessibility metadata and regression coverage span XAML, resources, managed settings, and native policy tests.",
+      "body": "### Add accessible names and regression coverage for the new profile UI\n\n**Severity:** `medium`\n\n**Affected code:** `KeyboardManagerEditorUI/Pages/MainPage.xaml`, `Strings/en-US/Resources.resw`, and the Keyboard Manager editor and engine test projects.\n\n**Problem:** New device-assignment ComboBoxes and icon-only controls need localized automation names; labels and tooltips alone do not identify them to screen readers. The new profile lifecycle, persistence, identity, and auto-switch paths also lack equivalent deterministic coverage.\n\n**Why it matters:** Assistive-technology users can encounter unlabeled controls, while data-loss and switching regressions remain undetected.\n\n**Suggested change:**\n1. Bind each assignment control's accessible name to its displayed keyboard identity.\n2. Add localized automation names for icon-only actions.\n3. Add tests for profile create, copy, switch, and delete; reserved names and sidecar exclusion; failed writes; null-hotkey serialization; identity collisions; editor refresh races; and auto-switch policy.\n\n**Verification:** Run UI, managed unit, and native test suites with accessibility-tree inspection; assert every new control has a non-empty localized name and each persistence or race case is deterministic.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The changed UI adds unlabeled interactive controls and stateful paths without matching regression coverage."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49276",
+      "type": "request_changes",
+      "label": "Request changes with seven current-head Keyboard Manager findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49276,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "6b211d8abae7311bb22bc32f2d8f86180a12cfb6"
+      },
+      "note": "Draft only. Seven implementation-ready general comments require explicit maintainer approval."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-15T06:50:30Z",
-    "request_at": "2026-09-15T06:49:44.8985396Z",
-    "reviewed_fork_head": "9f4869567b016d92663fb17b93ff63cd293be0b8",
-    "current_fork_head": "265a82c47c8e09eefa0dad7e17057fd972a119fa",
-    "fix_commit": "265a82c47c8e09eefa0dad7e17057fd972a119fa",
-    "resolved_copilot_threads": 23,
-    "unresolved_copilot_threads": 0,
-    "immediate_review_found": false
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-15T19:20:00Z",
+    "advancement_evidence": [
+      "Consumed seven fork Copilot reviews and reached zero new comments and zero unresolved threads.",
+      "Built the exact upstream and converged fork engine, editor, and native test projects.",
+      "Preserved the existing fork PR 779 and branch pr-iterate/49276-v2.",
+      "Mapped every retained fork-only correction to one of seven implementation-ready general comments."
+    ]
   },
   "freshness": {
-    "queued_at": "09/11/2026 12:38:30",
-    "checkpoint_at": "2026-09-15T06:50:30Z",
-    "copilot_requested_at": "2026-09-15T06:49:44.8985396Z"
+    "headRefOid": "6b211d8abae7311bb22bc32f2d8f86180a12cfb6",
+    "updatedAt": "2026-09-11T10:16:12Z",
+    "latestCopilotReviewAt": "2026-09-15T19:10:52Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T19:20:00Z"
   },
   "fork_pr": {
     "number": 779,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/779"
+    "repo": "MuyuanMS/PowerToys",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/779",
+    "state": "OPEN"
   },
   "fork_branch": "pr-iterate/49276-v2",
-  "internal_validation": {
-    "result": "passed",
-    "fork_head": "265a82c47c8e09eefa0dad7e17057fd972a119fa",
-    "commands": [
-      "tools\\build\\build-essentials.cmd",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEditorUI\\..\\..\\..\\..\\tools\\build\\build.cmd",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEngineLibrary\\..\\..\\..\\..\\tools\\build\\build.cmd",
-      "src\\modules\\keyboardmanager\\dll\\..\\..\\..\\..\\tools\\build\\build.cmd",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEngine\\..\\..\\..\\..\\tools\\build\\build.cmd",
-      "vstest.console.exe KeyboardManagerEditorUI.UnitTests.dll /Tests:KeyboardManagerEditorUI.UnitTests.RemappingHelperTests /Platform:x64"
-    ],
-    "tests_passed": 38
+  "fork_head_sha": "4cfb2abe9c28b510878055a41312d8cbe9537238",
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "6b211d8abae7311bb22bc32f2d8f86180a12cfb6",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "All findings require coordinated cross-file or cross-process changes; no suggestion blocks are proposed."
+    },
+    "fork_review": {
+      "result": "passed",
+      "commands": [
+        "Build KeyboardManagerEngineLibrary",
+        "Build KeyboardManagerEditorUI",
+        "Build KeyboardManagerEngineTest"
+      ],
+      "details": "The converged fork tree compiled successfully for the targeted engine, editor, and native test projects."
+    },
+    "upstream_head": {
+      "head_sha": "6b211d8abae7311bb22bc32f2d8f86180a12cfb6",
+      "result": "passed",
+      "commands": [
+        "build-essentials.cmd",
+        "Build KeyboardManagerEngineLibrary",
+        "Build KeyboardManagerEditorUI",
+        "Build KeyboardManagerEngineTest"
+      ],
+      "details": "The exact upstream engine, editor, and native test projects compiled successfully. The native test DLL was produced, but execution was unavailable because the CppUnit adapter is not installed."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
   }
 }
