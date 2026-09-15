@@ -1,112 +1,451 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "id": "pr-49323",
   "number": 49323,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "post_review",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-07T08:50:00Z",
-  "evaluated_at": "2026-09-07T08:50:00Z",
+  "confidence": "High",
+  "processVerdict": "ask",
+  "generated_at": "2026-09-15T16:40:25.9061307+08:00",
+  "evaluated_at": "2026-09-15T16:40:25.9061307+08:00",
   "source_updated_at": "2026-09-03T14:12:11Z",
   "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
   "title": "CmdPal JS/TS Extensions - Phase 2: JSON-RPC transport + manifest",
   "url": "https://github.com/microsoft/PowerToys/pull/49323",
-  "confidence": "High",
-  "processVerdict": "ask",
-  "summary": "Current-head review converged with zero new published Copilot comments and zero unresolved Copilot threads. Fork-side fixes hardened port validation, filesystem race handling, notification admission, registration concurrency, inbound request concurrency, stderr framing/budget state, and disconnect callbacks. The remaining author-facing blocker is that the AOT-compatible CmdPal project uses StreamJsonRpc 2.21.69 reflection-based local-target registration and parameter-object invocation; the AOT-safe RpcTargetMetadata and NamedArgs APIs first appear in a later package generation and require a coordinated dependency update.",
+  "summary": "The durable fork review was resumed without re-mirroring. Its sixth current-head Copilot review was consumed before any new request; it returned zero published inline comments, the only suppressed candidate was after the round-five cutoff, and zero unresolved Copilot threads remain. The exact converged fork tree rebuilt and passed 62 focused tests. Because that fork contains five fix commits not present upstream, the terminal payload now accounts for every fork-only hunk as eight validated apply-ready suggestions or coordinated inline requests, together with the existing NativeAOT dispatch blocker.",
   "status": {
-    "glyph": "⚠",
-    "label": "Review ready — request changes",
-    "detail": "The code review is current and locally validated. One high-severity NativeAOT dispatch finding remains, and the three upstream Azure UI-test jobs are red."
+    "glyph": "WARN",
+    "label": "Review ready - request changes",
+    "detail": "Eleven current-head review items are ready: eight apply-ready suggestions and three coordinated inline requests. The exact suggestion patch builds and passes 55 focused tests; the converged fork tree passes 62. Three upstream Azure UI-test jobs remain red, and prerequisite PR 49321 remains open."
   },
-  "next_action": "Request the NativeAOT-safe StreamJsonRpc upgrade/registration change from the author, then rerun the failed x64 Win10, x64 Win11, and arm64 test jobs.",
-  "needs_revalidation": true,
+  "next_action": "After explicit maintainer approval and a mandatory freshness check, post the selected current-head items as a request-changes review. Do not merge before prerequisite PR 49321, and rerun the failed x64 Win10, x64 Win11, and arm64 test jobs.",
+  "needs_revalidation": false,
   "proposed_comments": [
     {
-      "id": "make-streamjsonrpc-dispatch-nativeaot-safe",
-      "kind": "companion",
+      "id": "validate-debug-port-range",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Reject unusable inspector ports",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/JSExtensionManifest.cs",
+      "start_line": 163,
+      "line": 163,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Reject unusable inspector ports\n\n**Severity:** `medium`\n\nThe manifest currently accepts zero, negative values, and values above the TCP port range. Those values reach process launch and produce an extension that cannot expose the requested inspector endpoint. Validate an explicitly supplied port while parsing, and add regression cases for `-1`, `0`, and `65536`.\n\n```suggestion\n        // An explicit inspector port must be usable as a TCP port. Port 0 is not\n        // supported because the host must know which port the extension selected.\n        if (package.CmdPal.DebugPort is <= 0 or > 65535)\n        {\n            return JSExtensionManifestParseResult.Failure(\"The 'cmdpal.debugPort' field must be between 1 and 65535.\");\n        }\n\n        // Rule 3: either cmdpal.main or top-level main must resolve to an existing file.\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "The parser directly accepts these invalid values, while TCP ports are limited to 1-65535 and the host cannot discover a dynamically assigned port 0."
+      }
+    },
+    {
+      "id": "fail-closed-on-entrypoint-race",
+      "kind": "inline",
       "severity": "high",
+      "title": "Fail closed when an entry-point segment disappears",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/JSExtensionManifest.cs",
+      "start_line": 379,
+      "line": 381,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Fail closed when an entry-point segment disappears\n\n**Severity:** `high`\n\nA file or directory can disappear after the earlier existence check but before its attributes are read. Returning `false` here treats that unverified segment as safe, so parsing can accept an entry point whose containment was never established. Reject the path when the filesystem race prevents verification.\n\n```suggestion\n            // The entry point was present before validation began. If a segment disappears during\n            // the walk, fail closed rather than trusting a path whose attributes were not verified.\n            return true;\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "The catch is reached only when attribute verification loses the path; treating that state as non-reparse explicitly bypasses the containment safety check."
+      }
+    },
+    {
+      "id": "derive-stderr-budget-state",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Report an exhausted stderr budget at the exact limit",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/BoundedStderrReader.cs",
+      "start_line": 92,
+      "line": 92,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Report an exhausted stderr budget at the exact limit\n\n**Severity:** `medium`\n\n`_budgetNoticeEmitted` is set only when a later line is suppressed, so the property remains false when the final emitted line reaches the cap exactly. Consumers therefore receive stale budget state at EOF. Derive the status from the byte count and cover the exact-limit case.\n\n```suggestion\n    public bool BudgetExhausted => _totalLoggedBytes >= _maxTotalBytes;\n```",
       "confidence": {
         "score": 96,
-        "rationale": "Microsoft.CmdPal.UI.ViewModels imports the repository AOT compatibility props, while the current StreamJsonRpc 2.21.69 assembly exposes neither RpcTargetMetadata nor NamedArgs. The changed code registers inbound methods with MethodInfo/AddLocalRpcMethod and sends parameter objects through object[], both reflection-dependent paths called out by StreamJsonRpc's NativeAOT guidance."
-      },
-      "body": "### Make the StreamJsonRpc dispatch paths NativeAOT-safe\n\n**Severity:** `high`\n\n`Microsoft.CmdPal.UI.ViewModels` opts into AOT compatibility, but the new transport registers inbound handlers through reflection-based `AddLocalRpcMethod` and sends named parameter objects through `object[]`/`InvokeCoreAsync`. The pinned StreamJsonRpc 2.21.69 package does not provide the NativeAOT-safe `RpcTargetMetadata` and `NamedArgs` APIs, so a trimmed CmdPal build can lose or fail the binder metadata even though the ordinary Debug build passes. Please coordinate an upgrade to a StreamJsonRpc version with those APIs, register local targets using generated metadata, and use the `NamedArgs` parameter-object invocation overload; add a publish/AOT smoke test that exercises both an inbound call and an outbound parameter-object request.",
-      "in_diff": false,
-      "disposition": "proposed"
+        "rationale": "The existing state transition is visibly delayed until another line arrives; the byte counter already represents the documented cap."
+      }
+    },
+    {
+      "id": "emit-carriage-return-stderr-lines",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Treat carriage returns as stderr record terminators",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/BoundedStderrReader.cs",
+      "start_line": 148,
+      "line": 148,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Treat carriage returns as stderr record terminators\n\n**Severity:** `medium`\n\nProgress-style stderr commonly uses bare carriage returns. The current branch discards them, concatenating records such as `first\\rsecond\\r` and distorting both truncation and rate accounting. Emit and reset at `\\r`; a following `\\n` in CRLF input only produces an ignored empty record.\n\n```suggestion\n            EmitLine();\n            ResetLine();\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current branch demonstrably discards the delimiter, and the bounded reader already ignores blank records produced by CRLF."
+      }
+    },
+    {
+      "id": "declare-notification-channel-multi-reader",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Do not enable single-reader channel optimizations",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 42,
+      "line": 42,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Do not enable single-reader channel optimizations\n\n**Severity:** `high`\n\n`EnqueueNotification` reads from the channel when it is full, so producer threads and the consumer can call `TryRead` concurrently. Declaring `SingleReader = true` violates the channel contract and permits unsafe single-reader optimizations. Mark the bounded channel as multi-reader.\n\n```suggestion\n            SingleReader = false,\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "Both the producer overflow path and consumer loop read the same channel, directly contradicting the configured single-reader guarantee."
+      }
+    },
+    {
+      "id": "serialize-rpc-method-registration",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Serialize side-effecting RPC registration",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 310,
+      "line": 310,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Serialize side-effecting RPC registration\n\n**Severity:** `high`\n\n`ConcurrentDictionary.GetOrAdd` may run its value factory more than once for the same key. Here the factory registers a local RPC method as a side effect, so concurrent handler registration can create duplicate or ambiguous targets even if only one dictionary value wins. Serialize the check, registration, and update as one operation.\n\n```suggestion\n        lock (_registeredMethods)\n        {\n            if (_registeredMethods.ContainsKey(method))\n            {\n                return;\n            }\n\n            _registeredMethods[method] = AddRpcMethodTarget(method, this);\n        }\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "The documented GetOrAdd factory semantics allow duplicate invocation, and AddRpcMethodTarget mutates StreamJsonRpc registration state."
+      }
+    },
+    {
+      "id": "retry-notification-admission-race",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Retry notification admission after a consumer race",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 375,
+      "line": 375,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Retry notification admission after a consumer race\n\n**Severity:** `high`\n\nWhen the first `TryWrite` observes a full queue, the consumer can remove the last item before this producer calls `TryRead`. The current `return` then silently drops the new notification without incrementing `DroppedNotificationCount`. Retry while the channel is open, yielding so the consumer can make progress.\n\n```suggestion\n            if (_notificationQueue.Reader.Completion.IsCompleted)\n            {\n                return;\n            }\n\n            Thread.Yield();\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "The interleaving between TryWrite and TryRead is valid and leads directly to an uncounted dropped notification."
+      }
+    },
+    {
+      "id": "isolate-disconnected-subscribers",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Isolate disconnect event subscribers",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 444,
+      "line": 444,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Isolate disconnect event subscribers\n\n**Severity:** `medium`\n\nA throwing `Disconnected` subscriber currently prevents every later subscriber from observing transport teardown. Invoke handlers independently, matching the error-event isolation already used in this class, and add coverage with a throwing first subscriber followed by an observing subscriber.\n\n```suggestion\n            var handlers = Disconnected;\n            if (handlers is null)\n            {\n                return;\n            }\n\n            foreach (EventHandler handler in handlers.GetInvocationList())\n            {\n                try\n                {\n                    handler(this, EventArgs.Empty);\n                }\n                catch (Exception ex)\n                {\n                    Logger.LogError(\"A JSON-RPC disconnected event handler failed.\", ex);\n                }\n            }\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "Multicast delegate invocation stops at the first exception, and this teardown path has multiple independent consumers."
+      }
+    },
+    {
+      "id": "bound-inbound-request-concurrency",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Bound concurrent inbound request work",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 326,
+      "line": 326,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Bound concurrent inbound request work\n\n**Severity:** `high`\n\nEach inbound request can start another handler with no admission limit, so an extension can accumulate arbitrary concurrent work and exhaust memory or thread-pool capacity. Add a connection-owned concurrency gate around request-handler dispatch, return `JsonRpcError.ServerBusy` when all slots are occupied, release the slot in `finally`, and cover rejection after the configured limit. This requires coordinated state, dispatch, and test changes, so it is intentionally explanatory rather than a partial apply block.",
+      "confidence": {
+        "score": 93,
+        "rationale": "The dispatch path starts handlers independently with no existing semaphore, queue, or other bounded admission mechanism."
+      }
+    },
+    {
+      "id": "use-nativeaot-safe-local-target-registration",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Use NativeAOT-safe local target registration",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 316,
+      "line": 316,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Use NativeAOT-safe local target registration\n\n**Severity:** `high`\n\n`Microsoft.CmdPal.UI.ViewModels` imports the repository AOT-compatibility props, but this registration discovers the target with `MethodInfo` and `AddLocalRpcMethod`. The pinned StreamJsonRpc 2.21.69 package does not expose the generated `RpcTargetMetadata` path needed to preserve dispatch metadata under trimming. Coordinate a StreamJsonRpc upgrade and register the local target with generated NativeAOT-safe metadata; include an AOT publish smoke test that invokes one inbound handler.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The project explicitly opts into AOT compatibility, the changed code uses reflection-based target discovery, and the pinned assembly lacks RpcTargetMetadata."
+      }
+    },
+    {
+      "id": "use-nativeaot-safe-named-arguments",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Use the NativeAOT-safe named-argument invocation path",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+      "start_line": 535,
+      "line": 535,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "body": "### Use the NativeAOT-safe named-argument invocation path\n\n**Severity:** `high`\n\nThe parameter object is wrapped in `object[]` and sent through the reflection-oriented `InvokeCoreAsync` overload. Source-generated JSON metadata does not preserve StreamJsonRpc's argument binder, so a trimmed CmdPal build can fail outbound parameter-object requests. As part of the coordinated package upgrade, use the `NamedArgs` overload and exercise one outbound named-parameter request in the AOT smoke test.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The call directly selects the untyped object-array binder path, while the pinned StreamJsonRpc version lacks the NamedArgs API intended for NativeAOT parameter-object invocation."
+      }
     }
   ],
-  "actions": [],
+  "actions": [
+    {
+      "id": "request-changes-49323",
+      "type": "request_changes",
+      "label": "Request changes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+        "event": "REQUEST_CHANGES",
+        "body": "The JSON-RPC transport and manifest path need bounded concurrency, race-safe registration and notification handling, accurate stderr framing and budget state, fail-closed path validation, usable debug-port validation, isolated disconnect callbacks, and NativeAOT-safe StreamJsonRpc dispatch before merging."
+      }
+    }
+  ],
+  "safe_actions": [
+    "Post only through the approval-gated review publisher after a fresh current-head check",
+    "Apply the eight suggestion items as a batch or from bottom to top within each file",
+    "Keep all fork work on MuyuanMS/PowerToys and make no microsoft/PowerToys mutation without explicit approval",
+    "Do not merge before prerequisite PR 49321",
+    "Rerun the three failed Azure test jobs"
+  ],
   "phase0": {
     "author": "michaeljolley",
     "author_association": "MEMBER",
-    "bar": "maintainer/member process bar; template and demo nags skipped",
+    "bar": "member-authored; routine community template and demo nags skipped",
     "disposition": "Ask",
     "gates_tripped": [
       "P4"
     ],
-    "who_owes_next": "author",
-    "note": "CLA, dependency review, PR intake, telemetry, SDK build, and both architecture builds pass. No visual demo is needed because the PR is additive transport/manifest infrastructure. The three Azure test jobs (x64 Win10, x64 Win11, arm64) are failing. The stack prerequisite PR 49321 remains open, so this PR must not merge first."
+    "who_owes_next": "Maintainer approval, then author changes and CI rerun",
+    "note": "CLA, dependency review, PR intake, telemetry, SDK build, and both architecture builds pass. The x64 Win10, x64 Win11, and arm64 Azure test jobs fail. Prerequisite PR 49321 remains open and blocked, so this stacked PR must not merge first."
   },
-  "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-09-07T08:50:00Z",
-    "fork_pr": 608,
-    "fork_branch": "pr-iterate/49323-v8",
-    "fork_reviewed_head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
-    "copilot_review_count": 6,
-    "latest_copilot_review_at": "2026-09-07T08:39:00Z",
-    "copilot_final": "fresh review returned zero published inline comments",
-    "unresolved_copilot_threads": 0
+  "fork_pr": {
+    "number": 608,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/608",
+    "state": "OPEN",
+    "branch": "pr-iterate/49323-v8",
+    "head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
+    "base_sha": "ed3619d6889114d08da7a5b171205a3e3bf1a313"
   },
-  "validation": {
-    "upstream_head_matches": true,
-    "fork_diff_matches_upstream_scope": true,
-    "configuration": "x64 Debug",
-    "result": "passed",
-    "builds": [
-      "tools\\build\\build-essentials.cmd",
-      "src\\modules\\cmdpal\\CmdPalModuleInterface\\CmdPalModuleInterface.vcxproj",
-      "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
-      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj"
-    ],
-    "tests": [
-      {
-        "suite": "CmdPal manifest, bounded stderr, and JSON-RPC connection tests",
-        "result": "passed",
-        "count": 62
-      },
-      {
-        "suite": "Patch validation",
-        "command": "git diff --check",
-        "result": "passed"
-      }
-    ],
-    "outputs": [
-      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
-      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll",
-      "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe"
-    ]
-  },
-  "test_instructions": [
-    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-    "Open Command Palette and exercise a JavaScript extension from the complete stacked branch because this phase is not wired into the product by itself.",
-    "Verify request/notification traffic, stderr lines including carriage-return updates, invalid debug-port rejection, and overload behavior under concurrent inbound requests.",
-    "Publish the CmdPal UI with NativeAOT after the StreamJsonRpc upgrade and verify one inbound handler and one outbound named-parameter request."
-  ],
+  "fork_branch": "pr-iterate/49323-v8",
   "freshness": {
+    "status": "current_head_reviewed",
+    "previous_checkpoint_at": "2026-09-07T08:50:00Z",
+    "checkpoint_at": "2026-09-15T16:40:25.9061307+08:00",
+    "checked_at": "2026-09-15T16:40:25.9061307+08:00",
+    "upstream_head": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+    "source_updated_at": "2026-09-03T14:12:11Z",
     "issue_comment_count": 1,
     "review_count": 13,
     "review_comment_count": 23,
-    "last_issue_comment_at": "2026-09-03T13:57:00Z",
-    "last_review_at": "2026-09-03T14:12:11Z",
-    "last_review_comment_at": "2026-09-03T14:13:52Z",
-    "checkpoint_at": "2026-09-07T08:50:00Z"
+    "latest_issue_comment_at": "2026-08-14T22:39:01Z",
+    "latest_review_at": "2026-09-03T14:12:11Z",
+    "latest_review_comment_at": "2026-09-03T14:12:11Z",
+    "latest_copilot_review_at": "2026-09-07T08:39:00Z",
+    "latest_fork_commit_at": "2026-09-07T08:35:21Z",
+    "unresolved_fork_copilot_threads": 0,
+    "staleExpectation": "Expected current only while upstream head 74a09d5460c520d5444a140ad82c32a3ca56d166, source activity, review threads, and check results remain unchanged. Any new commit, comment, review, thread, or check transition requires a new freshness pass and may require rerunning the fork loop and exact suggestion-patch validation."
   },
-  "blockers": [
-    "NativeAOT-safe StreamJsonRpc local-target registration and named-parameter invocation require a coordinated upgrade from pinned version 2.21.69.",
-    "Upstream Azure UI-test jobs are failing for x64 Win10, x64 Win11, and arm64.",
-    "Stack prerequisite PR 49321 remains open."
-  ]
+  "copilot_review": {
+    "review_count": 6,
+    "latest_submitted_at": "2026-09-07T08:39:00Z",
+    "latest_commit_id": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
+    "latest_new_published_comments": 0,
+    "latest_suppressed_comments": 1,
+    "unresolved_threads": 0,
+    "policy_note": "The existing completed review on the matching fork head was consumed before considering another request. Its single suppressed candidate arrived in round six, after the skill's round-five suppressed-comment cutoff, so no duplicate request or additional iteration was made."
+  },
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "validate-debug-port-range",
+        "fail-closed-on-entrypoint-race",
+        "derive-stderr-budget-state",
+        "emit-carriage-return-stderr-lines",
+        "declare-notification-channel-multi-reader",
+        "serialize-rpc-method-registration",
+        "retry-notification-admission-race",
+        "isolate-disconnected-subscribers"
+      ]
+    },
+    "fork_tree": {
+      "worktree": "C:\\PowerToys-49323-v8",
+      "head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
+      "configuration": "x64 Debug",
+      "result": "passed",
+      "builds": [
+        "C:\\PowerToys-49323-v8\\tools\\build\\build-essentials.cmd",
+        "C:\\PowerToys-49323-v8\\src\\modules\\cmdpal\\CmdPalModuleInterface\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "C:\\PowerToys-49323-v8\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "C:\\PowerToys-49323-v8\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "tests": {
+        "suite": "CmdPal manifest, bounded stderr, and JSON-RPC connection tests",
+        "passed": 62,
+        "failed": 0,
+        "skipped": 0
+      },
+      "outputs": [
+        "C:\\PowerToys-49323-v8\\x64\\Debug\\PowerToys.exe",
+        "C:\\PowerToys-49323-v8\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll",
+        "C:\\PowerToys-49323-v8\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe"
+      ]
+    },
+    "suggestionPatch": {
+      "worktree": "C:\\PowerToys-49323-upstream-head",
+      "headSha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+      "result": "passed",
+      "appliedItemIds": [
+        "validate-debug-port-range",
+        "fail-closed-on-entrypoint-race",
+        "derive-stderr-budget-state",
+        "emit-carriage-return-stderr-lines",
+        "declare-notification-channel-multi-reader",
+        "serialize-rpc-method-registration",
+        "retry-notification-admission-race",
+        "isolate-disconnected-subscribers"
+      ],
+      "minimalRangesReviewed": true,
+      "commands": [
+        "C:\\PowerToys-49323-upstream-head\\tools\\build\\build-essentials.cmd",
+        "C:\\PowerToys-49323-upstream-head\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "C:\\PowerToys-49323-upstream-head\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "vstest.console.exe Microsoft.CmdPal.UI.ViewModels.UnitTests.dll /TestCaseFilter:FullyQualifiedName~JSExtensionManifestTests|FullyQualifiedName~BoundedStderrReaderTests|FullyQualifiedName~JsonRpcConnectionTests",
+        "git diff --check"
+      ],
+      "tests": {
+        "passed": 55,
+        "failed": 0,
+        "skipped": 0
+      },
+      "detail": "The eight literal, minimized suggestion replacements were applied together to a clean detached worktree at the pinned upstream head. The exact candidate built successfully and all pre-existing focused tests passed."
+    },
+    "environment_note": "Both builds required POWERTOYS_DISABLE_SPECTRE=1 and clearing inherited GIT_CONFIG_* variables because GIT_CONFIG_COUNT included an empty GIT_CONFIG_VALUE_3 that broke vcpkg. No repository file was changed for either environment workaround."
+  },
+  "fork_only_delta": {
+    "result": "fully_accounted",
+    "files": 6,
+    "insertions": 181,
+    "deletions": 12,
+    "localized_suggestions": [
+      "validate-debug-port-range",
+      "fail-closed-on-entrypoint-race",
+      "derive-stderr-budget-state",
+      "emit-carriage-return-stderr-lines",
+      "declare-notification-channel-multi-reader",
+      "serialize-rpc-method-registration",
+      "retry-notification-admission-race",
+      "isolate-disconnected-subscribers"
+    ],
+    "coordinated_requests": [
+      "bound-inbound-request-concurrency",
+      "use-nativeaot-safe-local-target-registration",
+      "use-nativeaot-safe-named-arguments"
+    ],
+    "test_hunks": "The fork's added manifest, stderr, concurrency, and disconnect tests are explicitly requested in the corresponding author-facing items. No fork-only hunk is represented as though it already exists upstream."
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "merge_state_status": "BLOCKED",
+    "upstream_head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+    "upstream_base_sha": "afaf0351b4a2fc14d8e6bdab90539b852986aa96",
+    "commit_count": 11,
+    "issue_comment_count": 1,
+    "review_count": 13,
+    "review_comment_count": 23,
+    "reported_checks": {
+      "total": 13,
+      "successful": 10,
+      "failing": 3,
+      "pending": 0,
+      "license_cla": "success",
+      "dependency_review": "success",
+      "pr_intake": "success",
+      "telemetry_pr_check": "success",
+      "command_palette_toolkit_sdk": "success",
+      "azure_arm64_tests": "failure",
+      "azure_x64_win10_tests": "failure",
+      "azure_x64_win11_tests": "failure"
+    },
+    "stack_prerequisite": {
+      "number": 49321,
+      "state": "OPEN",
+      "draft": false,
+      "head_sha": "177a6590370223400874ef11a71b4967cc891b71",
+      "merge_state_status": "BLOCKED",
+      "updated_at": "2026-09-03T02:17:15Z"
+    }
+  },
+  "workflow": {
+    "phase": "post_review",
+    "previous_phase": "review_in_progress",
+    "previous_checkpoint_at": "2026-09-07T08:50:00Z",
+    "checkpoint_at": "2026-09-15T16:40:25.9061307+08:00",
+    "resume_action": "approval_gated_request_changes",
+    "fork_pr": 608,
+    "fork_branch": "pr-iterate/49323-v8",
+    "worktree": "C:\\PowerToys-49323-v8",
+    "suggestion_worktree": "C:\\PowerToys-49323-upstream-head",
+    "upstream_head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+    "fork_reviewed_head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
+    "copilot_review_count": 6,
+    "latest_copilot_review_at": "2026-09-07T08:39:00Z",
+    "copilot_final": "existing matching-head review returned zero published inline comments",
+    "unresolved_copilot_threads": 0,
+    "build_result": "passed",
+    "suggestion_patch_result": "passed",
+    "advancement_evidence": [
+      "Preserved the saved checkpoint, fork PR 608, branch pr-iterate/49323-v8, fork head 9b8510564805a2aa5a0ad2dae202608c0455bb59, and upstream head 74a09d5460c520d5444a140ad82c32a3ca56d166.",
+      "Created C:\\PowerToys-49323-v8 from the existing local branch without re-mirroring, rebasing, committing, or pushing.",
+      "Consumed the existing sixth Copilot review before considering another request; no duplicate request and no polling occurred.",
+      "Applied the post-round-five suppressed-comment cutoff and confirmed zero unresolved Copilot threads from the durable resume state.",
+      "Rebuilt the exact converged fork tree and ran 62 focused tests with zero failures.",
+      "Mapped every fork-only change to eight apply-ready suggestions or three coordinated current-diff requests.",
+      "Applied all eight literal minimized suggestions to C:\\PowerToys-49323-upstream-head at the pinned upstream SHA.",
+      "Built that exact suggestion candidate and ran 55 focused pre-existing tests with zero failures.",
+      "Confirmed upstream head and source activity are unchanged, three Azure test jobs remain failed, and prerequisite PR 49321 remains open.",
+      "Advanced the dashboard item from review_in_progress to post_review with an approval-gated REQUEST_CHANGES action.",
+      "No microsoft/PowerToys write was performed."
+    ]
+  },
+  "test_instructions": [
+    "Launch C:\\PowerToys-49323-v8\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and exercise a JavaScript extension from the complete stacked branch because this phase is not wired into the product by itself.",
+    "Verify request and notification traffic, stderr lines including carriage-return updates, invalid debug-port rejection, and overload behavior under concurrent inbound requests.",
+    "Publish the CmdPal UI with NativeAOT after the StreamJsonRpc upgrade and verify one inbound handler and one outbound named-parameter request."
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys. No dashboard emit, sanitize, commit, or push was performed."
+  }
 }
