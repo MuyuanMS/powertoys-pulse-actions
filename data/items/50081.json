@@ -16,22 +16,22 @@
   "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "generated_at": "2026-09-14T17:49:20Z",
-  "evaluated_at": "2026-09-14T17:49:20Z",
+  "generated_at": "2026-09-15T13:21:19Z",
+  "evaluated_at": "2026-09-15T13:21:19Z",
   "source_updated_at": "2026-09-05T00:24:33Z",
   "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
-  "summary": "The saved fork review loop was resumed and its existing Copilot results were consumed before any new request. The latest fork pass returned zero new published comments with zero unresolved Copilot threads. The exact upstream head remains unchanged; five current-head findings are drafted for maintainer approval.",
+  "summary": "The saved fork review loop was resumed and its existing Copilot results were consumed before any new request. The latest fork pass returned zero new published comments with zero unresolved Copilot threads. The exact upstream head remains unchanged and passed targeted Advanced Paste builds; five current-head findings are drafted for maintainer approval.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
-    "detail": "Fork PR 440 is converged at 087c7fb7fe57e0274cc6b158d519bf202db0d47e with zero unresolved Copilot threads. The upstream head a877c02e63252545404b69398e4521867a1d7a29 passed the targeted AdvancedPaste test command; the repository-wide Debug build was attempted but stalled during restore and is not claimed as passed. No upstream write occurred."
+    "detail": "Fork PR 440 is converged at 087c7fb7fe57e0274cc6b158d519bf202db0d47e with zero unresolved Copilot threads. Targeted x64 Debug builds passed for the exact upstream head and converged fork tree. Five findings remain for maintainer approval. No upstream write occurred."
   },
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted review comments",
     "reason": "The five proposed comments are pinned to the live upstream head and remain unpublished pending explicit maintainer approval."
   },
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "source": {
     "repository": "microsoft/PowerToys",
     "headRefOid": "a877c02e63252545404b69398e4521867a1d7a29",
@@ -43,10 +43,105 @@
     "latestCopilotReviewAt": "2026-08-27T09:56:55Z",
     "latestForkCommitAt": "2026-08-27T09:53:28Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-14T17:49:20Z"
+    "checkedAt": "2026-09-15T13:21:19Z"
   },
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "preserve-paste-format-telemetry-ids",
+      "kind": "inline",
+      "title": "Preserve existing PasteFormats telemetry IDs",
+      "severity": "high",
+      "body": "### Preserve existing PasteFormats telemetry IDs\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs` (`PasteFormats`).\n\n**Suggested change:** Assign `PasteAsJpgFile` an explicit unused stable value instead of inserting it before the existing HTML and transcode values. These enum values are emitted directly in format-click and in-app-shortcut telemetry, so renumbering the following members makes existing dashboards and persisted numeric payloads interpret old actions as different formats. Keep display ordering separate from the persisted telemetry ID.",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
+      "line": 94,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 98,
+        "rationale": "The enum members are used as telemetry values, and insertion before existing members changes their numeric identities."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "normalize-jpeg-source-bitmap",
+      "kind": "inline",
+      "title": "Normalize clipboard bitmaps before JPEG encoding",
+      "severity": "high",
+      "body": "### Normalize clipboard bitmaps before JPEG encoding\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs` (`PasteAsJpgFileAsync`).\n\n**Suggested change:** Convert the decoded clipboard bitmap to a JPEG-supported pixel format and define alpha compositing before calling `SetSoftwareBitmap`. `GetImageContentAsync()` can return valid grayscale or alpha-bearing images that the encoder cannot consume directly or cannot represent correctly. Add regression coverage for both a grayscale image and a transparent image.",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs",
+      "line": 97,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 97,
+        "rationale": "The encoder path passes the decoded bitmap through without format normalization even though valid clipboard formats and JPEG alpha support differ."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "bound-large-image-jpeg-memory",
+      "kind": "companion",
+      "title": "Keep large-image JPEG conversion memory bounded",
+      "severity": "medium",
+      "body": "### Keep large-image JPEG conversion memory bounded\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs` (`PasteAsJpgFileAsync` and the bitmap-normalization path).\n\n**Problem:** Normalizing and encoding a large clipboard image can materialize several full-frame buffers at once. A 4000 x 3000 BGRA image is approximately 48 MB per copy, so repeated bitmap conversions plus managed copies can consume hundreds of megabytes.\n\n**Why it matters:** Large photos are a primary use case for JPEG output, and excessive transient allocation can make Advanced Paste slow, trigger memory pressure, or fail on otherwise valid input.\n\n**Suggested change:**\n1. Normalize pixels through a locked buffer, encoder-supported surface, or bounded row-wise conversion rather than creating repeated full-frame managed copies.\n2. Reuse or release intermediate surfaces before allocating the encoder output.\n3. Add a focused large transparent-image test or document and enforce a deliberate input-size limit.\n\n**Verification:** Convert a representative 4000 x 3000 transparent clipboard image, confirm the JPEG output is correct, and measure peak working-set growth to verify it remains bounded.",
+      "in_diff": false,
+      "out_of_diff_reason": "The concern spans allocation and conversion behavior across the method rather than one newly added RIGHT-side line, so no single current-diff anchor represents the required coordinated fix.",
+      "confidence": {
+        "score": 88,
+        "rationale": "The reviewed conversion approach can hold multiple full-frame representations; the exact peak depends on WinRT encoder internals."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-legacy-hotkey-ids",
+      "kind": "inline",
+      "title": "Preserve hotkey IDs for legacy settings",
+      "severity": "high",
+      "body": "### Preserve hotkey IDs for legacy settings\n\n**Severity:** `high`\n\n**Affected code:** `src/settings-ui/Settings.UI.Library/AdvancedPastePasteAsFileAction.cs` (`SubActions`).\n\n**Suggested change:** Preserve the existing serialized positions with an explicit migration or native placeholder before inserting the JPEG action into displayed order. For an older settings file with no JPEG property, the Settings model creates the missing backing field while the native module can still enumerate only actions physically present in the legacy JSON; inserting the child in the middle can therefore assign HTML and later actions the wrong hotkey IDs until settings are rewritten.",
+      "path": "src/settings-ui/Settings.UI.Library/AdvancedPastePasteAsFileAction.cs",
+      "line": 64,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "The hotkey identity is positional across managed and native settings readers, and legacy JSON omits the newly introduced child."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "hide-disabled-jpeg-shortcut",
+      "kind": "inline",
+      "title": "Hide disabled JPEG shortcuts",
+      "severity": "medium",
+      "body": "### Hide disabled JPEG shortcuts\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs` (`PopulateAdvancedPasteShortcuts`).\n\n**Suggested change:** Guard the JPEG entry with `PasteAsJpgFile.IsShown` in addition to the parent Paste-as-file visibility. Advanced Paste checks both visibility levels when activating the action, so Shortcut Guide currently can advertise a shortcut that the user disabled.",
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs",
+      "line": 62,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 99,
+        "rationale": "The new Shortcut Guide entry checks only the parent group while the action has its own visibility setting."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50081",
+      "type": "post_review",
+      "label": "Post four inline findings and one general review note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50081,
+        "event": "COMMENT",
+        "head_sha": "a877c02e63252545404b69398e4521867a1d7a29"
+      },
+      "note": "The four inline findings are submitted in one COMMENT review. The memory-bounds finding posts as a separate PR conversation comment. Draft only; no public write has occurred."
+    }
+  ],
   "safe_actions": [
     "Present the five drafted current-head comments for explicit maintainer approval",
     "Post nothing upstream until the pinned head and activity snapshot are revalidated",
@@ -59,7 +154,7 @@
       "result": "passed",
       "configuration": "Debug",
       "commands": [
-        "dotnet test src/modules/AdvancedPaste/AdvancedPaste.UnitTests/AdvancedPaste.UnitTests.csproj --configuration Debug --no-restore --verbosity minimal (exit 0)"
+        "src\\modules\\AdvancedPaste\\AdvancedPaste\\..\\..\\..\\..\\tools\\build\\build.cmd (x64 Debug, exit 0)"
       ],
       "checks": [
         "detect-telemetry-events: passed",
@@ -67,8 +162,8 @@
         "pr-intake: passed"
       ],
       "full_build": {
-        "result": "blocked",
-        "detail": "tools/build/build.ps1 -Platform x64 -Configuration Debug was started from the exact upstream-head local checkout and stalled during solution restore; no successful repository-wide build is claimed."
+        "result": "not_run",
+        "detail": "Repository-wide build was not run to completion; targeted repository build scripts covering Advanced Paste passed on the exact upstream head and converged fork tree."
       }
     },
     "fork_review": {
@@ -84,7 +179,7 @@
   "workflow": {
     "phase": "awaiting_review_approval",
     "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-14T17:49:20Z",
+    "checkpoint_at": "2026-09-15T13:21:19Z",
     "fork_pr": 440,
     "fork_branch": "pr-iterate/50081-v2",
     "fork_reviewed_head_sha": "087c7fb7fe57e0274cc6b158d519bf202db0d47e",
@@ -98,8 +193,9 @@
       "The latest Copilot review returned zero new published comments.",
       "Unresolved fork Copilot thread count is zero.",
       "The exact upstream head matches the dashboard head_sha.",
-      "Targeted AdvancedPaste test command exited 0.",
-      "The repository-wide build limitation is recorded explicitly rather than treated as passed."
+      "The exact upstream Advanced Paste x64 Debug build passed.",
+      "The converged fork tree passed build-essentials and the Advanced Paste x64 Debug build.",
+      "Five current-head findings were mapped to four RIGHT-side anchors and one independently actionable out-of-diff comment."
     ]
   },
   "fork_pr": {
