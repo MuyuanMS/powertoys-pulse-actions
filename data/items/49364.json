@@ -2,54 +2,216 @@
   "number": 49364,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "copilot",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T09:04:00Z",
-  "evaluated_at": "2026-09-15T09:04:00Z",
+  "generated_at": "2026-09-15T18:29:00Z",
+  "evaluated_at": "2026-09-15T18:29:00Z",
   "source_updated_at": "2026-08-29T11:39:55+08:00",
   "head_sha": "21024c17e5462971ef5f829194b4d79e7f87a65c",
   "title": "CmdPal JS/TS Extensions - Phase 7: details size, prefix-select, image fix (+ design proposals)",
   "url": "https://github.com/microsoft/PowerToys/pull/49364",
+  "summary": "The fork review converged with a zero-comment Copilot pass and zero unresolved threads. Exact upstream builds and passes 620 ViewModels tests plus 129 JsonRpc tests. Six current-diff findings and one CI companion request remain for approval.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Consumed the existing review first on preserved fork PR 698 and branch pr-iterate/49364-v3-current. The latest review at 2026-09-07T11:23:27Z had zero published comments but identified one valid suppressed compatibility issue: valid prerelease Node runtimes were rejected. Fixed full SemVer prerelease parsing and comparison in fork commit cc78e8d6b1012a6f0fc66b22d6074f624ae04b9f, pushed it without rewriting prior history, built the affected CmdPal test project, and passed all 55 NodeRuntimeLocator tests. Requested a fresh Copilot review at 2026-09-15T09:03:11.3186991Z; the single immediate check found no submitted review, so this is a valid external wait."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 698 converged at 561dc565c7c359d8271d735ea94cfb30fef624d3. Seven current-head review requests remain."
   },
-  "next_action": "On the next resume, consume a Copilot review submitted after 2026-09-15T09:03:11.3186991Z for fork PR 698 at head cc78e8d6b1012a6f0fc66b22d6074f624ae04b9f before making any further request.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "All findings are pinned to the current upstream head; no upstream write has occurred."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "strict-content-length",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Parse Content-Length as a strict bounded decimal",
+      "path": "src/modules/cmdpal/ts-sdk/src/runtime/framing.ts",
+      "start_line": 44,
+      "line": 44,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Parse Content-Length as a strict bounded decimal\n\n**Severity:** `high`\n\n`Number.parseInt` accepts malformed prefixes such as `123abc`, allowing the frame reader to consume an unintended length. Parse a complete ASCII decimal token, require a safe non-negative integer, and reject malformed, overflowed, or excessive values before allocating or waiting for the body.\n\n**Verification:** Cover trailing characters, signs, whitespace, overflow, and excessively large lengths.",
+      "confidence": {
+        "score": 97,
+        "rationale": "parseInt's prefix acceptance is deterministic and the frame length controls allocation and stream consumption."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "avoid-shell-url-launch",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Launch URLs without command-shell parsing",
+      "path": "src/modules/cmdpal/ts-sdk/src/runtime/openUrl.ts",
+      "start_line": 40,
+      "line": 40,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Launch URLs without command-shell parsing\n\n**Severity:** `high`\n\nThe Windows fallback launches URLs through `cmd.exe start`, introducing shell parsing and expansion into protocol dispatch. Use a platform/browser process-launch mechanism with the URL passed as one argument, preserve the error path, and avoid echoing sensitive URLs.\n\n**Verification:** Cover spaces, metacharacters, and non-HTTP protocols.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current path explicitly invokes cmd.exe with caller-controlled URL text."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "initialization-after-disposal",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Prevent asynchronous initialization from completing after disposal",
+      "path": "src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts",
+      "start_line": 216,
+      "line": 216,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Prevent asynchronous initialization from completing after disposal\n\n**Severity:** `high`\n\nAsynchronous initialization can complete after disposal and register a provider or report a fatal initialization error after the runtime is already torn down. Make initialization/disposal state explicit, prevent post-disposal registration, and route late failures through the disposed-state path.\n\n**Verification:** Add a dispose-before-initialization-completion test.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The completion path has no disposed-state guard and can mutate runtime state after teardown."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "bound-unknown-json-diagnostics",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Do not materialize untrusted JSON in diagnostics",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSModelMapper.cs",
+      "start_line": 306,
+      "line": 306,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Do not materialize untrusted JSON in diagnostics\n\n**Severity:** `medium`\n\nThe unknown-details-size path calls `GetRawText()` on an untrusted JSON value, which can allocate a very large string in a hot parser path and expose content in logs. Log only bounded, non-sensitive metadata or omit the preview.\n\n**Verification:** Add a large unknown-size value regression and confirm diagnostic allocation remains bounded.",
+      "confidence": {
+        "score": 91,
+        "rationale": "GetRawText materializes the complete JSON value and the input size is not trusted."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "enforce-node-engine-range",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Enforce the extension's Node engine requirement",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/JSExtensionWrapper.cs",
+      "start_line": 299,
+      "line": 299,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Enforce the extension's Node engine requirement\n\n**Severity:** `high`\n\nThe extension launch path does not enforce the manifest's Node engine range before starting Node. Add strict npm-compatible semver parsing and comparison, including malformed-range rejection, prerelease rules, and hyphen bounds, then reject incompatible runtimes before process startup.\n\n**Verification:** Cover stable, prerelease, malformed, comparator, caret, tilde, and hyphen-range cases.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The manifest requirement is available but not enforced before execution; the fork implementation passes focused runtime tests."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "reject-linked-lockfile-entries",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Reject linked packages in trusted lockfile validation",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/NpmCommandRunner.cs",
+      "start_line": 615,
+      "line": 615,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Reject linked packages in trusted lockfile validation\n\n**Severity:** `high`\n\nThe validator accepts `link: true` package entries while treating the lockfile as installed registry packages. Workspace or local-link entries can therefore bypass trusted-resolution and integrity checks. Reject linked entries explicitly.\n\n**Verification:** Add a lockfile regression proving a linked package is not accepted as trusted.",
+      "confidence": {
+        "score": 97,
+        "rationale": "Linked entries intentionally point outside normal registry resolution and do not satisfy package integrity assumptions."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "expand-ts-sdk-ci-validation",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Run TypeScript SDK checks and package verification in CI",
+      "in_diff": false,
+      "out_of_diff_reason": "The workflow CI definition that invokes the TypeScript SDK build is outside the current changed-line ranges.",
+      "body": "### Run TypeScript SDK checks and package verification in CI\n\n**Severity:** `medium`\n\n**Affected code:** the CmdPal TypeScript SDK workflow step and `src/modules/cmdpal/ts-sdk/package.json` scripts.\n\n**Problem:** The current CI step runs only `npm run build`, so type/lint/test regressions and package-content mistakes can pass even when compilation succeeds.\n\n**Why it matters:** This PR changes runtime framing, process launch, serialization, and package trust behavior; build-only validation does not exercise those contracts or verify the published package contents.\n\n**Suggested change:**\n1. Run `npm run check` before the production build.\n2. Retain `npm run build` for emitted artifacts.\n3. Run `npm run verify:pack` after the build.\n4. Ensure failures from any step block the workflow.\n\n**Verification:** Introduce a temporary failing unit test and a package-content mismatch to confirm each command fails CI, then restore the valid tree and confirm all three commands pass.",
+      "confidence": {
+        "score": 92,
+        "rationale": "The converged fork uses all three commands and catches classes of regressions that build-only validation omits."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49364",
+      "type": "request_changes",
+      "label": "Request changes with seven current-head CmdPal findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49364,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "21024c17e5462971ef5f829194b4d79e7f87a65c"
+      },
+      "note": "Draft only. Six inline findings and one implementation-ready general comment require explicit maintainer approval."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-15T09:04:00Z",
-    "request_at": "2026-09-15T09:03:11.3186991Z",
-    "reviewed_fork_head": "5fc9da8a3157af6fe3afdd4be40877bf636f21bd",
-    "reviewed_at": "2026-09-07T11:23:27Z",
-    "current_fork_head": "cc78e8d6b1012a6f0fc66b22d6074f624ae04b9f",
-    "fix_commit": "cc78e8d6b1012a6f0fc66b22d6074f624ae04b9f",
-    "copilot_round": 4,
-    "unresolved_copilot_threads": 0,
-    "immediate_review_found": false
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-15T18:29:00Z",
+    "advancement_evidence": [
+      "Consumed the fresh zero-comment Copilot review and confirmed zero unresolved threads.",
+      "Preserved fork PR 698 and branch pr-iterate/49364-v3-current.",
+      "Built the exact upstream head and passed 620 ViewModels plus 129 JsonRpc tests.",
+      "Built the converged fork correction.",
+      "Mapped every material fork fix to a current-head review request."
+    ]
   },
   "freshness": {
-    "queued_at": "09/14/2026 02:15:35",
-    "checkpoint_at": "2026-09-15T09:04:00Z",
-    "copilot_requested_at": "2026-09-15T09:03:11.3186991Z"
+    "headRefOid": "21024c17e5462971ef5f829194b4d79e7f87a65c",
+    "updatedAt": "2026-08-29T11:39:55+08:00",
+    "latestCopilotReviewAt": "2026-09-15T17:47:13Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T18:29:00Z"
   },
   "fork_pr": {
     "number": 698,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/698"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/698",
+    "state": "OPEN"
   },
   "fork_branch": "pr-iterate/49364-v3-current",
-  "internal_validation": {
-    "result": "passed",
-    "fork_head": "cc78e8d6b1012a6f0fc66b22d6074f624ae04b9f",
-    "commands": [
-      "tools\\build\\build-essentials.cmd (restore passed; runner build blocked by inherited malformed GIT_CONFIG_VALUE_3)",
-      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd",
-      "vstest.console.exe Microsoft.CmdPal.UI.ViewModels.UnitTests.dll /Tests:Microsoft.CmdPal.UI.ViewModels.UnitTests.NodeRuntimeLocatorTests /Platform:x64"
-    ],
-    "tests_passed": 55
+  "fork_head_sha": "561dc565c7c359d8271d735ea94cfb30fef624d3",
+  "validation": {
+    "suggestionPatch": {
+      "head_sha": "21024c17e5462971ef5f829194b4d79e7f87a65c",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "The findings contain no apply-ready suggestion blocks."
+    },
+    "upstreamHead": {
+      "head_sha": "21024c17e5462971ef5f829194b4d79e7f87a65c",
+      "result": "passed",
+      "commands": [
+        "Build affected CmdPal projects",
+        "Run ViewModels tests",
+        "Run JsonRpc tests",
+        "git diff --check"
+      ],
+      "tests": {
+        "passed": 749,
+        "failed": 0
+      },
+      "details": "Exact upstream validation passed with 620 ViewModels tests and 129 JsonRpc tests."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
   }
 }
