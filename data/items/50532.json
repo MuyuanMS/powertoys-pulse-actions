@@ -1,119 +1,222 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "id": "pr-50532",
   "number": 50532,
   "kind": "pr",
   "track": "review",
-  "stage": "building",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T23:10:00Z",
-  "evaluated_at": "2026-09-15T23:10:00Z",
+  "generated_at": "2026-09-16T00:30:00Z",
+  "evaluated_at": "2026-09-16T00:30:00Z",
   "source_updated_at": "2026-09-14T15:40:17Z",
   "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
   "title": "[Settings] Defer shortcut editor construction until first open",
   "url": "https://github.com/microsoft/PowerToys/pull/50532",
+  "summary": "The exact current-head suggestion candidate builds and passes 52 focused Settings tests using the repository-supported direct test host. Six medium-severity lifecycle and test-isolation suggestions remain for maintainer approval.",
   "status": {
-    "glyph": "...",
-    "label": "Exact-head validation in progress",
-    "detail": "The fork loop converged at e48961af5c with zero new Copilot comments and zero unresolved threads. The literal exact-head suggestion candidate now builds successfully, but the focused WinUI VSTest host exits with Windows status 0xC0000409 before producing managed test results."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 809 converged at e48961af with zero unresolved Copilot threads. The literal current-head suggestions pass both required builds and 52/52 focused tests."
   },
-  "next_action": "Rerun the focused ShortcutControlTests and relevant Settings subset on a host where the WinUI test host remains alive; do not expose the draft request-changes payload until exact-candidate tests complete.",
-  "proposed_comments": [],
-  "actions": [],
-  "validation": {
-    "fork_head": {
-      "head_sha": "e48961af5cffc4c6b84e2c83d96e94adc3d58b4c",
-      "result": "passed",
-      "commands": [
-        "tools\\build\\build-essentials.cmd (Debug x64, POWERTOYS_DISABLE_SPECTRE=1, inherited GIT_CONFIG_* overlay removed): passed",
-        "tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\settings-ui\\Settings.UI.UnitTests /m:2: passed",
-        "Settings.UI.UnitTests.exe --filter \"FullyQualifiedName~ShortcutControlTests|FullyQualifiedName~ViewModelTests.ShortcutGuide|FullyQualifiedName~ViewModelTests.FancyZones\" --report-trx: 52 passed, 0 failed, 0 skipped",
-        "Round 2 fix validation: build.ps1 targeted project and the same 52-test filter passed after replacing the process-wide repository swap with settings-config isolation and finally cleanup.",
-        "git diff --check: passed"
-      ],
-      "details": "The fork review loop converged after six consumed Copilot reviews with zero unresolved threads."
-    },
-    "suggestion_candidate": {
-      "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
-      "result": "blocked",
-      "commands": [
-        "tools\\build\\build.cmd",
-        "tools\\build\\build-essentials.cmd",
-        "dotnet vstest Settings.UI.UnitTests.dll --TestCaseFilter:FullyQualifiedName~ShortcutControlTests"
-      ],
-      "details": "Both required builds pass. The focused VSTest host exits with Windows status 0xC0000409 before reporting any managed test result. A broader run was dominated by environmental REGDB_E_CLASSNOTREG WinUI/COM activation failures."
-    }
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The current control teardown and test fixture can expose lifecycle races and leak process-wide Settings state."
   },
-  "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-15T23:10:00Z",
-    "previous_phase_name": "waiting_copilot",
-    "previous_phase": {
-      "artifact": "missing",
-      "inventory_classification": "excluded",
-      "inventory_reason": "draft_pr",
-      "prior_attempts": "Two prior workers returned empty output and made no artifact or fork changes."
-    },
-    "phase0": {
-      "author": "niels9001",
-      "author_association": "MEMBER",
-      "disposition": "proceed",
-      "detail": "Member-authored PR; process nags skipped. CLA and intake checks pass. The upstream x64 CI check is red, but the exact affected fork tree builds and its 52 targeted tests pass; CI failure details remain to be reconciled after Copilot convergence."
-    },
-    "fork_pr": 809,
-    "fork_branch": "pr-iterate/50532-v2",
-    "fork_head_sha": "e48961af5cffc4c6b84e2c83d96e94adc3d58b4c",
-    "unresolved_copilot_threads": 0,
-    "copilot_reviews": {
-      "consumed": {
-        "submitted_at": "2026-09-15T07:01:20Z",
-        "commit_id": "4268f1ae47f4944f0f8edd7548398b25e8261359",
-        "published_comments": 0,
-        "accepted_suppressed_findings": 2,
-        "fix_commit": "31d9d4ecab0175f8e4bcb372e699e4a5fcc088a7"
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "shortcut-control-unload-state-before-hide",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Clear active state before hiding the shortcut dialog",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutControl.xaml.cs",
+      "side": "RIGHT",
+      "start_line": 351,
+      "line": 352,
+      "in_diff": true,
+      "body": "Hiding the dialog can synchronously raise its closing path. The active-state flag must be cleared before that call so a lifecycle transition cannot observe the control as active while its editor is already being torn down. Clear the flag first, then hide the dialog.\n\n```suggestion\n            _isActive = false;\n            shortcutDialog?.Hide();\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "The hook can race teardown while the control still reports active; the literal candidate passes focused tests."
       },
-      "converged": {
-        "latest_fork_head": "e48961af5cffc4c6b84e2c83d96e94adc3d58b4c",
-        "latest_new_comments": 0,
-        "unresolved_threads": 0
-      }
+      "disposition": "proposed"
     },
+    {
+      "id": "shortcut-tests-settings-config-field",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Access the shared repository configuration for isolated tests",
+      "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
+      "side": "RIGHT",
+      "start_line": 30,
+      "line": 30,
+      "in_diff": true,
+      "body": "The fixture needs to isolate only the configuration held by the repository shared with `HotkeyConflictIgnoreHelper`; replacing the process-wide static repository makes the helper retain a different instance. Add a handle for that existing instance's configuration so it can be replaced and restored without changing the shared repository identity. Apply this together with the related fixture suggestions below.\n\n```suggestion\n        private static readonly FieldInfo RepositoryField = typeof(SettingsRepository<GeneralSettings>).GetField(\"settingsRepository\", BindingFlags.Static | BindingFlags.NonPublic);\n        private static readonly FieldInfo SettingsConfigField = typeof(SettingsRepository<GeneralSettings>).GetField(\"settingsConfig\", BindingFlags.Instance | BindingFlags.NonPublic);\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "The helper caches the shared repository identity; replacing only its configuration avoids split global state."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "shortcut-tests-preserve-shared-repository-fields",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Store the shared repository and its previous configuration",
+      "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
+      "side": "RIGHT",
+      "start_line": 33,
+      "line": 33,
+      "in_diff": true,
+      "body": "`HotkeyConflictIgnoreHelper` captures the shared settings repository during type initialization. Store that same repository and its previous configuration so the fixture can isolate settings without replacing the process-wide repository identity.\n\n```suggestion\n        private static SettingsRepository<GeneralSettings> repository;\n        private static GeneralSettings previousSettingsConfig;\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current replacement is initialization-order dependent; the literal candidate preserves the helper's shared instance."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "shortcut-tests-preserve-shared-repository-setup",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Initialize the helper before replacing only its configuration",
+      "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
+      "side": "RIGHT",
+      "start_line": 38,
+      "line": 43,
+      "in_diff": true,
+      "body": "Creating and publishing a replacement static repository after `HotkeyConflictIgnoreHelper` initializes splits the fixture from the helper, producing order-dependent behavior and leaking global test state. Initialize the helper first, retain its repository, and temporarily replace only that repository's settings configuration.\n\n```suggestion\n            // Reuse the helper's repository and replace only its settings for isolation.\n            // No Settings app, settings files, IPC connection or visible window is needed.\n            RuntimeHelpers.RunClassConstructor(typeof(HotkeyConflictIgnoreHelper).TypeHandle);\n            repository = (SettingsRepository<GeneralSettings>)RepositoryField.GetValue(null);\n            previousSettingsConfig = (GeneralSettings)SettingsConfigField.GetValue(repository);\n            repository.SettingsConfig = new GeneralSettings();\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current replacement is initialization-order dependent; the literal candidate preserves the helper's shared instance."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "shortcut-tests-capture-dispatcher-before-application",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Capture the dispatcher before signaling application readiness",
+      "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
+      "side": "RIGHT",
+      "start_line": 57,
+      "line": 58,
+      "in_diff": true,
+      "body": "The fixture signals readiness from the test application constructor. Capture the thread dispatcher before constructing that application so initialization cannot complete while `dispatcher` is still unset. This keeps cleanup deterministic if the test app immediately signals its ready task.\n\n```suggestion\n                            dispatcher = DispatcherQueue.GetForCurrentThread();\n                            _ = new ShortcutTestApplication(ready);\n```",
+      "confidence": {
+        "score": 91,
+        "rationale": "The current ordering permits the test thread to resume before the dispatcher field is assigned."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "shortcut-tests-restore-settings-config-finally",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Restore shared Settings state even when UI shutdown fails",
+      "path": "src/settings-ui/Settings.UI.UnitTests/Controls/ShortcutControlTests.cs",
+      "side": "RIGHT",
+      "start_line": 80,
+      "line": 86,
+      "in_diff": true,
+      "body": "Cleanup currently restores shared process state only after the UI-thread assertions succeed. A timeout or enqueue failure would leave the replacement settings configuration installed for later tests. Keep the UI shutdown assertions, but restore the shared configuration in `finally`.\n\n```suggestion\n            try\n            {\n                if (dispatcher != null)\n                {\n                    Assert.IsTrue(dispatcher.TryEnqueue(() => Application.Current.Exit()));\n                    Assert.IsTrue(uiThread.Join(Timeout), \"The test XAML thread did not exit.\");\n                }\n            }\n            finally\n            {\n                SettingsConfigField.SetValue(repository, previousSettingsConfig);\n            }\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "An assertion before restoration currently poisons later tests; the candidate restores state unconditionally."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50532",
+      "type": "request_changes",
+      "label": "Request six Settings lifecycle and test-isolation fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50532,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f"
+      },
+      "note": "Draft only. Six validated inline suggestions require explicit maintainer approval."
+    }
+  ],
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-16T00:30:00Z",
     "advancement_evidence": [
-      "Consumed six fork Copilot reviews and fixed all valid lifecycle, test-isolation, initialization, and fixture-state findings.",
-      "Converged at fork head e48961af5cffc4c6b84e2c83d96e94adc3d58b4c with zero new comments and zero unresolved threads.",
-      "Materialized the literal public suggestion candidate on the exact live upstream head.",
-      "Passed the Settings project and essentials builds after disk pressure cleared.",
-      "Reproduced a native WinUI test-host crash before managed results, preserving validation as incomplete rather than reporting false success."
-    ],
-    "fork_trace": [
-      "Initial branch pr-iterate/50532 was pushed before the live fork main divergence was discovered; repository rules prohibited force-pushing it.",
-      "Current fork PR 809 uses replacement branch pr-iterate/50532-v2 based on fork main f0a196cf493568839bf2b434ffa897287cef592f.",
-      "Mirrored PR commit after rebase: 7b2daa2fefb1512a509256ff3c19f8905f29cf73.",
-      "Review-fix commit: 4268f1ae47f4944f0f8edd7548398b25e8261359.",
-      "Review-fix commit: 31d9d4ecab0175f8e4bcb372e699e4a5fcc088a7."
+      "Converged the fork loop with zero new Copilot comments and zero unresolved threads.",
+      "Materialized the literal five-suggestion candidate on the exact live upstream head.",
+      "Passed the Settings project and essentials builds.",
+      "Used the repository-supported direct Microsoft.Testing.Platform executable after isolating the VSTest-host crash.",
+      "Passed 52/52 focused ShortcutControl, Shortcut Guide, and FancyZones Settings tests."
     ]
   },
   "freshness": {
-    "queued_at": "2026-09-15T06:10:14.243861Z",
-    "checkpoint_at": "2026-09-15T23:10:00Z",
-    "upstream_head": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
-    "source_updated_at": "2026-09-14T15:40:17Z",
-    "stale_expectation": "This actionless validation checkpoint remains stale until the literal exact-head candidate completes focused Settings tests or the upstream head changes."
+    "headRefOid": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
+    "updatedAt": "2026-09-14T15:40:17Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-16T00:30:00Z"
   },
   "fork_pr": {
     "number": 809,
+    "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/809",
-    "state": "OPEN",
-    "head_sha": "e48961af5cffc4c6b84e2c83d96e94adc3d58b4c"
+    "state": "OPEN"
   },
   "fork_branch": "pr-iterate/50532-v2",
   "fork_head_sha": "e48961af5cffc4c6b84e2c83d96e94adc3d58b4c",
-  "blockers": [
-    {
-      "terminal": false,
-      "detail": "The literal exact-head candidate builds, but the supported focused WinUI VSTest invocation exits with Windows status 0xC0000409 before emitting test results.",
-      "remediation": "Run ShortcutControlTests and the relevant Settings test subset on a host or configuration where the WinUI test host remains alive, then publish the already-converged current-head review payload only if those tests pass."
+  "validation": {
+    "fork_review": {
+      "result": "passed",
+      "commands": [
+        "Consume final Copilot review",
+        "Verify zero unresolved Copilot threads"
+      ],
+      "details": "The fork review loop converged at e48961af with zero new comments and zero unresolved threads."
+    },
+    "upstream_head": {
+      "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
+      "result": "passed",
+      "commands": [
+        "Build Settings.UI.UnitTests Debug x64",
+        "Run Settings.UI.UnitTests.exe focused filter"
+      ],
+      "tests": {
+        "passed": 52,
+        "failed": 0
+      },
+      "details": "The exact suggestion candidate builds and the direct repository-supported test host completes successfully."
+    },
+    "suggestion_patch": {
+      "head_sha": "efb4ef5d6c636f3709df8ea96d7bfe48a78a136f",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "shortcut-control-unload-state-before-hide",
+        "shortcut-tests-settings-config-field",
+        "shortcut-tests-preserve-shared-repository-fields",
+        "shortcut-tests-preserve-shared-repository-setup",
+        "shortcut-tests-capture-dispatcher-before-application",
+        "shortcut-tests-restore-settings-config-finally"
+      ],
+      "commands": [
+        "Apply the literal public suggestions to the exact upstream head",
+        "Run build-essentials and targeted Settings build",
+        "Run Settings.UI.UnitTests.exe with focused filter"
+      ],
+      "details": "All literal suggestions were applied to the pinned head; 52 tests passed with zero failures."
     }
-  ]
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
