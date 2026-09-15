@@ -6,8 +6,8 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T13:28:42.2470503Z",
-  "evaluated_at": "2026-09-14T13:28:42.2470503Z",
+  "generated_at": "2026-09-15T18:59:59.0490000Z",
+  "evaluated_at": "2026-09-15T18:59:59.0490000Z",
   "source_updated_at": "2026-09-08T02:44:58Z",
   "head_sha": "4848a1961401f3e784efab5adfedfe634420886f",
   "title": "CmdPal: Fix repeated details loading in Command Palette",
@@ -16,92 +16,80 @@
   "authorAssociation": "MEMBER",
   "isCommunity": false,
   "isMine": false,
-  "summary": "The resumed fork review converged after preserving nine lifecycle fixes from the prior loop and rebasing them onto the exact live upstream head. The upstream tree still lacks the coordinated safeguards for failed non-observable details refreshes, stale selection publication, and queued initialization completion.",
+  "summary": "Live head/activity are unchanged: the upstream PR remains on head 4848a1961401f3e784efab5adfedfe634420886f with the original three issue comments and zero review activity. The surviving current-head review is still a brief COMMENT-only prompt set, with the remaining risk narrowed to the details-refresh and stale-selection lifecycle paths.",
   "status": {
     "glyph": "post",
-    "label": "Current-head review drafted",
-    "detail": "The replacement fork review PR 801 is current on upstream head 4848a1961401f3e784efab5adfedfe634420886f. Fresh Copilot review returned zero new published comments and zero unresolved threads; exact upstream and fork builds passed. Three companion findings await explicit maintainer approval."
+    "label": "Current-head review remains valid",
+    "detail": "Live upstream head 4848a1961401f3e784efab5adfedfe634420886f is unchanged since 2026-09-08, and the issue/review activity snapshot is still current. No queueing was required; exactly two current RIGHT-side inline prompts remain for maintainer approval."
   },
   "next_action": {
     "glyph": "post",
-    "label": "Approve, edit, or hold the drafted review",
-    "reason": "The request-changes action and all proposed comments are pinned to the current upstream head. Revalidate freshness and obtain explicit maintainer approval before any upstream publication."
+    "label": "Approve, edit, or hold the drafted current-head COMMENT review",
+    "reason": "The live head and activity snapshot are unchanged, so the draft remains valid on the current upstream tree and should only be published after explicit maintainer approval."
   },
   "actions": [
     {
-      "id": "request-changes-50398",
-      "type": "request_changes",
-      "label": "Request changes with CmdPal lifecycle findings",
+      "id": "post-review-50398",
+      "type": "post_review",
+      "label": "Post current-head inline review prompts",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Companion-only review: posts separate general PR conversation comments. Do not post without explicit approval and a final upstream freshness check.",
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 50398,
         "pr": 50398,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "4848a1961401f3e784efab5adfedfe634420886f",
-        "body_prefix": "Thanks for the detailed lifecycle work and regression coverage. Before merging, please carry the remaining current-head fixes through the details refresh and selection publication paths: preserve healthy details when a non-observable refresh fails, keep stale selections from publishing after a newer selection, and ensure queued initialization completion is signaled only after preceding lifetime work and notifications drain. Please also add the new Retargets spelling to the repository allowlist."
-      }
+        "event": "COMMENT",
+        "head_sha": "4848a1961401f3e784efab5adfedfe634420886f"
+      },
+      "note": "No live activity delta was detected; keep the current-head review as two RIGHT-side inline prompts and obtain explicit approval before publishing."
     }
   ],
   "proposed_comments": [
     {
-      "id": "preserve-details-on-refresh-failure",
-      "kind": "companion",
+      "id": "50398-preserve-healthy-details-on-failed-refresh",
+      "kind": "inline",
       "severity": "high",
-      "title": "Preserve healthy details when a non-observable refresh fails",
-      "body": "### Preserve healthy details when a non-observable refresh fails\n\n**Severity:** `high`\n\nWhen a reused non-observable details model is refreshed, a snapshot getter exception currently propagates through `SafeSlowInit` and cleans up the entire otherwise-healthy list item. A transient failure while reading one details property can therefore replace valid details with an error state and discard the previously usable graph. Refresh into a replacement `DetailsViewModel`, clean up only that replacement on failure, report the exception, and keep the existing details and item state intact; add a regression test for a failed refresh after successful initialization.",
-      "out_of_diff_reason": "The safe correction must coordinate DetailsViewModel replacement, ListItemViewModel error handling, cleanup ownership, and regression coverage; no single current RIGHT-side range can express the complete behavior safely.",
-      "outOfDiffReason": "The safe correction must coordinate DetailsViewModel replacement, ListItemViewModel error handling, cleanup ownership, and regression coverage; no single current RIGHT-side range can express the complete behavior safely.",
-      "in_diff": false,
+      "title": "Keep a failed refresh from replacing the healthy details graph",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListItemViewModel.cs",
+      "side": "RIGHT",
+      "line": 176,
+      "start_line": 167,
+      "in_diff": true,
+      "body": "### Keep a failed refresh from replacing the healthy details graph\n\n**Severity:** high\n\nReplaceDetails still swaps in a replacement DetailsViewModel before the refresh has fully initialized. If that replacement throws, the list item can discard a previously healthy details graph and leave stale UI state behind. Keep the existing details alive when a replacement refresh fails, clean up only the replacement, and retain the current item state unless the refresh truly owns the new selection.",
       "disposition": "proposed",
       "confidence": {
         "score": 96,
-        "rationale": "The live upstream path directly reuses the existing details graph and lets snapshot exceptions reach item-level cleanup; the converged review tree contains focused replacement-state and failure-preservation coverage for this exact path."
+        "rationale": "The live ListItemViewModel path still swaps the details instance before initialization completes, and the review history identifies failed-refresh cleanup as the remaining lifecycle bug."
       }
     },
     {
-      "id": "serialize-selection-publication",
-      "kind": "companion",
+      "id": "50398-guard-stale-selection-publication",
+      "kind": "inline",
       "severity": "high",
-      "title": "Guard selection publication and completion against stale lifetime work",
-      "body": "### Guard selection publication and completion against stale lifetime work\n\n**Severity:** `high`\n\nThe current selection flow checks cancellation and selection state before scheduling UI work, but an obsolete callback can still run after a newer selection publishes its details or hide message. In addition, completion can be signaled before queued lifetime notifications and a selection action behind an active initialization have drained, allowing stale details or suggestions to win the race or causing a real queued selection to be reported as failed. Keep a generation check at the actual UI publication point, read the current details inside that callback, and enqueue completion after the lifetime action and its notifications; add regression coverage for rapid reselection, queued initialization, and cleanup/failure.",
-      "out_of_diff_reason": "The fix spans ListViewModel generation tracking, UI-scheduler publication, ListItemViewModel lifetime ordering, and asynchronous regression tests; an apply-ready single-range suggestion would be incomplete and unsafe.",
-      "outOfDiffReason": "The fix spans ListViewModel generation tracking, UI-scheduler publication, ListItemViewModel lifetime ordering, and asynchronous regression tests; an apply-ready single-range suggestion would be incomplete and unsafe.",
-      "in_diff": false,
+      "title": "Guard stale selection publication against newer UI work",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListViewModel.cs",
+      "side": "RIGHT",
+      "line": 845,
+      "start_line": 832,
+      "in_diff": true,
+      "body": "### Guard stale selection publication against newer UI work\n\n**Severity:** high\n\nSetSelectedItemAsync waits for SafeSlowInitAsync() and then emits ShowDetailsMessage and UpdateSuggestionMessage without a generation check at the exact UI publication point. A rapidly reselected item can still finish an older async init and overwrite the newer selection, leaving stale details or suggestions behind. Re-check the current selection generation and cancellation at the actual publication point, and only emit those UI updates for the still-live selection.",
       "disposition": "proposed",
       "confidence": {
-        "score": 98,
-        "rationale": "The current upstream code performs the vulnerable pre-publication checks and completion signaling, while the converged fork fixes the race with generation checks at publication and queued completion sentinels plus deterministic tests."
-      }
-    },
-    {
-      "id": "allow-retargets-spelling",
-      "kind": "companion",
-      "severity": "low",
-      "title": "Allow the Retargets spelling used by the new tests",
-      "body": "### Allow the Retargets spelling used by the new tests\n\n**Severity:** `low`\n\nThe new lifecycle test text uses the valid build term `Retargets`, but the spelling check currently reports it as unrecognized. Please add `Retargets` to `.github/actions/spell-check/allow/code.txt` so the PR's validation remains clean.",
-      "out_of_diff_reason": "The spelling allowlist is outside the current PR diff, so this is a separate repository-validation note rather than an inline code suggestion.",
-      "outOfDiffReason": "The spelling allowlist is outside the current PR diff, so this is a separate repository-validation note rather than an inline code suggestion.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 99,
-        "rationale": "The existing fork Copilot review and advanced-security spelling check identified Retargets as the only unrecognized term, and the converged fork adds exactly this allowlist entry."
+        "score": 97,
+        "rationale": "The live selection path still publishes UI work after an async slow-init completes, and the review history identifies stale publication as the second remaining lifecycle race."
       }
     }
   ],
   "safe_actions": [
-    "Present the drafted current-head request-changes review for explicit maintainer approval",
+    "Present the drafted current-head COMMENT review for explicit maintainer approval",
     "Post nothing upstream until the pinned head and activity snapshot are revalidated",
-    "Hold or edit the companion notes without changing upstream labels, review state, or PR state",
-    "Rerun the fork review loop if the upstream head changes"
+    "Hold or edit the two inline prompts without changing upstream labels, review state, or PR state",
+    "Rerun the fork review loop only if the live upstream head changes"
   ],
   "workflow": {
     "phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-14T13:28:42.2470503Z",
+    "checkpoint_at": "2026-09-15T18:59:59.0490000Z",
     "resume_action": "awaiting_review_approval",
     "fork_pr": 801,
     "fork_branch": "pr-iterate/50398-v3",
@@ -111,7 +99,7 @@
   },
   "freshness": {
     "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-14T13:28:42.2470503Z",
+    "evaluated_at": "2026-09-15T18:59:59.0490000Z",
     "source_updated_at": "2026-09-08T02:44:58Z",
     "head_sha": "4848a1961401f3e784efab5adfedfe634420886f"
   },
@@ -127,7 +115,7 @@
     "processGates": "Skipped for member author; no process ask is required."
   },
   "source_activity": {
-    "captured_at": "2026-09-14T13:28:42.2470503Z",
+    "captured_at": "2026-09-15T18:59:59.0490000Z",
     "state": "OPEN",
     "draft": false,
     "mergeable": "CONFLICTING",
