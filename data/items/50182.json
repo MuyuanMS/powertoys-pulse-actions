@@ -1,82 +1,219 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50182",
   "number": 50182,
   "kind": "pr",
   "track": "review",
-  "schemaVersion": 5,
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T16:09:50.3312009Z",
-  "evaluated_at": "2026-09-14T16:09:50.3312009Z",
+  "generated_at": "2026-09-15T12:03:53Z",
+  "evaluated_at": "2026-09-15T12:03:53Z",
   "source_updated_at": "2026-09-08T19:43:11Z",
   "head_sha": "a6e0b8bf19e5d877c0d6c124c2e245d0889f8444",
   "title": "CmdPal: Icons (2/n) - Separate dispatcher delay from icon UI-thread work",
   "url": "https://github.com/microsoft/PowerToys/pull/50182",
-  "summary": "The resumed fork Copilot loop remains converged with zero new published comments and zero unresolved Copilot threads. Rebuilds of the converged fork tree and exact upstream head passed for build essentials, Microsoft.CmdPal.UI, and Microsoft.CmdPal.UI.UnitTests; the current upstream head still lacks coordinated diagnostics lifecycle and cache-publication fixes, so a current-head request-changes review remains drafted and awaits explicit maintainer approval.",
+  "author": "jiripolasek",
+  "authorAssociation": "COLLABORATOR",
+  "state": "OPEN",
+  "draft": false,
+  "summary": "The existing fork-side review loop for PR 50182 was resumed instead of restarted. The outstanding Copilot review on fork PR 718 was consumed first: the latest submitted review at 2026-09-10T03:08:08Z reported zero new published inline comments, and the unresolved Copilot thread count is 0. The current upstream head remains a6e0b8bf19e5d877c0d6c124c2e245d0889f8444 with green CLA/CI, but the upstream tree still lacks the coordinated diagnostics shutdown, ETW lifecycle, bounded outlier, and cache publication fixes proven in the review branch; a request-changes companion review is drafted and approval-gated.",
+  "confidence": "High",
   "status": {
-    "glyph": "post",
-    "label": "Review drafted",
-    "detail": "Resume rebuild completed: fork Copilot loop has 0 published comments and 0 unresolved threads; exact upstream head a6e0b8bf19e5d877c0d6c124c2e245d0889f8444 and converged fork head 7d7468a2e8658fdde3bb35a01bdb6303867014e4 build successfully. Coordinated fork-only lifecycle and cache-publication fixes remain to be requested on the live PR."
+    "glyph": "ACTION",
+    "label": "Current-head request-changes draft ready",
+    "detail": "Fork PR 718 remains converged at 7d7468a2e8658fdde3bb35a01bdb6303867014e4 with 0 new published Copilot comments and 0 unresolved Copilot threads. Upstream PR 50182 is still pinned to a6e0b8bf19e5d877c0d6c124c2e245d0889f8444; the sparse legacy draft has been converted into an explicit request_changes action so sanitizer/action filtering will not close it as actionless."
   },
   "next_action": {
-    "glyph": "post",
-    "label": "Approve, edit, or hold the drafted review",
-    "reason": "The companion request is pinned to the unchanged current upstream head after rebuild and freshness checks. Obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
+    "glyph": "ACTION",
+    "label": "Request changes with one general review note",
+    "reason": "After explicit maintainer approval and a final freshness check, publish the prepared request-changes review. No write has been made to microsoft/PowerToys."
   },
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "stabilize-icon-diagnostics-shutdown-cache-publication",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Stabilize icon diagnostics shutdown and cache publication",
+      "body": "### Stabilize icon diagnostics shutdown and cache publication\n\n**Severity:** `high`\n\n**Affected code:**\n- `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnostics.cs` — `GetCurrentSession`, `OnEtwDisabled`, and ETW-only session lifetime\n- `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnosticsSession.cs` — `Stop`, `CreateReport`, mutation recording methods, dispatcher outlier capture, and completed-load demand state retention\n- `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers` / `AdaptiveCache<TKey, TValue>` and `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/CachedIconSourceProvider.cs` — replacement/removal callbacks, in-flight load publication, and cache occupancy reporting\n\n**Problem:** The upstream head can publish stopped/report state while diagnostic mutations and asynchronous cache-load publication are still racing. `Stop` publishes the session as stopped before every recorder has drained, ETW-only sessions can continue through disable/stop edges, cache replacement mutates existing entries in place while reporting removal, and concurrent in-flight icon loads can publish a task before the diagnostics load that describes it is registered. These paths make generated reports observe partially updated counters, stale demand state, or cache occupancy that does not match the load being reported.\n\n**Why it matters:** This PR's purpose is to make CmdPal icon diagnostics trustworthy enough for later performance work. If shutdown/report creation and cache publication are not atomic with the measurements they expose, a long or externally traced session can show internally inconsistent phase totals, retain stale demand state after cancellation, or attribute cache removals and in-flight work to the wrong load, which would send follow-up investigations in the wrong direction.\n\n**Suggested change:**\n1. Add a lightweight mutation gate around every diagnostics recorder: reject new mutations once stop/report creation starts, wait for active mutations before building the report, and ensure repeated `Stop` calls synchronize with the completed drain instead of returning while another caller is still waiting.\n2. Keep ETW-only sessions bounded and disposable: create them only while the event source is still enabled, stop them asynchronously on disable, and avoid retaining completed load-demand state for these hidden aggregate sessions.\n3. Bound dispatcher outlier storage while keeping a total sample counter, so long recordings report the full sample count without retaining every sample object.\n4. Publish cache and in-flight state atomically: create/register the diagnostics load before exposing the task to other callers, remove in-flight entries under a lock, report cache lookup occupancy, and replace adaptive-cache entries with compare/exchange-style updates so removal callbacks see the value that was actually removed.\n5. Add focused unit coverage for stopped-session mutation rejection, report creation waiting for in-flight mutations, ETW disable cleanup, bounded dispatcher outliers, cache removal callback counts, and concurrent in-flight publication.\n\n**Verification:** Run the CmdPal UI and unit-test builds, then run the icon diagnostics/cache unit tests that exercise report creation during active mutations, ETW enable/disable, dispatcher outlier retention, and concurrent cached icon source loading. Also verify a long diagnostics recording reports bounded top outliers with the total sample count preserved and that canceled/late loads are not recorded after session stop.",
+      "disposition": "proposed",
+      "in_diff": false,
+      "out_of_diff_reason": "The accepted review fix is coordinated across diagnostics session lifetime, ETW-only recording, adaptive cache replacement, cached-provider in-flight publication, and unit tests. It is not safely expressible as one current RIGHT-side apply-ready suggestion.",
+      "confidence": {
+        "score": 93,
+        "rationale": "The finding is supported by the consumed fork Copilot review history, a converged review branch that changes the affected diagnostics/cache paths, zero unresolved Copilot threads, and prior successful targeted upstream/fork validation recorded in the durable dashboard state. The current upstream head has not moved and still lacks those coordinated lifecycle and publication fixes."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50182",
+      "type": "request_changes",
+      "label": "Request changes with one general review note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Drafted maintainer action only; general review notes will be posted as separate PR conversation comments. Recheck upstream head, comments, reviews, and checks before publication. Do not label, close, approve, or otherwise mutate upstream except through the approved review publisher flow.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50182,
+        "head_sha": "a6e0b8bf19e5d877c0d6c124c2e245d0889f8444",
+        "event": "REQUEST_CHANGES"
+      }
+    }
+  ],
   "safe_actions": [
     "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
     "Post nothing upstream until the pinned head and activity snapshot are revalidated",
-    "Hold the review without changing labels, review state, or PR state"
+    "Hold the review without changing labels, review state, or PR state",
+    "Re-run synchronization, Copilot convergence, builds, and tests after material upstream activity or a new author commit"
   ],
-  "workflow": {
-    "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-14T16:09:50.3312009Z"
+  "safeActions": {
+    "proposedReviewDecision": "request_changes",
+    "postReview": {
+      "available": true,
+      "reason": "A high-confidence coordinated diagnostics/cache correctness request is drafted, but explicit maintainer approval and final upstream freshness validation are required."
+    },
+    "postComment": {
+      "available": true,
+      "reason": "The companion request can be approved, edited, or held."
+    },
+    "applyLabel": {
+      "available": false,
+      "reason": "No label change is part of this review; upstream labels remain maintainer-owned."
+    },
+    "closePr": {
+      "available": false,
+      "reason": "This is an active collaborator-authored CmdPal diagnostics PR with green checks; the disposition is a focused code request, not closure."
+    },
+    "triggerAzure": {
+      "available": false,
+      "reason": "PowerToys CI, license/cla, dependency-review, telemetry, and intake checks already completed successfully on the current head."
+    }
   },
-  "freshness": {
-    "queued_at": "09/13/2026 16:00:53",
-    "checkpoint_at": "2026-09-14T10:53:53.2090473Z"
+  "needs_revalidation": false,
+  "phase0": {
+    "author": "jiripolasek",
+    "author_association": "COLLABORATOR",
+    "bar": "collaborator-authored PR; template/demo/self-validation nags skipped",
+    "disposition": "Proceed",
+    "owes_after_posting": "author",
+    "gates_tripped": [],
+    "note": "Phase 0 process nags are skipped for a collaborator author. The PR is open, non-draft, linked to issue 49945, includes a detailed summary/evidence, and has green CLA and CI on the current head.",
+    "evidence": [
+      "Live upstream head is a6e0b8bf19e5d877c0d6c124c2e245d0889f8444 and updated_at is 2026-09-08T19:43:11Z.",
+      "Author association is COLLABORATOR, so community process gates are not applied.",
+      "license/cla and reported PowerToys CI/check runs succeeded on the current head.",
+      "No upstream public action was taken by this run."
+    ]
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "a6e0b8bf19e5d877c0d6c124c2e245d0889f8444",
+    "base_branch": "dev/jpolasek/f/49934-cmdpal-icon-diagnostics",
+    "updated_at": "2026-09-08T19:43:11Z",
+    "changed_file_count": 15,
+    "additions": 1690,
+    "deletions": 42,
+    "reported_checks": {
+      "total": 13,
+      "successful": 11,
+      "failing": 0,
+      "pending": 0,
+      "cancelled_superseded": 2,
+      "cla": "success",
+      "powerToysCi": "success"
+    }
   },
   "fork_pr": {
     "number": 718,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/718",
-    "head_sha": "7d7468a2e8658fdde3bb35a01bdb6303867014e4"
+    "state": "OPEN",
+    "updated_at": "2026-09-10T03:08:26Z",
+    "head_sha": "7d7468a2e8658fdde3bb35a01bdb6303867014e4",
+    "branch": "pr-iterate/50182-v2",
+    "changed_file_count": 10
   },
   "fork_branch": "pr-iterate/50182-v2",
-  "phase0": {
-    "authorAssociation": "COLLABORATOR",
-    "disposition": "Proceed",
-    "processGates": "Skipped for collaborator author; no process ask is required."
+  "workflow": {
+    "phase": "converged_draft_ready",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-15T12:03:53Z",
+    "reviewed_upstream_head_sha": "a6e0b8bf19e5d877c0d6c124c2e245d0889f8444",
+    "fork_pr": 718,
+    "fork_head_sha": "7d7468a2e8658fdde3bb35a01bdb6303867014e4",
+    "latest_copilot_review_at": "2026-09-10T03:08:08Z",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "resume_action": "maintainer-approval-or-freshness-recheck",
+    "build_result": "passed",
+    "note": "The existing latest fork review was inspected before deciding not to create a duplicate request. The artifact is checkpointed before the run cutoff and intentionally not emitted, committed, or pushed."
   },
+  "review_fixes": [
+    {
+      "commit": "e89d9718c",
+      "summary": "Aligned icon materialization classification."
+    },
+    {
+      "commit": "e1ad057bd",
+      "summary": "Hardened icon diagnostics cleanup races."
+    },
+    {
+      "commit": "4ab9cd0d9",
+      "summary": "Bounded hidden icon diagnostics state."
+    },
+    {
+      "commit": "07228e646",
+      "summary": "Updated adaptive cache lifecycle documentation."
+    },
+    {
+      "commit": "bf8f102f4",
+      "summary": "Addressed initial Copilot review findings for icon diagnostics."
+    },
+    {
+      "commit": "3172c1b5c",
+      "summary": "Guarded icon diagnostics stop snapshots."
+    },
+    {
+      "commit": "3a53a59d4",
+      "summary": "Addressed final icon diagnostics concurrency findings."
+    },
+    {
+      "commit": "7d7468a2e",
+      "summary": "Aligned diagnostics process snapshots with stop time."
+    }
+  ],
   "validation": {
     "upstream_head": {
       "head_sha": "a6e0b8bf19e5d877c0d6c124c2e245d0889f8444",
       "result": "passed",
+      "validated_at": "2026-09-14T16:09:50Z",
+      "scope": "Exact upstream PR head before proposed review fixes",
       "commands": [
         "build-essentials.cmd",
         "Microsoft.CmdPal.UI build.cmd",
         "Microsoft.CmdPal.UI.UnitTests build.cmd",
         "git diff --check"
       ],
-      "validated_at": "2026-09-14T16:09:50.3312009Z"
+      "note": "Preserved durable validation evidence from the resumed review state; no new upstream-head build was started inside the current bounded cutoff window."
     },
     "fork_head": {
       "head_sha": "7d7468a2e8658fdde3bb35a01bdb6303867014e4",
       "result": "passed",
+      "validated_at": "2026-09-14T16:09:50Z",
       "commands": [
         "build-essentials.cmd",
         "Microsoft.CmdPal.UI build.cmd",
         "Microsoft.CmdPal.UI.UnitTests build.cmd"
-      ],
-      "validated_at": "2026-09-14T16:09:50.3312009Z"
+      ]
     },
-    "suggestionPatch": {
+    "suggestion_patch": {
       "result": "not_applicable",
-      "appliedItemIds": [],
-      "minimalRangesReviewed": true,
+      "applied_comment_ids": [],
+      "minimal_ranges_reviewed": true,
       "commands": [],
-      "reason": "The remaining finding is a coordinated companion request; no apply-ready code suggestion block was drafted."
+      "reason": "The remaining finding is a coordinated companion request; no apply-ready suggestion block was drafted."
     }
   },
   "copilot_review": {
@@ -84,7 +221,28 @@
     "latest_commit_id": "7d7468a2e8658fdde3bb35a01bdb6303867014e4",
     "latest_new_comments": 0,
     "unresolved_threads": 0,
-    "policy_note": "The existing latest fork review was consumed before any new request; no duplicate review request was made. Resume rebuild confirmed the converged head and zero unresolved threads."
+    "verdict": "Zero new published inline comments; one suppressed advisory was treated under the suppressed-comment policy and does not block convergence.",
+    "policy_note": "The existing latest fork review was consumed before any new request; no duplicate review request was made."
   },
-  "needs_revalidation": true
+  "freshness": {
+    "status": "fresh-at-draft-time",
+    "head_sha": "a6e0b8bf19e5d877c0d6c124c2e245d0889f8444",
+    "source_updated_at": "2026-09-08T19:43:11Z",
+    "checkedAt": "2026-09-15T12:03:53Z",
+    "latestCopilotReviewAt": "2026-09-10T03:08:08Z",
+    "latestForkCommitAt": "2026-09-10T03:00:20Z",
+    "unresolvedForkCopilotThreads": 0
+  },
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The upstream head remains open and pinned to a6e0b8bf19e5d877c0d6c124c2e245d0889f8444. The preserved review branch converged at 7d7468a2e8658fdde3bb35a01bdb6303867014e4 after the latest Copilot review produced zero new published inline comments and zero unresolved Copilot threads. Re-evaluation against the current upstream state shows the coordinated diagnostics lifecycle and cache-publication fixes are still absent upstream, so the drafted request-changes companion comment remains current.",
+    "evidence": [
+      "Upstream PR 50182 is open, non-draft, and pinned to head a6e0b8bf19e5d877c0d6c124c2e245d0889f8444.",
+      "The latest fork Copilot review submitted at 2026-09-10T03:08:08Z was inspected and reported zero new published comments.",
+      "Get-UnresolvedCopilotThreads.ps1 returned 0 for fork PR 718.",
+      "The previous dashboard checkpoint recorded passing upstream-head and fork-head validation for build essentials, Microsoft.CmdPal.UI, Microsoft.CmdPal.UI.UnitTests, and git diff --check.",
+      "No writes were made to microsoft/PowerToys, and no dashboard emit/commit/push was run."
+    ],
+    "recommended_action": "After explicit maintainer approval and a final freshness check, post the current-head request-changes review through the approved publisher flow."
+  }
 }

@@ -1,69 +1,92 @@
 {
   "schemaVersion": 5,
+  "id": "pr-49226",
   "number": 49226,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "url": "https://github.com/microsoft/PowerToys/pull/49226",
+  "title": "[MouseWithoutBorders] Add theme-adaptive system tray icon setting",
+  "authorAssociation": "CONTRIBUTOR",
+  "isCommunity": true,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T10:05:00Z",
-  "evaluated_at": "2026-09-14T10:05:00Z",
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "generated_at": "2026-09-15T11:55:00Z",
+  "evaluated_at": "2026-09-15T11:55:00Z",
   "source_updated_at": "2026-09-09T15:52:49Z",
   "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
-  "title": "[MouseWithoutBorders] Add theme-adaptive system tray icon setting",
-  "url": "https://github.com/microsoft/PowerToys/pull/49226",
-  "summary": "The existing fork Copilot loop is converged, but the current upstream head still has lifecycle, resource-management, and unsupported cross-module propagation issues. A current-head REQUEST_CHANGES review with two companion findings is drafted; no upstream action has been posted.",
+  "summary": "The outstanding fork-side Copilot review was consumed before drafting; fork PR 728 has five completed Copilot reviews, zero new comments on the latest pass, and zero unresolved threads. The unchanged upstream head still has two current-head request-changes findings: theme-listener startup/resource cleanup is not failure-safe, and the new general fan-out advertises unsupported cross-module behavior while retaining tray bitmap lifetime gaps.",
   "status": {
     "glyph": "ACTION",
-    "label": "Request-changes review drafted",
-    "detail": "The action is pinned to upstream head 502db9b699572f54fefb65ec2829797fd02eec9e. Existing fork Copilot review converged with zero unresolved Copilot threads; exact candidate patch application and diff validation passed, while the full Settings build is blocked by unrelated ZoomIt zoomit.h code-page warning C4819 treated as error."
+    "label": "Review complete - approval required",
+    "detail": "The draft is pinned to upstream head 502db9b699572f54fefb65ec2829797fd02eec9e. No upstream review, comment, label, close, or other write was made."
   },
   "next_action": {
     "glyph": "ACTION",
     "label": "Approve, edit, or hold the drafted request-changes review",
-    "reason": "Recheck the live head, checks, comments, reviews, and threads immediately before any publication. Nothing has been posted upstream."
+    "reason": "Recheck the live head and activity immediately before any publication. The two companion findings are unpublished and require explicit maintainer approval."
   },
-  "proposed_comments": [],
-  "actions": [],
-  "safe_actions": [
-    "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
-    "Revalidate the live head and activity immediately before publication",
-    "Do not post, label, close, or otherwise write to microsoft/PowerToys without explicit approval"
-  ],
   "needs_revalidation": true,
-  "confidence": "High",
-  "source_activity": {
-    "state": "OPEN",
-    "draft": false,
-    "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
-    "base_sha": "d5fe397b058625700f8ba6df68abd10ce93d5e82",
-    "updated_at": "2026-09-09T15:52:49Z",
-    "author": "JRScott812",
-    "author_association": "CONTRIBUTOR",
-    "mergeable": true,
-    "merge_state": "blocked",
-    "review_count": 0,
-    "review_comment_count": 0,
-    "issue_comment_count": 4,
-    "unresolved_copilot_threads": 0,
-    "reported_checks": {
-      "summary": "Live PR metadata was refreshed; no upstream public review/comment was posted by this run."
-    }
+  "source": {
+    "repository": "microsoft/PowerToys",
+    "headRefOid": "502db9b699572f54fefb65ec2829797fd02eec9e",
+    "updatedAt": "2026-09-09T15:52:49Z"
   },
+  "freshness": {
+    "status": "fresh",
+    "headRefOid": "502db9b699572f54fefb65ec2829797fd02eec9e",
+    "updatedAt": "2026-09-09T15:52:49Z",
+    "latestCopilotReviewAt": "2026-09-09T20:34:27Z",
+    "latestForkCommitAt": "2026-09-09T20:24:58Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T11:55:00Z"
+  },
+  "proposed_comments": [
+    {
+      "id": "make-theme-listener-initialization-transactional",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make theme-listener initialization transactional",
+      "body": "**Affected code:**\n- `src/common/ManagedCommon/ThemeListener.cs` - `ThemeListener` constructor and `Dispose`\n- `src/modules/MouseWithoutBorders/App/Form/frmScreen.cs` - `ConfigureTrayThemeListener`\n\n**Problem:** `ThemeListener` starts the app-theme WMI watcher before the system-theme watcher and initial theme reads have completed. If a later construction, `Start`, or theme read fails, the earlier watcher can remain subscribed because the fields are not assigned until construction succeeds. Mouse Without Borders constructs this listener during form startup, so an unavailable WMI service can both leak a watcher and abort the remaining tray-form initialization.\n\n**Why it matters:** A machine without usable WMI theme notifications should still start Mouse Without Borders with its current icon, and a failed listener construction must not leave an active subscription behind. Otherwise startup reliability and repeated enable/disable cycles degrade over time.\n\n**Suggested change:**\n1. Create both `ManagementEventWatcher` instances in locals and attach handlers only inside a guarded initialization block.\n2. Start both watchers and read the initial themes before assigning them to the fields.\n3. On any failure, detach handlers, dispose both locals, rethrow, and catch/log the failure in `ConfigureTrayThemeListener` so form initialization continues.\n4. Add focused coverage for failure after the first watcher starts and for disposal after a successful initialization.\n\n**Verification:** Run the ManagedCommon and Mouse Without Borders builds/tests, then exercise enabling the setting on a system where theme monitoring cannot start and confirm the form still initializes and no watcher remains subscribed.",
+      "out_of_diff_reason": "The required fix spans ThemeListener construction, event subscription, startup failure handling, disposal, and the Mouse Without Borders caller rather than one safe current diff hunk.",
+      "outOfDiffReason": "The required fix spans ThemeListener construction, event subscription, startup failure handling, disposal, and the Mouse Without Borders caller rather than one safe current diff hunk.",
+      "in_diff": false,
+      "confidence": {
+        "score": 96,
+        "rationale": "The upstream constructor starts watchers sequentially without rollback, while the changed Mouse Without Borders startup path constructs the listener directly during form initialization. The fork fixed this exact failure mode and the fix is absent from the upstream head."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "limit-scope-and-fix-tray-icon-lifetimes",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Limit propagation to supported modules and fix tray icon lifetimes",
+      "body": "**Affected code:**\n- `src/settings-ui/Settings.UI.Library/ThemeAdaptiveTrayIconFanOut.cs` - `ApplyToModules`, `ApplyAwake`, `ApplyZoomIt`, and `ApplyPowerDisplay`\n- `src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs` - the general-setting fan-out call\n- `src/modules/MouseWithoutBorders/App/Form/frmScreen.cs` - `ChangeIcon`\n- `src/settings-ui/Settings.UI/Strings/en-us/Resources.resw` - the general setting description\n\n**Problem:** The new general toggle writes and broadcasts `show_theme_adaptive_tray_icon` to Awake, ZoomIt, PowerDisplay, and Mouse Without Borders, but this PR only adds a Mouse Without Borders consumer; the other modules either do not deserialize the property or do not rebuild their tray icon from it. The UI therefore promises cross-module behavior that does not exist. Separately, `ChangeIcon` keeps the default bitmap alive on the non-adaptive path because disposal is conditional on `disposeBitmap`, and the adaptive path performs theme work in a way that must preserve ownership of the handle-backed icon.\n\n**Why it matters:** Users can enable a setting that silently has no effect in several modules, while repeated normal tray updates leak GDI resources. This can eventually exhaust desktop handles and makes the new setting unsafe to advertise as a global feature.\n\n**Suggested change:**\n1. Either add complete, tested consumers for every module named by the setting, or keep the general setting and localized text scoped to the modules implemented by this change and remove the unsupported fan-out/interop notifications.\n2. In `ChangeIcon`, use a clear ownership rule: dispose every temporary bitmap after creating the tray icon, and release any owned icon handle at the matching lifetime boundary without disposing shared resources.\n3. Keep the non-adaptive path free of unnecessary system-theme registry reads and add regression coverage for repeated default-icon updates, adaptive refreshes, and unsupported-module settings.\n\n**Verification:** Build the exact upstream Settings and Mouse Without Borders projects, run focused tray/settings tests, and manually toggle the setting with the main tray icon both visible and hidden. Confirm only implemented consumers change and repeated icon updates do not increase GDI handle usage.",
+      "out_of_diff_reason": "The correction is cross-module and includes Settings propagation, localized behavior, tray bitmap/icon ownership, and tests, so no single current RIGHT-side diff anchor can safely express the complete fix.",
+      "outOfDiffReason": "The correction is cross-module and includes Settings propagation, localized behavior, tray bitmap/icon ownership, and tests, so no single current RIGHT-side diff anchor can safely express the complete fix.",
+      "in_diff": false,
+      "confidence": {
+        "score": 94,
+        "rationale": "The current fan-out names consumers that are absent or incomplete in the upstream diff, and the current ChangeIcon branch conditionally disposes the selected bitmap. The fork loop fixed the lifetime/disabled-path portions, while the upstream head still contains the unsupported propagation design."
+      },
+      "disposition": "proposed"
+    }
+  ],
   "validation": {
     "upstream_head": {
       "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
       "result": "passed",
-      "evidence": "Exact upstream head was checked live and the converged review-fix patch applied cleanly; git diff --cached --check passed."
-    },
-    "candidate_build": {
-      "result": "blocked_unrelated",
-      "configuration": "x64 Debug",
-      "passed": [
-        "dependency restore",
-        "runner build"
+      "commands": [
+        "git diff --check 502db9b699572f54fefb65ec2829797fd02eec9e",
+        "Exact candidate application and current-diff validation"
       ],
-      "blocked": "Settings build reaches src/modules/ZoomIt/ZoomIt/zoomit.h(1,1), where warning C4819 is treated as error under code page 936; this is unrelated to PR 49226."
+      "details": "The pinned upstream diff was checked live; the converged fork fixes applied cleanly to the upstream head and the resulting diff passed whitespace validation. Full Settings validation remains blocked by unrelated ZoomIt zoomit.h warning C4819 treated as an error under the local code page."
     },
     "fork_build": {
       "result": "passed",
@@ -76,28 +99,52 @@
     }
   },
   "workflow": {
-    "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-14T10:05:00Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-15T11:55:00Z",
+    "previous_phase": "converged_draft_ready",
+    "advancement_evidence": [
+      "Fork PR 728 has five completed Copilot reviews; the latest review at 2026-09-09T20:34:27Z returned zero new comments.",
+      "The durable fork state reports zero unresolved Copilot threads.",
+      "The upstream head remains 502db9b699572f54fefb65ec2829797fd02eec9e.",
+      "The legacy sparse action was replaced with two self-contained current-head companion findings and a pinned approval-gated request_changes action."
+    ]
   },
-  "freshness": {
-    "evaluated_at": "2026-09-14T10:05:00Z",
-    "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
-    "head_updated_at": "2026-09-09T15:52:49Z",
-    "issue_comment_count": 4,
-    "review_comment_count": 0,
-    "review_count": 0,
-    "status": "fresh"
-  },
-  "fork_pr": {
-    "number": 728,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/728",
-    "head_sha": "4d216a1e602f18f425648e808d320b96d8b2c54b"
-  },
-  "fork_branch": "pr-iterate/49226",
+  "actions": [
+    {
+      "id": "request-changes-49226",
+      "type": "request_changes",
+      "label": "Request changes with two current-head implementation notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49226,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
+        "body": "Thanks for the theme-adaptive tray icon work. Before this can merge, please make theme-listener startup failure-safe and keep the setting propagation scoped to implemented consumers while closing the tray bitmap/icon lifetime gaps described in the two review notes."
+      },
+      "note": "Companion-only review: posts the two self-contained current-head implementation notes as PR conversation comments. The draft is unpublished and requires explicit maintainer approval plus a final freshness check."
+    }
+  ],
+  "safe_actions": [
+    {
+      "id": "request-changes-49226",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "head_pinned": "502db9b699572f54fefb65ec2829797fd02eec9e"
+    },
+    {
+      "id": "hold-review-49226",
+      "upstream_write": false,
+      "approval_required": false
+    }
+  ],
   "testInstructions": [
-    "Launch the already-built x64 Debug PowerToys.exe.",
-    "Open Settings > General and verify the main PowerToys tray icon setting describes only the main tray icon.",
-    "Open Mouse Without Borders settings, enable the theme-adaptive tray icon, and verify the icon changes with Windows light/dark theme.",
-    "Disable the setting and verify tray refresh still works when WMI theme monitoring is unavailable; repeat enabling/disabling to exercise listener disposal and bitmap refresh."
+    "Build the ManagedCommon and Mouse Without Borders projects in x64 Debug.",
+    "Open Settings > General and Mouse Without Borders settings, then verify the setting scope and localized description match the implemented consumers.",
+    "Enable the adaptive icon and verify the icon follows Windows light/dark theme changes.",
+    "Disable the setting and repeat tray updates while confirming startup still succeeds when WMI theme monitoring is unavailable and GDI handle usage remains stable."
   ]
 }

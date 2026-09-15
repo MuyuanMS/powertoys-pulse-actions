@@ -2,32 +2,115 @@
   "number": 49943,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T07:20:55.8231938Z",
-  "evaluated_at": "2026-09-15T07:20:55.8231938Z",
+  "generated_at": "2026-09-15T12:15:00Z",
+  "evaluated_at": "2026-09-15T12:15:00Z",
   "source_updated_at": "2026-09-09T00:06:34+08:00",
   "head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
   "title": "CmdPal: Shelf (5/n) - Add Alt+Shift+# shortcuts that select the shelf item",
   "url": "https://github.com/microsoft/PowerToys/pull/49943",
   "status": {
-    "glyph": "...",
-    "label": "Local validation blocked",
-    "detail": "The existing fork review was consumed once: fork PR 684 at e285b48129767b7dcdfaadde3be46bb6f552d527 has five Copilot reviews, the latest submitted at 2026-09-08T11:25:51Z, and zero unresolved Copilot threads. That fork head descends from the live upstream head bb49871e039e8ae1c3e73b7b732e70a7b65f1462 and retains three fork-only fixes. An exact-upstream candidate with those changes applied passed git diff --check, but its narrow CmdPal ViewModels unit-test-project build stopped before compiling the changed project because the local package path packages\\Microsoft.Windows.CppWinRT.2.0.250303.1\\build\\native\\Microsoft.Windows.CppWinRT.props is missing. No current-head action is safe to draft until this exact candidate validates."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 684 is converged at e285b48129767b7dcdfaadde3be46bb6f552d527 with five Copilot reviews and zero unresolved Copilot threads. The exact upstream head remains bb49871e039e8ae1c3e73b7b732e70a7b65f1462. Three fork-only correctness fixes were applied to a clean upstream-head candidate; git diff --check and the pinned CmdPal ViewModels unit-test-project x64 Debug build passed."
   },
-  "next_action": "Restore Microsoft.Windows.CppWinRT.2.0.250303.1 in the exact candidate dependency layout, rerun the pinned CmdPal ViewModels unit-test-project build, then draft only the validated current-head fork-only fixes; do not request another Copilot review unless the fork head changes.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The draft is pinned to the unchanged upstream head and contains three concrete current-head findings. Explicit maintainer approval and the safe publisher are required before any upstream write."
+  },
+  "proposed_comments": [
+    {
+      "id": "support-released-alt-keytip-mode",
+      "kind": "inline",
+      "title": "Handle selection shortcuts after Alt is released",
+      "severity": "high",
+      "body": "### Handle selection shortcuts after Alt is released`n`n**Severity:** `high``n`n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfShortcuts.cs` (`IsSelectionShortcut` and `ResolveSelectionShortcut`).`n`n**Suggested change:** Treat `AccessKeyManager.IsDisplayModeEnabled` as an alternate entry condition for the Shift+number selection chord, not only the current `alt` modifier. Windows can report the shortcut after Alt has been released while key-tip display mode remains active; pass that state through both helpers and preserve the existing Ctrl/Shift/Win and visible-count checks. Add a regression test for `alt: false` while key-tip display mode is enabled.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfShortcuts.cs",
+      "line": 31,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 98,
+        "rationale": "The current upstream helper requires alt to be true, while the validated candidate adds the key-tip display-mode condition and a matching regression test."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "process-keytip-selection-before-anchor-lookup",
+      "kind": "inline",
+      "title": "Resolve key-tip selection before requiring a focused shelf button",
+      "severity": "high",
+      "body": "### Resolve key-tip selection before requiring a focused shelf button`n`n**Severity:** `high``n`n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs` (`TryHandleQuickAccessShelfItemKeyDown`).`n`n**Suggested change:** Evaluate `ResolveSelectionShortcut` immediately after confirming the shelf is visible, pass `AccessKeyManager.IsDisplayModeEnabled`, and consume visible or unavailable selection chords before calling `FindQuickAccessShelfButton`. In key-tip display mode the original source can be a non-button element, so the current early anchor lookup can prevent the numbered shelf selection from being recognized. Keep the existing Enter/context-command handling behind the anchor lookup, and preserve the native access-key focus behavior for a visible target.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "line": 1685,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 97,
+        "rationale": "The current upstream hunk performs the anchor lookup before selection resolution; the validated candidate moves resolution first, passes key-tip mode, and consumes the visible target path."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "cover-released-alt-keytip-regression",
+      "kind": "inline",
+      "title": "Add regression coverage for released-Alt key-tip selection",
+      "severity": "medium",
+      "body": "### Add regression coverage for released-Alt key-tip selection`n`n**Severity:** `medium``n`n**Affected code:** `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs` (`QuickAccessShelfResolverTests`).`n`n**Suggested change:** Extend the new shortcut tests with a case where `alt` is false, Shift is true, the numbered key is within the visible range, and key-tip display mode is true; assert that `IsSelectionShortcut` and `ResolveSelectionShortcut` accept it as a visible target. This locks the Windows key-tip transition behavior and prevents a future refactor from restoring the Alt-only condition.",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
+      "line": 50,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 95,
+        "rationale": "The current upstream test hunk lacks coverage for the released-Alt transition; the validated candidate adds both the predicate assertion and visible-target resolver test."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49943",
+      "type": "request_changes",
+      "label": "Request changes with three current-head CmdPal shelf findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49943,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
+        "body": "Thanks for the CmdPal shelf shortcut work and the focused resolver coverage. Before merge, please address the three current-head findings in this review: support Shift+number selection while Windows key-tip display mode remains active after Alt is released; resolve and consume that chord before requiring a focused shelf button; and add regression coverage for the released-Alt key-tip transition."
+      },
+      "note": "Draft only. No review, comment, label, close, or other public write has occurred on microsoft/PowerToys."
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-15T07:20:55.8231938Z",
-    "resume_action": "create-local checkout",
-    "stale_expectation": "The prior converged fork review cannot itself produce a clean upstream result because its three retained fixes are not present in the live upstream head."
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-15T12:15:00Z",
+    "resume_action": "maintainer-approval-or-revalidation",
+    "advancement_evidence": [
+      "Inspected the unchanged live upstream head before resuming.",
+      "Consumed the completed fork Copilot result before considering another request; fork PR 684 has five reviews and zero unresolved Copilot threads.",
+      "Applied the three retained fork-only fixes to a clean candidate at the pinned upstream head.",
+      "Restored the cached CppWinRT and WIL package directories required by the exact candidate dependency layout.",
+      "Passed git diff --check and the pinned CmdPal ViewModels unit-test-project x64 Debug build.",
+      "Mapped the three fork-only fixes to current RIGHT-side upstream diff anchors and emitted a current-head REQUEST_CHANGES draft instead of marking the upstream PR review-ready."
+    ]
   },
   "freshness": {
-    "queued_at": "09/13/2026 16:00:54",
-    "checkpoint_at": "2026-09-15T07:20:55.8231938Z"
+    "status": "fresh",
+    "headRefOid": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
+    "updatedAt": "2026-09-09T00:06:34+08:00",
+    "latestCopilotReviewAt": "2026-09-08T11:25:51Z",
+    "latestForkCommitAt": "2026-09-08T11:18:56Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T12:15:00Z"
   },
   "fork_pr": {
     "number": 684,
@@ -43,21 +126,22 @@
     "consumed_once": true
   },
   "validation": {
-    "suggestion_patch": {
-      "upstream_head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
-      "candidate_path": "<PowerToysCheckout>",
-      "result": "blocked",
-      "applied_files": [
-        "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfShortcuts.cs",
-        "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
-        "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs"
-      ],
+    "suggestionPatch": {
+      "head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
       "commands": [
         "git diff --check bb49871e039e8ae1c3e73b7b732e70a7b65f1462..e285b48129767b7dcdfaadde3be46bb6f552d527",
         "MSBuild src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj /m /restore /p:Configuration=Debug /p:Platform=x64 /t:Build /nologo /v:minimal"
       ],
-      "validated_at": "2026-09-15T07:20:55.8231938Z",
-      "error": "The build stopped in src\\common\\logger\\logger.vcxproj before the changed project compiled because packages\\Microsoft.Windows.CppWinRT.2.0.250303.1\\build\\native\\Microsoft.Windows.CppWinRT.props is missing."
+      "details": "The three findings are explanatory inline comments without apply-ready suggestion blocks. On a clean candidate at the pinned upstream head, the exact fork-only fixes passed git diff --check and the pinned CmdPal ViewModels unit-test-project x64 Debug build after restoring the local Microsoft.Windows.CppWinRT.2.0.250303.1 and Microsoft.Windows.ImplementationLibrary.1.0.260126.7 package directories."
+    },
+    "upstreamHead": {
+      "head_sha": "bb49871e039e8ae1c3e73b7b732e70a7b65f1462",
+      "result": "not_applicable",
+      "commands": [],
+      "details": "This is a non-clean review with current-head findings; the validated candidate covers the proposed fixes."
     }
   }
 }

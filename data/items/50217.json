@@ -3,24 +3,74 @@
   "number": 50217,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T14:45:00Z",
-  "evaluated_at": "2026-09-14T14:45:00Z",
+  "generated_at": "2026-09-15T11:53:00Z",
+  "evaluated_at": "2026-09-15T11:53:00Z",
   "source_updated_at": "2026-09-11T05:29:24Z",
   "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
   "title": "fix(file-locksmith): isolate handle enumeration",
   "url": "https://github.com/microsoft/PowerToys/pull/50217",
   "status": {
-    "glyph": "…",
-    "label": "Review loop queued; no fresh activity",
-    "detail": "The live upstream head remains 36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd and no fresh upstream activity has been detected since 2026-09-11T05:29:24Z. The durable fork evidence is retained as queued internal review context; no public review comments remain active.",
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "The live upstream head remains 36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd. The durable fork loop is converged with zero unresolved Copilot threads, and two root-cause findings were remapped to current RIGHT-side diff anchors. No upstream write occurred.",
     "upstream_public_writes": 0
   },
-  "next_action": "Queued for a full review against the durable head; no public general comments remain active while the prior evidence waits for refresh.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Approve, edit, or hold the drafted request-changes review.",
+  "proposed_comments": [
+    {
+      "id": "bounded-worker-cleanup",
+      "kind": "inline",
+      "title": "Bound worker cleanup after timeout or cancellation",
+      "severity": "high",
+      "body": "The timeout and cancellation paths call `TerminateAsync`, but this method waits for the worker to exit with `CancellationToken.None`. If the child remains stuck while its redirected pipes or cleanup path are blocked, the UI can hang indefinitely instead of honoring the advertised 30-second timeout. Bound the termination wait and pipe-drain cleanup, and return the documented timeout/failure result once that cleanup budget expires.",
+      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
+      "line": 245,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 94,
+        "rationale": "The current added termination path explicitly uses an uncancellable WaitForExitAsync, while the converged fork fixed this exact root cause with a bounded cleanup wait and bounded pipe draining."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "restrict-worker-inherited-handles",
+      "kind": "inline",
+      "title": "Restrict handles inherited by the worker process",
+      "severity": "high",
+      "body": "Using `ProcessStartInfo` with redirected standard streams does not by itself restrict every inheritable handle available to the child. A blocked worker can therefore retain unrelated caller handles, keeping resources alive and weakening the finite cleanup guarantee. Create the worker with an explicit inherited-handle list containing only stdin, stdout, and stderr (or an equivalent Windows handle-inheritance restriction), then keep the existing job-object cleanup around that process.",
+      "path": "src/modules/FileLocksmith/FileLocksmithUI/Services/FileLocksmithQueryService.cs",
+      "line": 224,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 89,
+        "rationale": "The current added ProcessStartInfo enables redirected child-process execution without an explicit handle allow-list, and the converged fork implemented PROC_THREAD_ATTRIBUTE_HANDLE_LIST for this exact containment gap."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50217",
+      "type": "request_changes",
+      "label": "Post the two current-head request-changes findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50217,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
+        "body": "Thanks for isolating handle enumeration in a worker process. Before merge, please bound worker termination and redirected-pipe cleanup so timeout/cancellation cannot hang indefinitely, and restrict child handle inheritance to the three redirected standard handles so a blocked worker cannot retain unrelated caller resources."
+      },
+      "note": "The two findings are anchored to current upstream RIGHT-side diff lines and remain unpublished pending explicit maintainer approval and a final freshness check."
+    }
+  ],
   "validation": {
     "upstream_head": {
       "head_sha": "36f47292e50c108d86a4c7a3995f7bb6a0b9d5cd",
@@ -51,19 +101,19 @@
     },
     "fork_only_delta": {
       "result": "accounted",
-      "detail": "Review-only fixes are represented by the two consolidated general findings; unrelated base-refresh commits are not treated as upstream author changes."
+      "detail": "Review-only fixes are represented by the two consolidated current-head findings: bounded worker cleanup and explicit inherited-handle restriction. Unrelated base-refresh commits are not treated as upstream author changes."
     }
   },
   "workflow": {
-    "phase": "review_in_progress",
+    "phase": "awaiting_review_approval",
     "copilot": "Latest completed Copilot review on fork PR 527 returned 0 new published comments; unresolved Copilot threads: 0.",
     "validation": "Exact upstream head and converged fork review tree both built; targeted File Locksmith tests passed 23/23.",
     "fork_pr": 527,
     "fork_branch": "pr-iterate/50217",
     "fork_head_sha": "25f7819176e4caaf7cf4f9d3708b45b40f7ab107",
-    "fork_only_delta": "Two consolidated review-fix themes remain against the live upstream head; no fresh upstream activity was detected and no unexplained public action is being posted automatically.",
-    "checkpoint_at": "2026-09-15T18:22:13Z",
-    "resume_action": "queued-for-full-review"
+    "fork_only_delta": "Two consolidated review-fix themes are mapped to current upstream RIGHT-side diff anchors; no unexplained public action is being posted automatically.",
+    "checkpoint_at": "2026-09-15T11:53:00Z",
+    "resume_action": "awaiting-review-approval"
   },
   "freshness": {
     "queued_at": "09/15/2026 18:22:13",
