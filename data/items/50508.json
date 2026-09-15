@@ -2,34 +2,128 @@
   "number": 50508,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T13:10:04.8901042Z",
-  "evaluated_at": "09/15/2026 11:36:58",
-  "source_updated_at": "2026-09-15T04:04:27Z",
+  "generated_at": "2026-09-15T16:18:00Z",
+  "evaluated_at": "2026-09-15T16:18:00Z",
+  "source_updated_at": "2026-09-15T15:26:39Z",
   "head_sha": "7156b04144c25c6615d1cb7bb6789ac32271b879",
   "title": "feat(workspaces): warn before unverified elevated app launches",
   "url": "https://github.com/microsoft/PowerToys/pull/50508",
+  "summary": "The saved Copilot review was consumed without a duplicate request and all fork threads are resolved. Two critical launch-target revalidation gaps remain on the current upstream head. The complete four-file correction candidate builds and passes all 135 Workspaces unit tests.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Consumed prior Copilot finding, fixed drive-relative path handling at fork commit a10c91974, passed Workspaces Debug build and targeted test, resolved all threads, and requested a fresh review at 2026-09-15T12:48:59Z; next run must consume it without a duplicate request."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 773 reached the automated round cap with zero unresolved threads. Two security findings remain represented as current-head inline comments; the validated correction candidate passes 135/135 tests."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The two critical findings are pinned to the unchanged upstream head and backed by exact correction-candidate validation. No upstream write has occurred."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "package-state-revalidation",
+      "kind": "inline",
+      "title": "Preserve and revalidate the package's captured trust state",
+      "severity": "critical",
+      "body": "### Preserve and revalidate the package's captured trust state\n\n**Severity:** `critical`\n\nThe final check only compares package identity and, when the original result was unverified, skips evaluating the current package state. The initial integrity and deployment state is also not retained in `target.package`. A package approved while unverified can therefore change to tampered, modified, stubbed, unavailable, external, or mutable content without invalidating that one-time approval.\n\nCapture the relevant deployment and integrity fields in `PackageIdentity` after the initial integrity operation. During `IsCurrent`, repeat integrity verification whenever it was performed initially, compare the complete captured state, and reject any state transition before activation.\n\n**Verification:** Add focused tests showing that an unchanged approved-unverified package remains eligible while modified, stubbed, unavailable, external, mutable, or changed-integrity registrations fail revalidation.",
+      "path": "src/modules/Workspaces/WorkspacesLib/PackageVerification.cpp",
+      "start_line": 254,
+      "line": 255,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "The current final check omits the captured integrity/deployment state, and the complete correction candidate passes all Workspaces tests."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "filesystem-target-revalidation",
+      "kind": "inline",
+      "title": "Fail closed when the approved filesystem target is not namespace-protected",
+      "severity": "critical",
+      "body": "### Fail closed when the approved filesystem target is not namespace-protected\n\n**Severity:** `critical`\n\nFor non-package targets this delegates directly to package revalidation, which treats an absent package identity as current. Absolute non-`.exe` paths, relative paths, and drive-relative paths such as `C:app.exe` can consequently pass after approval without a retained file handle. Holding only the executable handle is also insufficient when a writable ancestor directory can be renamed and replaced before `ShellExecuteEx` resolves `target.path` again.\n\nDistinguish URI/protocol targets from filesystem targets, reject every filesystem target that lacks a successfully retained file handle, and retain non-delete-sharing handles for each parent directory through the elevation request. Fail verification if any required directory cannot be protected.\n\n**Verification:** Add regressions for absolute `.exe`, `.lnk` or script, ordinary relative and drive-relative paths, plus a URI case confirming that legitimate protocol targets remain supported.",
+      "path": "src/modules/Workspaces/WorkspacesLib/SignatureVerification.cpp",
+      "start_line": 297,
+      "line": 300,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 97,
+        "rationale": "The absent-package path currently returns current without filesystem namespace protection; the complete correction candidate passes all Workspaces tests."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50508",
+      "type": "request_changes",
+      "label": "Request changes for two critical launch revalidation gaps",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50508,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "7156b04144c25c6615d1cb7bb6789ac32271b879"
+      },
+      "note": "Draft only. Two inline security findings will be submitted as one request-changes review after explicit maintainer approval; no public write has occurred."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-15T13:10:04.8901042Z"
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-15T16:18:00Z",
+    "advancement_evidence": [
+      "Consumed the saved Copilot request without issuing a duplicate request.",
+      "Resolved the final two non-blocking fork comments; zero unresolved threads remain.",
+      "Mapped two remaining fork-proven security fixes to the current upstream head.",
+      "Built the complete four-file correction candidate and passed all 135 Workspaces unit tests.",
+      "Stopped automated requests at the round-eight cap and drafted the supported maintainer action."
+    ]
   },
   "freshness": {
-    "queued_at": "09/14/2026 08:36:27",
-    "checkpoint_at": "2026-09-15T13:10:04.8901042Z"
+    "headRefOid": "7156b04144c25c6615d1cb7bb6789ac32271b879",
+    "updatedAt": "2026-09-15T15:26:39Z",
+    "latestCopilotReviewAt": "2026-09-15T13:15:27Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T16:18:00Z"
   },
   "fork_pr": {
     "number": 773,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/773"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/773",
+    "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/50508-v2"
+  "fork_branch": "pr-iterate/50508-v2",
+  "fork_head_sha": "a10c91974cefc10904556d8d4305112e8de4bc62",
+  "validation": {
+    "suggestionPatch": {
+      "head_sha": "7156b04144c25c6615d1cb7bb6789ac32271b879",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [
+        "tools\\build\\build.cmd in src\\modules\\Workspaces\\WorkspacesLib.UnitTests",
+        "vstest.console.exe Workspaces.Lib.UnitTests.dll /Platform:x64"
+      ],
+      "details": "The comments are explanatory current-diff findings without suggestion blocks. The complete four-file correction result was applied to the pinned upstream head, built successfully, and passed 135/135 tests."
+    },
+    "upstreamHead": {
+      "head_sha": "7156b04144c25c6615d1cb7bb6789ac32271b879",
+      "result": "not_applicable",
+      "commands": [],
+      "details": "This is a non-clean security review with current-head findings; the complete correction candidate was validated instead."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
