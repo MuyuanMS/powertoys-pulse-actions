@@ -1,28 +1,33 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 5,
   "id": "pr-47871",
   "number": 47871,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T09:35:00Z",
-  "evaluated_at": "2026-09-03T09:35:00Z",
+  "generated_at": "2026-09-15T02:10:00Z",
+  "evaluated_at": "2026-09-15T02:10:00Z",
   "source_updated_at": "2026-08-10T14:40:03Z",
   "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
   "title": "[Runner] Make tray icon context menu theme aware",
   "url": "https://github.com/microsoft/PowerToys/pull/47871",
-  "summary": "The owned_elsewhere exclusion was explicitly overridden. The current upstream head was mirrored to fork PR 591 and reviewed through Copilot/fork-side fixes. The supported current-head review action is to request changes for app-theme refresh, app-theme notification, high-contrast handling, and dark-mode initialization timing.",
+  "author": "Knyrps",
+  "authorAssociation": "CONTRIBUTOR",
+  "state": "OPEN",
+  "draft": false,
+  "summary": "The upstream head remains pinned to 81dbef8734f533a3497c2771193eef53aa692bf4. Fork PR 591 converged at 73fbd3662e57aab481aa8e2f2798ed3c5e36fada with zero new Copilot comments and zero unresolved threads. Re-evaluating the four review findings against the live upstream head confirms that immersive color policy refresh, app-theme change registration, high-contrast background handling, and early initialization timing remain valid and unaddressed in the upstream tree. A maintainer request-changes review is drafted and ready for explicit approval.",
+  "confidence": "High",
   "status": {
-    "glyph": "review",
-    "label": "Review notes drafted",
-    "detail": "Fork PR 591 converged after fixes through 73fbd3662e57aab481aa8e2f2798ed3c5e36fada; unresolved fork Copilot threads are zero."
+    "glyph": "ACTION",
+    "label": "Current-head request-changes draft ready",
+    "detail": "Fork PR 591 converged on 73fbd3662e57aab481aa8e2f2798ed3c5e36fada with 0 unresolved Copilot threads and approval recommendation. Upstream remains pinned to 81dbef8734f533a3497c2771193eef53aa692bf4 where all four findings remain valid. No public writes were sent to microsoft/PowerToys."
   },
   "next_action": {
-    "glyph": "post",
-    "label": "Review drafted request-changes action",
-    "reason": "Recheck upstream freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
+    "glyph": "ACTION",
+    "label": "Request changes with four current-head review notes",
+    "reason": "After explicit maintainer approval, recheck the live upstream head and activity, then publish the prepared request-changes review."
   },
   "proposed_comments": [
     {
@@ -31,7 +36,16 @@
       "severity": "medium",
       "title": "Refresh immersive color policy before reapplying app mode",
       "path": "src/common/Themes/dark_mode.cpp",
-      "body": "Refresh() re-queries ShouldAppsUseDarkMode without refreshing uxtheme's cached immersive-color policy, so an AppsUseLightTheme change can leave the old value in use. Load ordinal 104, RefreshImmersiveColorPolicyState, and call it before reapplying SetPreferredAppMode."
+      "line": 81,
+      "start_line": 80,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Refresh immersive color policy before reapplying app mode\n\n**Severity:** `medium`\n\n`Refresh()` re-queries `ShouldAppsUseDarkMode` without refreshing `uxtheme`'s cached immersive-color policy, so an `AppsUseLightTheme` change can leave the old value in use. Load ordinal 104 (`RefreshImmersiveColorPolicyState`) and call it before reapplying `SetPreferredAppMode`.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "Refresh() re-queries ShouldAppsUseDarkMode without calling RefreshImmersiveColorPolicyState (ordinal 104), leaving cached uxtheme immersive color state stale after an AppsUseLightTheme toggle."
+      }
     },
     {
       "id": "listen-for-app-theme",
@@ -39,7 +53,16 @@
       "severity": "medium",
       "title": "Listen for app-theme changes",
       "path": "src/runner/tray_icon.cpp",
-      "body": "The tray menu dark-mode decision follows the app theme, but the runner only registers a system-theme handler. Register the refresh handler for app-theme changes as well so menu mode updates when AppsUseLightTheme changes without a SystemUsesLightTheme change."
+      "line": 450,
+      "start_line": 450,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Listen for app-theme changes\n\n**Severity:** `medium`\n\nThe tray menu dark-mode decision follows the app theme, but the runner only registers a system-theme handler (`AddSystemThemeChangedHandler`). Register the refresh handler for app-theme changes as well (`AddAppThemeChangedHandler`) so menu mode updates when `AppsUseLightTheme` changes without a `SystemUsesLightTheme` change.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The tray menu theme logic checks the application theme preference, but start_tray_icon only registers a system-theme change handler. Registering AddAppThemeChangedHandler ensures menus update when the app theme changes independently."
+      }
     },
     {
       "id": "skip-high-contrast-menu-brush",
@@ -47,7 +70,16 @@
       "severity": "medium",
       "title": "Respect high-contrast menu colors",
       "path": "src/common/Themes/dark_mode.cpp",
-      "body": "The fixed dark brush overrides Windows high-contrast menu colors. Check SPI_GETHIGHCONTRAST and skip custom menu background brushes when HCF_HIGHCONTRASTON is set."
+      "line": 112,
+      "start_line": 111,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Respect high-contrast menu colors\n\n**Severity:** `medium`\n\nThe fixed dark brush overrides Windows high-contrast menu colors. Check `SPI_GETHIGHCONTRAST` via `SystemParametersInfoW` and skip custom menu background brushes when `HCF_HIGHCONTRASTON` is set so accessibility colors are preserved.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "Applying dark_menu_brush unconditionally in dark mode overrides Windows high-contrast theme menu colors. Checking SPI_GETHIGHCONTRAST for HCF_HIGHCONTRASTON preserves accessibility themes."
+      }
     },
     {
       "id": "initialize-before-window-create",
@@ -55,40 +87,55 @@
       "severity": "medium",
       "title": "Initialize dark-mode ordinals before creating the tray window",
       "path": "src/runner/tray_icon.cpp",
-      "body": "SetPreferredAppMode should be initialized before the tray window is created, matching the referenced ZoomIt sequence. Move DarkMode::Initialize() before RegisterClass/CreateWindowW."
+      "line": 451,
+      "start_line": 451,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Initialize dark-mode ordinals before creating the tray window\n\n**Severity:** `medium`\n\n`SetPreferredAppMode` should be initialized before the tray window is created, matching the referenced ZoomIt sequence. Move `DarkMode::Initialize()` before `RegisterClass(&wc)` and `CreateWindowW`.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 95,
+        "rationale": "Calling DarkMode::Initialize() after CreateWindowW can cause early menu or window creation paths to run with uninitialized preferred app mode. Following the ZoomIt precedent requires initialization before RegisterClass/CreateWindowW."
+      }
     }
   ],
   "actions": [
     {
-      "id": "post-review-47871",
-      "type": "post_review",
-      "label": "Post request-changes review",
+      "id": "request-changes-47871",
+      "type": "request_changes",
+      "label": "Request changes with four current-head review notes",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
+      "note": "Drafted maintainer action only. Recheck the live upstream head and activity before publication; no write has been made to microsoft/PowerToys.",
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 47871,
-        "event": "COMMENT",
         "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
-        "body_prefix": "Thanks for making the tray menu follow Windows theme preferences. I found a few current-head issues that can keep the menu from updating correctly or respecting accessibility colors."
-      },
-      "note": "Do not post without explicit approval and a final upstream freshness check."
+        "event": "REQUEST_CHANGES"
+      }
     }
   ],
-  "confidence": "High",
   "fork_pr": {
     "number": 591,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/591",
-    "head_sha": "73fbd3662e57aab481aa8e2f2798ed3c5e36fada"
+    "head_sha": "73fbd3662e57aab481aa8e2f2798ed3c5e36fada",
+    "branch": "pr-iterate/47871"
   },
   "fork_branch": "pr-iterate/47871",
   "workflow": {
     "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-03T09:35:00Z",
+    "previous_phase": "post_review",
+    "checkpoint_at": "2026-09-15T02:10:00Z",
+    "reviewed_upstream_head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
+    "fork_pr": 591,
+    "fork_head_sha": "73fbd3662e57aab481aa8e2f2798ed3c5e36fada",
+    "latest_copilot_review_at": "2026-09-03T09:27:44Z",
+    "latest_copilot_new_comments": 0,
     "unresolved_copilot_threads": 0,
-    "copilot_result": "empty_requested_reviewers_but_later_reviews_audited",
-    "latest_clean_audit": "zero unresolved Copilot threads on fork PR 591"
+    "resume_action": "maintainer-approval-or-freshness-recheck",
+    "build_result": "passed",
+    "note": "The saved fork loop is converged; this artifact preserves the current-head maintainer draft without publishing upstream."
   },
   "review_fixes": [
     {
@@ -104,15 +151,62 @@
       "summary": "Refreshed immersive color policy before reapplying preferred app mode."
     }
   ],
-  "revalidation": {
-    "result": "passed",
-    "builds": [
-      "src/common/Themes/Themes.vcxproj Debug x64",
-      "src/runner/runner.vcxproj Debug x64"
+  "phase0": {
+    "authorAssociation": "CONTRIBUTOR",
+    "disposition": "Proceed",
+    "processGates": "Community contributor PR; CLA signed, visual evidence provided in description, changes are in-scope and focused on runner tray icon theming."
+  },
+  "validation": {
+    "upstream_head": {
+      "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
+      "result": "passed",
+      "validated_at": "2026-09-15T02:10:00Z",
+      "scope": "Exact upstream PR head before proposed changes",
+      "builds": [
+        "src/common/Themes/Themes.vcxproj Debug x64",
+        "src/runner/runner.vcxproj Debug x64"
+      ],
+      "notes": [
+        "Inherited GIT_CONFIG_* variables were cleared before local builds to avoid vcpkg registry initialization failures.",
+        "POWERTOYS_DISABLE_SPECTRE=1 was set."
+      ]
+    },
+    "fork_head": {
+      "head_sha": "73fbd3662e57aab481aa8e2f2798ed3c5e36fada",
+      "result": "passed",
+      "validated_at": "2026-09-15T02:10:00Z",
+      "builds": [
+        "src/common/Themes/Themes.vcxproj Debug x64",
+        "src/runner/runner.vcxproj Debug x64"
+      ]
+    }
+  },
+  "copilot_review": {
+    "latest_submitted_at": "2026-09-03T09:27:44Z",
+    "latest_commit_id": "73fbd3662e57aab481aa8e2f2798ed3c5e36fada",
+    "latest_new_comments": 0,
+    "unresolved_threads": 0,
+    "verdict": "Approval recommended"
+  },
+  "freshness": {
+    "status": "fresh-at-draft-time",
+    "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
+    "source_updated_at": "2026-08-10T14:40:03Z",
+    "latestCopilotReviewAt": "2026-09-03T09:27:44Z",
+    "latestForkCommitAt": "2026-09-03T09:20:53Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T02:10:00Z"
+  },
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The upstream head remains open and pinned to 81dbef8734f533a3497c2771193eef53aa692bf4. The fork review converged at 73fbd3662e57aab481aa8e2f2798ed3c5e36fada with zero new Copilot comments and zero unresolved threads. Re-evaluating the four findings against current upstream code confirms that immersive color policy refresh, app-theme notification listening, high-contrast background override, and initialization timing remain unaddressed upstream. The drafted request-changes review captures these findings for maintainer approval.",
+    "evidence": [
+      "Upstream PR 47871 is open, non-draft, and pinned to head 81dbef8734f533a3497c2771193eef53aa692bf4.",
+      "Fork PR 591 converged at 73fbd3662e57aab481aa8e2f2798ed3c5e36fada with zero new Copilot comments and zero unresolved threads.",
+      "Re-examination of the current upstream diff confirms all four findings remain valid on the live upstream head.",
+      "Themes.vcxproj and runner.vcxproj build cleanly.",
+      "Zero writes were made to microsoft/PowerToys."
     ],
-    "tests": "No focused automated test project was changed by this PR.",
-    "notes": [
-      "Inherited GIT_CONFIG_* variables were cleared before local builds to avoid vcpkg registry initialization failures."
-    ]
+    "recommended_action": "After explicit maintainer approval and a final freshness check, post the current-head request-changes review comment as a maintainer action."
   }
 }
