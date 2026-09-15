@@ -1,72 +1,190 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-49916",
   "number": 49916,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "external",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T07:38:16Z",
-  "evaluated_at": "2026-09-15T15:38:16+08:00",
-  "source_updated_at": "2026-09-09T00:05:25+08:00",
+  "generated_at": "2026-09-16T00:20:00Z",
+  "evaluated_at": "2026-09-16T00:20:00Z",
+  "source_updated_at": "2026-09-08T16:05:25Z",
   "head_sha": "b299a74e74026dd0c953953aac12f748259d4f2e",
   "title": "CmdPal: Shelf (2/n) - Add recent commands to Home and quick access shelf",
   "url": "https://github.com/microsoft/PowerToys/pull/49916",
+  "summary": "The current-head CmdPal shelf review converged with zero unresolved Copilot threads. The affected UI and test projects build, 390 focused tests pass, and five findings remain for approval: cache generation, provider-qualified history, pinned shortcut stability, shelf limits, and persisted placement normalization.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Consumed the existing fork Copilot review for preserved fork PR 726 and branch pr-iterate/49916-v2. The one unresolved thread was valid: GetDefaultViewCache could return a cache built for an invalidated generation. Fixed it in fork commit 00861204c42ffb21f2b5fcb0c400456f5bdae48f, pushed to the fork branch, replied to and resolved the thread, restored/build-essential prerequisites, built the CmdPal view-model unit test project, and passed the two MainListPage cache regression tests. A fresh Copilot review was requested at 2026-09-15T07:38:09.4710431Z; the single immediate check found no newly submitted review, so this is a valid external wait."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 726 converged at 00861204. One exact-head suggestion and four coordinated implementation requests remain."
   },
-  "next_action": "On the next resume, consume a Copilot review submitted after 2026-09-15T07:38:09.4710431Z for fork PR 726 at head 00861204c42ffb21f2b5fcb0c400456f5bdae48f before making any further request.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Fork-only corrections are not present on the pinned upstream head and are represented by five current-head comments."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "mainlist-default-view-cache-race",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Retry default-view rebuilds invalidated mid-build",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Commands/MainListPage.cs",
+      "side": "RIGHT",
+      "start_line": 506,
+      "line": 520,
+      "in_diff": true,
+      "body": "### Retry default-view rebuilds invalidated mid-build\n\n**Severity:** `high`\n\nIf `_defaultViewGeneration` changes while `BuildDefaultViewCache` is running, the current fallback can return `rebuilt` even though it was produced for an invalidated generation. The invalidation notification may already have fired before this stale snapshot reaches the caller, so Home can keep showing an old pinned/recent-command layout until another unrelated refresh. Retry the rebuild when the generation changes and only return a cache that was installed for the current generation.\n\n```suggestion\n        while (true)\n        {\n            var existing = Volatile.Read(ref _defaultViewCache);\n            var generation = Volatile.Read(ref _defaultViewGeneration);\n            if (existing?.Generation == generation)\n            {\n                return existing;\n            }\n\n            var rebuilt = BuildDefaultViewCache(existing, generation);\n            if (generation != Volatile.Read(ref _defaultViewGeneration))\n            {\n                continue;\n            }\n\n            var current = Interlocked.CompareExchange(ref _defaultViewCache, rebuilt, existing);\n            if (current == existing)\n            {\n                return rebuilt;\n            }\n        }\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "The race was reproduced and the literal exact-head suggestion passed the focused build."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "provider-qualified-recent-history",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve provider identity in recent-command history",
+      "in_diff": false,
+      "out_of_diff_reason": "The safe fix coordinates history schema, resolution, scoring, context-menu removal, migration, and tests across multiple files.",
+      "body": "### Preserve provider identity in recent-command history\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/HistoryItem.cs`, `RecentCommandsManager.cs`, `TopLevelCommandResolver.cs`, `Commands/MainListPage.cs`, `Commands/RecentCommandListItem.cs`, and `src/modules/cmdpal/Microsoft.CmdPal.UI/CommandPaletteContextMenuFactory.cs`.\n\n**Problem:** Recent history is keyed only by `CommandId`. When two providers, or a provider command and an All Apps item, expose the same id, the recent section, frecency score, and remove command can select or delete the wrong entry.\n\n**Why it matters:** Users can invoke one command and later see another provider's command promoted, or remove one recent item and unexpectedly remove every entry sharing its id.\n\n**Suggested change:**\n1. Persist optional provider identity with each history item and introduce a `(ProviderId, CommandId)` identity with legacy id-only support.\n2. Index, enumerate, score, and remove history by that identity.\n3. Pass provider ids from top-level and All Apps call sites.\n4. Prefer exact provider/id resolution and migrate legacy entries when next recorded.\n5. Add collision, migration, scoring, and provider-specific removal tests.\n\n**Verification:** Run the CmdPal ViewModels suite and verify the two-provider collision and legacy migration scenarios; the converged candidate passes 361/361 tests.",
+      "confidence": {
+        "score": 93,
+        "rationale": "The current code resolves colliding ids without provider identity; the fork correction and regressions pass."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "pinned-ownership-and-shortcut-stability",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Keep pinned commands and Alt shortcuts stable when Recent appears first",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction spans resolver ownership, shelf shortcut indexing, user-facing resource text, and tests.",
+      "body": "### Keep pinned commands and Alt shortcuts stable when Recent appears first\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TopLevelCommandResolver.cs`, `QuickAccessShelfResolver.cs`, and `src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw`.\n\n**Problem:** Resolving recent commands before pinned commands when `recentCommandsFirst` is true lets Recent consume commands that should remain owned by Pinned, while shelf shortcut indexes are assigned from presentation order.\n\n**Why it matters:** Reordering sections can displace pinned items or make familiar Alt+number shortcuts launch recent commands instead.\n\n**Suggested change:**\n1. Resolve and reserve pinned ownership before resolving recent commands.\n2. Apply visual section order only after ownership is established.\n3. Assign pinned shortcut indexes from pinned order and recent indexes after the pinned range.\n4. Document the stable shortcut behavior.\n5. Add recent-before-pinned, pinned-limit, and shortcut-index tests.\n\n**Verification:** Run the CmdPal UI build and ViewModels suite; the converged candidate passes 361/361 tests.",
+      "confidence": {
+        "score": 91,
+        "rationale": "Presentation order currently determines ownership and shortcut numbering; the fork separates those concerns."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "quick-access-shelf-recent-limit",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Cap quick-access shelf recent items at five",
+      "in_diff": false,
+      "out_of_diff_reason": "The safe correction requires a shared normalization helper, call-site update, resource text, and tests.",
+      "body": "### Cap quick-access shelf recent items at five\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfViewModel.cs`, `QuickAccessShelfResolver.cs`, and the recent-command limit description in `Resources.resw`.\n\n**Problem:** The Home setting allows up to 10 recent commands, and the compact shelf applies that same maximum despite the intended five-item shelf behavior.\n\n**Why it matters:** Ten recent shelf items can overfill the compact row and create misleading expectations for visible Alt shortcuts.\n\n**Suggested change:**\n1. Add a shelf-specific maximum of five and normalize shelf configuration through it.\n2. Keep the Home setting's existing 1-10 range.\n3. Update the setting description to distinguish Home and shelf limits.\n4. Add shelf limit tests for 1, 5, and values above 5.\n\n**Verification:** Run the CmdPal UI build and ViewModels suite; the converged candidate passes 361/361 tests.",
+      "confidence": {
+        "score": 88,
+        "rationale": "The current shelf directly reuses the broader Home maximum; the fork enforces the documented compact limit."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "invalid-recent-placement-settings",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Normalize invalid persisted recent-placement values",
+      "in_diff": false,
+      "out_of_diff_reason": "This requires a model-boundary normalization change plus serialization regression coverage.",
+      "body": "### Normalize invalid persisted recent-placement values\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/SettingsModel.cs` and `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/SettingsServiceTests.cs`.\n\n**Problem:** `RecentCommandsOnQuickAccessShelf` and `RecentCommandsOnHome` deserialize arbitrary integers directly into enum auto-properties, allowing invalid persisted enum state into the model.\n\n**Why it matters:** Behavior then depends on every consumer defensively handling unknown values instead of enforcing a valid settings invariant once.\n\n**Suggested change:**\n1. Back both properties with fields.\n2. Retain only `BeforePinned` and `AfterPinned`; normalize all other values to `Hidden`.\n3. Add serialization tests for invalid values such as `-1` and `99`.\n\n**Verification:** Run `SettingsServiceTests` and the complete ViewModels suite; the converged candidate passes 361/361 tests.",
+      "confidence": {
+        "score": 86,
+        "rationale": "Deserialization currently accepts undefined enum integers; model-level normalization removes that invalid state."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49916",
+      "type": "request_changes",
+      "label": "Request five CmdPal shelf and recent-history corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49916,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "b299a74e74026dd0c953953aac12f748259d4f2e"
+      },
+      "note": "Draft only. One inline suggestion and four general review comments require explicit maintainer approval."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "reviewing_findings",
-    "previous_checkpoint_at": "2026-09-14T02:40:03.1702968Z",
-    "checkpoint_at": "2026-09-15T07:38:16Z",
-    "review_request_at": "2026-09-15T07:38:09.4710431Z",
-    "reviewed_fork_head": "b19a236506ff2b1757b9e6a748547de2e08ec38a",
-    "current_fork_head": "00861204c42ffb21f2b5fcb0c400456f5bdae48f",
-    "fix_commit": "00861204c42ffb21f2b5fcb0c400456f5bdae48f",
-    "consumed_copilot_review_at": "2026-09-09T05:14:50Z",
-    "resolved_copilot_threads": 1,
-    "unresolved_copilot_threads": 0,
-    "immediate_review_found": false
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-16T00:20:00Z",
+    "advancement_evidence": [
+      "Consumed the completed existing Copilot review rather than requesting a duplicate.",
+      "Confirmed the final review generated zero new comments and zero unresolved fork threads.",
+      "Built CmdPal UI, ViewModels tests, and Apps tests.",
+      "Passed 361 ViewModels tests and 29 Apps tests.",
+      "Applied the literal cache suggestion to the exact upstream head and rebuilt successfully."
+    ]
   },
   "freshness": {
-    "queued_at": "2026-09-13T16:50:47+08:00",
-    "checkpoint_at": "2026-09-15T07:38:16Z",
-    "copilot_requested_at": "2026-09-15T07:38:09.4710431Z"
+    "headRefOid": "b299a74e74026dd0c953953aac12f748259d4f2e",
+    "updatedAt": "2026-09-08T16:05:25Z",
+    "latestCopilotReviewAt": "2026-09-15T07:42:34Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-16T00:20:00Z"
   },
   "fork_pr": {
     "number": 726,
+    "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/726",
-    "head_sha": "00861204c42ffb21f2b5fcb0c400456f5bdae48f"
+    "state": "OPEN"
   },
   "fork_branch": "pr-iterate/49916-v2",
-  "fork_review_trace": {
-    "repository": "MuyuanMS/PowerToys",
-    "fork_pr": 726,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/726",
-    "branch": "pr-iterate/49916-v2",
-    "base_branch": "pr-review-base/49916-v3",
-    "previous_checkpoint_at": "2026-09-14T02:40:03.1702968Z",
-    "previous_fork_head": "b19a236506ff2b1757b9e6a748547de2e08ec38a",
-    "current_fork_head": "00861204c42ffb21f2b5fcb0c400456f5bdae48f",
-    "latest_consumed_copilot_review_at": "2026-09-09T05:14:50Z",
-    "requested_at": "2026-09-15T07:38:09.4710431Z",
-    "immediate_new_copilot_reviews": 0,
-    "unresolved_copilot_threads": 0
+  "fork_head_sha": "00861204c42ffb21f2b5fcb0c400456f5bdae48f",
+  "validation": {
+    "fork_review": {
+      "result": "passed",
+      "commands": [
+        "Build Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "Run Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "Build and run Microsoft.CmdPal.Ext.Apps.UnitTests",
+        "Build Microsoft.CmdPal.UI"
+      ],
+      "tests": {
+        "passed": 390,
+        "failed": 0
+      },
+      "details": "The converged fork candidate builds and all focused CmdPal tests pass."
+    },
+    "upstream_head": {
+      "head_sha": "b299a74e74026dd0c953953aac12f748259d4f2e",
+      "result": "passed",
+      "commands": [
+        "Inspect exact-head CI and required checks"
+      ],
+      "details": "CLA, dependency review, PowerToys CI, SDK, x64, arm64, and affected UI-test resolution checks pass."
+    },
+    "suggestion_patch": {
+      "head_sha": "b299a74e74026dd0c953953aac12f748259d4f2e",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "mainlist-default-view-cache-race"
+      ],
+      "commands": [
+        "Apply only the literal cache suggestion to the exact upstream head",
+        "Run build-essentials",
+        "Build Microsoft.CmdPal.UI.ViewModels.UnitTests"
+      ],
+      "details": "The literal suggestion was applied at the pinned upstream head and the affected project built successfully."
+    }
   },
-  "internal_validation": {
-    "result": "passed",
-    "fork_head": "00861204c42ffb21f2b5fcb0c400456f5bdae48f",
-    "commands": [
-      "tools\\build\\build-essentials.cmd",
-      "tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests",
-      "vstest.console.exe Microsoft.CmdPal.UI.ViewModels.UnitTests.dll /Tests:Microsoft.CmdPal.UI.ViewModels.UnitTests.MainListPageCacheTests.ConcurrentDefaultViewRebuilds_CannotOverwriteNewerSnapshot,Microsoft.CmdPal.UI.ViewModels.UnitTests.MainListPageCacheTests.InvalidatedDefaultViewRebuild_IsRetriedBeforeReturningItems /InIsolation /Logger:trx /Platform:x64"
-    ],
-    "tests_passed": 2,
-    "trx": "C:\\TestResults\\muyuanli_CPC-muyua-IGK6F_2026-09-15_15_37_33_net10.0.trx"
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
   }
 }
