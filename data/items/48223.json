@@ -4,7 +4,7 @@
   "number": 48223,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-02T14:58:00+08:00",
@@ -52,24 +52,7 @@
       "disposition": "proposed"
     }
   ],
-  "actions": [
-    {
-      "id": "post-review-48223",
-      "type": "request_changes",
-      "label": "Post follow-up request for changes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "General review note only; no inline suggestions. Recheck the upstream head and obtain explicit approval before posting.",
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 48223,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "3a607d9df11235d0c53d81245b8787b15017aa93",
-        "body": "### Finish the cache lifetime and bounded-storage design\n\n**Severity:** `high`\n\nThanks for the update — it addresses the file header, invariant formatting, delimiter-safe keys, documentation, and the basic atomic-write path. A few current-head issues still need to be resolved before this is merge-ready:\n\n- Cache files are checked and navigated without being pinned, while other Explorer preview/thumbnail processes can overwrite or evict the same entry. Coordinate writes/pruning across processes and keep an entry leased until WebView2 finishes navigation or capture.\n- When a cache write fails, the code falls back to `NavigateToString` even for generated HTML above WebView2's size limit, so large SVG previews can still be blank. Preserve a file-backed fallback and clean it after use.\n- `ManageCacheSize` caps the number of entries, not disk bytes; large SVGs can still consume substantial space, and interrupted `*.tmp` writes are never reclaimed. Enforce a byte budget and maintain stale temporary files.\n- The thumbnail path calls `WrapSVGInHTML` before cache lookup, so cache hits still regenerate the output the cache is intended to avoid.\n\nPlease add integration coverage proving that identical SVG/settings reuse an existing entry, rendering-setting changes produce a distinct entry, large-file fallback remains file-backed, and concurrent pruning cannot remove an entry while it is loading."
-      }
-    }
-  ],
+  "actions": [],
   "judgment": {
     "status": "review_drafted",
     "rationale": "PR 48223 is a first-time community contribution at upstream head 3a607d9df11235d0c53d81245b8787b15017aa93. Phase 0 passes: the CLA, intake, and telemetry checks are green; the linked issue and scope are clear; the author supplied tests and responded to the prior review. The response commit fixes several earlier findings but leaves material cache lifetime, storage-bound, fallback, and cache-hit behavior unresolved.",
@@ -145,5 +128,6 @@
     "Open a folder containing repeated small, transparent, and larger-than-1.5 MB SVG files; verify previews and thumbnails render and transparent backgrounds remain transparent.",
     "Reopen the folder and verify cached previews are reused without blank output; change the SVG preview background setting and verify the preview refreshes.",
     "Exercise many distinct SVGs and verify the SVG cache stays bounded and stale temporary/transient files are reclaimed."
-  ]
+  ],
+  "needs_revalidation": true
 }
