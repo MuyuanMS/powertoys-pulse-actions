@@ -1,35 +1,226 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-49963",
   "number": 49963,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "url": "https://github.com/microsoft/PowerToys/pull/49963",
+  "title": "[Peek] Enable reusable previewers for Peek to fix flicker",
+  "authorAssociation": "NONE",
+  "isCommunity": true,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T07:49:21.6102477Z",
-  "evaluated_at": "09/13/2026 16:00:54",
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "generated_at": "2026-09-15T02:15:00Z",
+  "evaluated_at": "2026-09-15T02:15:00Z",
   "source_updated_at": "2026-09-08T17:45:52Z",
   "head_sha": "7dcf82d455d888a2fa98c402b381a62d646ba756",
-  "title": "[Peek] Enable reusable previewers for Peek to fix flicker",
-  "url": "https://github.com/microsoft/PowerToys/pull/49963",
+  "summary": "The converged fork review consumed the completed Copilot result before resuming and has zero new comments and zero unresolved Copilot threads. The live upstream head is unchanged, but it still lacks current-head fixes for stale reusable-preview state, stale asynchronous UI updates, folder-scan status reporting, and a unit-test interface type mismatch.",
   "status": {
-    "glyph": "...",
-    "label": "Reviewing findings",
-    "detail": "Fork loop converged and both fork and exact upstream head build; current upstream still lacks validated fork-only correctness fixes, so a current-head maintainer request is drafted but not posted."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 717 is converged at 4e43f6425e5e979b3611b6b16cc33d8b89fdbfe3 with six Copilot review passes and zero unresolved Copilot threads. The exact upstream head remains 7dcf82d455d888a2fa98c402b381a62d646ba756. A current-head REQUEST_CHANGES draft is present and has not been posted."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-14T07:49:21.6102477Z"
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The draft is pinned to the unchanged upstream head and contains six concrete current-diff findings. Explicit maintainer approval and the safe publisher are required before any upstream write."
+  },
+  "needs_revalidation": false,
+  "source": {
+    "repository": "microsoft/PowerToys",
+    "headRefOid": "7dcf82d455d888a2fa98c402b381a62d646ba756",
+    "updatedAt": "2026-09-08T17:45:52Z"
   },
   "freshness": {
-    "queued_at": "09/13/2026 16:00:54",
-    "checkpoint_at": "2026-09-14T07:49:21.6102477Z"
+    "status": "fresh",
+    "headRefOid": "7dcf82d455d888a2fa98c402b381a62d646ba756",
+    "updatedAt": "2026-09-08T17:45:52Z",
+    "latestCopilotReviewAt": "2026-09-10T02:38:06Z",
+    "latestForkCommitAt": "2026-09-10T02:33:22Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T02:15:00Z"
   },
-  "fork_pr": {
-    "number": 717,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/717"
+  "proposed_comments": [
+    {
+      "id": "reset-reused-folder-state",
+      "kind": "inline",
+      "title": "Reset folder state when rebinding",
+      "severity": "high",
+      "body": "### Reset folder state when rebinding\n\n**Severity:** `high`\n\nWhen a loaded reusable previewer is rebound to another item, `FolderContents`, `FolderScanState`, and `IsFolder` still describe the previous item until a later scan callback runs. Folder-to-file navigation can therefore show stale counts or a folder row for the new file. Clear the folder-specific fields synchronously during `Rebind` before starting the new asynchronous load.",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
+      "line": 106,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 97,
+        "rationale": "The converged fork added the missing reset directly in Rebind, and the upstream method currently clears only file metadata and the icon."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "guard-reused-preview-load",
+      "kind": "inline",
+      "title": "Guard asynchronous preview updates after reuse",
+      "severity": "high",
+      "body": "### Guard asynchronous preview updates after reuse\n\n**Severity:** `high`\n\nThe UI callback in `LoadPreviewAsync` writes the captured item's name, date, folder flag, and icon after an await without confirming that the previewer is still bound to that item. Rapid navigation can let an older load overwrite the newly rebound preview. Check cancellation and `Item == currentItem` inside the UI callback, and apply the same current-item guard before publishing the asynchronously loaded icon.",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
+      "line": 156,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 95,
+        "rationale": "The exact fork correction adds both guards around the existing asynchronous UI writes, matching the reusable-preview race described by the current control flow."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "preserve-folder-scanning-status",
+      "kind": "inline",
+      "title": "Keep the scanning indicator while counts are available",
+      "severity": "medium",
+      "body": "### Keep the scanning indicator while counts are available\n\n**Severity:** `medium`\n\n`FormatFolderContents` returns the scanning label only when both counts are zero. During an incremental scan, the callback can already have non-zero counts while scanning is still active, so the preview loses the in-progress indication and appears final until the next state change. Append the localized scanning marker whenever `isScanning` is true, while retaining the incomplete marker for the non-scanning partial-error case.",
+      "path": "src/modules/peek/Peek.Common/Helpers/ReadableStringHelper.cs",
+      "line": 70,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 93,
+        "rationale": "The current conditional is directly inconsistent with the progress callback's ability to report counts and Scanning together; the converged fork changed this exact formatter."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "use-interface-file-size-type",
+      "kind": "inline",
+      "title": "Use the interface's unsigned file-size type in the test stub",
+      "severity": "high",
+      "body": "### Use the interface's unsigned file-size type in the test stub\n\n**Severity:** `high`\n\n`IFileSystemItem.FileSizeBytes` is `ulong`, but this new test stub declares it as `long`. The stub therefore does not implement the interface and the test project cannot compile; change the property to `ulong` while keeping the same test value.",
+      "path": "src/modules/peek/Peek.Common.UnitTests/ReusablePreviewerTests.cs",
+      "line": 38,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 100,
+        "rationale": "The interface declaration and the incompatible test-stub property type are directly verifiable at the current upstream head."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "prevent-stale-tooltip-publication",
+      "kind": "inline",
+      "title": "Reject stale tooltip results after navigation",
+      "severity": "high",
+      "body": "### Reject stale tooltip results after navigation\n\n**Severity:** `high`\n\n`UpdateTooltipAsync` captures `Item.Name` and then awaits a non-cancellable content-type lookup before publishing the tooltip. If navigation rebinds the same reusable previewer during that await, the old request can combine its type with the new item's date and size and then assign a stale tooltip. Capture the item before formatting, check cancellation and reference equality after the await, and check again before assigning `InfoTooltip`.",
+      "path": "src/modules/peek/Peek.FilePreviewer/FilePreview.xaml.cs",
+      "line": 647,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "The race is exposed by the current await and mutable Item access; the converged fork added the capture and post-await identity checks."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "make-content-type-lookup-cancellable",
+      "kind": "inline",
+      "title": "Run reusable content-type lookup off the UI callback",
+      "severity": "medium",
+      "body": "### Run reusable content-type lookup off the UI callback\n\n**Severity:** `medium`\n\nThe reusable previewer's `GetContentTypeAsync` seam directly awaits `item.GetContentTypeAsync()`, so a synchronous or slow implementation can block the preview load path and delay navigation. Route the lookup through the cancellable task-based seam used by the tests, while retaining the current-item guard before publishing the result.",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
+      "line": 214,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 86,
+        "rationale": "The converged fork changed this exact seam to Task.Run with the supplied cancellation token; the current implementation performs the operation inline."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "7dcf82d455d888a2fa98c402b381a62d646ba756",
+      "result": "blocked",
+      "commands": [
+        "dotnet restore src\\modules\\peek\\Peek.Common.UnitTests\\Peek.Common.UnitTests.csproj",
+        "msbuild src\\modules\\peek\\Peek.Common.UnitTests\\Peek.Common.UnitTests.csproj /t:Build /p:Configuration=Debug /p:Platform=x64 /m"
+      ],
+      "details": "Restore completed. The exact upstream build reached the native dependency graph but stopped because Microsoft.Windows.CppWinRT.2.0.250303.1\\build\\native\\Microsoft.Windows.CppWinRT.props is unavailable in the validation environment. The dotnet build path also cannot import Microsoft.Cpp.Default.props for the native projects."
+    },
+    "fork_head": {
+      "head_sha": "4e43f6425e5e979b3611b6b16cc33d8b89fdbfe3",
+      "result": "passed",
+      "details": "Existing converged fork validation recorded a successful x64 Debug build and six completed Copilot passes; this evidence is not transferred to the upstream head."
+    },
+    "suggestionPatch": {
+      "head_sha": "7dcf82d455d888a2fa98c402b381a62d646ba756",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "The six findings are explanatory inline comments without apply-ready suggestion blocks; no literal suggestion patch is claimed."
+    }
   },
-  "fork_branch": "pr-iterate/49963-v4"
+  "source_context": {
+    "repository": "microsoft/PowerToys",
+    "head_sha": "7dcf82d455d888a2fa98c402b381a62d646ba756",
+    "updated_at": "2026-09-08T17:45:52Z",
+    "fork_review": "MuyuanMS/PowerToys#717",
+    "fork_branch": "pr-iterate/49963-v4"
+  },
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-15T02:15:00Z",
+    "resume_action": "maintainer-approval-or-revalidation",
+    "advancement_evidence": [
+      "Inspected the unchanged live upstream head before resuming.",
+      "Inspected fork PR 717 and consumed the completed Copilot result before considering another request.",
+      "Latest completed fork Copilot review is on 4e43f6425e5e979b3611b6b16cc33d8b89fdbfe3 and returned zero new published comments.",
+      "Unresolved Copilot thread count on fork PR 717 is zero.",
+      "Mapped fork-only correctness fixes to six current RIGHT-side upstream diff anchors.",
+      "Exact upstream validation was attempted; restore completed but native build was blocked by the unavailable Microsoft.Windows.CppWinRT package.",
+      "Emitted a current-head REQUEST_CHANGES draft instead of incorrectly marking the upstream PR review-ready."
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-changes-49963",
+      "type": "request_changes",
+      "label": "Request changes with six current-head Peek correctness findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49963,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "7dcf82d455d888a2fa98c402b381a62d646ba756",
+        "body": "Thanks for the reusable-previewer work and the iterative regression coverage. Before merge, please address the six current-head findings in this review: reset folder-specific state during unsupported-preview rebinding; guard asynchronous preview and icon updates against stale items; keep the folder-scanning marker while counts are still being collected; use the interface's ulong file-size type in the test stub; prevent stale tooltip publication after navigation; and keep content-type lookup off the UI callback with cancellation support."
+      },
+      "note": "Draft only. No review, comment, label, close, or other public write has occurred on microsoft/PowerToys."
+    }
+  ],
+  "safe_actions": [
+    {
+      "id": "request-changes-49963",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "validator_required": "Test-ReviewData.ps1",
+      "head_pinned": "7dcf82d455d888a2fa98c402b381a62d646ba756"
+    },
+    {
+      "id": "hold-review-49963",
+      "upstream_write": false,
+      "approval_required": false
+    }
+  ]
 }
