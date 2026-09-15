@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-15T15:18:06.025557+08:00",
+  "generated_at": "2026-09-15T15:34:21.6499854+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1267
   },
   "impact": {
-    "as_of": "2026-09-15T15:18:06.025557+08:00",
+    "as_of": "2026-09-15T15:34:21.6499854+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -4704,8 +4704,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "waiting_copilot",
+      "owes": "external",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -4727,11 +4727,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 443,
-        "fork_title": "[PR 50054] [CmdPal] Window Walker: match app name and window title together",
+        "fork_number": 810,
+        "fork_title": "[PR 50054] Window Walker: match app name and window title together",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50054-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/443"
+        "fork_branch": "pr-iterate/50054-v3",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/810"
       }
     },
     {
@@ -5380,7 +5380,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "reviewing_findings",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -5515,15 +5515,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 5,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with five current-head CmdPal shelf findings"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -6167,20 +6170,23 @@ window.BOARD_INDEX = {
       "track": "review",
       "stage": "review_in_progress",
       "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "pending_author": true,
+      "waiting_since": "09/15/2026 07:19:10",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
-      "labels": [],
+      "labels": [
+        "Product-Settings",
+        "Ready for review"
+      ],
       "assignees": [
         "MuyuanMS"
       ],
       "created_at": "2026-08-04T14:54:58Z",
-      "updated_at": "2026-09-01T06:44:50Z",
-      "comments": 5,
+      "updated_at": "2026-09-15T07:19:10Z",
+      "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
