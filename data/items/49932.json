@@ -1,34 +1,193 @@
 {
+  "schemaVersion": 3,
+  "id": "pr-49932",
   "number": 49932,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-09-14T02:40:02.2518323Z",
-  "evaluated_at": "09/13/2026 16:50:46",
-  "source_updated_at": "2026-09-09T00:05:46+08:00",
-  "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
-  "title": "CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
   "url": "https://github.com/microsoft/PowerToys/pull/49932",
+  "title": "CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "stage": "review_in_progress",
+  "owes": "maintainer",
+  "pending_author": false,
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "generated_at": "2026-09-15T07:37:44Z",
+  "evaluated_at": "2026-09-15T07:37:44Z",
+  "source_updated_at": "2026-09-08T16:05:46Z",
+  "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
+  "summary": "The resumed fork review loop was consumed before making any new request: fork PR 687 has five Copilot review passes, the latest completed review returned zero published comments, and zero Copilot threads remain unresolved. The exact upstream head is unchanged and still lacks the fork-only correctness fixes, so the furthest valid state is a current-head REQUEST_CHANGES draft awaiting maintainer approval rather than review_ready.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Current live head 1f551a7d72083bcf7b5681c9501154291b6870d5 requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 687 is converged at b06f1d586ee526b2604cb7690af1805fca7b7943; latest Copilot review 2026-09-08T10:59:27Z generated zero published comments and unresolved fork Copilot threads are zero. Exact upstream head 1f551a7d72083bcf7b5681c9501154291b6870d5 remains unchanged. A current-head REQUEST_CHANGES draft is present and has not been posted."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-14T02:40:02.2518323Z"
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The draft is pinned to the unchanged upstream head and covers the fork-only fixes as current-head review requests. Explicit maintainer approval and the safe publisher are required before any upstream write."
+  },
+  "needs_revalidation": true,
+  "source": {
+    "repository": "microsoft/PowerToys",
+    "headRefOid": "1f551a7d72083bcf7b5681c9501154291b6870d5",
+    "updatedAt": "2026-09-08T16:05:46Z"
   },
   "freshness": {
-    "queued_at": "09/13/2026 16:50:46",
-    "checkpoint_at": "2026-09-14T02:40:02.2518323Z"
+    "status": "fresh",
+    "headRefOid": "1f551a7d72083bcf7b5681c9501154291b6870d5",
+    "updatedAt": "2026-09-08T16:05:46Z",
+    "latestCopilotReviewAt": "2026-09-08T10:59:27Z",
+    "latestForkCommitAt": "2026-09-08T10:58:10Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T07:37:44Z"
   },
-  "fork_pr": {
-    "number": 687
+  "proposed_comments": [
+    {
+      "id": "preserve-drag-package-resources",
+      "kind": "companion",
+      "title": "Preserve deferred drag-package resources",
+      "severity": "high",
+      "body": "### Preserve deferred drag-package resources\n\n**Severity:** `high`\n\nPlease preserve the source `DataPackageView` resource map when copying item drag data. The current drag helper copies requested operation, properties, and formats, but it drops `ResourceMap` entries used by HTML/images and other deferred payloads. Precompute the resource map before drag start where the API can still be awaited, cancel list-item drags when the map is not ready, and add coverage proving the resource map survives the shelf/list drag copy.",
+      "outOfDiffReason": "The verified fix spans CommandItemViewModel, DataPackageTransfer, ListItemsView, ShellPage, and view-model tests; it is not safely represented by one independently applicable inline suggestion.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The converged fork added DataPackageResourceMapTask, async resource-map copy, TryCopy gating, and regression tests, and the exact upstream head still drops ResourceMap entries."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "honor-source-drag-operation",
+      "kind": "companion",
+      "title": "Do not force copied shelf payloads to move operations",
+      "severity": "high",
+      "body": "### Do not force copied shelf payloads to move operations\n\n**Severity:** `high`\n\nShelf items backed by an extension `DataPackage` can advertise `Copy` or `Link` operations, but the current shelf drop handlers always accept `Move` for reorder, pin, and remove targets. That can misreport the completed drag operation to the source and break external drag payload semantics. Carry the source package's requested/allowed operation through drag start and use the preferred copied operation for accepted shelf drops, falling back to `Move` only for shelf-internal items without an external data package.",
+      "outOfDiffReason": "The correction touches drag start, drag-over, drop, remove, pin, and cleanup state in ShellPage; a single-line suggestion would be incomplete.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current handlers force DataPackageOperation.Move even after copying a source package whose RequestedOperation may be Copy or Link; the fork fix tracks and reuses the preferred operation."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "track-persisted-pin-state",
+      "kind": "companion",
+      "title": "Distinguish persisted pins from items shown in the pinned section",
+      "severity": "medium",
+      "body": "### Distinguish persisted pins from items shown in the pinned section\n\n**Severity:** `medium`\n\n`CanPin` is currently based on whether the composed shelf item is in the pinned section. When recent commands are shown before pinned commands, an item that is already persisted as pinned can also appear in the recent section with `IsPinned == false`, making the UI offer to pin a command that is already persisted. Track whether each item exists in the persisted pinned-command set separately from its current visual section, and base pin eligibility/reorder acceptance on that persisted state.",
+      "outOfDiffReason": "The verified fix adds persisted-pin state to QuickAccessShelfItem equality/reuse and computes it from QuickAccessShelfViewModel, so it is a coordinated view-model change rather than a localized replacement.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The fork fix adds IsPersistedPinned, includes it in reuse/equality, computes it from pinned command IDs, and adds a regression for a recent-section item that remains persisted pinned."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "directory-bookmark-drag-package",
+      "kind": "companion",
+      "title": "Include local directory bookmarks in storage-item drag data",
+      "severity": "medium",
+      "body": "### Include local directory bookmarks in storage-item drag data\n\n**Severity:** `medium`\n\nThe bookmark list item builds storage-item drag data only when the classified target is one of the file-like kinds and `File.Exists` returns true. Local directory bookmarks therefore cannot be dragged as folders even though the helper already supports resolving directories through `StorageFolder`. Include `CommandKind.Directory` and accept `Directory.Exists` when creating the local path package, with regression coverage for a local directory bookmark.",
+      "outOfDiffReason": "The behavior crosses bookmark classification and the shared indexer drag-data helper; the tested request is safer as an author-facing companion than a narrow partial patch.",
+      "confidence": {
+        "score": 93,
+        "rationale": "The current condition excludes CommandKind.Directory before DataPackageHelper can use its StorageFolder path; the fork fix and new test cover this exact gap."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "limit-drag-helper-visibility",
+      "kind": "companion",
+      "title": "Keep the indexer drag helper internal",
+      "severity": "low",
+      "body": "### Keep the indexer drag helper internal\n\n**Severity:** `low`\n\n`DataPackageHelper` is an implementation detail of the indexer/bookmark drag-data path, but the PR exposes it publicly. Please keep the helper `internal` and grant the bookmark extension friend access only if that sharing is intentional; this avoids adding unnecessary public API surface while preserving the cross-extension reuse.",
+      "outOfDiffReason": "This is a small API-surface cleanup tied to the bookmark/indexer sharing decision and project friend access, not a standalone current-line suggestion.",
+      "confidence": {
+        "score": 84,
+        "rationale": "The fork changed the helper back to internal and added InternalsVisibleTo for the bookmark extension, preserving behavior without widening public surface."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
+      "result": "not_transferred",
+      "commands": [],
+      "details": "The upstream head itself was not marked clean because it lacks the converged fork-only fixes."
+    },
+    "fork_head": {
+      "head_sha": "b06f1d586ee526b2604cb7690af1805fca7b7943",
+      "result": "converged",
+      "commands": [
+        "Get-UnresolvedCopilotThreads.ps1 -ForkOwner MuyuanMS -PRNumber 687"
+      ],
+      "details": "Latest fork Copilot review returned zero published comments; unresolved Copilot thread count is zero."
+    },
+    "suggestionPatch": {
+      "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "preserve-drag-package-resources",
+        "honor-source-drag-operation",
+        "track-persisted-pin-state",
+        "directory-bookmark-drag-package",
+        "limit-drag-helper-visibility"
+      ],
+      "commands": [
+        "git local checkout add --detach <PowerToysCheckout> refs/remotes/upstream/pr/49932",
+        "git diff --binary refs/remotes/upstream/pr/49932..b06f1d586ee526b2604cb7690af1805fca7b7943 | git -C <PowerToysCheckout> apply --index",
+        "tools\\build\\build-essentials.cmd (restore passed; runner build blocked by inherited GIT_CONFIG_VALUE_3/vcpkg until env was cleared)",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "msbuild src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj /t:Test /p:Platform=x64 /p:Configuration=Debug",
+        "msbuild src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj /t:Test /p:Platform=x64 /p:Configuration=Debug"
+      ],
+      "details": "The exact upstream head plus the full converged fork-only patch built successfully after clearing inherited GIT_CONFIG_* variables. Microsoft.CmdPal.UI, Microsoft.CmdPal.UI.ViewModels.UnitTests, and Microsoft.CmdPal.Ext.Bookmarks.UnitTests builds passed; UI.ViewModels tests passed 361/361 and Bookmarks tests passed 227/227."
+    }
   },
-  "fork_branch": "pr-iterate/49932-v4"
+  "source_context": {
+    "repository": "microsoft/PowerToys",
+    "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
+    "updated_at": "2026-09-08T16:05:46Z",
+    "fork_review": "MuyuanMS/PowerToys#687",
+    "fork_branch": "pr-iterate/49932-v4"
+  },
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-15T07:37:44Z",
+    "resume_action": "maintainer-approval-or-revalidation",
+    "advancement_evidence": [
+      "Resumed the exact durable fork trace: fork PR 687, branch pr-iterate/49932-v4, fork head b06f1d586ee526b2604cb7690af1805fca7b7943.",
+      "Consumed the existing completed fork Copilot review before making any new request; no duplicate review request was created.",
+      "Latest fork Copilot review submitted at 2026-09-08T10:59:27Z returned zero published comments.",
+      "Unresolved fork Copilot thread count is zero.",
+      "Live upstream head remains 1f551a7d72083bcf7b5681c9501154291b6870d5 and is the merge-base of the fork head.",
+      "Mapped all fork-only hunks to five current-head author-facing requests instead of marking the upstream PR clean.",
+      "Materialized the exact suggestion-result tree from the pinned upstream head and validated it with targeted CmdPal builds and affected MSTest projects."
+    ]
+  },
+  "actions": [],
+  "safe_actions": [
+    {
+      "id": "request-changes-49932",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "validator_required": "Test-ReviewData.ps1",
+      "head_pinned": "1f551a7d72083bcf7b5681c9501154291b6870d5"
+    },
+    {
+      "id": "hold-review-49932",
+      "upstream_write": false,
+      "approval_required": false
+    }
+  ]
 }
