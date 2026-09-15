@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-15T14:21:25.0787461+08:00",
+  "generated_at": "2026-09-15T15:00:23.9143949+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 165,
     "open_issues": 12644,
     "community": 11801,
-    "artifacts": 1267
+    "artifacts": 1268
   },
   "impact": {
-    "as_of": "2026-09-15T14:21:25.0787461+08:00",
+    "as_of": "2026-09-15T15:00:23.9143949+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -101,6 +101,7 @@ window.BOARD_INDEX = {
     50551,
     50545,
     50535,
+    50532,
     50531,
     50530,
     50520,
@@ -1573,7 +1574,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_ready",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -1615,13 +1616,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "waiting_copilot",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1636,7 +1637,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 809,
+        "fork_title": "[PR 50532] [Settings] Defer shortcut editor construction until first open",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50532-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/809"
+      }
     },
     {
       "id": "pr-50531",
@@ -2105,7 +2114,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -5826,15 +5835,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 2,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with two current-head CmdPal command-link fixes"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -7045,14 +7057,14 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "maintainer",
+      "stage": "waiting_copilot",
+      "owes": "copilot",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 12,
+      "proposed_open": 0,
       "primary_action": null,
       "labels": [
         "Needs-Triage",
@@ -7075,8 +7087,7 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49279-v4",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/695"
-      },
-      "needs_revalidation": true
+      }
     },
     {
       "id": "pr-49276",
@@ -7091,8 +7102,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "waiting_copilot",
+      "owes": "copilot",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
