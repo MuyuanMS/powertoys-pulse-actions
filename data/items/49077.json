@@ -1,34 +1,209 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-49077",
   "number": 49077,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T02:40:24.2731559Z",
-  "evaluated_at": "08/14/2026 00:19:14",
-  "source_updated_at": "2026-08-15T00:00:29+08:00",
+  "generated_at": "2026-09-15T19:20:00Z",
+  "evaluated_at": "2026-09-15T19:20:00Z",
+  "source_updated_at": "2026-08-14T16:00:29Z",
   "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
   "title": "[Workspaces] Migrate Editor from WPF to WinUI 3",
   "url": "https://github.com/microsoft/PowerToys/pull/49077",
+  "summary": "The current-head fork review converged with zero new Copilot comments and zero unresolved threads. The fork passed all 55 focused tests. Four implementation requests and three current-diff test/documentation findings remain for approval.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Current live head dd7e6fd976e33d78eec2bd3007213df1f1970724 requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 824 converged at 5264ef8bc61e81812f099c2d70d2c00a5117a36f. Seven current-head review requests remain."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "All findings are pinned to the current upstream head; no upstream write has occurred."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "refresh-previews-after-theme-change",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Refresh rendered previews when the runtime theme changes",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction coordinates ThemeHelper, the active page/view model, and project preview regeneration across several files.",
+      "body": "### Refresh rendered previews when the runtime theme changes\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/Workspaces/WorkspacesEditor.WinUI/Helpers/ThemeHelper.cs`, `MainPage`, and `Project.InitializePreview`.\n\n**Problem:** The theme-change handler updates only the cached theme flag. Existing preview bitmaps were rendered with explicit light or dark colors and remain stale until another edit causes a redraw.\n\n**Why it matters:** A workspace preview can visibly disagree with the current application theme for the rest of the editing session.\n\n**Suggested change:**\n1. Notify the active view model from `ActualThemeChanged`.\n2. Reinitialize the edited project preview, or refresh every displayed project preview, when the actual theme changes.\n3. Keep the refresh on the UI dispatcher and avoid recreating unrelated model state.\n\n**Verification:** Switch between light and dark themes while the editor is open and confirm existing workspace previews immediately update their colors.",
+      "confidence": {
+        "score": 93,
+        "rationale": "Preview colors are materialized into bitmaps and the current theme callback does not redraw them."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "restore-etw-trace-lifetime",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve the ETW trace lifetime in the migrated app",
+      "in_diff": false,
+      "out_of_diff_reason": "The fix adds an app-lifetime field and disposal wiring rather than replacing one current diff line.",
+      "body": "### Preserve the ETW trace lifetime in the migrated app\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/Workspaces/WorkspacesEditor.WinUI/Views/App.xaml.cs`, the application lifetime and existing `IDisposable` shutdown path.\n\n**Problem:** The migrated app logs telemetry events but no longer owns the lifetime `ETWTrace` instance that installs the telemetry listener and optional ETL session.\n\n**Why it matters:** Telemetry initialization and cleanup behavior changes despite telemetry being a stated migration non-goal; events or trace resources can be missing or left unmanaged.\n\n**Suggested change:**\n1. Add an app-lifetime `ETWTrace` field initialized with the application.\n2. Dispose it from the existing `IDisposable` shutdown path.\n3. Match the lifetime pattern used by the prior editor and other WinUI applications without changing event names or payloads.\n\n**Verification:** Start and close the editor with telemetry enabled and confirm trace resources initialize and release cleanly while emitted event names and payloads remain unchanged.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The migration removed the prior lifetime owner while retaining event calls that depend on the trace setup."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "restore-app-row-preview-highlighting",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Restore app-row hover highlighting in the preview",
+      "in_diff": false,
+      "out_of_diff_reason": "The behavior requires coordinated XAML pointer handlers and code-behind preview regeneration.",
+      "body": "### Restore app-row hover highlighting in the preview\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/Workspaces/WorkspacesEditor.WinUI/Views/WorkspacesEditorPage.xaml` and `WorkspacesEditorPage.xaml.cs`.\n\n**Problem:** The previous editor set `Application.IsHighlighted` and regenerated the project preview on mouse enter and leave. The migrated WinUI app rows have no equivalent pointer handlers.\n\n**Why it matters:** Hovering an application no longer identifies its window in the workspace preview, removing useful editing feedback and migration parity.\n\n**Suggested change:**\n1. Add pointer-enter and pointer-exit handlers to the app-row control.\n2. Resolve the row's bound `Application` and set `IsHighlighted` true or false.\n3. Reinitialize the parent project's preview after each transition.\n4. Clear highlighting safely if the row is recycled or detached.\n\n**Verification:** Open a workspace with multiple applications, move the pointer across app rows, and confirm the corresponding preview window highlights and then returns to normal.",
+      "confidence": {
+        "score": 92,
+        "rationale": "The WPF implementation had explicit hover handlers and the migrated row has no replacement behavior."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "use-current-workspaces-ui-automation-contract",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Update UI tests for WinUI SettingsCard automation roles",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction spans multiple UI-test files and their shared automation lookup helpers.",
+      "body": "### Update UI tests for WinUI SettingsCard automation roles\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/Workspaces/WorkspacesEditorUITest`, especially `WorkspacesEditorTests.cs`, `WorkspacesEditingPageTests.cs`, `WorkspacesLauncherTest.cs`, and `Workspaces.Editor.UITests.csproj`.\n\n**Problem:** The migrated list is exposed as `WorkspacesItemsControl`, while clickable `SettingsCard` workspace items expose a Button role rather than the legacy Custom role. Old name-based parent lookups and Custom filters return empty collections, causing tests to skip the behavior they claim to validate.\n\n**Why it matters:** Creation, cancellation, filtering, editing, launching, and navigation can regress while the UI suite appears green or inconclusive because it never interacts with a real card.\n\n**Suggested change:**\n1. Locate the list with `By.AccessibilityId(\"WorkspacesItemsControl\")`.\n2. Query workspace cards with generic `Element` or the appropriate Button wrapper.\n3. Replace removed editing-page actions with the current card-click and title-bar Back flow.\n4. Apply the same automation contract consistently across the suite and fail when expected seeded workspace cards are absent.\n\n**Verification:** Run the Workspaces UI tests with at least one workspace present and confirm creation, cancellation, filtering, editing, launching, and navigation tests interact with actual cards.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The migrated automation roles differ from the legacy selectors, making current lookups unable to reach real workspace cards."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "exercise-switch-deletion-in-unit-tests",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Exercise SwitchDeletion in the toggle tests",
+      "path": "src/modules/Workspaces/WorkspacesEditor.UnitTests/ApplicationModelTests.cs",
+      "start_line": 25,
+      "line": 25,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Exercise `SwitchDeletion` in the toggle tests\n\n**Severity:** `medium`\n\nThe tests named for `SwitchDeletion` currently assign `IsIncluded` directly, so they do not execute the production method or verify its preview-redraw behavior. Replace the direct toggles in all three `SwitchDeletion_*` tests with `app.SwitchDeletion()` while retaining the initial-state setup and assertions.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The tests visibly bypass the method named in their test cases and therefore cannot catch regressions in its additional behavior."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "verify-workspace-card-navigation",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Verify workspace-card navigation in the design test",
+      "path": "src/modules/Workspaces/WorkspacesEditorUITest/WorkspaceItemDesignTests.cs",
+      "start_line": 79,
+      "line": 79,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Verify workspace-card navigation in the design test\n\n**Severity:** `medium`\n\n`WorkspaceItem_CardIsClickableForEditing` currently passes after merely finding an item, so the click handler and `IsClickEnabled` can regress without detection. Click the first workspace card and assert that the editor page appears, for example by checking for the `EditNameTextBox` accessibility ID.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current assertion only proves item discovery and never exercises the behavior named by the test."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "narrow-migration-documentation-scope",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Narrow the WPF-free migration claim",
+      "path": "src/modules/Workspaces/WorkspacesEditorWinUiMigration.md",
+      "start_line": 234,
+      "line": 234,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Narrow the WPF-free migration claim\n\n**Severity:** `low`\n\n`WorkspacesEditorWinUiMigration.md` says the migration removes all WPF dependencies from the Workspaces module, but `WorkspacesLauncherUI` remains WPF-based in this tree. Limit the claim and outcome to the Workspaces Editor UI surface, and explicitly state that the launcher is a separate scope.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current tree still contains the WPF launcher project, directly contradicting the module-wide outcome statement."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49077",
+      "type": "request_changes",
+      "label": "Request changes with seven current-head Workspaces Editor findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49077,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724"
+      },
+      "note": "Draft only. Three inline findings and four implementation-ready general comments require explicit maintainer approval."
+    }
+  ],
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-14T02:40:24.2731559Z"
+    "phase": "review_drafted",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-15T19:20:00Z",
+    "advancement_evidence": [
+      "Rechecked the exact live upstream head and current activity.",
+      "Converged fork PR 824 through two Copilot rounds.",
+      "Confirmed the latest review has zero new comments and zero unresolved threads.",
+      "Built the fork Workspaces Editor and unit-test projects and passed all 55 tests.",
+      "Mapped every material fork correction to three current-diff findings and four implementation-ready companion requests."
+    ]
   },
   "freshness": {
-    "queued_at": "2026-09-14T02:40:24.2731559Z",
-    "checkpoint_at": "2026-09-14T02:40:24.2731559Z"
+    "headRefOid": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+    "updatedAt": "2026-08-14T16:00:29Z",
+    "latestCopilotReviewAt": "2026-09-15T19:13:34Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T19:20:00Z"
   },
   "fork_pr": {
-    "number": 217
+    "number": 824,
+    "repo": "MuyuanMS/PowerToys",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/824",
+    "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/49077-v2"
+  "fork_branch": "pr-iterate/49077-v5",
+  "fork_head_sha": "5264ef8bc61e81812f099c2d70d2c00a5117a36f",
+  "validation": {
+    "fork_review": {
+      "result": "passed",
+      "commands": [
+        "Build WorkspacesEditor.WinUI",
+        "Build WorkspacesEditor.UnitTests",
+        "Run PowerToys.WorkspacesEditor.Tests"
+      ],
+      "tests": {
+        "passed": 55,
+        "failed": 0
+      },
+      "details": "The converged fork projects built and all 55 focused unit tests passed."
+    },
+    "upstream_head": {
+      "head_sha": "dd7e6fd976e33d78eec2bd3007213df1f1970724",
+      "result": "partial_environment_blocker",
+      "commands": [
+        "Restore and start focused Workspaces Editor build"
+      ],
+      "details": "The exact upstream tree restored and reached dependency compilation, then stopped on an unrelated pre-existing ZoomIt C4819 warning under host code page 936. No Workspaces source compilation failure was established."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
