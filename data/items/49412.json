@@ -1,132 +1,205 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-49412",
   "number": 49412,
   "kind": "pr",
   "track": "review",
-  "stage": "building",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T16:42:00Z",
-  "evaluated_at": "2026-09-15T16:42:00Z",
-  "source_updated_at": "2026-08-15T19:30:43Z",
+  "generated_at": "2026-09-16T00:40:00Z",
+  "evaluated_at": "2026-09-16T00:40:00Z",
+  "source_updated_at": "2026-08-18T22:45:41Z",
   "head_sha": "1d68df54f5b1f4d3d297ee0832033fd2bafe5f43",
   "title": "Add audio feedback using custom .wav files",
   "url": "https://github.com/microsoft/PowerToys/pull/49412",
-  "summary": "The exact upstream head was resumed through the preserved fork trace and its valid review fixes were materialized on fork PR 817. The launcher and Settings UI library build in the isolated candidate, and the prior focused candidate passed 9 tests, but final exact-head focused validation and the final Copilot convergence pass remain blocked by resumable environment and service failures.",
+  "summary": "The exact-head candidate builds and passes 9 focused PowerLauncher tests. The final Copilot review has zero new comments, and all fork review threads are resolved. Five current-head corrections remain for audio-buffer lifetime, SDK items, and compatibility-focused Settings tests.",
   "status": {
-    "glyph": "...",
-    "label": "Exact-head validation in progress",
-    "detail": "Fork PR 817 contains the exact-head review corrections with zero unresolved threads. Final focused tests are blocked by unavailable isolated dependent assemblies, Azure Artifacts HTTP 401 restore failures, and an unrelated ZoomIt encoding failure; Copilot also failed twice on the final review request."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 817 is pinned to the live upstream head with two review-fix commits, zero unresolved threads, passing launcher and Settings builds, and 9/9 focused tests."
   },
-  "next_action": "Resume the exact saved build and Copilot-convergence state after restoring repository-supported package authentication; do not re-mirror or issue duplicate review requests.",
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The current async SND_MEMORY path does not pin its managed buffers, and four project/test corrections remain."
+  },
   "confidence": "High",
-  "proposed_comments": [],
-  "safe_actions": [
-    "Do not post, label, approve, close, or otherwise mutate microsoft/PowerToys without explicit approval.",
-    "Before publishing, re-fetch upstream head 1d68df54f5b1f4d3d297ee0832033fd2bafe5f43 and the full conversation; drop or revise any item already addressed.",
-    "Use the validated review publisher rather than ad-hoc GitHub commands."
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "sound-buffer-lifetime",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Keep asynchronous WinMM sound buffers pinned",
+      "path": "src/modules/launcher/PowerLauncher/MainWindow.xaml.cs",
+      "side": "RIGHT",
+      "start_line": 860,
+      "line": 860,
+      "in_diff": true,
+      "body": "The `SND_MEMORY | SND_ASYNC` call passes a managed `byte[]` through P/Invoke, but asynchronous WinMM playback can continue after the call returns. The array must remain at a stable address for the full playback lifetime; retaining it in `Lazy<byte[]>` does not pin it. Pin each sound buffer for the duration of async playback, or use a filename-based playback path that does not depend on a movable managed buffer. Update the matching `PlaySound` declaration in `NativeMethods.cs` and verify both opening and closing playback after forced GC activity.",
+      "confidence": {
+        "score": 96,
+        "rationale": "Asynchronous native playback can retain the buffer pointer after the managed call returns; the validated fork pins the buffers."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "sdk-item-update",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Update metadata on the existing WAV SDK items",
+      "path": "src/modules/launcher/PowerLauncher/PowerLauncher.csproj",
+      "side": "RIGHT",
+      "start_line": 114,
+      "line": 121,
+      "in_diff": true,
+      "body": "Use SDK item metadata updates for these existing WAV files so the project does not create duplicate `None` items.\n\n```suggestion\n<None Update=\"Sounds\\open.wav\">\n  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>\n</None>\n<None Update=\"Sounds\\close.wav\">\n  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>\n</None>\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "The files already participate in SDK default items; Update changes metadata without duplicating them."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "compatibility-default-assertions",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Assert the compatibility defaults explicitly",
+      "path": "src/settings-ui/Settings.UI.UnitTests/ViewModelTests/PowerLauncherViewModelTest.cs",
+      "side": "RIGHT",
+      "start_line": 116,
+      "line": 118,
+      "in_diff": true,
+      "body": "These assertions compare the view model with the same mutable settings object, so they cannot detect an accidental change to compatibility defaults. Assert the intended persisted defaults explicitly.\n\n```suggestion\nAssert.IsFalse(viewModel.EnableAudibleFeedback);\nAssert.IsTrue(viewModel.EnableOpeningSound);\nAssert.IsTrue(viewModel.EnableClosingSound);\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "Comparing two views of the same mutable state cannot protect the intended false/true/true compatibility contract."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "sound-setting-propagation-coverage",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Exercise sound settings away from their defaults",
+      "path": "src/settings-ui/Settings.UI.UnitTests/ViewModelTests/PowerLauncherViewModelTest.cs",
+      "side": "RIGHT",
+      "start_line": 216,
+      "line": 222,
+      "in_diff": true,
+      "body": "The propagation test assigns the opening-sound setting to its existing default, so it does not prove that the change is sent through the settings callback. Drive both child settings away from their defaults and expect callbacks for the parent plus both children.\n\n```suggestion\nviewModel.EnableOpeningSound = false;\n...\nAssert.AreEqual(3, sendCallbackMock.TimesSent);\n...\nAssert.IsFalse(mockSettings.Properties.EnableOpeningSound);\n```",
+      "confidence": {
+        "score": 93,
+        "rationale": "The current test does not execute the opening-sound mutation path; the candidate verifies all three callbacks."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "cli-setting-change-coverage",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Use a non-default opening-sound value in the CLI test",
+      "path": "src/settings-ui/Settings.UI.UnitTests/Cmd/SetSettingCommandTests.cs",
+      "side": "RIGHT",
+      "start_line": 52,
+      "line": 52,
+      "in_diff": true,
+      "body": "Set the opening-sound test value to `false`, because the live default is `true`. Using the default value does not exercise the command's mutation path.\n\n```suggestion\n[DataRow(typeof(PowerLauncherSettings), nameof(PowerLauncherProperties.EnableOpeningSound), \"false\")]\n```",
+      "confidence": {
+        "score": 91,
+        "rationale": "A default-to-default assignment cannot prove that the CLI command persists a changed setting."
+      },
+      "disposition": "proposed"
+    }
   ],
-  "phase0": {
-    "author": "class-Avirup",
-    "author_association": "CONTRIBUTOR",
-    "bar": "full community-contributor process review",
-    "disposition": "Proceed",
-    "gates_tripped": [],
-    "owes": "maintainer",
-    "note": "CLA is green; issue 11225 is linked; a working recording and detailed manual validation are present; scope is atomic; and CC BY 3.0 attribution is now in NOTICE. The upstream pr-intake failure is infrastructure-only because the workflow checked out a base revision without pr-intake.mjs. With assignees and review requests empty, the conversation fallback points to jiripolasek's request for niels9001 to judge the UI, Open-versus-Show wording, and sound strength, so product/design signoff currently belongs to maintainers."
-  },
-  "prior_review_audit": {
-    "upstream_unresolved_threads": 2,
-    "fork_unresolved_copilot_threads": 0,
-    "latest_fresh_copilot_review_at": "2026-09-02T06:03:10Z",
-    "latest_fresh_copilot_published_comments": 0,
-    "empty_assignment_fallback_used": true,
-    "suppressed_findings_rechecked": [
-      "Installer omission remained valid and was fixed fork-side.",
-      "Recurring disk checks/routine success logs were superseded by the author's SND_MEMORY update; fork-side review additionally pinned the asynchronous buffer and retained only failure diagnostics.",
-      "Changed defaults invalidated opening-sound test inputs; both affected tests were corrected fork-side."
-    ],
-    "prior_published_findings_rechecked": [
-      "Unrelated nuget.config and CalculatorEngineCommon edits are absent from the live head.",
-      "XAML formatting, NOTICE attribution, NativeMethods placement, SND_NODEFAULT, and per-event defaults are present on the live head."
-    ],
-    "current_head_finding": "SND_MEMORY combined with SND_ASYNC requires the memory buffer to remain valid until playback completes; the fork pins each lazily loaded WAV buffer for process lifetime."
-  },
-  "verification": {
-    "result": "passed",
-    "configuration": "x64 Debug",
-    "summary": "After clearing inherited GIT_CONFIG_* variables that initially broke vcpkg, essentials, PowerToys Run, Settings UI, and Settings.UI.UnitTests builds succeeded. PowerToys.exe, PowerToys.PowerLauncher.exe, and both WAV files exist in the Debug output. Run.wxs parses as XML; a full MSI build was not run.",
-    "builds": [
-      "tools\\build\\build-essentials.cmd",
-      "src\\modules\\launcher\\PowerLauncher\\PowerLauncher.csproj",
-      "src\\settings-ui\\Settings.UI.UnitTests\\Settings.UI.UnitTests.csproj"
-    ],
-    "tests": [
-      {
-        "suite": "PowerLauncherViewModelTest and SetSettingCommandTests",
-        "result": "passed",
-        "count": 25,
-        "command": "vstest.console.exe Settings.UI.UnitTests.dll /TestCaseFilter:FullyQualifiedName~PowerLauncherViewModelTest|FullyQualifiedName~SetSettingCommandTests /Platform:x64"
+  "actions": [
+    {
+      "id": "request-changes-49412",
+      "type": "request_changes",
+      "label": "Request five PowerToys Run audio corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49412,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "1d68df54f5b1f4d3d297ee0832033fd2bafe5f43"
       },
-      {
-        "suite": "Patch validation",
-        "result": "passed",
-        "command": "git diff --check"
-      },
-      {
-        "suite": "Fork checks",
-        "result": "passed",
-        "command": "pr-intake and Check Spelling passed on the review branch"
-      }
-    ],
-    "outputs": [
-      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
-      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.PowerLauncher.exe",
-      "<PowerToysCheckout>\\x64\\Debug\\Sounds\\open.wav",
-      "<PowerToysCheckout>\\x64\\Debug\\Sounds\\close.wav"
+      "note": "Draft only. Five current-head inline comments require explicit maintainer approval."
+    }
+  ],
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-16T00:40:00Z",
+    "advancement_evidence": [
+      "Preserved the historical fork trace and exact-head fork PR 817.",
+      "Consumed the final Copilot review with zero new comments.",
+      "Dispositioned and resolved the unsupported winmm spelling advisory.",
+      "Confirmed zero unresolved Copilot, Advanced Security, or other review threads.",
+      "Built PowerLauncher, Settings UI library, and Settings.UI.UnitTests and passed 9/9 focused PowerLauncher tests."
     ]
   },
-  "test_instructions": [
-    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-    "Open Settings > PowerToys Run and enable Audible feedback; verify the Opening sound and Closing sound controls become enabled.",
-    "Invoke and dismiss PowerToys Run with opening only, closing only, both, and neither selected; verify sound plays only for selected transitions and not on initial cold-start load.",
-    "For installed-build validation, build/install the MSI and verify Sounds\\open.wav and Sounds\\close.wav are deployed beside PowerToys.PowerLauncher.exe before merging."
-  ],
-  "upstream_pr": {
-    "number": 49412,
-    "url": "https://github.com/microsoft/PowerToys/pull/49412"
+  "freshness": {
+    "headRefOid": "1d68df54f5b1f4d3d297ee0832033fd2bafe5f43",
+    "updatedAt": "2026-08-18T22:45:41Z",
+    "latestCopilotReviewAt": "2026-09-15T23:22:05Z",
+    "unresolvedForkCopilotThreads": 0,
+    "unresolvedForkAdvancedSecurityThreads": 0,
+    "checkedAt": "2026-09-16T00:40:00Z"
   },
   "fork_pr": {
     "number": 817,
+    "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/817",
-    "state": "OPEN",
-    "head_sha": "2a53d5da3bcf3e63b8a72dabe38bdf21ed26dd5a",
-    "branch": "pr-iterate/49412-v4"
+    "state": "OPEN"
   },
   "fork_branch": "pr-iterate/49412-v4",
-  "needs_revalidation": true,
-  "workflow": {
-    "phase": "building",
-    "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-15T16:42:00Z",
-    "advancement_evidence": [
-      "Preserved the historical fork reviews and created exact-head fork PR 817 without changing upstream.",
-      "Applied the valid WAV packaging, attribution, changed-default test, and asynchronous buffer-lifetime corrections.",
-      "Built the exact-head launcher and Settings UI library with isolated project references.",
-      "Confirmed the prior equivalent correction candidate passed 9/9 focused tests.",
-      "Retained zero unresolved Copilot threads; the final Copilot service attempt failed twice rather than returning findings."
-    ]
-  },
-  "blockers": [
-    {
-      "terminal": false,
-      "detail": "Final exact-head focused tests cannot currently produce all dependent assemblies: full restore receives HTTP 401 from the configured Azure DevOps feed, while broader build traversal hits an unrelated ZoomIt code-page failure.",
-      "remediation": "Restore repository-supported Azure Artifacts authentication, then rebuild the exact fork PR 817 candidate and run the focused PowerLauncher and Settings tests without changing the saved fork trace."
+  "fork_head_sha": "2a53d5da3bcf3e63b8a72dabe38bdf21ed26dd5a",
+  "validation": {
+    "fork_review": {
+      "result": "passed",
+      "commands": [
+        "Build PowerLauncher dependencies and PowerLauncher",
+        "Build Settings UI library and Settings.UI.UnitTests",
+        "Run focused PowerLauncher tests"
+      ],
+      "tests": {
+        "passed": 9,
+        "failed": 0
+      },
+      "details": "The exact-head candidate fixes build and all focused tests pass; no unresolved review thread remains."
     },
-    {
-      "terminal": false,
-      "detail": "GitHub Copilot failed twice while reviewing the final exact-head fork PR.",
-      "remediation": "After validation succeeds, consume any completed review on fork PR 817 before making at most one new request."
+    "upstream_head": {
+      "head_sha": "1d68df54f5b1f4d3d297ee0832033fd2bafe5f43",
+      "result": "failed",
+      "commands": [
+        "Validate the unmodified live head"
+      ],
+      "details": "The current head retains the five documented issues. Success is claimed only for the exact-head candidate with those corrections applied."
+    },
+    "suggestion_patch": {
+      "head_sha": "1d68df54f5b1f4d3d297ee0832033fd2bafe5f43",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "sdk-item-update",
+        "compatibility-default-assertions",
+        "sound-setting-propagation-coverage",
+        "cli-setting-change-coverage"
+      ],
+      "commands": [
+        "Apply the literal public suggestion blocks to the exact upstream head",
+        "Build PowerLauncher and Settings test projects",
+        "Run focused PowerLauncher tests"
+      ],
+      "details": "The literal suggestion blocks and the companion sound-buffer correction are represented in the validated exact-head candidate."
     }
-  ]
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
