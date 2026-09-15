@@ -11,27 +11,27 @@
   "isMine": false,
   "state": "OPEN",
   "draft": false,
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
   "generated_at": "2026-09-15T07:37:44Z",
-  "evaluated_at": "2026-09-15T07:37:44Z",
+  "evaluated_at": "2026-09-15T10:24:09Z",
   "source_updated_at": "2026-09-08T16:05:46Z",
   "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
-  "summary": "The resumed fork review loop was consumed before making any new request: fork PR 687 has five Copilot review passes, the latest completed review returned zero published comments, and zero Copilot threads remain unresolved. The exact upstream head is unchanged and still lacks the fork-only correctness fixes, so the furthest valid state is a current-head REQUEST_CHANGES draft awaiting maintainer approval rather than review_ready.",
+  "summary": "Live upstream head and activity are unchanged. Five distinct supported root causes are now mapped to current RIGHT-side diff lines: resource-map transfer, drag-operation negotiation, persisted pin state, directory bookmark payloads, and helper visibility. The existing converged fork and historical full-patch build evidence support five inline prose comments awaiting maintainer approval as a non-blocking COMMENT review. This is not a clean-upstream approval or an apply-ready suggestion result.",
   "status": {
     "glyph": "📝",
-    "label": "Review complete — approval required",
-    "detail": "Fork PR 687 is converged at b06f1d586ee526b2604cb7690af1805fca7b7943; latest Copilot review 2026-09-08T10:59:27Z generated zero published comments and unresolved fork Copilot threads are zero. Exact upstream head 1f551a7d72083bcf7b5681c9501154291b6870d5 remains unchanged. A current-head REQUEST_CHANGES draft is present and has not been posted."
+    "label": "Review draft — approval required",
+    "detail": "Fork PR 687 remains at b06f1d586ee526b2604cb7690af1805fca7b7943; its latest Copilot review at 2026-09-08T10:59:27Z generated zero new comments and live unresolved Copilot threads are zero. Upstream head and activity remain unchanged. Five current-diff inline comments are drafted, not posted; historical build evidence covers the full fork patch only."
   },
   "next_action": {
     "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "The draft is pinned to the unchanged upstream head and covers the fork-only fixes as current-head review requests. Explicit maintainer approval and the safe publisher are required before any upstream write."
+    "label": "Review the five drafted inline comments",
+    "reason": "The non-blocking COMMENT draft is pinned to the unchanged upstream head. Explicit maintainer approval and fresh-head validation by the safe publisher are required before posting; no overall review body or general conversation comments are proposed."
   },
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "source": {
     "repository": "microsoft/PowerToys",
     "headRefOid": "1f551a7d72083bcf7b5681c9501154291b6870d5",
@@ -44,78 +44,92 @@
     "latestCopilotReviewAt": "2026-09-08T10:59:27Z",
     "latestForkCommitAt": "2026-09-08T10:58:10Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T07:37:44Z"
+    "checkedAt": "2026-09-15T10:24:09Z"
   },
   "proposed_comments": [
     {
       "id": "preserve-drag-package-resources",
-      "kind": "companion",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
+      "line": 12,
+      "side": "RIGHT",
       "title": "Preserve deferred drag-package resources",
       "severity": "high",
-      "body": "### Preserve deferred drag-package resources\n\n**Severity:** `high`\n\nPlease preserve the source `DataPackageView` resource map when copying item drag data. The current drag helper copies requested operation, properties, and formats, but it drops `ResourceMap` entries used by HTML/images and other deferred payloads. Precompute the resource map before drag start where the API can still be awaited, cancel list-item drags when the map is not ready, and add coverage proving the resource map survives the shelf/list drag copy.",
-      "outOfDiffReason": "The verified fix spans CommandItemViewModel, DataPackageTransfer, ListItemsView, ShellPage, and view-model tests; it is not safely represented by one independently applicable inline suggestion.",
+      "body": "**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs` (`Copy`, `DelayRenderer`), `CommandItemViewModel.cs` in the same directory, and `src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/ListItemsView.xaml.cs` (`Items_DragItemsStarting`) and `Pages/ShellPage.xaml.cs` (`QuickAccessShelfItem_DragStarting`).\n\n**Problem:** `Copy` preserves properties and deferred formats but never transfers the source resource map. Copying an HTML payload's format alone loses its referenced resources.\n\n**Why it matters:** Shelf and list-item drags can advertise valid formats while delivering incomplete HTML/image content to the destination.\n\n**Suggested change:**\n1. Add asynchronous resource-map preparation using `GetResourceMapAsync`, copy every returned entry into `destination.ResourceMap`, and retain the existing requested-operation, properties, and deferred-format copying. Log resource-map retrieval failures with the existing logger.\n2. Prepare a resource-map task when `CommandItemViewModel` refreshes its data package. Provide a synchronous `TryCopy` that returns false while preparation is incomplete; cancel `Items_DragItemsStarting` in that case rather than delivering an unprepared package.\n3. Await the asynchronous copy in the shelf drag-start handler under its drag deferral; complete that deferral in `finally`. In `DelayRenderer`, await `GetDataAsync`, log failures, and complete its data-provider deferral in `finally` on success, failure, or cancellation.\n\n**Verification:** Extend `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs` to assert resource-map key/value preservation, rejection of an incomplete preparation task, successful copying after preparation, and preservation of operation/properties/deferred text. Build CmdPal UI and run the view-model tests. Drag resource-backed HTML from both the list and shelf and verify the destination receives the referenced resources.",
       "confidence": {
         "score": 96,
         "rationale": "The converged fork added DataPackageResourceMapTask, async resource-map copy, TryCopy gating, and regression tests, and the exact upstream head still drops ResourceMap entries."
       },
-      "disposition": "proposed",
-      "out_of_diff_reason": "The verified fix spans CommandItemViewModel, DataPackageTransfer, ListItemsView, ShellPage, and view-model tests; it is not safely represented by one independently applicable inline suggestion."
+      "disposition": "proposed"
     },
     {
       "id": "honor-source-drag-operation",
-      "kind": "companion",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "start_line": 1057,
+      "start_side": "RIGHT",
+      "line": 1060,
+      "side": "RIGHT",
       "title": "Do not force copied shelf payloads to move operations",
       "severity": "high",
-      "body": "### Do not force copied shelf payloads to move operations\n\n**Severity:** `high`\n\nShelf items backed by an extension `DataPackage` can advertise `Copy` or `Link` operations, but the current shelf drop handlers always accept `Move` for reorder, pin, and remove targets. That can misreport the completed drag operation to the source and break external drag payload semantics. Carry the source package's requested/allowed operation through drag start and use the preferred copied operation for accepted shelf drops, falling back to `Move` only for shelf-internal items without an external data package.",
-      "outOfDiffReason": "The correction touches drag start, drag-over, drop, remove, pin, and cleanup state in ShellPage; a single-line suggestion would be incomplete.",
+      "body": "**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs`, especially `QuickAccessShelfItem_DragStarting`, the reorder/pin/remove drag-over and drop handlers, and `CompleteQuickAccessShelfDrag`.\n\n**Problem:** This assignment unconditionally adds `Move` and broadens external packages to `Copy`; the shelf targets also hard-code `AcceptedOperation = Move`. A bookmark package requesting only `Copy` can therefore negotiate a move with an external destination.\n\n**Why it matters:** Explorer may relocate the bookmarked file instead of copying it, and internal shelf drops can report an operation inconsistent with the source package.\n\n**Suggested change:**\n1. For a copied external package, set allowed operations from its requested operation, using `Copy` when that operation is `None`; do not unconditionally OR in `Move` or `Copy`. Keep `Move` for shelf-only items without a package.\n2. Compute and retain the shelf's preferred accepted operation from those allowed flags (prefer `Copy`, then `Link`, otherwise the allowed `Move`). Use that value in all reorder, pin, and remove drag-over/drop handlers instead of hard-coded `Move`.\n3. Reset the retained operation to `None` in `CompleteQuickAccessShelfDrag`, including cancelled and failed drags. Keep pin/reorder/remove model changes separate from the external storage operation.\n\n**Verification:** Build CmdPal UI. Drag a copy-only file bookmark to Explorer and verify the original remains at its path; exercise link-only payloads and ensure `Move` is never advertised for them. Verify reorder, pin, and remove still work with copied payloads and shelf-only items, and that a cancelled drag cannot leak operation state into the next drag.",
       "confidence": {
         "score": 94,
         "rationale": "The current handlers force DataPackageOperation.Move even after copying a source package whose RequestedOperation may be Copy or Link; the fork fix tracks and reuses the preferred operation."
       },
-      "disposition": "proposed",
-      "out_of_diff_reason": "The correction touches drag start, drag-over, drop, remove, pin, and cleanup state in ShellPage; a single-line suggestion would be incomplete."
+      "disposition": "proposed"
     },
     {
       "id": "track-persisted-pin-state",
-      "kind": "companion",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfViewModel.cs",
+      "line": 326,
+      "side": "RIGHT",
       "title": "Distinguish persisted pins from items shown in the pinned section",
       "severity": "medium",
-      "body": "### Distinguish persisted pins from items shown in the pinned section\n\n**Severity:** `medium`\n\n`CanPin` is currently based on whether the composed shelf item is in the pinned section. When recent commands are shown before pinned commands, an item that is already persisted as pinned can also appear in the recent section with `IsPinned == false`, making the UI offer to pin a command that is already persisted. Track whether each item exists in the persisted pinned-command set separately from its current visual section, and base pin eligibility/reorder acceptance on that persisted state.",
-      "outOfDiffReason": "The verified fix adds persisted-pin state to QuickAccessShelfItem equality/reuse and computes it from QuickAccessShelfViewModel, so it is a coordinated view-model change rather than a localized replacement.",
+      "body": "**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/QuickAccessShelfViewModel.cs` (`BuildItems`), `QuickAccessShelfItem.cs` in the same directory (`CreateOrReuse`, `Matches`, `Equals`, `GetHashCode`), and `src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs` (reorder eligibility).\n\n**Problem:** `item.IsPinned` describes the winning visual section, not persisted pin membership. With `RecentCommandsPlacement.BeforePinned`, a persisted pin can appear in the recent section with `IsPinned == false`, so this calculation incorrectly makes it pinnable.\n\n**Why it matters:** The UI offers a pin drop that `TryPinItem` rejects, and reorder eligibility conflates section placement with persisted state.\n\n**Suggested change:**\n1. Build a set of `(ProviderId, CommandId)` from the pinned-command snapshot in `BuildItems`. Derive persisted membership independently of the composed section, and use it when calculating `CanPin`.\n2. Carry a separate `IsPersistedPinned` value through `QuickAccessShelfItem` construction/reuse, matching, equality, and hashing so changed persisted state cannot reuse a stale item.\n3. Use persisted membership for source reorder eligibility in the shelf drag-over/drop handlers. Retain visual `IsPinned` for section-specific removal and pinned-section targets.\n\n**Verification:** Extend `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs` with a recent-section item that remains persisted pinned: `IsPinned` false, `IsPersistedPinned` true, and `CanPin` false. Cover reuse when persisted state changes, run the view-model tests, and verify recent-first pin/reorder/removal behavior in CmdPal.",
       "confidence": {
         "score": 91,
         "rationale": "The fork fix adds IsPersistedPinned, includes it in reuse/equality, computes it from pinned command IDs, and adds a regression for a recent-section item that remains persisted pinned."
       },
-      "disposition": "proposed",
-      "out_of_diff_reason": "The verified fix adds persisted-pin state to QuickAccessShelfItem equality/reuse and computes it from QuickAccessShelfViewModel, so it is a coordinated view-model change rather than a localized replacement."
+      "disposition": "proposed"
     },
     {
       "id": "directory-bookmark-drag-package",
-      "kind": "companion",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkListItem.cs",
+      "start_line": 125,
+      "start_side": "RIGHT",
+      "line": 126,
+      "side": "RIGHT",
       "title": "Include local directory bookmarks in storage-item drag data",
       "severity": "medium",
-      "body": "### Include local directory bookmarks in storage-item drag data\n\n**Severity:** `medium`\n\nThe bookmark list item builds storage-item drag data only when the classified target is one of the file-like kinds and `File.Exists` returns true. Local directory bookmarks therefore cannot be dragged as folders even though the helper already supports resolving directories through `StorageFolder`. Include `CommandKind.Directory` and accept `Directory.Exists` when creating the local path package, with regression coverage for a local directory bookmark.",
-      "outOfDiffReason": "The behavior crosses bookmark classification and the shared indexer drag-data helper; the tested request is safer as an author-facing companion than a narrow partial patch.",
+      "body": "**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Pages/BookmarkListItem.cs` (`ClassifyAsync`, `ApplyClassificationResult`) and `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Helpers/DataPackageHelper.cs` (`CreateDataPackageForPath`).\n\n**Problem:** This filter excludes `CommandKind.Directory` and requires `File.Exists`, so an existing folder receives no local path for its drag package even though the shared helper already resolves directories as `StorageFolder`.\n\n**Why it matters:** Local directory bookmarks cannot provide folder storage-item data when dragged from the shelf.\n\n**Suggested change:**\n1. Include `CommandKind.Directory` in the accepted local target kinds and allow `Directory.Exists(classification.Target)` alongside `File.Exists` before retaining the target path. Keep missing and non-local targets excluded.\n2. Continue passing the classified path through `ApplyClassificationResult` to the existing shared helper; do not duplicate its folder-resolution logic.\n3. Add a directory regression beside the existing local-file test in `src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Bookmarks.UnitTests/BookmarksCommandProviderTests.cs`: create a temporary directory, initialize its bookmark item, await storage-item data, assert one item with that directory path, and clean up in `finally`.\n\n**Verification:** Run the Bookmarks unit tests and confirm both file and directory packages remain supported. Drag a directory bookmark to a storage-item consumer and verify it receives the folder; missing paths and web bookmarks must not gain a spurious local storage payload.",
       "confidence": {
         "score": 93,
         "rationale": "The current condition excludes CommandKind.Directory before DataPackageHelper can use its StorageFolder path; the fork fix and new test cover this exact gap."
       },
-      "disposition": "proposed",
-      "out_of_diff_reason": "The behavior crosses bookmark classification and the shared indexer drag-data helper; the tested request is safer as an author-facing companion than a narrow partial patch."
+      "disposition": "proposed"
     },
     {
       "id": "limit-drag-helper-visibility",
-      "kind": "companion",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Helpers/DataPackageHelper.cs",
+      "line": 17,
+      "side": "RIGHT",
       "title": "Keep the indexer drag helper internal",
       "severity": "low",
-      "body": "### Keep the indexer drag helper internal\n\n**Severity:** `low`\n\n`DataPackageHelper` is an implementation detail of the indexer/bookmark drag-data path, but the PR exposes it publicly. Please keep the helper `internal` and grant the bookmark extension friend access only if that sharing is intentional; this avoids adding unnecessary public API surface while preserving the cross-extension reuse.",
-      "outOfDiffReason": "This is a small API-surface cleanup tied to the bookmark/indexer sharing decision and project friend access, not a standalone current-line suggestion.",
+      "body": "**Severity:** `low`\n\n**Affected code:** `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Helpers/DataPackageHelper.cs` (`DataPackageHelper`) and `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Microsoft.CmdPal.Ext.Indexer.csproj` (`InternalsVisibleTo`).\n\n**Problem:** Sharing this implementation helper with Bookmarks currently makes the entire helper class public.\n\n**Why it matters:** That exposes a broader API than the one intended cross-extension consumer needs. This is a non-blocking API-surface cleanup, not a runtime blocker.\n\n**Suggested change:**\n1. Restore `internal static class DataPackageHelper`.\n2. In the indexer project's existing friend-assembly item group, retain its unit-test entry and add `InternalsVisibleTo` for the actual bookmark assembly name, `Microsoft.CmdPal.Ext.Bookmarks`. Make both edits together so the bookmark call remains accessible.\n\n**Verification:** Build the indexer and Bookmarks dependency chain, then run the Bookmarks unit tests. Confirm `BookmarkListItem` can still call `CreateDataPackageForPath` without publicly exposing the helper.",
       "confidence": {
         "score": 84,
         "rationale": "The fork changed the helper back to internal and added InternalsVisibleTo for the bookmark extension, preserving behavior without widening public surface."
       },
-      "disposition": "proposed",
-      "out_of_diff_reason": "This is a small API-surface cleanup tied to the bookmark/indexer sharing decision and project friend access, not a standalone current-line suggestion."
+      "disposition": "proposed"
     }
   ],
   "validation": {
@@ -133,17 +147,10 @@
       ],
       "details": "Latest fork Copilot review returned zero published comments; unresolved Copilot thread count is zero."
     },
-    "suggestionPatch": {
+    "fork_patch": {
       "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
       "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "preserve-drag-package-resources",
-        "honor-source-drag-operation",
-        "track-persisted-pin-state",
-        "directory-bookmark-drag-package",
-        "limit-drag-helper-visibility"
-      ],
+      "fork_head_sha": "b06f1d586ee526b2604cb7690af1805fca7b7943",
       "commands": [
         "git local checkout add --detach <PowerToysCheckout> refs/remotes/upstream/pr/49932",
         "git diff --binary refs/remotes/upstream/pr/49932..b06f1d586ee526b2604cb7690af1805fca7b7943 | git -C <PowerToysCheckout> apply --index",
@@ -154,7 +161,7 @@
         "msbuild src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj /t:Test /p:Platform=x64 /p:Configuration=Debug",
         "msbuild src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj /t:Test /p:Platform=x64 /p:Configuration=Debug"
       ],
-      "details": "The exact upstream head plus the full converged fork-only patch built successfully after clearing inherited GIT_CONFIG_* variables. Microsoft.CmdPal.UI, Microsoft.CmdPal.UI.ViewModels.UnitTests, and Microsoft.CmdPal.Ext.Bookmarks.UnitTests builds passed; UI.ViewModels tests passed 361/361 and Bookmarks tests passed 227/227."
+      "details": "Historical artifact evidence: the upstream head plus the full converged fork-only patch built successfully after clearing inherited GIT_CONFIG_* variables. Microsoft.CmdPal.UI, Microsoft.CmdPal.UI.ViewModels.UnitTests, and Microsoft.CmdPal.Ext.Bookmarks.UnitTests builds passed; UI.ViewModels tests passed 361/361 and Bookmarks tests passed 227/227. This validates the full fork patch, not literal public suggestion blocks or the unmodified upstream tree. Reused without rebuilding during targeted re-summarization; no apply-ready suggestion blocks are proposed."
     }
   },
   "source_context": {
@@ -167,7 +174,7 @@
   "workflow": {
     "phase": "review_drafted",
     "previous_phase": "building",
-    "checkpoint_at": "2026-09-15T07:37:44Z",
+    "checkpoint_at": "2026-09-15T10:24:09Z",
     "resume_action": "maintainer-approval-or-revalidation",
     "advancement_evidence": [
       "Resumed the exact durable fork trace: fork PR 687, branch pr-iterate/49932-v4, fork head b06f1d586ee526b2604cb7690af1805fca7b7943.",
@@ -175,41 +182,37 @@
       "Latest fork Copilot review submitted at 2026-09-08T10:59:27Z returned zero published comments.",
       "Unresolved fork Copilot thread count is zero.",
       "Live upstream head remains 1f551a7d72083bcf7b5681c9501154291b6870d5 and is the merge-base of the fork head.",
-      "Mapped all fork-only hunks to five current-head author-facing requests instead of marking the upstream PR clean.",
-      "Materialized the exact suggestion-result tree from the pinned upstream head and validated it with targeted CmdPal builds and affected MSTest projects."
+      "Rechecked live upstream head/activity and durable fork head/review threads during targeted re-summarization; none changed.",
+      "Mapped the full fork patch across 11 files to five distinct current RIGHT-side inline roots, including resource-map preparation/deferrals and regression coverage; no general-only root remains.",
+      "Reused historical full-fork-patch build/test evidence, correcting its previous suggestion-result label. No Copilot request, rebuild, or upstream write was made.",
+      "Baseline: five proposed companion comments, zero inline comments, one request_changes action, and 35 installed artifact-validator errors. Repaired draft: five inline prose comments, zero companions, and one post_review COMMENT action."
     ]
   },
   "actions": [
     {
-      "id": "request-changes-49932",
-      "type": "request_changes",
-      "label": "Request changes with five separate general PR conversation comments (no inline anchors)",
+      "id": "post-review-49932",
+      "type": "post_review",
+      "label": "Post five inline review comments",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 49932,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5",
-        "body": "Thanks for the quick access shelf drag-and-drop work. Before merge, please address the current-head findings in this review: preserve deferred drag package resource maps, avoid forcing copied payloads to report Move operations, distinguish persisted pin state from visual section placement, include local directory bookmarks in storage-item drag data, and keep the shared drag helper internal."
+        "event": "COMMENT",
+        "head_sha": "1f551a7d72083bcf7b5681c9501154291b6870d5"
       },
-      "note": "Companion-only review: because there are no valid inline anchors or apply-ready suggestions, approval would post these findings as separate general PR conversation comments, not inline code comments. Draft only; no upstream write has occurred."
+      "note": "Draft only: five current-diff inline prose comments, no overall review body, no general PR conversation comments, and no apply-ready suggestion blocks. The retained validation covers the full coordinated fork patch, not independent literal suggestions. Posting requires explicit maintainer approval; the default review event is COMMENT."
     }
   ],
   "safe_actions": [
     {
-      "id": "request-changes-49932",
+      "id": "post-review-49932",
       "upstream_write": true,
       "approval_required": true,
       "publisher_required": "Publish-ApprovedReview.ps1",
       "validator_required": "Test-ReviewData.ps1",
       "head_pinned": "1f551a7d72083bcf7b5681c9501154291b6870d5"
-    },
-    {
-      "id": "hold-review-49932",
-      "upstream_write": false,
-      "approval_required": false
     }
   ]
 }
