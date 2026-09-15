@@ -103,65 +103,6 @@
     "changed_file_count": 12
   },
   "fork_branch": "pr-iterate/49093-v4",
-  "proposed_comments": [
-    {
-      "id": "reject-empty-utc-format",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Reject an empty UTC format body",
-      "body": "### Reject an empty UTC format body\n\n**Severity:** `medium`\n\nA format such as `UTC:` becomes empty after the prefix is removed, but the empty string is then passed to `DateTime.ToString`, which renders the general date/time value instead of using the documented invalid-format fallback. Reject the stripped value before converting tokens so this input cannot silently display an unintended format.\n\n```suggestion\n                syntax = syntax.Substring(4);\n                if (string.IsNullOrWhiteSpace(syntax))\n                {\n                    return false;\n                }\n```",
-      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TimeDate/Helpers/TimeAndDateHelper.cs",
-      "start_line": 525,
-      "line": 525,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 91,
-        "rationale": "The current upstream code strips UTC: and immediately formats the resulting empty string; .NET treats an empty date format as the general date/time pattern."
-      }
-    },
-    {
-      "id": "derive-era-from-formatted-date",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Derive the era from the UTC date",
-      "body": "### Derive the era from the UTC date\n\n**Severity:** `medium`\n\nWhen the custom format starts with `UTC:`, all date tokens are rendered from `dtObject` in UTC, but the era abbreviation is still computed from the local `dateTimeNow`. Around a local/UTC date boundary in cultures with era changes, the `EAB` token can therefore describe a different date than the rest of the output.\n\n```suggestion\n            var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dtObject));\n```",
-      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TimeDate/Helpers/TimeAndDateHelper.cs",
-      "start_line": 530,
-      "line": 530,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 84,
-        "rationale": "The formatter selects dtObject for UTC mode but uses dateTimeNow for era lookup, so the two paths can disagree at a date or era boundary."
-      }
-    },
-    {
-      "id": "avoid-refresh-hot-path-warning",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Avoid recurring warnings during clock refresh",
-      "body": "### Avoid recurring warnings during clock refresh\n\n**Severity:** `medium`\n\nAn invalid custom Clock-band format reaches this recovery path on every refresh, so the warning is emitted every minute or every second while the setting remains invalid. Preserve the useful warning and fallback behavior discussed in this review, but validate or deduplicate the warning when settings are loaded or changed so the refresh hot path does not repeat the same log entry indefinitely.",
-      "disposition": "proposed",
-      "confidence": {
-        "score": 88,
-        "rationale": "NowDockBand refreshes continuously and the formatter logs from the exception recovery path, so an unchanged invalid setting produces repeated warnings."
-      }
-    },
-    {
-      "id": "localize-clock-format-placeholder",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Localize the Clock-band format placeholder",
-      "body": "### Localize the Clock-band format placeholder\n\n**Severity:** `medium`\n\nThe settings manager hard-codes `ddd dd.MM \\\\KW WOY`, which exposes a German-specific `KW` example to every locale despite the new setting being localized. Move this placeholder into the resource file and provide a translator-facing comment so each locale can choose its own week abbreviation and example.",
-      "disposition": "proposed",
-      "confidence": {
-        "score": 92,
-        "rationale": "The placeholder is a literal assigned in SettingsManager while the surrounding setting labels and format examples are resource-backed."
-      }
-    }
-  ],
+  "proposed_comments": [],
   "needs_revalidation": true
 }

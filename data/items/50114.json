@@ -2,7 +2,7 @@
   "number": 50114,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-14T17:14:55.4161838Z",
@@ -22,126 +22,8 @@
     "label": "Review request-changes draft",
     "reason": "Recheck the upstream head and obtain explicit maintainer approval before posting the drafted process ask and code suggestions."
   },
-  "proposed_comments": [
-    {
-      "id": "context-50114-visual-evidence-ci",
-      "kind": "companion",
-      "disposition": "proposed",
-      "out_of_diff_reason": "The visual-evidence and upstream-CI requests concern PR process and live checks rather than a single changed source line.",
-      "type": "comment",
-      "title": "Add visual evidence and address failed CI",
-      "severity": "medium",
-      "confidence": {
-        "score": 98,
-        "rationale": "The live PR intake comment requests visual evidence for the Settings UI change, and the live upstream status rollup still reports failed PowerToys CI x64 and arm64 release builds."
-      },
-      "body": "Thanks for the change. Could you add a short screenshot, GIF, or video showing the new Cursor Wrap setting and its behavior in an RDP session, and take a look at the failed PowerToys CI checks, including the x64 and arm64 release builds? Once those are addressed or explained, the review can continue."
-    },
-    {
-      "id": "remove-unit-test-source-from-production-project",
-      "kind": "inline",
-      "title": "Keep the unit-test source out of the production DLL",
-      "severity": "high",
-      "confidence": {
-        "score": 98,
-        "rationale": "The production CursorWrap project currently compiles MonitorTopologyTests.cpp even though that file includes Visual Studio CppUnitTest headers and test-only classes."
-      },
-      "body": "### Keep the unit-test source out of the production DLL\n\n**Severity:** `high`\n\n`MonitorTopologyTests.cpp` is included in the production CursorWrap DLL project. That source depends on `CppUnitTest.h`, so the release build can fail to resolve test-only headers; even if it compiled, the test class should not ship in the module binary. Keep the source only in the dedicated CursorWrap unit-test project.",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj",
-      "start_line": 99,
-      "line": 100,
-      "side": "RIGHT"
-    },
-    {
-      "id": "block-vertical-suppressed-top-corner-wrap",
-      "kind": "inline",
-      "title": "Block vertical movement at suppressed top corners",
-      "severity": "high",
-      "confidence": {
-        "score": 95,
-        "rationale": "At a top-left or top-right corner, removing only the Top candidate leaves Left or Right available, so vertical movement can still wrap sideways instead of being blocked."
-      },
-      "body": "### Block vertical movement at suppressed top corners\n\n**Severity:** `high`\n\nAt a top-left or top-right corner, suppressing only the `Top` candidate still leaves the side edge in the candidate list. When the pointer is moving upward, `PrioritizeEdgeByDirection` can then fall back to that side candidate and wrap sideways instead of keeping the RDP connection bar reachable. Detect the suppressed top-corner case before collecting side candidates, return no edge for vertical or unknown movement, and still allow horizontal movement to wrap through the side edge.",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/MouseUtils/CursorWrap/MonitorTopology.cpp",
-      "start_line": 262,
-      "line": 315,
-      "side": "RIGHT"
-    },
-    {
-      "id": "cover-suppressed-top-corner-direction",
-      "kind": "inline",
-      "title": "Cover suppressed top-corner direction handling",
-      "severity": "medium",
-      "confidence": {
-        "score": 93,
-        "rationale": "The added topology tests cover straight edges and lower monitors, but they do not exercise the top-corner fallback that currently allows upward movement to wrap sideways."
-      },
-      "body": "### Cover suppressed top-corner direction handling\n\n**Severity:** `medium`\n\nThe new tests cover global-top suppression for straight top edges, but they miss the corner case where side candidates remain available. Add coverage for upward, unknown, and horizontal movement at a suppressed top corner so the intended behavior is locked down.",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/MouseUtils/CursorWrap/UnitTests/MonitorTopologyTests.cpp",
-      "start_line": 184,
-      "line": 184,
-      "side": "RIGHT"
-    },
-    {
-      "id": "make-rdp-suppression-setting-atomic",
-      "kind": "inline",
-      "title": "Synchronize the live RDP suppression setting",
-      "severity": "medium",
-      "confidence": {
-        "score": 94,
-        "rationale": "set_config writes this field on the runner thread while MouseHookProc reads it on the hook thread, matching the existing reason m_hookActive is atomic."
-      },
-      "body": "### Synchronize the live RDP suppression setting\n\n**Severity:** `medium`\n\n`set_config` updates this option on the runner thread while `MouseHookProc` reads it on the separate low-level mouse hook thread. A plain `bool` makes live settings changes a C++ data race. Store the setting atomically, matching the existing hook-thread state pattern, and read it with a relaxed load in the hook path. Also update the hook read to `m_suppressTopEdgeWrapInRemoteSession.load(std::memory_order_relaxed)` where `suppressTopEdgeWrap` is computed.",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
-      "start_line": 87,
-      "line": 87,
-      "side": "RIGHT"
-    },
-    {
-      "id": "load-rdp-suppression-setting-atomically",
-      "kind": "inline",
-      "title": "Read the RDP suppression setting atomically in the hook",
-      "severity": "medium",
-      "confidence": {
-        "score": 94,
-        "rationale": "This is the paired hook-thread read for the setting made atomic above; without it the code will not compile after changing the field type."
-      },
-      "body": "### Read the RDP suppression setting atomically in the hook\n\n**Severity:** `medium`\n\nAfter the setting is made atomic, the hook path should read the current value explicitly. A relaxed load is enough here because the flag is a standalone setting and the hook only needs a current boolean value without ordering other data. Apply this together with the field-type change above.",
-      "in_diff": true,
-      "disposition": "proposed",
-      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
-      "start_line": 731,
-      "line": 731,
-      "side": "RIGHT"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50114",
-      "type": "request_changes",
-      "label": "Request changes with process ask and 5 code suggestions",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Current-head review draft; explicit approval and freshness recheck required before posting.",
-      "review": {
-        "pr": 50114,
-        "pullRequest": 50114,
-        "repository": "microsoft/PowerToys",
-        "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
-        "event": "REQUEST_CHANGES",
-        "body_prefix": "Thanks for the contribution. Please address the process and correctness items below."
-      }
-    }
-  ],
+  "proposed_comments": [],
+  "actions": [],
   "confidence": "High",
   "judgment": {
     "status": "review_comments_ready",
@@ -221,5 +103,6 @@
     "commit_count": 4,
     "changed_file_count": 16
   },
-  "fork_branch": "pr-iterate/50114"
+  "fork_branch": "pr-iterate/50114",
+  "needs_revalidation": true
 }

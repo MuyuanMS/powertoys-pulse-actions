@@ -195,32 +195,7 @@
       "approval_required": false
     }
   ],
-  "proposed_comments": [
-    {
-      "id": "separate-win-hold-trigger-source",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Keep Win-key hold separate from the activation hotkey",
-      "body": "### Keep Win-key hold separate from the activation hotkey\n\n**Severity:** `high`\n\nThe new `OpenShortcutGuide` branch infers a Windows-key hold from `GetAsyncKeyState` inside an asynchronously queued UI callback, while the activation hotkey and the Win-key hold both signal the same Shortcut Guide event. A Win-containing activation hotkey such as the default Win+Shift+/ can therefore be routed through the Windows-key action path: with `Off` it can be dropped, with `TaskbarIndicators` it can open the wrong pane, and when the overlay is already visible the new `OpenShortcutGuide` branch returns instead of using the normal toggle-close path.\n\nPlease carry the trigger source explicitly from the runner/module interface to the Shortcut Guide process, for example by using a distinct Win-key-hold event/message and keeping the existing trigger event for the regular activation hotkey. In the Win-key `OpenShortcutGuide` path, also refresh `Program.ForegroundWindowHandle` before calling `MainPaneControl.Open()` so app-specific shortcuts are resolved against the current foreground app.",
-      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs",
-      "line": 229,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed"
-    },
-    {
-      "id": "preserve-telemetry-and-press-time",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Preserve settings telemetry and the configured hold delay",
-      "body": "### Preserve settings telemetry and the configured hold delay\n\n**Severity:** `high`\n\n`send_settings_telemetry()` now calls `EnsureProcessRuns(\"telemetry\")`, but the helper returns early whenever the persistent Shortcut Guide UI process is already running. `Program.Main` only emits the settings telemetry event when a process is actually launched with the `telemetry` argument, so settings telemetry becomes a no-op in the common enabled case.\n\nPlease keep telemetry as a transient launch path that does not reuse or replace the tracked UI-process handle and does not reset pending UI trigger events. This change should also restore the `press_time` parsing/clamping and return `m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts` instead of hard-coding 900 ms, otherwise the Settings `PressTime` value from 100-5000 ms no longer affects Win-key hold activation.",
-      "path": "src/modules/ShortcutGuide/ShortcutGuideModuleInterface/dllmain.cpp",
-      "line": 161,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed"
-    }
-  ],
+  "proposed_comments": [],
   "verification": {
     "result": "passed",
     "configuration": "x64 Debug",

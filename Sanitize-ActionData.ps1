@@ -19,23 +19,23 @@ $blockedProperties = @(
   'evidenceDirectory'
 )
 
+function Test-ActionableCompanionBody {
+  param([string]$Body)
+
+  foreach ($section in @('Affected code', 'Problem', 'Why it matters', 'Suggested change', 'Verification')) {
+    if ($Body -notmatch ('(?im)^\*\*' + [regex]::Escape($section) + ':\*\*')) {
+      return $false
+    }
+  }
+  return $Body -match '(?is)\*\*Affected code:\*\*.*?`[^`\r\n]+`.*?\*\*Problem:\*\*' -and
+    $Body -match '(?ims)\*\*Suggested change:\*\*.+?(?:^\s*(?:[-*]|\d+\.)\s+\S|```(?!suggestion)\w*)'
+}
+
 function Convert-PublicValue {
   param($Value)
 
   if ($null -eq $Value) {
     return $null
-  }
-
-  function Test-ActionableCompanionBody {
-    param([string]$Body)
-
-    foreach ($section in @('Affected code', 'Problem', 'Why it matters', 'Suggested change', 'Verification')) {
-      if ($Body -notmatch ('(?im)^\*\*' + [regex]::Escape($section) + ':\*\*')) {
-        return $false
-      }
-    }
-    return $Body -match '(?is)\*\*Affected code:\*\*.*?`[^`\r\n]+`.*?\*\*Problem:\*\*' -and
-      $Body -match '(?ims)\*\*Suggested change:\*\*.+?(?:^\s*(?:[-*]|\d+\.)\s+\S|```(?!suggestion)\w*)'
   }
 
   if ($Value -is [string]) {
@@ -145,16 +145,16 @@ function Get-PublicActions {
           $invalidReviewReasons.Add("PR $($Artifact.number) companion comment $id contains inline location or suggestion data")
         }
       }
-      $companionKeys = @{}
-      foreach ($comment in @($proposedComments | Where-Object { $_.kind -eq 'companion' })) {
-        $normalizedTitle = ([string]$comment.title).Trim().ToLowerInvariant()
-        $normalizedBody = [regex]::Replace(([string]$comment.body).Trim().ToLowerInvariant(), '\s+', ' ')
-        foreach ($key in @("title:$normalizedTitle", "body:$normalizedBody")) {
-          if ($companionKeys.ContainsKey($key)) {
-            $invalidReviewReasons.Add("PR $($Artifact.number) has duplicate companion findings $($companionKeys[$key]) and $($comment.id)")
-          } else {
-            $companionKeys[$key] = [string]$comment.id
-          }
+    }
+    $companionKeys = @{}
+    foreach ($comment in @($proposedComments | Where-Object { $_.kind -eq 'companion' })) {
+      $normalizedTitle = ([string]$comment.title).Trim().ToLowerInvariant()
+      $normalizedBody = [regex]::Replace(([string]$comment.body).Trim().ToLowerInvariant(), '\s+', ' ')
+      foreach ($key in @("title:$normalizedTitle", "body:$normalizedBody")) {
+        if ($companionKeys.ContainsKey($key)) {
+          $invalidReviewReasons.Add("PR $($Artifact.number) has duplicate companion findings $($companionKeys[$key]) and $($comment.id)")
+        } else {
+          $companionKeys[$key] = [string]$comment.id
         }
       }
     }
@@ -173,6 +173,9 @@ function Get-PublicActions {
       }
       $actions = @($actions | Where-Object {
         $_.type -notin @('post_review', 'request_changes')
+      })
+      $Artifact.proposed_comments = @($Artifact.proposed_comments | Where-Object {
+        $_.disposition -ne 'proposed'
       })
       $Artifact.stage = 'review_in_progress'
       if ($Artifact.PSObject.Properties['needs_revalidation']) {

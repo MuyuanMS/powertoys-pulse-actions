@@ -23,58 +23,7 @@
     "label": "Approve the drafted request-changes review",
     "reason": "The draft contains two current-diff fixes and one CLI end-to-end coverage note. Recheck the upstream head immediately before any publication."
   },
-  "proposed_comments": [
-    {
-      "id": "preserve-cli-folder-display-name",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Preserve folder names for separator-terminated CLI paths",
-      "body": "### Preserve folder names for separator-terminated CLI paths\n\n**Severity:** `medium`\n\n`Path.GetFullPath` can retain a trailing directory separator, while `Path.GetFileName` returns an empty name for a separator-terminated folder or root. That produces a blank Peek heading. Derive the display name from a separator-trimmed path and preserve the original path as the root fallback.\n\n```suggestion\n                string name = GetDisplayName(path);\n                items.Add(Directory.Exists(path)\n                    ? new FolderItem(path, name, path)\n                    : new FileItem(path, name));\n            }\n\n            Items = items;\n            CurrentItem = items.Count > 0 ? items[0] : null;\n        }\n\n        private static string GetDisplayName(string path)\n        {\n            var trimmedPath = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);\n            var name = Path.GetFileName(trimmedPath.Length > 0 ? trimmedPath : path);\n\n            return string.IsNullOrEmpty(name) ? path : name;\n        }\n```",
-      "path": "src/modules/peek/Peek.UI/MainWindowViewModel.cs",
-      "line": 208,
-      "start_line": 186,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 92,
-        "rationale": "The failure follows directly from Path.GetFileName behavior for trailing separators and roots; the fix is localized to CLI item construction."
-      }
-    },
-    {
-      "id": "preserve-explorer-activation-multiplicity",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Do not show multi-item counters for ordinary Explorer activation",
-      "body": "### Do not show multi-item counters for ordinary Explorer activation\n\n**Severity:** `high`\n\nExplorer activation populates `Items` with neighboring entries, so testing `Items.Count > 1` displays a multi-item counter for a single selected file. Keep activation multiplicity separately: use the Explorer query's multiple-files flag for Explorer activation and the CLI path count for direct CLI activation.\n\n```suggestion\n        [ObservableProperty]\n        [NotifyPropertyChangedFor(nameof(DisplayItemCount))]\n        [NotifyPropertyChangedFor(nameof(HasMultipleItems))]\n        private IReadOnlyList<IFileSystemItem>? _items;\n\n        [ObservableProperty]\n        [NotifyPropertyChangedFor(nameof(HasMultipleItems))]\n        private bool _isMultipleItemsActivation;\n```",
-      "path": "src/modules/peek/Peek.UI/MainWindowViewModel.cs",
-      "line": 80,
-      "start_line": 75,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 90,
-        "rationale": "The current code replaces the old multiple-files activation condition with Items.Count, which includes neighbors for one Explorer selection."
-      }
-    },
-    {
-      "id": "add-cli-e2e-coverage",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Add end-to-end coverage for the direct CLI launch path",
-      "body": "### Add end-to-end coverage for the direct CLI launch path\n\n**Severity:** `medium`\n\nThe unit tests cover argument classification, but direct CLI activation is a separate cross-process workflow. Add Peek UI coverage that launches multiple paths and verifies relative-path expansion, mixed file/folder creation, navigation, and invalid-input exit behavior.",
-      "path": "src/modules/peek/Peek.UI/PeekXAML/App.xaml.cs",
-      "line": 125,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 78,
-        "rationale": "Existing tests cover classification and Explorer activation, not the direct CLI activation branch."
-      }
-    }
-  ],
+  "proposed_comments": [],
   "actions": [],
   "needs_revalidation": true,
   "confidence": "High",
