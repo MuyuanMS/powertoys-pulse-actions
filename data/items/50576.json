@@ -1,28 +1,135 @@
 {
+  "schemaVersion": 4,
+  "id": "pr-50576",
   "number": 50576,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-15T19:33:10.816+08:00",
-  "evaluated_at": "2026-09-15T11:33:10Z",
-  "source_updated_at": "2026-09-15T10:54:55Z",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-15T23:30:00Z",
+  "evaluated_at": "2026-09-15T23:30:00Z",
+  "source_updated_at": "2026-09-15T18:17:49Z",
+  "head_sha": "4ffdaef394a793f5f8ddf430ce3b6c9681d39c72",
+  "title": "test(workspaces): isolate native test hangs (do not merge)",
+  "url": "https://github.com/microsoft/PowerToys/pull/50576",
+  "summary": "The diagnostic Workspaces review converged with zero unresolved Copilot threads. The fork and exact upstream-head candidate build successfully. Two high-severity lifecycle gaps remain in package integrity revalidation and thread-pool I/O teardown.",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author",
-    "detail": "The automated PR intake still requires visual evidence and a closing issue reference before review can proceed. The author has started PowerToys CI, but has not yet supplied either requested item for the current head."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 828 converged after five consumed Copilot reviews. Both complete current-head corrections pass the affected Workspaces builds."
   },
   "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for author evidence",
-    "reason": "The current head remains blocked on the requested visual evidence and issue-closing disclosure; another dashboard review pass is not useful until the author responds."
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The diagnostic result can be unreliable if package content changes before launch or pipe resources close while an I/O callback is active."
   },
-  "actions": [],
   "confidence": "High",
-  "head_sha": "25ce72843ce4f33b220dea043f029a1feffc9680",
-  "upstream_pr": {
-    "number": 50576,
-    "url": "https://github.com/microsoft/PowerToys/pull/50576"
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "revalidate-package-content-before-launch",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Revalidate package content before launch",
+      "path": "src/modules/Workspaces/WorkspacesLib/PackageVerification.cpp",
+      "side": "RIGHT",
+      "start_line": 254,
+      "line": 255,
+      "in_diff": true,
+      "body": "### Revalidate package content before launch\n\n**Severity:** `high`\n\nThis currentness check revalidates the package identity and metadata, but a previously verified package can still be modified or tampered with after the initial `VerifyContentIntegrityAsync` call and before launch. Re-run content-integrity verification for previously verified targets using the resolved package, fail closed when that package is unavailable, and retain the package handle in the registration returned by the resolver.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The currentness path does not repeat the content-integrity check; the exact upstream candidate builds after retaining and revalidating the resolved package."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "drain-threadpool-io-before-pipe-teardown",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Drain thread-pool I/O before pipe teardown",
+      "path": "src/modules/Workspaces/WorkspacesLib.UnitTests/LauncherIpcServerTests.cpp",
+      "side": "RIGHT",
+      "start_line": 287,
+      "line": 288,
+      "in_diff": true,
+      "body": "### Drain thread-pool I/O before pipe teardown\n\n**Severity:** `high`\n\n`Close` cancels outstanding I/O and immediately releases `Connection`. A pending completion can release the final reference from inside `CompleteIo`, destroying the connection while its callback is still active and closing the thread-pool I/O and pipe before callbacks drain. Cancel the operations, wait for all thread-pool I/O callbacks to finish, then close the thread-pool I/O and pipe before releasing the owning connection.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current teardown can destroy callback-owned resources while a completion is active; the exact candidate builds after explicitly draining callbacks."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50576",
+      "type": "request_changes",
+      "label": "Request two Workspaces lifecycle corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50576,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "4ffdaef394a793f5f8ddf430ce3b6c9681d39c72"
+      },
+      "note": "Draft only. Two current-head inline comments require explicit maintainer approval."
+    }
+  ],
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-15T23:30:00Z",
+    "advancement_evidence": [
+      "Consumed existing Copilot reviews before requesting another.",
+      "Fixed both valid findings on the personal fork and resolved all fork review threads.",
+      "Consumed the final zero-inline-comment Copilot review.",
+      "Built the corrected fork Workspaces native projects and launcher UI.",
+      "Applied the complete corrections to the exact pinned upstream head and rebuilt the affected projects successfully."
+    ]
+  },
+  "freshness": {
+    "headRefOid": "4ffdaef394a793f5f8ddf430ce3b6c9681d39c72",
+    "updatedAt": "2026-09-15T18:17:49Z",
+    "latestCopilotReviewAt": "2026-09-15T22:43:10Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T23:30:00Z"
+  },
+  "fork_pr": {
+    "number": 828,
+    "repo": "MuyuanMS/PowerToys",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/828",
+    "state": "OPEN"
+  },
+  "fork_branch": "pr-iterate/50576-v2",
+  "fork_head_sha": "02cb95f9e11b052d4c15c2241cdec227e0a66e0e",
+  "validation": {
+    "fork_review": {
+      "result": "passed",
+      "commands": [
+        "Build WorkspacesLib Debug x64",
+        "Build WorkspacesLibUnitTests Debug x64",
+        "Build WorkspacesLauncherUI Debug x64"
+      ],
+      "details": "The corrected fork builds with zero errors and has zero unresolved Copilot threads."
+    },
+    "upstream_head": {
+      "head_sha": "4ffdaef394a793f5f8ddf430ce3b6c9681d39c72",
+      "result": "passed",
+      "commands": [
+        "Apply the complete two-finding candidate to the pinned upstream head",
+        "Build WorkspacesLib Debug x64",
+        "Build WorkspacesLibUnitTests Debug x64",
+        "Build WorkspacesLauncherUI Debug x64"
+      ],
+      "details": "The exact upstream-head candidate builds successfully; the comments intentionally provide implementation guidance rather than literal suggestion blocks."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
   }
 }
