@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 5,
+  "id": "pr-50551",
+  "number": 50551,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-14T11:30:00Z",
+  "evaluated_at": "2026-09-14T11:30:00Z",
+  "source_updated_at": "2026-09-13T06:08:59Z",
+  "head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
+  "title": "feat(dsc): add ZoomIt settings function data",
+  "url": "https://github.com/microsoft/PowerToys/pull/50551",
+  "state": "OPEN",
+  "draft": false,
+  "author": "Gijsreyn",
+  "authorAssociation": "CONTRIBUTOR",
+  "isCommunity": true,
+  "processVerdict": "proceed",
+  "summary": "The fork review loop converged after five Copilot passes with zero new comments and zero unresolved Copilot threads. Exact upstream validation now reaches the affected DSC project and reports one PR-introduced StyleCop error; the live upstream tree also lacks the bounded ZoomIt validation and native invalid-input coverage fixes that were needed to converge the fork review.",
+  "status": {
+    "glyph": "ACTION",
+    "label": "Request changes draft ready",
+    "detail": "Live upstream head a8c0e5fc326981259c3bc344f224589bc930f449 is pinned. Restore, runner, Settings UI, and ZoomIt interop builds passed; the exact DSC build fails at SettingsResource.cs:64 with SA1515, and four current-head review items remain."
+  },
+  "next_action": {
+    "glyph": "ACTION",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The current-head draft covers the StyleCop failure, unsafe RecordScaling and hotkey inputs, unvalidated native rejection paths, and the missing blank line. No upstream action has been posted."
+  },
+  "proposed_comments": [
+    {
+      "id": "add-zoomit-input-validation",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Validate bounded ZoomIt settings before writing",
+      "confidence": {
+        "score": 97,
+        "rationale": "The converged fork review required explicit range checks for RecordScaling, nested hotkey codes, and the exposed ZoomIt slider and enum controls before interop writes."
+      },
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/ZoomItSettingsFunctionData.cs",
+      "line": 91,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Validate bounded ZoomIt settings before writing\n\n**Severity:** `high`\n\n`SetState` forwards the requested values directly to the native interop. The current UI and native code impose bounds that this DSC path does not enforce: `RecordScaling` must be 10–100, nested hotkey `value.code` must be 0–255, and the exposed sliders/enums must stay within their UI/native ranges. Reject invalid values before the first interop write and add boundary tests so a hand-authored DSC document cannot persist values that underflow, corrupt packed hotkeys, or produce invalid ZoomIt behavior.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "reject-invalid-record-format",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Reject unknown recording formats",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current native branch maps every value other than GIF to MP4, so malformed input is silently accepted and persisted as a different format."
+      },
+      "path": "src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettings.cpp",
+      "line": 243,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Reject unknown recording formats\n\n**Severity:** `high`\n\nThis conversion treats every value other than `GIF` as `MP4`. A malformed `RecordFormat` therefore silently changes the requested state instead of failing validation. Accept only the supported `GIF` and `MP4` values and return an invalid-argument error for anything else before updating the registry-backed state.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "cover-native-rejection-paths",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Exercise native rejection paths",
+      "confidence": {
+        "score": 94,
+        "rationale": "The added tests replace the native save delegate with an in-memory function; they do not execute the native invalid-format, string-size, or binary-size rejection branches."
+      },
+      "path": "src/dsc/v3/PowerToys.DSC.UnitTests/SettingsResourceTests/SettingsResourceZoomItModuleTest.cs",
+      "line": 230,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Exercise native rejection paths\n\n**Severity:** `medium`\n\nThe new tests validate the managed DSC wrapper and only read through the real interop. Save tests replace `SaveSettingsJson` with an in-memory delegate, so they cannot catch regressions in the native invalid-format, string-length, or binary-size rejection paths added by this change. Add focused native/interoperability coverage that invokes `SaveSettingsJson` with each malformed input and verifies rejection without mutating the registry.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "fix-settingsresource-stylecop",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Fix the StyleCop blank-line violation",
+      "confidence": {
+        "score": 100,
+        "rationale": "The exact upstream DSC build fails with SA1515 at this newly added comment; inserting the required blank line is a deterministic build fix."
+      },
+      "path": "src/dsc/v3/PowerToys.DSC/DSCResources/SettingsResource.cs",
+      "line": 64,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Fix the StyleCop blank-line violation\n\n**Severity:** `low`\n\nThe exact upstream DSC build reports `SA1515` on this comment because it follows the `Workspaces` registration without a separating blank line. Add the required blank line before the ZoomIt comment and rerun the DSC build.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50551",
+      "type": "request_changes",
+      "label": "Request changes with four current-head review items",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50551,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
+        "body": "Thanks for adding registry-backed ZoomIt DSC settings. Before merge, please address the current-head validation and build issues: enforce the supported RecordScaling, nested hotkey, slider, and enum bounds before native writes; reject unknown RecordFormat values instead of treating them as MP4; add coverage for the native invalid-input rejection paths; and fix the SA1515 blank-line error reported by the exact upstream DSC build."
+      },
+      "note": "Current-head REQUEST_CHANGES draft only. Explicit maintainer approval and Publish-ApprovedReview.ps1 are required before any upstream write."
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
+      "result": "failed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "src\\modules\\ZoomIt\\ZoomItSettingsInterop\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\dsc\\v3\\PowerToys.DSC\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "detail": "Restore, runner, Settings UI, and ZoomItSettingsInterop Debug x64 builds passed. PowerToys.DSC.csproj reached compilation but failed with SA1515 at DSCResources/SettingsResource.cs:64; one pre-existing CsWinRT1028 warning was also reported."
+    }
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "upstream_updated_at": "2026-09-13T06:08:59Z",
+    "upstream_head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
+    "changed_file_count": 6,
+    "issue_comment_count": 1,
+    "review_count": 0,
+    "review_comment_count": 0,
+    "unresolved_review_thread_count": 0,
+    "reported_checks": {
+      "summary": "The PR intake comment is present; no upstream review or Azure Pipelines result was posted in the retrieved snapshot."
+    }
+  },
+  "fork_pr": {
+    "number": 792,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/792",
+    "base": "review-base/50551",
+    "branch": "pr-iterate/50551-v2",
+    "head_sha": "09372ff79dc379138b36a3eaed732a729a9819bb"
+  },
+  "fork_branch": "pr-iterate/50551-v2",
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-14T11:30:00Z",
+    "queued_head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
+    "reviewed_upstream_head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
+    "fork_head_sha": "09372ff79dc379138b36a3eaed732a729a9819bb",
+    "copilot_review_count": 5,
+    "final_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "advancement_evidence": [
+      "Consumed the existing fork review PR 792 and confirmed zero unresolved Copilot threads; no duplicate review request was made.",
+      "Preserved the converged fork branch pr-iterate/50551-v2 at 09372ff79dc379138b36a3eaed732a729a9819bb.",
+      "Cleared the inherited vcpkg failure by removing the empty GIT_CONFIG_VALUE_3 environment entry before running the standard build scripts.",
+      "Exact upstream restore, runner, Settings UI, and ZoomIt interop Debug x64 builds passed.",
+      "Exact upstream DSC validation reached source compilation and exposed SA1515 at SettingsResource.cs:64.",
+      "Converted the resumable building checkpoint into a current-head approval-gated request_changes draft."
+    ]
+  }
+}

@@ -1,0 +1,242 @@
+{
+  "number": 50545,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-14T11:20:00Z",
+  "evaluated_at": "2026-09-14T11:20:00Z",
+  "source_updated_at": "2026-09-12T23:14:08Z",
+  "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+  "title": "feat: Add Microsoft DSC FancyZonesLayouts resource",
+  "url": "https://github.com/microsoft/PowerToys/pull/50545",
+  "summary": "The fork review loop converged after addressing the Copilot findings around malformed FancyZones data, native defaults, validation, reload notification, and editor serialization. The current upstream head is unchanged and the resulting maintainer review draft contains ten current-head findings; no upstream action has been posted.",
+  "status": {
+    "glyph": "review",
+    "label": "Current-head review drafted",
+    "detail": "Fresh Copilot review 5196898114 on fork head 523baa97ddd9da869168919eeffa32b87a48158c generated zero published comments, and all fork Copilot threads are resolved. The fork fixes are not present in upstream head 3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a, so ten supported findings await explicit maintainer approval."
+  },
+  "next_action": {
+    "glyph": "post",
+    "label": "Approve, edit, or hold the drafted review",
+    "reason": "Revalidate the live upstream head and review activity, then explicitly approve selected comments before posting anything to microsoft/PowerToys."
+  },
+  "actions": [
+    {
+      "id": "post-review-50545",
+      "type": "post_review",
+      "label": "Post selected review findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50545,
+        "pullRequest": 50545,
+        "event": "COMMENT",
+        "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+        "body_prefix": "Thanks for the FancyZonesLayouts resource implementation. I found several malformed-input and round-trip consistency cases that should be addressed before this resource is relied on for declarative layout state."
+      },
+      "note": "Mandatory: revalidate the upstream head and activity snapshot, validate the pinned review payload, and require explicit maintainer approval before publishing."
+    }
+  ],
+  "proposed_comments": [
+    {
+      "id": "skip-custom-layout-without-name",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Skip stored custom layouts without a name",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 195,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Skip stored custom layouts without a name\n\n**Severity:** `medium`\n\nFancyZones skips a custom layout when the required `name` property is absent, but this conversion turns the missing value into an empty string and exports it as valid state. That makes `get`/`export` disagree with what the engine loaded and can produce output that a later `set` rejects. Preserve the property-presence check and skip the malformed entry with a warning.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The native parser requires the name and the current coalescing to string.Empty is directly visible in the changed conversion path."
+      }
+    },
+    {
+      "id": "validate-canvas-coordinates",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Reject canvas zones missing coordinates",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 227,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Reject canvas zones missing coordinates\n\n**Severity:** `medium`\n\nThe native canvas parser requires X, Y, width, and height for every zone. Source-generated deserialization materializes a missing X or Y as zero, so this path can export a malformed stored layout as a valid zone at the origin even though FancyZones drops it. Check coordinate-property presence before materializing the friendly model and skip the entry when either coordinate is absent.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 93,
+        "rationale": "The shared wrapper uses non-nullable coordinates and the changed validation only checks dimensions, which leaves missing coordinates indistinguishable from explicit zero values."
+      }
+    },
+    {
+      "id": "skip-hotkey-without-key",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Do not materialize a missing hotkey key as zero",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 358,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Do not materialize a missing hotkey key as zero\n\n**Severity:** `medium`\n\nFancyZones skips a hotkey entry when the required `key` property is absent, while the non-nullable wrapper turns that omission into integer zero and this conversion emits it as a real assignment. Preserve whether `key` was present and skip malformed entries so exported state matches the running engine.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 92,
+        "rationale": "The native contract requires key and the shared wrapper's default integer value is accepted by the current conversion."
+      }
+    },
+    {
+      "id": "distinguish-missing-and-empty-monitor-configuration",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Preserve an explicitly empty monitor configuration",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 398,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve an explicitly empty monitor configuration\n\n**Severity:** `medium`\n\nFancyZones maps every monitor-configuration value other than exactly `vertical` to horizontal, including an explicitly empty string. Treating empty and missing as the same drops a default that the engine applies horizontally; skip only a missing property and preserve the empty-string case.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 98,
+        "rationale": "The native TypeFromString behavior is deterministic and the changed code can distinguish null from an empty string."
+      }
+    },
+    {
+      "id": "canonicalize-template-defaults",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Canonicalize non-grid template defaults on read",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 501,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Canonicalize non-grid template defaults on read\n\n**Severity:** `medium`\n\nThe desired state writes show-spacing false and spacing zero for non-grid templates, but the read path returns the shared wrapper defaults true and 16. A normal focus or blank default therefore reports drift and is rewritten even though those fields are ignored by the engine. Apply the same type-specific canonicalization when reading defaults that is already used when writing them.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 95,
+        "rationale": "The changed writer explicitly zeroes non-grid fields while the corresponding reader copies the wrapper values unchanged."
+      }
+    },
+    {
+      "id": "validate-grid-zone-shapes",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Reject non-rectangular and incomplete grid maps",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 671,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Reject non-rectangular and incomplete grid maps\n\n**Severity:** `high`\n\nChecking only the numeric range and contiguity of cell IDs still accepts maps such as `[[0, 1], [1, 0]]` or a map whose declared maximum is never encountered. The native grid builder rejects disconnected or repeated regions, so this resource can write a layout that FancyZones cannot initialize. Validate that every zone ID forms one rectangle and that the generated zone set is complete before accepting the stored layout.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The native editor validation requires rectangular regions, and the current changed path does not perform that shape check."
+      }
+    },
+    {
+      "id": "prevent-percentage-sum-overflow",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Accumulate percentage totals without integer overflow",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 715,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Accumulate percentage totals without integer overflow\n\n**Severity:** `high`\n\nThe percentage values are supplied by the declarative input and are summed in an Int32 accumulator before the equality check. Large positive values can wrap to 10000, pass validation, and then reach native layout geometry as invalid percentages. Accumulate in a wider integer type or reject values before summing.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The overflow is a direct consequence of the current int accumulator and can be reproduced with large positive inputs."
+      }
+    },
+    {
+      "id": "reject-custom-default-overrides",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Reject ignored scalar overrides on custom defaults",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 466,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Reject ignored scalar overrides on custom defaults\n\n**Severity:** `medium`\n\nFancyZones derives zone count, sensitivity, show-spacing, and spacing from the referenced custom layout when it constructs a custom default. Accepting and writing these scalar overrides makes the resource report values that the runtime ignores. Reject the overrides for custom defaults or normalize them from the referenced custom layout before writing.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The runtime derives these fields from the referenced custom layout, while the changed public model accepts them independently."
+      }
+    },
+    {
+      "id": "broadcast-layout-reload",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Notify FancyZones after the first successful write",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs",
+      "line": 125,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Notify FancyZones after the first successful write\n\n**Severity:** `high`\n\nThe file watcher initializes its write-time baseline on the first matching event and does not invoke the reload callback until a later change. A first DSC set while FancyZones is running can therefore leave the in-memory layout unchanged until a second write or restart. Broadcast the registered FancyZones reload message explicitly after all relevant files are written successfully.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 91,
+        "rationale": "The watcher behavior and the changed SetState write sequence show that relying only on file notification leaves the first update without a reload callback."
+      }
+    },
+    {
+      "id": "preserve-editor-wire-defaults",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Keep editor serialization defaults separate from DSC read defaults",
+      "body": "### Keep editor serialization defaults separate from DSC read defaults\n\n**Severity:** `medium`\n\nThe shared FancyZones editor wrappers now supply native defaults for omitted properties, but the editor also uses those same constructors when serializing its files. That changes the editor's neutral non-grid values and custom-default metadata, causing editor saves and DSC canonicalization to oscillate. Explicitly preserve the editor's false/zero non-grid values and zero custom-default metadata during editor serialization, or introduce DSC-specific read DTOs so the shared wire model keeps its existing serialization behavior.",
+      "in_diff": false,
+      "out_of_diff_reason": "The required correction is in FancyZonesEditorIO serialization code, which is outside the upstream PR's changed-file diff; the shared wrapper lines can only explain the contract conflict.",
+      "disposition": "proposed",
+      "confidence": {
+        "score": 97,
+        "rationale": "The fork fix is localized to the editor serializer and the upstream head does not contain that correction, while the shared wrappers are also consumed by editor serialization."
+      }
+    }
+  ],
+  "validation": {
+    "fork_head": {
+      "head_sha": "523baa97ddd9da869168919eeffa32b87a48158c",
+      "result": "passed",
+      "commands": [
+        "<PowerToysCheckout>\\src\\dsc\\v3\\PowerToys.DSC.UnitTests\\..\\..\\..\\..\\tools\\build\\build.cmd (x64 Debug): passed",
+        "dotnet vstest PowerToys.DSC.UnitTests.dll --TestCaseFilter:FullyQualifiedName~FzLayoutsConverterTests: 28 passed, 0 failed",
+        "dotnet vstest PowerToys.DSC.UnitTests.dll --TestCaseFilter:FullyQualifiedName~LayoutsResourceFancyZonesTest: 58 passed, 0 failed"
+      ]
+    },
+    "upstream_head": {
+      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+      "result": "blocked",
+      "commands": [
+        "<PowerToysCheckout>\\src\\dsc\\v3\\PowerToys.DSC.UnitTests\\..\\..\\..\\..\\tools\\build\\build.cmd (x64 Debug)"
+      ],
+      "detail": "The exact upstream local checkout reached the build but Visual Studio vcpkg failed before compilation because the local vcpkg registry cache reported 'missing config value GIT_CONFIG_VALUE_3'. The review remains approval-gated with findings; it is not marked review_ready."
+    }
+  },
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-14T11:20:00Z",
+    "fork_pr": 785,
+    "fork_branch": "pr-iterate/50545",
+    "unresolved_copilot_threads": 0,
+    "copilot_review": {
+      "submitted_at": "2026-09-14T11:08:35Z",
+      "commit_id": "523baa97ddd9da869168919eeffa32b87a48158c",
+      "published_comments": 0
+    }
+  },
+  "fork_pr": {
+    "number": 785,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/785",
+    "state": "OPEN",
+    "head_sha": "523baa97ddd9da869168919eeffa32b87a48158c"
+  },
+  "fork_branch": "pr-iterate/50545"
+}

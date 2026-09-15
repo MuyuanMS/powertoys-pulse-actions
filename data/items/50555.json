@@ -1,0 +1,116 @@
+{
+  "kind": "issue",
+  "author": "SenseiOfer",
+  "schemaVersion": 5,
+  "source_updated_at": "2026-09-13T21:57:23Z",
+  "proposed_fixes": [
+    {
+      "title": "Calculate Command Palette Dock bottom edge from active screen bounds and taskbar edge",
+      "confidence": {
+        "level": "yellow",
+        "rationale": "The screenshot and repro clearly identify the coordinate offset, but source inspection of the exact dock placement calculation is needed.",
+        "score": 65
+      },
+      "root_cause": "Command Palette Dock calculates bottom screen margins using work area or default taskbar height without checking if taskbar is actually docked at the bottom edge.",
+      "plan": [
+        "Locate Command Palette Dock window positioning code in CmdPal / Dock manager.",
+        "Check ABM_GETTASKBARPOS edge (ABE_BOTTOM vs ABE_TOP/ABE_LEFT/ABE_RIGHT) when computing bottom dock placement.",
+        "Ensure bottom dock aligns to monitor bottom when taskbar is top-docked."
+      ],
+      "verification": [
+        "Run Command Palette with taskbar at Top and Dock at Bottom.",
+        "Verify Dock aligns directly to the bottom screen edge with no artificial gap."
+      ]
+    }
+  ],
+  "pending_author": false,
+  "url": "https://github.com/microsoft/PowerToys/issues/50555",
+  "status": {
+    "label": "Fix plan ready for design",
+    "glyph": "🎯",
+    "detail": "Command Palette Dock applies hardcoded or inverted taskbar edge offset when taskbar is placed at screen top."
+  },
+  "evaluated_at": "2026-09-13T23:05:44.865732Z",
+  "judgment": {
+    "evidence": [
+      "With Windows Taskbar at Top and Command Palette Dock position set to Bottom with Auto-hide, dock appears offset above screen bottom.",
+      "The visual gap matches standard taskbar height at screen bottom where taskbar would normally reside.",
+      "Dock positioning logic needs to inspect AppBar/Taskbar edge from SHAppBarMessage (ABM_GETTASKBARPOS) and work area calculation."
+    ],
+    "rationale": "The reporter provides deterministic reproduction steps and screenshot on Windows 11 Insider build with taskbar at the top. The Command Palette Dock bottom positioning logic likely assumes the taskbar is at the bottom or applies work area bottom margin incorrectly.",
+    "evaluated_at": "2026-09-13T23:05:44.865732Z",
+    "source_updated_at": "2026-09-13T21:57:23Z",
+    "recommended_action": "Inspect Command Palette Dock window placement calculation and test against Top/Left/Right taskbar configurations.",
+    "status": "actionable_design"
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "title": "Command Palette Dock does not appear correctly with custom taskbar position",
+  "issue_context": {
+    "known_information": [
+      "PowerToys version 0.101.2362 on Windows 11 (build 26220.0).",
+      "Taskbar set to Top; Command Palette Dock set to Bottom with Auto-hide enabled.",
+      "Dock appears with a gap at the bottom corresponding to taskbar height."
+    ],
+    "initial_investigation": [
+      "Reviewed report #50555 updated at 2026-09-13T21:57:23Z.",
+      "Identified Command Palette Dock window positioning and AppBar edge handling as the probable component."
+    ],
+    "summary": "Command Palette Dock appears offset above the bottom of the screen when the Windows taskbar is positioned at the top.",
+    "information_gaps": [],
+    "inferences": [
+      "The dock layout calculation assumes the taskbar occupies the bottom edge of the monitor."
+    ],
+    "analysis": "The issue is cleanly reproducible with deterministic steps and screenshot evidence."
+  },
+  "assignees": [],
+  "generated_at": "2026-09-13T23:05:44.865732Z",
+  "track": "fix",
+  "owes": "maintainer",
+  "stage": "triage_revalidated",
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix covers custom taskbar edge offsets in Command Palette Dock."
+  },
+  "confidence": "Yellow",
+  "actions": [
+    {
+      "confirm": false,
+      "type": "approve_design",
+      "primary": true,
+      "label": "Design fix",
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream.",
+      "id": "design-50555"
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce top taskbar with bottom dock",
+      "reproduce": {
+        "version_requirement": "0.101.2362+",
+        "setup": [],
+        "expected_result": "Dock appears flush at screen bottom without empty offset gap.",
+        "title": "Verify Command Palette Dock positioning with top taskbar",
+        "steps": [
+          "Set Windows Taskbar to Top.",
+          "Configure Command Palette Dock to Bottom with Auto-hide.",
+          "Move mouse cursor to bottom of screen to trigger dock."
+        ],
+        "module": "Command Palette",
+        "prerequisites": [
+          "Windows 11 build with top taskbar capability",
+          "Command Palette Dock enabled"
+        ]
+      }
+    }
+  ],
+  "next_action": {
+    "reason": "Check Dock window positioning logic against multi-edge taskbar bounds.",
+    "label": "Design fix",
+    "glyph": "▶️"
+  },
+  "comments": 0,
+  "number": 50555
+}
