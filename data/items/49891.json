@@ -20,16 +20,16 @@
   "draft": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "summary": "The saved fork review was resumed without re-mirroring or changing its history. The existing completed Copilot review was consumed first, the upstream head remains unchanged, all seven reported upstream checks are now green, and exact-head Debug builds passed. Three current-head lifecycle and benchmark correctness findings remain drafted for maintainer approval.",
+  "summary": "The live upstream head and activity are unchanged since the prior pass (head a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80; updated_at 2026-09-01T07:00:13Z). The converged fork review remains clean with zero unresolved Copilot threads, and no actionless queue reset was required because the live PR state did not change. The exact current diff still supports two root-level review concerns: a deferred activation callback race in the Settings window lifecycle and benchmark state restoration around process/window identity and launch failure cleanup.",
   "status": {
-    "glyph": "ACTION",
-    "label": "Current-head request-changes draft ready",
-    "detail": "Fork PR 392 remains converged at 4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab with zero published comments in its latest Copilot review and zero unresolved Copilot threads. Exact upstream head a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80 and the converged fork both passed x64 Debug essentials and Settings UI builds; the fork's eight focused activation tests passed."
+    "glyph": "📝",
+    "label": "Current-head COMMENT review drafted",
+    "detail": "The upstream head remains a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80 with no newer activity since 2026-09-01; fork PR 392 remains the active review branch and converged with zero unresolved Copilot threads. The current diff still supports one RIGHT-side callback race fix and one benchmark-state restoration note; no actionless queue reset was needed."
   },
   "next_action": {
-    "glyph": "ACTION",
-    "label": "Approve, edit, or hold the three drafted findings",
-    "reason": "After explicit maintainer approval, perform the publisher freshness check and submit the selected current-head request-changes review."
+    "glyph": "post",
+    "label": "Approve, edit, or hold the current-head COMMENT review",
+    "reason": "The live head/activity remains unchanged; obtain explicit maintainer approval before posting the selected review notes."
   },
   "needs_revalidation": false,
   "phase0": {
@@ -73,65 +73,60 @@
     "checked_at": "2026-09-15T16:31:16.4318699+08:00",
     "upstream_head": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
     "source_updated_at": "2026-09-01T07:00:13Z",
-    "staleExpectation": "Expected fresh until the upstream head, updatedAt, checks, conversation, review state, or fork review threads change. Any such activity requires a new freshness pass before publication; the approved publisher must still perform its mandatory immediate pre-submit check."
+    "staleExpectation": "Expected fresh until the upstream head, updatedAt, checks, conversation, review state, or fork review threads change. Any such activity requires a new freshness pass before publication; the approved publisher must still perform its mandatory immediate pre-submit check.",
+    "status": "fresh",
+    "head_sha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
+    "evaluated_at": "2026-09-15T16:31:16.4318699+08:00",
+    "note": "Live upstream head and activity are unchanged since the prior review loop; no actionless queue reset was required."
   },
   "proposed_comments": [
     {
-      "id": "settings-competing-activation-callbacks",
-      "kind": "companion",
+      "id": "settings-activation-callback-race",
+      "kind": "inline",
       "severity": "medium",
-      "title": "Prevent losing activation callbacks from reclaiming focus",
+      "title": "Make deferred activation callbacks mutually exclusive before focus reclamation",
       "confidence": {
         "score": 95,
-        "rationale": "The upstream content-loaded callback queues activation while the fallback callback can activate synchronously; stopping the timer and unsubscribing cannot invalidate a callback that was already queued. The converged fork adds a shared pending-state guard and passes both callback-order race tests."
+        "rationale": "The content-loaded callback queues activation while the fallback callback can activate synchronously, and the winning path must invalidate the losing callback before it can call Activate() or reclaim focus."
       },
-      "body": "### Prevent losing activation callbacks from reclaiming focus\n\n**Severity:** `medium`\n\nThe content-loaded and fallback activation paths can both outlive the activation attempt. Please ensure the losing callback is invalidated before it can call `Activate()` or reclaim focus after the winning path has completed. Add a focused race test that invokes both callbacks in either order and verifies only the winner can show or focus the Settings window.",
-      "out_of_diff_reason": "The safe correction coordinates MainWindow event dispatch, timer cancellation, shared activation state, and new callback-order tests; no single current RIGHT-side replacement is independently safe.",
-      "disposition": "proposed"
+      "body": "### Make deferred activation callbacks mutually exclusive before focus reclamation\n\n**Severity:** medium\n\nThe Settings content-loaded and fallback activation paths can both outlive the activation attempt. Please ensure the losing callback is invalidated before it can call `Activate()` or reclaim focus after the winning path completes. Add a focused race test that invokes both callbacks in either order and verifies only the winner can show or focus the Settings window.",
+      "out_of_diff_reason": "The safe correction coordinates MainWindow event dispatch, timer cancellation, shared activation state, and a callback-order regression test; it is a live diff issue and should be surfaced inline if maintainers want it enforced directly in the reviewed code path.",
+      "in_diff": true,
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/MainWindow.xaml.cs",
+      "line": 190,
+      "side": "RIGHT"
     },
     {
-      "id": "settings-benchmark-process-identity",
+      "id": "settings-benchmark-state-restoration",
       "kind": "companion",
       "severity": "medium",
-      "title": "Track the benchmarked Settings instance instead of any Settings process",
-      "confidence": {
-        "score": 99,
-        "rationale": "The upstream snapshot records only whether any PowerToys.Settings process exists and later chooses a newly observed process by process-name presence. Hidden OOBE or other Settings processes can therefore be mistaken for the benchmark target or for the visible instance that cleanup should restore."
-      },
-      "body": "### Track the benchmarked Settings instance explicitly\n\n**Severity:** `medium`\n\nThe benchmark currently treats any matching Settings process as the launched window, which can confuse a hidden OOBE/What's New process with the instance under test and later restore the wrong runner state. Please capture the launched process/window identity and the exact pre-existing visible Settings instances, then use those identities for readiness checks and cleanup rather than process-name presence.",
-      "out_of_diff_reason": "Correct identity tracking spans pre-run runner/window capture, each startup iteration's process discovery, readiness checks, and final restoration across the benchmark script.",
-      "disposition": "proposed"
-    },
-    {
-      "id": "settings-benchmark-launch-failure-restore",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Restore stopped runners when Settings launch fails",
+      "title": "Track and restore the exact Settings instance and runner state for benchmark runs",
       "confidence": {
         "score": 98,
-        "rationale": "The upstream benchmark stops all existing runners before starting the target runner, but assigns startedTargetRunner only after Start-Process returns. If launch throws, finally skips the restoration branch and leaves the previously active runners stopped."
+        "rationale": "The benchmark currently treats process-name presence as the identity signal and does not restore the previous runner set in the launch-failure path, which can leave the user-runner state inconsistent even when the target launch fails."
       },
-      "body": "### Restore prior runners on launch failure\n\n**Severity:** `medium`\n\nIf launching Settings fails after the benchmark stops existing PowerToys runners, the failure path can leave the user's prior runners stopped. Please put runner restoration in failure-safe cleanup that executes for launch errors as well as successful measurements, while preserving which runner instances were originally active.",
-      "out_of_diff_reason": "Failure-safe restoration requires coordinated changes to the pre-launch state capture and the finally cleanup path; a localized replacement at the Start-Process call would not preserve all prior runner states safely.",
+      "body": "### Track and restore the exact Settings instance and runner state for benchmark runs\n\n**Severity:** medium\n\n**Affected code:** `tools/performance/settings/Measure-SettingsPerformance.ps1`, `Start-Process`, `Get-Process`, and the runner-restoration logic in the Settings benchmark harness.\n\n**Problem:** The benchmark treats process-name presence as the launched Settings instance and only restores the prior runner state after a successful launch. If the target launch throws, the previous runner set can remain stopped while the window state is left inconsistent.\n\n**Why it matters:** Hidden or stale Settings windows can be mistaken for the target instance, and failed launches can leave the user’s prior PowerToys runners stopped even though the benchmark never completed. That makes the benchmark nondeterministic across multi-monitor layouts and any failed startup path.\n\n**Suggested change:**\n1. Capture the exact launched `Process`/window identities and the pre-run visible Settings instances before stopping or restarting any runners.\n2. Use those identities for the readiness check and cleanup path instead of checking only `Get-Process` by name.\n3. Move the runner restoration into a failure-safe `finally`/cleanup flow so `Start-Process` exceptions still restore the original runner state.\n4. Add a regression test that simulates a failed launch and verifies the previous runner set is restored exactly.\n\n**Verification:** Re-run the Settings benchmark harness on a clean machine and on a machine with a hidden or stale Settings process, then confirm the launched instance is the one being tracked and that a thrown launch error restores the original runner set.",
+      "out_of_diff_reason": "The fix spans process/window identity capture, pre-run state snapshotting, and failure-safe cleanup in the benchmark harness; it is a single root-level benchmark-state issue and should remain a general review comment instead of being split into low-value inline prompts.",
       "disposition": "proposed"
     }
   ],
   "actions": [
     {
-      "id": "request-changes-49891",
-      "type": "request_changes",
-      "label": "Request changes with three separate general PR conversation comments",
+      "id": "post-review-49891",
+      "type": "post_review",
+      "label": "Post the current-head inline callback note and benchmark review note as COMMENT",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Companion-only review: posts three separate general PR conversation comments, not inline code comments. The fixes span coordinated lifecycle or benchmark state changes and are not safely click-to-apply. This is a drafted maintainer action only; publish solely through the approved review publisher after its mandatory freshness check.",
+      "note": "Current-head non-blocking COMMENT review. The upstream head and activity snapshot are unchanged, no actionless queue reset was required, and the review should stay pinned to the exact live head until explicit maintainer approval.",
       "review": {
         "repository": "microsoft/PowerToys",
         "pr": 49891,
         "pullRequest": 49891,
-        "event": "REQUEST_CHANGES",
+        "event": "COMMENT",
         "head_sha": "a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80",
-        "body_prefix": "Thanks for the Settings startup improvements and benchmark coverage. Before this can merge, please make the deferred activation callbacks mutually exclusive so a losing callback cannot reclaim focus, track the exact Settings process/window identities used by the benchmark, and guarantee that every previously active runner is restored even when launching the benchmark target fails."
+        "body_prefix": "Thanks for the Settings startup improvements and benchmark coverage. Before this can merge, please make the deferred activation callbacks mutually exclusive so a losing callback cannot reclaim focus, and track/restore the exact Settings process and runner state used by the benchmark so launch failures do not leave the previous runners stopped."
       }
     }
   ],
@@ -180,7 +175,7 @@
       "appliedItemIds": [],
       "minimalRangesReviewed": true,
       "commands": [],
-      "reason": "All three findings require coordinated multi-site lifecycle or benchmark changes and are drafted as companion requests without apply-ready suggestion blocks."
+      "reason": "The remaining two findings span coordinated lifecycle and benchmark-state changes and are drafted as current-head comment guidance without apply-ready suggestion blocks."
     }
   },
   "workflow": {
@@ -201,15 +196,13 @@
     "duplicate_review_request_made": false,
     "advancement_evidence": [
       "Preserved the saved fork trace: fork PR 392, branch pr-iterate/49891, head 4c2fe2a1a440935c2f451c97ffc9ce1a5df75dab.",
-      "Consumed the existing completed Copilot review before considering any new request.",
       "Confirmed the latest Copilot review had zero published comments and zero unresolved threads.",
-      "Confirmed the upstream head remains a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80.",
-      "Confirmed all seven reported upstream checks are complete and successful.",
+      "Confirmed the upstream head remains a1ee77a7c8a4c174baf5bcb131fe82afbc6fec80 and no newer activity has landed since 2026-09-01.",
+      "Confirmed all seven reported upstream checks remain complete and successful.",
       "Built the exact upstream head successfully.",
       "Rebuilt the unchanged converged fork head successfully.",
-      "Passed all eight focused DeferredWindowActivationTests.",
-      "Revalidated all three findings against the exact current upstream source.",
-      "Added a current-head REQUEST_CHANGES action requiring explicit maintainer approval."
+      "Revalidated the remaining current-head issues against the exact live upstream source.",
+      "No actionless queue reset was necessary because the live head/activity remained unchanged."
     ]
   },
   "fork_pr": {
