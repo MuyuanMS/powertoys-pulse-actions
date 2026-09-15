@@ -65,6 +65,11 @@ rules. In particular:
   designs with the same checkpoint and publish guarantees;
 - preserve and resume existing fork work instead of duplicating it;
 - validate all newly processed artifacts and scan generated JSON for secrets;
+- for PR findings that cannot be anchored inline, publish only consolidated,
+  implementation-ready general comments that name affected paths/symbols,
+  explain the problem and impact, provide ordered change guidance or
+  illustrative pseudo-code, and state verification; reject terse or duplicate
+  conversions of suppressed review findings;
 - regenerate `data/index.json`, `data/index.js`, and per-number artifacts;
 - publish completed review artifacts incrementally and finish the run with
   unfinished PRs queued/running; require a zero stale queue only when

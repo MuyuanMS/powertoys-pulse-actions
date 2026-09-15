@@ -160,6 +160,35 @@ function Test-ReviewItemBody {
     return $errors.ToArray()
 }
 
+function Test-CompanionItemBody {
+    param(
+        [AllowNull()][string]$Body,
+        [Parameter(Mandatory)][string]$Label
+    )
+
+    $errors = [System.Collections.Generic.List[string]]::new()
+    $requiredSections = @(
+        'Affected code',
+        'Problem',
+        'Why it matters',
+        'Suggested change',
+        'Verification'
+    )
+    foreach ($section in $requiredSections) {
+        if ($Body -notmatch ('(?im)^\*\*' + [regex]::Escape($section) + ':\*\*')) {
+            $errors.Add("$Label must contain an **${section}:** section.")
+        }
+    }
+    if ($Body -notmatch '(?is)\*\*Affected code:\*\*.*?`[^`\r\n]+`.*?\*\*Problem:\*\*') {
+        $errors.Add("$Label must name at least one repository path or symbol in backticks under **Affected code:**.")
+    }
+    if ($Body -notmatch '(?ims)\*\*Suggested change:\*\*.+?(?:^\s*(?:[-*]|\d+\.)\s+\S|```(?!suggestion)\w*)') {
+        $errors.Add("$Label must provide concrete implementation steps or an illustrative non-suggestion code block under **Suggested change:**.")
+    }
+
+    return $errors.ToArray()
+}
+
 function Get-RightSideHunkMap {
     param([AllowNull()][string]$Patch)
 
@@ -507,6 +536,9 @@ function Test-ReviewDataDocument {
                 foreach ($errorMessage in Test-ReviewItemBody -Body ([string]$item.body) -Label "$label body" -Severity ([string]$item.severity).ToLowerInvariant()) {
                     $errors.Add($errorMessage)
                 }
+                foreach ($errorMessage in Test-CompanionItemBody -Body ([string]$item.body) -Label "$label body") {
+                    $errors.Add($errorMessage)
+                }
 
                 if ([string]$item.body -match '```suggestion') {
                     $errors.Add("$label is a companion note and cannot contain a suggestion block.")
@@ -518,6 +550,20 @@ function Test-ReviewDataDocument {
                     [int]$item.line -gt 0 -or
                     [int]$item.startLine -gt 0) {
                     $errors.Add("$label is a companion note and cannot contain inline coordinates.")
+                }
+            }
+        }
+
+        $companionKeys = @{}
+        foreach ($item in @($items | Where-Object { $_.kind -eq 'companion' })) {
+            $normalizedTitle = ([string]$item.title).Trim().ToLowerInvariant()
+            $normalizedBody = ([regex]::Replace(([string]$item.body).Trim().ToLowerInvariant(), '\s+', ' '))
+            foreach ($key in @("title:$normalizedTitle", "body:$normalizedBody")) {
+                if ($companionKeys.ContainsKey($key)) {
+                    $errors.Add("$prefix has duplicate companion findings '$($companionKeys[$key])' and '$($item.id)'; consolidate overlapping author guidance.")
+                }
+                else {
+                    $companionKeys[$key] = [string]$item.id
                 }
             }
         }
