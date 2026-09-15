@@ -2,45 +2,211 @@
   "number": 50192,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T11:56:22.1799872Z",
-  "evaluated_at": "2026-09-15T11:56:22.1799872Z",
+  "generated_at": "2026-09-15T13:45:00Z",
+  "evaluated_at": "2026-09-15T13:45:00Z",
   "source_updated_at": "2026-09-08T21:00:27Z",
   "head_sha": "7c8c2d6247679bc7fd1143d2c3816225ec308593",
   "title": "CmdPal: Icons (12/n) - Share Shell icons by identity and display file-type previews",
   "url": "https://github.com/microsoft/PowerToys/pull/50192",
   "status": {
-    "glyph": "...",
-    "label": "Local validation blocked",
-    "detail": "Exact-upstream-head validation remains blocked on the live head 7c8c2d6247679bc7fd1143d2c3816225ec308593. A fresh build of src/modules/cmdpal/Microsoft.Terminal.UI/Microsoft.Terminal.UI.vcxproj in the existing detached local checkout using VS 18 MSBuild reproduced the same failure before the changed C# project compiles: MIDL2025 and MIDL2026 in src/modules/cmdpal/Microsoft.Terminal.UI/Converters.idl at the closing bracket in the runtimeclass declaration. This is a resumable exact-head build blocker; no review action is safe to draft until exact-head validation succeeds."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "The prior MIDL blocker cleared after the required clean restore. The exact upstream CmdPal UI and Terminal UI projects build, the converged fork projects build, all 358 CmdPal UI tests pass, and the latest Copilot pass has zero new comments and zero unresolved threads. Seven current-head findings remain for approval."
   },
-  "next_action": "Resume exact-upstream-head validation on the pinned 7c8c2d6247679bc7fd1143d2c3816225ec308593 tree; do not request another Copilot review unless the upstream head changes.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Seven Shell icon-cache correctness findings are pinned to the unchanged upstream head. No upstream write has occurred."
+  },
+  "proposed_comments": [
+    {
+      "id": "preserve-file-type-preview",
+      "kind": "inline",
+      "title": "Preserve the useful file-type preview when exact refinement falls back",
+      "severity": "medium",
+      "body": "### Preserve the useful file-type preview when exact refinement falls back\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/CachedIconSourceProvider.cs` (exact refinement result selection).\n\n**Suggested change:** Treat `ShellItemIconFallback` as a fallback result rather than replacing a successful intermediate file-type icon with it. Keep the intermediate source when exact refinement produces only the generic fallback, and add a regression test for that completion path.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/CachedIconSourceProvider.cs",
+      "line": 264,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 95,
+        "rationale": "The current null-coalescing selection accepts the non-null generic fallback before the more useful intermediate result."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "recheck-image-list-generation",
+      "kind": "inline",
+      "title": "Recheck Shell image-list generation before sharing or extracting cached locations",
+      "severity": "high",
+      "body": "### Recheck Shell image-list generation before sharing or extracting cached locations\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoaderService.cs` (canonical-load arbitration and extraction).\n\n**Suggested change:** For `SystemImageList` identities, verify `ShellIconLocations.IsCurrent` immediately before joining an existing materialized load and again after extraction. If the generation changed, discard the location, retry boundedly, and fall back to a path-specific identity instead of publishing an icon extracted from a stale system-image-list index.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoaderService.cs",
+      "line": 294,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 92,
+        "rationale": "The supplied or cached location can become stale between lookup, task sharing, and extraction while the design depends on generation-safe invalidation."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "handle-updateimage-notifications",
+      "kind": "inline",
+      "title": "Invalidate cached Shell identities on image-list update notifications",
+      "severity": "high",
+      "body": "### Invalidate cached Shell identities on image-list update notifications\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellIconCacheInvalidator.cs` (notification registration and message handling).\n\n**Suggested change:** Register for `SHCNE_UPDATEIMAGE`, read the delivered event ID from `SHChangeNotification_Lock`, and invalidate with a dedicated update-image reason. Windows can replace an existing system image-list entry without an association change, while the current code subscribes only to `SHCNE_ASSOCCHANGED` and does not classify the delivered event.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellIconCacheInvalidator.cs",
+      "line": 106,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 90,
+        "rationale": "System image-list replacement uses SHCNE_UPDATEIMAGE, which is absent from the registration and event classification."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "avoid-file-type-alias-poisoning",
+      "kind": "inline",
+      "title": "Avoid poisoning shared file-type aliases with path-specific fallback results",
+      "severity": "high",
+      "body": "### Avoid poisoning shared file-type aliases with path-specific fallback results\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellIconLocationResolver.cs` (`FileType` fallback and alias caching).\n\n**Suggested change:** Make path-specific fallback locations from a failed file-type lookup non-cacheable as extension-wide aliases. The fallback extraction should return an empty result rather than the original item's thumbnail stream, so exact refinement remains the first item-specific load and one transient `.txt` lookup cannot poison every `.txt` request.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellIconLocationResolver.cs",
+      "line": 99,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 93,
+        "rationale": "The resolver can store an ItemPath fallback beneath the request's shared FileType cache identity."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "version-direct-image-identity",
+      "kind": "inline",
+      "title": "Make direct-image thumbnail identities change when the file changes",
+      "severity": "medium",
+      "body": "### Make direct-image thumbnail identities change when the file changes\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellItemIconLocator.cs` (direct-image thumbnail identity).\n\n**Suggested change:** Include a cheap file version such as `File.GetLastWriteTimeUtc(itemPath).Ticks` in the thumbnail identity and avoid caching the direct-image raw alias. Normal file-content edits do not necessarily raise association or system-image-list invalidations, so a path-only identity can keep returning an old preview.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellItemIconLocator.cs",
+      "line": 49,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 88,
+        "rationale": "The current identity contains only path and size mode, neither of which changes when the image contents are replaced."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "reuse-binary-icon-parser",
+      "kind": "inline",
+      "title": "Use the real binary-icon parser before excluding legacy Shell paths",
+      "severity": "medium",
+      "body": "### Use the real binary-icon parser before excluding legacy Shell paths\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellItemIconRequestClassifier.cs` (`LooksLikeBinaryIconReference`).\n\n**Suggested change:** Reuse `IconPathParser.TryParseBinaryIconReference` so only genuine `file,index` references bypass Shell item loading. The current first-comma split rejects valid paths such as `C:\\folder.exe,assets\\report.txt` without checking whether the suffix is an icon index. Add classifier coverage for comma-containing filesystem paths.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellItemIconRequestClassifier.cs",
+      "line": 52,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 86,
+        "rationale": "The heuristic validates the binary-looking prefix but not the comma suffix, unlike the existing parser."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "disable-alias-cache-without-notifications",
+      "kind": "inline",
+      "title": "Disable Shell alias caching when change notifications are unavailable",
+      "severity": "medium",
+      "body": "### Disable Shell alias caching when change notifications are unavailable\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellIconCacheInvalidator.cs` (notification-registration failure path).\n\n**Suggested change:** Disable and clear the shared Shell location alias cache when desktop resolution or notification registration fails, and re-enable it only after registration succeeds. Frequency-based cache decay is not a correctness invalidation mechanism for aliases that map paths to system image-list identities.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/ShellIconCacheInvalidator.cs",
+      "line": 118,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 84,
+        "rationale": "The alias cache has no correctness TTL, so the logged promise of normal expiry cannot prevent stale Shell identity reuse."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50192",
+      "type": "request_changes",
+      "label": "Request changes with seven current-head Shell icon findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50192,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "7c8c2d6247679bc7fd1143d2c3816225ec308593",
+        "body": "Thanks for the large Shell-icon caching work. The prior validation blocker has cleared on the current head after a clean restore, but correctness gaps remain around invalidation races, fallback caching, direct-image freshness, and legacy-path classification. Please address the seven findings in this review before merge."
+      },
+      "note": "Draft only. No review, comment, label, CI trigger, or other public write has occurred on microsoft/PowerToys."
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-15T11:56:22.1799872Z"
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-15T13:45:00Z",
+    "advancement_evidence": [
+      "Consumed the existing clean sixth Copilot review on fork PR 719; zero unresolved Copilot threads remain.",
+      "Cleared malformed inherited Git configuration variables and completed the prescribed clean restore.",
+      "The exact upstream CmdPal UI and Terminal UI projects built successfully.",
+      "The converged fork CmdPal UI and Terminal UI projects built successfully.",
+      "All 358 CmdPal UI unit tests passed.",
+      "Mapped seven fork-only fixes to current RIGHT-side upstream diff anchors."
+    ]
   },
   "freshness": {
-    "queued_at": "09/12/2026 22:53:10",
-    "checkpoint_at": "2026-09-15T11:56:22.1799872Z"
+    "headRefOid": "7c8c2d6247679bc7fd1143d2c3816225ec308593",
+    "updatedAt": "2026-09-08T21:00:27Z",
+    "latestCopilotReviewAt": "2026-09-09T10:03:06Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T13:45:00Z"
   },
   "fork_pr": {
     "number": 719,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/719"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/719",
+    "state": "OPEN"
   },
   "fork_branch": "pr-iterate/50192-v4",
+  "fork_head_sha": "0e6a3d428142cc9ba62044911a3a32f27e8353d5",
   "validation": {
-    "upstream_head": {
+    "suggestionPatch": {
       "head_sha": "7c8c2d6247679bc7fd1143d2c3816225ec308593",
-      "result": "failed",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
       "commands": [
-        "msbuild src\\modules\\cmdpal\\Microsoft.Terminal.UI\\Microsoft.Terminal.UI.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /t:Build"
+        "tools\\build\\build-essentials.cmd",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Microsoft.Terminal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "vstest.console.exe <PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\tests\\Microsoft.CmdPal.UI.UnitTests.dll /Platform:x64"
       ],
-      "validated_at": "2026-09-15T11:56:22.1799872Z",
-      "error": "MIDL2025 and MIDL2026: syntax error in src/modules/cmdpal/Microsoft.Terminal.UI/Converters.idl near the closing bracket of the runtimeclass declaration."
+      "details": "The findings are explanatory inline comments without suggestion blocks. The exact upstream and converged fork projects built, and the fork test assembly passed 358 tests."
+    },
+    "upstreamHead": {
+      "head_sha": "7c8c2d6247679bc7fd1143d2c3816225ec308593",
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Microsoft.Terminal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "details": "The earlier MIDL2025/MIDL2026 failure did not reproduce after the required restore and was not caused by this PR's changed files."
     }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
   }
 }

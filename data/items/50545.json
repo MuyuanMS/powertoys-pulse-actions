@@ -2,34 +2,197 @@
   "number": 50545,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T11:42:21.7161038Z",
-  "evaluated_at": "09/14/2026 11:20:00",
+  "generated_at": "2026-09-15T13:40:00Z",
+  "evaluated_at": "2026-09-15T13:40:00Z",
   "source_updated_at": "2026-09-12T23:14:08Z",
   "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
   "title": "feat: Add Microsoft DSC FancyZonesLayouts resource",
   "url": "https://github.com/microsoft/PowerToys/pull/50545",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "The existing fork Copilot request was consumed: review 5196898114 for fork head 523baa97ddd9da869168919eeffa32b87a48158c returned zero published comments and zero unresolved Copilot threads remain. The upstream head is unchanged. Resume at exact upstream-head validation and regenerate the missing current-head review draft; do not request another Copilot review unless the upstream head changes."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 785 converged at 523baa97ddd9da869168919eeffa32b87a48158c after eight Copilot reviews, with zero new comments in the latest pass and zero unresolved threads. The exact upstream head and converged fork DSC projects both build successfully. Six current-head findings remain for maintainer approval."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The six findings are pinned to the unchanged upstream head. No upstream review has been posted."
+  },
+  "proposed_comments": [
+    {
+      "id": "stored-layout-validation",
+      "kind": "inline",
+      "title": "Validate stored custom layouts before exposing them as valid state",
+      "severity": "high",
+      "body": "### Validate stored custom layouts before exposing them as valid state\n\n**Severity:** `high`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (`FromCustomLayouts`).\n\n**Suggested change:** Validate every persisted grid and canvas layout with the same required-name, coordinate, dimension, percentage, and cell-topology rules used for DSC input before returning it from `get` or `export`. Skip invalid stored entries with a warning rather than returning data that the native FancyZones engine cannot load, and add regression coverage for malformed persisted layouts.",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "start_line": 191,
+      "line": 195,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 94,
+        "rationale": "The current conversion path returns persisted layouts without applying the validation used for incoming DSC state."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "blank-zone-count",
+      "kind": "inline",
+      "title": "Use the native zero-zone default for blank layouts",
+      "severity": "high",
+      "body": "### Use the native zero-zone default for `blank`\n\n**Severity:** `high`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (`ToDefaultLayouts` and `ValidateZoneCount`) and the corresponding DSC model descriptions.\n\n**Suggested change:** Use `0` as the omitted `zoneCount` default for the `blank` template and retain the normal default for other template types. Apply the same type-aware rule in conversion, validation, generated descriptions, and `doc/dsc/layouts-resource.md`, while continuing to reject explicitly invalid counts.",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "start_line": 257,
+      "line": 263,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 98,
+        "rationale": "The native FancyZones contract treats blank as a zero-zone template, while the generic fallback currently supplies three."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "grid-map-topology",
+      "kind": "inline",
+      "title": "Validate grid zone IDs and topology against the native contract",
+      "severity": "high",
+      "body": "### Validate grid zone IDs and topology against the native contract\n\n**Severity:** `high`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (grid cell-map validation).\n\n**Suggested change:** Collect the distinct zone IDs, require them to be contiguous from zero and within the native 128-zone limit, and verify that every ID occupies one rectangular region. The current per-cell range check accepts gaps and disconnected or repeated regions that pass DSC validation but cannot be represented by the native converter. Add tests for missing IDs and non-rectangular/disconnected regions.",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "start_line": 617,
+      "line": 635,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 97,
+        "rationale": "Range validation alone accepts maps that violate the native converter's contiguous rectangular-zone assumptions."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "percentage-overflow",
+      "kind": "inline",
+      "title": "Prevent percentage-sum integer overflow",
+      "severity": "medium",
+      "body": "### Prevent percentage-sum integer overflow\n\n**Severity:** `medium`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (percentage validation).\n\n**Suggested change:** Accumulate row and column percentages in `long`, and use the widened result in diagnostics, or reject individual values before summing. The current `int` accumulator can wrap before the equality check and allow an invalid set of large positive percentages to appear to total `10000`. Add a regression case whose `int` sum overflows.",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "start_line": 647,
+      "line": 658,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 99,
+        "rationale": "Unchecked Int32 addition can wrap and the code compares the wrapped result to the expected total."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "live-reload-notification",
+      "kind": "inline",
+      "title": "Ensure the first DSC write reloads a running FancyZones instance",
+      "severity": "high",
+      "body": "### Ensure the first DSC write reloads a running FancyZones instance\n\n**Severity:** `high`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs` (layout-file write and reload path).\n\n**Suggested change:** After a successful file write, send the appropriate FancyZones reload notification, or change the watcher initialization so its first observed modification is delivered. The existing watcher establishes its baseline on the first notification and suppresses that callback, so the first DSC `set` can leave a running FancyZones instance on stale in-memory layouts. Cover the first-write-while-running scenario in an integration test.",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs",
+      "start_line": 202,
+      "line": 202,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 93,
+        "rationale": "The existing watcher initialization suppresses its first callback while the DSC path relies on file notification for immediate application."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "round-trip-defaults",
+      "kind": "inline",
+      "title": "Preserve effective defaults during layout round-trips",
+      "severity": "medium",
+      "body": "### Preserve effective defaults during layout round-trips\n\n**Severity:** `medium`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (default-layout conversion).\n\n**Suggested change:** Preserve whether optional values were omitted, or apply the type-specific native defaults explicitly during conversion instead of treating non-nullable zero and false values as authored state. Verify `get`, `test`, and `export` round-trips for omitted properties across `blank`, `focus`, grid templates, and custom defaults so DSC does not repeatedly report and rewrite false drift.",
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "start_line": 385,
+      "line": 392,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 91,
+        "rationale": "The shared non-nullable wire models erase presence information needed to distinguish omitted values from explicit zero or false."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50545",
+      "type": "request_changes",
+      "label": "Request changes with six current-head FancyZones DSC findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50545,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+        "body": "Thanks for adding the FancyZones layouts DSC resource. Before merge, please address the six current-head correctness findings in this review: validate persisted layouts, preserve the native blank-layout zone-count contract, enforce native grid topology, prevent percentage overflow, ensure the first write reloads a running instance, and preserve effective defaults during round-trips."
+      },
+      "note": "Draft only. No review, comment, label, CI trigger, or other public write has occurred on microsoft/PowerToys."
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-15T11:42:21.7161038Z"
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-15T13:40:00Z",
+    "advancement_evidence": [
+      "Consumed the completed Copilot review for fork head 523baa97ddd9da869168919eeffa32b87a48158c before considering another request.",
+      "The latest of eight Copilot reviews returned zero new published comments and zero unresolved threads remain.",
+      "The exact upstream head passed the targeted PowerToys DSC x64 Debug build.",
+      "The converged fork head passed the same targeted DSC build.",
+      "Mapped six retained fork-only correctness fixes to current RIGHT-side upstream diff ranges."
+    ]
   },
   "freshness": {
-    "queued_at": "2026-09-15T11:42:21.7161038Z",
-    "checkpoint_at": "2026-09-15T11:42:21.7161038Z"
+    "headRefOid": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+    "updatedAt": "2026-09-12T23:14:08Z",
+    "latestCopilotReviewAt": "2026-09-14T11:08:35Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T13:40:00Z"
   },
   "fork_pr": {
     "number": 785,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/785"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/785",
+    "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/50545"
+  "fork_branch": "pr-iterate/50545",
+  "fork_head_sha": "523baa97ddd9da869168919eeffa32b87a48158c",
+  "validation": {
+    "suggestionPatch": {
+      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "src\\dsc\\v3\\PowerToys.DSC\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "details": "The six findings are explanatory inline comments without apply-ready suggestion blocks. The exact upstream DSC project and converged fork DSC project both built successfully in x64 Debug with Spectre mitigation disabled for the local environment."
+    },
+    "upstreamHead": {
+      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "src\\dsc\\v3\\PowerToys.DSC\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "details": "The exact upstream head passed the targeted DSC project build. A direct dotnet test invocation was not treated as authoritative because it lacked the Visual Studio native-project environment."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
+  }
 }
