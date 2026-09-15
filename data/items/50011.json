@@ -2,33 +2,105 @@
   "number": 50011,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T02:39:54.8738922Z",
-  "evaluated_at": "08/27/2026 09:25:17",
+  "generated_at": "2026-09-15T15:45:00Z",
+  "evaluated_at": "2026-09-15T15:45:00Z",
   "source_updated_at": "2026-08-20T22:07:50+08:00",
   "head_sha": "a616ec6747d1df9342dcb996caec1e1d27dd7399",
   "title": "fix(ui-tests): avoid plaintext SecureString conversion",
   "url": "https://github.com/microsoft/PowerToys/pull/50011",
+  "summary": "The preserved fork review converged with a zero-comment Copilot pass and zero unresolved threads. One current-head resource-lifetime finding remains: the temporary SecureString must be disposed deterministically after either local-user update path.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Current live head a616ec6747d1df9342dcb996caec1e1d27dd7399 requires a fresh review pass; prior state is resumable or lacks a publishable current-head result."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 456 is Copilot-clean. The literal try/finally correction applied to the exact upstream head passes diff checking and Windows PowerShell syntax parsing."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES comment",
+    "reason": "One implementation-ready general comment is pinned to the unchanged upstream head. No upstream write has occurred."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "dispose-secure-password-after-local-user-update",
+      "kind": "companion",
+      "title": "Dispose the temporary SecureString after updating the local user",
+      "severity": "medium",
+      "body": "### Dispose the temporary SecureString after the local-user update\n\n**Severity:** `medium`\n\n**Affected code:** `.github/skills/ui-tests-local-vm/templates/oem/Set-UiTestAutoLogon.ps1`, the `$securePassword` update path around the `New-LocalUser` and `Set-LocalUser` calls.\n\n**Problem:** The PR constructs a read-only `SecureString` but leaves it undisposed after either local-user cmdlet returns. The object can retain sensitive password material longer than necessary, including when a cmdlet throws.\n\n**Why it matters:** This weakens the intended secret-lifetime improvement and makes cleanup depend on garbage collection rather than deterministic disposal on success and failure paths.\n\n**Suggested change:**\n1. Keep the character-by-character construction and `MakeReadOnly()` call.\n2. Wrap the existing create-or-update block in `try`/`finally`.\n3. Call `$securePassword.Dispose()` in `finally` so both branches release the temporary secure buffer even when the user update fails.\n\n**Verification:** Parse the script with Windows PowerShell and exercise both the create-user and update-user branches, including a cmdlet failure, confirming the cmdlet receives the SecureString and cleanup always runs.",
+      "in_diff": false,
+      "out_of_diff_reason": "The changed diff covers SecureString construction, but deterministic disposal belongs around the unchanged surrounding New-LocalUser and Set-LocalUser control flow.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The new SecureString is not disposed on any exit path; the exact-head try/finally candidate parses successfully."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50011",
+      "type": "request_changes",
+      "label": "Request changes with one general security-lifetime finding",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50011,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "a616ec6747d1df9342dcb996caec1e1d27dd7399"
+      },
+      "note": "The finding posts as a separate PR conversation comment after explicit approval. No public write has occurred."
+    }
+  ],
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-09-14T02:39:54.8738922Z"
+    "phase": "review_drafted",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-15T15:45:00Z",
+    "advancement_evidence": [
+      "Resumed fork PR 456 and branch pr-iterate/50011-v4 without duplicating review requests.",
+      "Consumed the latest zero-comment Copilot review; zero unresolved threads remain.",
+      "Validated the literal try/finally correction against the exact upstream head with diff checking and Windows PowerShell parsing."
+    ]
   },
   "freshness": {
-    "queued_at": "09/14/2026 02:15:13",
-    "checkpoint_at": "2026-09-14T02:39:54.8738922Z"
+    "headRefOid": "a616ec6747d1df9342dcb996caec1e1d27dd7399",
+    "updatedAt": "2026-08-20T22:07:50+08:00",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T15:45:00Z"
   },
   "fork_pr": {
-    "number": 456
+    "number": 456,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/456",
+    "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/50011-v4"
+  "fork_branch": "pr-iterate/50011-v4",
+  "fork_head_sha": "a0670d27cfeaf9060dff3b30cc0177049200d8f9",
+  "validation": {
+    "suggestionPatch": {
+      "head_sha": "a616ec6747d1df9342dcb996caec1e1d27dd7399",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [
+        "git diff --check",
+        "Windows PowerShell syntax parsing"
+      ],
+      "details": "The finding is an out-of-diff general comment without a suggestion block. The literal try/finally candidate applied to the exact upstream head passes diff and syntax validation."
+    },
+    "upstreamHead": {
+      "head_sha": "a616ec6747d1df9342dcb996caec1e1d27dd7399",
+      "result": "not_applicable",
+      "commands": [],
+      "details": "This is a non-clean documentation/script review with a current-head finding; the literal correction candidate was validated instead."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }

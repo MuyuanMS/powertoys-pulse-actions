@@ -11,13 +11,13 @@
   "isMine": false,
   "state": "OPEN",
   "draft": false,
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "generated_at": "2026-09-15T09:28:13Z",
-  "evaluated_at": "2026-09-15T09:28:13Z",
+  "generated_at": "2026-09-15T15:12:00Z",
+  "evaluated_at": "2026-09-15T15:12:00Z",
   "source_updated_at": "2026-08-25T16:17:58Z",
   "head_sha": "3e4900aab56d4d860e915defdcb8cb419596c87d",
   "summary": "The existing fork review result was consumed before making any new request. The live upstream PR remains open and unchanged at 3e4900aab56d4d860e915defdcb8cb419596c87d with green required checks, fork PR 435 remains open at converged head 59db0d9bc87d66feb2fb7483c53f7a6e5ade51f6, the latest Copilot review after the saved request returned zero published comments, and zero Copilot threads are unresolved. The remaining fork-only finding is drafted as a current-head general review note and has not been posted.",
@@ -31,7 +31,7 @@
     "label": "Approve, edit, or hold the drafted COMMENT review",
     "reason": "The draft posts one companion review note requesting that fixed-width padding stay scoped to the dock-band presentation and that rounding-transition coverage be retained. It is pinned to the live upstream head and has not been posted."
   },
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "source": {
     "repository": "microsoft/PowerToys",
     "headRefOid": "3e4900aab56d4d860e915defdcb8cb419596c87d",
@@ -44,9 +44,24 @@
     "latestCopilotReviewAt": "2026-08-31T04:24:08Z",
     "latestForkCommitAt": "2026-08-28T02:09:51Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T09:28:13Z"
+    "checkedAt": "2026-09-15T15:12:00Z"
   },
-  "proposed_comments": [],
+  "proposed_comments": [
+    {
+      "id": "scope-fixed-width-padding-to-dock-band",
+      "kind": "companion",
+      "title": "Scope fixed-width padding to the network dock band",
+      "severity": "medium",
+      "body": "### Scope fixed-width padding to the network dock band\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/PerformanceWidgetsPage.cs` (`FormatIncomingData` and the network dock-band title updates).\n\n**Problem:** The current change adds padding inside the shared `AsBitsPerSecString`, `AsBytesPerSecString`, and `AsBinaryBytesPerSecString` formatters. Those helpers are also used outside the network dock band, so other Performance Monitor views inherit presentation padding intended only to stabilize the band width.\n\n**Why it matters:** Shared data-formatting behavior now depends on one presentation's layout workaround, changes visible text in unrelated views, and makes future consumers inherit unexpected spaces.\n\n**Suggested change:**\n1. Keep the shared speed formatters responsible only for natural numeric and unit text.\n2. Apply fixed-width padding where `_networkUpItem` and `_networkDownItem` are initialized and updated for the dock band.\n3. Preserve the rounded-boundary checks for K/M/G transitions and add focused coverage for dock-band padding.\n4. Confirm ordinary Performance Monitor views retain unpadded values.\n\n**Verification:** Build `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor` and `src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests`, run `FormatIncomingDataTests`, and manually compare network values in dock-band and non-band presentations.",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction spans three shared formatter methods and the network dock-band call sites, so no single current RIGHT-side range safely represents the coordinated change.",
+      "confidence": {
+        "score": 93,
+        "rationale": "The exact upstream diff changes shared formatters used beyond the dock band, while the validated fork isolates padding at the presentation boundary."
+      },
+      "disposition": "proposed"
+    }
+  ],
   "validation": {
     "fork_convergence": {
       "fork_pr": 435,
@@ -81,7 +96,7 @@
   },
   "workflow": {
     "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-15T09:28:13Z",
+    "checkpoint_at": "2026-09-15T15:12:00Z",
     "previous_phase": "review_drafted",
     "advancement_evidence": [
       "Consumed the saved fork review request before making any new request.",
@@ -163,7 +178,23 @@
       }
     ]
   },
-  "actions": [],
+  "actions": [
+    {
+      "id": "post-review-48100",
+      "type": "post_review",
+      "label": "Post one general review note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 48100,
+        "event": "COMMENT",
+        "head_sha": "3e4900aab56d4d860e915defdcb8cb419596c87d"
+      },
+      "note": "The finding posts as a separate PR conversation comment. Draft only; no public write has occurred."
+    }
+  ],
   "safe_actions": [
     {
       "id": "post-review-48100",

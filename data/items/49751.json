@@ -8,178 +8,142 @@
   "title": "CmdPal: Update parameter text box style and makes its brushes themeable",
   "state": "OPEN",
   "draft": false,
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
   "confidence": "High",
-  "processVerdict": "proceed",
-  "generated_at": "2026-09-15T09:35:00Z",
-  "evaluated_at": "2026-09-15T09:35:00Z",
+  "generated_at": "2026-09-15T15:48:00Z",
+  "evaluated_at": "2026-09-15T15:48:00Z",
   "source_updated_at": "2026-08-26T07:44:53Z",
   "head_sha": "dea2046bf72c597a87a7f3b32d36963bbeb6cc51",
-  "summary": "The exact saved fork checkpoint was resumed without remirroring. Fork PR 482 on pr-iterate/49751-v2 already has two Copilot zero-comment reviews on e171cf7e39be6650dd258906a3a5b10f32ae2997 and zero unresolved Copilot threads. The fork-only correction maps to current upstream-head suggestions, but the exact suggestion-patch build on a clean dea2046bf72c597a87a7f3b32d36963bbeb6cc51 local checkout is blocked by an unrelated Command Palette native dependency MIDL failure, so no publishable review action is valid yet.",
+  "summary": "The resumed fork review converged with a fresh zero-comment Copilot pass and zero unresolved threads. Both the fork and exact-head correction candidate build the CmdPal UI successfully. Three current-head findings remain for approval: two focused-border resources and one caret unload/reload lifecycle defect.",
   "status": {
-    "glyph": "...",
-    "label": "Exact-patch validation blocked",
-    "detail": "Consumed the existing fork Copilot reviews on the preserved fork PR 482 / pr-iterate/49751-v2 trace; latest review at 2026-08-27T10:38:43Z returned zero new comments and there are zero unresolved Copilot threads. A clean upstream-head candidate with the exact fork-only suggestion patch fails while building Microsoft.Terminal.UI before the changed UI project can complete: MIDL2025/MIDL2026 in src/modules/cmdpal/Microsoft.Terminal.UI/Converters.idl."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 460 converged at fe80b6db07f4579f64fda266efc5c4fd61a32299. After the prescribed restore, the fork and pinned upstream correction candidate both built Microsoft.CmdPal.UI successfully."
   },
-  "next_action": "Resume exact-patch validation on the pinned upstream head dea2046bf72c597a87a7f3b32d36963bbeb6cc51; do not request another Copilot review unless the upstream head or preserved fork checkpoint changes.",
-  "needs_revalidation": true,
-  "source": {
-    "repository": "microsoft/PowerToys",
-    "headRefOid": "dea2046bf72c597a87a7f3b32d36963bbeb6cc51",
-    "updatedAt": "2026-08-26T07:44:53Z",
-    "reviewDecision": "REVIEW_REQUIRED",
-    "checks": "All observed upstream checks were successful, including PowerToys CI and license/cla."
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Three findings are pinned to the unchanged upstream head. No upstream write has occurred."
   },
-  "freshness": {
-    "status": "fresh-but-validation-blocked",
-    "headRefOid": "dea2046bf72c597a87a7f3b32d36963bbeb6cc51",
-    "updatedAt": "2026-08-26T07:44:53Z",
-    "forkHeadOid": "e171cf7e39be6650dd258906a3a5b10f32ae2997",
-    "latestCopilotReviewAt": "2026-08-27T10:38:43Z",
-    "latestForkCommitAt": "2026-08-27T10:15:47Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T09:35:00Z",
-    "staleExpectation": "This item is expected to remain in the stale PR review queue until exact suggestion-patch validation succeeds or the upstream head changes and the review is rerun."
-  },
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "49751-focus-border-normal",
+      "kind": "inline",
+      "title": "Use the platform focused border brush in the normal theme",
+      "severity": "medium",
+      "body": "### Use the platform focused border brush in the normal theme\n\n**Severity:** `medium`\n\nThe light-theme focused parameter border uses `SystemAccentColorLight2`, which can be too pale against `TextControlBackgroundFocused` and make the 2 px focus indication difficult to see. Use `TextControlBorderBrushFocused` so the parameter control follows the theme-adaptive focused TextBox border resource.\n\n**Verification:** Build Microsoft.CmdPal.UI and verify focused parameter borders in light, dark, and high-contrast themes.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Styles/Theme.Normal.xaml",
+      "start_line": 22,
+      "line": 22,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 98,
+        "rationale": "The hard-coded light accent is visibly weaker than the platform focused-control brush; the corrected resource builds on the exact-head candidate."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "49751-focus-border-colorful",
+      "kind": "inline",
+      "title": "Use the platform focused border brush in the colorful theme",
+      "severity": "medium",
+      "body": "### Use the platform focused border brush in the colorful theme\n\n**Severity:** `medium`\n\nThe colorful light-theme dictionary has the same pale `SystemAccentColorLight2` focused border. Use `TextControlBorderBrushFocused` here as well so both parameter styles follow the platform's theme-adaptive focus indication.\n\n**Verification:** Build Microsoft.CmdPal.UI and compare focus visibility in the colorful light theme and high contrast.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Styles/Theme.Colorful.xaml",
+      "start_line": 22,
+      "line": 22,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 98,
+        "rationale": "The duplicated hard-coded resource has the same contrast issue, and the corrected resource builds on the exact-head candidate."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "49751-caret-reload-lifecycle",
+      "kind": "inline",
+      "title": "Preserve caret synchronization across unload and reload",
+      "severity": "high",
+      "body": "### Preserve caret synchronization across unload and reload\n\n**Severity:** `high`\n\nThese switchable parameter text boxes enable `TextBoxCaretColor.SyncWithForeground`, but the attached behavior detaches its `Loaded` handler when the control unloads while leaving the attached property enabled. When the parameters view is hidden and shown again, caret synchronization can stop permanently.\n\nUpdate `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/TextBoxCaretColor.cs` so unload/reload preserves or re-registers the `Loaded` hook and reapplies the caret color. Cover both `StringParamTemplate` and `ListParamTemplate` instances.\n\n**Verification:** Open a parameter editor, hide and reopen the parameters view, and confirm caret and foreground colors remain synchronized.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/SearchBar.xaml",
+      "start_line": 43,
+      "line": 43,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "The attached property remains enabled after the behavior removes its own reload hook; the lifecycle correction builds in both validated trees."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49751",
+      "type": "request_changes",
+      "label": "Request changes with three current-head CmdPal UI findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49751,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "dea2046bf72c597a87a7f3b32d36963bbeb6cc51"
+      },
+      "note": "Draft only. Three inline findings will be submitted as one request-changes review after explicit approval; no public write has occurred."
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "previous_phase": "queued",
-    "checkpoint_at": "2026-09-15T09:35:00Z",
-    "resume_action": "resume-exact-patch-validation",
-    "phases": [
-      {
-        "name": "resume-check",
-        "result": "completed",
-        "detail": "Preserved the dashboard checkpoint fork trace instead of the generic older closed fork PR discovered by the resume helper."
-      },
-      {
-        "name": "consume-existing-review",
-        "result": "completed",
-        "detail": "Read fork PR 482 once; the requested reviewers list is empty because Copilot already submitted reviews, not because another request is needed."
-      },
-      {
-        "name": "copilot-loop",
-        "result": "converged-on-fork",
-        "detail": "Two Copilot reviews on fork head e171cf7e39be6650dd258906a3a5b10f32ae2997 returned zero published inline comments; the fork has zero Copilot review threads."
-      },
-      {
-        "name": "fork-delta-accounting",
-        "result": "completed",
-        "detail": "The only review fix commit removes TextBoxCaretColor unload detachment and changes Light theme focused parameter borders in Theme.Normal.xaml and Theme.Colorful.xaml to TextControlBorderBrushFocused."
-      },
-      {
-        "name": "exact-suggestion-validation",
-        "result": "blocked",
-        "detail": "The exact candidate patch was applied to a detached clean upstream head local checkout, restored, and built; build failed in Microsoft.Terminal.UI MIDL before the changed Microsoft.CmdPal.UI project could complete."
-      }
-    ],
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-15T15:48:00Z",
     "advancement_evidence": [
-      "Advanced from queued/review_in_progress with no consumed fork result to a precise building checkpoint.",
-      "Consumed the existing fork Copilot review result instead of creating a duplicate review request.",
-      "Confirmed no unresolved fork Copilot threads.",
-      "Mapped fork-only changes back to the current upstream head but withheld public actions because exact-patch validation is blocked.",
-      "Preserved fork PR 482 and pr-iterate/49751-v2 as the canonical fork trace."
+      "Resumed fork PR 460 and branch pr-iterate/49751 without re-mirroring or duplicating Copilot requests.",
+      "Consumed the fresh zero-comment Copilot pass; zero unresolved threads remain.",
+      "Cleared malformed inherited GIT_CONFIG_* variables and ran the prescribed restore.",
+      "Built Microsoft.CmdPal.UI successfully on the fork and exact-head correction candidate."
     ]
   },
-  "fork_pr": {
-    "number": 482,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/482",
-    "state": "OPEN",
-    "head_sha": "e171cf7e39be6650dd258906a3a5b10f32ae2997",
-    "latest_copilot_review_at": "2026-08-27T10:38:43Z",
-    "copilot_review_count": 2,
-    "unresolved_copilot_threads": 0
+  "freshness": {
+    "headRefOid": "dea2046bf72c597a87a7f3b32d36963bbeb6cc51",
+    "updatedAt": "2026-08-26T07:44:53Z",
+    "latestCopilotReviewAt": "2026-09-15T14:18:00Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T15:48:00Z"
   },
-  "fork_branch": "pr-iterate/49751-v2",
+  "fork_pr": {
+    "number": 460,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/460",
+    "state": "OPEN"
+  },
+  "fork_branch": "pr-iterate/49751",
+  "fork_head_sha": "fe80b6db07f4579f64fda266efc5c4fd61a32299",
   "validation": {
-    "fork_review": {
-      "result": "passed",
-      "head_sha": "e171cf7e39be6650dd258906a3a5b10f32ae2997",
-      "details": "Existing fork review result consumed; latest Copilot review reported zero new comments and no unresolved Copilot threads were present."
-    },
     "suggestionPatch": {
       "head_sha": "dea2046bf72c597a87a7f3b32d36963bbeb6cc51",
-      "result": "blocked",
-      "candidate_worktree": "C:\\pt-49751-suggestion-candidate-157b3312",
-      "applied_comment_ids": [
-        "keep-caret-sync-after-reload",
-        "use-platform-focused-border-normal-light",
-        "use-platform-focused-border-colorful-light"
-      ],
+      "result": "not_applicable",
       "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
       "commands": [
-        "dotnet restore src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj --verbosity quiet",
-        "tools\\build\\build.cmd -Platform x64 -Configuration Debug from src\\modules\\cmdpal\\Microsoft.CmdPal.UI"
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.cmd in src\\modules\\cmdpal\\Microsoft.CmdPal.UI"
       ],
-      "details": "Restore completed. The exact suggestion-patch build failed with MIDL2025 and MIDL2026 in src/modules/cmdpal/Microsoft.Terminal.UI/Converters.idl while building the native dependency graph, before the changed C# and XAML project could finish."
+      "details": "The three findings are explanatory inline comments without suggestion blocks. The converged correction patch was materialized on the pinned upstream head and Microsoft.CmdPal.UI built successfully."
+    },
+    "upstreamHead": {
+      "head_sha": "dea2046bf72c597a87a7f3b32d36963bbeb6cc51",
+      "result": "not_applicable",
+      "commands": [],
+      "details": "This is a non-clean review with current-head findings; the exact-head correction candidate was validated instead."
     }
   },
-  "candidate_findings": [
-    {
-      "id": "keep-caret-sync-after-reload",
-      "kind": "inline",
-      "title": "Keep caret color synchronization after the text box reloads",
-      "severity": "medium",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/TextBoxCaretColor.cs",
-      "startLine": 67,
-      "line": 113,
-      "side": "RIGHT",
-      "confidence": {
-        "score": 94,
-        "rationale": "The upstream attached property detaches itself on Unloaded, but nothing reattaches it while the attached property remains true; the fork fix removes only that self-detach path."
-      },
-      "disposition": "withheld-validation-blocked"
-    },
-    {
-      "id": "use-platform-focused-border-normal-light",
-      "kind": "inline",
-      "title": "Use the platform focused TextBox border brush in the normal light theme",
-      "severity": "low",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Styles/Theme.Normal.xaml",
-      "line": 52,
-      "side": "RIGHT",
-      "confidence": {
-        "score": 90,
-        "rationale": "The PR makes the parameter text box themeable, but the Light normal theme hard-codes an accent color instead of following TextControlBorderBrushFocused like the focused TextBox state."
-      },
-      "disposition": "withheld-validation-blocked"
-    },
-    {
-      "id": "use-platform-focused-border-colorful-light",
-      "kind": "inline",
-      "title": "Use the platform focused TextBox border brush in the colorful light theme",
-      "severity": "low",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Styles/Theme.Colorful.xaml",
-      "line": 47,
-      "side": "RIGHT",
-      "confidence": {
-        "score": 90,
-        "rationale": "The Colorful Light theme has the same hard-coded accent focused border as the Normal Light theme, so it does not follow the platform TextBox focused brush."
-      },
-      "disposition": "withheld-validation-blocked"
-    }
-  ],
-  "blockers": [
-    {
-      "terminal": false,
-      "type": "validation",
-      "detail": "Exact-patch validation on a clean upstream-head candidate is blocked by MIDL2025/MIDL2026 in src/modules/cmdpal/Microsoft.Terminal.UI/Converters.idl.",
-      "remediation": "Rerun the exact-patch build after the Command Palette native dependency/MIDL environment is fixed, or validate with the repository-supported environment that can build Microsoft.Terminal.UI."
-    }
-  ],
-  "safe_actions": [
-    {
-      "id": "hold-review-49751",
-      "upstream_write": false,
-      "approval_required": false
-    }
-  ],
-  "upstreamWrites": {
-    "performed": false,
-    "details": "No review, comment, label, close, push, or other write was sent to microsoft/PowerToys."
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
   }
 }

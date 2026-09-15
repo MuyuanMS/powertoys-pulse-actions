@@ -2,43 +2,178 @@
   "number": 49324,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T17:46:12.242504+08:00",
-  "evaluated_at": "2026-09-15T17:06:51.697+08:00",
+  "generated_at": "2026-09-15T14:55:00Z",
+  "evaluated_at": "2026-09-15T14:55:00Z",
   "source_updated_at": "2026-08-29T01:51:09Z",
+  "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
+  "title": "CmdPal JS/TS Extensions - Phase 3: adapters + proxies",
+  "url": "https://github.com/microsoft/PowerToys/pull/49324",
   "status": {
-    "label": "Author responded — review needed",
-    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action.",
-    "glyph": "🔄"
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 430 converged at 8d359514c100a3d0e502d35c38ece07baf722f7e with a zero-comment Copilot pass and zero unresolved threads. The 21-file literal patch applied to the exact upstream head, the CmdPal production and focused unit-test projects built, and the TypeScript SDK suite passed 117 tests. Five current-head findings remain for approval."
   },
   "next_action": {
-    "label": "Run PR review",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision.",
-    "glyph": "🔄"
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Five findings are pinned to the unchanged upstream head and passed GitHub-aware review-payload validation. No upstream write has occurred."
   },
-  "actions": [],
-  "needs_revalidation": true,
-  "schemaVersion": 4,
-  "confidence": "High",
-  "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
-  "upstream_pr": {
-    "number": 49324,
-    "url": "https://github.com/microsoft/PowerToys/pull/49324",
-    "state": "OPEN",
-    "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
-    "updated_at": "2026-08-29T01:51:09Z"
+  "proposed_comments": [
+    {
+      "id": "property-change-target-identity",
+      "kind": "inline",
+      "title": "Route property changes to their originating model",
+      "severity": "high",
+      "body": "### Route property changes to their originating model\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSPropertyChangeRegistry.cs` (property-change target registration and dispatch).\n\n**Suggested change:** Extend the wire payload with an originating target kind, tag each C# property-change target, and filter dispatch to the matching kind while preserving compatibility for senders without the discriminator. A command item, list item, and nested command can share a `commandId`, so broadcasting every update under that ID lets an icon, title, or command replacement intended for one model mutate the others. Add coverage proving command and item icon updates remain isolated.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSPropertyChangeRegistry.cs",
+      "start_line": 50,
+      "line": 50,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 94,
+        "rationale": "The registry broadcasts by commandId while distinct live target types intentionally share that ID."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "cleared-observable-properties",
+      "kind": "inline",
+      "title": "Transmit cleared observable properties",
+      "severity": "high",
+      "body": "### Transmit cleared observable properties\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts` (observable property-change serialization).\n\n**Suggested change:** Serialize an explicit `null` when an optional observable value is assigned `undefined`, while retaining normal serialization for defined values. JSON currently omits undefined object members, so the C# adapter never receives the clear operation and can keep displaying stale state such as an obsolete empty-content command. Add a regression that clears a previously populated optional property.",
+      "path": "src/modules/cmdpal/ts-sdk/src/runtime/runtime.ts",
+      "start_line": 859,
+      "line": 859,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 91,
+        "rationale": "JSON serialization omits undefined members and therefore cannot communicate a clear to the adapter."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "form-action-identity",
+      "kind": "inline",
+      "title": "Preserve Adaptive Card action IDs on form submission",
+      "severity": "high",
+      "body": "### Preserve Adaptive Card action IDs on form submission\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSFormContentProxy.cs` and the matching TypeScript form submission runtime/serializer.\n\n**Suggested change:** Implement the action-aware form interface in the C# proxy, include a non-empty `actionId` in `form/submit`, and propagate it through the TypeScript runtime to an optional action handler while retaining the existing `submitForm` fallback. The current bridge sends inputs and data but discards which Adaptive Card action was invoked, so extensions cannot distinguish Save from Cancel. Add C# and SDK tests asserting the action ID reaches the extension.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSFormContentProxy.cs",
+      "start_line": 45,
+      "line": 45,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 93,
+        "rationale": "The proxy exposes only the legacy submission shape even though action-aware form events can provide an action ID."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "prehost-notification-ordering",
+      "kind": "inline",
+      "title": "Keep notifications queued until pre-host replay drains",
+      "severity": "high",
+      "body": "### Keep notifications queued until pre-host replay drains\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSCommandProviderProxy.cs` (`InitializeWithHost` notification replay).\n\n**Suggested change:** Keep a replacement queue active while replaying, drain repeatedly until it is empty, and only then switch to inline dispatch. The current code marks the queue open before replay finishes, so a newly arriving host notification can execute immediately and overtake an earlier queued show or hide notification. Add a race-focused regression proving a live notification cannot overtake the backlog.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSCommandProviderProxy.cs",
+      "start_line": 239,
+      "line": 239,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 90,
+        "rationale": "The queue is disabled before its backlog is replayed, creating a direct ordering race."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "status-operation-ordering",
+      "kind": "inline",
+      "title": "Serialize asynchronous status operations",
+      "severity": "high",
+      "body": "### Serialize asynchronous status operations\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSCommandProviderProxy.cs` (status show, hide, and disposal operations).\n\n**Suggested change:** Queue status operations per provider and await the ordered queue during disposal before releasing host state. The current implementation starts asynchronous `ShowStatus` and `HideStatus` operations independently, so a hide or cleanup can finish before an earlier show and leave stale status visible. Add a regression with a delayed show that verifies the observable order is always show then hide.",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.JsonRpc/Models/JSCommandProviderProxy.cs",
+      "start_line": 555,
+      "line": 555,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 88,
+        "rationale": "State tracking is locked but the host-facing asynchronous operations themselves have no ordering primitive."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49324",
+      "type": "request_changes",
+      "label": "Request changes with five current-head CmdPal adapter findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49324,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2"
+      },
+      "note": "Draft only. Five inline findings will be submitted as one request-changes review after explicit maintainer approval; no public write has occurred."
+    }
+  ],
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-15T14:55:00Z",
+    "advancement_evidence": [
+      "Resumed fork PR 430 without re-mirroring or duplicating review requests.",
+      "Consumed the latest Copilot pass, which produced zero new comments; zero unresolved threads remain.",
+      "Applied the converged 21-file patch to the exact upstream head.",
+      "Built the CmdPal JsonRpc production and focused unit-test projects.",
+      "Passed all 117 TypeScript SDK tests.",
+      "Validated the exact review payload with Test-ReviewData.ps1 -CheckGitHub."
+    ]
+  },
+  "freshness": {
+    "headRefOid": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
+    "updatedAt": "2026-08-29T01:51:09Z",
+    "latestCopilotReviewAt": "2026-09-10T12:09:30Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T14:55:00Z"
   },
   "fork_pr": {
     "number": 430,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/430",
-    "state": "OPEN",
-    "updated_at": "2026-09-10T12:08:31Z",
-    "head_sha": "8d359514c100a3d0e502d35c38ece07baf722f7e",
-    "previous_head_sha": "96b8756fd6060d3ef8e6f0a93cba482545798310",
-    "base_sha": "462f74bb1ac3bf9d7a4a4977600cd58396806cd0",
-    "branch": "pr-iterate/49324"
+    "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/49324"
+  "fork_branch": "pr-iterate/49324",
+  "fork_head_sha": "8d359514c100a3d0e502d35c38ece07baf722f7e",
+  "validation": {
+    "suggestionPatch": {
+      "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [
+        "tools\\build\\build.cmd in src\\modules\\cmdpal\\Microsoft.CmdPal.JsonRpc",
+        "tools\\build\\build.cmd in src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.JsonRpc.UnitTests",
+        "npm test in src\\modules\\cmdpal\\ts-sdk"
+      ],
+      "details": "The five findings are explanatory inline comments without suggestion blocks. The converged literal patch built successfully and the TypeScript SDK suite passed 117 tests."
+    },
+    "upstreamHead": {
+      "head_sha": "73975a5391f1d6150afbaa522c4a5afc7aed1ea2",
+      "result": "not_applicable",
+      "commands": [],
+      "details": "This is a non-clean review with current-head findings; the literal converged patch was validated instead."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
+  }
 }

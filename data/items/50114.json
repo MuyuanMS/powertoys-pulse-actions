@@ -2,107 +2,167 @@
   "number": 50114,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T17:14:55.4161838Z",
-  "evaluated_at": "2026-09-14T17:14:55.4161838Z",
+  "generated_at": "2026-09-15T15:35:00Z",
+  "evaluated_at": "2026-09-15T15:35:00Z",
   "source_updated_at": "2026-08-25T15:01:46Z",
   "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
   "title": "Disable cursor wrap on the top edge of monitors when in an RDP session.",
   "url": "https://github.com/microsoft/PowerToys/pull/50114",
-  "summary": "Current-head review is ready. Phase 0 still needs visual evidence and upstream CI repair, and the code review found four apply-ready fixes for production build isolation, suppressed top-corner behavior, test coverage, and settings synchronization.",
+  "summary": "The preserved fork review converged with zero new Copilot comments and zero unresolved threads. The exact upstream CursorWrap build reproduces a production-project failure, while the literal four-fix candidate builds and passes all 7 focused tests. Four current-head findings remain for maintainer approval; upstream CI is also failed and PR intake requested visual evidence.",
   "status": {
-    "glyph": "warn",
-    "label": "Current-head review comments ready",
-    "detail": "Upstream head 620ae8838d2257594d617891ecbe9f4ae3f03a2a is unchanged from the stale queue entry. The fork review loop converged with a zero-comment Copilot review and zero unresolved Copilot threads after valid fixes were applied locally."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 452 converged at 13da307495323132951df02ca2b108dccfc34217. The exact upstream production project fails because a unit-test source is compiled into CursorWrap; the validated correction candidate builds both affected projects and passes 7/7 tests."
   },
   "next_action": {
-    "glyph": "▶",
-    "label": "Review request-changes draft",
-    "reason": "Recheck the upstream head and obtain explicit maintainer approval before posting the drafted process ask and code suggestions."
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Four findings are pinned to the unchanged upstream head. No upstream write has occurred."
   },
-  "proposed_comments": [],
-  "actions": [],
   "confidence": "High",
-  "judgment": {
-    "status": "review_comments_ready",
-    "rationale": "The upstream PR is a community contribution with a visible Settings UI change, failed upstream release CI checks, and current-head CursorWrap correctness/build issues that should be addressed before landing.",
-    "evidence": [
-      "Live upstream head remains 620ae8838d2257594d617891ecbe9f4ae3f03a2a, matching the stale queue item.",
-      "Author association is CONTRIBUTOR, so full Phase 0 applies.",
-      "The PR body links issue 45200 and includes validation steps, but no screenshot, GIF, or video; live PR intake also requests visual evidence.",
-      "The live upstream status rollup reports PowerToys CI, Build x64 Release, and Build arm64 Release as failed.",
-      "The fork review loop applied valid fixes on the preserved pr-iterate/50114 branch, received a zero-comment Copilot review on the resulting head, and has zero unresolved Copilot threads.",
-      "No review, comment, label, state change, close action, or other mutation was made on microsoft/PowerToys."
-    ],
-    "recommended_action": "After explicit maintainer approval and a current-head freshness check, post the selected request-changes review comments.",
-    "evaluated_at": "2026-09-02T12:24:40.877+08:00",
-    "source_updated_at": "2026-08-25T15:01:46Z"
-  },
-  "validation": {
-    "upstream_head": {
-      "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
-      "result": "not_run",
-      "detail": "Live upstream head and all proposed inline coordinates were revalidated against the current GitHub PR diff. No exact upstream-tree build was run in this worker."
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "production-build-isolation",
+      "kind": "inline",
+      "title": "Keep unit-test sources out of the production DLL",
+      "severity": "high",
+      "body": "### Keep unit-test sources out of the production DLL\n\n**Severity:** `high`\n\n`UnitTests\\MonitorTopologyTests.cpp` is listed in the production `CursorWrap.vcxproj`, so the production project attempts to compile the CppUnitTest source. This causes the exact upstream CursorWrap build to fail with `C1010` while looking for the precompiled header and would incorrectly place test code in the production build. Remove this compile entry; the file is already owned by `CursorWrapUnitTests.vcxproj`.\n\n**Verification:** Build both CursorWrap projects and run `CursorWrap.UnitTests`.",
+      "path": "src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj",
+      "start_line": 100,
+      "line": 100,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 99,
+        "rationale": "The exact upstream build fails at this production compile entry, and removing it is part of the candidate that builds and passes all focused tests."
+      },
+      "disposition": "proposed"
     },
-    "fork_review_tree": {
-      "head_sha": "13da307495323132951df02ca2b108dccfc34217",
-      "result": "passed",
-      "builds": [
-        "src/modules/MouseUtils/CursorWrap built successfully with tools/build/build.cmd",
-        "CursorWrap.UnitTests built successfully and vstest.console.exe passed 7 tests"
-      ]
+    {
+      "id": "suppressed-top-corner-direction",
+      "kind": "inline",
+      "title": "Do not wrap sideways from a suppressed top corner",
+      "severity": "high",
+      "body": "### Do not wrap sideways from a suppressed top corner\n\n**Severity:** `high`\n\nWhen the top edge is suppressed at a global-top monitor corner, the current code removes only the `Top` candidate and then allows the remaining `Left` or `Right` candidate to win. Upward or unknown movement can therefore wrap sideways instead of being blocked at the RDP connection-bar edge.\n\nHandle this condition before candidate selection: return no edge for vertical-dominant or unknown movement, while preserving side wrapping for horizontal movement. Add corner-focused regression coverage.",
+      "path": "src/modules/MouseUtils/CursorWrap/MonitorTopology.cpp",
+      "start_line": 304,
+      "line": 315,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "The candidate-selection flow directly permits the sideways fallback, and the validated correction handles the direction before selecting an edge."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "suppressed-top-corner-test",
+      "kind": "inline",
+      "title": "Add regression coverage for suppressed top corners",
+      "severity": "medium",
+      "body": "### Add regression coverage for suppressed top corners\n\n**Severity:** `medium`\n\nThe current tests verify ordinary top suppression and unaffected horizontal edges, but not the corner fallback that can wrap upward movement sideways. Add a test covering a global-top corner with upward movement and unknown direction, both of which must return no edge, plus horizontal movement, which must still select the side edge.\n\n**Verification:** Run the focused CursorWrap unit-test assembly and confirm all corner-direction cases pass.",
+      "path": "src/modules/MouseUtils/CursorWrap/UnitTests/MonitorTopologyTests.cpp",
+      "start_line": 184,
+      "line": 184,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 94,
+        "rationale": "The missing branch is observable at a top corner and is covered by the validated candidate's regression test."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "rdp-setting-atomicity",
+      "kind": "inline",
+      "title": "Synchronize the live RDP setting",
+      "severity": "high",
+      "body": "### Synchronize the live RDP setting\n\n**Severity:** `high`\n\nThe settings runner thread writes `m_suppressTopEdgeWrapInRemoteSession` while `MouseHookProc` reads it on a separate hook thread. Keeping this as a plain `bool` creates a C++ data race when the setting changes while Cursor Wrap is active.\n\nStore it as `std::atomic_bool` and use a relaxed load in the hook path. Rebuild CursorWrap and rerun the focused unit tests.",
+      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
+      "start_line": 87,
+      "line": 87,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 97,
+        "rationale": "The setting is written and read by distinct live threads without synchronization; the validated candidate uses an atomic value."
+      },
+      "disposition": "proposed"
     }
-  },
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50114",
+      "type": "request_changes",
+      "label": "Request changes with four current-head CursorWrap findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50114,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a"
+      },
+      "note": "Draft only. Four inline findings will be submitted as one request-changes review after explicit maintainer approval; no public write has occurred."
+    }
+  ],
   "workflow": {
-    "phase": "awaiting_review_approval",
-    "previous_phase": "review_drafted",
-    "checkpoint_at": "2026-09-14T17:14:55.4161838Z",
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-15T15:35:00Z",
     "advancement_evidence": [
-      "Revalidated the live upstream head 620ae8838d2257594d617891ecbe9f4ae3f03a2a; it is unchanged.",
-      "Revalidated the current upstream changed-file set and inline RIGHT-side anchors.",
-      "Consumed the existing fork Copilot result; latest review returned zero new comments and unresolved Copilot thread count is zero.",
-      "Preserved fork PR 452 and branch pr-iterate/50114 without restarting the trace.",
-      "Removed unvalidated apply-ready suggestion blocks rather than claiming exact-patch validation that was not performed.",
-      "No public write was made to microsoft/PowerToys."
-    ],
-    "queued_head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
-    "reviewed_upstream_head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
-    "fork_pr": 452,
-    "fork_pr_url": "https://github.com/MuyuanMS/PowerToys/pull/452",
-    "fork_branch": "pr-iterate/50114",
-    "fork_head_sha": "13da307495323132951df02ca2b108dccfc34217",
-    "copilot_review": "Latest fork Copilot review at 2026-08-26T13:51:58Z reported 0 new comments.",
-    "unresolved_copilot_threads": 0,
-    "build_result": "<PowerToysCheckout>\\src\\modules\\MouseUtils\\CursorWrap built successfully with tools\\build\\build.cmd.",
-    "unit_test_result": "<PowerToysCheckout>\\src\\modules\\MouseUtils\\CursorWrap\\UnitTests built successfully and vstest.console.exe passed 7 CursorWrap.UnitTests tests.",
-    "completed": [
-      "Preserved and resumed existing fork PR 452, branch pr-iterate/50114, and local checkout <PowerToysCheckout>",
-      "Confirmed the fork PR file scope matches the upstream PR file scope.",
-      "Verified all prior fork Copilot threads are resolved and the latest Copilot round returned zero published comments.",
-      "Rechecked live upstream Phase 0: visual evidence is still missing and upstream PowerToys CI x64/arm64 release checks are failed."
+      "Resumed fork PR 452 and branch pr-iterate/50114 without re-mirroring or requesting a duplicate Copilot review.",
+      "Consumed the latest zero-comment Copilot review; zero unresolved fork threads remain.",
+      "Reproduced the production-project failure on exact upstream head 620ae8838d2257594d617891ecbe9f4ae3f03a2a.",
+      "Applied the literal four-fix patch to the pinned upstream head.",
+      "Built CursorWrap and CursorWrap.UnitTests and passed all 7 focused tests on the correction candidate.",
+      "Observed failed upstream x64 and arm64 Release CI and the existing intake request for visual evidence."
     ]
   },
-  "upstream_pr": {
-    "number": 50114,
-    "url": "https://github.com/microsoft/PowerToys/pull/50114",
-    "state": "OPEN",
-    "draft": false,
-    "updated_at": "2026-08-25T15:01:46Z",
-    "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
-    "base_ref": "main"
+  "freshness": {
+    "headRefOid": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+    "updatedAt": "2026-08-25T15:01:46Z",
+    "latestCopilotReviewAt": "2026-08-26T13:51:58Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-15T15:35:00Z"
   },
   "fork_pr": {
     "number": 452,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/452",
-    "state": "OPEN",
-    "updated_at": "2026-08-26T13:51:58Z",
-    "head_sha": "13da307495323132951df02ca2b108dccfc34217",
-    "base_sha": "980d4193df2d4f912870877e89ba14278741ea83",
-    "commit_count": 4,
-    "changed_file_count": 16
+    "state": "OPEN"
   },
   "fork_branch": "pr-iterate/50114",
-  "needs_revalidation": true
+  "fork_head_sha": "13da307495323132951df02ca2b108dccfc34217",
+  "validation": {
+    "suggestionPatch": {
+      "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.cmd in src\\modules\\MouseUtils\\CursorWrap",
+        "tools\\build\\build.cmd in src\\modules\\MouseUtils\\CursorWrap\\UnitTests",
+        "vstest.console.exe CursorWrap.UnitTests.dll"
+      ],
+      "details": "The four findings are explanatory inline comments without suggestion blocks. The literal converged correction patch was applied to the pinned upstream head; both affected projects built and all 7 focused tests passed."
+    },
+    "upstreamHead": {
+      "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+      "result": "failed",
+      "commands": [
+        "tools\\build\\build.cmd in src\\modules\\MouseUtils\\CursorWrap"
+      ],
+      "details": "The exact upstream production project fails at UnitTests\\MonitorTopologyTests.cpp with C1010 because the unit-test source is compiled by CursorWrap.vcxproj. This failure is the first proposed finding."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
+  }
 }
