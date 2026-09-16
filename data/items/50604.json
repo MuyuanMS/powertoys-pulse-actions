@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50604",
+  "number": 50604,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "reproduction_ready",
+  "generated_at": "2026-09-16T17:25:00Z",
+  "evaluated_at": "2026-09-16T17:25:00Z",
+  "source_updated_at": "2026-09-16T15:11:43Z",
+  "title": "No recovery on Auto Hide Cursor",
+  "url": "https://github.com/microsoft/PowerToys/issues/50604",
+  "summary": "Auto Hide Cursor on PowerToys 0.101.2572 hides the cursor after typing or idle input, but the cursor reportedly stays hidden when the mouse moves and only recovers after disabling the utility.",
+  "status": {
+    "glyph": "🧪",
+    "label": "Current-build reproduction ready",
+    "detail": "The report includes clear steps and a video on a current build; maintainers should reproduce and inspect low-level mouse-hook delivery and cursor restore behavior before selecting a code fix."
+  },
+  "next_action": {
+    "glyph": "🧪",
+    "label": "Reproduce Auto Hide Cursor restore failure",
+    "reason": "The issue is visible and current-version, but source inspection leaves multiple plausible failure points that need a controlled repro trace."
+  },
+  "confidence": "Medium",
+  "pending_author": false,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The reporter supplied current PowerToys version, concise steps, OS build, and a video showing the cursor remains hidden. A maintainer reproduction is the next useful action because the initial source check shows at least two plausible failure layers: low-level mouse hook movement filtering and system cursor restoration.",
+    "evidence": [
+      "The issue targets PowerToys v0.101.2572 and Mouse Utilities Auto Hide Cursor.",
+      "The steps are concise: enable Auto Hide Cursor, trigger hiding by typing or idle input, wait for the cursor to hide, then move the cursor.",
+      "The expected behavior is for movement to show the cursor; the actual behavior is that the cursor remains hidden until Auto Hide Cursor is disabled.",
+      "The issue includes a public video attachment and Windows 11 build 26200.9457 details.",
+      "No comments or existing upstream author-wait request are present."
+    ],
+    "recommended_action": "Run a controlled maintainer reproduction on a current build with Auto Hide Cursor tracing enabled, then decide whether the failing layer is mouse input detection, injected-input filtering, movement thresholding, or SystemParametersInfo cursor restoration."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys code fix is likely applicable if reproduced, but the lightweight pass cannot yet distinguish whether the cursor stays hidden because movement events are filtered, movement never crosses the intentional threshold, or RestoreSystemCursors fails until module disable."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Auto Hide Cursor does not restore the cursor on mouse movement after hiding; disabling the utility restores visibility.",
+    "known_information": [
+      "PowerToys version reported: v0.101.2572.",
+      "Installation method: PowerToys auto-update.",
+      "Area selected: Mouse Utilities.",
+      "The reporter provided steps covering both typing-triggered and idle-triggered hiding.",
+      "The reporter attached a video showing the behavior.",
+      "Operating system details include Windows 11 Home 25H2, OS build 26200.9457."
+    ],
+    "inferences": [
+      "The worker is likely still alive because disabling Auto Hide Cursor restores the cursor.",
+      "The failure may involve the low-level mouse hook not treating the reported movement as non-injected movement, the state machine not seeing intentional movement, or repeated failure of SystemParametersInfo cursor restoration.",
+      "A direct fix design would be speculative until a repro trace identifies which branch fails."
+    ],
+    "analysis": "The report is specific enough for maintainer reproduction and does not need a duplicate generic information request. Source inspection shows the Auto Hide Cursor state machine should show on intentional movement or mouse button/wheel input, so a trace should confirm whether MouseHookProc queues Show and whether SystemCursorHider.Restore succeeds.",
+    "initial_investigation": [
+      "Reviewed the issue body, labels, assignees, comments, video attachment reference, and OS details.",
+      "Inspected src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h and confirmed OnMouseInput returns Show after intentional movement while hidden.",
+      "Inspected src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp and confirmed WH_MOUSE_LL events are ignored when LLMHF_INJECTED or LLMHF_LOWER_IL_INJECTED is set, and movement is classified from WM_MOUSEMOVE.",
+      "Inspected src/modules/MouseUtils/AutoHideCursor/SystemCursorHider.h and confirmed restoration reloads system cursors through SystemParametersInfoW(SPI_SETCURSORS) and refreshes the current cursor."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-auto-hide-restore-50604",
+      "type": "reproduce",
+      "label": "Reproduce Auto Hide Cursor restore failure",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Mouse Utilities - Auto Hide Cursor",
+        "version_requirement": "PowerToys v0.101.2572 or newer current build",
+        "prerequisites": [
+          "Auto Hide Cursor enabled",
+          "Test both Hide on typing and Hide on idle if available",
+          "Tracing or logging available for AutoHideCursor worker mouse-hook events and cursor restore failures"
+        ],
+        "steps": [
+          "Enable Auto Hide Cursor.",
+          "Trigger hiding by typing and wait until the cursor disappears.",
+          "Move the mouse enough to exceed the intentional movement threshold.",
+          "Observe whether the cursor becomes visible.",
+          "Repeat after triggering hide through the idle timer.",
+          "If the cursor stays hidden, click or scroll once and observe whether button/wheel input restores it.",
+          "Disable Auto Hide Cursor and confirm whether the system cursor is restored."
+        ],
+        "expected_result": "Any intentional mouse movement after hiding should restore the cursor without requiring the utility to be disabled.",
+        "setup_requirements": [
+          "Capture whether MouseHookProc receives WM_MOUSEMOVE with injected flags cleared.",
+          "Capture whether AutoHideCursorState::OnMouseInput returns Show.",
+          "Capture whether SystemCursorHider::Restore and RestoreSystemCursors succeed or report a Win32 error."
+        ]
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, labels, assignments, closures, or other public mutations were made to microsoft/PowerToys."
+  }
+}

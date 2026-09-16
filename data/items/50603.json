@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50603",
+  "number": 50603,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "generated_at": "2026-09-16T17:25:00Z",
+  "evaluated_at": "2026-09-16T17:25:00Z",
+  "source_updated_at": "2026-09-16T14:55:58Z",
+  "title": "Clipboard copy fails in PowerToys Run over Chrome Remote Desktop",
+  "url": "https://github.com/microsoft/PowerToys/issues/50603",
+  "summary": "PowerToys Run file/folder path copy fails every time inside Chrome Remote Desktop with CLIPBRD_E_CANT_OPEN from WPF Clipboard.Flush, while Windows Remote Desktop works and linked upstream WPF evidence says WinForms clipboard succeeds under the same failure mode.",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The failure path is isolated to PowerToys Run context-menu clipboard writes that use WPF Clipboard.SetText and can throw when a remote clipboard owner temporarily holds OpenClipboard."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Approve resilient clipboard-copy design",
+    "reason": "The issue has deterministic repro steps, a bug report ZIP, stack evidence, and a linked WPF clipboard compatibility finding."
+  },
+  "confidence": "Yellow",
+  "pending_author": false,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The public report supplies exact steps, a PowerToys bug report ZIP, the failing exception, and a linked WPF issue describing the same OpenClipboard failure with a likely safer WinForms clipboard path. A focused PowerToys Run clipboard helper design is justified without asking the reporter for more information.",
+    "evidence": [
+      "The issue reproduces every time when PowerToys Run is used through Chrome Remote Desktop, independent of Chrome Remote Desktop clipboard synchronization.",
+      "The logged exception is System.Runtime.InteropServices.COMException: OpenClipboard Failed, HRESULT 0x800401D0 (CLIPBRD_E_CANT_OPEN), thrown from System.Windows.Clipboard.Flush.",
+      "The failing public stack points at src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/ContextMenuLoader.cs copying record.Path.",
+      "The reporter linked microsoft/PowerToys#25437 and dotnet/wpf#9901, where the same WPF Clipboard.Flush failure is documented and System.Windows.Forms.Clipboard is reported to succeed.",
+      "Focused source inspection found multiple PowerToys Run context-menu copy paths using System.Windows.Clipboard.SetText directly."
+    ],
+    "recommended_action": "Approve a focused design to centralize PowerToys Run clipboard writes behind a resilient helper that avoids or retries the WPF Clipboard.Flush failure path."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys-owned fix is applicable because the failing copy action is in PowerToys Run plugin code and can be changed to use a resilient clipboard implementation without requiring reporter-side configuration changes."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Use a resilient PowerToys Run clipboard-copy helper for path-copy actions",
+      "root_cause": "PowerToys Run context-menu copy actions call WPF Clipboard.SetText directly. In Chrome Remote Desktop sessions the WPF Flush/OpenClipboard path can fail with CLIPBRD_E_CANT_OPEN when another clipboard participant temporarily owns the clipboard, so the action reports failure even though a retry or alternate clipboard implementation may succeed.",
+      "plan": [
+        "Add or reuse a shared PowerToys Run clipboard helper that runs on an STA thread and retries transient CLIPBRD_E_CANT_OPEN failures with short backoff.",
+        "Evaluate System.Windows.Forms.Clipboard.SetText for this path because the linked WPF issue reports it succeeds where WPF Clipboard.Flush fails.",
+        "Replace direct Clipboard.SetText calls in PowerToys Run plugins, starting with Microsoft.Plugin.Indexer.ContextMenuLoader, with the helper.",
+        "Preserve existing logging and user-visible failure reporting when all retry attempts fail.",
+        "Add focused unit coverage for transient clipboard-open failures and successful retry/alternate-path behavior."
+      ],
+      "verification": [
+        "Reproduce issue #50603 through Chrome Remote Desktop and confirm Ctrl+C on a PowerToys Run file/folder result copies the path without showing the failure dialog.",
+        "Confirm the copied path appears in Windows Clipboard History.",
+        "Run focused PowerToys Run plugin tests covering the clipboard helper retry behavior.",
+        "Smoke test at least one existing non-indexer PowerToys Run copy action to verify no regression from centralizing clipboard writes."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The exception, stack, repro, and linked WPF behavior strongly identify the failing mechanism, but maintainer-side validation should compare WPF retry behavior against a WinForms fallback in the affected remote session."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerToys Run path-copy from a search result fails inside Chrome Remote Desktop with a WPF clipboard OpenClipboard failure, even though the same workflow works over Windows Remote Desktop.",
+    "known_information": [
+      "PowerToys version reported: 0.97.1.",
+      "The reporter provided deterministic steps using Chrome Remote Desktop, PowerToys Run, a local file or folder result, and Ctrl+C.",
+      "The copied path can be pasted, but it is not available in Windows Clipboard History and PowerToys shows an empty-body failure message titled Fail to set text in clipboard.",
+      "The uploaded bug report excerpt shows CLIPBRD_E_CANT_OPEN from System.Windows.Clipboard.Flush in the Indexer context-menu copy action.",
+      "The reporter linked prior PowerToys and WPF issues for the same clipboard-open failure and noted System.Windows.Forms.Clipboard succeeds in the linked WPF case."
+    ],
+    "inferences": [
+      "Chrome Remote Desktop likely changes clipboard ownership/timing enough that WPF Clipboard.Flush fails transiently or follows a less compatible path.",
+      "A retrying or alternate clipboard implementation in PowerToys Run is more likely to fix the user-visible failure than another request for reporter diagnostics.",
+      "Other PowerToys Run plugins that call WPF Clipboard.SetText directly may share the same failure mode."
+    ],
+    "analysis": "The report already contains the discriminating evidence normally requested for clipboard failures: exact environment, repro steps, exception, stack, and linked framework-level behavior. Source inspection confirms the reported failing symbol still calls WPF Clipboard.SetText directly. The next useful maintainer action is to approve a focused design and validation pass rather than ask the reporter to collect another bug report.",
+    "initial_investigation": [
+      "Reviewed the issue body, labels, comments, linked evidence, and bug report excerpt.",
+      "Inspected src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/ContextMenuLoader.cs and confirmed the copy-path action calls System.Windows.Clipboard.SetText(record.Path).",
+      "Searched PowerToys Run plugins and found additional direct System.Windows.Clipboard.SetText call sites in Calculator, TimeDate, System, Registry, Folder, VSCode Workspaces, UnitConverter, and ValueGenerator plugins.",
+      "Checked the linked WPF failure mode through the public issue description supplied by the reporter; no private diagnostics were used."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-clipboard-design-50603",
+      "type": "approve_design",
+      "label": "Approve resilient clipboard-copy design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "issue": 50603,
+        "title": "Make PowerToys Run clipboard-copy actions resilient to CLIPBRD_E_CANT_OPEN",
+        "prompt": "Design and implement a focused PowerToys Run clipboard helper for issue #50603. Use the public issue context and proposed fix: replace direct WPF Clipboard.SetText calls, starting with Microsoft.Plugin.Indexer.ContextMenuLoader, with an STA-safe retrying helper and evaluate System.Windows.Forms.Clipboard as the fallback path documented in the linked WPF issue. Preserve existing logging and failure UI after retries, add unit coverage for transient OpenClipboard failures, and validate through Chrome Remote Desktop if available."
+      },
+      "note": "Approval starts fork-side design/implementation work only; no upstream write occurs automatically."
+    },
+    {
+      "id": "reproduce-clipboard-crd-50603",
+      "type": "reproduce",
+      "label": "Reproduce Chrome Remote Desktop clipboard failure",
+      "reproduce": {
+        "module": "PowerToys Run",
+        "version_requirement": "0.97.1 or a current build before the clipboard-helper fix",
+        "prerequisites": [
+          "A Windows machine reachable through Chrome Remote Desktop",
+          "PowerToys Run enabled",
+          "At least one local file or folder indexed by PowerToys Run"
+        ],
+        "steps": [
+          "Connect to the Windows machine using Chrome Remote Desktop.",
+          "Invoke PowerToys Run.",
+          "Search for a local file or folder.",
+          "Highlight the result.",
+          "Press Ctrl+C to copy the path.",
+          "Check whether PowerToys shows a Fail to set text in clipboard dialog and whether Clipboard History contains the copied path."
+        ],
+        "expected_result": "The path is copied without an error dialog and is available in Windows Clipboard History.",
+        "setup": []
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, labels, assignments, closures, or other public mutations were made to microsoft/PowerToys."
+  }
+}

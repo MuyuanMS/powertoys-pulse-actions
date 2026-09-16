@@ -1,147 +1,75 @@
 {
   "schemaVersion": 5,
+  "id": "pr-50508",
   "number": 50508,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
+  "stage": "review_in_progress",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-16T11:50:43.9901069Z",
-  "evaluated_at": "2026-09-16T11:50:43.9901069Z",
-  "source_updated_at": "2026-09-16T11:42:07Z",
-  "head_sha": "9cdc9e7583f2bcac6d3034a053b091314363c57b",
+  "generated_at": "2026-09-16T17:19:02.5813319Z",
+  "evaluated_at": "2026-09-16T17:19:02.5813319Z",
+  "source_updated_at": "2026-09-16T16:41:11Z",
+  "head_sha": "4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d",
   "title": "feat(workspaces): warn before unverified elevated app launches",
   "url": "https://github.com/microsoft/PowerToys/pull/50508",
-  "summary": "The scheduled worker re-reviewed the new upstream head and produced two current-head security findings. Exact upstream-head targeted validation passed; no upstream public action was taken.",
   "status": {
-    "glyph": "📝",
-    "label": "Review complete — approval required",
-    "detail": "The live head remains reviewed with two drafted findings. Later activity was context/status-only and did not invalidate the current-head draft."
+    "glyph": "⏳",
+    "label": "Waiting for Copilot review",
+    "detail": "Fresh fork Copilot review requested at 2026-09-16T17:19:00.3052960Z; immediate check found 0 submitted review(s), pending reviewer: False. The next scheduled run must consume this request before creating another."
   },
   "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "Two security-sensitive revalidation gaps remain on the live head."
+    "glyph": "⏳",
+    "label": "Resume after Copilot review",
+    "reason": "Fresh fork Copilot review was requested for live head 4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d and no submitted review was available on the one immediate check."
   },
-  "confidence": "High",
-  "needs_revalidation": false,
-  "phase0": {
-    "authorAssociation": "MEMBER",
-    "disposition": "Proceed",
-    "processGates": "Member-authored PR; community process nags skipped. CLA, intake, dependency review, and telemetry checks are green; Azure aggregate/test jobs were still queued or in progress at review time."
-  },
-  "proposed_comments": [
-    {
-      "id": "package-state-revalidation",
-      "kind": "inline",
-      "severity": "critical",
-      "title": "Preserve and revalidate the package captured trust state",
-      "path": "src/modules/Workspaces/WorkspacesLib/PackageVerification.cpp",
-      "start_line": 254,
-      "line": 255,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Preserve and revalidate the package captured trust state\n\n**Severity:** `critical`\n\nThe final package check compares only the captured package identity, and it skips the metadata policy whenever the original approval was for an unverified package. That means the same package identity can still be accepted after it becomes modified, stubbed, unavailable, external, mutable, or changes content-integrity state between the warning and activation.\n\nCapture the deployment and integrity fields with the initial `PackageIdentity`, repeat integrity verification during `IsCurrent` when it was part of the captured state, and reject any state transition before activation.\n\n**Verification:** Add focused regressions showing that an unchanged approved-unverified package remains eligible, while modified, stubbed, unavailable, external, mutable, and changed-integrity registrations fail revalidation.",
-      "confidence": {
-        "score": 96,
-        "rationale": "Current-head PackageIdentity stores only identity/signing metadata, while PackageVerification::details::IsCurrent skips MetadataEligible for approved-unverified targets and therefore does not compare modified, stub, status, external/mutable, or integrity-state transitions."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "filesystem-target-revalidation",
-      "kind": "inline",
-      "severity": "critical",
-      "title": "Fail closed for filesystem targets that are not fully protected",
-      "path": "src/modules/Workspaces/WorkspacesLib/SignatureVerification.cpp",
-      "start_line": 297,
-      "line": 299,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Fail closed for filesystem targets that are not fully protected\n\n**Severity:** `critical`\n\n`SignatureVerification::IsCurrent` delegates non-package targets to package revalidation, and that path returns current whenever `target.package` is empty. As a result, absolute non-`.exe` paths, relative paths, drive-relative paths such as `C:app.exe`, and verified executables whose writable parent directories can be renamed after approval can pass the final check without protecting the filesystem namespace that `ShellExecuteEx` resolves.\n\nDistinguish URI/protocol targets from filesystem targets, reject every filesystem target that lacks a retained executable handle, and keep non-delete-sharing handles for each parent directory through the elevation request. If any required directory cannot be protected, fail the verification instead of allowing approval to proceed.\n\n**Verification:** Add regressions for absolute `.exe`, `.lnk` or script, ordinary relative and drive-relative paths, plus a URI case confirming legitimate protocol targets remain supported.",
-      "confidence": {
-        "score": 97,
-        "rationale": "Current-head SignatureVerification::IsCurrent delegates every target to PackageVerification::IsCurrent; non-package targets return true when target.package is empty, regardless of whether a file handle exists or directory namespace protection was retained."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50508",
-      "type": "request_changes",
-      "label": "Request two Workspaces launch-target revalidation corrections",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50508,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "9cdc9e7583f2bcac6d3034a053b091314363c57b",
-        "body": "Two launch-target revalidation gaps remain in this security-sensitive elevation path. Please address the package-state transition and filesystem-target issues below before approval."
-      },
-      "note": "Draft only. Explicit maintainer approval and final freshness/check-state revalidation are required before posting."
-    }
-  ],
-  "fork_pr": {
-    "number": 773,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/773",
-    "state": "OPEN",
-    "head_sha": "66005ff107e52e3b0c3cb67600fcb37f7538319e"
-  },
-  "fork_branch": "pr-iterate/50508-v2",
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
-    "phase": "review_drafted",
+    "phase": "waiting_copilot",
     "previous_phase": "stale_old_head",
-    "checkpoint_at": "2026-09-16T10:00:46.5172791Z",
+    "checkpoint_at": "2026-09-16T17:19:02.5813319Z",
     "advancement_evidence": [
-      "Detected and reviewed new upstream head 9cdc9e7583f2bcac6d3034a053b091314363c57b.",
-      "Preserved existing fork PR 773 and branch pr-iterate/50508-v2 without treating fork-only changes as clean upstream evidence.",
-      "Consumed existing fork Copilot review state with zero unresolved threads.",
-      "Built runner/settings essentials and WorkspacesLib.UnitTests on the exact upstream head.",
-      "Validated review data with Test-ReviewData.ps1 -AllowIncomplete -CheckGitHub.",
-      "Drafted two current-head request-changes findings and took no upstream public action.",
-      "Context revalidation at 2026-09-16T11:42:07Z found no head change and no new substantive author fix; existing current-head findings remain valid."
+      "Detected that upstream head moved from 9cdc9e7583f2bcac6d3034a053b091314363c57b to 4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d, invalidating the prior draft review action.",
+      "Created and preserved fork PR 838 on branch pr-iterate/50508-v3 at the live upstream head.",
+      "Requested a fresh fork Copilot review at 2026-09-16T17:19:00.3052960Z.",
+      "Performed the one allowed immediate check; no submitted Copilot review newer than the request was available.",
+      "Cleared stale public review actions and left the PR in a durable waiting_copilot state.",
+      "No upstream public action was taken."
     ]
   },
   "freshness": {
-    "status": "current_head_reviewed",
-    "headRefOid": "9cdc9e7583f2bcac6d3034a053b091314363c57b",
-    "updatedAt": "2026-09-16T11:42:07Z",
-    "latestCopilotReviewAt": "09/16/2026 04:28:40",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-16T11:50:43.9901069Z"
+    "queued_at": "2026-09-16T17:19:02.5813319Z",
+    "checkpoint_at": "2026-09-16T17:19:02.5813319Z",
+    "latestCopilotRequestAt": "2026-09-16T17:19:00.305296Z",
+    "unresolvedForkCopilotThreads": 0
+  },
+  "fork_pr": {
+    "number": 838,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/838",
+    "state": "OPEN",
+    "head_sha": "4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d"
+  },
+  "fork_branch": "pr-iterate/50508-v3",
+  "fork_head_sha": "4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d",
+  "phase0": {
+    "authorAssociation": "MEMBER",
+    "disposition": "Proceed",
+    "processGates": "Member-authored PR; community process nags skipped. The PR includes scope, validation, and screenshot evidence. Live CI had queued/in-progress jobs and no current failed process gate at checkpoint time."
   },
   "validation": {
     "upstream_head": {
-      "head_sha": "9cdc9e7583f2bcac6d3034a053b091314363c57b",
-      "result": "passed",
-      "commands": [
-        "git -C <PowerToysCheckout> checkout --detach 9cdc9e7583f2bcac6d3034a053b091314363c57b",
-        "tools\\build\\build-essentials.cmd (restore plus runner/settings essentials; exited 0)",
-        "tools\\build\\build.cmd -Configuration Debug -Platform x64 in src\\modules\\Workspaces\\WorkspacesLib.UnitTests (exited 0)"
-      ],
-      "details": "Initial build attempts exposed environment/dependency setup only: first failed because inherited GIT_CONFIG_VALUE_3 broke vcpkg git, second failed on missing Microsoft.Windows.CppWinRT package. Clearing GIT_CONFIG_* and running build-essentials restored dependencies; the targeted exact-head WorkspacesLib.UnitTests project then built successfully."
+      "head_sha": "4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d",
+      "result": "not_started",
+      "details": "Deferred until the fresh fork Copilot review is available; the fork PR currently matches the upstream head and has no divergent review-loop fixes."
     },
-    "suggestion_patch": {
-      "head_sha": "9cdc9e7583f2bcac6d3034a053b091314363c57b",
-      "result": "not_applicable",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [],
-      "commands": [],
-      "details": "The proposed comments contain no literal suggestion blocks."
+    "fork_threads": {
+      "result": "passed",
+      "unresolvedCopilotThreads": 0
     }
   },
   "upstream_safety": {
     "public_actions_taken": false,
     "detail": "No public mutation was made to microsoft/PowerToys."
-  },
-  "source_activity": {
-    "reviewCommentCount": 11,
-    "reviewCount": 12,
-    "issueCommentCount": 7,
-    "latest_status_activity": "2026-09-16T11:42:07Z",
-    "context_revalidation": "Head unchanged at 9cdc9e7583f2bcac6d3034a053b091314363c57b; latest issue comment was Azure Pipelines, latest review activity was an empty author COMMENTED review, and the existing current-head request-changes draft remains valid."
   }
 }
