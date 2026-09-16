@@ -4,23 +4,156 @@
   "number": 50539,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "external",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T02:00:00Z",
-  "evaluated_at": "2026-09-16T02:00:00Z",
+  "generated_at": "2026-09-16T02:55:00Z",
+  "evaluated_at": "2026-09-16T02:55:00Z",
   "source_updated_at": "2026-09-15T09:29:31Z",
   "head_sha": "c2fe86dc4eecbed0291dd534fce161fef944c0fe",
   "title": "Ready for Review - [Mouse Jump] - add new (unused) library code as a prerequisite for #50462, #50464",
   "url": "https://github.com/microsoft/PowerToys/pull/50539",
   "status": {
     "glyph": "...",
-    "label": "Waiting for Copilot",
-    "detail": "Consumed the next review, fixed the TelemetryContext disposal-lifecycle finding at fork commit 4dedc633a2, resolved its thread, and passed the common build plus 22 focused tests. A fresh review for that head is pending."
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 811 converged with zero published findings and zero unresolved threads. The complete exact-head correction candidate builds with zero errors and passes 22 focused tests."
   },
-  "next_action": "On resume, consume a Copilot review for fork head 4dedc633a27e50a9e6ff78dff5313a0db55fbd6e before making any further request.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Seven consolidated Mouse Jump lifecycle, resource, telemetry, and Win32 findings remain absent from the upstream head."
+  },
+  "proposed_comments": [
+    {
+      "id": "blur-lifecycle-race-and-failure",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Keep blur completion tied to its original screen state",
+      "path": "src/modules/MouseUtils/MouseJump.Common/Blurring/ScreenshotBlurPipeline.cs",
+      "start_line": 230,
+      "line": 230,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep blur completion tied to its original screen state\n\n**Severity:** `high`\n\nIf blur creation throws, the current task can leave `BlurInProgress` set and never advance the queued screenshot. Separately, a screen can be removed and recreated with the same monitor handle while an older task is still running, allowing that task to overwrite the replacement state's `Done` image or clear its in-progress flag. Keep creation and recovery inside the guarded path, associate each task with the exact state instance or a generation, verify that identity before success and failure updates, dispose stale results, and still raise completion for discarded work.",
+      "confidence": {
+        "score": 99,
+        "rationale": "Both transitions are directly visible in the changed implementation and corrected by the exact-head candidate."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "capture-cancellation-and-disposal",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Preserve unexpected capture cancellation and dispose every provider",
+      "path": "src/modules/MouseUtils/MouseJump.Common/Capture/ScreenshotCapturePipeline.cs",
+      "start_line": 97,
+      "line": 97,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve unexpected capture cancellation and dispose every provider\n\n**Severity:** `high`\n\nOnly swallow `OperationCanceledException` when this pipeline's cancellation token is actually canceled; a provider or sink can raise cancellation for an unrelated reason and that failure must reach the aggregate result. `DisposeAsync` should attempt every provider even when waiting or an earlier provider fails, aggregate those failures, and document that disposal can throw the aggregate rather than promising that cleanup never reports errors.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The pipeline's cancellation and cleanup paths alter observable failure semantics; the complete correction candidate passes."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "native-handle-cleanup",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Make native capture cleanup independent",
+      "path": "src/modules/MouseUtils/MouseJump.Common/Capture/DesktopScreenshotCaptureProvider.cs",
+      "start_line": 139,
+      "line": 139,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Make native capture cleanup independent\n\n**Severity:** `high`\n\nA failed `SetStretchBltMode` occurs after the graphics HDC has been acquired, and a failure releasing the graphics HDC can otherwise skip releasing the desktop HDC. Release each acquired native resource in its own nested `try/finally` path so one cleanup failure cannot leak the other handle; preserve the existing failure rather than silently replacing it.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The changed failure branches can bypass independent native handle releases; the correction candidate closes both paths."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "bitmap-allocation-cleanup",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Dispose allocated bitmaps on construction failures",
+      "out_of_diff_reason": "The required cleanup spans multiple allocation sites and exception paths, so no single minimal current-head range safely expresses the complete correction.",
+      "body": "### Dispose allocated bitmaps on construction failures\n\n**Affected code:** `src/modules/MouseUtils/MouseJump.Common/Helpers/BlurHelper.cs` (`CreateMutedImage`), `src/modules/MouseUtils/MouseJump.Common/Capture/StaticScreenshotCaptureProvider.cs`, and `src/modules/MouseUtils/MouseJump.Common/Bezels/CornerTemplates.cs` (`ScaleHalf`).\n\n**Problem:** Each method allocates a `Bitmap` before `Graphics.FromImage`, drawing, scaling, or blur operations that can throw. The exception path currently loses the only reference to the native bitmap.\n\n**Why it matters:** Repeated capture or renderer-construction failures leak GDI resources and can eventually prevent later screenshots or bezel rendering from being created.\n\n**Suggested change:**\n1. Keep the allocated bitmap in a local nullable variable.\n2. Perform the remaining work inside `try` and set the local to null only after ownership transfers to the caller.\n3. Dispose the local in `catch` before rethrowing.\n4. Apply the same ownership pattern to every allocation in the three named methods.\n\n**Verification:** Force a graphics or draw failure in each helper and verify the exception propagates while the allocated bitmap is disposed; run the Mouse Jump common unit suite afterward.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The affected helpers allocate GDI bitmaps before throwable operations, and the validated correction closes each failure path."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "bezel-geometry-validation",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Validate bezel widths and drawable geometry",
+      "path": "src/modules/MouseUtils/MouseJump.Common/Bezels/BezelRenderer.cs",
+      "start_line": 91,
+      "line": 91,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Validate bezel widths and drawable geometry\n\n**Severity:** `medium`\n\nThe renderer truncates the style width to an integer and uses one profile for all sides, so fractional, zero, or asymmetric borders can fail later or render the wrong geometry. The public draw path also reaches equal-endpoint or negative strip cases when a target dimension is at or below twice the bezel width. Reject unsupported non-positive, subpixel, or asymmetric styles explicitly and skip or reject zero-length and undersized edge geometry before constructing gradient brushes.",
+      "confidence": {
+        "score": 95,
+        "rationale": "Invalid style and geometry cases are directly reachable and handled by the validated correction."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "telemetry-lifecycle-and-serialization",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Make telemetry shutdown and writer synchronization failure-safe",
+      "path": "src/modules/MouseUtils/MouseJump.Common/Telemetry/TelemetryAdapter.cs",
+      "start_line": 97,
+      "line": 97,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Make telemetry shutdown and writer synchronization failure-safe\n\n**Severity:** `high`\n\nA writer exception must not terminate the only consumer while later `Flush` or `Dispose` calls continue waiting forever; retain the failure and complete or fault pending flush signals. Hold the write gate through the operation that pauses or flushes writing, skip the scope activity itself when flattening records, and clear `TelemetryContext.adapter` before disposing the captured adapter so a failed shutdown cannot leave a disposed instance installed.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The single-consumer lifetime and gate transitions can deadlock or emit incorrect records; the full correction candidate passes."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "win32-wrapper-result-contracts",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve native result semantics and generate every declared API",
+      "out_of_diff_reason": "The correction covers several independent wrappers plus the CsWin32 manifest, so a single inline replacement would be incomplete and unsafe.",
+      "body": "### Preserve native result semantics and generate every declared API\n\n**Affected code:** `User32_SendInput.SendInput`, `User32_TrackPopupMenuEx.TrackPopupMenuEx`, `User32_GetSystemMetrics.GetSystemMetrics`, and `src/modules/MouseUtils/MouseJump.Common/NativeMethods.txt`.\n\n**Problem:** `SendInput` returns a count and partial insertion is not success; `TrackPopupMenuEx` returns command ID 0 for normal dismissal under `TPM_RETURNCMD`; and zero is a valid result for some system metrics. The new wrappers also reference generated APIs that are absent from the CsWin32 manifest.\n\n**Why it matters:** Callers can continue after only part of an input sequence, throw whenever a user dismisses a context menu, or treat valid display metrics as failures. Missing manifest entries prevent the new wrappers from compiling.\n\n**Suggested change:**\n1. Compare `SendInput`'s result with the requested count.\n2. Preserve the integer menu command and model cancellation separately from API failure.\n3. Retain raw system-metric zero values.\n4. Add `DestroyCursor`, `DestroyIcon`, `DestroyMenu`, `DeleteObject`, `CloseHandle`, and `FreeLibrary` to `NativeMethods.txt`.\n\n**Verification:** Build `MouseJump.Common` for x64 and exercise partial input, menu dismissal, zero-valued metrics, and generated API references in focused tests or equivalent mocks.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The corrected wrappers preserve documented Win32 semantics and the manifest additions enable the generated APIs."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50539",
+      "type": "request_changes",
+      "label": "Request seven Mouse Jump corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50539,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "c2fe86dc4eecbed0291dd534fce161fef944c0fe",
+        "body": "Please address the lifecycle, native-resource, synchronization, and Win32-result issues below before merging."
+      },
+      "note": "Draft only. Five inline comments and two separate PR conversation comments require explicit maintainer approval."
+    }
+  ],
   "validation": {
     "fork_head": {
       "head_sha": "4dedc633a27e50a9e6ff78dff5313a0db55fbd6e",
@@ -35,11 +168,21 @@
         "failed": 0
       },
       "details": "The corrected fork candidate builds and passes the focused Mouse Jump suite. The WinUI build remains environment-blocked in pre-existing CppWinRT logger/GPOWrapper dependencies without a source diagnostic."
+    },
+    "upstream_head": {
+      "head_sha": "c2fe86dc4eecbed0291dd534fce161fef944c0fe",
+      "result": "passed",
+      "commands": [
+        "Apply the complete meaningful fork correction patch to the pinned upstream head",
+        "Build MouseJump.Common Debug x64",
+        "Build and run MouseJump.Common.UnitTests"
+      ],
+      "details": "The exact correction candidate builds with zero warnings and errors; 22 tests pass and one is skipped."
     }
   },
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-16T02:00:00Z",
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-16T02:55:00Z",
     "previous_phase": {
       "artifact": "missing",
       "inventory_classification": "excluded",
@@ -57,10 +200,11 @@
         "fix_commit": "4dedc633a27e50a9e6ff78dff5313a0db55fbd6e",
         "resolved_threads": 1
       },
-      "outstanding_request": {
-        "requested_head_sha": "4dedc633a27e50a9e6ff78dff5313a0db55fbd6e",
-        "immediate_check": "No submitted review was available after the bounded check; no duplicate request was made.",
-        "polling": "Stopped after the permitted bounded check."
+      "final": {
+        "reviewed_head_sha": "4dedc633a27e50a9e6ff78dff5313a0db55fbd6e",
+        "submitted_at": "2026-09-16T01:22:34Z",
+        "published_comments": 0,
+        "unresolved_threads": 0
       }
     },
     "fork_trace": [
@@ -68,15 +212,18 @@
       "Cleared TelemetryContext.adapter before disposing the captured adapter so disposal failure cannot retain a completed adapter.",
       "Pushed corrected fork head 4dedc633a27e50a9e6ff78dff5313a0db55fbd6e.",
       "Replied to and resolved the review thread.",
-      "Requested one fresh Copilot review and stopped without a duplicate request when no submitted review was available."
+      "Consumed the final review for fork head 4dedc633a27e50a9e6ff78dff5313a0db55fbd6e; it published zero findings and left zero unresolved threads.",
+      "Materialized every meaningful fork correction as five inline and two implementation-ready companion comments.",
+      "Applied the complete correction patch to a clean checkout of the live upstream head.",
+      "Built MouseJump.Common and its unit tests successfully; 22 tests passed and one was skipped."
     ]
   },
   "freshness": {
     "queued_at": "2026-09-15T10:15:20.098692Z",
-    "checkpoint_at": "2026-09-16T02:00:00Z",
+    "checkpoint_at": "2026-09-16T02:55:00Z",
     "upstream_head": "c2fe86dc4eecbed0291dd534fce161fef944c0fe",
     "source_updated_at": "2026-09-15T09:29:31Z",
-    "stale_expectation": "This waiting checkpoint remains valid while upstream stays unchanged and the fresh review for fork head 4dedc633a27e50a9e6ff78dff5313a0db55fbd6e has not been consumed."
+    "stale_expectation": "The drafted action remains current while the upstream head and relevant activity stay unchanged."
   },
   "fork_pr": {
     "number": 811,
