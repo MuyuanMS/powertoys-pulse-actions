@@ -4,35 +4,134 @@
   "number": 48524,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "external",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T02:10:00Z",
-  "evaluated_at": "2026-09-16T02:10:00Z",
+  "generated_at": "2026-09-16T02:45:00Z",
+  "evaluated_at": "2026-09-16T02:45:00Z",
   "source_updated_at": "2026-07-01T22:26:03Z",
   "head_sha": "e54b77e159f4f1bfe4f816428954b8b4333cf786",
   "title": "Added eraser tool with pixel and stroke modes in ZoomIt suite",
   "url": "https://github.com/microsoft/PowerToys/pull/48524",
-  "summary": "All 16 Advanced Security threads are resolved, and a narrow local fallback successfully compiled and linked the corrected ZoomIt executable. A fresh Copilot review is required for the latest declaration fix; full exact-head restore remains separately unavailable through Azure Artifacts.",
+  "summary": "The exact upstream head plus the complete meaningful ZoomIt correction set compiles and links successfully. The current fork review is clean with zero unresolved Copilot or Advanced Security threads, and five current-head eraser findings are ready for maintainer review.",
   "status": {
     "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Fork PR 599 advanced to 63676fb56e. Its direct Debug x64 ZoomIt build compiles and links successfully with existing local dependencies; a fresh review is pending for the latest declaration fix."
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 599 is clean at 63676fb56e. Its current-head Copilot review has zero findings, and the exact upstream-head correction candidate builds PowerToys.ZoomIt.exe successfully."
   },
   "next_action": {
     "glyph": "...",
-    "label": "Consume the fresh review for the corrected ZoomIt head",
-    "reason": "The fork build is no longer blocked; review convergence and current-head comment materialization remain."
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Five validated eraser lifecycle, rendering, input, performance, and localization findings remain on the upstream head."
   },
   "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "zoomit-eraser-state-lifecycle",
+      "kind": "inline",
+      "severity": "critical",
+      "title": "Centralize eraser state cleanup",
+      "path": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+      "start_line": 442,
+      "line": 453,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Centralize eraser state cleanup\n\n**Severity:** `critical`\n\nCentralize eraser disengagement for every transition that leaves drawing or changes the drawing state. The cleanup must restore cursor clipping, re-enable Sticky Keys, clear the engaged state, restore the transient cursor area before changing the mode, and re-establish the normal drawing constraint when drawing continues. Apply this consistently across LiveDraw transitions, typing, color changes, clear, undo, plain E, and exit-mode paths rather than maintaining separate partial state resets.\n\n**Verification:** Exercise mouse and tablet erasing, then switch to LiveDraw, typing, colors, Ctrl+Z, clear, plain E, and exit drawing. Verify that cursor movement and Sticky Keys return to their normal state after every transition.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The correction candidate centralizes the state restoration and builds successfully at the exact upstream head."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "zoomit-eraser-pixel-and-swept-input",
+      "kind": "inline",
+      "severity": "critical",
+      "title": "Erase exact ink pixels across the swept input path",
+      "path": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+      "start_line": 6647,
+      "line": 6650,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Erase exact ink pixels across the swept input path\n\n**Severity:** `critical`\n\nUse an exact masked RGB comparison for eraser ink detection. The current channel-distance threshold can classify anti-aliased, translucent, or highlighter pixels as background, leaving visible remnants behind. The stroke path must also process the complete swept segment between consecutive pointer positions so fast mouse or pen movement cannot skip sections of a stroke.\n\n**Verification:** Draw thin, anti-aliased, translucent, and highlighted strokes. Erase them slowly and quickly, including diagonal paths and sparse pointer updates, and verify that no visible fragments remain.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The validated correction replaces threshold-based detection and processes the full pointer segment."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "zoomit-stroke-component-and-performance",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Preserve stroke identity and bound eraser work",
+      "out_of_diff_reason": "This requires coordinated flood-fill identity, gesture sampling, and canvas-buffer lifetime changes; no single current RIGHT-side range safely represents the complete fix.",
+      "body": "### Preserve stroke identity and bound eraser work\n\n**Affected code:** `src/modules/ZoomIt/ZoomIt/Zoomit.cpp`, including stroke flood-fill, gesture sampling, and canvas-buffer lifetime.\n\n**Problem:** Stroke erasing can remove every 8-connected ink component touched by the flood fill, so anti-aliased contact can merge visually separate strokes. The gesture also repeatedly copies the full canvas into DIB sections and allocates a full visited buffer for sampled points.\n\n**Why it matters:** Erasing one stroke can remove neighboring content, and continuous erasing can become unresponsive on large monitors.\n\n**Suggested change:**\n1. Track the intended stroke boundary rather than treating every connected ink pixel as the same stroke.\n2. Reuse gesture-scoped canvas and visited state, or otherwise bound allocation and full-canvas copies across sampled points.\n3. Preserve the existing background restoration behavior for pixel mode.\n\n**Verification:** Draw two touching or overlapping strokes and erase only one; confirm the other remains. Repeat on a large canvas with continuous eraser movement and verify input remains responsive.",
+      "confidence": {
+        "score": 86,
+        "rationale": "The fork correction addresses both connected-component overreach and repeated full-canvas gesture costs and builds in the exact candidate."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "zoomit-tablet-and-undo-state",
+      "kind": "inline",
+      "severity": "critical",
+      "title": "Keep tablet and undo transitions consistent with eraser state",
+      "path": "src/modules/ZoomIt/ZoomIt/Zoomit.cpp",
+      "start_line": 9328,
+      "line": 9374,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep tablet and undo transitions consistent with eraser state\n\n**Severity:** `critical`\n\nKeep tablet hover transformation, pen inversion, and synthetic mouse transitions consistent with eraser gesture state. While an eraser gesture is active, stylus inversion and Ctrl+Z must not be interpreted as ordinary drawing undo, and pointer-up handling must not synthesize a right-button transition that unexpectedly exits drawing. Gate these transitions on the eraser state and restore normal drawing constraints when the gesture ends.\n\n**Verification:** Test mouse and tablet input, pen hover, pen inversion or barrel input, Ctrl+Z, pointer-up, and Shift+E while erasing. Verify there is no unintended undo, mode exit, cursor jump, or lost tablet input.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The validated candidate coordinates pointer and undo transitions with the eraser gesture state."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "zoomit-resource-localization-and-layout",
+      "kind": "inline",
+      "severity": "moderate",
+      "title": "Localize eraser labels and preserve dialog layout",
+      "path": "src/modules/ZoomIt/ZoomIt/ZoomIt.rc",
+      "start_line": 204,
+      "line": 210,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Localize eraser labels and preserve dialog layout\n\n**Severity:** `moderate`\n\nKeep the new eraser popup labels in the resource table and enlarge or reflow the Draw and Options dialogs so the eraser instructions and existing controls remain visible. Add matching identifiers in `resource.h`; do not hard-code user-facing popup text in `Zoomit.cpp`.\n\n**Verification:** Open the Draw and Options tabs at 100%, 125%, and 200% scaling. Confirm the eraser instructions, hotkey control, bottom checkboxes, and dialog buttons are all visible in localized builds.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The exact correction candidate moves strings into resources and updates the dialog layout and identifiers."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-48524",
+      "type": "request_changes",
+      "label": "Request five ZoomIt eraser corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 48524,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "e54b77e159f4f1bfe4f816428954b8b4333cf786",
+        "body": "The eraser feature needs its state lifecycle, pixel and stroke behavior, tablet transitions, performance, and localized dialog integration corrected before merge."
+      },
+      "note": "Draft only. Four inline comments and one separate PR conversation comment require explicit maintainer approval."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "building",
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
     "review_round": 12,
-    "checkpoint_at": "2026-09-16T02:10:00Z",
+    "checkpoint_at": "2026-09-16T02:45:00Z",
     "advancement_evidence": [
       "Rechecked the unchanged live upstream head.",
       "Resumed fork PR 599 and preserved its twelve-commit correction trace.",
@@ -45,21 +144,23 @@
       "Built ZoomItBreak, Version, logger, SettingsAPI, and EtwTrace dependencies directly.",
       "Compiled and linked the corrected Debug x64 PowerToys.ZoomIt.exe without restore.",
       "Fixed the required Sticky Keys helper declaration ordering at fork head 63676fb56eb7424e8d769920f4ea794e44b4ba83.",
-      "Started a fresh Copilot convergence pass for that corrected fork head."
+      "Consumed the existing current-head Copilot review; it has zero findings and zero unresolved threads.",
+      "Applied only the meaningful three-file ZoomIt correction set to the exact upstream head.",
+      "Excluded the unrelated generated App_h.h cleanup from the review payload.",
+      "Built and linked the exact-head correction candidate successfully without restore.",
+      "Validated every inline anchor against the current RIGHT-side diff."
     ],
     "remaining_work": [
-      "Consume the fresh Copilot review for fork head 63676fb56eb7424e8d769920f4ea794e44b4ba83.",
-      "Materialize the meaningful ZoomIt fork diff as current-head review comments.",
-      "Keep the unrelated generated App_h.h cleanup out of the ZoomIt review."
+      "Await explicit maintainer approval before posting the drafted request-changes review."
     ]
   },
   "freshness": {
     "headRefOid": "e54b77e159f4f1bfe4f816428954b8b4333cf786",
     "updatedAt": "2026-07-01T22:26:03Z",
-    "latestCopilotReviewAt": "2026-09-15T20:12:26Z",
+    "latestCopilotReviewAt": "2026-09-16T02:08:22Z",
     "unresolvedForkCopilotThreads": 0,
     "unresolvedForkAdvancedSecurityThreads": 0,
-    "checkedAt": "2026-09-16T02:10:00Z"
+    "checkedAt": "2026-09-16T02:45:00Z"
   },
   "fork_pr": {
     "number": 599,
@@ -81,11 +182,12 @@
     },
     "upstream_head": {
       "head_sha": "e54b77e159f4f1bfe4f816428954b8b4333cf786",
-      "result": "blocked",
+      "result": "passed",
       "commands": [
-        "Restore exact upstream suggestion candidate"
+        "Apply only the meaningful ZoomIt correction set to the pinned upstream head",
+        "Build ZoomIt Debug x64 without restore"
       ],
-      "details": "Azure Artifacts returned HTTP 401 for required .NET 8.0.31 runtime packages, leaving dependent sources unavailable. This is resumable and not terminal."
+      "details": "The exact-head correction candidate compiled and linked PowerToys.ZoomIt.exe successfully using local dependency outputs and package caches; Azure authentication was not required."
     }
   },
   "blockers": [],
