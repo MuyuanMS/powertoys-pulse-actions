@@ -4,44 +4,129 @@
   "number": 50508,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T20:00:42.9374003Z",
-  "evaluated_at": "2026-09-16T20:00:42.9374003Z",
-  "source_updated_at": "2026-09-16T16:41:11Z",
+  "generated_at": "2026-09-16T21:55:00Z",
+  "evaluated_at": "2026-09-16T21:55:00Z",
+  "source_updated_at": "2026-09-16T18:22:18Z",
   "head_sha": "4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d",
   "title": "feat(workspaces): warn before unverified elevated app launches",
   "url": "https://github.com/microsoft/PowerToys/pull/50508",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting for Copilot review",
-    "detail": "Consumed fork Copilot review 5226082003 submitted at 2026-09-16T17:31:17Z after the previous request, fixed five valid findings on branch pr-iterate/50508-v3 at 248387b68472394bef99362756e0e432f5d8d007, resolved three fork Copilot threads, passed focused Workspaces launcher UI/lib builds, and requested one fresh follow-up Copilot review at 2026-09-16T20:00:21.3933830Z. Next run must inspect fork PR 838 before requesting another."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Consumed fresh fork Copilot review 5227825289 submitted at 2026-09-16T20:14:31Z after the previous request; it had zero actionable new comments and zero unresolved Copilot threads. The validated fork still contains five meaningful fixes that are absent from the upstream head, so current-head general review notes remain for maintainer approval."
   },
   "next_action": {
-    "glyph": "⏳",
-    "label": "Resume after Copilot review",
-    "reason": "A fresh follow-up review was requested after the fork-only fixes; do not request another review until fork PR 838 is inspected for a submitted review newer than 2026-09-16T20:00:21.3933830Z."
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The fresh follow-up Copilot review is clean, focused validation passed, and the remaining fork-only fixes are represented as current-head general review notes."
   },
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "launcher-approval-ui-fallback",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Fail or retry approval requests when the UI never becomes visible",
+      "out_of_diff_reason": "The required fallback logic is absent from the current upstream diff and spans the launcher approval flow rather than a single minimal inline range.",
+      "body": "### Fail or retry approval requests when the UI never becomes visible\n\n**Affected code:** `src/modules/Workspaces/WorkspacesLauncher/Launcher.cpp` (`Launcher::requestApproval`) and the approval request state shared with the launcher UI.\n\n**Problem:** When an approval request is pending but the approval window has not been shown, the launcher can keep waiting after an early request delivery race instead of surfacing that the UI is unavailable.\n\n**Why it matters:** Elevated-app launch approval can stall in a pending state even though the launcher and UI are alive enough to recover or fail deterministically.\n\n**Suggested change:**\n1. While holding the UI-helper mutex, detect the pending-but-not-shown state.\n2. Retry the approval request delivery once the UI helper is available.\n3. If the request still cannot be delivered, fail the pending decision with the existing unavailable-UI result instead of leaving it pending.\n4. Keep the failure path observable through the existing Workspaces launcher logging/result handling.\n\n**Verification:** Run the Workspaces launcher approval-flow tests, including UI startup and unavailable-UI cases.",
+      "confidence": {
+        "score": 92,
+        "rationale": "The fork review loop validated the fallback behavior and the fresh Copilot follow-up had no actionable comments."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "launcher-ui-dispatcher-shutdown",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Guard IPC callbacks during dispatcher shutdown",
+      "out_of_diff_reason": "The shutdown guard and targeted exception handling are absent from the current upstream diff and apply to teardown control flow rather than a localized changed range.",
+      "body": "### Guard IPC callbacks during dispatcher shutdown\n\n**Affected code:** `src/modules/Workspaces/WorkspacesLauncherUI/ViewModels/MainViewModel.cs` (`ReceiveMessage` and dispatcher callback scheduling).\n\n**Problem:** Messages can arrive while the view model has stopped or the dispatcher is shutting down. Calling `BeginInvoke` in that state can throw during teardown.\n\n**Why it matters:** Launcher UI shutdown can become noisy or fail around normal process teardown, especially when IPC callbacks race with disposal.\n\n**Suggested change:**\n1. Return before scheduling work when the view model has stopped.\n2. Check dispatcher shutdown state before `BeginInvoke`.\n3. Catch the expected dispatcher-shutdown `InvalidOperationException` narrowly and log it through the existing warning path.\n4. Preserve normal exception behavior for non-shutdown failures.\n\n**Verification:** Run the Workspaces launcher UI unit tests and add or run shutdown/message-race coverage that delivers a message during teardown.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The race was identified by fork Copilot review and the focused Workspaces launcher UI build/tests passed after the fix."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "status-window-distinct-automation-id",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Use distinct automation IDs for skipped launch states",
+      "out_of_diff_reason": "The exact XAML/UI automation adjustment is absent from the current upstream diff and is best described as a UI automation contract fix.",
+      "body": "### Use distinct automation IDs for skipped launch states\n\n**Affected code:** `src/modules/Workspaces/WorkspacesLauncherUI/StatusWindow.xaml` (launch-state text/glyph automation identifiers).\n\n**Problem:** The skipped-state presentation can expose a launch-state automation ID that collides with its glyph peer or otherwise leaves the UI automation query ambiguous.\n\n**Why it matters:** UI automation tests and accessibility tooling need a stable element identity for each terminal launch state.\n\n**Suggested change:**\n1. Assign a stable, distinct `AutomationProperties.AutomationId` to the state text element, derived from the workspace name.\n2. Ensure the selector used by tests targets one visible element rather than both a collapsed peer and a visible state.\n3. Keep the existing `LaunchState_{Name}` contract available for the terminal state that maintainers expect to query.\n\n**Verification:** Run the Workspaces launcher UI automation tests for skipped and non-skipped rows.",
+      "confidence": {
+        "score": 88,
+        "rationale": "The validated fork fix targeted the automation ambiguity and the fresh Copilot follow-up produced no actionable comments."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "pending-approval-visibility-sync",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Synchronize pending approval visibility checks",
+      "out_of_diff_reason": "The synchronized visibility accessor is absent from the current upstream diff and affects shared launcher/UI state.",
+      "body": "### Synchronize pending approval visibility checks\n\n**Affected code:** `src/modules/Workspaces/WorkspacesLib/PendingLaunchApproval.h` (`PendingLaunchApproval::IsShown` or equivalent visibility state).\n\n**Problem:** Approval visibility is shared across launcher and UI threads, but the decision about whether to dispatch another approval request needs a lock-protected read of that state.\n\n**Why it matters:** An unsynchronized read can miss the startup race the fallback is meant to handle, or introduce a data race in the approval lifecycle.\n\n**Suggested change:**\n1. Expose a lock-protected visibility accessor on the pending approval object.\n2. Use that accessor when deciding whether the approval request must be dispatched again.\n3. Keep all state transitions for pending/shown/completed approval decisions under the same synchronization boundary.\n\n**Verification:** Run approval lifecycle tests that cover concurrent request delivery and UI initialization.",
+      "confidence": {
+        "score": 93,
+        "rationale": "The fork-only fix was part of the validated approval-race correction and focused Workspaces builds passed."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "signature-verification-final-path-normalization",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Normalize the final executable path before signature verification",
+      "out_of_diff_reason": "The centralized path-normalization helper and call-site wiring are absent from the current upstream diff.",
+      "body": "### Normalize the final executable path before signature verification\n\n**Affected code:** `src/modules/Workspaces/WorkspacesLib/SignatureVerification.cpp` (path normalization before signature-verification dispatch).\n\n**Problem:** Extended paths need to be normalized only after the final executable path is resolved: `\\\\?\\UNC\\` paths should become UNC paths, drive-letter paths can drop the `\\\\?\\` prefix, and non-drive volume/device paths must not be made relative.\n\n**Why it matters:** Passing inconsistent or incorrectly stripped paths into signature verification can reject valid executables or mis-handle volume/device paths.\n\n**Suggested change:**\n1. Centralize final-path normalization in one helper.\n2. Convert `\\\\?\\UNC\\` paths to normal UNC paths.\n3. Remove the `\\\\?\\` prefix only for drive-letter paths.\n4. Preserve non-drive volume/device paths such as `\\\\?\\Volume{GUID}\\app.exe`.\n5. Apply the helper to the final resolved executable path before dispatching signature verification.\n\n**Verification:** Run WorkspacesLib signature-verification tests for drive-letter, UNC, extended UNC, and volume/device executable paths.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The fork review loop validated the final-path normalization and focused WorkspacesLib build passed."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50508",
+      "type": "request_changes",
+      "label": "Request five Workspaces launcher corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50508,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d",
+        "body": "Please address the Workspaces launcher approval, teardown, automation, shared-state, and path-normalization issues below before merging."
+      },
+      "note": "Draft only. Five general review notes — separate PR conversation comments — require explicit maintainer approval."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
+    "phase": "review_drafted",
     "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-16T20:00:42.9374003Z",
+    "checkpoint_at": "2026-09-16T21:55:00Z",
     "advancement_evidence": [
       "Consumed fork Copilot review 5226082003 submitted at 2026-09-16T17:31:17Z after the 2026-09-16T17:19:00.3052960Z request.",
       "Fixed five valid findings on fork commit 248387b68472394bef99362756e0e432f5d8d007: WorkspacesLauncherUI.UnitTests Windows Forms build metadata, MainViewModel dispatcher shutdown race, LauncherUIHelper async pipe send acknowledgement, StatusWindow skipped-state automation ID, and SignatureVerification extended-path handling.",
       "Resolved fork Copilot threads PRRT_kwDOM2Pyb86jCt5c, PRRT_kwDOM2Pyb86jCt6L, and PRRT_kwDOM2Pyb86jCt6-; zero unresolved Copilot threads remain.",
       "Restored/build-essentials prerequisites after local restore/environment failures, then passed focused x64 Release builds for WorkspacesLauncherUI.UnitTests and WorkspacesLib.UnitTests.",
       "Requested one fresh follow-up fork Copilot review at 2026-09-16T20:00:21.3933830Z before the run cutoff and performed the one allowed immediate check; no submitted follow-up review was available yet.",
+      "Consumed fresh fork Copilot review 5227825289 submitted at 2026-09-16T20:14:31Z after the request; it reported zero new published comments and left zero unresolved Copilot threads.",
+      "Mapped five meaningful fork-only fixes to current-head general review notes because upstream head 4cf37e5da9e0c64fcdd8a03a32fde65d34097a6d does not contain them.",
       "No upstream public action was taken."
     ]
   },
   "freshness": {
     "queued_at": "2026-09-16T20:00:42.9374003Z",
-    "checkpoint_at": "2026-09-16T20:00:42.9374003Z",
-    "latestCopilotReviewAt": "2026-09-16T17:31:17Z",
+    "checkpoint_at": "2026-09-16T21:55:00Z",
+    "latestCopilotReviewAt": "2026-09-16T20:14:31Z",
     "latestCopilotRequestAt": "2026-09-16T20:00:21.393383Z",
     "unresolvedForkCopilotThreads": 0
   },
@@ -86,6 +171,20 @@
         "tools\\build\\build.cmd -Platform x64 -Configuration Release (WorkspacesLib.UnitTests)"
       ],
       "details": "Focused Workspaces launcher UI and library unit-test builds passed after restoring repository prerequisites."
+    },
+    "fork_head": {
+      "head_sha": "248387b68472394bef99362756e0e432f5d8d007",
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build.cmd -Platform x64 -Configuration Release (WorkspacesLauncherUI.UnitTests)",
+        "tools\\build\\build.cmd -Platform x64 -Configuration Release (WorkspacesLib.UnitTests)",
+        "WorkspacesLauncherUI.UnitTests"
+      ],
+      "tests": {
+        "passed": 92,
+        "failed": 0
+      },
+      "details": "Fresh follow-up review was clean after the fork-only fixes; focused builds and WorkspacesLauncherUI.UnitTests passed."
     }
   },
   "upstream_safety": {
