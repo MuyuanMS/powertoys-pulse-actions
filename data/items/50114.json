@@ -2,134 +2,47 @@
   "number": 50114,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-15T15:35:00Z",
-  "evaluated_at": "2026-09-15T15:35:00Z",
-  "source_updated_at": "2026-08-25T15:01:46Z",
-  "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-09-16T13:12:09.9354407Z",
+  "evaluated_at": "2026-09-16T13:12:09.9354407Z",
+  "source_updated_at": "2026-09-16T12:41:48Z",
+  "head_sha": "48d6403e8e7a6edb7ca38d8ad5b997b23f78a3f0",
   "title": "Disable cursor wrap on the top edge of monitors when in an RDP session.",
   "url": "https://github.com/microsoft/PowerToys/pull/50114",
-  "summary": "The preserved fork review converged with zero new Copilot comments and zero unresolved threads. The exact upstream CursorWrap build reproduces a production-project failure, while the literal four-fix candidate builds and passes all 7 focused tests. Four current-head findings remain for maintainer approval; upstream CI is also failed and PR intake requested visual evidence.",
+  "summary": "The upstream head changed from 620ae8838d2257594d617891ecbe9f4ae3f03a2a to 48d6403e8e7a6edb7ca38d8ad5b997b23f78a3f0 via a main merge, so the previous drafted review action is no longer current. The PR is currently labeled Needs-Author-Feedback and the latest intake comment asks the author to add visual evidence for the product UI change; no new maintainer review action is proposed until that evidence arrives.",
   "status": {
-    "glyph": "📝",
-    "label": "Review complete — approval required",
-    "detail": "Fork PR 452 converged at 13da307495323132951df02ca2b108dccfc34217. The exact upstream production project fails because a unit-test source is compiled into CursorWrap; the validated correction candidate builds both affected projects and passes 7/7 tests."
+    "glyph": "⏳",
+    "label": "Waiting on author feedback",
+    "detail": "Live head is 48d6403e8e7a6edb7ca38d8ad5b997b23f78a3f0. The previous review draft was pinned to 620ae8838d2257594d617891ecbe9f4ae3f03a2a and has been cleared. Upstream now has a Needs-Author-Feedback label and an intake request for screenshot, GIF, or video evidence before review continues."
   },
   "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "Four findings are pinned to the unchanged upstream head. No upstream write has occurred."
+    "glyph": "⏳",
+    "label": "Wait for the author to add visual evidence",
+    "reason": "The latest upstream intake request asks the author to add a screenshot, GIF, or video to the PR description. Re-run the review after the author updates or removes the author-wait condition."
   },
   "confidence": "High",
   "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "production-build-isolation",
-      "kind": "inline",
-      "title": "Keep unit-test sources out of the production DLL",
-      "severity": "high",
-      "body": "### Keep unit-test sources out of the production DLL\n\n**Severity:** `high`\n\n`UnitTests\\MonitorTopologyTests.cpp` is listed in the production `CursorWrap.vcxproj`, so the production project attempts to compile the CppUnitTest source. This causes the exact upstream CursorWrap build to fail with `C1010` while looking for the precompiled header and would incorrectly place test code in the production build. Remove this compile entry; the file is already owned by `CursorWrapUnitTests.vcxproj`.\n\n**Verification:** Build both CursorWrap projects and run `CursorWrap.UnitTests`.",
-      "path": "src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj",
-      "start_line": 100,
-      "line": 100,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 99,
-        "rationale": "The exact upstream build fails at this production compile entry, and removing it is part of the candidate that builds and passes all focused tests."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "suppressed-top-corner-direction",
-      "kind": "inline",
-      "title": "Do not wrap sideways from a suppressed top corner",
-      "severity": "high",
-      "body": "### Do not wrap sideways from a suppressed top corner\n\n**Severity:** `high`\n\nWhen the top edge is suppressed at a global-top monitor corner, the current code removes only the `Top` candidate and then allows the remaining `Left` or `Right` candidate to win. Upward or unknown movement can therefore wrap sideways instead of being blocked at the RDP connection-bar edge.\n\nHandle this condition before candidate selection: return no edge for vertical-dominant or unknown movement, while preserving side wrapping for horizontal movement. Add corner-focused regression coverage.",
-      "path": "src/modules/MouseUtils/CursorWrap/MonitorTopology.cpp",
-      "start_line": 304,
-      "line": 315,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 96,
-        "rationale": "The candidate-selection flow directly permits the sideways fallback, and the validated correction handles the direction before selecting an edge."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "suppressed-top-corner-test",
-      "kind": "inline",
-      "title": "Add regression coverage for suppressed top corners",
-      "severity": "medium",
-      "body": "### Add regression coverage for suppressed top corners\n\n**Severity:** `medium`\n\nThe current tests verify ordinary top suppression and unaffected horizontal edges, but not the corner fallback that can wrap upward movement sideways. Add a test covering a global-top corner with upward movement and unknown direction, both of which must return no edge, plus horizontal movement, which must still select the side edge.\n\n**Verification:** Run the focused CursorWrap unit-test assembly and confirm all corner-direction cases pass.",
-      "path": "src/modules/MouseUtils/CursorWrap/UnitTests/MonitorTopologyTests.cpp",
-      "start_line": 184,
-      "line": 184,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 94,
-        "rationale": "The missing branch is observable at a top corner and is covered by the validated candidate's regression test."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "rdp-setting-atomicity",
-      "kind": "inline",
-      "title": "Synchronize the live RDP setting",
-      "severity": "high",
-      "body": "### Synchronize the live RDP setting\n\n**Severity:** `high`\n\nThe settings runner thread writes `m_suppressTopEdgeWrapInRemoteSession` while `MouseHookProc` reads it on a separate hook thread. Keeping this as a plain `bool` creates a C++ data race when the setting changes while Cursor Wrap is active.\n\nStore it as `std::atomic_bool` and use a relaxed load in the hook path. Rebuild CursorWrap and rerun the focused unit tests.",
-      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
-      "start_line": 87,
-      "line": 87,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 97,
-        "rationale": "The setting is written and read by distinct live threads without synchronization; the validated candidate uses an atomic value."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50114",
-      "type": "request_changes",
-      "label": "Request changes with four current-head CursorWrap findings",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50114,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a"
-      },
-      "note": "Draft only. Four inline findings will be submitted as one request-changes review after explicit maintainer approval; no public write has occurred."
-    }
-  ],
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
-    "phase": "review_drafted",
-    "previous_phase": "building",
-    "checkpoint_at": "2026-09-15T15:35:00Z",
+    "phase": "awaiting_author",
+    "previous_phase": "review_drafted",
+    "checkpoint_at": "2026-09-16T13:12:09.9354407Z",
     "advancement_evidence": [
-      "Resumed fork PR 452 and branch pr-iterate/50114 without re-mirroring or requesting a duplicate Copilot review.",
-      "Consumed the latest zero-comment Copilot review; zero unresolved fork threads remain.",
-      "Reproduced the production-project failure on exact upstream head 620ae8838d2257594d617891ecbe9f4ae3f03a2a.",
-      "Applied the literal four-fix patch to the pinned upstream head.",
-      "Built CursorWrap and CursorWrap.UnitTests and passed all 7 focused tests on the correction candidate.",
-      "Observed failed upstream x64 and arm64 Release CI and the existing intake request for visual evidence."
+      "Detected live upstream head changed from 620ae8838d2257594d617891ecbe9f4ae3f03a2a to 48d6403e8e7a6edb7ca38d8ad5b997b23f78a3f0 after a main merge.",
+      "Cleared the old proposed REQUEST_CHANGES action because it was pinned to the previous head.",
+      "Observed current Needs-Author-Feedback label and automated PR intake comment at 2026-09-16T12:41:47Z requesting visual evidence for the product UI change.",
+      "No upstream public action was taken."
     ]
   },
   "freshness": {
-    "headRefOid": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
-    "updatedAt": "2026-08-25T15:01:46Z",
-    "latestCopilotReviewAt": "2026-08-26T13:51:58Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T15:35:00Z"
+    "headRefOid": "48d6403e8e7a6edb7ca38d8ad5b997b23f78a3f0",
+    "updatedAt": "2026-09-16T12:41:48Z",
+    "latestIssueCommentAt": "2026-09-16T12:41:47Z",
+    "authorWaitEvidence": "Needs-Author-Feedback label plus PR intake request for visual evidence.",
+    "checkedAt": "2026-09-16T13:12:09.9354407Z"
   },
   "fork_pr": {
     "number": 452,
@@ -161,8 +74,32 @@
       "details": "The exact upstream production project fails at UnitTests\\MonitorTopologyTests.cpp with C1010 because the unit-test source is compiled by CursorWrap.vcxproj. This failure is the first proposed finding."
     }
   },
+  "author_wait_evidence": {
+    "type": "needs_author_feedback_label_and_intake_request",
+    "label": "Needs-Author-Feedback",
+    "requested_by": "github-actions",
+    "requested_at": "2026-09-16T12:41:47Z",
+    "url": "https://github.com/microsoft/PowerToys/pull/50114#issuecomment-5412304700",
+    "requested_evidence": "Add a screenshot, GIF, or video to the PR description so reviewers can validate the visible result."
+  },
+  "source_activity": {
+    "captured_at": "2026-09-16T13:12:09.9354407Z",
+    "state": "OPEN",
+    "draft": false,
+    "upstream_updated_at": "2026-09-16T12:41:48Z",
+    "upstream_head_sha": "48d6403e8e7a6edb7ca38d8ad5b997b23f78a3f0",
+    "previous_review_head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+    "latest_commit_at": "2026-09-16T12:41:29Z",
+    "latest_issue_comment_at": "2026-09-16T12:41:47Z",
+    "lastMeaningfulEvent": "Automated PR intake requested visual evidence and applied Needs-Author-Feedback after the author merged main."
+  },
   "upstream_safety": {
     "public_actions_taken": false,
     "detail": "No comments, reviews, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
+  },
+  "superseded_review": {
+    "head_sha": "620ae8838d2257594d617891ecbe9f4ae3f03a2a",
+    "reason": "Previous proposed comments were pinned to the old head and are not currently actionable while the PR is waiting on author visual evidence.",
+    "comment_count": 4
   }
 }
