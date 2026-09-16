@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-16T17:58:42.6629873+08:00",
+  "generated_at": "2026-09-16T18:03:38.8923457+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 166,
     "open_issues": 12647,
     "community": 11805,
-    "artifacts": 1251
+    "artifacts": 1252
   },
   "impact": {
-    "as_of": "2026-09-16T17:58:42.6629873+08:00",
+    "as_of": "2026-09-16T18:03:38.8923457+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50596,
     50585,
     50581,
     50576,
@@ -1398,13 +1399,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -2268,10 +2269,10 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 6,
+      "proposed_open": 2,
       "primary_action": {
         "type": "request_changes",
-        "label": "Request six Workspaces security and robustness corrections"
+        "label": "Request two Workspaces launch-target revalidation corrections"
       },
       "labels": [
         "Product-Workspaces",
