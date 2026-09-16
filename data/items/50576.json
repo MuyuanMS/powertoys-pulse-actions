@@ -1,31 +1,35 @@
 {
-  "schemaVersion": 4,
-  "id": "pr-50576",
+  "schemaVersion": 5,
   "number": 50576,
   "kind": "pr",
   "track": "review",
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T02:35:00Z",
-  "evaluated_at": "2026-09-16T02:35:00Z",
-  "source_updated_at": "2026-09-16T02:11:47Z",
-  "head_sha": "aa2b15003f53c123de69d05196074015f5962af1",
+  "generated_at": "2026-09-16T05:16:32Z",
+  "evaluated_at": "2026-09-16T05:16:32Z",
+  "source_updated_at": "2026-09-16T05:13:45Z",
+  "head_sha": "9618f45ce47fcad3a422e445a39aaa7e0751b79a",
   "title": "test(workspaces): isolate native test hangs (do not merge)",
   "url": "https://github.com/microsoft/PowerToys/pull/50576",
-  "summary": "The diagnostic Workspaces review converged with zero unresolved Copilot threads. The fork and exact upstream-head candidate build successfully. Two high-severity lifecycle gaps remain in package integrity revalidation and thread-pool I/O teardown.",
+  "summary": "The latest upstream commit affects PowerRename and does not address either Workspaces lifecycle finding. The preserved fork review has a fresh zero-finding Copilot pass and zero unresolved threads. An exact current-head correction candidate passes 69/69 focused tests.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
-    "detail": "Fork PR 828 remains converged with zero findings and zero unresolved threads. Focused revalidation found only CI and intake activity; both lifecycle findings remain current, and the ARM64 build now passes."
+    "detail": "Fork PR 828 converged at 48caa47fba. Both findings remain on live head 9618f45ce4, and the exact correction candidate passes all 69 focused Workspaces tests."
   },
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "The diagnostic result can be unreliable if package content changes before launch or pipe resources close while an I/O callback is active."
+    "reason": "The diagnostic result can be unreliable until package content is revalidated and thread-pool I/O callbacks drain before teardown."
   },
   "confidence": "High",
   "needs_revalidation": false,
+  "phase0": {
+    "authorAssociation": "MEMBER",
+    "disposition": "Proceed",
+    "processGates": "Community process gates skipped. The PR is explicitly diagnostic-only and marked do not merge; the failing upstream test is diagnostic evidence rather than a product-fix gate."
+  },
   "proposed_comments": [
     {
       "id": "revalidate-package-content-before-launch",
@@ -33,14 +37,14 @@
       "severity": "high",
       "title": "Revalidate package content before launch",
       "path": "src/modules/Workspaces/WorkspacesLib/PackageVerification.cpp",
-      "side": "RIGHT",
       "start_line": 254,
       "line": 255,
+      "side": "RIGHT",
       "in_diff": true,
       "body": "### Revalidate package content before launch\n\n**Severity:** `high`\n\nThis currentness check revalidates the package identity and metadata, but a previously verified package can still be modified or tampered with after the initial `VerifyContentIntegrityAsync` call and before launch. Re-run content-integrity verification for previously verified targets using the resolved package, fail closed when that package is unavailable, and retain the package handle in the registration returned by the resolver.",
       "confidence": {
         "score": 97,
-        "rationale": "The currentness path does not repeat the content-integrity check; the exact upstream candidate builds after retaining and revalidating the resolved package."
+        "rationale": "The exact live head still omits repeated content-integrity verification; the correction candidate retains the package and reruns verification."
       },
       "disposition": "proposed"
     },
@@ -50,14 +54,14 @@
       "severity": "high",
       "title": "Drain thread-pool I/O before pipe teardown",
       "path": "src/modules/Workspaces/WorkspacesLib.UnitTests/LauncherIpcServerTests.cpp",
-      "side": "RIGHT",
       "start_line": 287,
       "line": 288,
+      "side": "RIGHT",
       "in_diff": true,
       "body": "### Drain thread-pool I/O before pipe teardown\n\n**Severity:** `high`\n\n`Close` cancels outstanding I/O and immediately releases `Connection`. A pending completion can release the final reference from inside `CompleteIo`, destroying the connection while its callback is still active and closing the thread-pool I/O and pipe before callbacks drain. Cancel the operations, wait for all thread-pool I/O callbacks to finish, then close the thread-pool I/O and pipe before releasing the owning connection.",
       "confidence": {
         "score": 98,
-        "rationale": "The current teardown can destroy callback-owned resources while a completion is active; the exact candidate builds after explicitly draining callbacks."
+        "rationale": "The exact live head still releases the connection without draining callbacks; the correction candidate waits before closing the I/O object and pipe."
       },
       "disposition": "proposed"
     }
@@ -66,7 +70,7 @@
     {
       "id": "request-changes-50576",
       "type": "request_changes",
-      "label": "Request two Workspaces lifecycle corrections",
+      "label": "Request two current-head Workspaces lifecycle corrections",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -74,66 +78,62 @@
         "repository": "microsoft/PowerToys",
         "pullRequest": 50576,
         "event": "REQUEST_CHANGES",
-        "head_sha": "aa2b15003f53c123de69d05196074015f5962af1",
-        "body": "Thanks for the diagnostic isolation work. Before relying on the result, please address the two current-head Workspaces lifecycle findings in this review: revalidate package content integrity immediately before launching a previously verified package, and drain thread-pool I/O callbacks before tearing down the IPC test pipe."
+        "head_sha": "9618f45ce47fcad3a422e445a39aaa7e0751b79a",
+        "body": "Thanks for the diagnostic isolation work. Before relying on the result, please address the two current-head Workspaces lifecycle findings: revalidate package content integrity immediately before launch and drain thread-pool I/O callbacks before tearing down the IPC test pipe."
       },
-      "note": "Draft only. Two current-head inline comments require explicit maintainer approval."
+      "note": "Draft only. Explicit maintainer approval and a final freshness check are required before posting."
     }
   ],
   "workflow": {
     "phase": "review_drafted",
-    "previous_phase": "review_ready",
-    "checkpoint_at": "2026-09-16T02:35:00Z",
+    "previous_phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-16T05:16:32Z",
+    "copilot_round": 6,
     "advancement_evidence": [
-      "Consumed existing Copilot reviews before requesting another.",
-      "Fixed both valid findings on the personal fork and resolved all fork review threads.",
-      "Detected the upstream head change and performed the mandatory full re-review.",
-      "Preserved fork PR 828 and incorporated the new diagnostic-only upstream commit.",
-      "Consumed the fresh new-head Copilot review with zero inline findings and zero unresolved threads.",
-      "Built the corrected fork Workspaces chain and passed 42/42 new diagnostic-tooling tests.",
-      "Applied the complete corrections to the exact new upstream head and rebuilt the affected projects successfully.",
-      "Revalidated subsequent activity through the latest completed relevant check at 2026-09-16T02:11:47Z; no commit, review, or finding-file change invalidated the action."
+      "Preserved and inspected fork PR 828 before requesting the final Copilot pass.",
+      "Revalidated both findings against live upstream head 9618f45ce47fcad3a422e445a39aaa7e0751b79a.",
+      "Confirmed the newest upstream commit changes PowerRename and does not incorporate either Workspaces correction.",
+      "Consumed a fresh zero-finding Copilot pass and confirmed zero unresolved threads.",
+      "Built the exact current-head correction candidate and passed 69/69 focused Workspaces native unit tests."
     ]
   },
   "freshness": {
-    "headRefOid": "aa2b15003f53c123de69d05196074015f5962af1",
-    "updatedAt": "2026-09-16T02:11:47Z",
-    "latestCopilotReviewAt": "2026-09-15T23:55:11Z",
+    "status": "current_head_reviewed",
+    "headRefOid": "9618f45ce47fcad3a422e445a39aaa7e0751b79a",
+    "updatedAt": "2026-09-16T05:13:45Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-16T02:35:00Z"
+    "checkedAt": "2026-09-16T05:16:32Z"
   },
   "fork_pr": {
     "number": 828,
     "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/828",
-    "state": "OPEN"
+    "state": "OPEN",
+    "head_sha": "48caa47fba8a1eeff72fd24dd2a67b3ffa815df1"
   },
   "fork_branch": "pr-iterate/50576-v2",
-  "fork_head_sha": "2879b395c0bd37de74d97ede35abf5e8b5674f4c",
   "validation": {
-    "fork_review": {
+    "suggestion_patch": {
+      "head_sha": "9618f45ce47fcad3a422e445a39aaa7e0751b79a",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "The two inline comments contain implementation guidance rather than literal suggestion blocks."
+    },
+    "correction_candidate": {
+      "head_sha": "9618f45ce47fcad3a422e445a39aaa7e0751b79a",
       "result": "passed",
       "commands": [
-        "Build WorkspacesLib Debug x64",
-        "Build WorkspacesLibUnitTests Debug x64",
-        "Build WorkspacesLauncherUI Debug x64"
+        "Build the affected Workspaces native projects",
+        "Run the focused WorkspacesLib.UnitTests test DLL"
       ],
       "tests": {
-        "passed": 42,
-        "failed": 0
+        "passed": 69,
+        "failed": 0,
+        "skipped": 0
       },
-      "details": "The corrected fork builds with zero errors, the diagnostic-tooling Pester suite passes 42/42, and the fresh full-head Copilot review has zero findings and zero unresolved threads."
-    },
-    "upstream_head": {
-      "head_sha": "aa2b15003f53c123de69d05196074015f5962af1",
-      "result": "passed",
-      "commands": [
-        "Apply the complete two-finding candidate to the pinned upstream head",
-        "Build WorkspacesLib Debug x64",
-        "Build WorkspacesLibUnitTests Debug x64",
-        "Build WorkspacesLauncherUI Debug x64"
-      ],
-      "details": "The exact upstream-head candidate builds successfully; the comments intentionally provide implementation guidance rather than literal suggestion blocks."
+      "details": "The exact live-head candidate containing both complete corrections built successfully and all 69 focused tests passed."
     }
   },
   "upstream_safety": {

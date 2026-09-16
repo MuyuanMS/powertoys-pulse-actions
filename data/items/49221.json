@@ -1,86 +1,138 @@
 {
-  "schemaVersion": 3,
-  "id": "pr-49221",
+  "schemaVersion": 5,
   "number": 49221,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-15T18:14:26Z",
-  "evaluated_at": "2026-09-15T18:14:26Z",
-  "source_updated_at": "2026-09-15T17:59:40Z",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-16T03:13:54Z",
+  "evaluated_at": "2026-09-16T03:13:54Z",
+  "source_updated_at": "2026-08-16T23:08:39Z",
   "head_sha": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
   "title": "[Common] Add theme-adaptive tray icon helpers for module tray icons",
   "url": "https://github.com/microsoft/PowerToys/pull/49221",
-  "summary": "The existing upstream changes-requested review remains unanswered after the author's latest commit. The fork review is converged with zero new Copilot comments and zero unresolved threads, so no duplicate review action is proposed.",
+  "summary": "The historical changes-requested review targeted an older commit and no longer justifies author-wait. The preserved fork review now has a fresh zero-finding Copilot pass and zero unresolved threads. Two consolidated current-head implementation requests remain for approval.",
   "status": {
-    "glyph": "⏳",
-    "label": "Waiting on author changes",
-    "detail": "The author has not replied or pushed after the current maintainer review requested a representative demo and specific icon-lifetime, settings, accessibility, and initialization corrections."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 270 remains converged at 951f739ee with a fresh zero-finding Copilot review and zero unresolved threads. The affected fork build passed and produced PowerToys.exe."
   },
   "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for the existing changes-requested review",
-    "reason": "Revalidate after the author replies or pushes a new commit; do not post a duplicate request."
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Two implementation-ready current-head findings remain and the old author-wait signal is superseded."
   },
   "confidence": "High",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
-  "author_wait_evidence": {
-    "author": "LegendaryBlair",
-    "url": "https://github.com/microsoft/PowerToys/pull/49221#pullrequestreview-4897926501",
-    "created_at": "2026-08-10T14:44:01Z",
-    "requested_evidence": "Add a representative General-toggle theme-switching demo and address the requested icon ownership, NUL-padding, accessibility, and missing-settings initialization corrections.",
-    "author_activity_after_request": false,
-    "latest_author_commit": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
-    "latest_author_commit_at": "2026-08-14T23:42:50Z"
+  "phase0": {
+    "authorAssociation": "CONTRIBUTOR",
+    "disposition": "Proceed",
+    "processGates": "CLA complete, representative demo present, linked issue open, and no red required check reported. The incomplete template validation section is a non-blocking note."
   },
-  "workflow": {
-    "phase": "awaiting_author",
-    "previous_phase": "queued",
-    "checkpoint_at": "2026-09-15T18:14:26Z",
-    "advancement_evidence": [
-      "Revalidated upstream review 4897926501 and confirmed it remains CHANGES_REQUESTED.",
-      "Confirmed no author commit, reply, or review thread activity after the latest author commit.",
-      "Consumed the existing converged fork state without requesting another Copilot review.",
-      "Confirmed zero new fork Copilot comments and zero unresolved fork Copilot threads.",
-      "Reused passing affected fork builds; the exact upstream restore and runner build passed before disk exhaustion interrupted a broader Settings build."
-    ]
-  },
-  "freshness": {
-    "headRefOid": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
-    "updatedAt": "2026-09-15T17:59:40Z",
-    "latestCopilotReviewAt": "2026-09-03T16:33:47Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T18:14:26Z"
-  },
+  "proposed_comments": [
+    {
+      "id": "theme-listener-partial-initialization",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Dispose a partially initialized ThemeListener",
+      "in_diff": false,
+      "out_of_diff_reason": "The cleanup must restructure the constructor's multi-step watcher initialization rather than replace one safe current-diff range.",
+      "body": "### Dispose a partially initialized ThemeListener\n\n**Severity:** `medium`\n\n**Affected code:** `src/common/ManagedCommon/ThemeListener.cs`, the `ThemeListener` constructor.\n\n**Problem:** The constructor starts the app-theme watcher before it creates and starts the system-theme watcher. If the second query, watcher construction, or `Start()` call throws, the first watcher remains subscribed and running because construction never completes and the caller cannot dispose it.\n\n**Why it matters:** Repeated Settings or module initialization attempts can leak WMI watchers and event subscriptions, leaving callbacks active after failed construction.\n\n**Suggested change:**\n1. Create both watchers in local variables inside a guarded initialization block.\n2. Start and subscribe both locals before assigning them to the readonly fields.\n3. On failure, dispose every watcher already created and rethrow the original exception.\n4. Preserve the existing successful initialization and idempotent `Dispose()` behavior.\n\n```csharp\nManagementEventWatcher appWatcher = null;\nManagementEventWatcher systemWatcher = null;\ntry\n{\n    // Construct, subscribe, and start both watchers.\n    appThemeWatcher = appWatcher;\n    systemThemeWatcher = systemWatcher;\n}\ncatch\n{\n    systemWatcher?.Dispose();\n    appWatcher?.Dispose();\n    throw;\n}\n```\n\n**Verification:** Build the Settings UI and common managed projects, inject a failure after the first watcher starts, and verify that watcher is disposed and no callback remains registered.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The constructor starts the first watcher before creating the second and has no partial-construction cleanup path."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "defer-module-toggle-until-consumers-land",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Do not expose a module-wide toggle without module consumers",
+      "in_diff": false,
+      "out_of_diff_reason": "A complete fix requires coordinated settings contracts and runtime consumers across four modules, not one current RIGHT-side range.",
+      "body": "### Do not expose a module-wide toggle without module consumers\n\n**Severity:** `high`\n\n**Affected code:** `src/settings-ui/Settings.UI.Library/ThemeAdaptiveTrayIconFanOut.cs`, `src/settings-ui/Settings.UI/ViewModels/GeneralViewModel.cs`, `src/settings-ui/Settings.UI/Strings/en-us/Resources.resw`, and the Awake, ZoomIt, PowerDisplay, and Mouse Without Borders settings/runtime implementations.\n\n**Problem:** The PR advertises a master setting for four module tray icons and writes new properties into their settings files, but the corresponding module consumers are absent. Existing module contracts do not read those values, and a later typed settings save can discard unknown properties.\n\n**Why it matters:** Users can enable a visible setting and receive no module behavior while the UI reports success. Per-module preferences can also be lost during later saves.\n\n**Suggested change:**\n1. Either include the settings contracts, readers, icon call sites, and refresh behavior for all four modules in this atomic change; or remove the module fan-out and describe the setting as PowerToys-tray-only until those consumers land.\n2. If module-wide behavior remains, add focused tests for each module's JSON shape, missing or malformed settings, persistence, and refresh ordering.\n3. Verify that the General setting updates every advertised running module without losing existing per-module preferences.\n\n**Verification:** Confirm each advertised module reads the new property at runtime, run the affected Settings and module builds, toggle Windows light/dark mode with the modules running, restart Settings, and test missing and malformed settings files.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The PR writes module properties while repository inspection shows that the corresponding runtime consumers are absent from the change set."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49221",
+      "type": "request_changes",
+      "label": "Request two theme-listener and module-toggle corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49221,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
+        "body": "Thanks for the contribution. The CLA is complete and the PR is scoped coherently. The remaining requests cover partial ThemeListener initialization cleanup and the module-wide toggle's missing consumers."
+      },
+      "note": "Draft only. Two implementation-ready general comments require explicit maintainer approval."
+    }
+  ],
   "fork_pr": {
     "number": 270,
     "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/270",
-    "state": "OPEN"
+    "state": "OPEN",
+    "head_sha": "951f739eeef63cdc71b4ac539f07a1014f6a492b"
   },
   "fork_branch": "pr-iterate/49221-v2",
-  "fork_head_sha": "951f739eeef63cdc71b4ac539f07a1014f6a492b",
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-16T03:13:54Z",
+    "copilot_round": 12,
+    "advancement_evidence": [
+      "Confirmed the prior upstream CHANGES_REQUESTED review targeted an older commit and is historical rather than a current author-wait signal.",
+      "Preserved fork PR 270 and branch pr-iterate/49221-v2.",
+      "Consumed a fresh Copilot review on fork head 951f739ee with zero new findings.",
+      "Confirmed zero unresolved Copilot threads.",
+      "Rebuilt the affected fork Runner and Settings essentials and produced x64\\Debug\\PowerToys.exe.",
+      "Consolidated the current correction set into two implementation-ready general comments."
+    ]
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "headRefOid": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
+    "updatedAt": "2026-08-16T23:08:39Z",
+    "latestCopilotReviewAt": "2026-09-16T03:13:54Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-16T03:13:54Z"
+  },
   "validation": {
+    "suggestion_patch": {
+      "head_sha": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "Both findings require coordinated out-of-diff changes and contain no literal suggestion blocks."
+    },
     "fork_review": {
       "result": "passed",
       "commands": [
         "tools\\build\\build-essentials.cmd",
-        "Build src\\common\\Themes",
-        "Build src\\common\\ManagedCommon"
+        "tools\\build\\build.cmd in src\\settings-ui\\Settings.UI"
       ],
-      "details": "The affected fork essentials, Themes, and ManagedCommon projects build successfully; the latest Copilot review has zero comments and zero unresolved threads."
+      "details": "Runner and Settings essentials completed successfully and produced x64\\Debug\\PowerToys.exe."
     },
     "upstream_head": {
       "head_sha": "fa2fd082e0760aa8d69be21fdb9f0ed701360f62",
       "result": "partial_environment_blocker",
       "commands": [
-        "tools\\build\\build-essentials.cmd"
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.cmd in src\\settings-ui\\Settings.UI"
       ],
-      "details": "Restore and runner build passed. A broader Settings build stopped only after the disk filled; no source compilation failure was established. This does not supersede the existing upstream author request."
+      "details": "The exact upstream and correction-candidate builds reached an unrelated pre-existing ZoomIt\\zoomit.h C4819/C2220 code-page failure; source diff validation passed and no error pointed to this PR's changed source."
     }
   },
   "upstream_safety": {

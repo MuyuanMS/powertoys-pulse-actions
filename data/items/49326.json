@@ -4,33 +4,134 @@
   "number": 49326,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "external",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T01:45:00Z",
-  "evaluated_at": "2026-09-16T01:45:00Z",
+  "generated_at": "2026-09-16T03:00:00Z",
+  "evaluated_at": "2026-09-16T03:00:00Z",
   "source_updated_at": "2026-08-29T10:51:59+08:00",
   "head_sha": "970a5aec1a554c4b73974220cfdf2954e47ec8d7",
   "title": "CmdPal JS/TS Extensions - Phase 5: gallery npm install/uninstall",
   "url": "https://github.com/microsoft/PowerToys/pull/49326",
   "status": {
     "glyph": "...",
-    "label": "Waiting on Copilot review",
-    "detail": "Consumed the next review, fixed five uninstall, process-output, visibility, and documentation findings, pushed fork head 484188b543, resolved all five threads, and passed UI/ViewModels builds plus 135 focused tests. A fresh review for that head is pending."
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 738 converged at df6d21e085 with zero new findings and zero unresolved threads. The complete exact-head candidate passes all affected builds and 135 focused tests."
   },
-  "next_action": "On resume, consume a submitted Copilot review for fork head 484188b543591f26ca80997cf0b29bcda1c9d620 before making any further request.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Five validated npm trust, filesystem, lifecycle, process-output, and recovery findings remain on the upstream head."
+  },
+  "proposed_comments": [
+    {
+      "id": "npm-artifact-trust-boundary",
+      "kind": "inline",
+      "severity": "critical",
+      "title": "Validate the complete dependency source",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/NpmArtifact.cs",
+      "line": 238,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Validate the complete dependency source\n\n**Severity:** `critical`\n\nThe package tarball is integrity-checked, but each dependency URL in its shrinkwrap is also an executable network trust boundary because npm honors the lockfile resolution. Accepting only the hostname permits a non-default HTTPS port, credentials, a query, or a fragment; treating `link: true` as trusted also permits a local workspace dependency without registry provenance.\n\nRequire an approved HTTPS host on the default port with no userinfo, query, or fragment, and reject workspace-link entries rather than bypassing resolution and SRI validation. Cover these rejected forms in the artifact and lockfile tests.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The corrected candidate rejects non-canonical lockfile URLs and workspace links before npm can fetch dependencies."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "npm-filesystem-safety",
+      "kind": "inline",
+      "severity": "critical",
+      "title": "Revalidate reparse-safe filesystem paths",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/NpmCommandRunner.cs",
+      "line": 83,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Revalidate reparse-safe filesystem paths\n\n**Severity:** `critical`\n\nThe staging directory and extension root can be redirected through a junction or symbolic-link ancestor even when the final child itself is ordinary. That makes npm writes, promotion, marker cleanup, and recursive deletion operate outside the Command Palette extension tree.\n\nBefore creating, promoting, deleting, or recovering a path, walk all existing ancestors and reject reparse points. Repeat the check immediately before recursive deletion and after root creation, and fail closed when the path cannot be inspected.",
+      "confidence": {
+        "score": 95,
+        "rationale": "Recursive staging cleanup and promotion can escape the intended tree through a reparse-point ancestor."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "npm-transactional-lifecycle",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Make install and uninstall failures transactional",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/NpmJsExtensionInstaller.cs",
+      "line": 109,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Make install and uninstall failures transactional\n\n**Severity:** `medium`\n\nInstall and uninstall coordinate filesystem changes with host lifecycle operations. Non-cancellation exceptions must be converted to the operation-specific localized failure result, and a promoted installation must be rolled back on every post-promotion failure. When uninstall fails after stopping an extension, restore the provider if its directory remains; do not leave the install marker behind as a permanent retry blocker.\n\nPreserve cancellation as cancellation, log non-cancellation failures, and ensure marker cleanup and rollback determine the returned state rather than reporting an operation as successful while discovery remains suppressed.",
+      "confidence": {
+        "score": 93,
+        "rationale": "Host lifecycle exceptions and cancellation can otherwise leave a promoted extension stopped or permanently suppressed."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "npm-process-output-and-gallery-state",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Complete process diagnostics and gallery state handling",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/NpmCommandRunner.cs",
+      "line": 437,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Complete process diagnostics and gallery state handling\n\n**Severity:** `medium`\n\nThe npm process result is evaluated after exit while asynchronous stderr events can still be buffered, producing empty or truncated diagnostics. Drain redirected stdout and stderr to completion before using the exit code. Also bind the legacy gallery install control's visibility to the same state that authorizes installation, so an action that must be hidden is collapsed rather than displayed disabled.\n\nAdd focused coverage for the failure path and retain the existing gallery state tests.",
+      "confidence": {
+        "score": 90,
+        "rationale": "The process error path needs complete stream draining, and the UI must not expose a disabled install action in a hidden-action state."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "stale-marker-recovery-path",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Guard stale-marker recovery before mutation",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpcExtensionService.cs",
+      "line": 667,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Guard stale-marker recovery before mutation\n\n**Severity:** `medium`\n\nStartup recovery deletes marker files under extension directories. Checking only the root and immediate child does not protect against a reparse-point ancestor, so the recovery operation can delete a marker outside the intended extensions tree.\n\nApply the same complete-ancestor validation used by installer operations before each marker delete, and leave the directory in the recoverable-failure set when validation or deletion fails.",
+      "confidence": {
+        "score": 91,
+        "rationale": "Startup marker recovery mutates the filesystem and needs the same ancestor safety guarantees as normal installer cleanup."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49326",
+      "type": "request_changes",
+      "label": "Request five npm extension installer corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49326,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "970a5aec1a554c4b73974220cfdf2954e47ec8d7"
+      },
+      "note": "Draft only. Five inline comments require explicit maintainer approval."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-16T01:45:00Z",
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-16T03:00:00Z",
     "request_at": "2026-09-15T09:16:59.1434508Z",
     "reviewed_fork_head": "88d095c82b4b32e51f07de1b11c58e9704cba11a",
-    "current_fork_head": "484188b543591f26ca80997cf0b29bcda1c9d620",
-    "fix_commit": "484188b543591f26ca80997cf0b29bcda1c9d620",
-    "copilot_round": 8,
-    "resolved_copilot_threads": 5,
+    "current_fork_head": "df6d21e0850d608b337745d92f93b643a49d22ac",
+    "fix_commit": "df6d21e0850d608b337745d92f93b643a49d22ac",
+    "copilot_round": 9,
+    "resolved_copilot_threads": 3,
     "unresolved_copilot_threads": 0,
     "immediate_review_found": false,
     "preserved_checkpoint_trace": {
@@ -71,19 +172,19 @@
       },
       {
         "name": "fresh_review_request",
-        "status": "waiting",
-        "detail": "Consumed the review for fork head 3837d9f232fcfc05ce0a1f86e7d263370fd196b6, fixed all five current findings, resolved their threads, and requested one fresh review for head 484188b543591f26ca80997cf0b29bcda1c9d620. No submitted result was available after the bounded check."
+        "status": "done",
+        "detail": "Consumed the review for fork head 484188b543591f26ca80997cf0b29bcda1c9d620, fixed and resolved its three findings, then consumed the clean review on converged head df6d21e0850d608b337745d92f93b643a49d22ac."
       }
     ]
   },
   "freshness": {
     "queued_at": "09/13/2026 16:50:47",
-    "checkpoint_at": "2026-09-16T01:45:00Z",
+    "checkpoint_at": "2026-09-16T03:00:00Z",
     "source_updated_at": "2026-08-29T10:51:59+08:00",
     "upstream_head_sha": "970a5aec1a554c4b73974220cfdf2954e47ec8d7",
     "fork_head_before": "88d095c82b4b32e51f07de1b11c58e9704cba11a",
-    "fork_head_after": "484188b543591f26ca80997cf0b29bcda1c9d620",
-    "stale_expectation": "Remain actionless while waiting for the corrected-head Copilot review. Any upstream head change or submitted fork review for 484188b543591f26ca80997cf0b29bcda1c9d620 requires re-evaluation."
+    "fork_head_after": "df6d21e0850d608b337745d92f93b643a49d22ac",
+    "stale_expectation": "The drafted action remains current while the upstream head and relevant activity stay unchanged."
   },
   "fork_pr": {
     "number": 738,
@@ -92,7 +193,7 @@
     "state": "OPEN",
     "branch": "pr-iterate/49326-v3",
     "head_before": "88d095c82b4b32e51f07de1b11c58e9704cba11a",
-    "head_after": "484188b543591f26ca80997cf0b29bcda1c9d620"
+    "head_after": "df6d21e0850d608b337745d92f93b643a49d22ac"
   },
   "fork_branch": "pr-iterate/49326-v3",
   "validation": {
@@ -106,7 +207,23 @@
         "passed": 135,
         "failed": 0
       },
-      "details": "The corrected candidate additionally handles uninstall failures, fully drains npm process output, collapses hidden legacy install controls, and accurately documents rejected workspace links."
+      "details": "The complete 12-file correction set builds in the exact upstream-head candidate and all 135 focused npm installer tests pass."
+    },
+    "upstream_head": {
+      "head_sha": "970a5aec1a554c4b73974220cfdf2954e47ec8d7",
+      "result": "passed",
+      "commands": [
+        "Run build-essentials",
+        "Build Microsoft.CmdPal.UI.ViewModels",
+        "Build Microsoft.CmdPal.UI",
+        "Build Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "Run NpmArtifactTests, NpmCommandRunnerTests, and NpmJsExtensionInstallerTests"
+      ],
+      "tests": {
+        "passed": 135,
+        "failed": 0
+      },
+      "details": "The complete fork correction set was applied to a detached candidate at the exact upstream head; all builds and focused tests passed."
     }
   }
 }

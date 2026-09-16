@@ -3,27 +3,27 @@
   "number": 50218,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-15T18:59:58+08:00",
-  "evaluated_at": "2026-09-15T18:59:58+08:00",
-  "source_updated_at": "2026-08-28T21:21:07Z",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-09-16T03:42:21Z",
+  "evaluated_at": "2026-09-16T03:42:21Z",
+  "source_updated_at": "2026-09-16T03:42:21Z",
   "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
   "title": "fix(common): handle packaged context menu servicing shutdown",
   "url": "https://github.com/microsoft/PowerToys/pull/50218",
   "state": "OPEN",
   "draft": false,
-  "summary": "The live upstream head remains 1e2e18d8725145d012d0b0d55e4ed5251febba51 and the durable fork review loop is still converged with zero unresolved Copilot threads. No fresh activity or head drift was detected, so the earlier general findings were remapped to the current head and consolidated into two exact COMMENT prompts for a final maintainer approval check.",
+  "summary": "The maintainer approved the two current-head general review notes. Both notes are posted as separate PR conversation comments and the pinned COMMENT review was submitted after confirming the live head was unchanged and all required checks were green. The PR is now waiting for the author.",
   "status": {
-    "glyph": "📝",
-    "label": "Review complete — approval required",
-    "detail": "The durable fork PR remains converged at cc07865f18082dd39ad8ae63f3429984e80ae479 with zero unresolved Copilot threads. The live upstream head 1e2e18d8725145d012d0b0d55e4ed5251febba51 is unchanged since 2026-08-28T21:21:07Z, and there is no fresh upstream activity to queue. No upstream-public write was made."
+    "glyph": "⏳",
+    "label": "Waiting on author changes",
+    "detail": "Both approved review notes and COMMENT review are published on head 1e2e18d872. All required checks were green at submission; no author reply or commit follows the requests."
   },
   "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted COMMENT review",
-    "reason": "The two current-head general review prompts are pinned to the live upstream head and remain unpublished pending explicit approval."
+    "glyph": "⏳",
+    "label": "Wait for the author to address the posted review",
+    "reason": "Do not post duplicate requests. Revalidate after an author reply or new commit."
   },
   "confidence": "High",
   "phase0": {
@@ -51,52 +51,28 @@
       "The added telemetry events still need privacy documentation in DATA_AND_PRIVACY.md."
     ]
   },
-  "proposed_comments": [
-    {
-      "id": "retry-safe-lifecycle-and-drain",
-      "kind": "companion",
-      "title": "Keep servicing shutdown retry-safe and activity-drain-safe",
-      "severity": "high",
-      "body": "**Affected code:**\n- The shared servicing-window lifecycle helper that synchronizes monitor initialization and shutdown target creation\n- The FileLocksmith servicing shutdown path and its activity admission/drain logic\n- The new shutdown UI test covering idle `WM_CLOSE` behavior\n\n**Problem:** When the monitor initialization times out or fails, the code can still commit the monitor and complete `INIT_ONCE` before a servicing target is known to exist. A later activation can then accept activity against a monitor with no valid shutdown target, and concurrent failed retries can race on the same initialization result. The current test also exercises only the idle `WM_CLOSE` case and does not cover the admitted-activity drain contract.\n\n**Why it matters:** The shutdown lifecycle needs a stable, retry-safe handoff: a successful target must be established before the state is published, and a shutdown in progress must reject new activity while allowing the already-admitted work to drain gracefully. Without that, a later activation can use invalid state or observe a racey shutdown lifecycle.\n\n**Suggested change:**\n1. Keep the shared initialization result synchronized on successful target creation only; leave failed attempts retryable and never publish the monitor before the lifecycle has a valid servicing target.\n2. Reject new activity once shutdown starts while allowing already-admitted work to remain active until the last operation exits or the grace period expires.\n3. Add a direct regression test covering admitted-activity shutdown, rejection after shutdown starts, and the final drain path before the shutdown completes.\n\n**Verification:** Run the FileLocksmith servicing lifecycle tests and confirm that failed initialization does not publish a monitor, concurrent retries do not race, and a shutdown with active work waits for the final drain before completing.",
-      "out_of_diff_reason": "The issue spans the shared lifecycle helper, the shutdown/drain state machine, and the test harness, so a single inline suggestion would be brittle and incomplete.",
-      "confidence": {
-        "score": 94,
-        "rationale": "The prior review root cause is the same across initialization completion, invalid lifecycle state publication, and the missing admitted-work drain regression coverage."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "document-servicing-telemetry",
-      "kind": "companion",
-      "title": "Document the new ServicingWindowInitialization telemetry events",
-      "severity": "medium",
-      "body": "**Affected code:**\n- The new `*_ServicingWindowInitialization` telemetry events\n- `DATA_AND_PRIVACY.md`\n\n**Problem:** The change adds four new servicing-window initialization telemetry events but the privacy documentation still only lists the existing events.\n\n**Why it matters:** The emitted telemetry and the privacy documentation need to match so maintainers can verify the data collection contract before shipping the change.\n\n**Suggested change:**\n1. Add a row for each new `ServicingWindowInitialization` event in `DATA_AND_PRIVACY.md`, or confirm the event is intentionally covered by an existing broader entry if that is the intended contract.\n2. Keep the documentation aligned with the actual emitted names and the behavior the event records.\n\n**Verification:** Review the telemetry event definitions alongside `DATA_AND_PRIVACY.md` and confirm every emitted event is documented or explicitly intentionally grouped under a broader entry.",
-      "out_of_diff_reason": "The privacy-documentation gap is not anchored to any single current-diff inline comment site, so a concise general review prompt is the correct and stable form.",
-      "confidence": {
-        "score": 96,
-        "rationale": "The diff adds four new telemetry events and the privacy doc still has no matching entries."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-50218",
-      "type": "post_review",
-      "label": "Post the two current-head general review notes as COMMENT",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50218,
-        "event": "COMMENT",
-        "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
-        "body": "Thanks for the servicing fix. Before merge, please keep the servicing lifecycle retry-safe and activity-drain-safe, and document the new ServicingWindowInitialization telemetry events. The two issues are current-head implementation requirements and should be addressed as separate follow-up changes in the review thread."
-      },
-      "note": "General-only review: posts two current-head review comments. The exact upstream head is unchanged; explicit maintainer approval and a final live freshness check are required before posting."
-    }
-  ],
+  "proposed_comments": [],
+  "actions": [],
+  "author_wait_evidence": {
+    "author": "MuyuanMS",
+    "urls": [
+      "https://github.com/microsoft/PowerToys/pull/50218#issuecomment-5691379752",
+      "https://github.com/microsoft/PowerToys/pull/50218#issuecomment-5691379867"
+    ],
+    "created_at": "2026-09-16T02:59:04Z",
+    "requested_evidence": "Address the retry-safe servicing lifecycle and activity-drain behavior, add direct regression coverage, and document the new ServicingWindowInitialization telemetry events.",
+    "author_activity_after_request": false
+  },
+  "approval": {
+    "decision": "approved",
+    "approved_at": "2026-09-16T03:41:00Z",
+    "submitted_at": "2026-09-16T03:42:20Z",
+    "review_event": "COMMENT",
+    "review_id": 5218261428,
+    "review_url": "https://github.com/microsoft/PowerToys/pull/50218#pullrequestreview-5218261428",
+    "head_sha": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
+    "checks_result": "passed"
+  },
   "fork_pr": {
     "number": 526,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/526",
@@ -127,45 +103,35 @@
     }
   },
   "workflow": {
-    "phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-15T18:59:58+08:00",
-    "previous_phase": "converged_draft_ready",
+    "phase": "awaiting_author",
+    "checkpoint_at": "2026-09-16T03:42:21Z",
+    "previous_phase": "awaiting_review_approval",
     "advancement_evidence": [
       "Live upstream head remains 1e2e18d8725145d012d0b0d55e4ed5251febba51 and the updatedAt remains 2026-08-28T21:21:07Z.",
       "Durable fork PR remains converged at cc07865f18082dd39ad8ae63f3429984e80ae479 with zero unresolved Copilot threads.",
       "The earlier three companion findings were remapped to the live diff and consolidated into two exact current-head general prompts.",
-      "No fresh upstream head or activity drift was detected, so no queue rebalance was required.",
-      "No upstream-public write occurred."
+      "Observed the two approved Pulse comments posted by MuyuanMS on the exact reviewed head.",
+      "Confirmed no author reply or commit occurred after the posted requests.",
+      "Recorded explicit maintainer approval for the two existing general review notes.",
+      "Revalidated the exact live head and confirmed all required checks were green.",
+      "Submitted COMMENT review 5218261428 through Publish-ApprovedReview.ps1."
     ]
   },
   "freshness": {
-    "status": "fresh",
+    "status": "waiting_author",
     "headRefOid": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
-    "updatedAt": "2026-08-28T21:21:07Z",
+    "updatedAt": "2026-09-16T03:42:21Z",
     "latestCopilotReviewAt": "2026-09-10T16:47:41Z",
     "latestForkCommitAt": "2026-09-10T16:42:37Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T18:59:58+08:00"
+    "checkedAt": "2026-09-16T03:42:21Z"
   },
-  "zero_upstream_public_writes": true,
+  "zero_upstream_public_writes": false,
   "needs_revalidation": false,
-  "safe_actions": [
-    {
-      "id": "post-review-50218",
-      "upstream_write": true,
-      "approval_required": true,
-      "publisher_required": "Publish-ApprovedReview.ps1",
-      "head_pinned": "1e2e18d8725145d012d0b0d55e4ed5251febba51"
-    },
-    {
-      "id": "hold-review-50218",
-      "upstream_write": false,
-      "approval_required": false
-    }
-  ],
+  "safe_actions": [],
   "source": {
     "repository": "microsoft/PowerToys",
     "headRefOid": "1e2e18d8725145d012d0b0d55e4ed5251febba51",
-    "updatedAt": "2026-08-28T21:21:07Z"
+    "updatedAt": "2026-09-16T03:42:21Z"
   }
 }

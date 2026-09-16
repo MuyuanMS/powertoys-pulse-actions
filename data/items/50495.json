@@ -6,97 +6,101 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T12:42:00Z",
-  "evaluated_at": "2026-09-14T12:42:00Z",
+  "generated_at": "2026-09-16T03:30:00Z",
+  "evaluated_at": "2026-09-16T03:30:00Z",
   "source_updated_at": "2026-09-10T00:45:00Z",
   "head_sha": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
-  "title": "AltWindowCycle: address #50494 review feedback (click-through, memory, fallback, footer bar)",
+  "title": "AltWindowCycle: address PR review feedback (click-through, memory, fallback, footer bar)",
   "url": "https://github.com/microsoft/PowerToys/pull/50495",
-  "summary": "The existing fork review loop is converged: the latest Copilot pass produced zero new comments and the fork has zero unresolved Copilot threads. The exact upstream head was rebuilt with the converged review patch; three current-head code requests remain drafted for maintainer approval.",
+  "summary": "A fresh current-head review replaced the old vague comments. Fork PR 798 has a new zero-finding Copilot pass and zero unresolved threads, and an exact upstream-head candidate containing all three literal suggestions builds successfully. Three focused AltWindowCycle corrections remain for approval, while the live x64 CI build is also failing.",
   "status": {
     "glyph": "📝",
-    "label": "Review ready — three requests drafted",
-    "detail": "Upstream head f8582446c98cfb82f385e5364ef1057e4a8eec9d is unchanged. Fork PR 798 is converged, and both the fork tree and exact upstream-head candidate built successfully after clearing inherited GIT_CONFIG_* variables."
+    "label": "Review complete — approval required",
+    "detail": "Fresh Copilot round 4 completed at 2026-09-16T03:19:29Z with zero new findings and zero unresolved threads. The exact suggestion candidate builds, but PowerToys CI and the x64 Release check are red."
   },
   "next_action": {
     "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted review",
-    "reason": "Nothing may be posted upstream until the pinned head and activity snapshot are revalidated and explicit maintainer approval is given."
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Three exact-diff suggestions and the failing live x64 build must be resolved before merge."
   },
-  "actions": [
-    {
-      "id": "post-review-50495",
-      "type": "post_review",
-      "label": "Post the three selected requests as review comments",
-      "primary": true,
-      "confirm": true,
-      "review": {
-        "event": "COMMENT",
-        "pr": 50495,
-        "head_sha": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
-        "body_prefix": "Thanks for addressing the earlier AltWindowCycle feedback. The requests below cover three remaining correctness and resilience issues in the current head."
-      },
-      "note": "Mandatory: refresh the upstream head, checks, comments, reviews, and threads; validate the pinned payload; and require explicit approval before publishing."
-    }
-  ],
-  "safe_actions": [
-    "Present the drafted current-head review for explicit maintainer approval",
-    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
-    "Hold or edit the review without changing upstream labels, review state, or PR state",
-    "Rerun the fork review loop if the upstream head changes"
-  ],
-  "proposed_comments": [
-    {
-      "id": "disable-thumbnail-host-hit-testing",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Make the thumbnail host click-through",
-      "confidence": {
-        "score": 98,
-        "rationale": "WS_EX_NOACTIVATE prevents focus activation but does not suppress hit-testing; the display-only thumbnail host can therefore intercept clicks through transparent overlay regions."
-      },
-      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
-      "line": 539,
-      "startLine": 539,
-      "side": "RIGHT",
-      "body": "### Make the thumbnail host click-through\n\n**Severity:** `high`\n\n`WS_EX_NOACTIVATE` stops this helper window from taking focus, but it does not make the window transparent to mouse hit-testing. Because `thumbHost` sits above the layered overlay, clicks that land on transparent overlay pixels can still be consumed by the host instead of reaching the window underneath. Add `WS_DISABLED` to the host style (or otherwise explicitly suppress hit-testing) so the display-only thumbnail surface remains click-through."
-    },
-    {
-      "id": "bound-static-snapshot-memory-and-fallback",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Bound snapshot memory and preserve a fallback preview",
-      "confidence": {
-        "score": 96,
-        "rationale": "The current path retains native-resolution PrintWindow bitmaps for every visible slot and skips DWM registration even when capture returns null, creating both a large-memory path and an empty-preview failure mode."
-      },
-      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
-      "line": 1054,
-      "startLine": 1054,
-      "side": "RIGHT",
-      "body": "### Bound snapshot memory and preserve a fallback preview\n\n**Severity:** `high`\n\nThe static-preview path stores each window capture at native client resolution until the overlay closes, so several 4K windows can consume hundreds of megabytes even though each card only displays a small preview. Downsample/crop the capture to the destination preview rectangle immediately and retain only that bitmap; if `PrintWindow` fails, leave the slot aligned but continue to register a live DWM thumbnail so protected or GPU-exclusive windows do not render as an empty acrylic hole."
-    },
-    {
-      "id": "composite-page-indicator-without-opaque-bar",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Composite the page indicator over the panel",
-      "confidence": {
-        "score": 95,
-        "rationale": "The footer currently uses the opaque tile-header text path against the translucent panel, and the backing pixels must be flushed before the direct alpha-compositing path reads them."
-      },
-      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
-      "line": 1606,
-      "startLine": 1606,
-      "side": "RIGHT",
-      "body": "### Composite the page indicator over the panel\n\n**Severity:** `medium`\n\nThe page indicator is drawn over the translucent panel, but this call still uses the opaque tile-header path, which paints a solid dark rectangle across the footer. Use a transparent-background text path that alpha-composites glyph coverage onto the existing pixels, and flush pending GDI+ drawing before reading those pixels; otherwise the direct buffer access can blend against stale data or be overwritten by the later flush."
-    }
-  ],
+  "confidence": "High",
+  "needs_revalidation": false,
   "phase0": {
     "authorAssociation": "MEMBER",
-    "disposition": "Proceed",
-    "processGates": "Skipped for member author; upstream intake is ready for review."
+    "disposition": "Request changes",
+    "processGates": "Community process nags skipped for the member author. Genuine blocker: PowerToys CI and the x64 Release build are failing on the live head; CLA, intake, dependency review, telemetry detection, UI-test resolution, and arm64 Release passed."
   },
+  "proposed_comments": [
+    {
+      "id": "flush-page-indicator-before-composite",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Flush GDI+ output before page-indicator compositing",
+      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "start_line": 1597,
+      "line": 1597,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Flush GDI+ output before page-indicator compositing\n\n**Severity:** `high`\n\nThe transparent page-indicator path reads and blends the DIB pixels directly, but the preceding GDI+ drawing is still buffered when `DrawHeaderText` starts. That can blend the text against stale pixels, and the later flush can overwrite the indicator. Flush the graphics before this direct pixel access, as the other direct-buffer paths already do.\n\n```suggestion\n            g.Flush();\n            DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, pageRc, pageText,\n```",
+      "confidence": {
+        "score": 97,
+        "rationale": "The live diff calls DrawHeaderText on the DIB before the only later GDI+ flush; the exact candidate with this pre-read flush builds."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "handle-downsample-draw-failure",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Treat downsample failures as capture failures",
+      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "start_line": 1027,
+      "line": 1028,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Treat downsample failures as capture failures\n\n**Severity:** `medium`\n\n`CaptureWindowSnapshotForPreview` currently checks only the destination bitmap status after calling `Graphics::DrawImage`. If the draw operation itself fails while the bitmap remains allocated, the slot is treated as a valid snapshot and the DWM fallback is skipped, leaving a blank preview. Check the `DrawImage` status and return `nullptr` so `RegisterThumbnails` can use its existing live-thumbnail fallback.\n\n```suggestion\n        if (tg.DrawImage(full.get(),\n                         Gdiplus::RectF(0.0f, 0.0f, static_cast<Gdiplus::REAL>(dw), static_cast<Gdiplus::REAL>(dh)),\n                         srcLeft,\n                         srcTop,\n                         srcW,\n                         srcH,\n                         Gdiplus::UnitPixel) != Gdiplus::Ok)\n        {\n            return nullptr;\n        }\n```",
+      "confidence": {
+        "score": 82,
+        "rationale": "The live diff ignores DrawImage status; returning null on failure reuses the existing DWM fallback, and the exact candidate builds."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "name-inset-header-test",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Name the inset header geometry accurately",
+      "path": "src/modules/AltWindowCycle/UnitTests/AltWindowCycleLogicTests.cpp",
+      "start_line": 116,
+      "line": 116,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Name the inset header geometry accurately\n\n**Severity:** `low`\n\nThe test name says both rectangles are flush edge-to-edge, but the header assertion is intentionally inset (`44..320`) inside the tile (`32..332`) while only the preview is flush. Rename the test so a failure communicates the actual layout contract.\n\n```suggestion\n        TEST_METHOD(TilePreviewIsFlushAndHeaderIsInsetWithinTile)\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The current test name contradicts its own inset-header assertions; the exact rename candidate builds."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50495",
+      "type": "request_changes",
+      "label": "Request three focused AltWindowCycle corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50495,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
+        "body": "The PR is close, but please address the three implementation details below before merging. The live x64 build check is also failing, so please rerun or repair that build after applying the fixes."
+      },
+      "note": "Draft only. Explicit maintainer approval and a final live freshness check are required before posting."
+    }
+  ],
   "fork_pr": {
     "number": 798,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/798",
@@ -104,50 +108,53 @@
     "head_sha": "79c0142e0eec494745c4e5cdb7f569e3da7cecb2"
   },
   "fork_branch": "pr-iterate/50495-v2",
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-16T03:30:00Z",
+    "copilot_round": 4,
+    "advancement_evidence": [
+      "Resumed the preserved fork PR and branch without remirroring.",
+      "Consumed a fresh Copilot review submitted at 2026-09-16T03:19:29Z with zero new findings.",
+      "Confirmed zero unresolved Copilot threads.",
+      "Replaced the old broad comments with three exact current-diff suggestions.",
+      "Built the preserved fork head and an exact upstream-head candidate containing all three literal suggestions."
+    ]
+  },
   "freshness": {
     "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-14T12:42:00Z",
-    "source_updated_at": "2026-09-10T00:45:00Z",
-    "head_sha": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
-    "latest_copilot_review_at": "2026-09-14T07:24:50Z",
-    "unresolved_copilot_threads": 0
+    "headRefOid": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
+    "updatedAt": "2026-09-10T00:45:00Z",
+    "latestCopilotReviewAt": "2026-09-16T03:19:29Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-16T03:30:00Z"
   },
-  "verification": {
-    "result": "passed",
-    "summary": "The converged fork tree and the exact upstream head with the scoped converged review patch applied both built successfully for AltWindowCycle and AltWindowCycleUnitTests.",
-    "builds": [
-      "<PowerToysCheckout>\\src\\modules\\AltWindowCycle\\AltWindowCycle.vcxproj",
-      "<PowerToysCheckout>\\src\\modules\\AltWindowCycle\\UnitTests\\AltWindowCycleUnitTests.vcxproj",
-      "<PowerToysSuggestionCheckout>\\src\\modules\\AltWindowCycle\\AltWindowCycle.vcxproj",
-      "<PowerToysSuggestionCheckout>\\src\\modules\\AltWindowCycle\\UnitTests\\AltWindowCycleUnitTests.vcxproj"
-    ],
-    "latest_targeted_validation": "Both review trees built with zero errors after clearing inherited GIT_CONFIG_* variables and setting POWERTOYS_DISABLE_SPECTRE=1. The essentials build emitted one pre-existing CsWinRT1028 warning.",
-    "suggestionPatch": {
-      "headSha": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
       "result": "passed",
-      "appliedItemIds": [],
-      "minimalRangesReviewed": true,
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "flush-page-indicator-before-composite",
+        "handle-downsample-draw-failure",
+        "name-inset-header-test"
+      ],
       "commands": [
-        "<PowerToysSuggestionCheckout>\\tools\\build\\build-essentials.cmd",
-        "<PowerToysSuggestionCheckout>\\src\\modules\\AltWindowCycle\\..\\..\\..\\tools\\build\\build.cmd",
-        "<PowerToysSuggestionCheckout>\\src\\modules\\AltWindowCycle\\UnitTests\\..\\..\\..\\..\\tools\\build\\build.cmd"
-      ]
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.cmd in src\\modules\\AltWindowCycle",
+        "tools\\build\\build.cmd in src\\modules\\AltWindowCycle\\UnitTests"
+      ],
+      "details": "The three literal public suggestions were applied to a clean candidate at the exact upstream head; AltWindowCycle and AltWindowCycleUnitTests built successfully."
+    },
+    "upstream_head": {
+      "head_sha": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
+      "result": "not_applicable",
+      "commands": [],
+      "details": "This is a non-clean review with three current-head findings; the exact suggestion candidate was validated."
     }
   },
-  "test_instructions": [
-    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-    "Trigger AltWindowCycle and verify clicks through transparent overlay regions still reach the underlying window.",
-    "Cycle through several windows including a protected or GPU-rendered window; verify a failed PrintWindow capture falls back to a live thumbnail and that preview memory remains bounded.",
-    "Use enough windows to create multiple pages and verify the footer shows page text without an opaque dark bar across the panel."
-  ],
-  "workflow": {
-    "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-14T12:42:00Z",
-    "resume_action": "awaiting_review_approval",
-    "fork_pr": 798,
-    "fork_branch": "pr-iterate/50495-v2",
-    "fork_head_sha": "79c0142e0eec494745c4e5cdb7f569e3da7cecb2",
-    "unresolved_copilot_threads": 0,
-    "build_result": "passed"
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
   }
 }

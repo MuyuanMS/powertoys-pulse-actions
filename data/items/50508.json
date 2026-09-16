@@ -1,61 +1,133 @@
 {
+  "schemaVersion": 5,
   "number": 50508,
   "kind": "pr",
   "track": "review",
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T02:20:00Z",
-  "evaluated_at": "2026-09-16T02:20:00Z",
-  "source_updated_at": "2026-09-16T01:14:27Z",
-  "head_sha": "4fe80c780ffca4f79f14aa111bff22247105d4d8",
+  "generated_at": "2026-09-16T04:28:40Z",
+  "evaluated_at": "2026-09-16T04:28:40Z",
+  "source_updated_at": "2026-09-16T04:19:50Z",
+  "head_sha": "0131e2b97ab86b05acd493c9a5b04d68d5180e0d",
   "title": "feat(workspaces): warn before unverified elevated app launches",
   "url": "https://github.com/microsoft/PowerToys/pull/50508",
-  "summary": "The mandatory fresh review on the changed upstream head completed with zero published findings and zero unresolved threads. Two critical launch-target revalidation gaps remain, and the exact correction candidate passes all 116 focused tests.",
+  "summary": "The mandatory full review on the new upstream head converged with a fresh zero-finding Copilot pass and zero unresolved threads. Six current-head findings remain, and the exact correction candidate builds WorkspacesLib and WorkspacesLauncher and passes 117/117 focused tests.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
-    "detail": "Fork PR 773 is synchronized at 93989f2386. The fresh review has zero published findings and zero unresolved threads; both exact-head corrections pass 116/116 focused tests, and all 13 upstream checks are now green."
+    "detail": "Fork PR 773 converged at 66005ff107. The exact current-head correction candidate passes 117 focused tests and the launcher build; the latest check snapshot has no failures, with three checks still pending."
   },
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "Two validated security findings remain absent from the exact upstream head."
+    "reason": "Three critical security findings and three launcher robustness/quality findings remain on the live head."
   },
   "confidence": "High",
   "needs_revalidation": false,
+  "phase0": {
+    "authorAssociation": "MEMBER",
+    "disposition": "Proceed",
+    "processGates": "Community process nags skipped. CLA, intake, dependency review, and telemetry checks passed; the final snapshot contained eight passed checks, three pending checks, and zero failures."
+  },
   "proposed_comments": [
     {
       "id": "package-state-revalidation",
       "kind": "inline",
-      "title": "Preserve and revalidate the package's captured trust state",
       "severity": "critical",
-      "body": "### Preserve and revalidate the package's captured trust state\n\n**Severity:** `critical`\n\nThe final check only compares package identity and, when the original result was unverified, skips evaluating the current package state. The initial integrity and deployment state is also not retained in `target.package`. A package approved while unverified can therefore change to tampered, modified, stubbed, unavailable, external, or mutable content without invalidating that one-time approval.\n\nCapture the relevant deployment and integrity fields in `PackageIdentity` after the initial integrity operation. During `IsCurrent`, repeat integrity verification whenever it was performed initially, compare the complete captured state, and reject any state transition before activation.\n\n**Verification:** Add focused tests showing that an unchanged approved-unverified package remains eligible while modified, stubbed, unavailable, external, mutable, or changed-integrity registrations fail revalidation.",
+      "title": "Preserve and revalidate the package's captured trust state",
       "path": "src/modules/Workspaces/WorkspacesLib/PackageVerification.cpp",
       "start_line": 254,
       "line": 255,
       "side": "RIGHT",
       "in_diff": true,
+      "body": "### Preserve and revalidate the package's captured trust state\n\n**Severity:** `critical`\n\nThe final check only compares package identity and verified-package metadata. For a target whose original package result was not verified, the code does not retain the full deployment and integrity state and can accept the same package identity after it becomes tampered, modified, stubbed, unavailable, external, mutable, or changes integrity state.\n\nCapture the deployment and integrity fields in `PackageIdentity` after the initial package evaluation. During `IsCurrent`, repeat integrity verification whenever it was performed initially, compare the full captured state, and reject any state transition before activation.\n\n**Verification:** Add focused tests showing that an unchanged approved-unverified package remains eligible while modified, stubbed, unavailable, external, mutable, or changed-integrity registrations fail revalidation.",
       "confidence": {
         "score": 96,
-        "rationale": "The current code bypasses current-state evaluation for initially unverified packages; the exact proposed fix and transition tests pass."
+        "rationale": "The correction candidate captures and rechecks package state and rejects changed integrity and deployment transitions."
       },
       "disposition": "proposed"
     },
     {
       "id": "filesystem-target-revalidation",
       "kind": "inline",
-      "title": "Fail closed when the approved filesystem target is not namespace-protected",
       "severity": "critical",
-      "body": "### Fail closed when the approved filesystem target is not namespace-protected\n\n**Severity:** `critical`\n\nFor non-package targets this delegates directly to package revalidation, which treats an absent package identity as current. Absolute non-`.exe` paths, relative paths, and drive-relative paths such as `C:app.exe` can consequently pass after approval without a retained file handle. Holding only the executable handle is also insufficient when a writable ancestor directory can be renamed and replaced before `ShellExecuteEx` resolves `target.path` again.\n\nDistinguish URI/protocol targets from filesystem targets, reject every filesystem target that lacks a successfully retained file handle, and retain non-delete-sharing handles for each parent directory through the elevation request. Fail verification if any required directory cannot be protected.\n\n**Verification:** Add regressions for absolute `.exe`, `.lnk` or script, ordinary relative and drive-relative paths, plus a URI case confirming that legitimate protocol targets remain supported.",
+      "title": "Fail closed when the approved filesystem target is not namespace-protected",
       "path": "src/modules/Workspaces/WorkspacesLib/SignatureVerification.cpp",
       "start_line": 297,
       "line": 300,
       "side": "RIGHT",
       "in_diff": true,
+      "body": "### Fail closed when the approved filesystem target is not namespace-protected\n\n**Severity:** `critical`\n\nFor non-package targets, `IsCurrent` delegates to package revalidation, which treats an absent package identity as current. Absolute non-`.exe` paths, relative paths, and drive-relative paths such as `C:app.exe` can pass after approval without a retained file handle, and an executable handle alone does not protect writable ancestor directories that can be renamed before `ShellExecuteEx` resolves the path.\n\nDistinguish URI targets from filesystem targets, reject every filesystem target without a retained file handle, and retain non-delete-sharing handles for each parent directory through the elevation request. Fail verification if any required directory cannot be protected.\n\n**Verification:** Add regressions for absolute `.exe`, `.lnk` or script, relative and drive-relative paths, plus a URI case confirming legitimate protocol targets remain supported.",
       "confidence": {
         "score": 97,
-        "rationale": "Absent package identity is currently treated as current; the exact fail-closed implementation and filesystem/URI regressions pass."
+        "rationale": "Absent package identity is currently accepted; the exact fail-closed correction and filesystem/URI regressions pass."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "filesystem-directory-handle-failure",
+      "kind": "inline",
+      "severity": "critical",
+      "title": "Reject partially protected filesystem targets",
+      "path": "src/modules/Workspaces/WorkspacesLib/SignatureVerification.cpp",
+      "start_line": 297,
+      "line": 300,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Reject partially protected filesystem targets\n\n**Severity:** `critical`\n\nWhen opening a parent directory fails, `Verify` returns an unverified target while retaining the executable handle. The current `IsCurrent` check only requires that file handle, so a user-approved warning can proceed without pinning the directory namespace that `ShellExecuteEx` later resolves.\n\nRequire the retained parent-directory handle set during filesystem revalidation, or clear the executable handle before returning from any directory-protection failure. Add a regression where a target has a retained executable handle but no protected directories and must be rejected.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The fresh Copilot loop confirmed the partial-protection path; the correction candidate requires directory handles and passes a focused regression."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "launcher-status-map-copy",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Avoid copying the launching-state map on each update",
+      "path": "src/modules/Workspaces/WorkspacesLauncher/LauncherUIHelper.h",
+      "line": 15,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Avoid copying the launching-state map on each update\n\n**Severity:** `low`\n\n`UpdateLaunchStatus` only reads the launching-state map before serializing it, but the new signature takes the map by value. Each update copies the full status map unnecessarily even though the call site already owns a stable snapshot.\n\nTake `const WorkspacesData::LaunchingAppStateMap&` in the declaration and implementation so the UI helper does not create another full-map copy on every launch-status update.",
+      "confidence": {
+        "score": 88,
+        "rationale": "The method only serializes the map and the const-reference correction compiles in the launcher project."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "window-arranger-termination-fallback",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Keep a termination fallback for the arranger process",
+      "path": "src/modules/Workspaces/WorkspacesLauncher/WindowArrangerHelper.cpp",
+      "start_line": 25,
+      "line": 28,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep a termination fallback for the arranger process\n\n**Severity:** `medium`\n\nThe destructor now relies on the stored process handle for termination. If that handle lacks `PROCESS_TERMINATE` access, `TerminateProcess` fails and can leave the arranger process running even though the previous implementation reopened the process before terminating it.\n\nWhen termination through the stored handle fails, reopen `m_processId` with `PROCESS_TERMINATE | SYNCHRONIZE` and retry before logging failure. This preserves the prior cleanup robustness while keeping the stored handle as the fast path.",
+      "confidence": {
+        "score": 90,
+        "rationale": "The exact candidate restores a narrower termination fallback and compiles in WorkspacesLauncher."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "launcher-ui-win32-error-format",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Format the UI termination Win32 error consistently",
+      "path": "src/modules/Workspaces/WorkspacesLauncher/LauncherUIHelper.cpp",
+      "line": 43,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Format the UI termination Win32 error consistently\n\n**Severity:** `low`\n\nThe shutdown path logs raw `GetLastError()` when terminating the Workspaces UI process fails. That is harder to diagnose than the formatted Win32 error helper already used in nearby launcher code.\n\nInclude `common/utils/winapi_error.h` and log `get_last_error_or_default(GetLastError())` so the failure carries the same stable formatted diagnostics as the rest of the component.",
+      "confidence": {
+        "score": 89,
+        "rationale": "Nearby code uses the same Win32 diagnostic helper and the exact candidate compiles in the launcher project."
       },
       "disposition": "proposed"
     }
@@ -64,7 +136,7 @@
     {
       "id": "request-changes-50508",
       "type": "request_changes",
-      "label": "Request changes for two critical launch revalidation gaps",
+      "label": "Request six Workspaces security and robustness corrections",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -72,65 +144,65 @@
         "repository": "microsoft/PowerToys",
         "pullRequest": 50508,
         "event": "REQUEST_CHANGES",
-        "head_sha": "4fe80c780ffca4f79f14aa111bff22247105d4d8",
-        "body": "Two launch-target revalidation gaps remain in this security-sensitive elevation path. Please address the package-state transition and filesystem namespace issues described inline before approval."
+        "head_sha": "0131e2b97ab86b05acd493c9a5b04d68d5180e0d",
+        "body": "Three security-sensitive launch-target revalidation gaps and three launcher robustness issues remain. Please address the current-head findings below before approval."
       },
-      "note": "Draft only. Explicit maintainer confirmation is required before posting."
+      "note": "Draft only. Explicit maintainer approval and a final freshness/check-state revalidation are required before posting."
     }
   ],
-  "workflow": {
-    "phase": "review_drafted",
-    "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-16T02:20:00Z",
-    "advancement_evidence": [
-      "Detected upstream head change from 7156b04144c25c6615d1cb7bb6789ac32271b879 to 4fe80c780ffca4f79f14aa111bff22247105d4d8.",
-      "Consumed all existing fork review state before making a new request; nine reviews and zero unresolved threads were present.",
-      "Merged the exact new upstream head into the preserved review branch and pushed fork head 93989f2386fdebd459e71147e4122fe964afc5dd.",
-      "Confirmed the two prior launch-revalidation findings remain applicable.",
-      "Passed the exact-head correction-candidate build and 116/116 focused tests.",
-      "Consumed the mandatory fresh review for fork head 93989f2386fdebd459e71147e4122fe964afc5dd.",
-      "Confirmed the fresh review published zero inline findings and all 12 fork threads remain resolved.",
-      "Revalidated both retained findings and their RIGHT-side anchors on the exact live upstream head.",
-      "Passed the exact-head correction-candidate build and 116/116 focused tests.",
-      "Drafted the current-head request-changes action without making an upstream write.",
-      "Revalidated subsequent check activity through 2026-09-16T01:14:27Z; all 13 upstream checks now pass and no new discussion or source change affects the findings."
-    ],
-    "retained_findings": [
-      "Preserve and revalidate the package's captured trust state in PackageVerification.cpp.",
-      "Fail closed when an approved filesystem target is not namespace-protected in SignatureVerification.cpp."
-    ]
-  },
-  "freshness": {
-    "headRefOid": "4fe80c780ffca4f79f14aa111bff22247105d4d8",
-    "updatedAt": "2026-09-16T01:14:27Z",
-    "unresolvedForkCopilotThreads": 0,
-    "latestCopilotReviewAt": "2026-09-16T00:00:25Z",
-    "checkedAt": "2026-09-16T02:20:00Z"
-  },
   "fork_pr": {
     "number": 773,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/773",
-    "state": "OPEN"
+    "state": "OPEN",
+    "head_sha": "66005ff107e52e3b0c3cb67600fcb37f7538319e"
   },
   "fork_branch": "pr-iterate/50508-v2",
-  "fork_head_sha": "93989f2386fdebd459e71147e4122fe964afc5dd",
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-16T04:28:40Z",
+    "advancement_evidence": [
+      "Detected and reviewed new upstream head 0131e2b97ab86b05acd493c9a5b04d68d5180e0d.",
+      "Preserved fork PR 773 and branch pr-iterate/50508-v2.",
+      "Processed three new fork review rounds, fixing and resolving the supported findings.",
+      "Consumed the final Copilot review on fork head 66005ff107 with zero new comments.",
+      "Confirmed zero unresolved Copilot threads.",
+      "Applied the complete correction set to the exact upstream head.",
+      "Built WorkspacesLib.UnitTests and passed 117/117 tests.",
+      "Built WorkspacesLauncher with zero warnings and zero errors."
+    ]
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "headRefOid": "0131e2b97ab86b05acd493c9a5b04d68d5180e0d",
+    "updatedAt": "2026-09-16T04:19:50Z",
+    "latestCopilotReviewAt": "2026-09-16T04:28:40Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-16T04:28:40Z"
+  },
   "validation": {
-    "suggestionPatch": {
-      "head_sha": "4fe80c780ffca4f79f14aa111bff22247105d4d8",
+    "suggestion_patch": {
+      "head_sha": "0131e2b97ab86b05acd493c9a5b04d68d5180e0d",
       "result": "not_applicable",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [],
-      "commands": [
-        "tools\\build\\build.cmd in src\\modules\\Workspaces\\WorkspacesLib.UnitTests",
-        "vstest.console.exe Workspaces.Lib.UnitTests.dll /Platform:x64"
-      ],
-      "details": "The retained findings are hidden while the mandatory fresh review is pending. The complete correction result was applied to the pinned upstream head, built successfully, and passed 116/116 tests."
-    },
-    "upstreamHead": {
-      "head_sha": "4fe80c780ffca4f79f14aa111bff22247105d4d8",
-      "result": "not_applicable",
       "commands": [],
-      "details": "This is a non-clean security review with current-head findings; the complete correction candidate was validated instead."
+      "details": "The six comments contain no literal suggestion blocks; the complete correction candidate was validated instead."
+    },
+    "correction_candidate": {
+      "head_sha": "0131e2b97ab86b05acd493c9a5b04d68d5180e0d",
+      "result": "passed",
+      "commands": [
+        "git apply --check correction patch on detached upstream head",
+        "tools\\build\\build.cmd -Configuration Debug -Platform x64 in src\\modules\\Workspaces\\WorkspacesLib.UnitTests",
+        "vstest.console.exe x64\\Debug\\tests\\Workspaces\\Workspaces.Lib.UnitTests.dll /Platform:x64",
+        "MSBuild.exe src\\modules\\Workspaces\\WorkspacesLauncher\\WorkspacesLauncher.vcxproj /p:Platform=x64 /p:Configuration=Debug with repository SolutionDir"
+      ],
+      "tests": {
+        "passed": 117,
+        "failed": 0
+      },
+      "details": "The exact current-head correction candidate passes all 117 focused tests; WorkspacesLauncher builds with zero warnings and zero errors."
     }
   },
   "upstream_safety": {
