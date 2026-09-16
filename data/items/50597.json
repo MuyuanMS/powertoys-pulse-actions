@@ -4,35 +4,101 @@
   "number": 50597,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T11:35:48.7818838Z",
-  "evaluated_at": "2026-09-16T11:35:48.7818838Z",
+  "generated_at": "2026-09-16T11:39:57.2647761Z",
+  "evaluated_at": "2026-09-16T11:39:57.2647761Z",
   "source_updated_at": "2026-09-16T09:12:15Z",
   "head_sha": "c22e3b1062597ca9aef3a5bd7e0d3bf61fb8c79a",
   "title": "feat(Window Hopper): mouse hover and click to select windows",
   "url": "https://github.com/microsoft/PowerToys/pull/50597",
-  "summary": "The fork review loop converged with a clean fresh Copilot review and zero unresolved threads after fixing mouse-hook lifecycle issues on the fork. Exact upstream-head AltWindowCycle builds passed. Four draft review comments are ready for maintainer approval: three code findings and one Phase 0 demo/validation ask.",
+  "summary": "The fork review loop converged with a clean fresh Copilot review and zero unresolved threads after fixing mouse-hook lifecycle issues on the fork. Exact upstream-head AltWindowCycle builds passed. Three current-head code findings are ready for maintainer approval; Phase 0 also noted the first-time contributor should add demo and validation evidence.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
-    "detail": "Three mouse-hook lifecycle findings plus one demo/validation ask are drafted for maintainer approval."
+    "detail": "Three mouse-hook lifecycle findings are drafted for maintainer approval."
   },
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted review comments",
-    "reason": "The converged fork includes fixes absent from the upstream head, and the first-time contributor PR still needs demo/validation evidence."
+    "reason": "The converged fork includes fixes absent from the upstream head."
   },
   "confidence": "High",
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "phase0": {
     "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
     "disposition": "Ask",
-    "processGates": "CLA passed; visual evidence missing for user-visible Window Hopper behavior; validation checklist unchecked; scope is atomic and linked feature request exists."
+    "processGates": "CLA passed; visual evidence missing for user-visible Window Hopper behavior; validation checklist unchecked; scope is atomic and linked feature request exists. Suggested ask: add a short recording or screenshots for hover selection, left-click activation, outside-click dismissal, pagination, and complete the validation checklist with manual steps plus AltWindowCycle.UnitTests result."
   },
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "mouse-hook-pending-release",
+      "kind": "inline",
+      "severity": "major",
+      "title": "Keep the hook active until the swallowed release is consumed",
+      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "line": 442,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 88,
+        "rationale": "The validated fork fix showed the low-level hook must remain active while a swallowed left-button release is pending."
+      },
+      "body": "### Keep the hook active until the swallowed release is consumed\r\n\r\n**Severity:** `major`\r\n\r\nPlease keep the low-level mouse hook active while a swallowed left-button release is still pending, even after the overlay begins dismissing. Otherwise the physical `WM_LBUTTONUP` can reach the underlying application without its matching button-down. Continue routing that release through the hook and consume it before teardown."
+    },
+    {
+      "id": "mouse-hook-overlay-visible",
+      "kind": "inline",
+      "severity": "major",
+      "title": "Do not unhook after gap or padding clicks while the overlay remains visible",
+      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "line": 474,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 87,
+        "rationale": "The validated fork fix keeps hover/click selection working after swallowed button-up events that do not dismiss the overlay."
+      },
+      "body": "### Do not unhook after gap or padding clicks while the overlay remains visible\r\n\r\n**Severity:** `major`\r\n\r\nPlease do not unhook the mouse hook after every swallowed button-up while the overlay remains visible. A click in tile padding or a gap can leave the overlay open; unhooking here makes later hover and click selection stop working for the rest of that session. Only tear down the hook after the overlay has been dismissed."
+    },
+    {
+      "id": "mouse-hook-final-shutdown",
+      "kind": "inline",
+      "severity": "major",
+      "title": "Force final shutdown to clear hook state",
+      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "line": 624,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 86,
+        "rationale": "The validated fork fix adds a final teardown path so stale hook state cannot survive shutdown while a swallowed release is pending."
+      },
+      "body": "### Force final shutdown to clear hook state\r\n\r\n**Severity:** `major`\r\n\r\nPlease add a forced final-shutdown teardown path that always unhooks the mouse hook and clears `g_swallowedLeftDown`. If shutdown occurs while a swallowed button-up is pending, the deferred ordinary teardown can otherwise leave stale hook state and prevent a later enable from installing a new hook."
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50597",
+      "type": "request_changes",
+      "label": "Request three Window Hopper hook-lifecycle fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50597,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "c22e3b1062597ca9aef3a5bd7e0d3bf61fb8c79a",
+        "body": "Three mouse-hook lifecycle issues remain in the Window Hopper interaction path. Please address the current-head findings below before approval."
+      },
+      "note": "Draft only. Explicit maintainer approval and final freshness/check-state revalidation are required before posting."
+    }
+  ],
   "fork_pr": {
     "number": 835,
     "repo": "MuyuanMS/PowerToys",
@@ -45,14 +111,14 @@
   "workflow": {
     "phase": "review_drafted",
     "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-16T11:35:48.7818838Z",
+    "checkpoint_at": "2026-09-16T11:39:57.2647761Z",
     "advancement_evidence": [
       "Consumed the fresh fork Copilot review submitted at 2026-09-16T10:53:13Z on fork head e04e996d235961619195753f6ece733c12e76e83; it had zero published comments.",
       "Confirmed zero unresolved fork Copilot threads.",
       "Built AltWindowCycle.vcxproj and AltWindowCycleUnitTests.vcxproj on the fork.",
       "Built the exact upstream head for AltWindowCycle and unit tests; x64/Debug/PowerToys.exe exists.",
       "Mapped the converged fork-only mouse-hook lifecycle fixes to three current-head upstream findings.",
-      "Recorded the first-time contributor demo/validation checklist ask.",
+      "Recorded the first-time contributor demo/validation checklist ask in Phase 0 metadata.",
       "No upstream public action was taken."
     ]
   },
@@ -62,7 +128,7 @@
     "updatedAt": "2026-09-16T09:12:15Z",
     "latestCopilotReviewAt": "2026-09-16T10:53:13Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-16T11:35:48.7818838Z"
+    "checkedAt": "2026-09-16T11:39:57.2647761Z"
   },
   "validation": {
     "fork_review": {
