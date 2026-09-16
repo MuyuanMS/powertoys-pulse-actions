@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-17T04:09:49.4989986+08:00",
+  "generated_at": "2026-09-17T05:54:12.9953796+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 167,
-    "open_issues": 12647,
-    "community": 11807,
-    "artifacts": 1254
+    "open_issues": 12648,
+    "community": 11808,
+    "artifacts": 1255
   },
   "impact": {
-    "as_of": "2026-09-17T04:09:49.4989986+08:00",
+    "as_of": "2026-09-17T05:54:12.9953796+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -571,6 +571,7 @@ window.BOARD_INDEX = {
     14596,
     14351,
     30692,
+    50608,
     50604,
     50603,
     50594,
@@ -1381,7 +1382,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-16T16:37:52Z",
-      "updated_at": "2026-09-16T18:01:10Z",
+      "updated_at": "2026-09-16T21:44:08Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -154769,6 +154770,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50608",
+      "kind": "issue",
+      "number": 50608,
+      "url": "https://github.com/microsoft/PowerToys/issues/50608",
+      "title": "PowerToys Run ran into an issue",
+      "author": "sdudnic-ingerop",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "triage",
+      "stage": "waiting_on_author",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-16T21:03:04Z",
+      "updated_at": "2026-09-16T21:11:12Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-50607",
       "kind": "issue",
       "number": 50607,
@@ -154791,13 +154826,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Docs",
-        "Needs-Triage"
+        "Needs-Author-Feedback",
+        "Issue-Docs"
       ],
       "assignees": [],
       "created_at": "2026-09-16T18:59:32Z",
-      "updated_at": "2026-09-16T18:59:32Z",
-      "comments": 0,
+      "updated_at": "2026-09-16T20:54:25Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -275516,8 +275551,8 @@ window.BOARD_INDEX = {
         "michaeljolley"
       ],
       "created_at": "2026-02-15T15:36:22Z",
-      "updated_at": "2026-05-18T19:45:03Z",
-      "comments": 20,
+      "updated_at": "2026-09-16T21:38:43Z",
+      "comments": 21,
       "priority": null
     },
     {
@@ -425473,8 +425508,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2019-09-06T14:59:13Z",
-      "updated_at": "2026-09-16T12:54:00Z",
-      "comments": 37,
+      "updated_at": "2026-09-16T21:14:38Z",
+      "comments": 38,
       "priority": null
     },
     {
