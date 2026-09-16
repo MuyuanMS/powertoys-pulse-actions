@@ -2,27 +2,105 @@
   "number": 50333,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "external",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T00:10:00Z",
-  "evaluated_at": "2026-09-16T00:10:00Z",
+  "generated_at": "2026-09-16T01:35:00Z",
+  "evaluated_at": "2026-09-16T01:35:00Z",
   "source_updated_at": "2026-09-02T13:51:47Z",
   "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
   "title": "Feature/advanced paste text case part2",
   "url": "https://github.com/microsoft/PowerToys/pull/50333",
   "status": {
     "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Consumed the review on fork head 09d2ecaa, fixed its valid suppressed slot-visibility finding at fork commit 9bc039daae, and passed affected Debug builds plus 2/2 focused tests. A follow-up Copilot request returned HTTP 422 and the immediate check found no new review."
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 815 converged with zero published findings and zero unresolved threads. The complete exact-head correction candidate passes the Advanced Paste, Settings, Shortcut Guide, and focused test builds."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "The native/UI slot contract, Shortcut Guide integration, Unicode notice, and migration coverage remain incomplete on the upstream head."
+  },
+  "proposed_comments": [
+    {
+      "id": "hotkey-slot-contract",
+      "kind": "inline",
+      "severity": "critical",
+      "title": "Keep native and Settings hotkey slots aligned",
+      "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+      "start_line": 430,
+      "line": 430,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep native and Settings hotkey slots aligned\n\n**Severity:** `critical`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, `src/settings-ui/Settings.UI.Library/AdvancedPasteAdditionalActions.cs`, `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`, and `src/settings-ui/Settings.UI/ViewModels/ShortcutConflictViewModel.cs`.\n\n**Problem:** Adding `text-case` to the native traversal makes hotkey IDs depend on the shape of the persisted `additional-actions` JSON. Settings, however, deserializes omitted or null groups and leaves to defaults, while the native loader currently skips missing or malformed groups and leaves. The resulting vectors can have different lengths, so a Text Case or custom-action conflict can be assigned to the wrong action or shown with the wrong localized header. The optional coaching shortcut must also occupy the same slot on both sides whenever it is enabled and has a non-zero key, even when its parent action is hidden.\n\n**Why it matters:** A user can save a valid older or partially written settings file, then have conflict detection and hotkey routing disagree about which shortcut is being edited or invoked.\n\n**Suggested change:**\n1. Define the native additional-action traversal in the same fixed order as `AdvancedPasteAdditionalActions.GetAllActions()`.\n2. Reserve a disabled placeholder for every missing or non-object action group and leaf, including all ten Text Case leaves, rather than omitting it from the native vector.\n3. Append exactly one slot for each leaf that has a shortcut; do not duplicate the vector insertion.\n4. Keep the optional coaching slot condition identical between native registration and `GetAllHotkeyAccessors()`.\n5. Add regression coverage for v1 and partial settings payloads, asserting that Settings accessor positions and native hotkey positions remain aligned.\n\n**Verification:** Build `AdvancedPasteModuleInterface` and Settings, then test an older settings file with omitted `fix-spelling-and-grammar`, a null or incomplete `text-case` group, hidden Fix Spelling with coaching enabled, and a custom action. Confirm each conflict is labeled and routed to its actual shortcut.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The exact correction candidate aligns the fixed slot schema across native and managed code and passes all affected builds and focused tests."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "shortcut-guide-text-case-actions",
+      "kind": "companion",
+      "severity": "moderate",
+      "title": "Include Text Case shortcuts in Shortcut Guide",
+      "out_of_diff_reason": "PowerToysShortcutsPopulator.cs is not changed by this PR, so there is no current RIGHT-side range for the required integration.",
+      "body": "### Include Text Case shortcuts in Shortcut Guide\n\n**Affected code:** `src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs`, `src/settings-ui/Settings.UI.Library/AdvancedPasteTextCaseAction.cs`, and `src/settings-ui/Settings.UI/Strings/en-us/Resources.resw`.\n\n**Problem:** Shortcut Guide populates Advanced Paste shortcuts from an explicit list. The list includes existing core, file, and transcode actions but none of the ten new Text Case leaves. A configured Text Case shortcut will work in Advanced Paste but will not appear in Shortcut Guide.\n\n**Why it matters:** Users rely on Shortcut Guide to discover configured global shortcuts; omitting these actions makes the new feature inconsistent with the existing Advanced Paste shortcuts.\n\n**Suggested change:**\n1. In `PowerToysShortcutsPopulator.Populate`, add a `TextCase.IsShown` branch after the existing Advanced Paste action groups.\n2. Append each of the ten Text Case leaf shortcuts only when that leaf is shown.\n3. Use the corresponding existing localized header resource and the existing Advanced Paste module label.\n4. Add Shortcut Guide coverage proving shown Text Case shortcuts are emitted and hidden leaves are not.\n\n**Verification:** Enable Text Case actions, assign shortcuts, open Shortcut Guide, and confirm each enabled action appears with its localized name while disabled actions do not.",
+      "confidence": {
+        "score": 96,
+        "rationale": "Shortcut Guide uses an explicit action list and currently has no Text Case entries; the validated candidate adds the complete integration."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "unicode-notice",
+      "kind": "companion",
+      "severity": "moderate",
+      "title": "Add the vendored Unicode notice to the root notice file",
+      "out_of_diff_reason": "NOTICE.md is not changed by this PR, so there is no current RIGHT-side range for the required release-notice update.",
+      "body": "### Add the vendored Unicode notice to the root notice file\n\n**Affected code:** `NOTICE.md`, `src/modules/AdvancedPaste/UnicodeData/LICENSE.txt`, and `src/modules/AdvancedPaste/UnicodeData/SentenceBreakProperty.txt`.\n\n**Problem:** This PR vendors Unicode `SentenceBreakProperty.txt` and compiles generated data derived from it, but the root `NOTICE.md` has no Advanced Paste or Unicode entry. The sibling license file is not a substitute for the root notice distributed with the product.\n\n**Why it matters:** The release artifact needs to carry the required attribution and license notice for the third-party Unicode data it incorporates.\n\n**Suggested change:**\n1. Add Advanced Paste to the utilities listed by `NOTICE.md`.\n2. Add an Advanced Paste section containing the Unicode data source and Unicode License V3 text from `UnicodeData/LICENSE.txt`.\n3. Keep the source and copyright year consistent with the vendored Unicode 17 data.\n\n**Verification:** Compare the new root notice entry against `UnicodeData/LICENSE.txt` and confirm a packaged build includes the updated root `NOTICE.md`.",
+      "confidence": {
+        "score": 99,
+        "rationale": "The repository vendors Unicode data and its license but omits the corresponding root distribution notice."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "migration-shape-regression-test",
+      "kind": "companion",
+      "severity": "moderate",
+      "title": "Test the persisted v1-to-v2 settings shape",
+      "out_of_diff_reason": "The PR adds no Settings migration test file, so there is no current RIGHT-side range for the missing regression coverage.",
+      "body": "### Test the persisted v1-to-v2 settings shape\n\n**Affected code:** `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`, `src/settings-ui/Settings.UI.Library/AdvancedPasteAdditionalActions.cs`, `src/settings-ui/Settings.UI.Library/AdvancedPasteTextCaseAction.cs`, and `src/settings-ui/Settings.UI.UnitTests/ModelsTests/AdvancedPasteSettingsTests.cs`.\n\n**Problem:** Updating `Version` from `1` to `2` alone does not prove that an existing on-disk v1 payload is deserialized, upgraded, and persisted with the new `text-case` group and all ten leaves. A future serializer or initialization change could leave the runtime and Settings UI with different action shapes while a version-only assertion still passes.\n\n**Why it matters:** Persisted settings compatibility is part of the hotkey-ID contract; a malformed migrated shape can shift shortcut conflict metadata and native routing.\n\n**Suggested change:**\n1. Deserialize a representative v1 Advanced Paste JSON payload that omits `text-case`.\n2. Run `UpgradeSettingsConfiguration`, serialize the result, and deserialize it again.\n3. Assert version `2`, the Text Case group, all ten leaves, and their default visibility and empty shortcuts.\n4. Add a partial or null group case covering the settings model's null-coalescing behavior.\n\n**Verification:** Run the focused `AdvancedPasteSettingsTests` suite and confirm both v1 and partial-payload round trips produce the expected ordered accessor shape.",
+      "confidence": {
+        "score": 88,
+        "rationale": "The version changes without an end-to-end persisted-shape regression; the candidate test demonstrates the required compatibility contract."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50333",
+      "type": "request_changes",
+      "label": "Request four Advanced Paste integration corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50333,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+        "body": "The implementation needs its native and Settings hotkey registration contract, Shortcut Guide population, third-party notice, and migration regression coverage completed before merge."
+      },
+      "note": "Draft only. One inline review comment and three separate PR conversation comments require explicit maintainer approval."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
+    "phase": "review_drafted",
     "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-16T00:10:00Z",
+    "checkpoint_at": "2026-09-16T01:35:00Z",
     "advancement_evidence": [
       "Consumed the completed review on fork head 09d2ecaa678001dca9b249f3aa0e6f808942c588 before requesting another.",
       "Assessed its single suppressed finding and restored independent counting of the enabled non-zero coaching shortcut.",
@@ -30,12 +108,17 @@
       "Confirmed zero published findings and zero unresolved Copilot threads.",
       "Built PowerToys Settings and Settings.UI.UnitTests in Debug.",
       "Passed 2/2 focused AdvancedPasteSettingsTests.",
-      "Attempted one fresh Copilot request; GitHub returned HTTP 422, and the immediate check found no newly submitted review."
+      "Consumed the final Copilot review on fork head 9bc039daae719a7cfab1a1c237fcdcc9e9420056; it published zero findings.",
+      "Confirmed all three fork review threads are resolved.",
+      "Materialized the complete four-root correction set onto the exact live upstream head.",
+      "Passed the runner, Settings, AdvancedPasteModuleInterface, Shortcut Guide, and Settings unit-test Debug builds.",
+      "Passed 2/2 focused AdvancedPasteSettingsTests.",
+      "Represented every meaningful fork-only correction as one inline and three implementation-ready companion comments."
     ]
   },
   "freshness": {
     "queued_at": "2026-09-15T13:43:53.0186544Z",
-    "checkpoint_at": "2026-09-16T00:10:00Z",
+    "checkpoint_at": "2026-09-16T01:35:00Z",
     "review_request_attempt_at": "2026-09-15T23:28:16.5672409Z",
     "unresolvedForkCopilotThreads": 0
   },
@@ -49,7 +132,10 @@
     "fork_candidate": {
       "result": "passed",
       "commands": [
+        "Debug build: runner",
         "Debug build: PowerToys Settings",
+        "Debug build: AdvancedPasteModuleInterface",
+        "Debug build: ShortcutGuide.Ui",
         "Debug build: Settings.UI.UnitTests",
         "Focused AdvancedPasteSettingsTests"
       ],
@@ -57,14 +143,7 @@
         "passed": 2,
         "failed": 0
       },
-      "details": "The exact upstream head is an ancestor of the clean corrected fork. The candidate restores the coaching shortcut's independent visibility boundary and passes the focused settings tests."
+      "details": "The complete correction set was materialized onto a clean exact-upstream-head candidate and passed all affected builds plus the focused settings tests."
     }
-  },
-  "blockers": [
-    {
-      "terminal": false,
-      "detail": "The one permitted fresh Copilot request for fork head 9bc039daae719a7cfab1a1c237fcdcc9e9420056 returned GitHub HTTP 422, and no newly submitted review was present in the immediate check.",
-      "remediation": "On resume, inspect fork PR 815 for a review on the current head. If none exists and no request is pending, retry one fork-side Copilot request and stop after the immediate check."
-    }
-  ]
+  }
 }
