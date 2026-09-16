@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-16T18:03:38.8923457+08:00",
+  "generated_at": "2026-09-16T18:15:12.9290450+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 166,
     "open_issues": 12647,
     "community": 11805,
-    "artifacts": 1252
+    "artifacts": 1253
   },
   "impact": {
-    "as_of": "2026-09-16T18:03:38.8923457+08:00",
+    "as_of": "2026-09-16T18:15:12.9290450+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50597,
     50596,
     50585,
     50581,
@@ -1364,13 +1365,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1385,7 +1386,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 835,
+        "fork_title": "[PR 50597] feat(Window Hopper): mouse hover and click to select windows",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50597-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/835"
+      }
     },
     {
       "id": "pr-50596",
