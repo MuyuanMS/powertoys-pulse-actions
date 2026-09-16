@@ -2,37 +2,97 @@
   "number": 50508,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "external",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T01:00:00Z",
-  "evaluated_at": "2026-09-16T01:00:00Z",
+  "generated_at": "2026-09-16T01:15:00Z",
+  "evaluated_at": "2026-09-16T01:15:00Z",
   "source_updated_at": "2026-09-15T23:40:33Z",
   "head_sha": "4fe80c780ffca4f79f14aa111bff22247105d4d8",
   "title": "feat(workspaces): warn before unverified elevated app launches",
   "url": "https://github.com/microsoft/PowerToys/pull/50508",
-  "summary": "A new upstream commit invalidated the prior actionable review. The exact live head was merged into the preserved fork branch, the two launch-target findings remain applicable, and a mandatory fresh Copilot review is running.",
+  "summary": "The mandatory fresh review on the changed upstream head completed with zero published findings and zero unresolved threads. Two critical launch-target revalidation gaps remain, and the exact correction candidate passes all 116 focused tests.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot",
-    "detail": "Upstream advanced to 4fe80c780f. Fork PR 773 is synchronized at 93989f2386 with zero unresolved threads, and the exact-head correction candidate passes 116/116 tests. The mandatory fresh review is still running."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Fork PR 773 is synchronized at 93989f2386. The fresh review has zero published findings and zero unresolved threads; both exact-head corrections pass 116/116 focused tests."
   },
-  "next_action": "Consume the Copilot request started at 2026-09-15T23:42:59Z for fork head 93989f2386fdebd459e71147e4122fe964afc5dd before issuing another request.",
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
+    "reason": "Two validated security findings remain absent from the exact upstream head."
+  },
   "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "package-state-revalidation",
+      "kind": "inline",
+      "title": "Preserve and revalidate the package's captured trust state",
+      "severity": "critical",
+      "body": "### Preserve and revalidate the package's captured trust state\n\n**Severity:** `critical`\n\nThe final check only compares package identity and, when the original result was unverified, skips evaluating the current package state. The initial integrity and deployment state is also not retained in `target.package`. A package approved while unverified can therefore change to tampered, modified, stubbed, unavailable, external, or mutable content without invalidating that one-time approval.\n\nCapture the relevant deployment and integrity fields in `PackageIdentity` after the initial integrity operation. During `IsCurrent`, repeat integrity verification whenever it was performed initially, compare the complete captured state, and reject any state transition before activation.\n\n**Verification:** Add focused tests showing that an unchanged approved-unverified package remains eligible while modified, stubbed, unavailable, external, mutable, or changed-integrity registrations fail revalidation.",
+      "path": "src/modules/Workspaces/WorkspacesLib/PackageVerification.cpp",
+      "start_line": 254,
+      "line": 255,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "The current code bypasses current-state evaluation for initially unverified packages; the exact proposed fix and transition tests pass."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "filesystem-target-revalidation",
+      "kind": "inline",
+      "title": "Fail closed when the approved filesystem target is not namespace-protected",
+      "severity": "critical",
+      "body": "### Fail closed when the approved filesystem target is not namespace-protected\n\n**Severity:** `critical`\n\nFor non-package targets this delegates directly to package revalidation, which treats an absent package identity as current. Absolute non-`.exe` paths, relative paths, and drive-relative paths such as `C:app.exe` can consequently pass after approval without a retained file handle. Holding only the executable handle is also insufficient when a writable ancestor directory can be renamed and replaced before `ShellExecuteEx` resolves `target.path` again.\n\nDistinguish URI/protocol targets from filesystem targets, reject every filesystem target that lacks a successfully retained file handle, and retain non-delete-sharing handles for each parent directory through the elevation request. Fail verification if any required directory cannot be protected.\n\n**Verification:** Add regressions for absolute `.exe`, `.lnk` or script, ordinary relative and drive-relative paths, plus a URI case confirming that legitimate protocol targets remain supported.",
+      "path": "src/modules/Workspaces/WorkspacesLib/SignatureVerification.cpp",
+      "start_line": 297,
+      "line": 300,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 97,
+        "rationale": "Absent package identity is currently treated as current; the exact fail-closed implementation and filesystem/URI regressions pass."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50508",
+      "type": "request_changes",
+      "label": "Request changes for two critical launch revalidation gaps",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50508,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "4fe80c780ffca4f79f14aa111bff22247105d4d8",
+        "body": "Two launch-target revalidation gaps remain in this security-sensitive elevation path. Please address the package-state transition and filesystem namespace issues described inline before approval."
+      },
+      "note": "Draft only. Explicit maintainer confirmation is required before posting."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-16T01:00:00Z",
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-16T01:15:00Z",
     "advancement_evidence": [
       "Detected upstream head change from 7156b04144c25c6615d1cb7bb6789ac32271b879 to 4fe80c780ffca4f79f14aa111bff22247105d4d8.",
       "Consumed all existing fork review state before making a new request; nine reviews and zero unresolved threads were present.",
       "Merged the exact new upstream head into the preserved review branch and pushed fork head 93989f2386fdebd459e71147e4122fe964afc5dd.",
       "Confirmed the two prior launch-revalidation findings remain applicable.",
       "Passed the exact-head correction-candidate build and 116/116 focused tests.",
-      "Requested one mandatory fresh review and stopped after the permitted check."
+      "Consumed the mandatory fresh review for fork head 93989f2386fdebd459e71147e4122fe964afc5dd.",
+      "Confirmed the fresh review published zero inline findings and all 12 fork threads remain resolved.",
+      "Revalidated both retained findings and their RIGHT-side anchors on the exact live upstream head.",
+      "Passed the exact-head correction-candidate build and 116/116 focused tests.",
+      "Drafted the current-head request-changes action without making an upstream write."
     ],
     "retained_findings": [
       "Preserve and revalidate the package's captured trust state in PackageVerification.cpp.",
@@ -42,9 +102,9 @@
   "freshness": {
     "headRefOid": "4fe80c780ffca4f79f14aa111bff22247105d4d8",
     "updatedAt": "2026-09-15T23:40:33Z",
-    "latestCopilotReviewAt": "2026-09-15T13:15:27Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-16T01:00:00Z"
+    "latestCopilotReviewAt": "2026-09-16T00:00:25Z",
+    "checkedAt": "2026-09-16T01:15:00Z"
   },
   "fork_pr": {
     "number": 773,
