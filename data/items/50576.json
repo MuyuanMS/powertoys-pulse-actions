@@ -1,35 +1,147 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50576",
   "number": 50576,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T10:00:46.7467197Z",
-  "evaluated_at": "09/16/2026 07:21:48",
+  "generated_at": "2026-09-16T10:45:00.1827911Z",
+  "evaluated_at": "2026-09-16T10:45:00.1827911Z",
   "source_updated_at": "2026-09-16T07:58:01Z",
   "head_sha": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70",
   "title": "test(workspaces): isolate native test hangs (do not merge)",
   "url": "https://github.com/microsoft/PowerToys/pull/50576",
+  "summary": "The resumed worker consumed the fresh fork Copilot review, resolved supported findings on the fork branch, verified zero unresolved fork threads, and validated the exact suggestion candidate against the live upstream head. Two current-head inline suggestions are drafted for maintainer approval.",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Prior fork Copilot review was consumed, supported findings were fixed on fork branch pr-iterate/50576-v3, validation passed, and a fresh fork Copilot review was requested at 2026-09-16T09:49:15.8210792Z. Next run must inspect fork PR 831 before requesting another."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Two validated Workspaces launcher shutdown suggestions are ready for maintainer approval."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-16T10:00:46.7467197Z"
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted review comments",
+    "reason": "Two medium-severity shutdown-lifetime fixes are validated against the exact upstream head."
   },
-  "freshness": {
-    "queued_at": "09/16/2026 07:21:49",
-    "checkpoint_at": "2026-09-16T10:00:46.7467197Z"
+  "confidence": "High",
+  "needs_revalidation": false,
+  "phase0": {
+    "authorAssociation": "MEMBER",
+    "disposition": "Proceed",
+    "processGates": "Member-authored diagnostic-only PR; community process nags skipped."
   },
+  "proposed_comments": [
+    {
+      "id": "workspaces-ui-shutdown-drain",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Let the launcher UI consume the shutdown frame before disconnecting",
+      "path": "src/modules/Workspaces/WorkspacesLauncher/LauncherUIHelper.cpp",
+      "start_line": 33,
+      "line": 38,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 88,
+        "rationale": "The current shutdown path sends a graceful frame and immediately stops/disconnects the pipe; the validated replacement keeps the channel alive while the UI has a bounded chance to consume the shutdown frame and exit."
+      },
+      "body": "### Let the launcher UI consume the shutdown frame before disconnecting\r\n\r\n**Severity:** `medium`\r\n\r\n`Send` only confirms that the shutdown frame was written to the pipe; it does not prove the UI read and processed it. Calling `Stop()` immediately afterward can disconnect the named pipe before the UI consumes the graceful shutdown, causing it to observe a broken pipe instead of a normal shutdown. This keeps the channel alive for the existing bounded process-exit wait, then only disconnects/terminates if the UI does not exit in time.\r\n\r\n```suggestion\r\n    const bool gracefulShutdownSent = IsReady() && m_channel.Send(Message(L\"shutdown\").Stringify().c_str());\r\n    DWORD gracefulShutdownWait = WAIT_FAILED;\r\n    if (gracefulShutdownSent && m_process)\r\n    {\r\n        gracefulShutdownWait = WaitForSingleObject(m_process.get(), 1500);\r\n    }\r\n\r\n    m_channel.Stop();\r\n    if (m_process && gracefulShutdownWait != WAIT_OBJECT_0 &&\r\n        WaitForSingleObject(m_process.get(), gracefulShutdownSent ? 0 : 1500) == WAIT_TIMEOUT)\r\n```"
+    },
+    {
+      "id": "launcher-process-wait-callback-drain",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Drain the registered wait callback before returning",
+      "path": "src/modules/Workspaces/WorkspacesLauncherUI/IPC/LauncherProcessIdentity.cs",
+      "start_line": 100,
+      "line": 113,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 90,
+        "rationale": "RegisterWaitForSingleObject callbacks may still be running after Unregister(null); the validated replacement uses the documented completion-event form and waits for callback drain before the retained process identity is disposed."
+      },
+      "body": "### Drain the registered wait callback before returning\r\n\r\n**Severity:** `medium`\r\n\r\n`Unregister(null)` does not wait for an in-flight registered wait callback to finish, so `WaitForExitAsync` can return while the callback still races with disposal of the retained process identity. Using a completion event with `Unregister` drains the callback before the method exits, matching the PR's shutdown-lifetime goal.\r\n\r\n```suggestion\r\n            using var callbackDrained = new ManualResetEvent(false);\r\n            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);\r\n            var registration = ThreadPool.RegisterWaitForSingleObject(\r\n                waitHandle,\r\n                (_, _) => completion.TrySetResult(),\r\n                null,\r\n                Timeout.Infinite,\r\n                executeOnlyOnce: true);\r\n            try\r\n            {\r\n                await completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);\r\n            }\r\n            finally\r\n            {\r\n                registration.Unregister(callbackDrained);\r\n                callbackDrained.WaitOne();\r\n            }\r\n```"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50576",
+      "type": "post_review",
+      "label": "Post two validated Workspaces shutdown suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50576,
+        "event": "COMMENT",
+        "head_sha": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70"
+      },
+      "note": "Draft only. Explicit maintainer approval and final freshness/check-state revalidation are required before posting."
+    }
+  ],
   "fork_pr": {
     "number": 831,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/831"
+    "repo": "MuyuanMS/PowerToys",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/831",
+    "state": "OPEN",
+    "head_sha": "00f987ea6b4c79e3c70ab04ea1388c7560fb9e1a"
   },
-  "fork_branch": "pr-iterate/50576-v3"
+  "fork_branch": "pr-iterate/50576-v3",
+  "fork_head_sha": "00f987ea6b4c79e3c70ab04ea1388c7560fb9e1a",
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-16T10:45:00.1827911Z",
+    "advancement_evidence": [
+      "Consumed fresh fork Copilot review submitted at 2026-09-16T09:53:56Z with zero published inline comments.",
+      "Ignored two suppressed diagnostic-test-exclusion notes as intentional for the do-not-merge branch.",
+      "Confirmed zero unresolved fork Copilot threads.",
+      "Validated the exact suggestion candidate on live upstream head 89c1c6de6b3abd93e5e0663c1849e196f7bc7a70.",
+      "Built WorkspacesLauncherUI, WorkspacesLauncherUI.UnitTests, and WorkspacesLauncher on the candidate.",
+      "No upstream public action was taken."
+    ]
+  },
+  "freshness": {
+    "status": "current_head_reviewed",
+    "headRefOid": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70",
+    "updatedAt": "2026-09-16T07:58:01Z",
+    "latestCopilotReviewAt": "2026-09-16T09:53:56Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-16T10:45:00.1827911Z"
+  },
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "workspaces-ui-shutdown-drain",
+        "launcher-process-wait-callback-drain"
+      ],
+      "commands": [
+        "Apply exact two suggestion blocks to the detached upstream head",
+        "git diff --cached --check",
+        "build-essentials.cmd",
+        "Build WorkspacesLauncherUI",
+        "Build WorkspacesLauncherUI.UnitTests",
+        "Build WorkspacesLauncher"
+      ],
+      "details": "The exact suggestion candidate passed diff check and focused builds."
+    },
+    "fork_review": {
+      "result": "passed",
+      "latestCopilotReviewAt": "2026-09-16T09:53:56Z",
+      "unresolvedCopilotThreads": 0,
+      "details": "Fresh fork Copilot review had zero published inline comments after fork fixes."
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
