@@ -243,6 +243,51 @@ $invalid.prs[0].publicPayload.contextBody = 'Validated locally at C:\PowerToys-r
 $errors = @(Test-ReviewDataDocument -Document $invalid)
 Assert-True (($errors -join "`n") -match 'local validation provenance|internal local path') 'Internal local validation paths must fail.'
 
+$groupedReview = Copy-JsonObject $reviewData
+$groupedMember = Copy-JsonObject $groupedReview.prs[0].publicPayload.items[0]
+$groupedMember.id = 'fix-value-secondary'
+$groupedMember.path = 'src/Other.cs'
+$groupedMember.title = 'Keep persisted values aligned (2/2)'
+$groupedMember | Add-Member -NotePropertyName selectionGroup -NotePropertyValue ([pscustomobject]@{
+    id = 'persisted-value-contract'
+    title = 'Keep persisted values aligned'
+    position = 2
+    total = 2
+    atomic = $true
+})
+$groupedReview.prs[0].publicPayload.items[0].title = 'Keep persisted values aligned (1/2)'
+$groupedReview.prs[0].publicPayload.items[0] | Add-Member -NotePropertyName selectionGroup -NotePropertyValue ([pscustomobject]@{
+    id = 'persisted-value-contract'
+    title = 'Keep persisted values aligned'
+    position = 1
+    total = 2
+    atomic = $true
+})
+$groupedReview.prs[0].publicPayload.items = @(
+    $groupedReview.prs[0].publicPayload.items[0],
+    $groupedMember,
+    $groupedReview.prs[0].publicPayload.items[1]
+)
+$groupedReview.prs[0].internalEvidence.validation.suggestionPatch.appliedItemIds = @(
+    'fix-value',
+    'fix-value-secondary'
+)
+$groupedReview.prs[0].internalEvidence.validation.lineEndingSafety.checkedItemIds = @(
+    'fix-value',
+    'fix-value-secondary'
+)
+$groupedReview.prs[0].internalEvidence.validation.lineEndingSafety.files = @(
+    [pscustomobject]@{ path = 'src/Test.cs'; result = 'passed'; lineEndings = 'lf' },
+    [pscustomobject]@{ path = 'src/Other.cs'; result = 'passed'; lineEndings = 'lf' }
+)
+$errors = @(Test-ReviewDataDocument -Document $groupedReview)
+Assert-True ($errors.Count -eq 0) "Valid atomic suggestion groups should pass: $($errors -join '; ')"
+
+$invalid = Copy-JsonObject $groupedReview
+$invalid.prs[0].publicPayload.items[1].selectionGroup.position = 1
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'positions must be unique') 'Atomic suggestion groups must have complete unique positions.'
+
 $invalid = Copy-JsonObject $reviewData
 $invalid.prs[0].publicPayload.items[0].line = 20
 $invalid.prs[0].publicPayload.items[0].startLine = 20
@@ -305,6 +350,16 @@ Assert-True (($errors -join "`n") -match 'cannot approve|unsupported action') 'A
 
 $errors = @(Test-ReviewDecisionDocument -Decisions $decisions -ReviewData $reviewData -ExpectedHash 'other-hash')
 Assert-True (($errors -join "`n") -match 'does not match') 'Decision hash mismatches must fail.'
+
+$groupedDecisions = Copy-JsonObject $decisions
+$groupedDecisions.prs[0].items | Add-Member -NotePropertyName 'fix-value-secondary' -NotePropertyValue 'post'
+$errors = @(Test-ReviewDecisionDocument -Decisions $groupedDecisions -ReviewData $groupedReview -ExpectedHash 'data-hash')
+Assert-True ($errors.Count -eq 0) "Posting every atomic group member should pass: $($errors -join '; ')"
+
+$invalidGroupedDecisions = Copy-JsonObject $groupedDecisions
+$invalidGroupedDecisions.prs[0].items.'fix-value-secondary' = 'hold'
+$errors = @(Test-ReviewDecisionDocument -Decisions $invalidGroupedDecisions -ReviewData $groupedReview -ExpectedHash 'data-hash')
+Assert-True (($errors -join "`n") -match 'atomic selection group') 'Partial atomic group decisions must fail.'
 
 $plan = Get-ApprovedReviewPlan -ReviewData $reviewData -Decision $decisions.prs[0]
 $serializedPlan = $plan | ConvertTo-Json -Depth 20

@@ -234,6 +234,36 @@ foreach ($path in @($paths)) {
         }
       }
     }
+    foreach ($group in @(
+      $proposedComments |
+        Where-Object { $null -ne $_.selection_group } |
+        Group-Object { [string]$_.selection_group.id }
+    )) {
+      $members = @($group.Group)
+      $groupId = [string]$group.Name
+      $expectedTotal = [int]$members[0].selection_group.total
+      $expectedTitle = [string]$members[0].selection_group.title
+      if ($groupId -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$' -or
+          [string]::IsNullOrWhiteSpace($expectedTitle) -or
+          $members.Count -lt 2 -or
+          $expectedTotal -ne $members.Count) {
+        $errors.Add("$prefix atomic selection group '$groupId' has invalid identity, title, or size")
+      }
+      $positions = @()
+      foreach ($member in $members) {
+        if ($member.kind -ne 'inline' -or
+            [string]$member.body -notmatch '(?i)```suggestion' -or
+            $member.selection_group.atomic -ne $true -or
+            [string]$member.selection_group.title -ne $expectedTitle -or
+            [int]$member.selection_group.total -ne $expectedTotal) {
+          $errors.Add("$prefix atomic selection group '$groupId' must contain consistent apply-ready inline suggestions")
+        }
+        $positions += [int]$member.selection_group.position
+      }
+      if ((@($positions | Sort-Object -Unique) -join ',') -ne (@(1..$members.Count) -join ',')) {
+        $errors.Add("$prefix atomic selection group '$groupId' positions must cover 1 through $($members.Count)")
+      }
+    }
     foreach ($comment in $inlineComments) {
       Require-Text $comment.path 'proposed_comments[].path' $prefix
       Require-Text $comment.body 'proposed_comments[].body' $prefix

@@ -188,6 +188,14 @@ mandatory line-mapping pass against the live head: try a safe apply-ready
 suggestion first, otherwise emit exact inline prose, otherwise use a companion
 with `outOfDiffReason`. If no inline item is possible, label the approval
 action clearly as general review notes with no inline suggestions.
+When the same root-cause fix requires two or more independently line-addressable
+edits, emit one suggestion per location and bind them with an atomic
+`selectionGroup`. Number the public headings `(1/N)` through `(N/N)`, keep the
+shared explanation concise rather than duplicating a long preamble, and make
+each member identify its local role. The dashboard and publisher must allow
+only all-or-none selection, and the exact-patch build must apply the complete
+group together. Do not use a group when any member is optional, out of diff,
+unsafe to apply, or independently meaningful.
 Before emission, merge overlapping companion findings by root cause and
 implementation. One underlying fix should produce one coherent author-facing
 comment, not separate comments for each module, symptom, or suppressed review

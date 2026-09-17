@@ -560,6 +560,36 @@ if (-not (Test-Path $artifactValidator)) {
     & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 | Out-Null
     $validPrArtifactText = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw
 
+    $incompleteAtomicGroup = $validPrArtifactText | ConvertFrom-Json
+    $incompleteAtomicGroup.proposed_comments[0] |
+      Add-Member -NotePropertyName selection_group -NotePropertyValue ([pscustomobject]@{
+        id = 'coordinated-fix'
+        title = 'Apply the coordinated fix'
+        position = 1
+        total = 2
+        atomic = $true
+      })
+    $incompleteAtomicGroup | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted an incomplete atomic suggestion group.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    & $actionSanitizer -DataPath (Join-Path $artifactRoot 'data') 3>$null | Out-Null
+    $sanitizedAtomicGroup = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw |
+      ConvertFrom-Json
+    if ($sanitizedAtomicGroup.stage -ne 'review_in_progress' -or
+        @($sanitizedAtomicGroup.actions | Where-Object {
+          $_.type -in @('post_review', 'request_changes')
+        }).Count -gt 0) {
+      $errors.Add('Sanitizer did not fail closed for an incomplete atomic suggestion group.')
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
+
     $invalidSuggestionValidation = $validPrArtifactText | ConvertFrom-Json
     $invalidSuggestionValidation.validation.suggestion_patch.applied_comment_ids = @('other-fix')
     $invalidSuggestionValidation | ConvertTo-Json -Depth 10 |

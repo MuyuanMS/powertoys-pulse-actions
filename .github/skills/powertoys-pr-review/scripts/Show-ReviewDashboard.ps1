@@ -234,6 +234,11 @@ function fmtBody(b){
 }
 function payloadOf(pr){ return pr.publicPayload||{contextBody:'',items:[]}; }
 function itemsOf(pr){ return payloadOf(pr).items||[]; }
+function groupOf(item){ return item&&item.selectionGroup&&item.selectionGroup.atomic ? item.selectionGroup : null; }
+function groupMembers(pr,item){
+  const group=groupOf(item);
+  return group ? itemsOf(pr).filter(candidate=>groupOf(candidate)&&groupOf(candidate).id===group.id) : [item];
+}
 function evidenceOf(pr){ return pr.internalEvidence||{}; }
 function defaultItem(){ return 'post'; }
 function prByNum(n){ return (DATA.prs||[]).find(p=>p.number==n); }
@@ -310,7 +315,10 @@ function renderDetail(n){
   let sugHtml='';
   itemsOf(pr).forEach(s=>{
     const sev=(s.severity||'low').toLowerCase();
-    const checked = st.items[s.id]==='post' ? 'checked' : '';
+    const group = groupOf(s);
+    const checked = (group ? groupMembers(pr,s).every(member=>st.items[member.id]==='post') : st.items[s.id]==='post') ? 'checked' : '';
+    const isGroupLead = !group || group.position===1;
+    const groupText = group ? ('<span class="badge b-status">'+esc(group.title)+' · atomic '+esc(group.position)+'/'+esc(group.total)+'</span>') : '';
     const isOpen = !!st.open[s.id];
     const fileTxt = esc(s.path||'')+(s.line?(':'+s.line):'');
     const meta = '<div class="sug-meta">'
@@ -328,8 +336,9 @@ function renderDetail(n){
       + '<span class="caret">\u25B6</span>'
       + '<span class="badge sev sev-'+sev+'">'+esc(sev)+'</span>'
       + '<span class="grow">'+esc(s.title)+'</span>'
+      + groupText
       + '<span class="file">'+fileTxt+'</span>'
-      + (canDecide?('<label class="chk" onclick="event.stopPropagation()"><input type="checkbox" '+checked+' onchange="setSug('+n+',\''+esc(s.id)+'\',this.checked)"> post</label>'):'')
+      + (canDecide&&isGroupLead?('<label class="chk" onclick="event.stopPropagation()"><input type="checkbox" '+checked+' onchange="setSug('+n+',\''+esc(s.id)+'\',this.checked)"> '+(group?'post group':'post')+'</label>'):'')
       + '</div><div class="sug-body">'+bodyInner+'</div></div>';
   });
 
@@ -394,7 +403,11 @@ async function applyCodeLinks(){
 }
 function ed(){ const box=document.getElementById('ctxbox'); const t=document.getElementById('edtog'); const on=box.contentEditable!=='true'; box.contentEditable=on; box.style.outline=on?'1px solid #2ea043':''; t.textContent=on?'done':'edit'; if(on){ box.focus(); } state[current].contextBody=box.innerText; box.oninput=()=>{ state[current].contextBody=box.innerText; markEdited(current); }; }
 function nav(d){ const arr=(DATA.prs||[]).map(p=>p.number); let i=arr.indexOf(current)+d; if(i<0)i=0; if(i>=arr.length)i=arr.length-1; selectPR(arr[i]); }
-function setSug(n,id,v){ state[n].items[id]= v?'post':'hold'; markEdited(n); updateHeader(); }
+function setSug(n,id,v){
+  const pr=prByNum(n), item=itemsOf(pr).find(candidate=>candidate.id===id);
+  groupMembers(pr,item).forEach(member=>{ state[n].items[member.id]=v?'post':'hold'; });
+  markEdited(n); updateHeader(); renderDetail(n);
+}
 function setAction(n,v){ state[n].action=v; markEdited(n); }
 function setCtx(n,v){ state[n].postContext=v; markEdited(n); }
 function setCtxBtn(n,v){

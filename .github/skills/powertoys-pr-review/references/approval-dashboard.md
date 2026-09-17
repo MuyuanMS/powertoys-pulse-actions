@@ -125,6 +125,25 @@ The page polls `/status` every few seconds. The coordinator is the only writer o
 | `inline` | Canonical `body`; zero or one non-empty `suggestion` fence; `path`, `line`, optional `startLine`; `side: RIGHT`; range in one current diff hunk | Inline review comment |
 | `companion` | Implementation-ready `body` with affected paths/symbols, problem, impact, ordered change guidance, and verification; no suggestion fence or inline coordinates; concrete `outOfDiffReason` | Review body section |
 
+When one fix requires localized edits at multiple current diff locations, emit
+one inline item per location and attach the same `selectionGroup`:
+
+```jsonc
+"selectionGroup": {
+  "id": "align-hotkey-slots",
+  "title": "Align hotkey slots",
+  "position": 1,
+  "total": 3,
+  "atomic": true
+}
+```
+
+Every member must be an apply-ready inline suggestion. Positions must cover
+`1..total`, and the dashboard exposes one checkbox for the complete group.
+Decisions that post only part of a group are invalid. Use titles such as
+`Align hotkey slots (1/3)` so each GitHub comment remains understandable after
+posting.
+
 Do not use separate `body` and `fix` fields. Do not place status, links, build evidence, or private review provenance in a public item.
 
 The validator rejects:
@@ -140,6 +159,8 @@ The validator rejects:
   missing or do not match;
 - suggestion payloads that did not record the final minimal-range pass;
 - clean zero-item payloads without a passing build of the pinned upstream head.
+- malformed selection groups or decisions that post only part of an atomic
+  group.
 
 ## `review-decisions.json` schema
 
