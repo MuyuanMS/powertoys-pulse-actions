@@ -4,242 +4,183 @@
   "number": 49323,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "confidence": "High",
-  "processVerdict": "ask",
-  "generated_at": "2026-09-15T16:40:25.9061307+08:00",
-  "evaluated_at": "2026-09-15T16:40:25.9061307+08:00",
+  "generated_at": "2026-09-17T14:30:00Z",
+  "evaluated_at": "2026-09-17T14:30:00Z",
   "source_updated_at": "2026-09-03T14:12:11Z",
   "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
   "title": "CmdPal JS/TS Extensions - Phase 2: JSON-RPC transport + manifest",
   "url": "https://github.com/microsoft/PowerToys/pull/49323",
-  "summary": "The durable fork review was resumed without re-mirroring. Its sixth current-head Copilot review was consumed before any new request; it returned zero published inline comments, the only suppressed candidate was after the round-five cutoff, and zero unresolved Copilot threads remain. The exact converged fork tree rebuilt and passed 62 focused tests. Because that fork contains five fix commits not present upstream, the terminal payload now accounts for every fork-only hunk as eight validated apply-ready suggestions or coordinated inline requests, together with the existing NativeAOT dispatch blocker.",
+  "summary": "The live upstream head is unchanged. The existing fork review converged with zero published Copilot comments and zero unresolved Copilot threads; the exact fork tree rebuilt successfully. Three consolidated current-head blocking review notes remain, covering NativeAOT-safe dispatch, transport concurrency/lifecycle, and manifest/stderr validation.",
   "status": {
-    "glyph": "WARN",
-    "label": "Review ready - request changes",
-    "detail": "Eleven current-head review items are ready: eight apply-ready suggestions and three coordinated inline requests. The exact suggestion patch builds and passes 55 focused tests; the converged fork tree passes 62. Three upstream Azure UI-test jobs remain red, and prerequisite PR 49321 remains open."
+    "glyph": "📝",
+    "label": "Current-head REQUEST_CHANGES review drafted",
+    "detail": "The review is pinned to upstream head 74a09d5460c520d5444a140ad82c32a3ca56d166 and requires explicit maintainer approval plus a final freshness check before any upstream write."
   },
-  "next_action": "After explicit maintainer approval and a mandatory freshness check, post the selected current-head items as a request-changes review. Do not merge before prerequisite PR 49321, and rerun the failed x64 Win10, x64 Win11, and arm64 test jobs.",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
-  "safe_actions": [
-    "Post only through the approval-gated review publisher after a fresh current-head check",
-    "Apply the eight suggestion items as a batch or from bottom to top within each file",
-    "Keep all fork work on MuyuanMS/PowerToys and make no microsoft/PowerToys mutation without explicit approval",
-    "Do not merge before prerequisite PR 49321",
-    "Rerun the three failed Azure test jobs"
+  "next_action": {
+    "glyph": "post",
+    "label": "Approve, edit, or hold the current-head REQUEST_CHANGES review",
+    "reason": "No public action has been taken on microsoft/PowerToys."
+  },
+  "needs_revalidation": false,
+  "processVerdict": "ask",
+  "proposed_comments": [
+    {
+      "id": "49323-nativeaot-safe-rpc-dispatch",
+      "kind": "companion",
+      "title": "Use NativeAOT-safe dispatch for named JSON-RPC arguments",
+      "severity": "high",
+      "body": "### Use NativeAOT-safe dispatch for named JSON-RPC arguments\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs` (`InvokeCoreAsync` parameter-object path and method registration), plus the StreamJsonRpc dependency configuration in `Microsoft.CmdPal.UI.ViewModels.csproj`.\n\n**Problem:** The parameter-object request path still routes arguments through an untyped `object[]`, and method registration relies on a concurrent value factory with side effects. That leaves outgoing named-argument dispatch dependent on reflection-style binding and can register the same target more than once under concurrent registration.\n\n**Why it matters:** The project declares NativeAOT compatibility, but the current invocation path is not trim-safe for parameter objects. A duplicate registration can also make an RPC method ambiguous or fail nondeterministically when extensions initialize concurrently.\n\n**Suggested change:**\n1. Use the generated or `NamedArgs` overload supported by the pinned StreamJsonRpc version for parameter-object calls; update the dependency/configuration only if that overload is unavailable.\n2. Serialize the check, registration, and dictionary update so a method target is registered at most once.\n3. Add focused tests for NativeAOT-safe named parameters and concurrent duplicate registration.\n\n**Verification:** Build the CmdPal UI with NativeAOT enabled, exercise one outbound named-parameter request, and run concurrent registration tests proving one handler is installed and invoked.",
+      "out_of_diff_reason": "The required NativeAOT dispatch and registration changes span overload selection, dependency configuration, and synchronization; they are not safely expressible as one apply-ready current RIGHT-side suggestion.",
+      "outOfDiffReason": "The required NativeAOT dispatch and registration changes span overload selection, dependency configuration, and synchronization; they are not safely expressible as one apply-ready current RIGHT-side suggestion.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 96,
+        "rationale": "The fork review repeatedly identified the untyped parameter-object dispatch and registration side effect, and the converged fixes target those exact paths."
+      }
+    },
+    {
+      "id": "49323-bound-transport-lifecycle",
+      "kind": "companion",
+      "title": "Bound inbound work and make transport shutdown race-safe",
+      "severity": "high",
+      "body": "### Bound inbound work and make transport shutdown race-safe\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs` (`EnqueueNotification`, request admission, `Dispose`, disconnect/error dispatch, and notification consumption).\n\n**Problem:** The transport can admit unbounded concurrent inbound requests, can lose a notification when the consumer removes the last queue item between `TryWrite` and the overflow `TryRead`, and declares a single-reader channel while producers also read from it. Disposal can also synchronously wait on the consumer task during reentrant callbacks, while one throwing `Disconnected` subscriber can prevent later subscribers from being notified.\n\n**Why it matters:** A busy or hostile extension can exhaust resources, silently lose notifications, or stall shutdown for the timeout. These races make transport behavior nondeterministic exactly during overload and teardown, when callers need reliable error and disconnect delivery.\n\n**Suggested change:**\n1. Add a bounded inbound request gate and release it on every completion, cancellation, and failure path.\n2. Make the queue configuration match its actual producer/consumer access, and retry admission when a concurrent consumer wins the overflow race instead of dropping the new notification.\n3. Avoid synchronously waiting on the currently executing consumer task during reentrant disposal.\n4. Invoke disconnect subscribers independently so one exception cannot suppress later subscribers.\n5. Add stress tests for overload, admission races, reentrant disposal, and subscriber isolation.\n\n**Verification:** Run the JSON-RPC connection tests under concurrent request and notification load, force disposal from a notification/error callback, and verify all subscribers receive disconnect notification while no accepted message is lost.",
+      "out_of_diff_reason": "The root cause requires coordinated changes across queue configuration, admission, lifecycle, and event-dispatch paths; no single safe replacement covers the complete behavior.",
+      "outOfDiffReason": "The root cause requires coordinated changes across queue configuration, admission, lifecycle, and event-dispatch paths; no single safe replacement covers the complete behavior.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 94,
+        "rationale": "The issues are directly exercised by the changed transport implementation and were addressed by the converged fork fixes and focused tests."
+      }
+    },
+    {
+      "id": "49323-validation-and-stderr-boundaries",
+      "kind": "companion",
+      "title": "Fail closed on manifest races and preserve stderr line boundaries",
+      "severity": "medium",
+      "body": "### Fail closed on manifest races and preserve stderr line boundaries\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/JSExtensionManifest.cs` (entry-point containment validation) and `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/BoundedStderrReader.cs` (line termination and budget state).\n\n**Problem:** An entry-point segment that disappears between the existence check and attribute read can be accepted instead of failing validation. The stderr reader also treats a bare carriage return as non-terminating and can leave `BudgetExhausted` false when the final emitted line reaches the byte cap exactly.\n\n**Why it matters:** A manifest can pass path validation without a verified entry point, and progress-style stderr output can be concatenated or reported with inaccurate budget state. Both behaviors make extension startup and diagnostics dependent on timing and producer-specific line endings.\n\n**Suggested change:**\n1. Treat missing or unreadable path segments during the containment check as validation failure.\n2. Treat CR, LF, and CRLF as line terminators without emitting an extra empty CRLF record.\n3. Derive the budget status from the accumulated byte count so EOF reports exhaustion accurately.\n4. Add regression tests for a disappearing entry-point segment, CR-only and CRLF input, and exact-cap output.\n\n**Verification:** Run the manifest and bounded-stderr unit tests and verify invalid paths fail closed, each stderr line is emitted once, and the budget property is correct at EOF.",
+      "out_of_diff_reason": "The corrections cover two related validation/diagnostic components and require coordinated test updates; they are not a single safe apply-ready replacement.",
+      "outOfDiffReason": "The corrections cover two related validation/diagnostic components and require coordinated test updates; they are not a single safe apply-ready replacement.",
+      "in_diff": false,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 95,
+        "rationale": "The changed implementations contain the specific race, CR handling, and cap-state branches, and the fork fixes include focused regression coverage."
+      }
+    }
   ],
-  "phase0": {
-    "author": "michaeljolley",
-    "author_association": "MEMBER",
-    "bar": "member-authored; routine community template and demo nags skipped",
-    "disposition": "Ask",
-    "gates_tripped": [
-      "P4"
-    ],
-    "who_owes_next": "Maintainer approval, then author changes and CI rerun",
-    "note": "CLA, dependency review, PR intake, telemetry, SDK build, and both architecture builds pass. The x64 Win10, x64 Win11, and arm64 Azure test jobs fail. Prerequisite PR 49321 remains open and blocked, so this stacked PR must not merge first."
-  },
+  "actions": [
+    {
+      "id": "request-changes-49323",
+      "type": "request_changes",
+      "label": "Post the current-head REQUEST_CHANGES review with three general findings",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 49323,
+        "pullRequest": 49323,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166"
+      },
+      "note": "Draft only. The three self-contained general comments are pinned to the current upstream head; perform a final live freshness check before posting."
+    }
+  ],
+  "safe_actions": [
+    "Present the drafted current-head REQUEST_CHANGES review for explicit maintainer approval.",
+    "Post the three general comments as separate review conversation comments after approval and a final freshness check.",
+    "Do not merge before prerequisite PR 49321 is resolved.",
+    "Rerun the three failed Azure UI-test jobs before merge."
+  ],
   "fork_pr": {
     "number": 608,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/608",
-    "state": "OPEN",
-    "branch": "pr-iterate/49323-v8",
-    "head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
-    "base_sha": "ed3619d6889114d08da7a5b171205a3e3bf1a313"
+    "state": "OPEN"
   },
   "fork_branch": "pr-iterate/49323-v8",
+  "fork_head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
   "freshness": {
-    "status": "current_head_reviewed",
-    "previous_checkpoint_at": "2026-09-07T08:50:00Z",
-    "checkpoint_at": "2026-09-15T16:40:25.9061307+08:00",
-    "checked_at": "2026-09-15T16:40:25.9061307+08:00",
-    "upstream_head": "74a09d5460c520d5444a140ad82c32a3ca56d166",
-    "source_updated_at": "2026-09-03T14:12:11Z",
-    "issue_comment_count": 1,
-    "review_count": 13,
-    "review_comment_count": 23,
-    "latest_issue_comment_at": "2026-08-14T22:39:01Z",
-    "latest_review_at": "2026-09-03T14:12:11Z",
-    "latest_review_comment_at": "2026-09-03T14:12:11Z",
-    "latest_copilot_review_at": "2026-09-07T08:39:00Z",
-    "latest_fork_commit_at": "2026-09-07T08:35:21Z",
-    "unresolved_fork_copilot_threads": 0,
-    "staleExpectation": "Expected current only while upstream head 74a09d5460c520d5444a140ad82c32a3ca56d166, source activity, review threads, and check results remain unchanged. Any new commit, comment, review, thread, or check transition requires a new freshness pass and may require rerunning the fork loop and exact suggestion-patch validation."
-  },
-  "copilot_review": {
-    "review_count": 6,
-    "latest_submitted_at": "2026-09-07T08:39:00Z",
-    "latest_commit_id": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
-    "latest_new_published_comments": 0,
-    "latest_suppressed_comments": 1,
-    "unresolved_threads": 0,
-    "policy_note": "The existing completed review on the matching fork head was consumed before considering another request. Its single suppressed candidate arrived in round six, after the skill's round-five suppressed-comment cutoff, so no duplicate request or additional iteration was made."
-  },
-  "validation": {
-    "suggestion_patch": {
-      "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "validate-debug-port-range",
-        "fail-closed-on-entrypoint-race",
-        "derive-stderr-budget-state",
-        "emit-carriage-return-stderr-lines",
-        "declare-notification-channel-multi-reader",
-        "serialize-rpc-method-registration",
-        "retry-notification-admission-race",
-        "isolate-disconnected-subscribers"
-      ]
-    },
-    "fork_tree": {
-      "head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
-      "configuration": "x64 Debug",
-      "result": "passed",
-      "builds": [
-        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
-        "<PowerToysCheckout>\\src\\modules\\cmdpal\\CmdPalModuleInterface\\..\\..\\..\\..\\tools\\build\\build.cmd",
-        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
-        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
-      ],
-      "tests": {
-        "suite": "CmdPal manifest, bounded stderr, and JSON-RPC connection tests",
-        "passed": 62,
-        "failed": 0,
-        "skipped": 0
-      },
-      "outputs": [
-        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
-        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CmdPalModuleInterface.dll",
-        "<PowerToysCheckout>\\x64\\Debug\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe"
-      ]
-    },
-    "suggestionPatch": {
-      "headSha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
-      "result": "passed",
-      "appliedItemIds": [
-        "validate-debug-port-range",
-        "fail-closed-on-entrypoint-race",
-        "derive-stderr-budget-state",
-        "emit-carriage-return-stderr-lines",
-        "declare-notification-channel-multi-reader",
-        "serialize-rpc-method-registration",
-        "retry-notification-admission-race",
-        "isolate-disconnected-subscribers"
-      ],
-      "minimalRangesReviewed": true,
-      "commands": [
-        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
-        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
-        "<PowerToysCheckout>\\src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd",
-        "vstest.console.exe Microsoft.CmdPal.UI.ViewModels.UnitTests.dll /TestCaseFilter:FullyQualifiedName~JSExtensionManifestTests|FullyQualifiedName~BoundedStderrReaderTests|FullyQualifiedName~JsonRpcConnectionTests",
-        "git diff --check"
-      ],
-      "tests": {
-        "passed": 55,
-        "failed": 0,
-        "skipped": 0
-      },
-      "detail": "The eight literal, minimized suggestion replacements were applied together to a clean detached local checkout at the pinned upstream head. The exact candidate built successfully and all pre-existing focused tests passed."
-    },
-    "environment_note": "Both builds required POWERTOYS_DISABLE_SPECTRE=1 and clearing inherited GIT_CONFIG_* variables because GIT_CONFIG_COUNT included an empty GIT_CONFIG_VALUE_3 that broke vcpkg. No repository file was changed for either environment workaround."
-  },
-  "fork_only_delta": {
-    "result": "fully_accounted",
-    "files": 6,
-    "insertions": 181,
-    "deletions": 12,
-    "localized_suggestions": [
-      "validate-debug-port-range",
-      "fail-closed-on-entrypoint-race",
-      "derive-stderr-budget-state",
-      "emit-carriage-return-stderr-lines",
-      "declare-notification-channel-multi-reader",
-      "serialize-rpc-method-registration",
-      "retry-notification-admission-race",
-      "isolate-disconnected-subscribers"
-    ],
-    "coordinated_requests": [
-      "bound-inbound-request-concurrency",
-      "use-nativeaot-safe-local-target-registration",
-      "use-nativeaot-safe-named-arguments"
-    ],
-    "test_hunks": "The fork's added manifest, stderr, concurrency, and disconnect tests are explicitly requested in the corresponding author-facing items. No fork-only hunk is represented as though it already exists upstream."
+    "status": "fresh",
+    "headRefOid": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+    "updatedAt": "2026-09-03T14:12:11Z",
+    "latestCopilotReviewAt": "2026-09-07T08:39:00Z",
+    "latestForkCommitAt": "2026-09-07T08:35:21Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-17T14:30:00Z"
   },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "merge_state_status": "BLOCKED",
     "upstream_head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
-    "upstream_base_sha": "afaf0351b4a2fc14d8e6bdab90539b852986aa96",
-    "commit_count": 11,
-    "issue_comment_count": 1,
+    "updated_at": "2026-09-03T14:12:11Z",
     "review_count": 13,
-    "review_comment_count": 23,
-    "reported_checks": {
-      "total": 13,
-      "successful": 10,
-      "failing": 3,
-      "pending": 0,
-      "license_cla": "success",
-      "dependency_review": "success",
-      "pr_intake": "success",
-      "telemetry_pr_check": "success",
-      "command_palette_toolkit_sdk": "success",
-      "azure_arm64_tests": "failure",
-      "azure_x64_win10_tests": "failure",
-      "azure_x64_win11_tests": "failure"
-    },
-    "stack_prerequisite": {
+    "issue_comment_count": 1,
+    "failed_checks": [
+      "azure_arm64_tests",
+      "azure_x64_win10_tests",
+      "azure_x64_win11_tests"
+    ],
+    "prerequisite_pr": {
       "number": 49321,
       "state": "OPEN",
-      "draft": false,
-      "head_sha": "177a6590370223400874ef11a71b4967cc891b71",
-      "merge_state_status": "BLOCKED",
-      "updated_at": "2026-09-03T02:17:15Z"
+      "head_sha": "177a6590370223400874ef11a71b4967cc891b71"
     }
   },
-  "workflow": {
-    "phase": "post_review",
-    "previous_phase": "review_in_progress",
-    "previous_checkpoint_at": "2026-09-07T08:50:00Z",
-    "checkpoint_at": "2026-09-15T16:40:25.9061307+08:00",
-    "resume_action": "approval_gated_request_changes",
-    "fork_pr": 608,
-    "fork_branch": "pr-iterate/49323-v8",
-    "upstream_head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
-    "fork_reviewed_head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
-    "copilot_review_count": 6,
-    "latest_copilot_review_at": "2026-09-07T08:39:00Z",
-    "copilot_final": "existing matching-head review returned zero published inline comments",
-    "unresolved_copilot_threads": 0,
-    "build_result": "passed",
-    "suggestion_patch_result": "passed",
-    "advancement_evidence": [
-      "Preserved the saved checkpoint, fork PR 608, branch pr-iterate/49323-v8, fork head 9b8510564805a2aa5a0ad2dae202608c0455bb59, and upstream head 74a09d5460c520d5444a140ad82c32a3ca56d166.",
-      "Created <PowerToysCheckout> from the existing local branch without re-mirroring, rebasing, committing, or pushing.",
-      "Consumed the existing sixth Copilot review before considering another request; no duplicate request and no polling occurred.",
-      "Applied the post-round-five suppressed-comment cutoff and confirmed zero unresolved Copilot threads from the durable resume state.",
-      "Rebuilt the exact converged fork tree and ran 62 focused tests with zero failures.",
-      "Mapped every fork-only change to eight apply-ready suggestions or three coordinated current-diff requests.",
-      "Applied all eight literal minimized suggestions to <PowerToysCheckout> at the pinned upstream SHA.",
-      "Built that exact suggestion candidate and ran 55 focused pre-existing tests with zero failures.",
-      "Confirmed upstream head and source activity are unchanged, three Azure test jobs remain failed, and prerequisite PR 49321 remains open.",
-      "Advanced the dashboard item from review_in_progress to post_review with an approval-gated REQUEST_CHANGES action.",
-      "No microsoft/PowerToys write was performed."
-    ]
+  "validation": {
+    "fork_tree": {
+      "head_sha": "9b8510564805a2aa5a0ad2dae202608c0455bb59",
+      "result": "passed",
+      "configuration": "x64 Debug",
+      "commands": [
+        "tools\\build\\build-essentials.cmd with POWERTOYS_DISABLE_SPECTRE=1",
+        "src\\modules\\cmdpal\\CmdPalModuleInterface\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "tests": {
+        "passed": 62,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "suggestion_patch": {
+      "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "details": "The current artifact exposes no literal apply-ready suggestion blocks; all findings are implementation-ready general comments."
+    },
+    "line_ending_safety": {
+      "head_sha": "74a09d5460c520d5444a140ad82c32a3ca56d166",
+      "result": "passed",
+      "checked_comment_ids": [],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/JSExtensionManifest.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/BoundedStderrReader.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/JsonRpc/JsonRpcConnection.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ],
+      "details": "Raw upstream blobs were checked at the pinned head; all inspected files use LF only."
+    }
   },
-  "test_instructions": [
-    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-    "Open Command Palette and exercise a JavaScript extension from the complete stacked branch because this phase is not wired into the product by itself.",
-    "Verify request and notification traffic, stderr lines including carriage-return updates, invalid debug-port rejection, and overload behavior under concurrent inbound requests.",
-    "Publish the CmdPal UI with NativeAOT after the StreamJsonRpc upgrade and verify one inbound handler and one outbound named-parameter request."
-  ],
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys. No dashboard emit, sanitize, commit, or push was performed."
+    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
   }
 }

@@ -1,50 +1,134 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-49647",
   "number": 49647,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T18:42:00Z",
-  "evaluated_at": "2026-09-15T18:42:00Z",
+  "generated_at": "2026-09-17T14:03:36.4391163Z",
+  "evaluated_at": "2026-09-17T14:03:36.4391163Z",
   "source_updated_at": "2026-09-01T06:46:14Z",
   "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
   "title": "[Advanced Paste] Add single-line paste formatting",
   "url": "https://github.com/microsoft/PowerToys/pull/49647",
-  "summary": "The current-head fork review converged with zero new Copilot comments and zero unresolved threads. Exact upstream and literal-suggestion builds pass. One inline hotkey fix and three coordinated telemetry, ABI, and UI-test requests remain for approval.",
+  "summary": "The live upstream head remains covered by the converged fork review. Copilot returned zero new comments and zero unresolved threads; exact upstream and literal suggestion validation passed. Four current-head findings remain for maintainer approval.",
   "status": {
     "glyph": "📝",
-    "label": "Review complete — approval required",
-    "detail": "Fork PR 822 converged at 4d6af78ed2d3fd2de36f425b567c7447faf2d7e1. Four current-head findings remain."
+    "label": "Current-head COMMENT review drafted",
+    "detail": "Fork PR 822 at 4d6af78ed2d3fd2de36f425b567c7447faf2d7e1 is converged. One inline suggestion and three implementation-ready companion notes are pinned to upstream head 589a669."
   },
   "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "No upstream write has occurred."
+    "glyph": "post",
+    "label": "Approve, edit, or hold the current-head COMMENT review",
+    "reason": "The review is pinned to the unchanged upstream head and requires explicit maintainer approval before any original-repository write."
   },
-  "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "review_drafted",
-    "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-15T18:42:00Z",
-    "advancement_evidence": [
-      "Consumed seven Copilot reviews and reached zero new comments and zero unresolved threads.",
-      "Rebuilt the review on fork PR 822 after protected-branch-safe continuation.",
-      "Built exact upstream and the literal suggestion candidate.",
-      "Mapped every fork-only hunk to one inline suggestion or three companion requests."
-    ]
+  "needs_revalidation": false,
+  "source": {
+    "repository": "microsoft/PowerToys",
+    "headRefOid": "589a669bad9231c17908568bbd8ae73c628e75a8",
+    "updatedAt": "2026-09-01T06:46:14Z",
+    "state": "OPEN",
+    "draft": false
   },
-  "fork_pr": {
-    "number": 822,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/822",
-    "state": "OPEN"
+  "freshness": {
+    "status": "fresh",
+    "headRefOid": "589a669bad9231c17908568bbd8ae73c628e75a8",
+    "updatedAt": "2026-09-01T06:46:14Z",
+    "latestCopilotReviewAt": "2026-09-15T17:11:19Z",
+    "latestForkCommitAt": "2026-09-15T17:06:01Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-17T14:03:36.4391163Z"
   },
-  "fork_branch": "pr-iterate/49647-v7",
-  "fork_head_sha": "4d6af78ed2d3fd2de36f425b567c7447faf2d7e1",
+  "proposed_comments": [
+    {
+      "id": "reset-removed-single-line-hotkey",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Clear the single-line hotkey when the setting is absent",
+      "body": "### Clear the single-line hotkey when the setting is absent\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, the `settingsObject` reload path around `JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY`.\n\n**Problem:** When an older settings file does not contain the new property, this branch skips assignment and leaves `m_paste_as_single_line_hotkey` unchanged. After a user removes the shortcut or reloads legacy settings, the previously registered chord can therefore remain active even though the persisted configuration no longer contains it.\n\n**Why it matters:** A stale global hotkey can invoke Paste as Single Line unexpectedly and makes settings reload behavior depend on the process's previous state.\n\n**Suggested change:**\n\n```suggestion\n                        m_paste_as_single_line_hotkey = parse_single_hotkey(JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY, settingsObject);\n                    }\n                    else\n                    {\n                        m_paste_as_single_line_hotkey = {};\n                    }\n```\n\n**Verification:** Load settings once with a configured single-line shortcut and then reload a legacy settings object without `paste-as-single-line-hotkey`; confirm the old chord is no longer returned or registered and the other built-in hotkeys still reload normally.",
+      "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+      "line": 426,
+      "startLine": 422,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "The live diff adds conditional assignment without an absent-key reset, and the member is retained across settings reloads; the fork fix compiles on the exact upstream candidate."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "reserve-telemetry-hotkey-storage",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Prevent telemetry hotkey pointers from being invalidated",
+      "body": "### Prevent telemetry hotkey pointers from being invalidated\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/trace.cpp`, `AdvancedPaste_SettingsTelemetry` where `getHotkeyCStr` appends strings to `hotkeyStrs`.\n\n**Problem:** `getHotkeyCStr` returns a pointer into a `std::vector<std::wstring>` and is called repeatedly while the TraceLogging arguments are being constructed. The new single-line field adds another append, so a later vector reallocation can invalidate pointers captured for earlier fields before the event is emitted.\n\n**Why it matters:** The settings event can report corrupted or unrelated hotkey strings, making telemetry unreliable and potentially reading invalid string storage during event construction.\n\n**Suggested change:**\n\n1. Keep `hotkeyStrs` in the existing helper scope before any telemetry arguments are evaluated.\n2. Call `hotkeyStrs.reserve(5 + additionalActionsHotkeys.size());` immediately after construction, before `getHotkeyCStr` or `getAdditionalActionHotkeyCStr` can return pointers.\n3. Preserve the existing string construction and event argument order.\n\n**Verification:** Exercise telemetry with all five built-in shortcuts and additional actions populated, and confirm every emitted field remains stable; also run the AdvancedPasteModuleInterface build under the normal Debug configuration.",
+      "outOfDiffReason": "The required reserve call belongs immediately before the unchanged vector declaration, outside the current RIGHT-side diff hunk; the current diff only adds a later telemetry argument.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The live diff adds a fifth built-in string and the existing helper appends to a vector before returning c_str pointers; reserving the full fixed-plus-map capacity is the validated fork fix."
+      },
+      "disposition": "proposed",
+      "out_of_diff_reason": "The required coordinated change is outside a safe current RIGHT-side diff anchor and must be implemented across the affected files."
+    },
+    {
+      "id": "preserve-interop-abi-order",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Append the new interop constant without shifting existing ABI ordinals",
+      "confidence": {
+        "score": 93,
+        "rationale": "The live IDL, header, and implementation insert the new static method before existing methods; the fork convergence fix moves it to the end across all three files."
+      },
+      "body": "### Preserve the interop ABI order for the new constant\n\n**Severity:** `high`\n\n**Affected code:** `src/common/interop/Constants.idl`, `src/common/interop/Constants.h`, and `src/common/interop/Constants.cpp`, specifically the new `AdvancedPasteSingleLineMessage` declaration and implementation.\n\n**Problem:** The new static constant is inserted near the beginning of the existing WinRT constant list. That changes the ordinal position of every later method in the generated interface, so already-built clients can bind a numeric slot to the wrong constant after upgrading.\n\n**Why it matters:** Cross-process callers and generated WinRT projections rely on stable method ordering; an ordinal shift can produce incorrect IPC messages or break compatibility with components built against the previous interface.\n\n**Suggested change:**\n1. Remove `AdvancedPasteSingleLineMessage` from its early position in `Constants.idl` and `Constants.h`.\n2. Add the declaration at the end of the existing static-method list in both files, after `KeyboardManagerEngineInstanceMutex`.\n3. Move the matching `Constants::AdvancedPasteSingleLineMessage()` definition in `Constants.cpp` to the end of the implementation list, after the corresponding last existing constant.\n4. Regenerate the WinRT projection and rebuild every affected interop consumer so the new method is appended rather than inserted.\n\n**Verification:** Compare the generated interface method order before and after the change, confirming every pre-existing method keeps its ordinal; build `AdvancedPasteModuleInterface` and the Settings/Advanced Paste consumers and verify the single-line IPC message still resolves.\n\nThis must be applied consistently across all three interop files; a one-file inline deletion would leave the generated interface incomplete.",
+      "outOfDiffReason": "The safe fix moves one declaration and definition across multiple interop files; no single current RIGHT-side hunk can represent the coordinated ABI-preserving edit as an independently applyable suggestion.",
+      "out_of_diff_reason": "The required coordinated change is outside a safe current RIGHT-side diff anchor and must be implemented across the affected files."
+    },
+    {
+      "id": "restore-single-line-ui-coverage",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Restore end-to-end coverage for the single-line action and shortcuts",
+      "confidence": {
+        "score": 91,
+        "rationale": "The exact upstream UI test source lacks the single-line scenarios and source fixture, while the converged fork adds all three paths and the fixture and the UI-test project builds."
+      },
+      "body": "### Restore end-to-end coverage for the single-line action and shortcuts\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/AdvancedPaste/UITest-AdvancedPaste/AdvancedPasteUITest.cs`, `src/modules/AdvancedPaste/UITest-AdvancedPaste/TestFiles/PasteAsSingleLineFile.txt`, and `src/modules/AdvancedPaste/UITest-AdvancedPaste/TestFiles/PasteAsSingleLineResultFile.txt`.\n\n**Problem:** The current upstream head wires the new button, Ctrl+2 popup shortcut, and direct global shortcut, but the UI-test source file no longer contains scenarios that exercise those paths, and the referenced multiline source fixture is absent. The feature can therefore regress without an end-to-end test failing.\n\n**Why it matters:** Unit coverage cannot detect broken UI automation wiring, shortcut routing, or the expected clipboard result. Missing the fixture also causes any restored scenario to fail before it reaches Advanced Paste.\n\n**Suggested change:**\n1. Add `PasteAsSingleLineFile.txt` containing separate lines plus an embedded tab, and keep `PasteAsSingleLineResultFile.txt` as the expected flattened output without a trailing newline.\n2. Add independent UI tests for the visible action, Ctrl+2 popup shortcut, and configured direct shortcut; each should copy the source fixture, invoke only its named path, save the result, and compare it with the expected file.\n3. Give each assertion a path-specific failure message so a failing test identifies the button, popup shortcut, or direct shortcut route.\n4. Keep the test settings fixture aligned with the configured direct shortcut and document all three scenarios in `UITestAdvancedPaste.md`.\n\n**Verification:** Build `src/modules/AdvancedPaste/UITest-AdvancedPaste/AdvancedPaste-UITests.csproj`, run the three focused UI tests on Windows, and confirm the output is one line with the original inline tab preserved.",
+      "outOfDiffReason": "The current head has only the existing test-file renumbering hunk and no current single-line test/fixture additions; restoring the scenarios and adding a new source fixture requires coordinated multi-file additions.",
+      "out_of_diff_reason": "The required coordinated change is outside a safe current RIGHT-side diff anchor and must be implemented across the affected files."
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49647",
+      "type": "post_review",
+      "label": "Post the current-head inline and companion review notes as COMMENT",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 49647,
+        "pullRequest": 49647,
+        "event": "COMMENT",
+        "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+        "body_prefix": "Thanks for the focused Advanced Paste feature. Before merge, please clear the stale single-line hotkey state, protect telemetry hotkey storage, preserve interop ABI order, and restore end-to-end coverage for the new action and shortcuts."
+      },
+      "note": "Current-head non-blocking COMMENT review. Explicit maintainer approval and a final live freshness check are required before posting."
+    }
+  ],
   "validation": {
+    "upstream_head": {
+      "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+      "result": "passed",
+      "commands": [
+        "build-essentials.cmd on the exact upstream head",
+        "AdvancedPasteModuleInterface build on the exact upstream head"
+      ],
+      "details": "The pinned upstream head restored dependencies and built the required Debug essentials and AdvancedPasteModuleInterface successfully."
+    },
     "suggestion_patch": {
       "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
       "result": "passed",
@@ -53,23 +137,101 @@
         "reset-removed-single-line-hotkey"
       ],
       "commands": [
-        "Apply literal suggestion to exact upstream head",
-        "Build AdvancedPasteModuleInterface"
+        "Literal suggestion applied to a clean exact-head local checkout",
+        "AdvancedPasteModuleInterface build"
       ],
-      "details": "The literal hotkey-reset suggestion compiles on the pinned upstream candidate."
+      "details": "The apply-ready hotkey-reset suggestion compiled on the pinned upstream candidate."
     },
-    "upstream_head": {
+    "lineEndingSafety": {
       "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
       "result": "passed",
-      "commands": [
-        "build-essentials.cmd",
-        "Build AdvancedPasteModuleInterface"
+      "checked_comment_ids": [
+        "reset-removed-single-line-hotkey"
       ],
-      "details": "The exact upstream affected project builds successfully."
+      "files": [
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 1180,
+          "cr_only_count": 0
+        }
+      ],
+      "details": "Raw blob at the exact pinned upstream head is LF-only with no mixed or lone-CR endings."
+    },
+    "line_ending_safety": {
+      "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+      "result": "passed",
+      "checked_comment_ids": [
+        "reset-removed-single-line-hotkey"
+      ],
+      "files": [
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 1180,
+          "cr_only_count": 0
+        }
+      ],
+      "details": "Raw blob at the exact pinned upstream head is LF-only with no mixed or lone-CR endings."
     }
+  },
+  "fork_only_delta": {
+    "result": "fully_accounted",
+    "head_sha": "4d6af78ed2d3fd2de36f425b567c7447faf2d7e1",
+    "upstream_head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+    "items": [
+      "reset-removed-single-line-hotkey",
+      "reserve-telemetry-hotkey-storage",
+      "preserve-interop-abi-order",
+      "restore-single-line-ui-coverage"
+    ]
+  },
+  "workflow": {
+    "phase": "post_review",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-17T14:03:36.4391163Z",
+    "resume_action": "approval_gated_comment_review",
+    "fork_pr": 822,
+    "fork_branch": "pr-iterate/49647-v7",
+    "fork_reviewed_head_sha": "4d6af78ed2d3fd2de36f425b567c7447faf2d7e1",
+    "reviewed_upstream_head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8",
+    "latest_copilot_review_at": "2026-09-15T17:11:19Z",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "existing_review_consumed": true,
+    "duplicate_review_request_made": false,
+    "build_revalidated": true,
+    "advancement_evidence": [
+      "Live upstream state, changed files, comments, reviews, and checks were re-read.",
+      "Existing Copilot reviews were consumed before deciding no duplicate request was needed.",
+      "Raw pinned upstream target blob passed line-ending safety validation.",
+      "No microsoft/PowerToys write was performed."
+    ]
+  },
+  "fork_pr": {
+    "number": 822,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/822",
+    "state": "OPEN",
+    "head_sha": "4d6af78ed2d3fd2de36f425b567c7447faf2d7e1"
+  },
+  "fork_branch": "pr-iterate/49647-v7",
+  "copilot_review": {
+    "review_count": 7,
+    "latest_submitted_at": "2026-09-15T17:11:19Z",
+    "latest_commit_id": "4d6af78ed2d3fd2de36f425b567c7447faf2d7e1",
+    "latest_new_published_comments": 0,
+    "published_inline_comments": 0,
+    "unresolved_threads": 0,
+    "request_reused": true
   },
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
+    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, commits, pushes, or other mutations were made to microsoft/PowerToys."
   }
 }

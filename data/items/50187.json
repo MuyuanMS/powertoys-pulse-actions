@@ -1,35 +1,205 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50187",
   "number": 50187,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-17T11:12:27.0009615Z",
-  "evaluated_at": "09/14/2026 15:20:00",
+  "generated_at": "2026-09-17T13:18:00Z",
+  "evaluated_at": "2026-09-17T13:18:00Z",
   "source_updated_at": "2026-09-08T19:43:11Z",
   "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
   "title": "CmdPal: Icons (7/n) - Split glyph caches and materialize synchronous sources directly",
   "url": "https://github.com/microsoft/PowerToys/pull/50187",
+  "summary": "The upstream head and updatedAt remain unchanged. The saved fork review was resumed without re-mirroring; its latest Copilot review has zero published comments and zero unresolved threads. Revalidation rebuilt the fork branch successfully through PowerToys essentials, CmdPal UI, and CmdPal UI unit-test Debug. Three fork-only review fixes remain outside the upstream head, so the result is an approval-gated current-head review rather than review_ready.",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "Rebuild passed on resumed fork PR 502; exact-head suggestion blob EOL safety passed; latest matching-head Copilot review has zero published comments and zero unresolved threads. Awaiting explicit maintainer approval; no upstream action taken."
+    "glyph": "📝",
+    "label": "Current-head COMMENT review drafted",
+    "detail": "Upstream head 5123beae1e31d295c3e3d3a85d0c113a17f83a4e is still live. Fork PR 502 at 56e58f9fa7a0360717eaff9469bba9c1165de606 rebuilt successfully with zero unresolved Copilot threads. Fork-only fixes are represented as one current-diff inline note and two implementation-ready companion notes; no upstream action was taken."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-17T11:12:27.0009615Z"
+  "next_action": {
+    "glyph": "post",
+    "label": "Approve, edit, or hold the current-head COMMENT review",
+    "reason": "The review is pinned to the unchanged upstream head and requires explicit maintainer approval before any original-repository write."
+  },
+  "needs_revalidation": false,
+  "source": {
+    "repository": "microsoft/PowerToys",
+    "headRefOid": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+    "updatedAt": "2026-09-08T19:43:11Z",
+    "state": "OPEN",
+    "draft": false,
+    "baseRefOid": "b781101d3744c39c5359120453726be14e25e887"
   },
   "freshness": {
-    "queued_at": "09/17/2026 10:35:01",
-    "checkpoint_at": "2026-09-17T11:12:27.0009615Z"
+    "status": "fresh",
+    "headRefOid": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+    "updatedAt": "2026-09-08T19:43:11Z",
+    "latestCopilotReviewAt": "2026-09-09T03:59:58Z",
+    "latestForkCommitAt": "2026-09-09T03:21:56Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-17T13:18:00Z"
+  },
+  "proposed_comments": [
+    {
+      "id": "centralize-binary-materialization-predicate",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Centralize the binary materialization contract",
+      "body": "### Centralize the binary materialization contract\n\n**Severity:** `medium`\n\nThe binary branch currently embeds the `SoftwareBitmap` check directly in `TryCreateIconSourceSynchronously`, while the loader and tests need the same rule to decide whether asynchronous transfer is required. Please expose one shared predicate for the binary-plus-bitmap case and use it from both the synchronous conversion path and its callers so a future change cannot make those decisions disagree. Add focused coverage for the empty, URI, SVG, glyph, empty-binary, and bitmap-backed binary cases.",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconPathConverter.cs",
+      "line": 115,
+      "side": "RIGHT",
+      "confidence": {
+        "score": 91,
+        "rationale": "The fork-only change extracts the exact predicate from the current RIGHT-side binary branch and the matching tests exercise each prepared-icon kind."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "cover-synchronous-materialization-kinds",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Exercise every synchronous icon-source materialization branch",
+      "body": "### Exercise every synchronous icon-source materialization branch\n\n**Affected code:** `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconPathConverterTests.cs` — `IconSourceMaterializationContractSeparatesSynchronousKindsFromBinaryTransfer`; `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconPathConverter.cs` — `TryCreateIconSourceSynchronously` and the binary transfer path.\n\n**Problem:** The current tests classify empty, bitmap URI, SVG URI, and glyph inputs only through `RequiresAsynchronousMaterialization`. They do not invoke the synchronous materialization API for those kinds, so an incorrect source type or a broken synchronous branch could still pass.\n\n**Why it matters:** The PR changes the boundary between synchronous UI-thread construction and asynchronous bitmap transfer. Each supported synchronous kind needs a regression assertion so a later refactor cannot silently route it through the wrong path.\n\n**Suggested change:**\n1. Create one prepared icon for each empty, bitmap URI, SVG URI, and glyph input.\n2. Call `TryCreateIconSourceSynchronously` for each input and assert success plus the expected `IconSource` subtype.\n3. Keep separate empty-binary and bitmap-backed binary cases, asserting the bitmap ownership transfer and cleanup contract.\n\n**Illustrative test shape:**\n```csharp\nAssert.IsTrue(IconPathConverter.TryCreateIconSourceSynchronously(glyph, out var source));\nAssert.IsInstanceOfType<FontIconSource>(source);\n```\n\n**Verification:** Run `Microsoft.CmdPal.UI.UnitTests` in x64 Debug and confirm all materialization-contract cases pass with no leaked `SoftwareBitmap` ownership.",
+      "out_of_diff_reason": "The missing assertions are additions to the existing test method and do not have a safe current RIGHT-side anchor for an apply-ready replacement.",
+      "outOfDiffReason": "The missing assertions are additions to the existing test method and do not have a safe current RIGHT-side anchor for an apply-ready replacement.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The saved Copilot review identified this exact coverage gap, and the fork-only test additions directly exercise the previously unverified API branches."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "isolate-partition-diagnostics-assertions",
+      "kind": "companion",
+      "severity": "low",
+      "title": "Keep diagnostics assertions isolated per cache partition",
+      "body": "### Keep diagnostics assertions isolated per cache partition\n\n**Affected code:** `src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/IconLoadDiagnosticsTests.cs` — the cache-report test covering glyph and other partitions.\n\n**Problem:** Once glyph and other caches are reported independently, assertions against the whole report can accidentally match values from the wrong partition and leave the new partition contract under-tested.\n\n**Why it matters:** Diagnostics are used to compare cache behavior by source class. A report can look correct while glyph and other counters are swapped, merged, or attributed to the wrong section.\n\n**Suggested change:**\n1. Record at least one lookup, entry addition, and removal for the `Other` partition.\n2. Split the report into glyph and other sections using their stable headings.\n3. Assert lookup, hit/miss, maximum-entry, and removal-reason values within the matching partition section rather than across the entire report.\n\n**Illustrative assertion shape:**\n```csharp\nvar otherSection = GetTextBetween(report.Text, \"  20x20 Other cache, capacity 16\", \"Request origins\");\nStringAssert.Contains(otherSection, \"    Misses: 1\");\n```\n\n**Verification:** Run the CmdPal UI unit-test project and verify that changing either partition's counters causes the corresponding section assertion to fail.",
+      "out_of_diff_reason": "The fix extends test setup and assertion scoping across the report; it is safer as an implementation-ready companion note than as a partial inline patch.",
+      "outOfDiffReason": "The fix extends test setup and assertion scoping across the report; it is safer as an implementation-ready companion note than as a partial inline patch.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The fork-only diagnostics test changes isolate the exact partition sections and add representative Other-partition counters, matching the split-cache behavior introduced by the upstream PR."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50187",
+      "type": "post_review",
+      "label": "Post the current-head inline and companion review notes as COMMENT",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50187,
+        "pullRequest": 50187,
+        "event": "COMMENT",
+        "head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+        "body_prefix": "Thanks for the CmdPal icon cache and synchronous materialization work. Before merge, please centralize the binary materialization contract, cover every synchronous icon-source branch directly, and keep diagnostics assertions isolated per cache partition so the new split-cache behavior remains regression-tested."
+      },
+      "note": "Current-head non-blocking COMMENT review. The upstream head and activity snapshot are unchanged; explicit maintainer approval and a final live freshness check are required before posting."
+    }
+  ],
+  "validation": {
+    "fork_tree": {
+      "head_sha": "56e58f9fa7a0360717eaff9469bba9c1165de606",
+      "result": "passed",
+      "configuration": "x64 Debug",
+      "commands": [
+        "tools\\build\\build-essentials.cmd with POWERTOYS_DISABLE_SPECTRE=1",
+        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe was produced.",
+        "PowerToys essentials completed with 0 errors.",
+        "CmdPal UI and Microsoft.CmdPal.UI.UnitTests completed with 0 errors."
+      ]
+    },
+    "lineEndingSafety": {
+      "result": "passed",
+      "headSha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+      "checkedItemIds": [],
+      "files": [],
+      "reason": "No apply-ready suggestion blocks are emitted; the current-head items are inline prose or companion guidance."
+    },
+    "suggestionPatch": {
+      "result": "not_applicable",
+      "appliedItemIds": [],
+      "minimalRangesReviewed": true,
+      "commands": [],
+      "reason": "No apply-ready suggestion block is emitted because the remaining fork-only changes include coordinated test additions without safe standalone replacements."
+    }
+  },
+  "fork_only_delta": {
+    "result": "fully_accounted",
+    "head_sha": "56e58f9fa7a0360717eaff9469bba9c1165de606",
+    "upstream_head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+    "files": 3,
+    "insertions": 64,
+    "deletions": 7,
+    "items": [
+      "centralize-binary-materialization-predicate",
+      "cover-synchronous-materialization-kinds",
+      "isolate-partition-diagnostics-assertions"
+    ]
+  },
+  "workflow": {
+    "phase": "post_review",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-17T13:18:00Z",
+    "resume_action": "approval_gated_comment_review",
+    "fork_pr": 502,
+    "fork_branch": "pr-iterate/50187-v2",
+    "fork_reviewed_head_sha": "56e58f9fa7a0360717eaff9469bba9c1165de606",
+    "reviewed_upstream_head_sha": "5123beae1e31d295c3e3d3a85d0c113a17f83a4e",
+    "latest_copilot_review_at": "2026-09-09T03:59:58Z",
+    "latest_copilot_new_comments": 0,
+    "unresolved_copilot_threads": 0,
+    "existing_review_consumed": true,
+    "duplicate_review_request_made": false,
+    "build_revalidated": true,
+    "advancement_evidence": [
+      "Live upstream head and updatedAt still match the pinned evidence.",
+      "The existing matching-head Copilot review was consumed before considering another request.",
+      "Fork PR 502 and branch pr-iterate/50187-v2 were preserved without re-mirroring.",
+      "The fork branch rebuilt successfully through essentials, CmdPal UI, and CmdPal UI unit-test Debug.",
+      "The fork-only delta contains 64 insertions and 7 deletions across three files and is fully represented by the proposed review items.",
+      "No microsoft/PowerToys write was performed."
+    ]
   },
   "fork_pr": {
     "number": 502,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/502"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/502",
+    "state": "OPEN",
+    "head_sha": "56e58f9fa7a0360717eaff9469bba9c1165de606"
   },
-  "fork_branch": "pr-iterate/50187-v2"
+  "fork_branch": "pr-iterate/50187-v2",
+  "copilot_review": {
+    "review_count": 3,
+    "latest_submitted_at": "2026-09-09T03:59:58Z",
+    "latest_commit_id": "56e58f9fa7a0360717eaff9469bba9c1165de606",
+    "latest_new_published_comments": 0,
+    "published_inline_comments": 0,
+    "unresolved_threads": 0,
+    "request_reused": true,
+    "note": "The durable completed review on the matching fork head was consumed first; no duplicate request or polling was performed."
+  },
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Open Command Palette and exercise an icon-heavy surface that loads glyph, URI, and binary-backed icons.",
+    "Verify glyph and URI icons materialize without the asynchronous bitmap-transfer path, while bitmap-backed binary icons transfer ownership and render correctly.",
+    "If diagnostics are enabled, compare glyph and other cache sections independently and verify their counters and removal reasons remain separated."
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, commits, pushes, or other mutations were made to microsoft/PowerToys."
+  }
 }
