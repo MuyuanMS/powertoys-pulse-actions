@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-17T15:20:58.2703264+08:00",
+  "generated_at": "2026-09-17T16:09:36.9993983+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1252
   },
   "impact": {
-    "as_of": "2026-09-17T15:20:58.2703264+08:00",
+    "as_of": "2026-09-17T16:09:36.9993983+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -3764,7 +3764,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-09-15T10:59:04.0000000Z",
+      "waiting_since": "2026-09-15T10:59:04Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -4502,7 +4502,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-31T01:33:35.0000000Z",
+      "waiting_since": "2026-08-31T01:33:35Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6230,7 +6230,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 1,
-      "primary_action": null,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request shortcut-state fix with code suggestion"
+      },
       "labels": [
         "Product-Settings",
         "Ready for review"
@@ -6312,7 +6315,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-31T22:43:41.0000000Z",
+      "waiting_since": "2026-08-31T22:43:41Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -6768,7 +6771,7 @@ window.BOARD_INDEX = {
       "stage": "review_in_progress",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-31T14:21:56.0000000Z",
+      "waiting_since": "2026-08-31T14:21:56Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -7712,7 +7715,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-08-05T18:18:15.0000000Z",
+      "waiting_since": "2026-08-05T18:18:15Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -8061,7 +8064,7 @@ window.BOARD_INDEX = {
       "stage": "awaiting_author",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "2026-05-17T04:46:25.0000000Z",
+      "waiting_since": "2026-05-17T04:46:25Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
