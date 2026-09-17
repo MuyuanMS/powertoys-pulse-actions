@@ -6,35 +6,35 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-17T07:05:12Z",
-  "evaluated_at": "2026-09-17T07:05:12Z",
+  "generated_at": "2026-09-17T07:51:57Z",
+  "evaluated_at": "2026-09-17T07:51:57Z",
   "source_updated_at": "2026-09-17T03:33:53Z",
   "head_sha": "7bc6773c0723f5fcf9738183c65c9f8c6a93768e",
   "title": "[UI] Fix abnormal blinking when keep pressing a non-modifier key or windows key when setting a new hotkey shortcut",
   "url": "https://github.com/microsoft/PowerToys/pull/49662",
-  "summary": "The current head has one focused Settings UI correctness issue: HashSet-based key comparison discards ordering and duplicate multiplicity, so distinct shortcut states can suppress required UI refreshes. Upstream checks are green; one current-head inline finding is drafted for approval.",
+  "summary": "The current head has one focused Settings UI correctness issue: HashSet-based key comparison discards ordering and duplicate multiplicity, so distinct shortcut states can suppress required UI refreshes. Upstream checks are green; one apply-ready current-head inline suggestion is drafted for approval.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
-    "detail": "One current-head inline finding is drafted against the key-list comparison; the existing fork review has zero unresolved Copilot threads."
+    "detail": "One apply-ready current-head inline suggestion is drafted against the key-list comparison; the existing fork review has zero unresolved Copilot threads."
   },
   "next_action": {
     "glyph": "📝",
-    "label": "Approve or hold the drafted review",
+    "label": "Approve or hold the drafted code suggestion",
     "reason": "The proposed fix should preserve key multiplicity and comparison semantics instead of using set equality."
   },
   "confidence": "High",
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "proposed_comments": [
     {
       "id": "preserve-shortcut-key-sequence",
       "kind": "inline",
       "severity": "medium",
       "title": "Preserve key multiplicity when comparing shortcut state",
-      "body": "### Preserve key multiplicity when comparing shortcut state\n\n**Severity:** `medium`\n\n**Affected code:** `src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutDialogContentControl.xaml.cs`, `JudgeIfKeyValueSame`.\n\n**Problem:** `HashSet<object>.SetEquals` treats the key lists as unordered sets. It discards ordering and duplicate multiplicity, so two distinct key states can compare equal and prevent `ShortcutControl` from receiving the required refresh.\n\n**Why it matters:** A repeated or reordered key event can leave the dialog showing stale shortcut state, which undermines the blinking fix and can save or display the wrong combination.\n\n**Suggested change:** Compare the lists with an order- and multiplicity-preserving comparison using the repository's intended key identity semantics, such as an element-by-element comparison or an equivalent `SequenceEqual` path. Keep the existing null and count guards, and ensure the comparison matches the ordering produced by `GetKeysList()`.\n\n**Verification:** Add or update focused tests covering reordered keys and repeated key values, then run the Settings UI build and the ShortcutControl tests to confirm distinct key states still update the control while identical states remain suppressed.",
+      "body": "### Preserve key multiplicity when comparing shortcut state\n\n**Severity:** `medium`\n\n**Affected code:** `src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutDialogContentControl.xaml.cs`, `JudgeIfKeyValueSame`.\n\n**Problem:** `HashSet<object>.SetEquals` treats the key lists as unordered sets. It discards ordering and duplicate multiplicity, so two distinct key states can compare equal and prevent `ShortcutControl` from receiving the required refresh.\n\n**Why it matters:** A repeated or reordered key event can leave the dialog showing stale shortcut state, which undermines the blinking fix and can save or display the wrong combination.\n\n**Suggested change:** Compare the lists element by element so ordering and duplicate multiplicity are preserved while retaining the existing null and count guards.\n\n```suggestion\n            for (int index = 0; index < currentValue.Count; index++)\n            {\n                if (!Equals(currentValue[index], newValue[index]))\n                {\n                    return false;\n                }\n            }\n\n            return true;\n```\n\n**Verification:** Add or update focused tests covering reordered keys and repeated key values, then run the Settings UI build and the ShortcutControl tests to confirm distinct key states still update the control while identical states remain suppressed.",
       "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutDialogContentControl.xaml.cs",
-      "start_line": 134,
-      "line": 151,
+      "start_line": 152,
+      "line": 153,
       "side": "RIGHT",
       "in_diff": true,
       "disposition": "proposed",
@@ -48,7 +48,7 @@
     {
       "id": "request-changes-49662",
       "type": "request_changes",
-      "label": "Request focused shortcut-state comparison fix",
+      "label": "Request shortcut-state fix with code suggestion",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -91,11 +91,34 @@
   "validation": {
     "suggestion_patch": {
       "head_sha": "7bc6773c0723f5fcf9738183c65c9f8c6a93768e",
-      "result": "not_applicable",
+      "result": "passed",
       "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [],
-      "commands": [],
-      "details": "The proposed response contains no literal suggestion block and addresses the whole-file diff reconstruction process."
+      "applied_comment_ids": [
+        "preserve-shortcut-key-sequence"
+      ],
+      "commands": [
+        "dotnet restore src/settings-ui/Settings.UI/PowerToys.Settings.csproj -p:Platform=x64",
+        "tools/build/build-essentials.cmd"
+      ],
+      "details": "Applied the literal two-line replacement to the exact upstream head in a clean detached worktree. The resulting Settings UI project built successfully."
+    },
+    "line_ending_safety": {
+      "head_sha": "7bc6773c0723f5fcf9738183c65c9f8c6a93768e",
+      "result": "passed",
+      "checked_comment_ids": [
+        "preserve-shortcut-key-sequence"
+      ],
+      "files": [
+        {
+          "path": "src/settings-ui/Settings.UI/SettingsXAML/Controls/ShortcutControl/ShortcutDialogContentControl.xaml.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "crlf_count": 0,
+          "lf_only_count": 156,
+          "cr_only_count": 0
+        }
+      ]
     },
     "upstream_head": {
       "head_sha": "7bc6773c0723f5fcf9738183c65c9f8c6a93768e",
@@ -105,7 +128,7 @@
         "detect-telemetry-events",
         "license/cla"
       ],
-      "details": "The live upstream head is current and all visible upstream checks pass. A local focused build was not rerun in this worker because the durable fork checkout targets the prior review branch head."
+      "details": "The live upstream head is current and all visible upstream checks pass. The literal apply-ready suggestion was also built against this exact head."
     }
   },
   "upstream_safety": {
