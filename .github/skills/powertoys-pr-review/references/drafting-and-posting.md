@@ -115,6 +115,15 @@ When posting **multiple suggestions on the same file**, applying them one at a t
    syntax/build check that compiles every affected source file. This candidate
    worktree—not the hand-edited review fork—is the evidence that GitHub's
    apply button cannot produce malformed code.
+6. **Raw-blob line-ending gate:** before exposing an apply button, run
+   `Test-SuggestionLineEndings.ps1` against the pinned upstream head and every
+   suggestion target path. A blob containing more than one line-ending style
+   is unsafe even when it keeps the same BOM and a local candidate build
+   passes: GitHub's server-side Apply suggestion can reconstruct the complete
+   file with the `.gitattributes` working-tree EOL and create an all-lines
+   diff. Replace the suggestion block with exact inline prose, or use a
+   detailed companion comment when no current RIGHT-side anchor exists. Do not
+   normalize the file as part of an unrelated fix.
 
 Shorter is safer only when the shorter replacement remains a complete
 syntactic unit. The goal is the **smallest independently valid patch**, not the
@@ -205,6 +214,18 @@ For a payload containing suggestion blocks, also record:
       "appliedItemIds": ["missing-loop-brace"],
       "minimalRangesReviewed": true,
       "commands": ["dotnet build <smallest affected project>"]
+    },
+    "lineEndingSafety": {
+      "headSha": "<pinned upstream head>",
+      "result": "passed",
+      "checkedItemIds": ["missing-loop-brace"],
+      "files": [
+        {
+          "path": "src/Module/File.cs",
+          "result": "passed",
+          "lineEndings": "lf"
+        }
+      ]
     }
   }
 }
@@ -214,6 +235,8 @@ The applied item IDs must exactly match every public item containing a
 suggestion block. Run the commands after applying the literal suggestion text,
 not after manually recreating the intended fix. `minimalRangesReviewed` is set
 only after trimming unchanged edges and rebuilding the final minimized patch.
+The line-ending result must come from the raw Git blobs, not from checked-out
+files whose EOLs may already have been converted by Git.
 
 For a clean result with no public items, record:
 

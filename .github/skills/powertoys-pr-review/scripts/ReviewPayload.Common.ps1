@@ -574,6 +574,7 @@ function Test-ReviewDataDocument {
         $validation = $pullRequest.internalEvidence.validation
         if ($suggestionItems.Count -gt 0) {
             $suggestionPatch = $validation.suggestionPatch
+            $lineEndingSafety = $validation.lineEndingSafety
             if ($null -eq $suggestionPatch) {
                 $errors.Add("$prefix is ready with apply-ready suggestions but is missing internalEvidence.validation.suggestionPatch.")
             }
@@ -596,6 +597,34 @@ function Test-ReviewDataDocument {
                     -not [string]::IsNullOrWhiteSpace([string]$_)
                 }).Count -eq 0) {
                     $errors.Add("$prefix suggestionPatch.commands must record at least one syntax or build command.")
+                }
+            }
+            if ($null -eq $lineEndingSafety) {
+                $errors.Add("$prefix is ready with apply-ready suggestions but is missing internalEvidence.validation.lineEndingSafety.")
+            }
+            else {
+                if ([string]$lineEndingSafety.headSha -ne [string]$pullRequest.headSha) {
+                    $errors.Add("$prefix lineEndingSafety.headSha must match the pinned upstream headSha.")
+                }
+                if ([string]$lineEndingSafety.result -ne 'passed') {
+                    $errors.Add("$prefix lineEndingSafety.result must be 'passed'.")
+                }
+                $expectedItemIds = @($suggestionItems | ForEach-Object { [string]$_.id } | Sort-Object -Unique)
+                $checkedItemIds = @($lineEndingSafety.checkedItemIds | ForEach-Object { [string]$_ } | Sort-Object -Unique)
+                if (($expectedItemIds -join "`n") -cne ($checkedItemIds -join "`n")) {
+                    $errors.Add("$prefix lineEndingSafety.checkedItemIds must exactly match every public suggestion item.")
+                }
+                $expectedPaths = @($suggestionItems | ForEach-Object { [string]$_.path } | Sort-Object -Unique)
+                $fileResults = @($lineEndingSafety.files)
+                $checkedPaths = @($fileResults | ForEach-Object { [string]$_.path } | Sort-Object -Unique)
+                if (($expectedPaths -join "`n") -cne ($checkedPaths -join "`n")) {
+                    $errors.Add("$prefix lineEndingSafety.files must exactly cover every suggestion target path.")
+                }
+                foreach ($fileResult in $fileResults) {
+                    if ([string]$fileResult.result -ne 'passed' -or
+                        [string]$fileResult.lineEndings -notin @('lf', 'crlf', 'cr', 'none')) {
+                        $errors.Add("$prefix lineEndingSafety rejects '$($fileResult.path)' because its pinned blob has mixed or unverified line endings.")
+                    }
                 }
             }
         }

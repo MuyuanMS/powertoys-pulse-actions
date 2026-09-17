@@ -268,6 +268,25 @@ foreach ($path in @($paths)) {
           ($expectedCommentIds -join "`n") -cne ($appliedCommentIds -join "`n")) {
         $errors.Add("$prefix apply-ready suggestions require passing exact-patch validation for every suggestion comment")
       }
+      $checkedCommentIds = @($artifact.validation.line_ending_safety.checked_comment_ids |
+        ForEach-Object { [string]$_ } | Sort-Object -Unique)
+      $expectedPaths = @($validInlineSuggestions | ForEach-Object {
+        [string]$_.path
+      } | Sort-Object -Unique)
+      $fileResults = @($artifact.validation.line_ending_safety.files)
+      $checkedPaths = @($fileResults | ForEach-Object {
+        [string]$_.path
+      } | Sort-Object -Unique)
+      if ([string]$artifact.validation.line_ending_safety.head_sha -ne [string]$artifact.head_sha -or
+          [string]$artifact.validation.line_ending_safety.result -ne 'passed' -or
+          ($expectedCommentIds -join "`n") -cne ($checkedCommentIds -join "`n") -or
+          ($expectedPaths -join "`n") -cne ($checkedPaths -join "`n") -or
+          @($fileResults | Where-Object {
+            [string]$_.result -ne 'passed' -or
+            [string]$_.line_endings -notin @('lf', 'crlf', 'cr', 'none')
+          }).Count -gt 0) {
+        $errors.Add("$prefix apply-ready suggestions require passing raw-blob line-ending validation for every suggestion target")
+      }
     }
     foreach ($comment in $proposedComments | Where-Object { $null -ne $_.confidence }) {
       $confidenceScore = 0

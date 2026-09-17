@@ -163,6 +163,30 @@ function Get-PublicActions {
     $validInlineSuggestions = @($inlineComments | Where-Object {
       ([regex]::Matches([string]$_.body, '(?s)```suggestion\s*\r?\n.+?\r?\n```')).Count -eq 1
     })
+    if ($validInlineSuggestions.Count -gt 0) {
+      $expectedCommentIds = @($validInlineSuggestions | ForEach-Object {
+        [string]$_.id
+      } | Sort-Object -Unique)
+      $expectedPaths = @($validInlineSuggestions | ForEach-Object {
+        [string]$_.path
+      } | Sort-Object -Unique)
+      $checkedCommentIds = @($Artifact.validation.line_ending_safety.checked_comment_ids |
+        ForEach-Object { [string]$_ } | Sort-Object -Unique)
+      $fileResults = @($Artifact.validation.line_ending_safety.files)
+      $checkedPaths = @($fileResults | ForEach-Object {
+        [string]$_.path
+      } | Sort-Object -Unique)
+      if ([string]$Artifact.validation.line_ending_safety.head_sha -ne [string]$Artifact.head_sha -or
+          [string]$Artifact.validation.line_ending_safety.result -ne 'passed' -or
+          ($expectedCommentIds -join "`n") -cne ($checkedCommentIds -join "`n") -or
+          ($expectedPaths -join "`n") -cne ($checkedPaths -join "`n") -or
+          @($fileResults | Where-Object {
+            [string]$_.result -ne 'passed' -or
+            [string]$_.line_endings -notin @('lf', 'crlf', 'cr', 'none')
+          }).Count -gt 0) {
+        $invalidReviewReasons.Add("PR $($Artifact.number) apply-ready suggestions lack passing raw-blob line-ending validation")
+      }
+    }
     foreach ($action in $reviewActions) {
       if ("$($action.label) $($action.note)" -match '(?i)inline suggestion' -and
           $validInlineSuggestions.Count -eq 0) {

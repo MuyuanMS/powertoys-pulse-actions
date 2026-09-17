@@ -96,6 +96,18 @@ $reviewData = [pscustomobject]@{
                         minimalRangesReviewed = $true
                         commands = @('dotnet build src/Test.csproj')
                     }
+                    lineEndingSafety = [pscustomobject]@{
+                        headSha = $headSha
+                        result = 'passed'
+                        checkedItemIds = @('fix-value')
+                        files = @(
+                            [pscustomobject]@{
+                                path = 'src/Test.cs'
+                                result = 'passed'
+                                lineEndings = 'lf'
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -138,6 +150,17 @@ $invalid = Copy-JsonObject $reviewData
 $invalid.prs[0].internalEvidence.validation.suggestionPatch.minimalRangesReviewed = $false
 $errors = @(Test-ReviewDataDocument -Document $invalid)
 Assert-True (($errors -join "`n") -match 'minimalRangesReviewed must be true') 'Suggestion validation must record the minimal-range pass.'
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].internalEvidence.validation.PSObject.Properties.Remove('lineEndingSafety')
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'missing internalEvidence.validation.lineEndingSafety') 'Suggestion payloads must include pinned-blob line-ending validation.'
+
+$invalid = Copy-JsonObject $reviewData
+$invalid.prs[0].internalEvidence.validation.lineEndingSafety.files[0].result = 'failed'
+$invalid.prs[0].internalEvidence.validation.lineEndingSafety.files[0].lineEndings = 'mixed'
+$errors = @(Test-ReviewDataDocument -Document $invalid)
+Assert-True (($errors -join "`n") -match 'mixed or unverified line endings') 'Mixed-line-ending suggestion targets must fail closed.'
 
 $cleanReview = Copy-JsonObject $reviewData
 $cleanReview.prs[0].publicPayload.items = @()
@@ -357,6 +380,48 @@ finally {
     }
     if (Test-Path -LiteralPath $temporaryDirectory) {
         Remove-Item -LiteralPath $temporaryDirectory
+    }
+}
+
+$lineEndingRepository = Join-Path ([IO.Path]::GetTempPath()) ("review-eol-tests-{0}" -f [guid]::NewGuid())
+New-Item -ItemType Directory -Path $lineEndingRepository | Out-Null
+try {
+    & git -C $lineEndingRepository init --quiet
+    & git -C $lineEndingRepository config user.name 'Review Test'
+    & git -C $lineEndingRepository config user.email 'review@example.test'
+    [IO.File]::WriteAllText(
+        (Join-Path $lineEndingRepository '.gitattributes'),
+        "*.cs -text`n",
+        [Text.UTF8Encoding]::new($false)
+    )
+    [IO.File]::WriteAllBytes(
+        (Join-Path $lineEndingRepository 'safe.cs'),
+        [Text.Encoding]::UTF8.GetBytes("one`ntwo`n")
+    )
+    [IO.File]::WriteAllBytes(
+        (Join-Path $lineEndingRepository 'mixed.cs'),
+        [Text.Encoding]::UTF8.GetBytes("one`ntwo`r`nthree`n")
+    )
+    & git -C $lineEndingRepository add .gitattributes safe.cs mixed.cs
+    & git -C $lineEndingRepository commit --quiet -m 'Add EOL fixtures'
+    $fixtureHead = (& git -C $lineEndingRepository rev-parse HEAD).Trim()
+    $safeResult = & (Join-Path $skillRoot 'scripts\Test-SuggestionLineEndings.ps1') `
+        -Checkout $lineEndingRepository -HeadSha $fixtureHead -Path safe.cs -AsJson |
+        ConvertFrom-Json
+    Assert-True ($safeResult.result -eq 'passed' -and $safeResult.files[0].line_endings -eq 'lf') 'Uniform LF suggestion targets should pass.'
+    $mixedFailed = $false
+    try {
+        & (Join-Path $skillRoot 'scripts\Test-SuggestionLineEndings.ps1') `
+            -Checkout $lineEndingRepository -HeadSha $fixtureHead -Path mixed.cs -AsJson 2>$null | Out-Null
+    }
+    catch {
+        $mixedFailed = $_.Exception.Message -match 'mixed-line-ending'
+    }
+    Assert-True $mixedFailed 'Mixed-line-ending suggestion targets should be rejected before publication.'
+}
+finally {
+    if (Test-Path -LiteralPath $lineEndingRepository) {
+        Remove-Item -LiteralPath $lineEndingRepository -Recurse -Force
     }
 }
 
