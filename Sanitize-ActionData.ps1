@@ -4,6 +4,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $downgradedPrs = [System.Collections.Generic.HashSet[int]]::new()
+$proposedCommentCounts = @{}
 $dashboardRoot = Split-Path -Parent (Resolve-Path $DataPath).Path
 if (Test-Path (Join-Path $dashboardRoot '.git')) {
   & (Join-Path $dashboardRoot '.github\skills\powertoys-dashboard-update\scripts\Assert-CanonicalDashboardTarget.ps1') `
@@ -238,27 +239,41 @@ foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
   if ($artifact.PSObject.Properties.Name -contains 'actions') {
     $artifact.actions = @(Get-PublicActions $artifact)
   }
+  if ($artifact.kind -eq 'pr') {
+    $proposedCommentCounts[[int]$artifact.number] = @(
+      $artifact.proposed_comments |
+        Where-Object { $_.disposition -eq 'proposed' }
+    ).Count
+  }
   $publicArtifact = Convert-PublicValue $artifact
   $json = $publicArtifact | ConvertTo-Json -Depth 30
   [System.IO.File]::WriteAllText($path.FullName, $json, $encoding)
   $count++
 }
 
-if ($downgradedPrs.Count -gt 0) {
+if ($downgradedPrs.Count -gt 0 -or $proposedCommentCounts.Count -gt 0) {
   $indexPath = Join-Path $DataPath 'index.json'
   if (Test-Path $indexPath) {
     $index = Get-Content $indexPath -Raw | ConvertFrom-Json
-    foreach ($row in @($index.items | Where-Object {
-      $_.kind -eq 'pr' -and $downgradedPrs.Contains([int]$_.number)
-    })) {
-      $row.stage = 'review_in_progress'
-      if ($row.PSObject.Properties['needs_revalidation']) {
-        $row.needs_revalidation = $true
-      } else {
-        $row | Add-Member -NotePropertyName needs_revalidation -NotePropertyValue $true
+    foreach ($row in @($index.items | Where-Object { $_.kind -eq 'pr' })) {
+      $number = [int]$row.number
+      if ($proposedCommentCounts.ContainsKey($number)) {
+        if ($row.PSObject.Properties['proposed_open']) {
+          $row.proposed_open = $proposedCommentCounts[$number]
+        } else {
+          $row | Add-Member -NotePropertyName proposed_open -NotePropertyValue $proposedCommentCounts[$number]
+        }
       }
-      if ($row.PSObject.Properties['primary_action']) {
-        $row.primary_action = $null
+      if ($downgradedPrs.Contains($number)) {
+        $row.stage = 'review_in_progress'
+        if ($row.PSObject.Properties['needs_revalidation']) {
+          $row.needs_revalidation = $true
+        } else {
+          $row | Add-Member -NotePropertyName needs_revalidation -NotePropertyValue $true
+        }
+        if ($row.PSObject.Properties['primary_action']) {
+          $row.primary_action = $null
+        }
       }
     }
     $indexJson = $index | ConvertTo-Json -Depth 30

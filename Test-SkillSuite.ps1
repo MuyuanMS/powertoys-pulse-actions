@@ -624,6 +624,7 @@ if (-not (Test-Path $artifactValidator)) {
           kind = 'pr'
           number = 34567
           stage = 'review_ready'
+          proposed_open = 1
           primary_action = @{
             type = 'post_review'
             label = 'Post inline suggestion'
@@ -644,6 +645,7 @@ if (-not (Test-Path $artifactValidator)) {
         }).Count -gt 0 -or
         $sanitizedIndexRow.stage -ne 'review_in_progress' -or
         -not $sanitizedIndexRow.needs_revalidation -or
+        $sanitizedIndexRow.proposed_open -ne 0 -or
         $null -ne $sanitizedIndexRow.primary_action) {
       $errors.Add('Sanitizer did not fail closed for invalid review stage/action data.')
     }
