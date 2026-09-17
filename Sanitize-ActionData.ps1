@@ -13,6 +13,8 @@ $blockedProperties = @(
   'internal_evidence',
   'internalEvidence',
   'worktree',
+  'current_worktree',
+  'suggestion_worktree',
   'local_worktree_branch',
   'worktree_head',
   'worktree_clean',
