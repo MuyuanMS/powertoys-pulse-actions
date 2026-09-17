@@ -3,11 +3,11 @@
   "number": 49793,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T06:23:14Z",
-  "evaluated_at": "2026-09-15T06:23:14Z",
+  "generated_at": "2026-09-17T06:49:08Z",
+  "evaluated_at": "2026-09-17T06:49:08Z",
   "source_updated_at": "2026-09-11T16:28:30Z",
   "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
   "title": "CmdPal: Add command deep links",
@@ -27,14 +27,66 @@
     "label": "Request changes with two current-head fixes",
     "reason": "After explicit maintainer approval, recheck the live upstream head and activity, then publish the prepared REQUEST_CHANGES review through the safe publisher. No upstream write has been made."
   },
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "source": {
     "repository": "microsoft/PowerToys",
     "headRefOid": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
     "updatedAt": "2026-09-11T16:28:30Z"
   },
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "use-stable-command-id-for-links",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Use only stable command IDs in copied links",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current method passes TopLevelViewModel.Id into the protocol route, while TopLevelViewModel.Id falls back to a generated value when the underlying command ID is blank. The activation path resolves through provider command IDs and requires the returned command ID to match exactly, so generated top-level IDs can produce links that cannot be resolved later."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/CommandPaletteContextMenuFactory.cs",
+      "line": 209,
+      "start_line": 198,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Use only stable command IDs in copied links\n\n**Severity:** `high`\n\n`TryAddCommandLink` currently builds `x-cmdpal://commands/...` links from `TopLevelViewModel.Id`, but that property falls back to a generated ID when the wrapped command has no stable provider-assigned ID. Activation later resolves through the provider's command IDs and requires an exact ID match, so these copied links can be accepted, remembered, and then fail to resolve. Use the wrapped command's stable ID for command-link routes and skip the copy action when that ID is missing.\n\n```suggestion\n        var commandId = topLevelItem.ItemViewModel.Command.Id;\n        if (topLevelItem.IsFallback ||\n            topLevelItem.IsDockBand ||\n            string.IsNullOrWhiteSpace(commandId) ||\n            string.IsNullOrWhiteSpace(providerId))\n        {\n            return;\n        }\n\n        Uri uri;\n        try\n        {\n            uri = _protocolActivation.CreateUri(new CmdPalProtocolRoute.ExecuteCommand(providerId, commandId));\n        }\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "replace-filter-placeholder",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Resolve the filter failure-mode placeholder",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current command-link contract still contains a visible '(???)' placeholder in the new filter behavior section. Replacing it with explicit user recovery behavior is a localized documentation fix."
+      },
+      "path": "src/modules/cmdpal/doc/command-links.md",
+      "line": 98,
+      "start_line": 98,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Resolve the filter failure-mode placeholder\n\n**Severity:** `medium`\n\nThe new command-link contract still contains a visible `(???)` placeholder in the filter failure behavior. That leaves an unresolved design note in published documentation for a user-facing deep-link contract. Replace it with the concrete recovery behavior so the contract is ready to ship.\n\n```suggestion\n  unfiltered results; users can reopen the link after updating it with a valid filter.\n```",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49793",
+      "type": "request_changes",
+      "label": "Request changes with two current-head CmdPal command-link fixes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Draft only. Recheck the live upstream head and activity before any publication; no write has been made to microsoft/PowerToys.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49793,
+        "pr": 49793,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11"
+      }
+    }
+  ],
   "safe_actions": [
     "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
     "Post nothing upstream until the pinned head and activity snapshot are revalidated",
@@ -43,7 +95,7 @@
   "workflow": {
     "phase": "converged_draft_ready",
     "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-15T06:23:14Z",
+    "checkpoint_at": "2026-09-17T06:49:08Z",
     "reviewed_upstream_head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
     "resume_action": "maintainer-approval-or-freshness-recheck",
     "fork_pr": 742,
@@ -123,6 +175,34 @@
         "Suggestion ranges were minimized to the smallest independently valid replacements: one method block for the multi-site command ID change and one documentation line for the placeholder."
       ]
     },
+    "line_ending_safety": {
+      "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
+      "result": "passed",
+      "checked_comment_ids": [
+        "use-stable-command-id-for-links",
+        "replace-filter-placeholder"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/CommandPaletteContextMenuFactory.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 629,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/cmdpal/doc/command-links.md",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 213,
+          "cr_only_count": 0
+        }
+      ]
+    },
     "fork_review": {
       "fork_pr": 742,
       "fork_head_sha": "0a41d9d3a9106409458bbc6913f2652974ff6945",
@@ -143,7 +223,7 @@
     "policy_note": "Suppressed body feedback does not count as published inline comments, but the two still-valid current-head issues were converted into draft author-facing suggestions instead of being reported as a clean review."
   },
   "freshness": {
-    "evaluated_at": "2026-09-15T06:23:14Z",
+    "evaluated_at": "2026-09-17T06:49:08Z",
     "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
     "head_updated_at": "2026-09-11T16:28:30Z",
     "status": "fresh-at-draft-time",
