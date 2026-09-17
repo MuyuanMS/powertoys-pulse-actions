@@ -70,6 +70,10 @@ rules. In particular:
   suggestion blocks for files mixing LF, CRLF, or lone CR endings and retain
   the finding as exact inline prose or an implementation-ready general comment
   instead, because GitHub Apply suggestion can otherwise rewrite the full file;
+- when one correction maps to multiple safe current-diff locations, emit
+  separate inline suggestions with one atomic selection group so Pulse shows a
+  shared checkbox and posts every member together; use numbered `(1/N)` titles
+  and reject partial, optional, out-of-diff, or incompletely validated groups;
 - for PR findings that cannot be anchored inline, publish only consolidated,
   implementation-ready general comments that name affected paths/symbols,
   explain the problem and impact, provide ordered change guidance or

@@ -149,6 +149,31 @@ function Get-PublicActions {
         }
       }
     }
+    foreach ($group in @(
+      $proposedComments |
+        Where-Object { $null -ne $_.selection_group } |
+        Group-Object { [string]$_.selection_group.id }
+    )) {
+      $members = @($group.Group)
+      $groupId = [string]$group.Name
+      $expectedTotal = [int]$members[0].selection_group.total
+      $expectedTitle = [string]$members[0].selection_group.title
+      $positions = @($members | ForEach-Object { [int]$_.selection_group.position })
+      if ($groupId -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$' -or
+          [string]::IsNullOrWhiteSpace($expectedTitle) -or
+          $members.Count -lt 2 -or
+          $expectedTotal -ne $members.Count -or
+          (@($positions | Sort-Object -Unique) -join ',') -ne (@(1..$members.Count) -join ',') -or
+          @($members | Where-Object {
+            $_.kind -ne 'inline' -or
+            [string]$_.body -notmatch '(?i)```suggestion' -or
+            $_.selection_group.atomic -ne $true -or
+            [string]$_.selection_group.title -ne $expectedTitle -or
+            [int]$_.selection_group.total -ne $expectedTotal
+          }).Count -gt 0) {
+        $invalidReviewReasons.Add("PR $($Artifact.number) atomic selection group '$groupId' is malformed or incomplete")
+      }
+    }
     $companionKeys = @{}
     foreach ($comment in @($proposedComments | Where-Object { $_.kind -eq 'companion' })) {
       $normalizedTitle = ([string]$comment.title).Trim().ToLowerInvariant()

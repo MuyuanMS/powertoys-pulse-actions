@@ -209,6 +209,13 @@ author-wait signal, the next emit clears `pending_author`, sets
       },
       "path": "src/…/ValidationHelper.cs", "line": 334, "side": "RIGHT",
       "in_diff": true,           // committable inline suggestion vs body-only
+      "selection_group": {       // optional; all members post together
+        "id": "align-validation-contract",
+        "title": "Align validation contract",
+        "position": 1,
+        "total": 3,
+        "atomic": true
+      },
       "body": "markdown (may contain a ```suggestion block)",
       "disposition": "posted"    // proposed | posted | withdrawn
       // "reason": "…"            present when withdrawn
@@ -222,6 +229,11 @@ author-wait signal, the next emit clears `pending_author`, sets
   ]
 }
 ```
+
+An atomic `selection_group` is valid only for two or more apply-ready inline
+suggestions. All members use the same ID, title, total, and `atomic: true`;
+positions uniquely cover `1..total`. Pulse renders one checkbox and rejects
+partial posting.
 
 `validation.upstream_head` means the exact upstream tree was built; a passing
 divergent fork build cannot be substituted. `validation.suggestion_patch`

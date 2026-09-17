@@ -472,6 +472,47 @@ function Test-ReviewDataDocument {
             $errors.Add("$prefix has duplicate item id '$($duplicate.Name)'.")
         }
 
+        foreach ($group in @(
+            $items |
+                Where-Object { $null -ne $_.selectionGroup } |
+                Group-Object { [string]$_.selectionGroup.id }
+        )) {
+            $members = @($group.Group)
+            $groupId = [string]$group.Name
+            $groupPrefix = "$prefix selection group '$groupId'"
+            if ($groupId -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$') {
+                $errors.Add("$groupPrefix id must use 1-80 safe identifier characters.")
+            }
+            $expectedTotal = [int]$members[0].selectionGroup.total
+            $expectedTitle = [string]$members[0].selectionGroup.title
+            if ($members.Count -lt 2 -or $expectedTotal -ne $members.Count) {
+                $errors.Add("$groupPrefix must contain exactly its declared total of at least two items.")
+            }
+            if ([string]::IsNullOrWhiteSpace($expectedTitle)) {
+                $errors.Add("$groupPrefix is missing a shared title.")
+            }
+            $positions = @()
+            foreach ($member in $members) {
+                $selectionGroup = $member.selectionGroup
+                if ($member.kind -ne 'inline' -or
+                    [string]$member.body -notmatch '(?i)```suggestion') {
+                    $errors.Add("$groupPrefix may contain only inline apply-ready suggestions.")
+                }
+                if ($selectionGroup.atomic -ne $true) {
+                    $errors.Add("$groupPrefix must set atomic to true.")
+                }
+                if ([string]$selectionGroup.title -ne $expectedTitle -or
+                    [int]$selectionGroup.total -ne $expectedTotal) {
+                    $errors.Add("$groupPrefix members must use the same title and total.")
+                }
+                $positions += [int]$selectionGroup.position
+            }
+            $expectedPositions = @(1..$members.Count)
+            if ((@($positions | Sort-Object -Unique) -join ',') -ne ($expectedPositions -join ',')) {
+                $errors.Add("$groupPrefix positions must be unique and cover 1 through $($members.Count).")
+            }
+        }
+
         foreach ($item in $items) {
             $label = "$prefix item '$($item.id)'"
             $kind = ([string]$item.kind).ToLowerInvariant()
@@ -763,6 +804,21 @@ function Test-ReviewDecisionDocument {
         foreach ($knownId in $knownIds) {
             if ($knownId -notin @($decision.items.PSObject.Properties.Name)) {
                 $errors.Add("$prefix is missing item '$knownId'.")
+            }
+        }
+
+        foreach ($group in @(
+            $pullRequest.publicPayload.items |
+                Where-Object { $null -ne $_.selectionGroup } |
+                Group-Object { [string]$_.selectionGroup.id }
+        )) {
+            $groupDecisions = @(
+                $group.Group |
+                    ForEach-Object { [string]$decision.items.($_.id) } |
+                    Sort-Object -Unique
+            )
+            if ($groupDecisions.Count -ne 1) {
+                $errors.Add("$prefix must post or hold every member of atomic selection group '$($group.Name)' together.")
             }
         }
 
