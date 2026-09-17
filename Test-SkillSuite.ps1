@@ -524,6 +524,18 @@ if (-not (Test-Path $artifactValidator)) {
           minimal_ranges_reviewed = $true
           applied_comment_ids = @('inline-fix')
         }
+        line_ending_safety = @{
+          head_sha = ('d' * 40)
+          result = 'passed'
+          checked_comment_ids = @('inline-fix')
+          files = @(
+            @{
+              path = 'src/Test.cs'
+              result = 'passed'
+              line_endings = 'lf'
+            }
+          )
+        }
       }
       proposed_comments = @(
         @{
@@ -559,6 +571,31 @@ if (-not (Test-Path $artifactValidator)) {
       if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
         throw
       }
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
+
+    $mixedLineEndings = $validPrArtifactText | ConvertFrom-Json
+    $mixedLineEndings.validation.line_ending_safety.files[0].result = 'failed'
+    $mixedLineEndings.validation.line_ending_safety.files[0].line_endings = 'mixed'
+    $mixedLineEndings | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator accepted a suggestion targeting a mixed-EOL blob.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    & $actionSanitizer -DataPath (Join-Path $artifactRoot 'data') 3>$null | Out-Null
+    $sanitizedMixedEol = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw |
+      ConvertFrom-Json
+    if ($sanitizedMixedEol.stage -ne 'review_in_progress' -or
+        -not $sanitizedMixedEol.needs_revalidation -or
+        @($sanitizedMixedEol.actions | Where-Object {
+          $_.type -in @('post_review', 'request_changes')
+        }).Count -gt 0) {
+      $errors.Add('Sanitizer did not fail closed for a mixed-EOL suggestion target.')
     }
     Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
 

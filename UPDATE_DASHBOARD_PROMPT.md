@@ -65,6 +65,11 @@ rules. In particular:
   designs with the same checkpoint and publish guarantees;
 - preserve and resume existing fork work instead of duplicating it;
 - validate all newly processed artifacts and scan generated JSON for secrets;
+- before emitting any apply-ready PR suggestion, run the PR review skill's
+  raw-blob line-ending check against the exact pinned upstream head; reject
+  suggestion blocks for files mixing LF, CRLF, or lone CR endings and retain
+  the finding as exact inline prose or an implementation-ready general comment
+  instead, because GitHub Apply suggestion can otherwise rewrite the full file;
 - for PR findings that cannot be anchored inline, publish only consolidated,
   implementation-ready general comments that name affected paths/symbols,
   explain the problem and impact, provide ordered change guidance or

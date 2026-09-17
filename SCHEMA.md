@@ -181,6 +181,18 @@ author-wait signal, the next emit clears `pending_author`, sets
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": ["c-m5"]
+    },
+    "line_ending_safety": {
+      "head_sha": "abc123…",
+      "result": "passed",
+      "checked_comment_ids": ["c-m5"],
+      "files": [
+        {
+          "path": "src/…/ValidationHelper.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
     }
   },
   "fork": { "pr": 178, "branch": "pr-iterate/49136-v3" },
@@ -215,6 +227,10 @@ author-wait signal, the next emit clears `pending_author`, sets
 divergent fork build cannot be substituted. `validation.suggestion_patch`
 means the literal public suggestion blocks were applied to that upstream head
 and the resulting candidate tree passed the relevant syntax/build check.
+`validation.line_ending_safety` means the raw pinned Git blobs for every
+suggestion target were scanned before publication. Mixed LF/CRLF/CR blobs are
+unsafe for GitHub's server-side Apply suggestion and must be emitted as prose
+instead of an apply-ready block.
 
 Issue artifacts with `schemaVersion: 5` include a fix-coverage decision and
 display-only proposed fix plans in addition to the issue context:
