@@ -4,25 +4,25 @@
   "number": 50576,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T10:45:00.1827911Z",
-  "evaluated_at": "2026-09-16T10:45:00.1827911Z",
+  "generated_at": "2026-09-17T06:08:35.4258679Z",
+  "evaluated_at": "2026-09-17T06:08:35.4258679Z",
   "source_updated_at": "2026-09-16T07:58:01Z",
   "head_sha": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70",
   "title": "test(workspaces): isolate native test hangs (do not merge)",
   "url": "https://github.com/microsoft/PowerToys/pull/50576",
-  "summary": "The resumed worker consumed the fresh fork Copilot review, resolved supported findings on the fork branch, verified zero unresolved fork threads, and validated the exact suggestion candidate against the live upstream head. Two current-head inline suggestions are drafted for maintainer approval.",
+  "summary": "The current upstream head remains unchanged. The converged fork Copilot review has zero unresolved threads, and two exact-head validated Workspaces launcher shutdown fixes are drafted as inline suggestions for maintainer approval.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
-    "detail": "Two validated Workspaces launcher shutdown suggestions are ready for maintainer approval."
+    "detail": "Fresh fork Copilot findings were consumed and resolved on the fork. Two medium-severity current-head inline suggestions are validated against upstream head 89c1c6de6b3abd93e5e0663c1849e196f7bc7a70; no upstream action has been posted."
   },
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted review comments",
-    "reason": "Two medium-severity shutdown-lifetime fixes are validated against the exact upstream head."
+    "reason": "Two validated current-head shutdown-lifetime suggestions are ready for explicit maintainer approval; revalidate the head before any upstream publication."
   },
   "confidence": "High",
   "needs_revalidation": true,
@@ -31,8 +31,60 @@
     "disposition": "Proceed",
     "processGates": "Member-authored diagnostic-only PR; community process nags skipped."
   },
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "workspaces-ui-shutdown-drain",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Let the launcher UI consume the shutdown frame before disconnecting",
+      "body": "### Let the launcher UI consume the shutdown frame before disconnecting\r\n\r\n**Severity:** `medium`\r\n\r\n`Send` only confirms that the shutdown frame was written to the pipe; it does not prove the UI read and processed it. Calling `Stop()` immediately afterward can disconnect the named pipe before the UI consumes the graceful shutdown, causing it to observe a broken pipe instead of a normal shutdown. This keeps the channel alive for the existing bounded process-exit wait, then only disconnects/terminates if the UI does not exit in time.\r\n\r\n```suggestion\r\n    const bool gracefulShutdownSent = IsReady() && m_channel.Send(Message(L\"shutdown\").Stringify().c_str());\r\n    DWORD gracefulShutdownWait = WAIT_FAILED;\r\n    if (gracefulShutdownSent && m_process)\r\n    {\r\n        gracefulShutdownWait = WaitForSingleObject(m_process.get(), 1500);\r\n    }\r\n\r\n    m_channel.Stop();\r\n    if (m_process && gracefulShutdownWait != WAIT_OBJECT_0 &&\r\n        WaitForSingleObject(m_process.get(), gracefulShutdownSent ? 0 : 1500) == WAIT_TIMEOUT)\r\n```",
+      "path": "src/modules/Workspaces/WorkspacesLauncher/LauncherUIHelper.cpp",
+      "start_line": 33,
+      "line": 38,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 88,
+        "rationale": "The current shutdown path sends a graceful frame and immediately stops/disconnects the pipe; the validated replacement keeps the channel alive while the UI has a bounded chance to consume the shutdown frame and exit."
+      }
+    },
+    {
+      "id": "launcher-process-wait-callback-drain",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Drain the registered wait callback before returning",
+      "body": "### Drain the registered wait callback before returning\r\n\r\n**Severity:** `medium`\r\n\r\n`Unregister(null)` does not wait for an in-flight registered wait callback to finish, so `WaitForExitAsync` can return while the callback still races with disposal of the retained process identity. Using a completion event with `Unregister` drains the callback before the method exits, matching the PR's shutdown-lifetime goal.\r\n\r\n```suggestion\r\n            using var callbackDrained = new ManualResetEvent(false);\r\n            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);\r\n            var registration = ThreadPool.RegisterWaitForSingleObject(\r\n                waitHandle,\r\n                (_, _) => completion.TrySetResult(),\r\n                null,\r\n                Timeout.Infinite,\r\n                executeOnlyOnce: true);\r\n            try\r\n            {\r\n                await completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);\r\n            }\r\n            finally\r\n            {\r\n                registration.Unregister(callbackDrained);\r\n                callbackDrained.WaitOne();\r\n            }\r\n```",
+      "path": "src/modules/Workspaces/WorkspacesLauncherUI/IPC/LauncherProcessIdentity.cs",
+      "start_line": 100,
+      "line": 113,
+      "side": "RIGHT",
+      "in_diff": true,
+      "disposition": "proposed",
+      "confidence": {
+        "score": 90,
+        "rationale": "RegisterWaitForSingleObject callbacks may still be running after Unregister(null); the validated replacement uses the documented completion-event form and waits for callback drain before the retained process identity is disposed."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50576",
+      "type": "post_review",
+      "label": "Post two validated Workspaces shutdown suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Draft only. Revalidate the upstream head and activity snapshot before any publication; no upstream public action has occurred.",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pr": 50576,
+        "pullRequest": 50576,
+        "event": "COMMENT",
+        "head_sha": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70"
+      }
+    }
+  ],
   "fork_pr": {
     "number": 831,
     "repo": "MuyuanMS/PowerToys",
@@ -43,15 +95,14 @@
   "fork_branch": "pr-iterate/50576-v3",
   "fork_head_sha": "00f987ea6b4c79e3c70ab04ea1388c7560fb9e1a",
   "workflow": {
-    "phase": "review_drafted",
-    "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-16T10:45:00.1827911Z",
+    "phase": "awaiting_review_approval",
+    "previous_phase": "review_drafted",
+    "checkpoint_at": "2026-09-17T06:08:35.4258679Z",
     "advancement_evidence": [
-      "Consumed fresh fork Copilot review submitted at 2026-09-16T09:53:56Z with zero published inline comments.",
-      "Ignored two suppressed diagnostic-test-exclusion notes as intentional for the do-not-merge branch.",
-      "Confirmed zero unresolved fork Copilot threads.",
-      "Validated the exact suggestion candidate on live upstream head 89c1c6de6b3abd93e5e0663c1849e196f7bc7a70.",
-      "Built WorkspacesLauncherUI, WorkspacesLauncherUI.UnitTests, and WorkspacesLauncher on the candidate.",
+      "Consumed the fresh fork Copilot review on fork PR 831; it produced no new comments after the supported fixes and GraphQL reports zero unresolved Copilot threads.",
+      "Validated both current-head suggestions against exact upstream head 89c1c6de6b3abd93e5e0663c1849e196f7bc7a70.",
+      "Raw target blobs were checked with Test-SuggestionLineEndings.ps1 and are LF-only with passed lineEndingSafety evidence.",
+      "Focused Workspaces candidate builds passed.",
       "No upstream public action was taken."
     ]
   },
@@ -61,7 +112,7 @@
     "updatedAt": "2026-09-16T07:58:01Z",
     "latestCopilotReviewAt": "2026-09-16T09:53:56Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-16T10:45:00.1827911Z"
+    "checkedAt": "2026-09-17T06:08:35.4258679Z"
   },
   "validation": {
     "suggestion_patch": {
@@ -80,13 +131,63 @@
         "Build WorkspacesLauncherUI.UnitTests",
         "Build WorkspacesLauncher"
       ],
-      "details": "The exact suggestion candidate passed diff check and focused builds."
+      "details": "Exact two suggestion blocks were applied to a clean candidate based on the pinned upstream head and focused Workspaces builds passed.",
+      "lineEndingSafety": {
+        "head_sha": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70",
+        "result": "passed",
+        "files": [
+          {
+            "path": "src/modules/Workspaces/WorkspacesLauncher/LauncherUIHelper.cpp",
+            "line_endings": "lf",
+            "utf8_bom": false,
+            "crlf_count": 0,
+            "lf_only_count": 165,
+            "cr_only_count": 0
+          },
+          {
+            "path": "src/modules/Workspaces/WorkspacesLauncherUI/IPC/LauncherProcessIdentity.cs",
+            "line_endings": "lf",
+            "utf8_bom": false,
+            "crlf_count": 0,
+            "lf_only_count": 265,
+            "cr_only_count": 0
+          }
+        ]
+      }
     },
     "fork_review": {
       "result": "passed",
       "latestCopilotReviewAt": "2026-09-16T09:53:56Z",
       "unresolvedCopilotThreads": 0,
       "details": "Fresh fork Copilot review had zero published inline comments after fork fixes."
+    },
+    "line_ending_safety": {
+      "head_sha": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70",
+      "result": "passed",
+      "checked_comment_ids": [
+        "workspaces-ui-shutdown-drain",
+        "launcher-process-wait-callback-drain"
+      ],
+      "files": [
+        {
+          "path": "src/modules/Workspaces/WorkspacesLauncher/LauncherUIHelper.cpp",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 165,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/Workspaces/WorkspacesLauncherUI/IPC/LauncherProcessIdentity.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 265,
+          "cr_only_count": 0
+        }
+      ]
     }
   },
   "upstream_safety": {
