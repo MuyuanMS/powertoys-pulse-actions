@@ -3,7 +3,7 @@
   "number": 50183,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-14T16:53:16.2514283Z",
@@ -26,60 +26,8 @@
     "label": "Request changes with two current-head fixes",
     "reason": "After explicit maintainer approval, recheck the live upstream head and activity, then publish the prepared REQUEST_CHANGES review. No upstream write has been made."
   },
-  "proposed_comments": [
-    {
-      "id": "record-etw-only-icon-requests",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Record icon requests for ETW-only diagnostics",
-      "confidence": {
-        "score": 97,
-        "rationale": "The current branch starts request measurements only when a text-report session is recording, while the event source can be enabled independently. The fork fix is one localized condition change and the literal candidate built successfully."
-      },
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs",
-      "line": 440,
-      "start_line": 440,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Record icon requests for ETW-only diagnostics\n\n**Severity:** `medium`\n\nWhen an ETW listener enables `IconLoadEventSource` without starting a text-report session, this guard skips `BeginRequest`, so request, origin, provider-resolution, and demand-attribution events are missing even though the event source is active. Include the event-source state in the admission check so ETW-only sessions observe the same request lifecycle as report sessions.\n\n```suggestion\n            diagnostics = IconLoadDiagnostics.IsRecording || IconLoadEventSource.Log.IsEnabled()\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "reject-stale-icon-source-handler",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Reject completions from a stale icon source handler",
-      "confidence": {
-        "score": 98,
-        "rationale": "The asynchronous completion currently validates the request version and source key but not the delegate instance that produced the result. The fork fix adds that identity check, and the literal combined candidate built successfully on the exact upstream head."
-      },
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs",
-      "line": 457,
-      "start_line": 456,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Reject completions from a stale icon source handler\n\n**Severity:** `high`\n\nA completion can return after the control has been rebound to a different source-request handler while the request version and source key still appear current. Applying that result can publish an icon produced by the old handler; include the handler identity in the stale-completion check so rebinding cannot commit an obsolete value.\n\n```suggestion\n            if (requestVersion != iconBox._requestVersion ||\n                !ReferenceEquals(sourceKey, iconBox.SourceKey) ||\n                !ReferenceEquals(sourceRequested, iconBox._sourceRequested))\n```",
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50183",
-      "type": "request_changes",
-      "label": "Request changes with two current-head fixes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "This is a drafted maintainer action only. Recheck the live upstream head, checks, comments, reviews, and merge state immediately before publication; no write has been made to microsoft/PowerToys.",
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50183,
-        "pr": 50183,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41"
-      }
-    }
-  ],
+  "proposed_comments": [],
+  "actions": [],
   "safe_actions": [
     "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
     "Post nothing upstream until the pinned head and activity snapshot are revalidated",
@@ -185,5 +133,6 @@
       "No review, comment, commit, label, or other write was made to microsoft/PowerToys."
     ],
     "recommended_action": "After explicit maintainer approval and a final freshness check, publish the drafted REQUEST_CHANGES review."
-  }
+  },
+  "needs_revalidation": true
 }

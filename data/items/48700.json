@@ -4,7 +4,7 @@
   "number": 48700,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-15T18:35:00Z",
@@ -25,74 +25,9 @@
     "reason": "All findings are pinned to the current upstream head; no upstream write has occurred."
   },
   "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "restore-cif-entry-order",
-      "kind": "inline",
-      "severity": "low",
-      "title": "Keep the spelling exceptions sorted around CIELCh",
-      "path": ".github/actions/spell-check/expect.txt",
-      "start_line": 209,
-      "line": 211,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Keep the spelling exceptions sorted around CIELCh\n\n**Severity:** `low`\n\nThe repository documents `.github/actions/spell-check/expect.txt` as sorted. The new `cifhbcnohmdccbgoicgdjpfamggdegmo` entry currently precedes `CIELCh`, which breaks that ordering and makes subsequent dictionary updates harder to review. Keep the unchanged `cidl` entry in place while moving `CIELCh` before the new `cif...` entry.\n\n```suggestion\ncidl\nCIELCh\ncifhbcnohmdccbgoicgdjpfamggdegmo\n```",
-      "confidence": {
-        "score": 99,
-        "rationale": "The current PR introduces the entry out of order and the literal correction passed exact-head validation."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "restore-fmg-entry-order",
-      "kind": "inline",
-      "severity": "low",
-      "title": "Keep the fmg spelling exception after fmtid",
-      "path": ".github/actions/spell-check/expect.txt",
-      "start_line": 555,
-      "line": 555,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Keep the fmg spelling exception after fmtid\n\n**Severity:** `low`\n\nThe new `fmgjjmmmlfnkbppncijlocphclkkleod` entry is inserted before the `FILE...` entries, but the sorted dictionary places it after `fmtid` and before `FOF`. Move this entry to that position so the spelling file remains sorted; this is the same ordering rule used by the surrounding entries and avoids recurring spelling-check cleanup.",
-      "confidence": {
-        "score": 99,
-        "rationale": "The required destination follows directly from the sorted dictionary and passed exact-head ordering assertions."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "cover-startup-ipc-status-dispatch",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Cover normal startup IPC status dispatch",
-      "in_diff": false,
-      "out_of_diff_reason": "The safe correction spans the callback seam and new unit-test methods rather than one current RIGHT-side replacement.",
-      "body": "### Cover normal startup IPC status dispatch\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/Workspaces/WorkspacesLauncherUI.WinUI/Views/App.xaml.cs`, the IPC callback created in `App.OnLaunched`, and `src/modules/Workspaces/WorkspacesLauncherUI.UnitTests/UserWorkflowIntegrationTests.cs`.\n\n**Problem:** The tests exercise cancellation acknowledgment and the ViewModel pipeline, but do not directly invoke the normal callback branch that enqueues a non-empty status message and stops the startup `ready` retry timer. An empty message must remain a no-op.\n\n**Why it matters:** A regression can leave the timer retrying after the first status update or silently drop that update while existing tests still pass. This callback is the synchronization boundary between the native launcher and WinUI window.\n\n**Suggested change:**\n1. Extract the callback decision into a small testable helper that accepts the incoming string, an enqueue delegate, and a timer-stop delegate.\n2. Preserve the behavior: `cancel_ack` dispatches only cancellation acknowledgment; a non-empty ordinary message enqueues timer-stop followed by `IPCMessageReceivedCallback(message)`; an empty message enqueues nothing.\n3. Add scenario tests for a non-empty status message, an empty message, and `cancel_ack`, asserting enqueue count, callback payload, and whether the ready timer stopped.\n4. Keep callback state isolated between tests.\n\n**Verification:** Build `src/modules/Workspaces/WorkspacesLauncherUI.UnitTests/WorkspacesLauncherUI.UnitTests.csproj` and run the Scenario category with `vstest.console.exe`. The normal status test must observe the payload and one timer stop; the empty-message test must observe neither.",
-      "confidence": {
-        "score": 94,
-        "rationale": "The current callback branch is uncovered and the converged fork proves deterministic coverage for its message and timer behavior."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-48700",
-      "type": "request_changes",
-      "label": "Request changes with three current-head Workspaces findings",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 48700,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7"
-      },
-      "note": "Draft only. Two inline findings and one implementation-ready general comment require explicit maintainer approval."
-    }
-  ],
+  "needs_revalidation": true,
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
     "phase": "review_drafted",
     "previous_phase": "waiting_copilot",

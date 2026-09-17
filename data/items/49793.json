@@ -3,7 +3,7 @@
   "number": 49793,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-15T06:23:14Z",
@@ -27,67 +27,14 @@
     "label": "Request changes with two current-head fixes",
     "reason": "After explicit maintainer approval, recheck the live upstream head and activity, then publish the prepared REQUEST_CHANGES review through the safe publisher. No upstream write has been made."
   },
-  "needs_revalidation": false,
+  "needs_revalidation": true,
   "source": {
     "repository": "microsoft/PowerToys",
     "headRefOid": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
     "updatedAt": "2026-09-11T16:28:30Z"
   },
-  "proposed_comments": [
-    {
-      "id": "use-stable-command-id-for-links",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Use only stable command IDs in copied links",
-      "confidence": {
-        "score": 96,
-        "rationale": "The current method passes TopLevelViewModel.Id into the protocol route, while TopLevelViewModel.Id falls back to a generated value when the underlying command ID is blank. The activation path resolves through provider command IDs and requires the returned command ID to match exactly, so generated top-level IDs can produce links that cannot be resolved later. The literal suggestion built successfully on the pinned upstream head."
-      },
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/CommandPaletteContextMenuFactory.cs",
-      "line": 209,
-      "start_line": 198,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Use only stable command IDs in copied links\n\n**Severity:** `high`\n\n`TryAddCommandLink` currently builds `x-cmdpal://commands/...` links from `TopLevelViewModel.Id`, but that property falls back to a generated ID when the wrapped command has no stable provider-assigned ID. Activation later resolves through the provider's command IDs and requires an exact ID match, so these copied links can be accepted, remembered, and then fail to resolve. Use the wrapped command's stable ID for command-link routes and skip the copy action when that ID is missing.\n\n```suggestion\n        var commandId = topLevelItem.ItemViewModel.Command.Id;\n        if (topLevelItem.IsFallback ||\n            topLevelItem.IsDockBand ||\n            string.IsNullOrWhiteSpace(commandId) ||\n            string.IsNullOrWhiteSpace(providerId))\n        {\n            return;\n        }\n\n        Uri uri;\n        try\n        {\n            uri = _protocolActivation.CreateUri(new CmdPalProtocolRoute.ExecuteCommand(providerId, commandId));\n        }\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "replace-filter-placeholder",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Resolve the filter failure-mode placeholder",
-      "confidence": {
-        "score": 94,
-        "rationale": "The current command-link contract still contains a visible '(???)' placeholder in the new filter behavior section. Replacing the placeholder with the explicit user recovery behavior is a localized documentation fix, and the literal suggestion built with the command-link code candidate."
-      },
-      "path": "src/modules/cmdpal/doc/command-links.md",
-      "line": 98,
-      "start_line": 98,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Resolve the filter failure-mode placeholder\n\n**Severity:** `medium`\n\nThe new command-link contract still contains a visible `(???)` placeholder in the filter failure behavior. That leaves an unresolved design note in published documentation for a user-facing deep-link contract. Replace it with the concrete recovery behavior so the contract is ready to ship.\n\n```suggestion\n  unfiltered results; users can reopen the link after updating it with a valid filter.\n```",
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-49793",
-      "type": "request_changes",
-      "label": "Request changes with two current-head CmdPal command-link fixes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "This is a drafted maintainer action only. Recheck the live upstream head, checks, comments, reviews, and merge state immediately before publication; no write has been made to microsoft/PowerToys.",
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 49793,
-        "pr": 49793,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-        "body": "Thanks for the command deep-link work. Before merge, please address the two current-head findings in this review: copied command links should only be generated from stable provider-assigned command IDs, and the command-link documentation should replace the remaining filter failure-mode placeholder with concrete behavior."
-      }
-    }
-  ],
+  "proposed_comments": [],
+  "actions": [],
   "safe_actions": [
     "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
     "Post nothing upstream until the pinned head and activity snapshot are revalidated",

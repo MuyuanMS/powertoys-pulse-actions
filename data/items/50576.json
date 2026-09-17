@@ -4,7 +4,7 @@
   "number": 50576,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-16T10:45:00.1827911Z",
@@ -25,65 +25,14 @@
     "reason": "Two medium-severity shutdown-lifetime fixes are validated against the exact upstream head."
   },
   "confidence": "High",
-  "needs_revalidation": false,
+  "needs_revalidation": true,
   "phase0": {
     "authorAssociation": "MEMBER",
     "disposition": "Proceed",
     "processGates": "Member-authored diagnostic-only PR; community process nags skipped."
   },
-  "proposed_comments": [
-    {
-      "id": "workspaces-ui-shutdown-drain",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Let the launcher UI consume the shutdown frame before disconnecting",
-      "path": "src/modules/Workspaces/WorkspacesLauncher/LauncherUIHelper.cpp",
-      "start_line": 33,
-      "line": 38,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 88,
-        "rationale": "The current shutdown path sends a graceful frame and immediately stops/disconnects the pipe; the validated replacement keeps the channel alive while the UI has a bounded chance to consume the shutdown frame and exit."
-      },
-      "body": "### Let the launcher UI consume the shutdown frame before disconnecting\r\n\r\n**Severity:** `medium`\r\n\r\n`Send` only confirms that the shutdown frame was written to the pipe; it does not prove the UI read and processed it. Calling `Stop()` immediately afterward can disconnect the named pipe before the UI consumes the graceful shutdown, causing it to observe a broken pipe instead of a normal shutdown. This keeps the channel alive for the existing bounded process-exit wait, then only disconnects/terminates if the UI does not exit in time.\r\n\r\n```suggestion\r\n    const bool gracefulShutdownSent = IsReady() && m_channel.Send(Message(L\"shutdown\").Stringify().c_str());\r\n    DWORD gracefulShutdownWait = WAIT_FAILED;\r\n    if (gracefulShutdownSent && m_process)\r\n    {\r\n        gracefulShutdownWait = WaitForSingleObject(m_process.get(), 1500);\r\n    }\r\n\r\n    m_channel.Stop();\r\n    if (m_process && gracefulShutdownWait != WAIT_OBJECT_0 &&\r\n        WaitForSingleObject(m_process.get(), gracefulShutdownSent ? 0 : 1500) == WAIT_TIMEOUT)\r\n```"
-    },
-    {
-      "id": "launcher-process-wait-callback-drain",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Drain the registered wait callback before returning",
-      "path": "src/modules/Workspaces/WorkspacesLauncherUI/IPC/LauncherProcessIdentity.cs",
-      "start_line": 100,
-      "line": 113,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 90,
-        "rationale": "RegisterWaitForSingleObject callbacks may still be running after Unregister(null); the validated replacement uses the documented completion-event form and waits for callback drain before the retained process identity is disposed."
-      },
-      "body": "### Drain the registered wait callback before returning\r\n\r\n**Severity:** `medium`\r\n\r\n`Unregister(null)` does not wait for an in-flight registered wait callback to finish, so `WaitForExitAsync` can return while the callback still races with disposal of the retained process identity. Using a completion event with `Unregister` drains the callback before the method exits, matching the PR's shutdown-lifetime goal.\r\n\r\n```suggestion\r\n            using var callbackDrained = new ManualResetEvent(false);\r\n            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);\r\n            var registration = ThreadPool.RegisterWaitForSingleObject(\r\n                waitHandle,\r\n                (_, _) => completion.TrySetResult(),\r\n                null,\r\n                Timeout.Infinite,\r\n                executeOnlyOnce: true);\r\n            try\r\n            {\r\n                await completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);\r\n            }\r\n            finally\r\n            {\r\n                registration.Unregister(callbackDrained);\r\n                callbackDrained.WaitOne();\r\n            }\r\n```"
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-50576",
-      "type": "post_review",
-      "label": "Post two validated Workspaces shutdown suggestions",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50576,
-        "event": "COMMENT",
-        "head_sha": "89c1c6de6b3abd93e5e0663c1849e196f7bc7a70"
-      },
-      "note": "Draft only. Explicit maintainer approval and final freshness/check-state revalidation are required before posting."
-    }
-  ],
+  "proposed_comments": [],
+  "actions": [],
   "fork_pr": {
     "number": 831,
     "repo": "MuyuanMS/PowerToys",

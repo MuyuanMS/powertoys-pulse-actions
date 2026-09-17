@@ -2,7 +2,7 @@
   "number": 49647,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-15T18:42:00Z",
@@ -23,85 +23,9 @@
     "reason": "No upstream write has occurred."
   },
   "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "reset-removed-single-line-hotkey",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Clear the single-line hotkey when the setting is absent",
-      "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
-      "start_line": 422,
-      "line": 426,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Clear the single-line hotkey when the setting is absent\n\n**Severity:** `high`\n\nWhen an older settings object lacks the new property, this branch skips assignment and leaves `m_paste_as_single_line_hotkey` unchanged. A removed shortcut can remain registered after reload.\n\n```suggestion\n                        m_paste_as_single_line_hotkey = parse_single_hotkey(JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY, settingsObject);\n                    }\n                    else\n                    {\n                        m_paste_as_single_line_hotkey = {};\n                    }\n```\n\n**Verification:** Load a configured shortcut, then reload legacy settings without the property and confirm the old chord is cleared.",
-      "confidence": {
-        "score": 96,
-        "rationale": "The member persists across reloads and the absent-key branch performs no reset; the literal correction builds."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "reserve-telemetry-hotkey-storage",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Prevent telemetry hotkey pointers from being invalidated",
-      "in_diff": false,
-      "out_of_diff_reason": "The reserve call belongs before the unchanged vector declaration; the current diff only adds a later telemetry argument.",
-      "body": "### Prevent telemetry hotkey pointers from being invalidated\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/trace.cpp`, `AdvancedPaste_SettingsTelemetry` and its `hotkeyStrs` storage.\n\n**Problem:** The helper returns pointers into a `std::vector<std::wstring>` while later calls keep appending. Reallocation can invalidate pointers already captured for TraceLogging arguments.\n\n**Why it matters:** Telemetry can read invalid storage or report corrupted hotkey values.\n\n**Suggested change:**\n1. Keep the vector in the current helper scope.\n2. Reserve `5 + additionalActionsHotkeys.size()` before any helper returns `c_str()` pointers.\n3. Preserve the existing event field order.\n\n**Verification:** Emit telemetry with all built-in and additional shortcuts populated and confirm every field is stable; build AdvancedPasteModuleInterface.",
-      "confidence": {
-        "score": 94,
-        "rationale": "The helper appends before returning c_str pointers and the new field increases reallocation pressure."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "preserve-interop-abi-order",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Append the new interop constant without shifting ABI ordinals",
-      "in_diff": false,
-      "out_of_diff_reason": "The safe fix moves the declaration and definition across three interop files, so no single RIGHT-side suggestion can represent it.",
-      "body": "### Append the new interop constant without shifting ABI ordinals\n\n**Severity:** `high`\n\n**Affected code:** `src/common/interop/Constants.idl`, `Constants.h`, and `Constants.cpp`, for `AdvancedPasteSingleLineMessage`.\n\n**Problem:** Inserting the new static method near the beginning shifts every later generated interface ordinal.\n\n**Why it matters:** Existing WinRT projections and cross-process callers can bind old numeric slots to the wrong constants.\n\n**Suggested change:**\n1. Remove the method from its early position in all three files.\n2. Append it after the final existing constant consistently.\n3. Regenerate projections and rebuild affected consumers.\n\n**Verification:** Compare generated interface ordering before and after; confirm every existing ordinal is stable and build AdvancedPasteModuleInterface plus Settings consumers.",
-      "confidence": {
-        "score": 93,
-        "rationale": "The current IDL insertion shifts generated ordering; the fork moves it consistently to the end."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "restore-single-line-ui-coverage",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Restore end-to-end coverage for the single-line action",
-      "in_diff": false,
-      "out_of_diff_reason": "The current head lacks the new source fixture and all three single-line UI scenarios, requiring coordinated multi-file additions.",
-      "body": "### Restore end-to-end coverage for the single-line action\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/AdvancedPaste/UITest-AdvancedPaste/AdvancedPasteUITest.cs`, its `TestFiles` fixtures, and `UITestAdvancedPaste.md`.\n\n**Problem:** The visible button, Ctrl+2 popup shortcut, and configured direct shortcut are not exercised end to end, and the multiline source fixture is absent.\n\n**Why it matters:** UI automation wiring, shortcut routing, and clipboard flattening can regress without a test failure.\n\n**Suggested change:**\n1. Add a multiline source fixture with an embedded tab and an expected one-line result without a trailing newline.\n2. Add separate tests for button, popup shortcut, and direct shortcut paths.\n3. Give each assertion a path-specific failure message.\n4. Document all three scenarios.\n\n**Verification:** Build the Advanced Paste UI-test project and run the three focused Windows UI tests, confirming the tab is preserved and line breaks are removed.",
-      "confidence": {
-        "score": 91,
-        "rationale": "The current head wires all three paths but lacks their fixtures and end-to-end scenarios."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-49647",
-      "type": "request_changes",
-      "label": "Request changes with four current-head Advanced Paste findings",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 49647,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "589a669bad9231c17908568bbd8ae73c628e75a8"
-      },
-      "note": "Draft only. One inline suggestion and three implementation-ready general comments require explicit approval."
-    }
-  ],
+  "needs_revalidation": true,
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
     "phase": "review_drafted",
     "previous_phase": "waiting_copilot",

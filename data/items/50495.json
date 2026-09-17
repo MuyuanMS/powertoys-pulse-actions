@@ -3,7 +3,7 @@
   "number": 50495,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-16T03:30:00Z",
@@ -24,83 +24,14 @@
     "reason": "Three exact-diff suggestions and the failing live x64 build must be resolved before merge."
   },
   "confidence": "High",
-  "needs_revalidation": false,
+  "needs_revalidation": true,
   "phase0": {
     "authorAssociation": "MEMBER",
     "disposition": "Request changes",
     "processGates": "Community process nags skipped for the member author. Genuine blocker: PowerToys CI and the x64 Release build are failing on the live head; CLA, intake, dependency review, telemetry detection, UI-test resolution, and arm64 Release passed."
   },
-  "proposed_comments": [
-    {
-      "id": "flush-page-indicator-before-composite",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Flush GDI+ output before page-indicator compositing",
-      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
-      "start_line": 1597,
-      "line": 1597,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Flush GDI+ output before page-indicator compositing\n\n**Severity:** `high`\n\nThe transparent page-indicator path reads and blends the DIB pixels directly, but the preceding GDI+ drawing is still buffered when `DrawHeaderText` starts. That can blend the text against stale pixels, and the later flush can overwrite the indicator. Flush the graphics before this direct pixel access, as the other direct-buffer paths already do.\n\n```suggestion\n            g.Flush();\n            DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, pageRc, pageText,\n```",
-      "confidence": {
-        "score": 97,
-        "rationale": "The live diff calls DrawHeaderText on the DIB before the only later GDI+ flush; the exact candidate with this pre-read flush builds."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "handle-downsample-draw-failure",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Treat downsample failures as capture failures",
-      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
-      "start_line": 1027,
-      "line": 1028,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Treat downsample failures as capture failures\n\n**Severity:** `medium`\n\n`CaptureWindowSnapshotForPreview` currently checks only the destination bitmap status after calling `Graphics::DrawImage`. If the draw operation itself fails while the bitmap remains allocated, the slot is treated as a valid snapshot and the DWM fallback is skipped, leaving a blank preview. Check the `DrawImage` status and return `nullptr` so `RegisterThumbnails` can use its existing live-thumbnail fallback.\n\n```suggestion\n        if (tg.DrawImage(full.get(),\n                         Gdiplus::RectF(0.0f, 0.0f, static_cast<Gdiplus::REAL>(dw), static_cast<Gdiplus::REAL>(dh)),\n                         srcLeft,\n                         srcTop,\n                         srcW,\n                         srcH,\n                         Gdiplus::UnitPixel) != Gdiplus::Ok)\n        {\n            return nullptr;\n        }\n```",
-      "confidence": {
-        "score": 82,
-        "rationale": "The live diff ignores DrawImage status; returning null on failure reuses the existing DWM fallback, and the exact candidate builds."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "name-inset-header-test",
-      "kind": "inline",
-      "severity": "low",
-      "title": "Name the inset header geometry accurately",
-      "path": "src/modules/AltWindowCycle/UnitTests/AltWindowCycleLogicTests.cpp",
-      "start_line": 116,
-      "line": 116,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Name the inset header geometry accurately\n\n**Severity:** `low`\n\nThe test name says both rectangles are flush edge-to-edge, but the header assertion is intentionally inset (`44..320`) inside the tile (`32..332`) while only the preview is flush. Rename the test so a failure communicates the actual layout contract.\n\n```suggestion\n        TEST_METHOD(TilePreviewIsFlushAndHeaderIsInsetWithinTile)\n```",
-      "confidence": {
-        "score": 99,
-        "rationale": "The current test name contradicts its own inset-header assertions; the exact rename candidate builds."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50495",
-      "type": "request_changes",
-      "label": "Request three focused AltWindowCycle corrections",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50495,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "f8582446c98cfb82f385e5364ef1057e4a8eec9d",
-        "body": "The PR is close, but please address the three implementation details below before merging. The live x64 build check is also failing, so please rerun or repair that build after applying the fixes."
-      },
-      "note": "Draft only. Explicit maintainer approval and a final live freshness check are required before posting."
-    }
-  ],
+  "proposed_comments": [],
+  "actions": [],
   "fork_pr": {
     "number": 798,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/798",

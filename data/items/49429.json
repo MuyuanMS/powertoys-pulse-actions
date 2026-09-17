@@ -9,7 +9,7 @@
   "author": "michaeljolley",
   "state": "OPEN",
   "draft": false,
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "confidence": "High",
@@ -29,7 +29,7 @@
     "label": "Approve, edit, or hold the drafted COMMENT review",
     "reason": "The current-head draft contains one validated inline suggestion and two separate general PR conversation comments."
   },
-  "needs_revalidation": false,
+  "needs_revalidation": true,
   "process_review": {
     "verdict": "proceed",
     "owes": "maintainer",
@@ -50,54 +50,7 @@
     "unresolvedForkCopilotThreads": 0,
     "stale_expectation": "This draft becomes stale if the upstream head, review threads, or conversation activity changes before publication. Revalidate the pinned head and activity snapshot immediately before any approved upstream review is submitted."
   },
-  "proposed_comments": [
-    {
-      "id": "enable-horizontal-tab-strip-scrolling",
-      "kind": "inline",
-      "title": "Keep overflow tabs reachable",
-      "severity": "medium",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/TabbedPage.xaml",
-      "line": 86,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Keep overflow tabs reachable\n\n**Severity:** `medium`\n\nThe tab items use a horizontal panel, but the `ListView` keeps its default vertical-only scrolling behavior. When the tab titles exceed the available width, later tabs are clipped and cannot be reached; enable horizontal scrolling and disable the unused vertical axis.\n\n```suggestion\n            SelectionMode=\"Single\"\n            ScrollViewer.HorizontalScrollBarVisibility=\"Auto\"\n            ScrollViewer.HorizontalScrollMode=\"Enabled\"\n            ScrollViewer.VerticalScrollBarVisibility=\"Disabled\"\n            ScrollViewer.VerticalScrollMode=\"Disabled\"\n```",
-      "disposition": "proposed",
-      "confidence": {
-        "score": 96,
-        "rationale": "The tab panel is explicitly horizontal and the current ListView has no horizontal scrolling settings; the literal suggestion built successfully on the pinned upstream head."
-      }
-    },
-    {
-      "id": "tab-identity-cache-stability",
-      "kind": "companion",
-      "title": "Give every tab a stable unique identity and refresh its cached child correctly",
-      "severity": "high",
-      "body": "### Give every tab a stable unique identity and refresh its cached child correctly\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TabViewModel.cs`, `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TabbedPageViewModel.cs`, the public `ITab`/page contract under `src/modules/cmdpal/Microsoft.CmdPal.Ext.sdk/`, and the host sample or SDK docs that normalize tab IDs.\n\n**Problem:** The current tab selection and child cache falls back to mutable values such as the page ID, title, or array index. Duplicate or reordered tabs can therefore inherit another tab's selection and reuse a stale cached child view model after a page refresh or collection mutation.\n\n**Why it matters:** Reordering, duplicate pages, or a dynamic refresh can cause the wrong child view to render and keep querying stale extension data, so the visible page and the cached model drift apart.\n\n**Suggested change:**\n1. Add a stable `ITab.Id` contract and require IDs to be unique within a tabbed page. Replace the mutable fallback identity in the host and cache lookup path with the explicit ID.\n2. Use the same ID consistently for selection, child lookup, and disposal, and invalidate the cached child when a tab's page or identity changes after a refresh or republish.\n3. Update the toolkit, public sample, SDK documentation, and host normalization together so duplicate or missing IDs are rejected or normalized before the page is mounted.\n\n**Verification:** Add regression coverage for duplicate IDs, missing IDs, reordered tabs, and a refreshed tab with the same ID but a new page instance. Run the CmdPal view-model tests and confirm selection and cached child behavior stays isolated to the correct tab.",
-      "out_of_diff_reason": "The fix spans the public tab identity contract, the page/view-model cache semantics, and host duplication normalization; no single current RIGHT-side range is safe to patch in isolation.",
-      "outOfDiffReason": "The fix spans the public tab identity contract, the page/view-model cache semantics, and host duplication normalization; no single current RIGHT-side range is safe to patch in isolation.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 97,
-        "rationale": "The current fallback identity is derived from mutable/non-unique values, and the corrected tree adds explicit IDs plus regression coverage for duplicate and refreshed-page scenarios."
-      }
-    },
-    {
-      "id": "active-tab-context-and-lifecycle",
-      "kind": "companion",
-      "title": "Keep global UI context and async child lifetimes scoped to the active tab",
-      "severity": "high",
-      "body": "### Keep global UI context and async child lifetimes scoped to the active tab\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/TabbedPageViewModel.cs`, the child page/view-model types under `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/`, and the tabbed-page inner frame logic in `src/modules/cmdpal/Microsoft.CmdPal.UI/ExtViews/TabbedPage.xaml` and related code-behind.\n\n**Problem:** Hidden or refreshed tabs can still publish command-bar, details, suggestion, and focus updates, and their async initialization or disposal callbacks can complete after the tab has been closed. The result is stale shell context, incorrect search text restoration, and late updates attaching to a disposed page.\n\n**Why it matters:** Users can see the wrong tab's command bar or focus state, a hidden tab can overwrite the active tab's contextual data, and the page lifecycle can race with completion callbacks during navigation or teardown.\n\n**Suggested change:**\n1. Gate all global command-bar, details, suggestion, and focus messages so only the active child publishes shell context, then explicitly refresh the newly active child after activation.\n2. Preserve each cached child's search text and other transient state across activation changes instead of copying stale container values into a background tab.\n3. Await each child's async initialization before treating it as complete, serialize cleanup against in-flight initialization, and guard every callback after disposal so the tab cannot refresh or attach handlers to a dead page.\n4. When a tab is unsupported or deactivated, detach the previous inner page cleanly, clear the frame back stack, and use the existing deferred navigation cleanup path rather than synchronous collection or stale frame retention.\n\n**Verification:** Add targeted regressions for hidden-tab context updates, activation restoration, queued async init after disposal, and nested unsupported-tab transitions. Run the CmdPal view-model and UI tests and verify the visible tab remains the source of global context and focus while inactive tabs stay quiescent.",
-      "out_of_diff_reason": "The fix spans active-child publication, async initialization cleanup, and inner-frame deactivation; the behavior is scattered across multiple child and host view-models and cannot be safely patched as one local RIGHT-side edit.",
-      "outOfDiffReason": "The fix spans active-child publication, async initialization cleanup, and inner-frame deactivation; the behavior is scattered across multiple child and host view-models and cannot be safely patched as one local RIGHT-side edit.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 96,
-        "rationale": "Several child paths send global messenger updates unconditionally, and the durable review evidence shows late initialization/disposal callbacks and stale hidden-tab context were the core regressions behind the corrected tree."
-      }
-    }
-  ],
+  "proposed_comments": [],
   "validation": {
     "upstream_head": {
       "head_sha": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
@@ -166,23 +119,5 @@
       "The review is drafted as a non-blocking COMMENT action; no upstream write has occurred."
     ]
   },
-  "actions": [
-    {
-      "id": "post-review-49429",
-      "type": "post_review",
-      "label": "Post one inline suggestion and two general review notes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Mixed non-blocking review: one validated inline suggestion plus two general review notes posted as separate PR conversation comments. Nothing has been posted.",
-      "review": {
-        "event": "COMMENT",
-        "repository": "microsoft/PowerToys",
-        "pr": 49429,
-        "pullRequest": 49429,
-        "head_sha": "a8e7c1bd5660e7859bd5a0b7d174e8fd3064ffdf",
-        "body_prefix": "Thanks for the tabbed-page implementation and feature demo. I found one localized UI fix and two broader correctness issues; the broader findings are provided as separate general PR conversation comments."
-      }
-    }
-  ]
+  "actions": []
 }

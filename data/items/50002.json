@@ -2,7 +2,7 @@
   "number": 50002,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-15T15:58:00Z",
@@ -23,94 +23,9 @@
     "reason": "Four security and standards-compliance findings are pinned to the unchanged upstream head. No upstream write has occurred."
   },
   "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "oauth-reserved-keys",
-      "kind": "inline",
-      "title": "Reject reserved OAuth parameters in provider URLs and parameter maps",
-      "severity": "high",
-      "body": "### Reject reserved OAuth parameters in provider URLs and parameter maps\n\n**Severity:** `high`\n\nThe current contract leaves room for a provider to pass reserved OAuth keys through the host broker. That can let a redirect or token request override `redirect_uri`, `state`, `response_type`, `response_mode`, or `code_challenge_method`, breaking the browser flow's security assumptions.\n\n```suggestion\n    // The host rejects any raw query parameters named redirect_uri, state,\n    // response_type, response_mode, or code_challenge_method in the provider URL,\n    // and rejects the same reserved names in Parameters before the browser opens.\n    // The host injects redirect_uri/state, forces an authorization-code response, and\n    // rejects token-bearing redirects.\n    IReadOnlyDictionary<String, String> Parameters { get; };\n```",
-      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
-      "start_line": 199,
-      "line": 202,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 95,
-        "rationale": "The host contract exposes protocol-reserved names without defining rejection or host ownership."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "oauth-custom-scheme",
-      "kind": "inline",
-      "title": "Use a publisher-controlled reverse-domain callback scheme",
-      "severity": "high",
-      "body": "### Use a publisher-controlled reverse-domain callback scheme\n\n**Severity:** `high`\n\nThe generic `cmdpal://` callback is not publisher-controlled and does not follow RFC 8252 guidance for native application callbacks. Providers that validate redirects strictly can reject it or treat it as untrusted.\n\n```suggestion\n- **CustomScheme** (`com.microsoft.powertoys.cmdpal://auth/callback`). The redirect reactivates Command\n  Palette through its registered protocol, so the palette comes back to the front on\n  its own. Only works with providers that allow custom-scheme redirect URIs, so it's\n  the exception, not the rule. The Command Palette host registers this on the\n  publisher-controlled reverse-domain scheme `com.microsoft.powertoys.cmdpal` per RFC 8252 §7.1.\n```",
-      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
-      "start_line": 87,
-      "line": 90,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 94,
-        "rationale": "The existing example is not a publisher-controlled reverse-domain custom scheme."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "oauth-device-code",
-      "kind": "inline",
-      "title": "Require expires_in and enforce device-code polling semantics",
-      "severity": "medium",
-      "body": "### Require expires_in and enforce device-code polling semantics\n\n**Severity:** `medium`\n\nThe device-code example omits the mandatory `expires_in` contract and does not define required handling for `authorization_pending`, `slow_down`, network timeouts, or terminal errors. An implementation can otherwise wait indefinitely or poll incorrectly.\n\n```suggestion\n    Idp-->>Ext: device_code, user_code, verification_uri, interval, expires_in\n    Ext->>Page: Show user_code and verification_uri\n    User->>Idp: Open verification_uri, enter user_code, consent\n    loop Until expires_in or success\n        Ext->>Idp: POST token endpoint<br/>(grant_type=urn:ietf:params:oauth:grant-type:device_code,<br/>device_code, client_id)\n        alt authorization_pending\n            Idp-->>Ext: Keep polling at the current interval\n        else slow_down\n            Idp-->>Ext: Add 5 seconds to this and all later intervals\n        else network timeout\n            Ext->>Ext: Back off before retrying\n        else access_denied or expired_token\n            Idp-->>Ext: Stop with a terminal error\n        else success\n            Idp-->>Ext: access_token (+ optional refresh_token)\n            Ext->>Ext: Optionally store the token and stop polling\n        end\n    end\n```",
-      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
-      "start_line": 165,
-      "line": 165,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 92,
-        "rationale": "RFC 8628 requires expiration and defined polling/error behavior that the current sequence omits."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "oauth-session-binding",
-      "kind": "inline",
-      "title": "Bind authorization sessions to the initiating extension",
-      "severity": "high",
-      "body": "### Bind authorization sessions to the initiating extension\n\n**Severity:** `high`\n\nThe navigation contract describes a generic success signal without requiring session ownership or rejecting cross-extension completion. A leaked or replayed `SessionId` could otherwise complete another extension's flow and trigger its navigation.\n\n```suggestion\nThe host navigates to your signed-in page for you, and only for you. You name that\npage in `IAuthorizationRequest.SignedInPage` when you start the flow. The host checks\nthat the page belongs to your extension and holds onto it. After your token exchange\nsucceeds, the Toolkit calls `CompleteAuthorizationAsync(sessionId, true)`, and the\nhost foregrounds the palette and navigates to the page you already named. If the\nexchange fails or the extension abandons the flow, it completes the session with\n`false`, and the host clears the pending navigation without ever seeing a token.\n\nThe session deadline starts when the host accepts `RequestAuthorizationAsync` and\ncontinues after the redirect is delivered until completion. When the deadline expires,\nor when the extension disconnects or unloads, the host clears the retained page and\nall pending broker state. The host binds each pending session to the extension that\nstarted it and rejects completion requests from any other extension, even if a leaked\n`SessionId` is guessed or replayed. Late, duplicate, or unknown completion calls fail\nwithout navigating.\n```",
-      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
-      "start_line": 230,
-      "line": 230,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 96,
-        "rationale": "The broker contract lacks an explicit extension-ownership check for completion and retained navigation."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50002",
-      "type": "request_changes",
-      "label": "Request changes with four validated OAuth specification suggestions",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50002,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "c6813ef29daa23ac632a48cfbb081c2c6e07aca9"
-      },
-      "note": "Draft only. Four inline suggestions will be submitted as one request-changes review after explicit maintainer approval; no public write has occurred."
-    }
-  ],
+  "needs_revalidation": true,
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
     "phase": "review_drafted",
     "previous_phase": "reviewing_findings",
