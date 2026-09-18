@@ -4,11 +4,11 @@
   "number": 49966,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T22:20:00Z",
-  "evaluated_at": "2026-09-15T22:20:00Z",
+  "generated_at": "2026-09-18T02:37:05.8353784Z",
+  "evaluated_at": "2026-09-18T02:37:05.8353784Z",
   "source_updated_at": "2026-08-17T07:38:04Z",
   "head_sha": "531d89582ded17b79fb469c5a5ef5e1f30f3d4cc",
   "title": "[File Locksmith] Stop terminating the handle-enumeration worker",
@@ -25,13 +25,62 @@
     "reason": "The current implementation can leave detached workers using an unloaded DLL or destroyed object and can accumulate abandoned workers across reloads."
   },
   "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "filelocksmith-module-lock-include",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Include winrt/base.h for WinRT module lifetime management",
+      "path": "src/modules/FileLocksmith/FileLocksmithLibInterop/NtdllExtensions.cpp",
+      "side": "RIGHT",
+      "start_line": 7,
+      "line": 7,
+      "in_diff": true,
+      "body": "### Include `<winrt/base.h>` for WinRT module lifetime management\n\n**Severity:** `high`\n\nTo safely allow detached worker threads to outlive the calling `handles()` method without crashing if the COM/WinRT runtime unloads `PowerToys.FileLocksmithLib.Interop.dll`, include `<winrt/base.h>` to access `winrt::get_module_lock()`.\n\n```suggestion\n#include <mutex>\n\n#ifndef FILELOCKSMITH_LIB_STATIC\n#include <winrt/base.h>\n#endif\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "Background threads executing in an in-process DLL require a module lifetime guard while they remain active."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "filelocksmith-worker-concurrency-lifetime",
+      "kind": "companion",
+      "severity": "high",
+      "title": "Make abandoned handle-enumeration workers lifetime-safe and globally bounded",
+      "in_diff": false,
+      "out_of_diff_reason": "The correction spans worker construction, shared state, watchdog synchronization, module lifetime, process-wide budgeting, and focused regression coverage; it is not a safe single-range GitHub replacement.",
+      "body": "### Make abandoned handle-enumeration workers lifetime-safe and globally bounded\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/FileLocksmith/FileLocksmithLibInterop/NtdllExtensions.cpp`, especially `NtdllExtensions::handles()`, the detached worker closure, shared enumeration state, and watchdog loop.\n\n**Problem:** The replacement for `TerminateThread` still lets an abandoned worker capture and call through `this` after `handles()` returns, continue executing after the interop DLL is unloaded, and claim more work after the watchdog has detached it. The worker cap is also local to one call, so repeated reloads can accumulate blocked threads and duplicated process handles. Returning the result by value additionally copies the complete handle vector while holding its mutex.\n\n**Why it matters:** A delayed `NtQueryObject` return can turn the intended crash fix into a use-after-free or unloaded-code execution. Repeated refreshes can grow the process-wide thread and handle count without a bound, and an unblocked abandoned worker can race a replacement worker for later handles.\n\n**Suggested change:**\n1. Resolve the required `NtQueryObject` function pointer before starting workers and use a standalone file-name helper so worker closures never access `this`.\n2. Hold a `winrt::get_module_lock()` guard in every worker until that worker actually exits.\n3. Give each worker an abandonment flag and check it while holding the same work mutex used to claim `next_index`, so a detached worker cannot claim another handle after abandonment.\n4. Enforce a process-wide atomic worker budget across all `handles()` invocations and release each reserved slot exactly once when its worker exits.\n5. Keep scratch buffers and process-handle caches worker-local; share only the indexed input and mutex-protected result vector.\n6. Require several consecutive no-progress polls before abandonment so a single slow 200 ms interval is not treated as a hang.\n7. Move the final result vector after all reachable workers are done instead of copying it under the result lock.\n\n**Verification:** Build `FileLocksmithLibInterop.vcxproj` and `FileLocksmithCLIUnitTests.vcxproj` in x64 Release, run `FileLocksmithCLI.UnitTests.dll`, and add focused stress coverage that repeatedly reloads enumeration while one query is blocked. Verify 6/6 existing tests pass, the process-wide worker count never exceeds the configured cap, detached workers claim no new indices after abandonment, and DLL shutdown waits for active workers.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The converged candidate passed MSVC compilation and all focused tests while addressing the reviewed object, DLL, worker-slot, and synchronization lifetimes."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-49966",
+      "type": "request_changes",
+      "label": "Request changes for File Locksmith worker lifetime safety",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49966,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "531d89582ded17b79fb469c5a5ef5e1f30f3d4cc",
+        "body_prefix": "Thank you for the detailed investigation, reproduction benchmarks, and thorough PR description for addressing the crash in #49789. Moving away from `TerminateThread` to worker abandonment is the right direction. However, the abandoned background worker threads introduce several concurrency, lifetime, and resource-management issues that need to be addressed before merging."
+      },
+      "note": "Draft only. One inline suggestion and one implementation-ready general comment require explicit maintainer approval."
+    }
+  ],
   "workflow": {
     "phase": "review_drafted",
     "previous_phase": "resumed_fork_review",
-    "checkpoint_at": "2026-09-15T22:20:00Z",
+    "checkpoint_at": "2026-09-18T02:37:05.8353784Z",
     "advancement_evidence": [
       "Resumed existing fork PR 400 and consumed all existing Copilot review state.",
       "Converged after six Copilot reviews with zero unresolved threads.",
@@ -44,7 +93,7 @@
     "headRefOid": "531d89582ded17b79fb469c5a5ef5e1f30f3d4cc",
     "updatedAt": "2026-08-17T07:38:04Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T22:20:00Z"
+    "checkedAt": "2026-09-18T02:37:05.8353784Z"
   },
   "fork_pr": {
     "number": 400,
@@ -96,6 +145,20 @@
         "Run FileLocksmithCLI.UnitTests.dll"
       ],
       "details": "The minimal literal include suggestion is part of the validated candidate; the cross-cutting lifetime correction is intentionally represented as a general implementation request rather than a 166-line apply block."
+    },
+    "line_ending_safety": {
+      "head_sha": "531d89582ded17b79fb469c5a5ef5e1f30f3d4cc",
+      "result": "passed",
+      "checked_comment_ids": [
+        "filelocksmith-module-lock-include"
+      ],
+      "files": [
+        {
+          "path": "src/modules/FileLocksmith/FileLocksmithLibInterop/NtdllExtensions.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
     }
   },
   "upstream_safety": {

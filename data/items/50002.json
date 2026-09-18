@@ -2,47 +2,200 @@
   "number": 50002,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T15:58:00Z",
-  "evaluated_at": "2026-09-15T15:58:00Z",
+  "generated_at": "2026-09-18T02:37:05.8353784Z",
+  "evaluated_at": "2026-09-18T02:37:05.8353784Z",
   "source_updated_at": "2026-08-20T22:53:58Z",
   "head_sha": "c6813ef29daa23ac632a48cfbb081c2c6e07aca9",
   "title": "CmdPal: OAuth spec for extension toolkit",
   "url": "https://github.com/microsoft/PowerToys/pull/50002",
-  "summary": "The fork review loop converged after correcting the OAuth specification, with a fresh zero-comment Copilot pass and zero unresolved threads. Four RFC and broker-security findings are represented as literal current-head suggestions and passed exact-document candidate validation.",
+  "summary": "The existing Copilot results were consumed without duplicate requests. The fork review converged at 1be5067c9538fc60076e16f04fb7b3dee927835b with a fresh zero-comment review and zero unresolved Copilot threads. Eight current-head OAuth specification corrections remain for approval.",
   "status": {
     "glyph": "📝",
-    "label": "Review complete — approval required",
-    "detail": "Fork PR 758 converged at 5d6cc099c98174dde126e8d6fcd4782ebf9dd18d. Four literal suggestions applied to the exact upstream auth specification passed focused semantic validation."
+    "label": "Review complete - approval required",
+    "detail": "Fork PR 758 converged after six Copilot reviews. The final review at 2026-09-18T02:21:30Z returned zero published comments and all Copilot threads are resolved."
   },
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "Four security and standards-compliance findings are pinned to the unchanged upstream head. No upstream write has occurred."
+    "reason": "Eight standards, ABI, lifecycle, and credential-boundary findings are pinned to the unchanged upstream head."
   },
   "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "oauth-reserved-keys",
+      "kind": "inline",
+      "title": "Reject reserved OAuth parameters in provider URLs and parameter maps",
+      "severity": "high",
+      "body": "### Reject reserved OAuth parameters in provider URLs and parameter maps\n\n**Severity:** `high`\n\nThe current contract leaves room for a provider to pass reserved OAuth keys through the host broker. That can let a redirect or token request override `redirect_uri`, `state`, `response_type`, `response_mode`, or `code_challenge_method`, breaking the browser flow's security assumptions.\n\n```suggestion\n    // The host rejects any raw query parameters named redirect_uri, state,\n    // response_type, response_mode, or code_challenge_method in the provider URL,\n    // and rejects the same reserved names in Parameters before the browser opens.\n    // The host injects redirect_uri/state, forces an authorization-code response, and\n    // rejects token-bearing redirects.\n    IReadOnlyDictionary<String, String> Parameters { get; };\n```",
+      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+      "start_line": 199,
+      "line": 202,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 95,
+        "rationale": "The host contract exposes protocol-reserved names without defining rejection or host ownership."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "oauth-custom-scheme",
+      "kind": "inline",
+      "title": "Use a publisher-controlled reverse-domain callback scheme",
+      "severity": "high",
+      "body": "### Use a publisher-controlled reverse-domain callback scheme\n\n**Severity:** `high`\n\nThe generic `cmdpal://` callback is not publisher-controlled and does not follow RFC 8252 guidance for native application callbacks. Providers that validate redirects strictly can reject it or treat it as untrusted.\n\n```suggestion\n- **CustomScheme** (`com.microsoft.powertoys.cmdpal://auth/callback`). The redirect reactivates Command\n  Palette through its registered protocol, so the palette comes back to the front on\n  its own. Only works with providers that allow custom-scheme redirect URIs, so it's\n  the exception, not the rule. The Command Palette host registers this on the\n  publisher-controlled reverse-domain scheme `com.microsoft.powertoys.cmdpal` per RFC 8252 §7.1.\n```",
+      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+      "start_line": 87,
+      "line": 90,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 94,
+        "rationale": "The existing example is not a publisher-controlled reverse-domain custom scheme."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "oauth-device-code",
+      "kind": "inline",
+      "title": "Require expires_in and enforce device-code polling semantics",
+      "severity": "medium",
+      "body": "### Require expires_in and enforce device-code polling semantics\n\n**Severity:** `medium`\n\nThe device-code example omits the mandatory `expires_in` contract and does not define required handling for `authorization_pending`, `slow_down`, network timeouts, or terminal errors. An implementation can otherwise wait indefinitely or poll incorrectly.\n\n```suggestion\n    Idp-->>Ext: device_code, user_code, verification_uri, interval, expires_in\n    Ext->>Page: Show user_code and verification_uri\n    User->>Idp: Open verification_uri, enter user_code, consent\n    loop Until expires_in or success\n        Ext->>Idp: POST token endpoint<br/>(grant_type=urn:ietf:params:oauth:grant-type:device_code,<br/>device_code, client_id)\n        alt authorization_pending\n            Idp-->>Ext: Keep polling at the current interval\n        else slow_down\n            Idp-->>Ext: Add 5 seconds to this and all later intervals\n        else network timeout\n            Ext->>Ext: Back off before retrying\n        else access_denied or expired_token\n            Idp-->>Ext: Stop with a terminal error\n        else success\n            Idp-->>Ext: access_token (+ optional refresh_token)\n            Ext->>Ext: Optionally store the token and stop polling\n        end\n    end\n```",
+      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+      "start_line": 165,
+      "line": 165,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 92,
+        "rationale": "RFC 8628 requires expiration and defined polling/error behavior that the current sequence omits."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "oauth-session-binding",
+      "kind": "inline",
+      "title": "Bind authorization sessions to the initiating extension",
+      "severity": "high",
+      "body": "### Bind authorization sessions to the initiating extension\n\n**Severity:** `high`\n\nThe navigation contract describes a generic success signal without requiring session ownership or rejecting cross-extension completion. A leaked or replayed `SessionId` could otherwise complete another extension's flow and trigger its navigation.\n\n```suggestion\nThe host navigates to your signed-in page for you, and only for you. You name that\npage in `IAuthorizationRequest.SignedInPage` when you start the flow. The host checks\nthat the page belongs to your extension and holds onto it. After your token exchange\nsucceeds, the Toolkit calls `CompleteAuthorizationAsync(sessionId, true)`, and the\nhost foregrounds the palette and navigates to the page you already named. If the\nexchange fails or the extension abandons the flow, it completes the session with\n`false`, and the host clears the pending navigation without ever seeing a token.\n\nThe session deadline starts when the host accepts `RequestAuthorizationAsync` and\ncontinues after the redirect is delivered until completion. When the deadline expires,\nor when the extension disconnects or unloads, the host clears the retained page and\nall pending broker state. The host binds each pending session to the extension that\nstarted it and rejects completion requests from any other extension, even if a leaked\n`SessionId` is guessed or replayed. Late, duplicate, or unknown completion calls fail\nwithout navigating.\n```",
+      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+      "start_line": 230,
+      "line": 230,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 96,
+        "rationale": "The broker contract lacks an explicit extension-ownership check for completion and retained navigation."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "oauth-refresh-metadata-and-expiry",
+      "kind": "inline",
+      "title": "Preserve refresh metadata and represent unknown expiry",
+      "severity": "high",
+      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+      "line": 148,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve refresh metadata and represent unknown expiry\n\n**Severity:** `high`\n\nA refresh response may omit both `refresh_token` and `scope`, and RFC 6749 also allows it to omit `expires_in`. Accept the previous `OAuthToken` rather than only its refresh-token string, preserve the prior refresh token and granted scope when omitted, represent expiry as nullable, and do not inherit the old access token's expiry for a refreshed token whose lifetime is unknown.",
+      "confidence": {
+        "score": 97,
+        "rationale": "RFC 6749 permits omitted refresh metadata, and the current string-only API cannot preserve the granted scope or safely model an unknown refreshed-token expiry."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "oauth-host-owned-identity-and-abi",
+      "kind": "inline",
+      "title": "Keep sign-in identity and navigation types host-owned",
+      "severity": "high",
+      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+      "line": 188,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Keep sign-in identity and navigation types host-owned\n\n**Severity:** `high`\n\nThe host-owned sign-in UI must not display caller-controlled `DisplayName` text, because an extension could impersonate another extension or service. Derive the displayed extension identity from the bound manifest, use WinRT ABI types such as `IMapView<String, String>` and `IPage` for the request/result contract, and reuse the Toolkit's existing URL-launch helpers instead of adding a redundant host `OpenUrlAsync` method.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The host already has authoritative extension identity, and the current draft mixes non-WinRT collection/navigation types while duplicating an existing URL-launch capability."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "oauth-broker-validation-contract",
+      "kind": "inline",
+      "title": "Complete the broker validation and error contract",
+      "severity": "high",
+      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+      "line": 293,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Complete the broker validation and error contract\n\n**Severity:** `high`\n\nThe host contract currently promises only the happy path. Require S256 PKCE at the broker boundary, require HTTPS provider endpoints, and after validating `state` accept exactly one of an authorization `code` or a standard OAuth `error` while continuing to reject token-bearing and `form_post` responses. Otherwise denial can wait for timeout and malformed provider input can weaken the flow's assumptions.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The current security section does not define host-side PKCE or endpoint enforcement and provides no protocol path for valid OAuth error redirects."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "oauth-credential-store-boundary",
+      "kind": "inline",
+      "title": "Document the Credential Locker same-user boundary",
+      "severity": "high",
+      "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+      "line": 315,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Document the Credential Locker same-user boundary\n\n**Severity:** `high`\n\nCmdPal extension packages run as full-trust desktop processes, so `PasswordVault` is not an isolation boundary from the host or other processes running as the same Windows user. Describe it as at-rest/user separation only, make clear that namespaced keys prevent collisions rather than access, and require a stronger caller-supplied store or in-memory tokens when the threat model needs same-user process isolation.",
+      "confidence": {
+        "score": 99,
+        "rationale": "The extension template uses runFullTrust, and PasswordVault documentation does not provide per-package isolation to non-AppContainer desktop processes."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50002",
+      "type": "request_changes",
+      "label": "Request eight OAuth specification corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50002,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "c6813ef29daa23ac632a48cfbb081c2c6e07aca9"
+      },
+      "note": "Draft only. Eight current-head comments require explicit maintainer approval; no upstream write has occurred."
+    }
+  ],
   "workflow": {
     "phase": "review_drafted",
     "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-15T15:58:00Z",
+    "checkpoint_at": "2026-09-18T02:37:05.8353784Z",
     "advancement_evidence": [
       "Resumed fork PR 758 and branch pr-iterate/50002-v3.",
       "Fixed valid fork-side findings, resolved all threads, and consumed a fresh zero-comment Copilot review.",
       "Applied the four literal public suggestions to the pinned upstream head.",
       "Validated the resulting auth specification for the reverse-domain callback, reserved arguments, device-code timing, and extension-bound session rules."
-    ]
+    ],
+    "fork_head_sha": "1be5067c9538fc60076e16f04fb7b3dee927835b",
+    "unresolved_copilot_threads": 0,
+    "latest_copilot_review_at": "2026-09-18T02:21:30Z",
+    "copilot_review_count": 6
   },
   "freshness": {
     "headRefOid": "c6813ef29daa23ac632a48cfbb081c2c6e07aca9",
     "updatedAt": "2026-08-20T22:53:58Z",
     "latestCopilotReviewAt": "2026-09-15T15:19:20Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T15:58:00Z"
+    "checkedAt": "2026-09-18T02:37:05.8353784Z"
   },
   "fork_pr": {
     "number": 758,
@@ -50,7 +203,7 @@
     "state": "OPEN"
   },
   "fork_branch": "pr-iterate/50002-v3",
-  "fork_head_sha": "5d6cc099c98174dde126e8d6fcd4782ebf9dd18d",
+  "fork_head_sha": "1be5067c9538fc60076e16f04fb7b3dee927835b",
   "validation": {
     "suggestion_patch": {
       "head_sha": "c6813ef29daa23ac632a48cfbb081c2c6e07aca9",
@@ -73,6 +226,23 @@
       "result": "not_applicable",
       "commands": [],
       "details": "This is a documentation review with current-head findings; the literal public suggestion candidate was validated."
+    },
+    "line_ending_safety": {
+      "head_sha": "c6813ef29daa23ac632a48cfbb081c2c6e07aca9",
+      "result": "passed",
+      "checked_comment_ids": [
+        "oauth-reserved-keys",
+        "oauth-custom-scheme",
+        "oauth-device-code",
+        "oauth-session-binding"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/doc/specs/auth/index.md",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
     }
   },
   "upstream_safety": {
