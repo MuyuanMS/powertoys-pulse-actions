@@ -9,68 +9,12 @@
   "author": "daverayment",
   "state": "OPEN",
   "draft": false,
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
-  "pending_author": false,
-  "generated_at": "2026-09-15T18:59:59Z",
-  "evaluated_at": "2026-09-15T18:59:59Z",
-  "source_updated_at": "2026-09-08T23:43:30Z",
   "head_sha": "bc8ed60536693892953b2723f1bfc966aba2fe48",
-  "summary": "The live upstream head and activity are unchanged since the prior pass (head bc8ed60536693892953b2723f1bfc966aba2fe48; updated_at 2026-09-08T23:43:30Z). The converged fork review remains clean with zero unresolved Copilot threads, and no actionless queue reset was required because the live PR state did not change. The exact current diff still supports one RIGHT-side lifecycle fix and one general Alt-key navigation prompt before a non-blocking COMMENT review is posted.",
-  "status": {
-    "glyph": "📝",
-    "label": "Review ready — 1 inline and 1 companion prompt drafted",
-    "detail": "Upstream remains pinned to bc8ed60536693892953b2723f1bfc966aba2fe48 with no newer live activity since 2026-09-08; fork PR 720 remains the active review branch and converged after the fix loop. The current diff still supports one RIGHT-side startup-focus guard and one general Alt+Arrow navigation prompt."
-  },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted COMMENT review",
-    "reason": "The live head and activity are unchanged; explicit maintainer approval is still required before posting the selected non-blocking review prompts."
-  },
-  "actions": [
-    {
-      "id": "post-review-50472",
-      "type": "post_review",
-      "label": "Post separate general PR comments for the current-head COMMENT review",
-      "primary": true,
-      "confirm": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50472,
-        "event": "COMMENT",
-        "head_sha": "bc8ed60536693892953b2723f1bfc966aba2fe48",
-        "body": "### Scope startup focus clearing to the initial activation path and guard XamlRoot nulls\n\n**Severity:** high\n\nPlease scope the new focus redirect to the initial startup activation only, and return early when `XamlRoot` is null before touching `FocusManager`. The preview-size callback fires during later resize/navigation and can steal focus from interactive preview content if it keeps redirecting title-bar focus.\n\n### Preserve interactive-preview keyboard navigation while handling Alt+Left/Alt+Right\n\n**Severity:** medium\n\nPlease gate the low-level `VK_LEFT` and `VK_RIGHT` hook on `Alt` so ordinary arrow keys continue to reach WebView2 and other interactive preview controls. Keep the hidden focus sink out of normal tab navigation and add or retain focused UI coverage proving the title bar is not focused on startup and that Alt+Left/Alt+Right still changes the selected file while an interactive preview has focus."
-      },
-      "note": "Current-head non-blocking COMMENT review. These are separate general PR comments and the draft stays pinned to the exact live head until explicit maintainer approval."
-    }
-  ],
   "safe_actions": [
     "Present the drafted COMMENT review for explicit maintainer approval",
     "Post nothing upstream until the pinned head and activity snapshot are revalidated",
     "Hold the review without changing labels, review state, or PR state",
     "Re-run the fork review loop and exact-head validation after material upstream activity or an author commit"
-  ],
-  "proposed_comments": [
-    {
-      "id": "peek-startup-focus-lifecycle",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Scope startup focus clearing to the initial activation path and guard XamlRoot nulls",
-      "body": "### Scope startup focus clearing to the initial activation path and guard XamlRoot nulls\n\n**Severity:** high\n\n**Affected code:** `src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs`, `FilePreviewer_PreviewSizeChanged`, and `src/modules/peek/Peek.UI/PeekXAML/Views/TitleBar.xaml.cs`.\n\n**Problem:** The startup focus redirect can be triggered again when the preview size changes during later resize/navigation, and it also assumes the window has a connected `XamlRoot` before the first layout notification. That lets a non-startup preview-size callback steal focus from an interactive previewer or dereference a null root during early activation.\n\n**Why it matters:** The window should only clear the default title-bar focus once when it is actually showing for startup, not on every later resize event. Failing to guard the lifecycle can steal keyboard focus away from WebView2 or other interactive preview content and makes the startup behavior nondeterministic before the window is fully connected.\n\n**Suggested change:**\n1. Move the initial focus cleanup behind a one-time startup guard that runs only after the window is visible and only when the actual title-bar button is focused.\n2. Exit early if `XamlRoot` is null before calling `FocusManager` or any other root-dependent API.\n3. Keep the redirect scoped to the initial activation path so later `PreviewSizeChanged` events cannot re-trigger focus theft.\n4. Add a focused regression test that verifies the title-bar buttons do not take focus on startup and that a later resize/navigation event does not steal focus from an interactive preview.\n\n**Verification:** Rebuild the exact upstream head and confirm the title bar starts unfocused while a preview is shown, and confirm resize/navigation events no longer steal focus from an interactive preview after the window has connected.\n\n**Out-of-diff notes:** The fix requires a startup-only focus guard and a null-root guard in the live window lifecycle, and it is not safely expressible as a single inline suggestion on the current upstream diff.",
-      "out_of_diff_reason": "The fix spans the live startup activation lifecycle and the null-root guard in the Peek window code. It is a startup-path correction rather than a single inline diff edit, so it should stay as a companion review prompt with a clear lifecycle guard.",
-      "in_diff": false,
-      "disposition": "proposed"
-    },
-    {
-      "id": "preserve-interactive-preview-navigation",
-      "kind": "companion",
-      "severity": "medium",
-      "title": "Preserve interactive-preview keyboard navigation while handling Alt+Left/Alt+Right",
-      "body": "### Preserve interactive-preview keyboard navigation while handling Alt+Left/Alt+Right\n\n**Severity:** medium\n\n**Affected code:** `src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml.cs`, `FilePreviewer_PreviewSizeChanged`, `FocusSink`, and `src/modules/peek/Peek.UI/PeekXAML/Views/TitleBar.xaml.cs`.\n\n**Problem:** The keyboard hook currently intercepts left/right navigation too broadly; when Alt is not pressed, normal arrow keys should keep flowing to interactive preview controls such as WebView2. At the same time, the hidden focus sink should not become part of normal tab order while the startup focus transfer is active.\n\n**Why it matters:** Interactive previewers rely on arrows for their own controls, and a broad low-level hook can steal those keystrokes before the control receives them. This makes the Peek preview feel broken even though the file-change navigation is intended only for Alt+Left/Alt+Right.\n\n**Suggested change:**\n1. Gate the `VK_LEFT` and `VK_RIGHT` interception on `altPressed` so plain arrow keys continue to the active preview control.\n2. Keep the hidden `FocusSink` non-tab-stop during normal keyboard navigation and enable it only briefly around the programmatic focus transfer.\n3. Retain or add focused UI coverage proving the title-bar buttons are not focused on startup and that Alt+Left/Alt+Right still changes the selected file while an interactive preview has focus.\n\n**Verification:** Rebuild the exact upstream head and run the Peek UI tests or a focused manual interaction test to confirm arrow keys still reach WebView2/interactive preview controls, while Alt+Left/Alt+Right changes the selected file only when the user is using the Peek navigation shortcut.",
-      "out_of_diff_reason": "The required Alt-key guard, focus-sink tab-stop behavior, and focused UI coverage are all fork-side corrections relative to the current upstream head and remain best expressed as a single general review prompt.",
-      "in_diff": false,
-      "disposition": "proposed"
-    }
   ],
   "verification": {
     "result": "passed",
@@ -110,11 +54,11 @@
     "base_sha": "071c25e115e8097117e26f6fcfe9901301307f7a"
   },
   "freshness": {
-    "status": "fresh",
     "head_sha": "bc8ed60536693892953b2723f1bfc966aba2fe48",
-    "source_updated_at": "2026-09-08T23:43:30Z",
     "evaluated_at": "2026-09-15T18:59:59Z",
-    "note": "Live upstream head and activity are unchanged since the prior review loop; no actionless queue reset was required."
+    "note": "Live upstream head and activity are unchanged since the prior review loop; no actionless queue reset was required.",
+    "status": "current_head_author_wait",
+    "source_updated_at": "2026-09-18T06:55:16Z"
   },
   "fork_pr": {
     "number": 720,
@@ -124,9 +68,34 @@
     "branch": "pr-iterate/50472"
   },
   "workflow": {
-    "phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-15T18:59:59Z",
-    "resume_action": "maintainer-approval-or-freshness-recheck"
+    "phase": "waiting_on_author",
+    "checkpoint_at": "2026-09-18T08:55:08.2892498Z",
+    "resume_action": "author-response-or-new-head"
   },
-  "needs_revalidation": false
+  "stage": "waiting_on_author",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-09-18T08:55:08.2892498Z",
+  "evaluated_at": "2026-09-18T08:55:08.2892498Z",
+  "source_updated_at": "2026-09-18T06:55:16Z",
+  "summary": "The previously drafted current-head review findings were posted upstream on 2026-09-18T06:55:14Z. No author commit, comment, or review followed them, so this PR is now waiting for the author to address the Peek startup-focus and keyboard-navigation corrections.",
+  "status": {
+    "glyph": "WAIT",
+    "label": "Waiting on author",
+    "detail": "The current head is unchanged and the posted Pulse review has not received later author activity. Live checks are recorded separately by Pulse."
+  },
+  "next_action": "Wait for the author to respond or push a new commit, then revalidate the current head.",
+  "proposed_comments": [],
+  "actions": [],
+  "author_wait_evidence": {
+    "author": "MuyuanMS",
+    "created_at": "2026-09-18T06:55:14Z",
+    "url": "https://github.com/microsoft/PowerToys/pull/50472#issuecomment-5726361573",
+    "requested_evidence": "Address the Peek startup-focus and keyboard-navigation corrections posted for the current upstream head."
+  },
+  "needs_revalidation": false,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "This dashboard update made no public mutation to microsoft/PowerToys; it only reconciled review activity that was already present upstream."
+  }
 }

@@ -9,77 +9,9 @@
   "authorAssociation": "CONTRIBUTOR",
   "state": "OPEN",
   "draft": false,
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
-  "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "generated_at": "2026-09-15T18:30:20Z",
-  "evaluated_at": "2026-09-15T18:30:20Z",
-  "source_updated_at": "2026-09-05T03:21:10Z",
   "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
-  "summary": "The live upstream head remains 822df246301569b3194dfdcbaab666aa0a7a0a84 and the durable fork review loop stays converged at c4f2e32c910af4d91ea7c7f9380612e4c4043bfe with zero unresolved Copilot threads. The current RIGHT-side diff still contains two root-cause issues: release-time snap work must move off the low-level hook while preserving the destination monitor and restore-time bounds, and the final snap/DPI/focus sequence must be re-evaluated after the monitor transition. No fresh review was requested because the live head and activity are unchanged.",
-  "status": {
-    "glyph": "📝",
-    "label": "Review ready — approval required",
-    "detail": "Live upstream head 822df246301569b3194dfdcbaab666aa0a7a0a84 is unchanged since 2026-09-05T03:21:10Z, while fork PR 681 remains converged at c4f2e32c910af4d91ea7c7f9380612e4c4043bfe with zero unresolved Copilot threads. The earlier current-head findings were remapped onto the current RIGHT-side diff and consolidated into two root-cause prompts without any fresh review or upstream write.",
-    "upstream_public_writes": 0
-  },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted COMMENT review",
-    "reason": "The current head is unchanged and the two consolidated general prompts remain pinned for a comment-only review pending maintainer approval."
-  },
-  "proposed_comments": [
-    {
-      "id": "hook-thread-and-destination-monitor-placement",
-      "kind": "companion",
-      "title": "Keep snap work off the low-level hook and preserve destination-monitor maximize/restore bounds",
-      "severity": "high",
-      "body": "### Keep snap work off the low-level hook and preserve destination-monitor maximize/restore bounds\n\n**Severity:** ``high``\n\n**Affected code:**\n- ``src/modules/GrabAndMove/GrabAndMove/GrabAndMove.cpp`` — ``GrabAndMove::OnLowLevelMouseHook``\n- ``src/modules/GrabAndMove/GrabAndMove/GrabAndMove.cpp`` — ``GrabAndMove::HandleMouseButtonUp``\n- ``src/modules/GrabAndMove/GrabAndMove/GrabAndMoveWindowUtils.cpp`` — ``GetTargetMonitorRect`` / ``RestoreMaximizedWindow``\n\n**Problem:** Release-time snap placement still runs in the `WH_MOUSE_LL` callback and the maximize path overwrites the selected destination monitor with the current monitor state. That makes cross-monitor drags and restore-after-maximize vulnerable to stale rectangles or taskbar-offset jumps.\n\n**Why it matters:** A low-level hook is the wrong place for the final window move and maximize work because the callback is latency-sensitive and can be interrupted by the target app or a monitor transition. If the selected destination monitor is dropped, the final snap lands on the wrong monitor and restoring the maximized window can jump to the wrong workspace bounds.\n\n**Suggested change:**\n1. Queue the release-time snap request to the GrabAndMove message window and carry the release-time rectangle through the queued payload instead of doing the move directly from the low-level hook.\n2. In the queued handler, select the destination monitor from the release-time target rect before calling maximize, and preserve the window's original normal bounds for restore instead of overwriting them with the source-monitor placement data.\n3. Validate the restore path on a multi-monitor drag by confirming the window snaps to the chosen monitor and the maximized window restores to the preserved bounds rather than the stale taskbar-offset rectangle.\n\n**Verification:** Run the GrabAndMove Debug build and exercise a cross-monitor edge/corner drag followed by maximize and restore on a multi-monitor setup; confirm the final window stays on the chosen monitor and restore returns to the correct bounds without a stale jump.",
-      "in_diff": false,
-      "out_of_diff_reason": "This root cause spans the low-level mouse-hook path, queued placement, monitor selection, and restore-bounds preservation, so a single current-diff anchor would be misleading.",
-      "outOfDiffReason": "This root cause spans the low-level mouse-hook path, queued placement, monitor selection, and restore-bounds preservation, so a single current-diff anchor would be misleading.",
-      "confidence": {
-        "score": 98,
-        "rationale": "The upstream release path performs cross-process snap work directly from the low-level hook, while the converged fork fix moves that sequence to the message window and preserves the release-time rectangle for destination-monitor placement."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "destination-dpi-and-focus-sequencing",
-      "kind": "companion",
-      "title": "Recompute final snap bounds after the monitor/DPI transition and bound delayed focus restore",
-      "severity": "medium",
-      "body": "### Recompute final snap bounds after the monitor/DPI transition and bound delayed focus restore\n\n**Severity:** ``medium``\n\n**Affected code:**\n- ``src/modules/GrabAndMove/GrabAndMove/GrabAndMove.cpp`` — ``GrabAndMove::TrySnapWindow``\n- ``src/modules/GrabAndMove/GrabAndMove/GrabAndMove.cpp`` — ``GrabAndMove::MaximizeWindowAsync``\n- ``src/modules/GrabAndMove/GrabAndMove/GrabAndMoveWindowUtils.cpp`` — ``ComputeSnapBoundsForMonitor`` / ``RestoreForegroundWindow``\n\n**Problem:** The snap logic calculates the final side/corner bounds from the source monitor before the async monitor/DPI transition completes, and delayed focus restoration is not bounded to the active maximize target. That can leave a stale retry loop or restore the wrong foreground window after a drag that crosses monitors or changes DPI.\n\n**Why it matters:** A source-monitor margin calculation can be stale once the window moves to its destination monitor, and a non-bounded focus retry can keep a timer alive after the target has changed or hung. Both issues create visible drift or focus theft during edge/corner snap completion.\n\n**Suggested change:**\n1. Recompute the final side/corner bounds after the window reaches the destination monitor and the monitor/DPI transition has settled, rather than trusting the source-monitor margin values.\n2. Keep the delayed focus restore state bounded to the actual maximize target and clear it when the target no longer matches the active foreground window or the retry budget is exhausted.\n3. Validate the flow with a monitor-DPI transition and a follow-up maximize/restore to confirm the final bounds and focus restoration stay aligned with the target window.\n\n**Verification:** Run the GrabAndMove debug validation on a monitor/DPI-change scenario and confirm the final snap lands at the correct edge/corner and focus restoration stays bounded to the active target without a stale retry timer.",
-      "in_diff": false,
-      "out_of_diff_reason": "This root cause spans destination-aware placement, DPI-sensitive margin recalculation, and the asynchronous focus timer, so the fix is better expressed as one general review note.",
-      "outOfDiffReason": "This root cause spans destination-aware placement, DPI-sensitive margin recalculation, and the asynchronous focus timer, so the fix is better expressed as one general review note.",
-      "confidence": {
-        "score": 96,
-        "rationale": "The current flow measures source-monitor margins before the destination move and lacks the bounded focus-restoration state the converged fork added for the async maximize path."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-50245",
-      "type": "post_review",
-      "label": "Post the two current-head review comments",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "General-only review: posts separate general PR conversation comments. The exact upstream head is unchanged; explicit maintainer approval and a final live freshness check are required before posting.",
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50245,
-        "event": "COMMENT",
-        "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
-        "body": "Thanks for the Grab And Move snap work. Before merge, please keep the release-time snap placement out of the low-level hook and preserve the selected destination monitor's maximize/restore bounds, and then recompute the final snap bounds after the monitor/DPI transition while bounding the delayed focus restore. These are the current-head issues to address as follow-up changes in the review thread."
-      }
-    }
-  ],
   "fork_pr": {
     "number": 681,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/681",
@@ -89,22 +21,22 @@
   },
   "fork_branch": "pr-iterate/50245-v3",
   "workflow": {
-    "phase": "awaiting_review_approval",
     "previous_phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-15T18:30:20Z",
     "reviewed_upstream_head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
     "fork_pr": 681,
     "fork_head_sha": "c4f2e32c910af4d91ea7c7f9380612e4c4043bfe",
     "latest_copilot_review_at": "2026-09-07T05:28:32Z",
     "latest_copilot_new_comments": 0,
     "unresolved_copilot_threads": 0,
-    "resume_action": "maintainer-approval-or-freshness-recheck",
     "build_result": "passed",
     "recheck": {
       "live_head_is_unchanged": true,
       "activity_is_unchanged": true,
       "reason": "No fresh review or upstream write was requested because the live head and activity remained unchanged."
-    }
+    },
+    "phase": "waiting_on_author",
+    "checkpoint_at": "2026-09-18T08:55:08.2892498Z",
+    "resume_action": "author-response-or-new-head"
   },
   "validation": {
     "upstream_head": {
@@ -128,12 +60,38 @@
     }
   },
   "freshness": {
-    "status": "fresh",
     "head_sha": "822df246301569b3194dfdcbaab666aa0a7a0a84",
-    "source_updated_at": "2026-09-05T03:21:10Z",
     "latestCopilotReviewAt": "2026-09-07T05:28:32Z",
     "latestForkCommitAt": "2026-09-07T05:24:27Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T18:30:20Z"
+    "status": "current_head_author_wait",
+    "source_updated_at": "2026-09-18T06:40:19Z",
+    "checkedAt": "2026-09-18T08:55:08.2892498Z"
+  },
+  "stage": "waiting_on_author",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-09-18T08:55:08.2892498Z",
+  "evaluated_at": "2026-09-18T08:55:08.2892498Z",
+  "source_updated_at": "2026-09-18T06:40:19Z",
+  "summary": "The previously drafted current-head review findings were posted upstream on 2026-09-18T06:40:19Z. No author commit, comment, or review followed them, so this PR is now waiting for the author to address the two Grab And Move snap corrections.",
+  "status": {
+    "glyph": "WAIT",
+    "label": "Waiting on author",
+    "detail": "The current head is unchanged and the posted Pulse review has not received later author activity. Live checks are recorded separately by Pulse."
+  },
+  "next_action": "Wait for the author to respond or push a new commit, then revalidate the current head.",
+  "proposed_comments": [],
+  "actions": [],
+  "author_wait_evidence": {
+    "author": "MuyuanMS",
+    "created_at": "2026-09-18T06:40:19Z",
+    "url": "https://github.com/microsoft/PowerToys/pull/50245#issuecomment-5726221405",
+    "requested_evidence": "Address the two Grab And Move snap corrections posted for the current upstream head."
+  },
+  "needs_revalidation": false,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "This dashboard update made no public mutation to microsoft/PowerToys; it only reconciled review activity that was already present upstream."
   }
 }

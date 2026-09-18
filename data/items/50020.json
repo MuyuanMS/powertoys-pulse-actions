@@ -11,71 +11,23 @@
   "isMine": false,
   "state": "OPEN",
   "draft": false,
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
-  "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "generated_at": "2026-09-15T18:22:12Z",
-  "evaluated_at": "2026-09-15T18:22:12Z",
-  "source_updated_at": "2026-09-09T21:30:08Z",
   "head_sha": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
-  "summary": "The live upstream head remains 425fcebe5ff2374c05d87dc5ce60643c63eb5a5c and the durable fork review loop is already converged with zero unresolved Copilot threads. No fresh Copilot review or rebuild was requested because the head and activity are unchanged. The earlier six companion findings were remapped to the current RIGHT-side diff and consolidated into two current-head general implementation prompts for a comment-only review.",
-  "status": {
-    "glyph": "📝",
-    "label": "Review complete — approval required",
-    "detail": "Fork PR 745 remains converged at 9c95c8f90ddf9c0884af593fcd101870f08eaa05 with zero unresolved Copilot threads. The live upstream head 425fcebe5ff2374c05d87dc5ce60643c63eb5a5c is unchanged since 2026-09-09T21:30:08Z, passed the exact-head Peek validation, and has no stale revalidation or duplicate review trigger. No upstream write occurred."
-  },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted COMMENT review",
-    "reason": "The two consolidated implementation prompts are pinned to the live upstream head and remain unpublished pending explicit maintainer approval."
-  },
-  "needs_revalidation": false,
   "source": {
     "repository": "microsoft/PowerToys",
     "headRefOid": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
     "updatedAt": "2026-09-09T21:30:08Z"
   },
   "freshness": {
-    "status": "fresh",
     "headRefOid": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
-    "updatedAt": "2026-09-09T21:30:08Z",
     "latestCopilotReviewAt": "2026-09-10T01:09:58Z",
     "latestForkCommitAt": "2026-09-10T01:06:09Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T18:22:12Z"
+    "status": "current_head_author_wait",
+    "updatedAt": "2026-09-18T06:56:49Z",
+    "checkedAt": "2026-09-18T08:55:08.2892498Z"
   },
-  "proposed_comments": [
-    {
-      "id": "settings-boundary-window-and-compatibility",
-      "kind": "companion",
-      "title": "Clamp the preview-size setting at the settings boundary and preserve compatibility",
-      "severity": "high",
-      "body": "**Affected code:**\n- `src/modules/peek/Peek.Settings/PreviewSizeSettings.cs` — `PreviewSizeSettings.Load` and `PreviewSizeSettings.ClampMaxPreviewSize`\n- `src/modules/peek/Peek.UI/Settings/PreviewSizeControl.xaml` — `MaximumPreviewSize` and the `NumberBox` binding\n\n**Problem:** The new preview-size setting validates only when it is converted for display, not when it is restored from persisted settings. A hand-edited or older settings file can therefore reintroduce an out-of-range value and bypass the intended UI bounds.\n\n**Why it matters:** Persisted values should be rejected or clamped at the settings boundary before they reach the renderer, or the user can silently get an invalid configuration that undermines the intended preview-size contract and accessibility label.\n\n**Suggested change:**\n1. Clamp or reject the restored `MaximumPreviewSize` value in the settings load path before it is exposed to the view model.\n2. Preserve the legacy/default settings contract by keeping the 10 MB default when the saved value is missing or invalid and add round-trip coverage for older settings files.\n3. Keep the `NumberBox` accessible name aligned with the existing preview-size header and add a regression test covering invalid persisted values.\n\n**Verification:** Run the Peek settings and unit tests, then confirm an older or invalid saved value reloads to the clamped default and the `NumberBox` still exposes the correct label.",
-      "out_of_diff_reason": "This is a settings-contract issue spanning persisted restoration, backward compatibility, and the new UI control, so the correct fix is a consolidating review note rather than a single inline anchor.",
-      "outOfDiffReason": "This is a settings-contract issue spanning persisted restoration, backward compatibility, and the new UI control, so the correct fix is a consolidating review note rather than a single inline anchor.",
-      "confidence": {
-        "score": 94,
-        "rationale": "The prior fork loop identified the same root cause across persisted restore, legacy schema compatibility, and the preview-size UI, and the contract demands the invariant at the settings boundary."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "bounded-decoding-and-fallback-contract",
-      "kind": "companion",
-      "title": "Keep the bounded decoding and fallback path faithful to the text/binary contract",
-      "severity": "high",
-      "body": "**Affected code:**\n- `src/modules/peek/Peek.FilePreviewer/PeekFileDecoder.cs` — `TryReadWithEncodingDetection` and `TryDetectEncoding`\n- `src/modules/peek/Peek.FilePreviewer/PreviewFactory.cs` — `CreatePreviewForFile`\n\n**Problem:** The bounded read path still depends on a short prefix for charset detection, so legacy encodings that only become distinguishable later can decode incorrectly. BOM-less UTF-16/UTF-32 text can also be rejected when NUL-containing content is treated as binary too early, and the implementation comment still implies a constant-memory path instead of the actual buffered-result behavior.\n\n**Why it matters:** Valid text can be misclassified as binary or rendered with corrupted characters, and the documented memory contract becomes inaccurate to the actual buffered-decoding pipeline.\n\n**Suggested change:**\n1. Sample beyond a short prefix when detecting encoding, and only classify NUL-heavy content as binary after BOM-less UTF-16/UTF-32 and other plausible text cases are rejected.\n2. Keep the preview factory deterministic for text, binary, and oversized files by asserting the same fallback path for each case and covering the end-to-end regression tests.\n3. Update the decoder comment to describe the bounded read plus buffered decoded-result behavior instead of claiming constant-memory rendering.\n\n**Verification:** Run the Peek file-previewer unit tests and fallback regression coverage; verify a legacy-encoded sample, BOM-less UTF-16/UTF-32 sample, and oversized binary sample each follow the expected path.",
-      "out_of_diff_reason": "The root cause spans bounded detector sampling, encoding classification, fallback routing, and the buffered-result documentation, so it is safer and clearer as a single general prompt than as several stale inline anchors.",
-      "outOfDiffReason": "The root cause spans bounded detector sampling, encoding classification, fallback routing, and the buffered-result documentation, so it is safer and clearer as a single general prompt than as several stale inline anchors.",
-      "confidence": {
-        "score": 96,
-        "rationale": "The prior fork review consistently reproduced the same issue across detector sampling, BOM-less Unicode classification, and the end-to-end fallback path, while the code still materializes the full decoded result before render."
-      },
-      "disposition": "proposed"
-    }
-  ],
   "validation": {
     "upstream_head": {
       "head_sha": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
@@ -90,8 +42,6 @@
     }
   },
   "workflow": {
-    "phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-15T18:22:12Z",
     "previous_phase": "converged_draft_ready",
     "advancement_evidence": [
       "Live upstream head remains 425fcebe5ff2374c05d87dc5ce60643c63eb5a5c and the updatedAt remains 2026-09-09T21:30:08Z.",
@@ -99,26 +49,11 @@
       "The earlier six companion findings were re-mapped to the current RIGHT-side diff and consolidated into two current-head general prompts.",
       "Exact-head validation on the live upstream tree remains passed for repository essentials, Peek.FilePreviewer, Peek.FilePreviewer.UnitTests, and the Peek.FilePreviewer test suite.",
       "No fresh Copilot review or rebuild was requested because the live head and activity are unchanged."
-    ]
+    ],
+    "phase": "waiting_on_author",
+    "checkpoint_at": "2026-09-18T08:55:08.2892498Z",
+    "resume_action": "author-response-or-new-head"
   },
-  "actions": [
-    {
-      "id": "post-review-50020",
-      "type": "post_review",
-      "label": "Post the two current-head review comments",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50020,
-        "event": "COMMENT",
-        "head_sha": "425fcebe5ff2374c05d87dc5ce60643c63eb5a5c",
-        "body": "Thanks for the plain-text fallback work. Before merge, please clamp the restored maximum preview size at the settings boundary and preserve the legacy/default settings contract, and keep the bounded decoding/fallback path faithful to the text/binary detection and BOM-less Unicode cases. The two issues are both current-head implementation requirements, and they should be addressed as separate follow-up changes in the review thread."
-      },
-      "note": "General-only review: posts two separate PR conversation comments. The exact upstream head is unchanged; explicit maintainer approval and a final live freshness check are required before posting."
-    }
-  ],
   "safe_actions": [
     {
       "id": "post-review-50020",
@@ -132,5 +67,31 @@
       "upstream_write": false,
       "approval_required": false
     }
-  ]
+  ],
+  "stage": "waiting_on_author",
+  "owes": "author",
+  "pending_author": true,
+  "generated_at": "2026-09-18T08:55:08.2892498Z",
+  "evaluated_at": "2026-09-18T08:55:08.2892498Z",
+  "source_updated_at": "2026-09-18T06:56:49Z",
+  "summary": "The previously drafted current-head review findings were posted upstream on 2026-09-18T06:56:47Z. No author commit, comment, or review followed them, so this PR is now waiting for the author to address the two Peek settings and decoding corrections.",
+  "status": {
+    "glyph": "WAIT",
+    "label": "Waiting on author",
+    "detail": "The current head is unchanged and the posted Pulse review has not received later author activity. Live checks are recorded separately by Pulse."
+  },
+  "next_action": "Wait for the author to respond or push a new commit, then revalidate the current head.",
+  "proposed_comments": [],
+  "actions": [],
+  "author_wait_evidence": {
+    "author": "MuyuanMS",
+    "created_at": "2026-09-18T06:56:47Z",
+    "url": "https://github.com/microsoft/PowerToys/pull/50020#issuecomment-5726375761",
+    "requested_evidence": "Address the two Peek settings and decoding corrections posted for the current upstream head."
+  },
+  "needs_revalidation": false,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "This dashboard update made no public mutation to microsoft/PowerToys; it only reconciled review activity that was already present upstream."
+  }
 }
