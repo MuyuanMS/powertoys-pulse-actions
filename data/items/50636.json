@@ -1,115 +1,35 @@
 {
-  "schemaVersion": 5,
-  "id": "pr-50636",
   "number": 50636,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
+  "stage": "review_in_progress",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-18T14:39:00Z",
-  "evaluated_at": "2026-09-18T14:39:00Z",
-  "source_updated_at": "2026-09-18T12:44:46Z",
-  "head_sha": "733db2c1a1ac45110b66232e9d6ad6584bf5959e",
-  "title": "[Peek] Make WebBrowserPreviewer.Dispose synchronous",
+  "generated_at": "2026-09-18T16:44:17.1726107Z",
+  "evaluated_at": "2026-09-18T16:44:17.1726107Z",
+  "source_updated_at": "2026-09-18T14:13:44Z",
+  "head_sha": "5a87fe2a2f7462d5fac65769c8edce5fab8e1a30",
+  "title": "[Peek] Fix async void Dispose in WebBrowserPreviewer",
   "url": "https://github.com/microsoft/PowerToys/pull/50636",
-  "summary": "The explicit disposal path is synchronous, but the existing finalizer can still enumerate and delete temporary files on the finalizer thread. The converged fork removes that unsafe fallback and keeps cleanup on explicit disposal.",
   "status": {
-    "glyph": "💬",
-    "label": "Blocking review note ready",
-    "detail": "One implementation-ready general review note is pinned to the current head; it must be posted as a separate PR conversation comment."
+    "glyph": "...",
+    "label": "Reviewing findings",
+    "detail": "The upstream head changed. The fork Copilot loop is clean, but the fork-only synchronous-disposal correction must be remapped and validated on the new exact upstream head before exposing a review action."
   },
-  "next_action": {
-    "glyph": "💬",
-    "label": "Post general review note",
-    "reason": "The finalizer safety correction is outside the current RIGHT-side diff but is required by the disposal change."
-  },
-  "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "remove-finalizer-filesystem-cleanup",
-      "kind": "companion",
-      "in_diff": false,
-      "disposition": "proposed",
-      "out_of_diff_reason": "The PR changes the explicit Dispose path but leaves the existing finalizer path untouched, so removing the finalizer has no current RIGHT-side diff anchor.",
-      "severity": "medium",
-      "title": "Keep filesystem cleanup off the finalizer thread",
-      "confidence": {
-        "score": 94,
-        "rationale": "The converged fork removes the finalizer, retains idempotent explicit cleanup, passes the affected Peek build, and receives a zero-finding follow-up Copilot review."
-      },
-      "body": "### Keep filesystem cleanup off the finalizer thread\n\n**Severity:** `medium`\n\n**Affected code:**\n- `src/modules/peek/Peek.FilePreviewer/Previewers/WebBrowserPreviewer/WebBrowserPreviewer.cs` — `WebBrowserPreviewer.~WebBrowserPreviewer`, `Dispose(bool)`, and `Dispose()`\n\n**Problem:** The explicit disposal path is now synchronous, but the finalizer still reaches `Helper.CleanupTempDir`. That helper performs filesystem enumeration and deletion, so an abandoned previewer can run blocking and potentially slow I/O on the CLR finalizer thread.\n\n**Why it matters:** The finalizer thread is process-wide and serialized. A slow or blocked temporary-directory cleanup can delay finalization for unrelated objects and prolong shutdown; filesystem exceptions also cannot be handled by the caller that abandoned the object.\n\n**Suggested change:**\n1. Remove `~WebBrowserPreviewer()`.\n2. Replace the boolean disposal overload with one idempotent explicit `Dispose()` implementation.\n3. Run `Helper.CleanupTempDir` only from explicit disposal, after disposing the WebView resources.\n4. Call `GC.SuppressFinalize(this)` after successful explicit cleanup.\n5. Preserve the current guard so repeated `Dispose()` calls remain harmless.\n\n**Verification:** Build `Peek.FilePreviewer`, open and close markdown/source previews, confirm their temporary directories are removed during explicit disposal, and confirm repeated disposal does not throw."
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50636",
-      "type": "request_changes",
-      "label": "Post blocking general review note",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50636,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "733db2c1a1ac45110b66232e9d6ad6584bf5959e",
-        "comment_ids": [
-          "remove-finalizer-filesystem-cleanup"
-        ]
-      },
-      "note": "General review note — separate PR conversation comment. Explicit maintainer confirmation is required."
-    }
-  ],
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
-    "phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-18T14:39:00Z",
-    "advancement_evidence": [
-      "Consumed and fixed the fork Copilot finalizer-thread finding.",
-      "Resolved the fork thread and consumed a fresh zero-finding Copilot review.",
-      "Passed restore, Runner, Settings, and Peek.FilePreviewer builds.",
-      "Mapped the fork-only correction to one implementation-ready current-head companion finding."
-    ]
+    "phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-18T16:44:17.1726107Z"
   },
   "freshness": {
-    "headRefOid": "733db2c1a1ac45110b66232e9d6ad6584bf5959e",
-    "updatedAt": "2026-09-18T12:44:46Z",
-    "latestCopilotReviewAt": "2026-09-18T14:18:55Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-18T14:39:00Z"
+    "queued_at": "2026-09-18T16:44:17.1726107Z",
+    "checkpoint_at": "2026-09-18T16:44:17.1726107Z"
   },
   "fork_pr": {
     "number": 852,
-    "repo": "MuyuanMS/PowerToys",
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/852",
-    "state": "OPEN",
-    "head_sha": "abae691af505473355b22ca131e004240946a8a2"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/852"
   },
-  "fork_branch": "pr-iterate/50636",
-  "fork_head_sha": "abae691af505473355b22ca131e004240946a8a2",
-  "validation": {
-    "fork_review": {
-      "result": "passed",
-      "details": "Fresh post-fix Copilot review returned zero new findings and unresolved thread count is zero."
-    },
-    "fork_build": {
-      "result": "passed",
-      "head_sha": "abae691af505473355b22ca131e004240946a8a2",
-      "commands": [
-        "build-essentials.cmd",
-        "Peek.FilePreviewer build.cmd"
-      ],
-      "details": "Restore, Runner, Settings, and Peek.FilePreviewer built successfully; one pre-existing CsWinRT warning was emitted."
-    },
-    "upstream_head": {
-      "head_sha": "733db2c1a1ac45110b66232e9d6ad6584bf5959e",
-      "result": "reviewed",
-      "details": "The companion finding is pinned to the live upstream head; no apply-ready suggestion is emitted."
-    }
-  },
-  "upstream_safety": {
-    "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
-  }
+  "fork_branch": "pr-iterate/50636"
 }

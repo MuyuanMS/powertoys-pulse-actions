@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50650",
+  "number": 50650,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-18T16:39:51.836306Z",
+  "evaluated_at": "2026-09-18T16:39:51.836306Z",
+  "source_updated_at": "2026-09-18T15:16:27Z",
+  "title": "Copilot key intermittently fails to map to Ctrl (Right) key",
+  "url": "https://github.com/microsoft/PowerToys/issues/50650",
+  "summary": "Mapping the Copilot hardware shortcut Win (Left)+Shift (Left)+F23 to Ctrl (Right) intermittently leaks the original modifiers or action, matching an existing open Priority-2 Keyboard Manager issue.",
+  "confidence": "High",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Open issue #35808 already tracks Copilot-key remapping to Ctrl and contains the same failure family: leftover Shift or Windows modifiers, the Copilot action still opening, first-use failures, and reports that the Windows key becomes stuck in applications including PowerShell. Issue #50650 adds a current v0.101.2362 report and a diagnostic archive but does not identify a distinct mechanism or scenario that should be investigated separately. Consolidating it into #35808 avoids splitting the existing Priority-2 investigation.",
+    "evidence": [
+      "Issue #50650 maps Win (Left)+Shift (Left)+F23, the Copilot hardware shortcut, to Ctrl (Right) and reports intermittent Copilot activation plus a stuck Windows key.",
+      "Open Priority-2 issue #35808 tracks failure to remap the Copilot key to Ctrl and remains the active umbrella issue.",
+      "Discussion in #35808 reports the Copilot shortcut being emitted as Ctrl+Shift, original Win/Shift modifiers leaking through, the Copilot UI opening, and the Windows key becoming stuck in PowerShell.",
+      "Closed issue #33717 documents the related first-press failure in VS Code and other focused applications.",
+      "Closed issue #33589 documents the same F23-to-Ctrl mapping behaving as Ctrl+Shift and later reports multiple Ctrl, Shift, and Windows modifiers.",
+      "Current upstream KeyboardEventHandlers.cpp uses the generic shortcut-to-key path to release the source shortcut modifiers and inject the target key; no Copilot/F23-specific test covers the Win+Shift+F23-to-Right-Ctrl press/release sequence."
+    ],
+    "recommended_action": "Post a specific duplicate comment linking #35808 and consolidate the v0.101.2362 reproduction and diagnostic attachment there.",
+    "evaluated_at": "2026-09-18T16:39:51.836306Z",
+    "source_updated_at": "2026-09-18T15:16:27Z",
+    "confidence": {
+      "score": 96,
+      "level": "green",
+      "rationale": "The active duplicate contains the same source shortcut, target modifier, leaked original action/modifiers, affected applications, and stuck-Windows-key symptom."
+    }
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A separate fix plan for #50650 would duplicate the active Priority-2 investigation in #35808. No linked PR currently provides an existing fix, and the new report should be consolidated before any implementation is scoped."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A current PowerToys report shows the Copilot hardware shortcut cannot be reliably transformed into a held Right Ctrl modifier; the same modifier leakage and stuck-key behavior is already tracked in #35808.",
+    "known_information": [
+      "The reporter is using PowerToys v0.101.2362 installed through PowerToys auto-update.",
+      "The configured source is Win (Left)+Shift (Left)+F23, or the captured Copilot key, and the target is Ctrl (Right).",
+      "The failure is intermittent while using the remapped key for VS Code shortcuts.",
+      "When the failure occurs, Copilot activates and the Windows key appears to remain pressed.",
+      "A PowerToysReport ZIP is attached to #50650.",
+      "The issue has no comments, assignees, linked pull requests, or linked issue events and currently carries Issue-Bug and Needs-Triage.",
+      "Issue #35808 is open with Product-Keyboard Shortcut Manager and Priority-2 labels."
+    ],
+    "inferences": [
+      "The original Win/Shift modifier state may not always be fully suppressed or released when the generic shortcut-to-key remap injects Right Ctrl, but #50650 alone does not prove the exact event-order failure.",
+      "Application focus or key press/release ordering may affect the intermittent manifestation because prior reports include first-use and PowerShell-specific failures.",
+      "The diagnostic archive may add useful environment evidence to the existing investigation, but it does not justify a parallel issue or competing design."
+    ],
+    "analysis": "The report is sufficiently specific to match the established duplicate rather than request more reporter evidence. The source shortcut, desired target, leaked Copilot action, and stuck Windows modifier all appear in #35808's discussion. Current source confirms this combination travels through generic modifier release and target injection logic, while the focused unit tests cover generic modifier targets but not a physical Win+Shift+F23 Copilot sequence. The correct maintainer action is therefore a concrete duplicate comment, not a speculative new fix plan.",
+    "initial_investigation": [
+      "Read the complete live #50650 body, empty discussion, labels, assignees, timeline, attachment reference, and linked-work state through 2026-09-18T15:16:27Z.",
+      "Reviewed the complete discussion and current Priority-2 state of open issue #35808, including reports of Ctrl+Shift leakage, Copilot activation, PowerShell-specific failure, and a stuck Windows key.",
+      "Reviewed related closed issues #31979, #33589, and #33717 for prior F23/Copilot-to-Ctrl behavior and resolution history.",
+      "Searched upstream issues and pull requests for Copilot, F23, Ctrl, and stuck-modifier fixes; no current covering PR was found.",
+      "Inspected upstream main 6896d76317f60221b79174dc24836b8f64e82880 in KeyboardEventHandlers.cpp, Helpers.cpp, and OSLevelShortcutRemappingTests.cpp for the shortcut-to-modifier event path and test coverage.",
+      "Reviewed recent Keyboard Manager history, including generic stuck-modifier fixes #48571, #46672, #47192, and #37930; none is documented as resolving the active Copilot-key issue."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "close-duplicate-50650-35808",
+      "type": "post_comment",
+      "label": "Close as duplicate of #35808",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "body": "Thanks for the detailed v0.101.2362 report and the attached diagnostic archive. This behavior is already tracked in #35808. That issue covers remapping the Copilot hardware shortcut (`Win (Left) + Shift (Left) + F23`) to Ctrl, intermittent leakage of the original Shift/Windows modifiers, the Copilot action still opening, and reports of the Windows key becoming stuck in applications including PowerShell. Closing this as a duplicate will keep the current reproduction and investigation consolidated in #35808."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "author": "TimTheinAtTabs",
+  "pending_author": false,
+  "linked_work": {
+    "duplicates": [
+      {
+        "number": 35808,
+        "url": "https://github.com/microsoft/PowerToys/issues/35808",
+        "state": "OPEN",
+        "relationship": "Active Priority-2 umbrella issue for Copilot/F23-to-Ctrl remapping failures, leaked modifiers, Copilot activation, and stuck Windows-key behavior."
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 31979,
+        "url": "https://github.com/microsoft/PowerToys/issues/31979",
+        "state": "CLOSED",
+        "relationship": "Earlier Copilot/F23-to-Ctrl report with first-use and hardware-dependent failures."
+      },
+      {
+        "number": 33589,
+        "url": "https://github.com/microsoft/PowerToys/issues/33589",
+        "state": "CLOSED",
+        "relationship": "Earlier F23-to-Ctrl report where Shift and Windows modifiers leaked into the result."
+      },
+      {
+        "number": 33717,
+        "url": "https://github.com/microsoft/PowerToys/issues/33717",
+        "state": "CLOSED",
+        "relationship": "Earlier first-press failure for the same Copilot shortcut-to-Ctrl mapping."
+      }
+    ],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, labels, assignments, closures, cross-references, or other public mutations were made to microsoft/PowerToys."
+  }
+}
