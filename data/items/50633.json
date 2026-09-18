@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50633",
+  "number": 50633,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "reproducible",
+  "generated_at": "2026-09-18T11:14:41.5540412Z",
+  "evaluated_at": "2026-09-18T11:14:41.5540412Z",
+  "source_updated_at": "2026-09-18T08:43:17Z",
+  "title": "FancyZones: Snap to last known zone fails with some apps",
+  "url": "https://github.com/microsoft/PowerToys/issues/50633",
+  "summary": "FancyZones last-known-zone placement is deterministic but application-dependent: Visual Studio opens a few pixels offset, while additional Explorer and Terminal windows are not restored to the exact prior zone on a three-monitor system.",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report gives a clear feature setting, repeatable sequence, affected and unaffected applications, exact placement symptoms, and monitor topology. Maintainer-side reproduction should compare initial window rectangles and post-creation repositioning for apps that restore their own placement.",
+    "evidence": [
+      "Move newly created windows to their last known zone is enabled.",
+      "Visual Studio 2022/2026 opens offset a few pixels to the right.",
+      "Explorer and Terminal only place the first window reliably; additional concurrent windows land approximately in the region.",
+      "VS Code, Excel, Rider, Settings, Edge, Outlook, Teams, and Chrome reportedly behave correctly.",
+      "The primary monitor is 3440x1440 at 100% scaling with two additional monitors at different resolutions."
+    ],
+    "recommended_action": "Reproduce with Visual Studio, Explorer, and Terminal while tracing the initial and delayed window-position events against FancyZones last-known-zone placement.",
+    "evaluated_at": "2026-09-18T11:14:41.5540412Z",
+    "source_updated_at": "2026-09-18T08:43:17Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The application-specific pattern suggests FancyZones placement is being overwritten or rounded by later app-owned window restoration, but event tracing is needed to select the correct stabilization point."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Stabilize last-known-zone placement after app-owned window restoration",
+      "root_cause": "Likely a race or coordinate-conversion mismatch between FancyZones initial placement and application-owned restore/reposition behavior for multi-instance or DPI-aware windows.",
+      "plan": [
+        "Trace WinEvent location changes and placement calls from window creation through the first settled rectangle for the affected apps.",
+        "Compare logical/physical coordinate conversion and work-area offsets on the mixed-monitor topology.",
+        "If the app overwrites the initial placement, defer or reapply the saved zone only at the established new-window stabilization boundary without fighting normal user moves.",
+        "Add targeted coverage for multiple windows sharing the same executable and saved zone."
+      ],
+      "verification": [
+        "Open sequential and concurrent Visual Studio, Explorer, and Terminal windows and confirm each settles exactly in the saved zone without pixel drift.",
+        "Verify unaffected apps and mixed-DPI monitor transitions do not regress."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The affected/unaffected app split and pixel offset point to placement timing or coordinate conversion, but runtime traces are required to distinguish them."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Last-known-zone restoration is inaccurate for several apps despite working for others on the same mixed-monitor setup.",
+    "known_information": [
+      "PowerToys 0.98.1 installed with WinGet on Windows 11 Enterprise 24H2.",
+      "FancyZones runs non-elevated.",
+      "Visual Studio shows a small horizontal offset.",
+      "Additional Explorer and Terminal windows do not consistently occupy the exact saved zone.",
+      "Other listed applications work correctly."
+    ],
+    "inferences": [
+      "Some affected applications may perform a later window-placement update after FancyZones acts.",
+      "The Visual Studio pixel drift may involve work-area or DPI coordinate conversion."
+    ],
+    "analysis": "The report is sufficiently specific for targeted maintainer reproduction. Comparing the full window-position event sequence across affected and unaffected apps will distinguish an app-owned late move from a shared coordinate calculation error.",
+    "initial_investigation": [
+      "Compared affected and unaffected application groups and the supplied mixed-monitor topology.",
+      "Identified window-placement timing and coordinate conversion as the two discriminating hypotheses."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50633",
+      "type": "approve_design",
+      "label": "Approve last-known-zone placement stabilization design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "issue": 50633,
+        "title": "Approve last-known-zone placement stabilization design",
+        "prompt": "Design a focused fix for PowerToys issue 50633. Trace FancyZones last-known-zone placement from window creation through settled app-owned repositioning for Visual Studio, Explorer, and Terminal on mixed-monitor layouts; distinguish delayed app restoration from coordinate conversion, then stabilize placement and add multi-instance coverage."
+      },
+      "note": "Approval starts fork-side design work only; no upstream write occurs automatically."
+    },
+    {
+      "id": "reproduce-50633",
+      "type": "reproduce",
+      "label": "Trace last-known-zone placement",
+      "primary": true,
+      "confirm": false,
+      "reproduce": {
+        "module": "FancyZones",
+        "version": "Current main and PowerToys 0.98.1 for comparison",
+        "prerequisites": [
+          "Enable Move newly created windows to their last known zone",
+          "Use a three-monitor setup including 3440x1440 at 100% scaling",
+          "Install Visual Studio, Windows Terminal, and use File Explorer"
+        ],
+        "steps": [
+          "Snap one affected application window into a FancyZones zone.",
+          "Open another window while the first remains open and record its initial and settled rectangles.",
+          "Repeat after closing the first window and after restarting PowerToys.",
+          "Repeat for Visual Studio, Explorer, Terminal, and one unaffected control application."
+        ],
+        "expected": "Every newly created window settles exactly in the saved zone, with no pixel offset and no difference between first and concurrent windows."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "author": "thomasneubergersdx",
+  "pending_author": false,
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
+}

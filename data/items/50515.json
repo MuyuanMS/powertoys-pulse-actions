@@ -1,93 +1,126 @@
 {
   "schemaVersion": 5,
+  "id": "issue-50515",
   "number": 50515,
   "kind": "issue",
   "track": "triage",
-  "stage": "needs_information",
-  "owes": "author",
-  "pending_author": false,
-  "generated_at": "2026-09-11T15:08:39.7870394Z",
-  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
-  "source_updated_at": "2026-09-11T09:20:02Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50515",
+  "stage": "reproducible",
+  "generated_at": "2026-09-18T11:14:12.8466645Z",
+  "evaluated_at": "2026-09-18T11:14:12.8466645Z",
+  "source_updated_at": "2026-09-18T10:51:32Z",
   "title": "cmdpal dock new auto-hide bug with bottom position",
+  "url": "https://github.com/microsoft/PowerToys/issues/50515",
+  "summary": "Command Palette dock auto-hide repeatedly hides and reveals when docked at the bottom and the pointer reaches the Windows taskbar. A second user supplied a public recording confirming the behavior.",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report provides a short deterministic sequence and a second user supplied a recording of the same bottom-dock/taskbar interaction. The remaining work is maintainer-side reproduction against the current build to isolate the trigger boundary.",
+    "evidence": [
+      "Set Command Palette dock position to bottom.",
+      "Enable auto-hide.",
+      "Move the pointer into the Windows taskbar.",
+      "The dock repeatedly hides and reveals instead of remaining shown.",
+      "A second user confirmed the issue and attached a public recording."
+    ],
+    "recommended_action": "Reproduce on the current Command Palette build while tracing the bottom-edge auto-hide trigger and taskbar overlap.",
+    "evaluated_at": "2026-09-18T11:14:12.8466645Z",
+    "source_updated_at": "2026-09-18T10:51:32Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The symptom is consistent with competing taskbar-edge enter/leave or visibility triggers in the bottom-docked auto-hide state; focused reproduction is needed before implementation."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Debounce bottom-edge auto-hide transitions across the taskbar boundary",
+      "root_cause": "Likely competing pointer-boundary and dock visibility transitions repeatedly reinterpret movement into the bottom taskbar as both show and hide input.",
+      "plan": [
+        "Trace the bottom-docked auto-hide pointer and visibility state transitions.",
+        "Treat the taskbar-adjacent activation strip as part of one stable hover state instead of alternating enter/leave signals.",
+        "Add coverage for bottom docking with Windows taskbar auto-hide both enabled and disabled."
+      ],
+      "verification": [
+        "Reproduce the issue with bottom docking and confirm moving into the taskbar reveals the dock once without oscillation."
+      ],
+      "confidence": {
+        "score": 68,
+        "level": "yellow",
+        "rationale": "The deterministic taskbar-boundary symptom strongly suggests a state-transition conflict, but tracing is needed to identify the exact handler."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Bottom-docked Command Palette auto-hide oscillates when the cursor moves into the Windows taskbar.",
+    "known_information": [
+      "The issue occurs with Command Palette docked at the bottom and auto-hide enabled.",
+      "Moving the pointer into the taskbar triggers the failure.",
+      "A second user reproduced it and attached a recording."
+    ],
+    "inferences": [
+      "The bottom taskbar boundary may generate conflicting activation and dismissal transitions for the dock."
+    ],
+    "analysis": "The public sequence and recording are sufficient for maintainer reproduction. The correct next step is tracing the dock auto-hide state machine, not asking the reporter for generic diagnostics.",
+    "initial_investigation": [
+      "Reviewed the original report and the second-user confirmation recording reference."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50515",
+      "type": "approve_design",
+      "label": "Approve bottom-dock auto-hide stabilization design",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "design": {
+        "issue": 50515,
+        "title": "Approve bottom-dock auto-hide stabilization design",
+        "prompt": "Design a focused fix for PowerToys issue 50515. Trace Command Palette bottom-dock auto-hide pointer and visibility transitions at the Windows taskbar boundary, eliminate competing show/hide state changes without weakening activation behavior, and add coverage for taskbar auto-hide enabled and disabled."
+      },
+      "note": "Approval starts fork-side design work only; no upstream write occurs automatically."
+    },
+    {
+      "id": "reproduce-50515",
+      "type": "reproduce",
+      "label": "Reproduce bottom-dock auto-hide oscillation",
+      "primary": true,
+      "confirm": false,
+      "reproduce": {
+        "module": "Command Palette",
+        "version": "Current main or a build at least as new as 0.101.2492",
+        "prerequisites": [
+          "Windows taskbar visible at the bottom edge",
+          "Command Palette docking enabled"
+        ],
+        "steps": [
+          "Set Command Palette dock position to Bottom.",
+          "Enable dock auto-hide.",
+          "Move the pointer from the desktop into the Windows taskbar area.",
+          "Observe dock visibility transitions while moving along and away from the taskbar boundary."
+        ],
+        "expected": "The dock reveals once and remains stable while the pointer is in its activation/taskbar boundary; it must not repeatedly hide and reveal.",
+        "attachments": [
+          "https://github.com/user-attachments/assets/f9915e67-dd4c-4410-95c5-928099f4db2e"
+        ]
+      }
+    }
+  ],
   "labels": [
     "Issue-Bug",
     "Needs-Triage"
   ],
-  "assignees": null,
-  "comments": 0,
-  "status": {
-    "glyph": "?",
-    "label": "Needs targeted evidence",
-    "detail": "The public report needs concrete reproduction and diagnostic evidence before a fix design can be proposed."
+  "assignees": [],
+  "comments": 1,
+  "author": "TheGamer1445891",
+  "pending_author": false,
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [],
+    "related_prs": [],
+    "covering_prs": []
   },
-  "next_action": {
-    "glyph": "?",
-    "label": "Request repro steps and diagnostics",
-    "reason": "Ask only for the current evidence needed to confirm the failing path."
-  },
-  "judgment": {
-    "status": "needs_information",
-    "rationale": "The selected fast pass found an open bug report but not enough current public evidence to identify a specific PowerToys code fix without speculation.",
-    "evidence": [
-      "The issue is open and labeled as an Issue-Bug report.",
-      "Title: cmdpal dock new auto-hide bug with bottom position",
-      "Issue body excerpt: ### Microsoft PowerToys version and release channel v0.101.2492 ### Installation method Microsoft Store ### Area(s) with issue? Command Palette ### Steps to reproduce set cmdpal dock position to bottom, then enable auto-hide, then move cursor into the taskbar ### ✔️ Expected Behavior the dock shouldve been shown on bottom position, not weird hide-unhide (so...",
-      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) on 2026-09-11T14:37:38.0214846Z.",
-      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) on 2026-09-11T14:38:05.1052603Z.",
-      "Fast revalidation read the live issue body, labels, assignees, and 0 public comment(s) on 2026-09-11T15:08:39.7870394Z."
-    ],
-    "recommended_action": "Request exact reproduction steps and a fresh /bugreport diagnostic archive.",
-    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
-    "source_updated_at": "2026-09-11T09:20:02Z"
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository fix is not yet actionable because the selected lightweight pass did not find enough public evidence to identify the failing PowerToys code path."
-  },
-  "issue_context": {
-    "summary": "Open PowerToys bug report for the affected PowerToys module: cmdpal dock new auto-hide bug with bottom position",
-    "known_information": [
-      "The issue is open and labeled as an Issue-Bug report.",
-      "Title: cmdpal dock new auto-hide bug with bottom position",
-      "Issue body excerpt: ### Microsoft PowerToys version and release channel v0.101.2492 ### Installation method Microsoft Store ### Area(s) with issue? Command Palette ### Steps to reproduce set cmdpal dock position to bottom, then enable auto-hide, then move cursor into the taskbar ### ✔️ Expected Behavior the dock shouldve been shown on bottom position, not weird hide-unhide (so...",
-      "Fast revalidation covered live upstream activity through 09/11/2026 09:20:02.",
-      "Fast revalidation covered live upstream activity through 2026-09-11T09:20:02.0000000Z."
-    ],
-    "inferences": [
-      "The symptom may be PowerToys-specific, but the current public evidence is insufficient to choose a code change safely."
-    ],
-    "analysis": "The fast revalidation read the public title, body, labels, assignees, and latest comments. It found a bug report but no confirmed failing symbol, linked fix, or complete reproduction/diagnostic package suitable for a design artifact.",
-    "initial_investigation": [
-      "Read issue metadata, labels, assignees, body, and 0 public comment(s).",
-      "Checked selected dashboard artifact freshness and contract requirements before publishing.",
-      "Revalidated selected issue metadata, labels, assignees, body, and 0 public comment(s) during the scheduled bounded run."
-    ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "Numbered steps that reproduce the problem from a clean PowerToys start, including expected and actual behavior.",
-        "why_needed": "Maintainers need a deterministic scenario before choosing the owning code path or designing a fix.",
-        "how_to_collect": "Reply with numbered reproduction steps."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "Fresh PowerToys diagnostics captured immediately after reproducing the problem.",
-        "why_needed": "The diagnostic archive can identify the active module state, version, configuration, and relevant logs for the failing path.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "id": "request-repro-diagnostics-50515",
-      "type": "request_info",
-      "label": "Request repro steps and diagnostics",
-      "primary": true,
-      "comment": {
-        "body": "Thanks for the report. The current issue identifies the affected behavior (\"cmdpal dock new auto-hide bug with bottom position\") and the dashboard revalidation saw the public labels/comments, but it still does not contain enough current diagnostic evidence to distinguish a PowerToys code defect from environment- or configuration-specific behavior.\r\n\r\nPlease provide:\r\n1. Numbered steps that reproduce the problem from a clean PowerToys start, including the exact PowerToys version and Windows version.\r\n2. A fresh diagnostic archive captured immediately after reproducing it by adding a comment containing /bugreport.\r\n\r\nThose details will let maintainers confirm the failing path for the affected PowerToys module and decide whether this should move to a concrete fix design."
-      }
-    }
-  ]
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
