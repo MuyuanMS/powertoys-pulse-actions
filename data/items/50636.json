@@ -1,35 +1,126 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50636",
   "number": 50636,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-18T21:11:19.2314117Z",
-  "evaluated_at": "09/18/2026 16:44:17",
+  "generated_at": "2026-09-18T23:25:00Z",
+  "evaluated_at": "2026-09-18T23:25:00Z",
   "source_updated_at": "2026-09-18T14:13:44Z",
   "head_sha": "5a87fe2a2f7462d5fac65769c8edce5fab8e1a30",
   "title": "[Peek] Fix async void Dispose in WebBrowserPreviewer",
   "url": "https://github.com/microsoft/PowerToys/pull/50636",
+  "repository": "microsoft/PowerToys",
+  "confidence": "high",
+  "processVerdict": "proceed",
+  "summary": "The current-head fork review is converged with zero unresolved Copilot threads. Applying the literal minimized disposal suggestion to the pinned upstream head passes the Peek restore and build, and the target raw blob uses consistent LF line endings.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "The exact upstream candidate, Peek restore/build, diff check, and LF-only raw-blob gate passed for the minimized disposal suggestion. Final validator-ready action assembly remains before publication."
+    "glyph": "DRAFT",
+    "label": "Inline suggestion ready for approval",
+    "detail": "One current RIGHT-side disposal correction is ready for maintainer approval."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "After explicit maintainer approval and a freshness re-check, submit the selected inline suggestion in a REQUEST_CHANGES review.",
+  "proposed_comments": [
+    {
+      "id": "webbrowserpreviewer-dispose-guard",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Do not mark browser preview disposed from the finalizer path",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/WebBrowserPreviewer/WebBrowserPreviewer.cs",
+      "start_line": 71,
+      "line": 71,
+      "end_line": 85,
+      "side": "RIGHT",
+      "body": "### Do not mark browser preview disposed from the finalizer path\n\n**Severity:** `high`\n\nThe finalizer calls `Dispose(false)`, but the current guard still sets `disposed = true` even when `disposing` is false. Keep the finalizer path side-effect free so only explicit disposal performs the filesystem cleanup and records the object as disposed.\n\n```suggestion\nprotected virtual void Dispose(bool disposing)\n{\n    if (!disposed && disposing)\n    {\n        Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);\n        disposed = true;\n    }\n}\n```",
+      "suggestion": "protected virtual void Dispose(bool disposing)\n{\n    if (!disposed && disposing)\n    {\n        Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);\n        disposed = true;\n    }\n}",
+      "confidence": {
+        "score": 88,
+        "rationale": "The current RIGHT-side hunk contains the disposal guard, the literal minimized replacement is self-contained, and the exact suggestion candidate builds after the raw LF-only safety check."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50636",
+      "type": "request_changes",
+      "label": "Request the browser-preview disposal correction",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50636,
+        "pr": 50636,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "5a87fe2a2f7462d5fac65769c8edce5fab8e1a30",
+        "body": "Please keep the finalizer path side-effect free so only explicit disposal performs cleanup and marks the preview disposed."
+      },
+      "note": "Posts one current RIGHT-side inline suggestion after explicit approval and a final freshness check."
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-18T21:11:19.2314117Z"
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-18T23:25:00Z",
+    "fork_pr": 852,
+    "fork_branch": "pr-iterate/50636",
+    "fork_head_sha": "abae691af505473355b22ca131e004240946a8a2",
+    "unresolved_copilot_threads": 0
   },
   "freshness": {
-    "queued_at": "09/18/2026 16:44:17",
-    "checkpoint_at": "2026-09-18T21:11:19.2314117Z"
+    "status": "fresh",
+    "head_sha": "5a87fe2a2f7462d5fac65769c8edce5fab8e1a30",
+    "source_updated_at": "2026-09-18T14:13:44Z",
+    "evaluated_at": "2026-09-18T23:25:00Z"
   },
-  "fork_pr": {
-    "number": 852,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/852"
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "5a87fe2a2f7462d5fac65769c8edce5fab8e1a30",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "webbrowserpreviewer-dispose-guard"
+      ],
+      "commands": [
+        "Applied the literal public suggestion to the pinned upstream head.",
+        "Ran tools\\build\\build-essentials.cmd.",
+        "Ran tools\\build\\build.cmd in src\\modules\\peek\\Peek.FilePreviewer."
+      ],
+      "details": "The exact suggestion candidate restored and built successfully."
+    },
+    "line_ending_safety": {
+      "head_sha": "5a87fe2a2f7462d5fac65769c8edce5fab8e1a30",
+      "result": "passed",
+      "checked_comment_ids": [
+        "webbrowserpreviewer-dispose-guard"
+      ],
+      "files": [
+        {
+          "path": "src/modules/peek/Peek.FilePreviewer/Previewers/WebBrowserPreviewer/WebBrowserPreviewer.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": false
+        }
+      ]
+    },
+    "fork_review": {
+      "result": "passed",
+      "fork_head_sha": "abae691af505473355b22ca131e004240946a8a2",
+      "latest_copilot_new_comments": 0,
+      "unresolved_copilot_threads": 0
+    }
   },
-  "fork_branch": "pr-iterate/50636"
+  "fork": {
+    "repository": "MuyuanMS/PowerToys",
+    "pr": 852,
+    "branch": "pr-iterate/50636",
+    "head_sha": "abae691af505473355b22ca131e004240946a8a2"
+  },
+  "upstream_writes": false,
+  "dashboard_modified": true
 }
