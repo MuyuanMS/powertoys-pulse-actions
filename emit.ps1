@@ -1053,7 +1053,7 @@ foreach ($it in $src.items) {
   $proposedOpen = 0
   $postedComments = 0
   if ($o -and $o.proposed_comments) {
-    $proposedOpen = @($o.proposed_comments | Where-Object { $_.disposition -eq 'proposed' }).Count
+    $proposedOpen = @($o.proposed_comments | Where-Object { [string]$_.disposition -notin @('posted', 'withdrawn') }).Count
     $postedComments = @($o.proposed_comments | Where-Object { $_.disposition -eq 'posted' }).Count
   }
   $hasDraftReviewAction = @(

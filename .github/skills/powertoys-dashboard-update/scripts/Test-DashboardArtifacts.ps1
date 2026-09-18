@@ -180,7 +180,7 @@ foreach ($path in @($paths)) {
 
     $proposedComments = @(
       $artifact.proposed_comments |
-        Where-Object { $_.disposition -eq 'proposed' }
+        Where-Object { [string]$_.disposition -notin @('posted', 'withdrawn') }
     )
     $inlineComments = @(
       $proposedComments |

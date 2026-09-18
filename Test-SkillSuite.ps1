@@ -590,6 +590,33 @@ if (-not (Test-Path $artifactValidator)) {
     }
     Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
 
+    $legacyMissingDisposition = $validPrArtifactText | ConvertFrom-Json
+    $legacyMissingDisposition.proposed_comments[0].PSObject.Properties.Remove('disposition')
+    $legacyMissingDisposition.proposed_comments[0].kind = 'companion'
+    $legacyMissingDisposition.proposed_comments[0].in_diff = $false
+    $legacyMissingDisposition.proposed_comments[0].body = 'This legacy general comment is too terse.'
+    $legacyMissingDisposition | ConvertTo-Json -Depth 10 |
+      Set-Content (Join-Path $artifactRoot 'data\items\34567.json')
+    try {
+      & $artifactValidator -Dashboard $artifactRoot -Numbers 34567 2>$null | Out-Null
+      $errors.Add('Dashboard artifact validator ignored a malformed legacy comment with missing disposition.')
+    } catch {
+      if ($_.Exception.Message -notlike 'Dashboard artifact validation failed*') {
+        throw
+      }
+    }
+    & $actionSanitizer -DataPath (Join-Path $artifactRoot 'data') 3>$null | Out-Null
+    $sanitizedLegacyComment = Get-Content (Join-Path $artifactRoot 'data\items\34567.json') -Raw |
+      ConvertFrom-Json
+    if ($sanitizedLegacyComment.stage -ne 'review_in_progress' -or
+        @($sanitizedLegacyComment.proposed_comments).Count -ne 0 -or
+        @($sanitizedLegacyComment.actions | Where-Object {
+          $_.type -in @('post_review', 'request_changes')
+        }).Count -gt 0) {
+      $errors.Add('Sanitizer did not fail closed for a malformed legacy comment with missing disposition.')
+    }
+    Set-Content (Join-Path $artifactRoot 'data\items\34567.json') $validPrArtifactText
+
     $invalidSuggestionValidation = $validPrArtifactText | ConvertFrom-Json
     $invalidSuggestionValidation.validation.suggestion_patch.applied_comment_ids = @('other-fix')
     $invalidSuggestionValidation | ConvertTo-Json -Depth 10 |

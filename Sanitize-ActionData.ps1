@@ -111,7 +111,7 @@ function Get-PublicActions {
       }
     }
     $proposedComments = @($Artifact.proposed_comments | Where-Object {
-      $_.disposition -eq 'proposed'
+      [string]$_.disposition -notin @('posted', 'withdrawn')
     })
     $inlineComments = @($proposedComments | Where-Object {
       $_.kind -eq 'inline' -or
@@ -227,7 +227,7 @@ function Get-PublicActions {
         $_.type -notin @('post_review', 'request_changes')
       })
       $Artifact.proposed_comments = @($Artifact.proposed_comments | Where-Object {
-        $_.disposition -ne 'proposed'
+        [string]$_.disposition -in @('posted', 'withdrawn')
       })
       $Artifact.stage = 'review_in_progress'
       if ($Artifact.PSObject.Properties['needs_revalidation']) {
@@ -267,7 +267,7 @@ foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
   if ($artifact.kind -eq 'pr') {
     $proposedCommentCounts[[int]$artifact.number] = @(
       $artifact.proposed_comments |
-        Where-Object { $_.disposition -eq 'proposed' }
+        Where-Object { [string]$_.disposition -notin @('posted', 'withdrawn') }
     ).Count
   }
   $publicArtifact = Convert-PublicValue $artifact
