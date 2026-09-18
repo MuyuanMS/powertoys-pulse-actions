@@ -4,7 +4,7 @@
   "number": 49287,
   "kind": "pr",
   "track": "review",
-  "stage": "owned_elsewhere",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-02T22:13:49.5968467Z",
@@ -38,7 +38,7 @@
     "label": "Leave with active maintainer review",
     "reason": "The obsolete dashboard review draft has been invalidated; no parallel upstream action is appropriate."
   },
-  "needs_revalidation": false,
+  "needs_revalidation": true,
   "phase0": {
     "bar": "community contributor: full Phase 0",
     "verdict": "proceed",
@@ -87,104 +87,7 @@
       }
     }
   },
-  "proposed_comments": [
-    {
-      "id": "include-win-both-in-win-filter",
-      "kind": "inline",
-      "title": "Include Win (Both) in the Win modifier filter",
-      "severity": "medium",
-      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs",
-      "side": "RIGHT",
-      "line": 99,
-      "start_line": 99,
-      "body": "Generic \"Win (Both)\" remaps are stored with Keyboard Manager's synthetic `VK_WIN_BOTH` value (`0x104`), but the Win filter currently checks only left and right Win. Those mappings disappear whenever users enable the Win modifier filter, so include the synthetic code in the Win family.\n\n**Severity:** `medium`\n\n```suggestion\n        private static readonly int[] _winVkCodes = { 0x5B, 0x5C, 0x104 };\n```",
-      "suggestion": "        private static readonly int[] _winVkCodes = { 0x5B, 0x5C, 0x104 };",
-      "in_diff": true,
-      "confidence": {
-        "score": 93,
-        "rationale": "Keyboard Manager's validation and native helper code both treat 0x104 as VK_WIN_BOTH, and the current filter array contains only 0x5B/0x5C."
-      },
-      "disposition": "obsolete"
-    },
-    {
-      "id": "restore-real-app-filter-selection",
-      "kind": "inline",
-      "title": "Preserve app-filter selection using real app entries only",
-      "severity": "medium",
-      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs",
-      "side": "RIGHT",
-      "line": 1379,
-      "start_line": 1379,
-      "body": "`IndexOf` searches the localized sentinel entries and compares case-sensitively, while app names are user-controlled. If an app name differs only by case, or collides with a localized sentinel label such as \"All apps\" or \"Global only\", the filter can restore to the wrong option after a refresh. Search only the real app entries and use the same ordinal-ignore-case comparison as the rest of the filter.\n\n**Severity:** `medium`\n\n```suggestion\n                int found = -1;\n                for (int i = 2; i < AppFilterOptions.Count; i++)\n                {\n                    if (string.Equals(AppFilterOptions[i], previous, StringComparison.OrdinalIgnoreCase))\n                    {\n                        found = i;\n                        break;\n                    }\n                }\n```",
-      "suggestion": "                int found = -1;\n                for (int i = 2; i < AppFilterOptions.Count; i++)\n                {\n                    if (string.Equals(AppFilterOptions[i], previous, StringComparison.OrdinalIgnoreCase))\n                    {\n                        found = i;\n                        break;\n                    }\n                }",
-      "in_diff": true,
-      "confidence": {
-        "score": 95,
-        "rationale": "The first two combo entries are localized sentinels, while app names come from user configuration and are collected in a case-insensitive SortedSet."
-      },
-      "disposition": "obsolete"
-    },
-    {
-      "id": "clear-selection-before-disabling-selection-mode",
-      "kind": "inline",
-      "title": "Clear bulk selection before disabling selection mode",
-      "severity": "high",
-      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs",
-      "side": "RIGHT",
-      "line": 1570,
-      "start_line": 1570,
-      "body": "After a confirmed bulk delete, `IsSelectionMode = false` flips the bound lists back to `SelectionMode.None` while they can still contain selected items. The toggle path already clears while the lists are still in `Multiple` mode because `SelectedItems` is invalid otherwise; the delete path needs the same ordering to avoid crashing the settings panel.\n\n**Severity:** `high`\n\n```suggestion\n            ClearAllSelections();\n            IsSelectionMode = false;\n```",
-      "suggestion": "            ClearAllSelections();\n            IsSelectionMode = false;",
-      "in_diff": true,
-      "confidence": {
-        "score": 96,
-        "rationale": "The code comment and existing toggle path already establish that SelectedItems must be touched before SelectionMode becomes None, but the bulk-delete path skipped that ordering."
-      },
-      "disposition": "obsolete"
-    },
-    {
-      "id": "singular-bulk-delete-copy",
-      "kind": "companion",
-      "title": "Use singular bulk-delete resources when exactly one row is selected",
-      "severity": "low",
-      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Strings/en-US/Resources.resw",
-      "body": "### Use singular bulk-delete resources when exactly one row is selected\n\n**Severity:** `low`\n\nThe button and confirmation text currently produce grammatically incorrect copy such as \"Delete selected (1)\" followed by \"delete 1 remappings.\" Add singular resources for the one-item case and branch in `DeleteSelectedLabel` / `DeleteSelectedBtn_Click` so plural formatting is used only for counts other than one.",
-      "in_diff": false,
-      "confidence": {
-        "score": 92,
-        "rationale": "The current resource strings are unconditionally plural and the selected count is already available in both call sites."
-      },
-      "disposition": "obsolete"
-    },
-    {
-      "id": "selection-mode-row-actions",
-      "kind": "companion",
-      "title": "Prevent row-level actions from mutating data while bulk selection is active",
-      "severity": "medium",
-      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs",
-      "body": "### Prevent row-level actions from mutating data while bulk selection is active\n\n**Severity:** `medium`\n\n`IsItemClickEnabled` suppresses row editing in selection mode, but the per-row toggle switch and ellipsis menu can still fire. If one of those actions rebuilds the filtered lists while bulk selection is active, selected rows are cleared while the UI still appears to be in selection mode; deleting the last visible row can also hide the toolbar that contains Cancel. Either disable/hide those row actions while `IsSelectionMode` is true, or explicitly exit selection mode before handling an individual row delete/toggle.",
-      "in_diff": false,
-      "confidence": {
-        "score": 86,
-        "rationale": "The row action controls remain enabled inside each DataTemplate and their handlers mutate mapping state/reload views independently of the new selection-mode state."
-      },
-      "disposition": "obsolete"
-    },
-    {
-      "id": "filter-accessible-names",
-      "kind": "companion",
-      "title": "Give the new search and app filters stable accessible names",
-      "severity": "medium",
-      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml",
-      "body": "### Give the new search and app filters stable accessible names\n\n**Severity:** `medium`\n\nThe search box currently relies on placeholder text as its only label, which disappears once users type. The app-filter combo also exposes values such as an app name without a stable control name, so screen-reader and voice-control users cannot reliably identify what the control does. Add localized `AutomationProperties.Name` resources for the search box and app combo, and give the combo an `x:Uid` so those resources apply.",
-      "in_diff": false,
-      "confidence": {
-        "score": 88,
-        "rationale": "The current XAML adds both controls in the PR; SearchBox has only PlaceholderText and AppFilterCombo has no x:Uid or accessible-name resource."
-      },
-      "disposition": "obsolete"
-    }
-  ],
+  "proposed_comments": [],
   "actions": [],
   "safe_actions": [],
   "judgment": {

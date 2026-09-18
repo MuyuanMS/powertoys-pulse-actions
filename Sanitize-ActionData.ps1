@@ -261,6 +261,9 @@ $encoding = [System.Text.UTF8Encoding]::new($false)
 $count = 0
 foreach ($path in Get-ChildItem $itemsPath -Filter '*.json') {
   $artifact = Get-Content $path.FullName -Raw | ConvertFrom-Json
+  if ($artifact.kind -eq 'pr' -and -not $artifact.PSObject.Properties['proposed_comments']) {
+    $artifact | Add-Member -NotePropertyName proposed_comments -NotePropertyValue @()
+  }
   if ($artifact.PSObject.Properties.Name -contains 'actions') {
     $artifact.actions = @(Get-PublicActions $artifact)
   }

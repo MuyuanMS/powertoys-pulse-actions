@@ -7,8 +7,8 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-02T14:17:03.0631799+08:00",
-  "evaluated_at": "2026-09-02T14:17:03.0631799+08:00",
+  "generated_at": "2026-09-18T04:10:30.7104145Z",
+  "evaluated_at": "2026-09-18T04:10:30.7104145Z",
   "source_updated_at": "2026-08-14T16:56:43Z",
   "head_sha": "19e053aabb26af8098fb6951550b5f28e6de8a99",
   "title": "Add Keyboard Manager text replacements",
@@ -19,94 +19,133 @@
   "isMine": false,
   "state": "OPEN",
   "draft": false,
-  "labels": [
-    "Needs-Team-Response",
-    "Product-Keyboard Manager"
-  ],
   "confidence": "High",
   "processVerdict": "ask",
-  "summary": "Full community Phase 0 and resumed fork review are complete at the current upstream head. The PR now conflicts with main and should receive a bundled author request covering rebase, accidental-trigger UX alignment, and the validated Keyboard Manager text-replacement correctness fixes.",
+  "summary": "The current upstream head is unchanged and still conflicts with main. The former broad companion finding has been remapped into five implementation-ready inline findings on live RIGHT-side lines, while the branch-wide rebase and accidental-trigger UX decision remains one fully specified companion request. Existing upstream test and CapsLock threads are not duplicated.",
   "status": {
-    "glyph": "📝",
-    "label": "Review ready — author update request drafted",
-    "detail": "Upstream remains at 19e053aabb26af8098fb6951550b5f28e6de8a99 and is now merge-conflicting. The existing fork PR 352 on pr-iterate/48627-v3 was preserved and rebuilt; its final fresh Copilot review at 2026-08-13T13:10:55Z generated no new published comments and all Copilot threads are resolved."
+    "glyph": "review",
+    "label": "Blocking review fixes drafted",
+    "detail": "Fork PR 352 remains converged at e062ab5e71b7d25b7534d8a97e53e96cb96c13b7 with zero unresolved Copilot threads and no outstanding Copilot review request. The exact fork head and focused text-replacement tests rebuilt and passed on 2026-09-18."
   },
   "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted author request",
-    "reason": "The current-head review is defensible, but nothing should be posted upstream without explicit maintainer approval and a final freshness check."
+    "glyph": "review",
+    "label": "Approve or hold the request-changes draft",
+    "reason": "The selected findings are pinned to the unchanged live head. Nothing may be posted to microsoft/PowerToys without explicit approval and a final freshness check."
   },
   "proposed_comments": [
     {
-      "kind": "companion",
-      "id": "rebase-and-confirm-text-replacement-ux",
-      "title": "Rebase and align the text replacement trigger behavior",
-      "severity": "medium",
-      "body": "### Rebase and align the text replacement trigger behavior\n\n**Severity:** `medium`\n\nThanks for adding text replacement support and for including screenshots/recording in the PR description. The PR now has merge conflicts with main, and the latest maintainer feedback asks about accidental triggering for short text snippets; please rebase the branch, address or explicitly confirm the trigger-key behavior you want for short triggers, and refresh the validation steps after rebuilding Keyboard Manager.",
+      "id": "preserve-remap-priority-and-reset-runtime-state",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Preserve remap priority and reset text state on reload",
+      "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.cpp",
+      "line": 236,
+      "side": "RIGHT",
+      "body": "### Preserve remap priority and reset text state on reload\n\n**Severity:** `high`\n\nText replacement currently runs before the existing OS-level shortcut remap handler. A typed character that is also part of a configured shortcut can therefore be buffered or consumed before the higher-priority remap gets a chance to handle it. Settings reloads also replace the mapping tables without clearing the buffered process/window identity, so text typed under the old configuration can complete a trigger from the new configuration.\n\nRun the OS-level shortcut handler first and return immediately when it consumes the event; only then evaluate text replacement, including single-key-remap output that represents real target text. After every settings load, clear the text buffer and its process/window identity so matching restarts from an empty state.",
       "confidence": {
-        "score": 97,
-        "rationale": "The live PR is OPEN at head 19e053aabb26af8098fb6951550b5f28e6de8a99 with mergeable=CONFLICTING/dirty-equivalent state, author association FIRST_TIME_CONTRIBUTOR, and maintainer comment https://github.com/microsoft/PowerToys/pull/48627#issuecomment-4922548507 asking about accidental triggers and an optional trigger key."
+        "score": 96,
+        "rationale": "The live code calls HandleTextReplacementEvent before HandleOSLevelShortcutRemapEvent and LoadSettings does not reset the new buffer fields. The converged fork changes both paths and its exact head rebuilt successfully."
       }
     },
     {
-      "kind": "companion",
-      "id": "harden-text-replacement-runtime-and-editing-paths",
-      "title": "Harden the text replacement runtime and editing paths",
+      "id": "keep-replacement-injection-and-key-pairs-consistent",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
       "severity": "high",
-      "body": "### Harden the text replacement runtime and editing paths\n\n**Severity:** `high`\n\nBefore this can merge, please harden the new Keyboard Manager text replacement paths so typed triggers stay consistent with what the target app actually receives. The reviewed fixes include preserving remap priority, clearing stale buffers on generated text/settings reloads, suppressing matching key-up events after a replacement, stopping injection on partial SendInput failure, handling AltGr and non-printing translations correctly, bounding trigger/replacement lengths, rejecting prefix-conflicting triggers, localizing the trigger display, and making edit/save rollback transactional so failed edits do not lose or duplicate mappings. Please add/keep regression coverage for these cases in the Keyboard Manager engine and editor tests.",
+      "title": "Keep replacement injection and key pairs consistent",
+      "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+      "line": 2150,
+      "side": "RIGHT",
+      "body": "### Keep replacement injection and key pairs consistent\n\n**Severity:** `high`\n\nAfter a trigger matches, this suppresses the physical key-down but allows its later key-up through, and every SendInput result is ignored. Target applications can receive an unmatched key-up, while a partial backspace/text injection is still reported as a successful replacement. Re-pressing Shift after injection can also leave the modifier logically down when the user released it during the injected sequence.\n\nTrack every trigger key whose key-down is suppressed and consume exactly one matching key-up, even if settings are reloaded before release. Make backspace, modifier release, and Unicode text injection return success/failure and stop the sequence at the first failed SendInput call. Clear the buffer on failure and do not synthesize modifier key-downs after replacement; the next physical press can re-engage the modifier safely.",
       "confidence": {
-        "score": 93,
-        "rationale": "The preserved fork review loop fixed these exact issues across commits 148e7a411 through e062ab5e7, with final Copilot review on e062ab5e71b7d25b7534d8a97e53e96cb96c13b7 reporting no new published comments and Get-UnresolvedCopilotThreads.ps1 reporting 0 unresolved Copilot threads. Targeted x64 Debug builds and focused Keyboard Manager text replacement tests passed."
+        "score": 98,
+        "rationale": "The live handler returns 1 only for key-down matches, does not retain a pending key-up set, ignores all SendVirtualInput results, and re-presses released Shift keys. Focused fork tests cover overlapping suppressed key-ups and injection failure."
+      }
+    },
+    {
+      "id": "handle-altgr-and-dead-key-translation",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Handle AltGr and dead-key translation without corrupting the buffer",
+      "path": "src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp",
+      "line": 181,
+      "side": "RIGHT",
+      "body": "### Handle AltGr and dead-key translation without corrupting the buffer\n\n**Severity:** `high`\n\nAltGr is reported as left Ctrl plus right Alt, so the current modifier guard rejects characters that require AltGr even though they are ordinary printable input. `ToUnicodeEx` can also return a negative count for a dead key; treating every non-positive result as no text leaves the matching buffer out of sync with what the target application receives, and locale-dependent `iswprint` is not a reliable Win32 character classification.\n\nRecognize the left-Ctrl/right-Alt pair as AltGr, temporarily release that pair during replacement injection, and handle a negative ToUnicodeEx result as an empty translated sequence that resets matching state. Validate translated UTF-16 with `GetStringTypeW(CT_CTYPE1)` and reject undefined/control characters. Keep the existing unresolved CapsLock/toggle-state thread as the source of truth for toggle-bit handling rather than posting a duplicate comment.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The live guard treats every Ctrl or Alt state as a shortcut modifier and the translation path collapses dead-key and no-character results. The fork implements AltGr handling and Win32 character classification; the separate live CapsLock thread remains unresolved."
+      }
+    },
+    {
+      "id": "bound-and-disambiguate-text-triggers",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Bound text sizes and reject prefix-conflicting triggers",
+      "path": "src/modules/keyboardmanager/common/MappingConfiguration.cpp",
+      "line": 99,
+      "side": "RIGHT",
+      "body": "### Bound text sizes and reject prefix-conflicting triggers\n\n**Severity:** `medium`\n\nThe engine accepts unbounded trigger and replacement strings, and it rejects only exact duplicate triggers. Because matching runs after every character, a trigger such as `sun` fires before `sunny` can ever be reached; the editor can therefore save configurations with permanently unreachable replacements. Very large persisted strings also create unbounded hook-time buffering and injection work.\n\nDefine shared maximum lengths for trigger and replacement text, enforce them in this engine method and the editor controls, and reject a new trigger when either string is a prefix of the other. Use the same prefix rule in editor validation and when re-enabling a disabled mapping, with a localized conflict error. Add focused tests for both length boundaries and both prefix directions.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The live AddTextReplacement checks only empty and exact duplicate values, while the hook searches suffixes on every keystroke. The fork adds shared limits, prefix-conflict validation, localized UI feedback, and passing editor tests."
+      }
+    },
+    {
+      "id": "make-text-edit-save-transactional",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Make text replacement edits transactional",
+      "path": "src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs",
+      "line": 608,
+      "side": "RIGHT",
+      "body": "### Make text replacement edits transactional\n\n**Severity:** `high`\n\nEdit mode deletes the existing mapping and settings entry before this add/save path runs. The return values from deletion and SaveSettings are ignored, so a duplicate, persistence failure, or interop error can discard the original mapping while the dialog merely reports that the new value failed to save. The in-memory settings list can also diverge from the service configuration.\n\nMake deletion report success and abort the edit if it fails. When adding the replacement or saving settings fails, remove any partially added new trigger and restore the original active mapping. Remove the original settings entry only after the new service state is durable, then add the replacement entry once. Reload the list after failed enable/save operations so UI state reflects the service, and add edit-failure tests that prove the original mapping is neither lost nor duplicated.",
+      "confidence": {
+        "score": 98,
+        "rationale": "The live save flow deletes first, ignores DeleteTextReplacementMapping and SaveSettings failures, and mutates the settings list before durability is established. The converged fork adds rollback and its exact editor tests pass."
+      }
+    },
+    {
+      "id": "rebase-and-confirm-text-replacement-trigger-ux",
+      "kind": "companion",
+      "in_diff": false,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Rebase and confirm the text replacement trigger UX",
+      "out_of_diff_reason": "The merge conflict spans the branch against current main, and the maintainer's optional trigger-key question is a product behavior decision rather than a defect with one current RIGHT-side line.",
+      "body": "### Rebase and confirm the text replacement trigger UX\n\n**Severity:** `medium`\n\n**Affected code:**\n- `src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp` - `HandleTextReplacementEvent`\n- `src/modules/keyboardmanager/KeyboardManagerEditorUI/Controls/UnifiedMappingControl.xaml` - text-trigger editor\n- `src/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs` - text replacement save/edit flow\n\n**Problem:** The live branch conflicts with current `main`, and the maintainer thread asks whether short replacements should require an explicit trigger key such as Space. The PR currently replaces immediately when the typed suffix matches, without documenting or configuring that choice.\n\n**Why it matters:** The conflict prevents integration, while immediate matching makes short, common text easy to replace accidentally. Resolving code conflicts without first deciding the trigger behavior can also leave the editor, persisted model, and hook engine implementing different semantics.\n\n**Suggested change:**\n1. Rebase the branch onto current `main` and resolve Keyboard Manager conflicts without discarding newer remap behavior or tests.\n2. Choose and document one product behavior: immediate replacement, a required delimiter/trigger key, or a per-mapping option.\n3. If a trigger key is used, persist the choice, expose it in the editor, and make the hook include that key in matching and backspace accounting.\n4. Keep short-trigger validation and help text consistent with the chosen behavior.\n5. Refresh the PR validation steps after rebuilding the complete Keyboard Manager module chain.\n\n**Verification:** Configure one normal multi-character trigger and one short trigger. Type both in ordinary prose and around punctuation, confirm replacement occurs only under the chosen trigger policy, and verify the editor round-trips the setting after restart. Re-run the focused engine/editor text-replacement tests and the Keyboard Manager Debug x64 build after the rebase.",
+      "confidence": {
+        "score": 97,
+        "rationale": "GitHub reports mergeable_state=dirty on the unchanged live head, and maintainer moooyo explicitly raised accidental short-trigger activation and an optional trigger key in the upstream conversation."
       }
     }
   ],
   "actions": [
     {
-      "confirm": true,
+      "id": "request-changes-48627",
+      "type": "request_changes",
+      "label": "Request changes with selected review comments",
       "primary": true,
-      "type": "post_review",
-      "id": "post-author-request-48627",
-      "label": "Post the selected author request as COMMENT",
-      "note": "Recheck upstream head, conflict state, comments, reviews, and threads before publishing. Do not label, close, or mutate upstream except through the approved review publisher flow.",
+      "confirm": true,
+      "requiresApproval": true,
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 48627,
-        "event": "COMMENT",
+        "event": "REQUEST_CHANGES",
         "head_sha": "19e053aabb26af8098fb6951550b5f28e6de8a99",
-        "body": "### Rebase and align the text replacement trigger behavior\n\n**Severity:** `medium`\n\nThanks for adding text replacement support and for including screenshots/recording in the PR description. The PR now has merge conflicts with main, and the latest maintainer feedback asks about accidental triggering for short text snippets; please rebase the branch, address or explicitly confirm the trigger-key behavior you want for short triggers, and refresh the validation steps after rebuilding Keyboard Manager.\n\n### Harden the text replacement runtime and editing paths\n\n**Severity:** `high`\n\nBefore this can merge, please harden the new Keyboard Manager text replacement paths so typed triggers stay consistent with what the target app actually receives. The reviewed fixes include preserving remap priority, clearing stale buffers on generated text/settings reloads, suppressing matching key-up events after a replacement, stopping injection on partial SendInput failure, handling AltGr and non-printing translations correctly, bounding trigger/replacement lengths, rejecting prefix-conflicting triggers, localizing the trigger display, and making edit/save rollback transactional so failed edits do not lose or duplicate mappings. Please add/keep regression coverage for these cases in the Keyboard Manager engine and editor tests."
-      }
+        "body": "Keyboard Manager text replacement input, persistence, and edit paths need the selected correctness fixes before merge."
+      },
+      "note": "Posts selected inline review findings and any selected companion guidance as a separate general PR conversation comment. Recheck the live head, conflicts, comments, reviews, and threads before publication."
     }
   ],
-  "safe_actions": [
-    "Present the drafted COMMENT review for explicit maintainer approval",
-    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
-    "Hold the review without changing labels, review state, or PR state",
-    "Re-run synchronization, Copilot convergence, builds, and tests after material upstream activity or a new author commit"
-  ],
-  "safeActions": {
-    "proposedReviewDecision": "comment",
-    "postReview": {
-      "available": true,
-      "reason": "A bundled author update request is drafted, but explicit approval and final upstream freshness validation are required."
-    },
-    "postComment": {
-      "available": true,
-      "reason": "The two companion requests can be approved, edited, or held individually."
-    },
-    "applyLabel": {
-      "available": false,
-      "reason": "No label change is part of this review; upstream labels remain maintainer-owned."
-    },
-    "closePr": {
-      "available": false,
-      "reason": "The PR has an active feature implementation and maintainer interest; the current disposition is an author update request, not closure."
-    },
-    "triggerAzure": {
-      "available": false,
-      "reason": "The branch currently conflicts with main; Azure should be considered only after the author rebases/resolves conflicts."
-    }
-  },
-  "needs_revalidation": false,
   "phase0": {
     "author": "illgitthat",
     "author_association": "FIRST_TIME_CONTRIBUTOR",
@@ -114,34 +153,25 @@
     "disposition": "Ask",
     "owes_after_posting": "author",
     "gates_tripped": [
-      "P4 merge-conflict/current-main update",
-      "Maintainer UX feedback follow-up"
+      "P4 current-main conflict",
+      "Maintainer trigger-UX follow-up"
     ],
-    "note": "P1 passes: license/cla is successful. P2 passes: the PR description includes screenshots and a recording for the user-visible Keyboard Manager UI/runtime change. P3 is not triggered because there is no strong unchecked/AI-output signal beyond needing refreshed validation after rebase. P4 asks for current-main conflict resolution; reported checks otherwise include successful label, telemetry detection, and CLA, while external-fork Azure is not an automatic failure. P5 provenance passes; commits are by the PR author and follow normal review-response history. P6-P8 do not trip. P9 is not a standalone blocker because the description has summary, linked issue 5074, and demo evidence, though refreshed validation steps should accompany the rebase.",
-    "evidence": [
-      "The PR is non-draft and authored by FIRST_TIME_CONTRIBUTOR illgitthat.",
-      "The PR description says it adds typed text replacement support, links issue 5074, and includes two screenshots plus a user-attachment recording.",
-      "license/cla completed successfully at 2026-08-14T16:56:51Z; label and detect-telemetry-events checks succeeded on the current head.",
-      "Live GraphQL snapshot reports mergeable=CONFLICTING, reviewDecision=REVIEW_REQUIRED, 14 review threads, and one unresolved non-Copilot upstream thread.",
-      "Maintainer moooyo commented on 2026-07-09 that short text is easy to trigger accidentally and asked to consider a trigger key, then said the overall idea is good and targeted 0.102.",
-      "Linked issue 5074 remains open with long-standing community demand and product discussion; it is context rather than a duplicate/close gate."
-    ]
+    "note": "P1 passes because license/cla is successful. P2 passes because the PR description includes screenshots and a recording. P3 is not triggered independently. The branch conflicts with current main, and the maintainer's short-trigger UX question remains unanswered. Provenance, duplication, scope, and draft-state gates do not trip."
   },
   "source_activity": {
     "state": "OPEN",
     "draft": false,
-    "mergeable_state": "conflicting",
+    "mergeable_state": "dirty",
     "review_decision": "REVIEW_REQUIRED",
     "head_sha": "19e053aabb26af8098fb6951550b5f28e6de8a99",
     "base_branch": "main",
     "commit_count": 7,
-    "newest_commit_at": "2026-07-08T15:36:47Z",
-    "updated_at": "2026-08-14T16:56:43Z",
     "changed_file_count": 29,
     "additions": 931,
     "deletions": 15,
     "issue_comment_count": 4,
     "review_count": 6,
+    "review_comment_count": 15,
     "review_thread_count": 14,
     "unresolved_review_threads": 1,
     "unresolved_copilot_threads": 0,
@@ -156,12 +186,13 @@
     }
   },
   "freshness": {
-    "evaluated_at": "2026-09-02T14:17:03.0631799+08:00",
+    "evaluated_at": "2026-09-18T04:10:30.7104145Z",
     "head_sha": "19e053aabb26af8098fb6951550b5f28e6de8a99",
     "head_updated_at": "2026-08-14T16:56:43Z",
     "commit_count": 7,
     "issue_comment_count": 4,
     "review_count": 6,
+    "review_comment_count": 15,
     "review_thread_count": 14,
     "status": "fresh_current_head_conflicting"
   },
@@ -173,68 +204,70 @@
     "head_sha": "e062ab5e71b7d25b7534d8a97e53e96cb96c13b7",
     "base_sha": "5193a1e49729bf8d9a8553e352e7c0c285e50188",
     "commit_count": 19,
-    "changed_file_count": 31
+    "changed_file_count": 31,
+    "outstanding_review_requests": 0
   },
   "fork_branch": "pr-iterate/48627-v3",
   "workflow": {
     "phase": "review_drafted",
-    "checkpoint_at": "2026-09-02T14:17:03.0631799+08:00",
-    "resume_action": "rebuild-and-draft"
-  },
-  "revalidation": {
-    "completed_at": "2026-09-02T14:17:03.0631799+08:00",
-    "result": "passed",
-    "copilot_review_submitted_at": "2026-08-13T13:10:55Z",
-    "copilot_review_commit": "e062ab5e71b7d25b7534d8a97e53e96cb96c13b7",
-    "copilot_new_comment_count": 0,
+    "checkpoint_at": "2026-09-18T04:10:30.7104145Z",
+    "resume_action": "rebuild-and-draft",
+    "copilot_review_count": 9,
+    "latest_copilot_review_at": "2026-08-13T13:10:55Z",
+    "latest_copilot_review_head_sha": "e062ab5e71b7d25b7534d8a97e53e96cb96c13b7",
     "unresolved_copilot_threads": 0,
-    "diff_check": "passed",
-    "builds": [
-      "PowerToys essentials",
-      "src\\modules\\keyboardmanager\\common",
-      "src\\modules\\keyboardmanager\\dll",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEngine",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEditorLibrary",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEditorLibraryWrapper",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEditorUI",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEngineTest",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEditorTest",
-      "src\\modules\\keyboardmanager\\KeyboardManagerEditorUI.UnitTests"
-    ],
-    "tests": [
-      {
-        "suite": "KeyboardManager.Engine.UnitTests text replacement filter",
-        "result": "passed",
-        "passed": 6,
-        "failed": 0,
-        "skipped": 0
-      },
-      {
-        "suite": "KeyboardManager.Editor.UnitTests text replacement/loading filter",
-        "result": "passed",
-        "passed": 26,
-        "failed": 0,
-        "skipped": 0
-      },
-      {
-        "suite": "KeyboardManagerEditorUI.UnitTests text replacement/loading filter",
-        "result": "no matching tests",
-        "passed": 0,
-        "failed": 0,
-        "skipped": 0
-      }
-    ],
-    "outputs": [
-      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
-      "<PowerToysCheckout>\\x64\\Debug\\PowerToys.KeyboardManager.dll"
-    ],
-    "build_environment_note": "The local checkout already carries local-only Cpp.Build.props and Directory.Build.props Spectre overrides. Validation used POWERTOYS_DISABLE_SPECTRE=1; those local build-environment edits were not committed or pushed."
+    "duplicate_review_request_avoided": true
   },
+  "validation": {
+    "fork_head": {
+      "head_sha": "e062ab5e71b7d25b7534d8a97e53e96cb96c13b7",
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.cmd for KeyboardManager common, dll, engine, editor library, editor wrapper, editor UI, engine tests, and editor tests"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.KeyboardManager.dll"
+      ],
+      "tests": [
+        {
+          "suite": "KeyboardManager.Engine.UnitTests text replacement filter",
+          "result": "passed",
+          "passed": 6,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "KeyboardManager.Editor.UnitTests text replacement filter",
+          "result": "passed",
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0
+        }
+      ]
+    }
+  },
+  "existing_upstream_findings": [
+    {
+      "comment_id": 3544006017,
+      "disposition": "posted",
+      "finding": "Add low-level text replacement hook tests",
+      "reason_not_reproposed": "Copilot already posted this live-head finding. The converged fork expands the tests, but another upstream comment would duplicate the unresolved thread."
+    },
+    {
+      "comment_id": 3549714235,
+      "disposition": "posted",
+      "finding": "Apply toggle-key state before ToUnicodeEx",
+      "reason_not_reproposed": "The maintainer's live-head CapsLock/NumLock/ScrollLock finding remains unresolved and is already implementation-ready."
+    }
+  ],
+  "fork_changes_this_run": [],
   "test_instructions": [
     "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-    "Open PowerToys Settings > Keyboard Manager and add text replacement mappings, including one normal multi-character trigger and one short trigger that could be typed accidentally.",
-    "Verify the UI rejects empty, over-length, duplicate, and prefix-conflicting triggers and that editing an existing mapping either saves atomically or leaves the original mapping intact on failure.",
-    "Type configured triggers in a text editor with normal text, Shift-held input, AltGr characters, and after a single-key remap; verify only contiguous visible trigger text is replaced and modifier keys are not left stuck.",
-    "Toggle/reload Keyboard Manager settings while a trigger key is held and verify unmatched key-up events are not delivered to the target app."
+    "Open PowerToys Settings, enable Keyboard Manager, and add text replacement mappings with a normal trigger and a short trigger.",
+    "Verify empty, oversized, duplicate, and prefix-conflicting triggers are rejected, and a failed edit leaves the original mapping intact.",
+    "Type triggers using normal text, Shift, AltGr, and after a single-key remap; confirm only visible contiguous text is replaced and modifier keys are not left stuck.",
+    "Reload Keyboard Manager settings while a trigger key is held and confirm the target app receives neither a stale replacement nor an unmatched key-up."
   ]
 }

@@ -4,131 +4,196 @@
   "number": 41656,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-03T09:35:00Z",
-  "evaluated_at": "2026-09-03T09:35:00Z",
+  "generated_at": "2026-09-18T04:10:30.7104145Z",
+  "evaluated_at": "2026-09-18T04:10:30.7104145Z",
   "source_updated_at": "2026-08-31T11:24:48Z",
   "head_sha": "f0d6c56baab7843e38eff6e8c92dbca5e7b70450",
   "title": "Add AppUserModel_ID awareness to FancyZones",
   "url": "https://github.com/microsoft/PowerToys/pull/41656",
-  "summary": "The owned_elsewhere exclusion was explicitly overridden. Existing fork PR 336 and branch pr-iterate/41656-v4 were preserved and advanced with current-head review fixes. The supported action remains a request-changes/maintainer-fix draft for AUMID-only keys, property-store error handling, legacy fallback migration, tombstone handling, and parallel UI-test helper coverage.",
+  "author": "jsclary",
+  "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
+  "isCommunity": true,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "summary": "The current upstream head is unchanged. Existing public threads already cover the AUMID-only identity and noexcept concerns, so this draft does not duplicate them. The remaining blocking review finding is mapped to the live RIGHT-side AUMID construction, with a separate implementation-ready companion request for out-of-diff migration and helper coverage.",
   "status": {
     "glyph": "review",
-    "label": "Review notes drafted",
-    "detail": "Fork PR 336 converged after fixes through f4d7bd38bb39d78d67ff7943cf0bab1098800661; unresolved fork Copilot threads are zero."
+    "label": "Blocking review fixes drafted",
+    "detail": "Fork PR 336 remains converged at f4d7bd38bb39d78d67ff7943cf0bab1098800661 with zero unresolved Copilot threads and no outstanding Copilot review request. The exact fork head rebuilt successfully on 2026-09-18."
   },
   "next_action": {
-    "glyph": "post",
-    "label": "Review drafted request-changes action",
-    "reason": "Recheck upstream freshness and obtain explicit maintainer approval before posting anything to microsoft/PowerToys."
+    "glyph": "review",
+    "label": "Approve or hold the request-changes draft",
+    "reason": "The live head still lacks the validated legacy-history migration and regression coverage. Nothing may be posted to microsoft/PowerToys without explicit approval and a final freshness check."
   },
   "proposed_comments": [
     {
-      "id": "avoid-aumid-only-keys",
+      "id": "preserve-legacy-aumid-history",
       "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
       "severity": "high",
-      "title": "Do not persist AUMID-only history keys",
+      "title": "Preserve legacy history when qualifying keys with an AUMID",
       "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
-      "body": "If process path lookup fails but the AppUserModelID lookup succeeds, the current code can create keys like ?<AUMID>. Treat path lookup failure as no usable identity instead of persisting an AUMID-only key."
+      "line": 344,
+      "side": "RIGHT",
+      "body": "### Preserve legacy history when qualifying keys with an AUMID\n\n**Severity:** `high`\n\nThis changes the persisted identity from the executable path to `<path>?<AUMID>`, but existing `app-path` records contain only the executable path and every lookup/removal below uses the new exact key. After upgrade, previously saved zones therefore stop applying to AUMID windows. A direct fallback to the legacy vector is also unsafe because removing one qualified identity can mutate history still shared by sibling AUMIDs.\n\nPlease add a helper that strips the AUMID suffix, copy legacy history into a new qualified entry before the first mutation, and clear copied runtime handle maps. Lookups may fall back to the legacy entry only while no qualified entry exists; removals must materialize the qualified copy before changing it. Preserve an explicit empty qualified entry as a tombstone during JSON load and virtual-desktop cleanup so a removed AUMID does not fall back and resurrect legacy history.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The live diff changes all four history lookups to an AUMID-qualified key without a migration path. The converged fork implements copy-on-migration, qualified tombstones, and fallback isolation, and its exact head rebuilt successfully."
+      }
     },
     {
-      "id": "remove-noexcept-from-aumid-lookup",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Do not mark the COM/property-store path noexcept",
-      "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
-      "body": "GetProcessPathWithAUMID performs COM/property-store calls that can throw through WIL/WinRT helpers. Remove noexcept or handle failures explicitly so a property-store failure cannot terminate the process."
-    },
-    {
-      "id": "preserve-legacy-fallback-history",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Copy legacy history before mutating qualified entries",
-      "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
-      "body": "When a qualified identity falls back to a legacy process-path entry, mutating that shared legacy entry can erase history used by sibling AUMIDs. Copy the legacy data into a qualified entry, clear runtime handle maps, and mutate only the qualified entry."
-    },
-    {
-      "id": "constrain-empty-history-tombstones",
-      "kind": "inline",
+      "id": "add-aumid-migration-regression-coverage",
+      "kind": "companion",
+      "in_diff": false,
+      "disposition": "proposed",
       "severity": "medium",
-      "title": "Treat empty history as a tombstone only for qualified identities",
-      "path": "src/modules/fancyzones/FancyZonesLib/FancyZonesData/AppZoneHistory.cpp",
-      "body": "An explicit empty history should suppress fallback only for an AUMID-qualified key. Do not accept an empty unqualified app-path entry as a tombstone."
-    },
-    {
-      "id": "update-next-zone-history-helper",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Strip AUMID in the .Next UI-test helper",
-      "path": "src/modules/fancyzones/FancyZones.UITests.Next/Utils/ZoneHistory.cs",
-      "body": "The .Next helper matches app-path with EndsWith(exeName). Strip any ?<AUMID> suffix before matching, as the legacy ZoneSwitchHelper does."
+      "title": "Add AUMID migration and helper regression coverage",
+      "out_of_diff_reason": "The required unit-test and UI-test helper files are unchanged by the live upstream PR, so GitHub has no current RIGHT-side diff range for this coverage.",
+      "body": "### Add AUMID migration and helper regression coverage\n\n**Severity:** `medium`\n\n**Affected code:**\n- `src/modules/fancyzones/FancyZonesTests/UnitTests/AppZoneHistoryTests.Spec.cpp` - `AppZoneHistoryUnitTests`\n- `src/modules/fancyzones/FancyZones.UITests/Utils/ZoneSwitchHelper.cs` - `GetZoneIndexSetByAppName`\n- `src/modules/fancyzones/FancyZones.UITests.Next/Utils/ZoneHistory.cs` - `GetZoneIndexSetByAppName`\n\n**Problem:** The PR changes the persisted `app-path` key format, but it does not test isolation between two AUMIDs, migration from an existing process-path-only record, persistence of an empty qualified tombstone, or UI-test lookup of an executable name when the saved key has an AUMID suffix.\n\n**Why it matters:** Without these checks, a future edit can silently merge browser profiles, erase another profile's legacy history, resurrect a removed placement after reload, or make both FancyZones UI-test suites fail to locate otherwise valid history.\n\n**Suggested change:**\n1. Add a test helper that assigns distinct `PKEY_AppUserModel_ID` values to test windows.\n2. Verify two windows from the same executable keep independent zone histories.\n3. Seed a legacy executable-path entry, access it through a qualified window, mutate the qualified entry, and assert the legacy entry remains unchanged.\n4. Remove the qualified history, reload and synchronize virtual desktops, and assert the empty qualified tombstone remains while legacy history is still available to unqualified windows.\n5. In both UI-test helpers, strip the substring beginning at `?` before applying the executable-name suffix comparison.\n\n**Verification:** Build `src/modules/fancyzones/FancyZonesTests/UnitTests/UnitTests.vcxproj` and both FancyZones UI-test projects. Run the focused AUMID history tests and confirm both helper implementations find entries whose saved `app-path` is `<executable>?<AUMID>`.",
+      "confidence": {
+        "score": 94,
+        "rationale": "These exact out-of-diff tests and helper changes exist in the converged fork. The unit-test project builds, while the local native test host still exits with 0xC0000005 before reporting individual tests, matching the previously documented environment blocker."
+      }
     }
   ],
   "actions": [
     {
-      "id": "post-review-41656",
-      "type": "post_review",
-      "label": "Post request-changes review",
+      "id": "request-changes-41656",
+      "type": "request_changes",
+      "label": "Request changes with selected review comments",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 41656,
-        "event": "COMMENT",
+        "event": "REQUEST_CHANGES",
         "head_sha": "f0d6c56baab7843e38eff6e8c92dbca5e7b70450",
-        "body_prefix": "Thanks for adding AUMID awareness to FancyZones history. The current head still needs a few safeguards so AUMID-qualified entries do not corrupt or erase legacy history and property-store failures remain safe."
+        "body": "AUMID-qualified history must preserve and isolate existing process-path history before merge."
       },
-      "note": "Do not post without explicit approval and a final upstream freshness check."
+      "note": "Posts the selected inline review finding and any selected companion guidance as a separate general PR conversation comment. Recheck the live head and activity before publication."
     }
   ],
-  "confidence": "High",
+  "phase0": {
+    "author": "jsclary",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "bar": "full community-contributor process review",
+    "disposition": "Proceed",
+    "owes_after_review": "maintainer",
+    "gates_tripped": [],
+    "note": "P1 passes because license/cla is successful. P2 is not required for this internal history-key change because the description gives concrete affected applications and manual validation. P3 is not triggered: the author reports a successful build and two days of daily-driver validation. Required reported checks are green. The author has since explained that they no longer have a Windows validation environment, and maintainer niels9001 asked MuyuanMS to take over the fixes and verification, so the next action belongs to the maintainer rather than another process request to the author."
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "mergeable_state": "blocked",
+    "review_decision": "REVIEW_REQUIRED",
+    "head_sha": "f0d6c56baab7843e38eff6e8c92dbca5e7b70450",
+    "base_branch": "main",
+    "commit_count": 2,
+    "changed_file_count": 2,
+    "additions": 34,
+    "deletions": 4,
+    "issue_comment_count": 4,
+    "review_count": 8,
+    "review_comment_count": 12,
+    "review_thread_count": 7,
+    "unresolved_review_threads": 5,
+    "unresolved_copilot_threads": 4,
+    "reported_checks": {
+      "total": 6,
+      "successful": 3,
+      "failing": 0,
+      "pending": 0,
+      "skipped": 3,
+      "cla": "success",
+      "check_spelling": "success",
+      "azure_builds": "not_reported_on_current_rollup"
+    }
+  },
+  "freshness": {
+    "evaluated_at": "2026-09-18T04:10:30.7104145Z",
+    "head_sha": "f0d6c56baab7843e38eff6e8c92dbca5e7b70450",
+    "head_updated_at": "2026-08-31T11:24:48Z",
+    "commit_count": 2,
+    "issue_comment_count": 4,
+    "review_count": 8,
+    "review_comment_count": 12,
+    "review_thread_count": 7,
+    "status": "fresh_current_head"
+  },
   "fork_pr": {
     "number": 336,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/336",
-    "head_sha": "f4d7bd38bb39d78d67ff7943cf0bab1098800661"
+    "state": "OPEN",
+    "updated_at": "2026-09-03T09:28:24Z",
+    "head_sha": "f4d7bd38bb39d78d67ff7943cf0bab1098800661",
+    "base_sha": "267af559bcaa86a812e12ed596746ac52918562d",
+    "commit_count": 14,
+    "changed_file_count": 6,
+    "outstanding_review_requests": 0
   },
   "fork_branch": "pr-iterate/41656-v4",
   "workflow": {
-    "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-03T09:35:00Z",
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-18T04:10:30.7104145Z",
+    "resume_action": "rebuild-and-draft",
+    "copilot_review_count": 6,
+    "latest_copilot_review_at": "2026-09-03T09:28:24Z",
+    "latest_copilot_review_head_sha": "f4d7bd38bb39d78d67ff7943cf0bab1098800661",
     "unresolved_copilot_threads": 0,
-    "copilot_result": "empty_requested_reviewers_but_later_reviews_audited",
-    "latest_clean_audit": "zero unresolved Copilot threads on fork PR 336"
+    "duplicate_review_request_avoided": true
   },
-  "review_fixes": [
+  "validation": {
+    "fork_head": {
+      "head_sha": "f4d7bd38bb39d78d67ff7943cf0bab1098800661",
+      "result": "passed_with_test_host_blocker",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "src\\modules\\fancyzones\\FancyZonesLib\\..\\..\\..\\..\\tools\\build\\build.cmd",
+        "src\\modules\\fancyzones\\FancyZonesTests\\UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "<PowerToysCheckout>\\x64\\Debug\\FancyZonesLib.lib"
+      ],
+      "tests": [
+        {
+          "suite": "FancyZones.UnitTests AUMID and qualified-history filter",
+          "result": "blocked",
+          "exit_code": -1073741819,
+          "detail": "vstest.console.exe exits with 0xC0000005 immediately after discovering the DLL and before reporting individual tests."
+        }
+      ]
+    }
+  },
+  "existing_upstream_findings": [
     {
-      "commit": "8f5f57b6f4034c5592760e3e89b7596118dbdfa4",
-      "summary": "Applied AUMID stripping to the .Next UI-test ZoneHistory helper."
+      "comment_id": 3747214666,
+      "disposition": "posted",
+      "finding": "Do not create AUMID-only history keys",
+      "reason_not_reproposed": "The exact live-head concern and an apply-ready suggestion are already present in the upstream thread, and the author acknowledged it."
     },
     {
-      "commit": "77bc840d51299e11dd7d773fc2e0d4caa44af8d0",
-      "summary": "Constrained empty-history tombstones to AUMID-qualified identities."
-    },
-    {
-      "commit": "f4d7bd38bb39d78d67ff7943cf0bab1098800661",
-      "summary": "Copied legacy history into qualified entries before removal mutations."
+      "comment_id": 3264445481,
+      "disposition": "posted",
+      "finding": "Remove noexcept or contain allocation failures",
+      "reason_not_reproposed": "Copilot already posted the live-head finding on the declaration, so another review comment would duplicate an unresolved thread."
     }
   ],
-  "revalidation": {
-    "result": "builds_passed_tests_crash_blocker",
-    "builds": [
-      "src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj Debug x64",
-      "src/modules/fancyzones/FancyZonesTests/UnitTests/UnitTests.vcxproj Debug x64"
-    ],
-    "tests": [
-      {
-        "suite": "FancyZones.UnitTests.dll",
-        "result": "blocked",
-        "exit_code": -1073741819,
-        "detail": "The native test DLL crashes immediately under vstest before reporting individual test results."
-      }
-    ],
-    "notes": [
-      "Inherited GIT_CONFIG_* variables were cleared before local builds to avoid vcpkg registry initialization failures.",
-      "A separate exact-upstream-head build attempt was blocked by stale PR base/toolset/package state; the fork-fixed branch after merging current upstream main built successfully."
-    ]
-  }
+  "fork_changes_this_run": [],
+  "test_instructions": [
+    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
+    "Enable FancyZones and zone two windows from the same browser executable that use different taskbar identities, then confirm each identity restores its own zone.",
+    "Start with a legacy process-path-only history file, zone one qualified window, and confirm the legacy placement still applies to an unqualified window.",
+    "Remove the qualified placement, restart PowerToys, and confirm that identity remains unzoned instead of falling back to the legacy placement."
+  ]
 }

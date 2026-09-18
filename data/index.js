@@ -2816,7 +2816,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
+      "proposed_open": 2,
       "primary_action": {
         "type": "post_review",
         "label": "Post the current-head inline comment and general review note as COMMENT"
@@ -4564,7 +4564,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -4572,10 +4572,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post the selected requests as REQUEST_CHANGES"
-      },
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Product-Command Palette"
@@ -4597,7 +4594,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50181",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/496"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50151",
@@ -4953,7 +4951,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 1,
       "primary_action": {
         "type": "post_review",
         "label": "Post general request-changes note"
@@ -6434,7 +6432,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 2,
+      "proposed_open": 4,
       "primary_action": {
         "type": "post_review",
         "label": "Post the current-head inline and companion review notes as COMMENT"
@@ -6659,7 +6657,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 1,
       "primary_action": {
         "type": "post_review",
         "label": "Post the alignment note as a general review comment"
@@ -7767,7 +7765,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 1,
       "primary_action": {
         "type": "request_changes",
         "label": "Post the selected request as REQUEST_CHANGES"
@@ -7922,7 +7920,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 6,
       "primary_action": {
         "type": "post_review",
         "label": "Post the selected author request as COMMENT"
@@ -8448,7 +8446,7 @@ window.BOARD_INDEX = {
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
+      "proposed_open": 2,
       "primary_action": {
         "type": "post_review",
         "label": "Post request-changes review"

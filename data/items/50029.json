@@ -1,71 +1,148 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50029",
   "number": 50029,
   "kind": "pr",
   "track": "review",
-  "stage": "review_drafted",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-08-27T14:25:03Z",
-  "evaluated_at": "2026-08-27T14:25:03Z",
+  "generated_at": "2026-09-18T04:10:00Z",
+  "evaluated_at": "2026-09-18T04:10:00Z",
   "source_updated_at": "2026-08-20T14:08:59Z",
   "head_sha": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
   "title": "Add setting to disable cursor wrap in Game Mode (full screen D3D application).",
   "url": "https://github.com/microsoft/PowerToys/pull/50029",
+  "repository": "microsoft/PowerToys",
+  "author": "mikehall-ms",
+  "authorAssociation": "MEMBER",
+  "isCommunity": false,
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "high",
+  "processVerdict": "proceed",
+  "summary": "The live upstream head is unchanged. The resumed fork review moved the shell Game Mode query out of the low-level mouse hook, made live settings changes start and stop polling on the hook-owning event thread, and preserved CursorWrap operation if polling cannot start. Fork head 309f1714d06f5499630f2cdb0d6b78866762121d builds, the latest freshly requested Copilot review produced zero new comments, and unresolved fork Copilot threads are zero. The complete correction spans hook state, worker lifetime, settings updates, and failure handling, so it is represented as one implementation-ready companion request.",
   "status": {
     "glyph": "DRAFT",
     "label": "Request changes drafted",
-    "detail": "Fresh current-head review found one publishable correctness/performance concern. Prior thread-polling and settings-version comments were removed because they do not match the current upstream implementation or are not sufficiently author-facing defects."
+    "detail": "One current-head Game Mode polling lifecycle correction is ready for maintainer approval as a general review comment."
   },
-  "next_action": "Post the selected general review note as a request-changes review only after explicit maintainer approval and a freshness re-check against upstream head 40a0e8b21d39cb624edb1312dc2d6b9eca975a8e.",
+  "next_action": "After explicit maintainer approval and a freshness re-check, submit the selected general comment in a REQUEST_CHANGES review.",
+  "phase0": {
+    "author": "mikehall-ms",
+    "author_association": "MEMBER",
+    "bar": "repository member; routine community process nags skipped",
+    "disposition": "Proceed",
+    "who_owes_next": "Maintainer",
+    "gates_tripped": [],
+    "note": "The PR is open, CLA is complete, and the current upstream checks pass."
+  },
   "proposed_comments": [
     {
       "id": "move-game-mode-query-out-of-mouse-hook",
       "kind": "companion",
-      "title": "Keep Game Mode detection out of the low-level mouse hook",
-      "severity": "high",
-      "confidence": {
-        "score": 88,
-        "rationale": "The current upstream diff calls SHQueryUserNotificationState through detect_game_mode from MouseHookProc when the new option is enabled. Low-level hook callbacks are system input-path callbacks and should return quickly; this shell query is not a cached atomic read and can block input delivery."
-      },
-      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
-      "line": 728,
-      "side": "RIGHT",
       "in_diff": false,
-      "body": "### Keep Game Mode detection out of the low-level mouse hook\n\n**Severity:** `high`\n\nWhen the new setting is enabled, `MouseHookProc` calls `detect_game_mode()`, which invokes `SHQueryUserNotificationState`, from the `WH_MOUSE_LL` callback. That callback runs on the system input path and needs to return quickly; doing a shell notification-state query there can stall mouse delivery or cause Windows to skip/remove the hook, especially when the user is actively moving across monitor edges. Please move the Game Mode query to module state updated outside the low-level hook (for example, a timer or worker that owns failure handling) and make the hook read only cached atomic state before deciding whether to wrap."
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Keep Game Mode detection and lifecycle work off the mouse hook",
+      "out_of_diff_reason": "The proven correction coordinates state fields, worker lifetime, live settings handoff, hook startup and shutdown, and error fallback across multiple methods; no single current RIGHT-side range can safely implement the complete change.",
+      "body": "### Keep Game Mode detection and lifecycle work off the mouse hook\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/MouseUtils/CursorWrap/dllmain.cpp`, especially `MouseHookProc`, `parse_settings`, `StartMouseHook`, `StopMouseHook`, and the event-listener loop; `src/modules/MouseUtils/CursorWrap/pch.h` for the worker exception type.\n\n**Problem:** The new option calls `detect_game_mode()` from `MouseHookProc`. That function invokes `SHQueryUserNotificationState` while processing `WH_MOUSE_LL`, so the shell query executes on the system-wide input callback. A simple timer check only reduces frequency; it does not make the blocking call safe. The setting can also change while the hook is active, so any background polling lifecycle must be updated on the hook-owning thread rather than raced from the runner settings thread.\n\n**Why it matters:** Low-level mouse hooks must return quickly. A delayed shell query can stall mouse delivery or cause Windows to stop delivering the hook. If live settings transitions do not start or stop polling safely, the checkbox can have no effect until restart, race teardown, or disable CursorWrap when the optional polling worker cannot start.\n\n**Suggested change:**\n1. Store the option and cached Game Mode result in atomics, and make `MouseHookProc` read only those cached values.\n2. Poll `detect_game_mode()` from a dedicated worker with an explicit stop event; start it only while the hook is active and the option is enabled.\n3. Signal live option changes through a module-lifetime event consumed by the existing hook-owning event loop, then start or stop the polling worker there.\n4. Join the polling worker and close its stop handle during hook shutdown; join the event thread before closing the settings-change event during module destruction.\n5. If polling setup fails, log the failure, clear the cached Game Mode state, and continue installing the mouse hook so normal CursorWrap behavior remains available.\n\n**Verification:** Build the Debug x64 runner/settings essentials and `CursorWrap.vcxproj`. With CursorWrap already active, toggle the Game Mode option off and on without restarting PowerToys and verify the behavior changes immediately. Enter and leave a fullscreen D3D application while moving the cursor across monitor edges; confirm wrapping is suppressed only while Game Mode is active and mouse input remains responsive. Exercise module disable/shutdown while settings updates are occurring and verify there is no hang, stale callback, or handle use after teardown.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The exact upstream head performs SHQueryUserNotificationState through detect_game_mode at lines 721-729 of the low-level hook. The coordinated fork correction builds, its two published lifecycle findings were fixed and resolved, and the final fresh Copilot review on fork head 309f1714d produced zero new comments."
+      }
     }
   ],
   "actions": [
     {
-      "id": "post-review-50029",
-      "type": "post_review",
-      "label": "Post general request-changes note",
+      "id": "request-changes-50029",
+      "type": "request_changes",
+      "label": "Request the Game Mode polling lifecycle correction",
       "primary": true,
       "confirm": true,
-      "note": "Recheck upstream freshness and obtain explicit approval before publishing.",
+      "requiresApproval": true,
       "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50029,
         "pr": 50029,
-        "event": "COMMENT",
+        "event": "REQUEST_CHANGES",
         "head_sha": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
-        "body_prefix": "Thanks for adding the CursorWrap Game Mode option and validation details. I found one input-path issue to address before this is safe to merge."
-      }
+        "body": "Please address the Game Mode detection and polling lifecycle issue described in the selected general comment before merge."
+      },
+      "note": "Companion-only action: the implementation request is posted as a separate general PR comment. No write has been made to microsoft/PowerToys."
     }
   ],
   "workflow": {
     "phase": "review_drafted",
-    "review_iterations": 0,
-    "checkpoint_at": "2026-08-27T14:25:03Z",
-    "fresh_review_basis": "Current upstream head diff and PR metadata were revalidated. Existing fork review state is not clean, so no approve action was created."
+    "checkpoint_at": "2026-09-18T04:10:00Z",
+    "fork_pr": 477,
+    "fork_branch": "pr-iterate/50029-v6",
+    "fork_head_sha": "309f1714d06f5499630f2cdb0d6b78866762121d",
+    "latest_copilot_review_at": "2026-09-18T03:55:51Z",
+    "latest_copilot_review_id": 5244090395,
+    "copilot_final": "fresh review returned zero published comments after the converged fix set",
+    "unresolved_copilot_threads": 0,
+    "review_iterations": 3
   },
   "freshness": {
-    "checkpoint_at": "2026-08-27T14:25:03Z",
-    "upstream_head": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
-    "source_updated_at": "2026-08-20T14:08:59Z"
+    "status": "fresh",
+    "head_sha": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
+    "source_updated_at": "2026-08-20T14:08:59Z",
+    "evaluated_at": "2026-09-18T04:10:00Z",
+    "note": "The live upstream head and source activity remain unchanged."
   },
-  "confidence": "high",
-  "summary": "Member-authored PR; CLA and CI are green. Fresh current-head review does not support approval because Game Mode detection currently runs inside the low-level mouse hook; the artifact now exposes a concrete request-changes review action with the required nested review payload.",
-  "verify": [
-    "Enable CursorWrap and the new Game Mode option.",
-    "While a fullscreen D3D application is active, move the cursor repeatedly across monitor edges and confirm wrapping remains disabled without mouse lag or hook loss.",
-    "Leave the fullscreen D3D application and confirm CursorWrap resumes using the selected wrap and activation modes."
-  ]
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "The correction is a coordinated multi-method lifecycle change and contains no apply-ready suggestion block."
+    },
+    "line_ending_safety": {
+      "head_sha": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
+      "result": "not_applicable",
+      "checked_comment_ids": [],
+      "files": [],
+      "details": "No apply-ready suggestion targets a raw blob."
+    },
+    "fork_review": {
+      "result": "passed",
+      "fork_head_sha": "309f1714d06f5499630f2cdb0d6b78866762121d",
+      "latest_copilot_review_submitted_at": "2026-09-18T03:55:51Z",
+      "latest_copilot_review_commit": "309f1714d06f5499630f2cdb0d6b78866762121d",
+      "latest_copilot_new_comments": 0,
+      "unresolved_copilot_threads": 0,
+      "prior_request_inspected": true,
+      "duplicate_request_created": false
+    },
+    "fork_candidate": {
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.cmd in src\\modules\\MouseUtils\\CursorWrap"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CursorWrap.dll"
+      ],
+      "details": "Debug x64 runner/settings essentials and the Cursor Wrap module completed successfully after clearing inherited empty GIT_CONFIG_* entries."
+    }
+  },
+  "fork": {
+    "repository": "MuyuanMS/PowerToys",
+    "pr": 477,
+    "branch": "pr-iterate/50029-v6",
+    "head_sha": "309f1714d06f5499630f2cdb0d6b78866762121d"
+  },
+  "fork_writes": [
+    "Pushed 8abdd6108632889fb411d61e1b39f58f1bbfeed6 to add live polling lifecycle updates and preserve hook operation on polling failure.",
+    "Replied to and resolved fork Copilot thread PRRT_kwDOM2Pyb86cw8EK.",
+    "Pushed 309f1714d06f5499630f2cdb0d6b78866762121d to replace the HWND handoff with a module-lifetime event consumed by the hook-owning thread.",
+    "Replied to and resolved fork Copilot thread PRRT_kwDOM2Pyb86jndVK.",
+    "Requested one fresh Copilot review after each pushed correction; no pending request was duplicated."
+  ],
+  "upstream_writes": false,
+  "dashboard_modified": false
 }

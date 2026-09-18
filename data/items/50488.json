@@ -1,28 +1,42 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50488",
   "number": 50488,
   "kind": "pr",
   "track": "review",
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T18:30:19Z",
-  "evaluated_at": "2026-09-15T18:30:19Z",
+  "generated_at": "2026-09-18T04:10:00Z",
+  "evaluated_at": "2026-09-18T04:10:00Z",
   "source_updated_at": "2026-09-09T18:03:05Z",
   "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
   "title": "feat(mouseutils): add haptic feedback to Cursor Wrap",
   "url": "https://github.com/microsoft/PowerToys/pull/50488",
-  "fork": {
-    "pr": 752,
-    "branch": "pr-iterate/50488"
+  "repository": "microsoft/PowerToys",
+  "author": "niels9001",
+  "authorAssociation": "MEMBER",
+  "isCommunity": false,
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "high",
+  "processVerdict": "proceed",
+  "summary": "The live upstream head is unchanged. Fork PR 752 remains converged on head 75793aea7c77974c9a4913531fcf529c212e7100 with zero unresolved Copilot threads and a final freshly requested review containing zero new comments. Fresh Debug x64 runner/settings essentials and Cursor Wrap module builds pass. The exact upstream diff still exposes one RIGHT-side haptic edge-window lifecycle concern and one coordinated device/topology/fallback correction.",
+  "status": {
+    "glyph": "DRAFT",
+    "label": "Request changes drafted",
+    "detail": "One exact RIGHT-side inline comment and one implementation-ready general companion comment are ready for maintainer approval."
   },
-  "summary": "The live upstream head is unchanged since the last review pass (head 31212e026476a80d0158ac73cd1fcdfe5bd8417a; last activity 2026-09-09). No fresh upstream activity or actionless queue requeue was required. The fork review branch still converges with zero unresolved Copilot threads, and the exact current diff still needs one RIGHT-side lifecycle fix plus one general cross-monitor/device prompt before maintainers post a COMMENT review.",
-  "next_action": "Maintainer review of the drafted COMMENT action; no actionless queue re-queue was required because the live head/activity remains unchanged.",
-  "verify": [
-    "Live upstream head remains 31212e026476a80d0158ac73cd1fcdfe5bd8417a and has no newer comments or commits since 2026-09-09.",
-    "The exact upstream head remains unchanged from the last review loop and no re-triage is required by live activity.",
-    "The fork PR 752 branch remains the active review branch and converged with zero unresolved Copilot threads after the fix loop.",
-    "The latest fork review remains clean with no new published inline comments after the converged fix set."
-  ],
+  "next_action": "After explicit maintainer approval and a freshness re-check, submit the selected inline and general comments in a REQUEST_CHANGES review.",
+  "phase0": {
+    "author": "niels9001",
+    "author_association": "MEMBER",
+    "bar": "repository member; routine community process nags skipped",
+    "disposition": "Proceed",
+    "who_owes_next": "Maintainer",
+    "gates_tripped": [],
+    "note": "The PR is open, CLA and CI are green, and the description includes hardware validation."
+  },
   "proposed_comments": [
     {
       "id": "haptic-edge-window-lifecycle",
@@ -33,53 +47,116 @@
       "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
       "line": 432,
       "side": "RIGHT",
-      "title": "Keep the haptic edge window hidden until a wrap is pending",
-      "body": "### Keep the haptic edge window hidden until a wrap is pending\n\n**Severity:** high\n\nThe new edge-trigger windows are created topmost and left visible for the whole hook lifetime, so ordinary pointer movement at the virtual edge can still be hit-tested by the haptic overlay instead of the real application shell. This makes the callback-dependent route stateful for every edge pixel instead of only for an actual pending wrap. Keep the haptic window hidden until m_hasPendingWrap is set, and clear the pending state when haptics are unavailable or the message path is missed."
+      "title": "Keep the haptic input window hidden until a wrap is pending",
+      "body": "### Keep the haptic input window hidden until a wrap is pending\n\n**Severity:** `high`\n\nThe new haptic route creates four topmost layered windows covering every virtual-screen edge and leaves them visible for the entire mouse-hook lifetime. Ordinary pointer movement at those edges can therefore hit the CursorWrap overlay instead of the underlying application or shell, even when no wrap is pending. Use a hidden, transient input window that is shown only at the actual wrap point, and hide it again as soon as the pending wrap completes or is cancelled.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The exact upstream head registers and shows all four WS_EX_TOPMOST edge windows at hook startup. The converged fork replaces them with a transient hidden window and the final fresh Copilot review returned zero new comments."
+      }
     },
     {
       "id": "haptic-monitor-device-routing",
       "kind": "companion",
+      "in_diff": false,
+      "disposition": "proposed",
       "severity": "high",
-      "title": "Route haptic wrapping from device and monitor topology, not the virtual edge rectangle",
-      "body": "**Affected code:** CursorWrap::InitializeHaptics, CursorWrap::TryDeferWrapToHapticEdgeWindow, CursorWrap::RegisterHapticEdgeWindows, and CursorWrap::CompletePendingHapticWrap in src/modules/MouseUtils/CursorWrap/dllmain.cpp.\n\n**Problem:** The haptic wrap path samples device state once during listener startup, builds its haptic edge window from the virtual-screen bounds, and depends on a later WM_MOUSEMOVE to finish the deferred wrap. In staggered, indented, or disconnected monitor layouts, the current logic can treat a real edge as missing, ignore a reconnecting device, or leave the pending wrap stuck while the haptic overlay remains visible.\n\n**Why it matters:** Cursor Wrap should preserve the user’s configured wrap behavior even when display topology changes, the haptic device is hot-plugged, or the window-move notification is delayed. Right now the overlay can silently skip the wrap or leave the cursor stuck behind the shell message path.\n\n**Suggested change:** Refresh the haptic device state from the existing display/device notification path and clear any pending wrap when haptics become unavailable. Build the haptic input window from the actual monitor edge segments that the wrap algorithm uses, and add a short timeout/fallback so a missed WM_MOUSEMOVE still completes the pending cursor move without relying solely on the overlay message.\n\n**Verification:** Rebuild the exact upstream head and confirm the wrap still completes on a multi-monitor layout with a disconnected or reconnected haptic device, while ordinary non-wrap edge movement still reaches the underlying app or shell without staying under the layered haptic window."
+      "title": "Refresh haptic routing and preserve pending wraps across topology and device changes",
+      "out_of_diff_reason": "The complete correction coordinates haptic device refresh, display-change handling, transient window creation, timeout fallback, pending-state cancellation, and hook cleanup across several methods; no single current RIGHT-side range can safely implement it.",
+      "body": "### Refresh haptic routing and preserve pending wraps across topology and device changes\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/MouseUtils/CursorWrap/dllmain.cpp`, especially `InitializeHaptics`, `OnDisplayChange`, `TryDeferWrapToHapticEdgeWindow`, `RegisterHapticEdgeWindows`, `CompletePendingHapticWrap`, and hook shutdown.\n\n**Problem:** Haptic availability is sampled only when the listener starts, while the edge windows are built from the virtual-screen rectangle and the deferred wrap completes only if a later `WM_MOUSEMOVE` reaches one of those windows. Device hot-plug, display-layout changes, staggered monitor edges, window creation failure, or a missed mouse message can leave stale routing, skip haptic behavior, or leave `m_hasPendingWrap` set without completing the cursor move.\n\n**Why it matters:** Cursor Wrap must preserve the configured cursor transition regardless of optional haptic support. A stale or missed haptic route can make wrapping stop working at valid monitor edges, intercept unrelated edge input, or leave the pending transition stuck after topology or device changes.\n\n**Suggested change:**\n1. Replace startup-only haptic initialization with a refresh routine that clears stale state, re-queries API/device availability, and cancels any pending wrap when haptics are unavailable.\n2. Invoke that refresh from the existing display/device notification path after cancelling pending state and updating monitor topology.\n3. Create one reusable hidden layered input window, move and show it only at the actual wrap point, and verify it owns the hit test before deferring the wrap.\n4. Start a short timeout whenever a wrap is deferred; complete the pending cursor move from either `WM_MOUSEMOVE` or the timeout so optional haptic routing can never drop the wrap.\n5. Centralize cancellation so it clears `m_hasPendingWrap`, kills the timeout, hides the input window, and is called during refresh and hook teardown.\n\n**Verification:** Build the Debug x64 runner/settings essentials and `CursorWrap.vcxproj`. On staggered and indented multi-monitor layouts, verify wrapping completes at each real external edge while ordinary non-wrap edge movement reaches the underlying app or shell. Disconnect and reconnect the haptic device and change display topology while CursorWrap is active; verify availability refreshes, no stale overlay remains, and a missed input-window message still completes the pending cursor move through the timeout.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The exact upstream head samples haptic state once, constructs persistent windows from virtual-screen bounds, and has no timeout or centralized cancellation. The coordinated fork correction builds and converged with zero unresolved Copilot threads and zero new comments in the final review."
+      }
     }
   ],
   "actions": [
     {
-      "id": "post-review-50488",
-      "type": "post_review",
-      "label": "Post the current-head inline comment and general review note as COMMENT",
+      "id": "request-changes-50488",
+      "type": "request_changes",
+      "label": "Request the haptic input routing and lifecycle corrections",
       "primary": true,
       "confirm": true,
+      "requiresApproval": true,
       "review": {
-        "event": "COMMENT",
         "repository": "microsoft/PowerToys",
         "pullRequest": 50488,
         "pr": 50488,
-        "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a"
+        "event": "REQUEST_CHANGES",
+        "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
+        "body": "Please address the haptic input-window lifecycle and device/topology fallback issues described in the selected comments before merge."
       },
-      "note": "The haptic edge-window lifecycle item is posted as a RIGHT-side inline comment. The remaining monitor/device routing issue is kept as a single general companion prompt because it spans coordinated lifecycle changes and cannot be safely applied as one inline comment. No upstream write has occurred."
+      "note": "Posts one current RIGHT-side inline comment and one separate general PR comment. No write has been made to microsoft/PowerToys."
     }
   ],
-  "status": {
-    "glyph": "📝",
-    "label": "Review ready — 1 inline and 1 companion prompt drafted",
-    "detail": "Current head remains 31212e026476a80d0158ac73cd1fcdfe5bd8417a with no new live activity since 2026-09-09; fork PR 752 remains the review branch and converged after the fix loop. The current diff still supports a RIGHT-side lifecycle fix and one out-of-diff monitor/device prompt."
-  },
   "workflow": {
-    "phase": "review_ready",
-    "checkpoint_at": "2026-09-15T18:30:19Z",
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-18T04:10:00Z",
     "fork_pr": 752,
     "fork_branch": "pr-iterate/50488",
+    "fork_head_sha": "75793aea7c77974c9a4913531fcf529c212e7100",
     "latest_copilot_review_at": "2026-09-10T01:48:26Z",
+    "latest_copilot_review_id": 5161821566,
     "copilot_final": "fresh review returned zero published comments after the converged fix set",
-    "unresolved_copilot_threads": 0
+    "unresolved_copilot_threads": 0,
+    "review_iterations": 3
   },
   "freshness": {
     "status": "fresh",
     "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
     "source_updated_at": "2026-09-09T18:03:05Z",
-    "evaluated_at": "2026-09-15T18:30:19Z",
-    "note": "Live upstream head and activity are unchanged since the prior review loop; no actionless queue reset was required."
-  }
+    "evaluated_at": "2026-09-18T04:10:00Z",
+    "note": "The live upstream head and source activity remain unchanged."
+  },
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "The inline item is explanatory prose and the complete correction is coordinated across several methods; the artifact contains no apply-ready suggestion block."
+    },
+    "line_ending_safety": {
+      "head_sha": "31212e026476a80d0158ac73cd1fcdfe5bd8417a",
+      "result": "not_applicable",
+      "checked_comment_ids": [],
+      "files": [],
+      "details": "No apply-ready suggestion targets a raw blob."
+    },
+    "fork_review": {
+      "result": "passed",
+      "fork_head_sha": "75793aea7c77974c9a4913531fcf529c212e7100",
+      "latest_copilot_review_submitted_at": "2026-09-10T01:48:26Z",
+      "latest_copilot_review_commit": "75793aea7c77974c9a4913531fcf529c212e7100",
+      "latest_copilot_new_comments": 0,
+      "unresolved_copilot_threads": 0,
+      "prior_request_inspected": true,
+      "duplicate_request_created": false
+    },
+    "fork_candidate": {
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build-essentials.cmd",
+        "tools\\build\\build.cmd in src\\modules\\MouseUtils\\CursorWrap"
+      ],
+      "outputs": [
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe",
+        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.CursorWrap.dll"
+      ],
+      "details": "Fresh Debug x64 runner/settings essentials and the Cursor Wrap module completed successfully after clearing inherited empty GIT_CONFIG_* entries."
+    }
+  },
+  "fork": {
+    "repository": "MuyuanMS/PowerToys",
+    "pr": 752,
+    "branch": "pr-iterate/50488",
+    "head_sha": "75793aea7c77974c9a4913531fcf529c212e7100"
+  },
+  "fork_writes": [
+    "No new fork commit, push, reply, resolution, or Copilot review request was needed.",
+    "Reused existing fork commits 0a3df2e62efae8ebe46d92e4698bd45b09d16276 and 75793aea7c77974c9a4913531fcf529c212e7100.",
+    "Verified the existing final Copilot review and zero unresolved threads instead of duplicating a review request."
+  ],
+  "upstream_writes": false,
+  "dashboard_modified": false
 }
