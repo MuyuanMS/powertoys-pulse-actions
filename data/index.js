@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-18T22:49:55.7296906+08:00",
+  "generated_at": "2026-09-19T00:27:40.5996882+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 170,
-    "open_issues": 12667,
+    "open_prs": 171,
+    "open_issues": 12668,
     "community": 11829,
     "artifacts": 1257
   },
   "impact": {
-    "as_of": "2026-09-18T22:49:55.7296906+08:00",
+    "as_of": "2026-09-19T00:27:40.5996882+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -1357,6 +1357,40 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-50649",
+      "kind": "pr",
+      "number": 50649,
+      "url": "https://github.com/microsoft/PowerToys/pull/50649",
+      "title": "fix(settings-ui): release page-owned resources on navigation",
+      "author": "niels9001",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-18T15:13:28Z",
+      "updated_at": "2026-09-18T15:13:53Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": null,
+      "ci_state": null,
+      "merge_state": "CLEAN"
+    },
     {
       "id": "pr-50639",
       "kind": "pr",
@@ -154661,6 +154695,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50650",
+      "kind": "issue",
+      "number": 50650,
+      "url": "https://github.com/microsoft/PowerToys/issues/50650",
+      "title": "Copilot key intermittently fails to map to Ctrl (Right) key",
+      "author": "TimTheinAtTabs",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-18T15:16:27Z",
+      "updated_at": "2026-09-18T15:16:27Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-50648",
       "kind": "issue",
       "number": 50648,
@@ -158996,7 +159062,7 @@ window.BOARD_INDEX = {
       "author": "GinoCanessa",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -162117,8 +162183,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-18T14:16:18Z",
-      "comments": 110,
+      "updated_at": "2026-09-18T15:23:55Z",
+      "comments": 111,
       "priority": null
     },
     {
@@ -164483,12 +164549,12 @@ window.BOARD_INDEX = {
       }
     },
     {
-      "id": "issue-50258",
+      "id": "issue-13905",
       "kind": "issue",
-      "number": 50258,
-      "url": "https://github.com/microsoft/PowerToys/issues/50258",
-      "title": "Not Working with OneNote",
-      "author": "thisisaniya",
+      "number": 13905,
+      "url": "https://github.com/microsoft/PowerToys/issues/13905",
+      "title": "Feature Request: PowerToys Run: Convert between HEX, DEC, OCT and BIN etc",
+      "author": "StrangeCalibur",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -164501,19 +164567,19 @@ window.BOARD_INDEX = {
       "waiting_since": null,
       "has_artifact": false,
       "agent_status": "none",
-      "issue_type": "bug",
+      "issue_type": "feature",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Issue-Bug",
-        "Needs-Author-Feedback",
-        "Product-Always On Top",
-        "Needs-Triage"
+        "Resolution-Duplicate",
+        "Idea-Enhancement",
+        "Product-PowerToys Run",
+        "Run-Plugin"
       ],
       "assignees": [],
-      "created_at": "2026-08-31T00:53:42Z",
-      "updated_at": "2026-08-31T01:38:36Z",
-      "comments": 2,
+      "created_at": "2021-10-19T14:01:52Z",
+      "updated_at": "2026-04-11T20:42:04Z",
+      "comments": 4,
       "priority": null
     },
     {
@@ -204678,8 +204744,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-06-12T15:28:41Z",
-      "updated_at": "2026-06-12T15:28:55Z",
-      "comments": 0,
+      "updated_at": "2026-09-18T14:57:49Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -419231,6 +419297,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50258",
+      "kind": "issue",
+      "number": 50258,
+      "url": "https://github.com/microsoft/PowerToys/issues/50258",
+      "title": "Not Working with OneNote",
+      "author": "thisisaniya",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Product-Always On Top",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-08-31T00:53:42Z",
+      "updated_at": "2026-08-31T01:38:36Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-37035",
       "kind": "issue",
       "number": 37035,
@@ -420653,40 +420753,6 @@ window.BOARD_INDEX = {
       "created_at": "2025-01-17T15:29:13Z",
       "updated_at": "2026-04-18T11:14:17Z",
       "comments": 2,
-      "priority": null
-    },
-    {
-      "id": "issue-13905",
-      "kind": "issue",
-      "number": 13905,
-      "url": "https://github.com/microsoft/PowerToys/issues/13905",
-      "title": "Feature Request: PowerToys Run: Convert between HEX, DEC, OCT and BIN etc",
-      "author": "StrangeCalibur",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "feature",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate",
-        "Idea-Enhancement",
-        "Product-PowerToys Run",
-        "Run-Plugin"
-      ],
-      "assignees": [],
-      "created_at": "2021-10-19T14:01:52Z",
-      "updated_at": "2026-04-11T20:42:04Z",
-      "comments": 4,
       "priority": null
     },
     {
