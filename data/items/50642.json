@@ -4,87 +4,78 @@
   "number": 50642,
   "kind": "issue",
   "track": "triage",
-  "stage": "actionable_design",
-  "generated_at": "2026-09-18T14:10:00Z",
-  "evaluated_at": "2026-09-18T14:10:00Z",
-  "source_updated_at": "2026-09-18T13:47:35Z",
+  "stage": "fix_in_progress",
+  "generated_at": "2026-09-18T18:39:20.171181Z",
+  "evaluated_at": "2026-09-18T18:39:20.171181Z",
+  "source_updated_at": "2026-09-18T16:54:20Z",
   "title": "CmdPal: renew extension foreground permission for each command",
   "url": "https://github.com/microsoft/PowerToys/issues/50642",
-  "summary": "Command Palette grants foreground activation permission only when the active extension identity changes, although Windows can revoke that permission between commands from the same extension.",
+  "summary": "The per-command foreground-permission design remains technically current, but open maintainer PR #50651 now implements it with focused regression tests and passing CI.",
+  "confidence": "High",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The maintainer-authored report identifies the exact conditional and Windows permission lifetime mismatch. The failure can be addressed by renewing the foreground grant for each command activation rather than treating extension identity as permission state.",
+    "status": "duplicate_or_handled",
+    "rationale": "The prior design correctly identified that Command Palette treated extension identity as a proxy for a revocable Windows foreground grant. Since that evaluation, the issue author opened PR #50651, which explicitly closes #50642, moves foreground-grant logic into ExtensionWrapper, renews the grant for every command, preserves liveness checks when switching extensions, and adds unit coverage for repeated commands and extension transitions. A separate dashboard design or implementation would now duplicate active upstream work.",
     "evidence": [
-      "PowerToysRootPageService.OnPerformCommand calls SetActiveExtension before invoking an extension command.",
-      "SetActiveExtension calls CoAllowSetForegroundWindow only when the extension differs from _activeExtension.",
-      "Windows foreground grants can be revoked by later input or a grant to another process.",
-      "A command from the same extension can therefore run after its earlier grant is no longer valid."
+      "The complete issue report identifies PowerToysRootPageService.SetActiveExtension as granting foreground permission only when the extension identity changes.",
+      "Current main still contains that conditional and calls CoAllowSetForegroundWindow only inside the extension-change branch.",
+      "Open PR #50651 explicitly closes #50642 and changes SetActiveExtension to attempt a foreground grant on every command invocation.",
+      "PR #50651 adds IExtensionWrapper.TryAllowSetForeground and keeps the prior liveness lookup for extension changes while reusing the current extension object for consecutive commands.",
+      "PR #50651 adds PowerToysRootPageServiceTests covering three consecutive commands, switching command owners, returning to an earlier extension, GoHome, built-in commands, and both grant success and failure.",
+      "The current PR head caff2cb742171a2f3bf0580937b4583f2c331c32 has passing dependency, intake, telemetry, CLA, x64, arm64, Command Palette SDK, and aggregate PowerToys CI checks.",
+      "The issue author removed Needs-Author-Feedback after the PR was linked; no reporter evidence is currently requested."
     ],
-    "recommended_action": "Design a focused change that renews foreground activation permission for every extension command while preserving active-extension state management.",
-    "evaluated_at": "2026-09-18T14:10:00Z",
-    "source_updated_at": "2026-09-18T13:47:35Z"
+    "recommended_action": "Follow PR #50651 through upstream review and merge; do not start or approve a parallel design.",
+    "evaluated_at": "2026-09-18T18:39:20.171181Z",
+    "source_updated_at": "2026-09-18T16:54:20Z",
+    "confidence": {
+      "score": 98,
+      "level": "green",
+      "rationale": "The issue author owns both the report and linked closing PR, and the implementation matches the previously proposed renewal boundary with focused tests and passing CI."
+    }
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No linked implementation is present, and the report identifies a repository-owned permission-renewal defect."
+    "status": "existing_fix",
+    "rationale": "Open upstream PR #50651 is a concrete implementation of the exact per-command foreground-permission renewal described by the issue and prior design.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50651"
+    ]
   },
-  "proposed_fixes": [
-    {
-      "title": "Renew foreground permission at command invocation",
-      "root_cause": "SetActiveExtension uses extension identity as a proxy for a revocable Windows foreground grant, so later commands from the same extension may execute without valid activation permission.",
-      "plan": [
-        "Separate active-extension bookkeeping from foreground-permission renewal.",
-        "Call CoAllowSetForegroundWindow for the target extension process whenever a command is about to run, including consecutive commands from the same extension.",
-        "Preserve existing activation and exception handling when the extension process is unavailable.",
-        "Add focused coverage proving that consecutive same-extension commands renew permission."
-      ],
-      "verification": [
-        "Invoke two commands from the same extension with an intervening foreground-permission revocation and confirm the second target receives keyboard focus.",
-        "Verify switching extensions still updates active-extension state and grants the new process."
-      ],
-      "confidence": {
-        "score": 91,
-        "level": "green",
-        "rationale": "The report names the exact conditional, API contract, and failure mechanism; only implementation placement and test seams remain to be confirmed."
-      }
-    }
-  ],
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Repeated commands from one Command Palette extension can lose foreground activation because permission is renewed only when the active extension changes.",
+    "summary": "Command Palette extension commands can lose the ability to activate a target window because the foreground grant is revocable, while current main renews it only when the active extension changes; a linked maintainer PR now implements per-command renewal.",
     "known_information": [
-      "The report was authored and assigned to a PowerToys maintainer.",
-      "The target application may flash in the taskbar or appear without keyboard focus.",
-      "The current conditional skips CoAllowSetForegroundWindow for consecutive commands from the same extension."
+      "The maintainer-authored report uses a Visual Studio development build identified as PowerToys 0.101.",
+      "The observed target application may flash in the taskbar or become visible without keyboard focus.",
+      "PowerToysRootPageService.OnPerformCommand calls SetActiveExtension for commands owned by a CommandPaletteHost.",
+      "Current main updates _activeExtension and calls CoAllowSetForegroundWindow only when the extension differs from the previously active extension.",
+      "Windows can revoke a foreground grant after input to another process or a later grant to another process.",
+      "Issue #39255 contains an earlier public reproduction of consecutive top-level commands and list-page commands losing foreground access.",
+      "Issue #50642 is assigned to its author, jiripolasek, and now has only Issue-Bug and Product-Command Palette labels.",
+      "Open PR #50651 is authored by the same maintainer, explicitly closes #50642, and is marked Ready for review.",
+      "PR #50651 is not a draft, has no reviews or inline discussion yet, and currently requires review.",
+      "All reported checks on PR head caff2cb742171a2f3bf0580937b4583f2c331c32 are complete and successful."
     ],
     "inferences": [
-      "Renewing the grant immediately before each command should align the permission lifetime with the operation that consumes it."
+      "Renewing permission immediately before each extension command aligns the grant lifetime with the operation that consumes it.",
+      "Keeping the liveness check on extension transitions avoids adding the extra extension lookup to every repeated command while still attempting each foreground grant.",
+      "Because the linked PR implements the same control-flow boundary and regression cases as the prior design, the design is superseded by active implementation rather than invalidated.",
+      "Merge readiness still depends on upstream review despite passing CI."
     ],
-    "analysis": "The issue contains implementation-level evidence and does not require generic reporter diagnostics. A focused design should define the renewal boundary and regression coverage.",
+    "analysis": "The new cross-reference is decisive. Before PR #50651, the issue justified an actionable design because the report named the failing conditional and the API lifetime mismatch. The linked PR now makes that exact change: SetActiveExtension atomically updates active identity and calls TryAllowSetForeground for every invocation; ExtensionWrapper owns the native call and error handling; tests assert repeated same-extension grants and state transitions. The issue therefore remains actionable only through the existing upstream PR. Pulse should not expose Approve design, Request information, Reproduce, or a status-only comment while the closing implementation is under review.",
     "initial_investigation": [
-      "Reviewed the maintainer-authored call-flow description and Windows foreground-grant revocation behavior.",
-      "Confirmed there is no linked fix or competing implementation in the public issue."
+      "Read the complete live issue body, automated triage comment, labels, assignee, and timeline through 2026-09-18T16:54:20Z.",
+      "Confirmed the new cross-reference to PR #50651 and the maintainer's removal of Needs-Author-Feedback.",
+      "Inspected the complete PR description, four-commit history, changed files, closing references, reviews, discussion, current head, and check rollup.",
+      "Reviewed the full PR diff across IExtensionWrapper, ExtensionWrapper, PowerToysRootPageService, and the Command Palette unit-test project.",
+      "Read current main PowerToysRootPageService.cs and confirmed the issue's extension-change conditional is still present pending merge.",
+      "Reviewed recent history for PowerToysRootPageService.cs; no intervening main-branch commit supersedes the linked fix.",
+      "Reviewed related issue #39255, whose consecutive-command foreground-loss reproduction and prior forced per-command grant experiment support the same fix direction."
     ],
     "information_gaps": []
   },
-  "actions": [
-    {
-      "id": "approve-design-50642",
-      "type": "approve_design",
-      "label": "Approve per-command foreground permission design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design": {
-        "issue": 50642,
-        "title": "Renew extension foreground permission for every command",
-        "prompt": "Design a focused PowerToys fix for issue 50642. Trace PowerToysRootPageService.OnPerformCommand and SetActiveExtension, separate active-extension identity from the revocable CoAllowSetForegroundWindow grant, renew permission immediately before every extension command, preserve failure handling, and add regression coverage for consecutive commands from the same extension."
-      },
-      "note": "Approval starts fork-side design work only; no upstream write occurs automatically."
-    }
-  ],
+  "actions": [],
   "labels": [
     "Issue-Bug",
-    "Needs-Author-Feedback",
     "Product-Command Palette"
   ],
   "assignees": [
@@ -95,12 +86,27 @@
   "pending_author": false,
   "linked_work": {
     "duplicates": [],
-    "related_issues": [],
+    "related_issues": [
+      {
+        "number": 39255,
+        "url": "https://github.com/microsoft/PowerToys/issues/39255",
+        "state": "OPEN",
+        "relationship": "Earlier Command Palette foreground-access report with consecutive-command and list-page reproductions; PR #50651 also declares it as a closing issue."
+      }
+    ],
     "related_prs": [],
-    "covering_prs": []
+    "covering_prs": [
+      {
+        "number": 50651,
+        "url": "https://github.com/microsoft/PowerToys/pull/50651",
+        "state": "OPEN",
+        "head_sha": "caff2cb742171a2f3bf0580937b4583f2c331c32",
+        "relationship": "Maintainer-authored closing PR implementing per-command foreground grants with focused unit coverage and passing CI."
+      }
+    ]
   },
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
+    "detail": "No comments, labels, assignments, closures, cross-references, reviews, or other public mutations were made to microsoft/PowerToys."
   }
 }
