@@ -2,22 +2,38 @@
   "number": 49769,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-19T16:15:24.6112303Z",
-  "evaluated_at": "2026-09-19T16:15:24.6112303Z",
+  "generated_at": "2026-09-19T18:27:07Z",
+  "evaluated_at": "2026-09-19T18:27:07Z",
   "source_updated_at": "2026-09-19T14:09:19Z",
   "status": {
-    "label": "Waiting for fork Copilot review",
-    "detail": "The upstream head changed, invalidating the prior approval draft. The current head was remirrored safely with the existing review fixes preserved, and a fresh Copilot review is outstanding with zero unresolved threads."
+    "glyph": "DRAFT",
+    "label": "12 inline suggestions ready for approval",
+    "detail": "The fork review converged with zero findings and zero unresolved threads. The exact current-head suggestion candidate builds, and 12 inline suggestions across five fixes are ready for maintainer approval."
   },
-  "next_action": {
-    "label": "Resume after Copilot responds",
-    "reason": "Consume the review requested at 2026-09-19T16:11:45Z, then rebuild and remap current-head findings. Visual evidence remains missing."
-  },
-  "actions": [],
-  "needs_revalidation": true,
+  "next_action": "After explicit approval and a freshness re-check, submit the complete REQUEST_CHANGES review. Atomic suggestion groups must be selected together.",
+  "actions": [
+    {
+      "id": "request-changes-49769",
+      "type": "request_changes",
+      "label": "Request the CmdPal command-bar corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49769,
+        "pr": 49769,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "c08b745420deb3532a3774720d6e2b28fad50531",
+        "body": "The current change needs the validated command-bar refresh, compatibility, flyout anchoring, shortcut dispatch, and regression-test corrections before merge."
+      },
+      "note": "Posts 12 current RIGHT-side inline suggestions. The two coordinated groups must be selected and posted atomically."
+    }
+  ],
+  "needs_revalidation": false,
   "schemaVersion": 5,
   "head_sha": "c08b745420deb3532a3774720d6e2b28fad50531",
   "author_wait_evidence": {
@@ -30,59 +46,402 @@
     "number": 859,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/859",
     "state": "OPEN",
-    "head_sha": "fd1e8203efe2b60c544ebde514f5b2a49d4640c3"
+    "head_sha": "a5e7b4b0cd54b24f4bf93b8c580bca4df2164b9c"
   },
   "fork_branch": "pr-iterate/49769-v5",
-  "fork_head_sha": "fd1e8203efe2b60c544ebde514f5b2a49d4640c3",
-  "proposed_comments": [],
+  "fork_head_sha": "a5e7b4b0cd54b24f4bf93b8c580bca4df2164b9c",
+  "proposed_comments": [
+    {
+      "id": "refresh-selected-context",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Refresh command-bar state when the selected item is reused",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandBarViewModel.cs",
+      "start_line": 30,
+      "line": 30,
+      "side": "RIGHT",
+      "body": "### Refresh command-bar state when the selected item is reused\n\n**Severity:** `medium`\n\nWhen the selected item reference is unchanged, this setter returns before recalculating the primary, secondary, and overflow command state. A repeated selection can therefore leave the command bar showing stale actions after the underlying command snapshot changes. Refresh the derived context items before returning from the same-reference path.\n\n```suggestion\n                UpdateContextItems();\n                return;\n```",
+      "suggestion": "                UpdateContextItems();\n                return;",
+      "confidence": {
+        "score": 93,
+        "rationale": "The early return is directly on the changed selected-item setter path; reselecting the same object after its command snapshot changes leaves command-bar actions stale unless the derived state is refreshed."
+      }
+    },
+    {
+      "id": "preserve-context-item-compat-commanditem",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Preserve context-item compatibility (1/2)",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandItemViewModel.cs",
+      "start_line": 89,
+      "line": 89,
+      "side": "RIGHT",
+      "body": "### Preserve context-item compatibility (1/2)\n\n**Severity:** `medium`\n\nThis PR replaces the old MoreCommands backing concept with the unified context-item snapshot, but existing derived/partial code can still depend on the previous unsafe alias. Keeping the alias pointed at the same backing list preserves source compatibility without changing runtime behavior. Apply this together with the companion namespace import.\n\n```suggestion\n    protected List<IContextItemViewModel> UnsafeContextItems => _contextItems;\n\n    protected List<IContextItemViewModel> UnsafeMoreCommands => _contextItems;\n```",
+      "suggestion": "    protected List<IContextItemViewModel> UnsafeContextItems => _contextItems;\n\n    protected List<IContextItemViewModel> UnsafeMoreCommands => _contextItems;",
+      "selection_group": {
+        "id": "preserve-context-item-compat",
+        "title": "Preserve context-item compatibility",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 90,
+        "rationale": "The compatibility alias is a source-level preservation fix for existing partial/subclass code that still refers to the old MoreCommands backing member while sharing the same underlying context item list."
+      }
+    },
+    {
+      "id": "preserve-context-item-compat-snapshot",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Preserve context-item compatibility (2/2)",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/CommandContextSnapshot.cs",
+      "start_line": 5,
+      "line": 5,
+      "side": "RIGHT",
+      "body": "### Preserve context-item compatibility (2/2)\n\n**Severity:** `medium`\n\nThe snapshot type is in the `Models` namespace while its constructor and properties use view-model types from the parent namespace. Add the explicit import so the compatibility-preserving snapshot model compiles consistently with the alias change. Apply this together with the companion alias suggestion.\n\n```suggestion\nusing Microsoft.CmdPal.UI.ViewModels;\n\nnamespace Microsoft.CmdPal.UI.ViewModels.Models;\n```",
+      "suggestion": "using Microsoft.CmdPal.UI.ViewModels;\n\nnamespace Microsoft.CmdPal.UI.ViewModels.Models;",
+      "selection_group": {
+        "id": "preserve-context-item-compat",
+        "title": "Preserve context-item compatibility",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 90,
+        "rationale": "The snapshot model declares view-model typed properties from a nested Models namespace; the explicit import is required for the exact patched tree to compile consistently."
+      }
+    },
+    {
+      "id": "anchor-hidden-more-menu",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Anchor the hidden-More flyout to a visible command button",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml.cs",
+      "start_line": 60,
+      "line": 61,
+      "side": "RIGHT",
+      "body": "### Anchor the hidden-More flyout to a visible command button\n\n**Severity:** `medium`\n\nWhen the More button is hidden, Ctrl+K still opens the context menu, but the current fallback anchors the flyout to the whole command bar. That can place the menu away from the active command controls and makes focus restoration less predictable. Pick the visible More, secondary, or primary button as the anchor instead.\n\n```suggestion\n                    var target = ViewModel.ShouldShowMoreCommandsButton ?\n                        MoreCommandsButton :\n                        ViewModel.HasSecondaryCommand ? SecondaryButton : PrimaryButton;\n\n                    ContextMenuFlyout.ShowAt(\n                        target,\n```",
+      "suggestion": "                    var target = ViewModel.ShouldShowMoreCommandsButton ?\n                        MoreCommandsButton :\n                        ViewModel.HasSecondaryCommand ? SecondaryButton : PrimaryButton;\n\n                    ContextMenuFlyout.ShowAt(\n                        target,",
+      "confidence": {
+        "score": 88,
+        "rationale": "The current fallback anchors the flyout to the whole command bar when the More button is hidden; choosing a visible command button keeps placement and focus behavior localized to the actual command surface."
+      }
+    },
+    {
+      "id": "prevent-duplicate-shortcuts-xaml-closed",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Prevent duplicate shortcut execution (1/6)",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml",
+      "start_line": 50,
+      "line": 50,
+      "side": "RIGHT",
+      "body": "### Prevent duplicate shortcut execution (1/6)\n\n**Severity:** `high`\n\nPrimary shortcuts can be handled by both the command bar and the embedded context menu after the flyout control has been created, causing a command to execute twice. Track the flyout close event so the context menu only participates in global shortcut dispatch while it is actually open. Apply all suggestions in this group together.\n\n```suggestion\n                x:Name=\"ContextMenuFlyout\"\n                Closed=\"ContextMenuFlyout_Closed\"\n```",
+      "suggestion": "                x:Name=\"ContextMenuFlyout\"\n                Closed=\"ContextMenuFlyout_Closed\"",
+      "selection_group": {
+        "id": "prevent-duplicate-shortcuts",
+        "title": "Prevent duplicate shortcut execution",
+        "position": 1,
+        "total": 6,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "Both the command bar and embedded context menu receive the same global shortcut message; tracking flyout close state is required for the exact single-consumer fix."
+      }
+    },
+    {
+      "id": "prevent-duplicate-shortcuts-commandbar-receiver",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Prevent duplicate shortcut execution (2/6)",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml.cs",
+      "start_line": 104,
+      "line": 104,
+      "side": "RIGHT",
+      "body": "### Prevent duplicate shortcut execution (2/6)\n\n**Severity:** `high`\n\nThe command-bar receiver should not process a shortcut message that was already handled, and it should yield to the open context menu while the flyout is active. Without this gate, the same shortcut can invoke through both receivers. Apply all suggestions in this group together.\n\n```suggestion\n        if (msg.Handled || ContextMenuFlyout.IsOpen)\n        {\n            return;\n        }\n\n        if (!ViewModel.CanOpenContextMenu)\n```",
+      "suggestion": "        if (msg.Handled || ContextMenuFlyout.IsOpen)\n        {\n            return;\n        }\n\n        if (!ViewModel.CanOpenContextMenu)",
+      "selection_group": {
+        "id": "prevent-duplicate-shortcuts",
+        "title": "Prevent duplicate shortcut execution",
+        "position": 2,
+        "total": 6,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "The receiver currently processes the message even if another receiver already handled it and even while the flyout is open; either condition can duplicate command execution."
+      }
+    },
+    {
+      "id": "prevent-duplicate-shortcuts-commandbar-opened",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Prevent duplicate shortcut execution (3/6)",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml.cs",
+      "start_line": 150,
+      "line": 150,
+      "side": "RIGHT",
+      "body": "### Prevent duplicate shortcut execution (3/6)\n\n**Severity:** `high`\n\nSet the embedded context menu's open-state flag when the flyout opens. This lets shortcut dispatch switch to the flyout while it is active instead of allowing both controls to handle the same command. Apply all suggestions in this group together.\n\n```suggestion\n        ContextControl.IsFlyoutOpen = true;\n\n        // Focus the filter box so the flyout captures keyboard input,\n```",
+      "suggestion": "        ContextControl.IsFlyoutOpen = true;\n\n        // Focus the filter box so the flyout captures keyboard input,",
+      "selection_group": {
+        "id": "prevent-duplicate-shortcuts",
+        "title": "Prevent duplicate shortcut execution",
+        "position": 3,
+        "total": 6,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "The embedded context menu needs an explicit open-state flag before it can safely decide whether to consume global shortcut messages."
+      }
+    },
+    {
+      "id": "prevent-duplicate-shortcuts-commandbar-closed",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Prevent duplicate shortcut execution (4/6)",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml.cs",
+      "start_line": 155,
+      "line": 155,
+      "side": "RIGHT",
+      "body": "### Prevent duplicate shortcut execution (4/6)\n\n**Severity:** `high`\n\nClear the embedded context menu's open-state flag when the flyout closes. Otherwise, the context menu can keep consuming global shortcuts after it is no longer visible. Apply all suggestions in this group together.\n\n```suggestion\n    }\n\n    private void ContextMenuFlyout_Closed(object sender, object e)\n    {\n        ContextControl.IsFlyoutOpen = false;\n    }\n```",
+      "suggestion": "    }\n\n    private void ContextMenuFlyout_Closed(object sender, object e)\n    {\n        ContextControl.IsFlyoutOpen = false;\n    }",
+      "selection_group": {
+        "id": "prevent-duplicate-shortcuts",
+        "title": "Prevent duplicate shortcut execution",
+        "position": 4,
+        "total": 6,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "The open-state flag must be cleared on flyout close so global shortcuts return to command-bar handling after the menu is dismissed."
+      }
+    },
+    {
+      "id": "prevent-duplicate-shortcuts-contextmenu-state",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Prevent duplicate shortcut execution (5/6)",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContextMenu.xaml.cs",
+      "start_line": 58,
+      "line": 58,
+      "side": "RIGHT",
+      "body": "### Prevent duplicate shortcut execution (5/6)\n\n**Severity:** `high`\n\nThe context menu is registered for shortcut messages as soon as the control is instantiated, which is earlier than the flyout being open. Add an internal open-state flag so the receiver can ignore global shortcut messages while closed. Apply all suggestions in this group together.\n\n```suggestion\n    public ContextMenuViewModel ViewModel { get; }\n\n    internal bool IsFlyoutOpen { get; set; }\n```",
+      "suggestion": "    public ContextMenuViewModel ViewModel { get; }\n\n    internal bool IsFlyoutOpen { get; set; }",
+      "selection_group": {
+        "id": "prevent-duplicate-shortcuts",
+        "title": "Prevent duplicate shortcut execution",
+        "position": 5,
+        "total": 6,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "The control needs an internal state bit to distinguish instantiated-but-closed from actively open; relying on registration alone caused the duplicate handling."
+      }
+    },
+    {
+      "id": "prevent-duplicate-shortcuts-contextmenu-receiver",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Prevent duplicate shortcut execution (6/6)",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContextMenu.xaml.cs",
+      "start_line": 165,
+      "line": 165,
+      "side": "RIGHT",
+      "body": "### Prevent duplicate shortcut execution (6/6)\n\n**Severity:** `high`\n\nOnly the open flyout should handle context-menu shortcuts, and no receiver should process a message after it has already been handled. This prevents the primary shortcut from executing once through the command bar and again through the context menu. Apply all suggestions in this group together.\n\n```suggestion\n        if (msg.Handled || !IsFlyoutOpen)\n        {\n            return;\n        }\n\n        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);\n```",
+      "suggestion": "        if (msg.Handled || !IsFlyoutOpen)\n        {\n            return;\n        }\n\n        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);",
+      "selection_group": {
+        "id": "prevent-duplicate-shortcuts",
+        "title": "Prevent duplicate shortcut execution",
+        "position": 6,
+        "total": 6,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "The current receiver invokes commands without checking whether the flyout is open or whether another receiver already handled the message; this is the direct duplicate-execution path."
+      }
+    },
+    {
+      "id": "add-regression-assertion-commanditem",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "low",
+      "title": "Assert separators do not create overflow actions",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/CommandItemViewModelTests.cs",
+      "start_line": 145,
+      "line": 145,
+      "side": "RIGHT",
+      "body": "### Assert separators do not create overflow actions\n\n**Severity:** `low`\n\nThis test verifies that leading separators do not block secondary-command selection, but it does not assert the related More-button invariant. Add the overflow assertion so a future regression cannot show the More button for a single visible secondary command just because separators are present.\n\n```suggestion\n        Assert.AreEqual(\"Secondary\", viewModel.SecondaryCommand.Name);\n        Assert.IsFalse(viewModel.HasOverflowCommands);\n```",
+      "suggestion": "        Assert.AreEqual(\"Secondary\", viewModel.SecondaryCommand.Name);\n        Assert.IsFalse(viewModel.HasOverflowCommands);",
+      "confidence": {
+        "score": 87,
+        "rationale": "The test already constructs the separator-plus-secondary case; the added assertion captures the specific no-overflow invariant this PR is intended to preserve."
+      }
+    },
+    {
+      "id": "add-regression-assertion-contentpage",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "low",
+      "title": "Assert content-page updates keep the More button hidden",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/ContentPageViewModelTests.cs",
+      "start_line": 130,
+      "line": 130,
+      "side": "RIGHT",
+      "body": "### Assert content-page updates keep the More button hidden\n\n**Severity:** `low`\n\nThe content-page update path already verifies the refreshed primary and secondary commands, but it should also preserve the no-overflow state when only those visible actions remain. Add the assertion so content-page command refreshes cannot regress the hidden-More behavior.\n\n```suggestion\n        Assert.AreEqual(\"Updated Secondary\", viewModel.SecondaryCommandName);\n        Assert.IsFalse(viewModel.HasOverflowCommands);\n```",
+      "suggestion": "        Assert.AreEqual(\"Updated Secondary\", viewModel.SecondaryCommandName);\n        Assert.IsFalse(viewModel.HasOverflowCommands);",
+      "confidence": {
+        "score": 87,
+        "rationale": "The existing content-page update test already checks the derived primary/secondary state after command replacement; adding the overflow assertion protects the same UI invariant for content pages."
+      }
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-19T16:15:24.6112303Z",
-    "review_requested_at": "2026-09-19T16:11:45.8575342Z",
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-19T18:27:07Z",
+    "review_requested_at": "2026-09-19T18:09:03Z",
+    "latest_review_at": "2026-09-19T18:12:14Z",
     "unresolved_copilot_threads": 0
   },
   "validation": {
-    "suggestion_patch": {
-      "head_sha": "f6e9b980a455f09a38994792d21ca6d0f9ae5ae3",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "restore-unsafe-morecommands-accessor"
-      ],
-      "commands": [
-        "Build Microsoft.CmdPal.UI.ViewModels.UnitTests at the pinned upstream head with the literal suggestion applied",
-        "Run Microsoft.CmdPal.UI.ViewModels.UnitTests with vstest.console.exe"
-      ],
-      "details": "The literal suggestion built successfully and all 471 focused tests passed."
-    },
-    "line_ending_safety": {
-      "head_sha": "f6e9b980a455f09a38994792d21ca6d0f9ae5ae3",
-      "result": "passed",
-      "checked_comment_ids": [
-        "restore-unsafe-morecommands-accessor"
-      ],
-      "files": [
-        {
-          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandItemViewModel.cs",
-          "result": "passed",
-          "mixed": false,
-          "line_endings": "lf",
-          "utf8_bom": false
-        }
-      ]
-    },
     "fork_review": {
       "result": "passed",
+      "latest_copilot_review_submitted_at": "2026-09-19T18:12:14Z",
       "latest_copilot_new_comments": 0,
       "unresolved_copilot_threads": 0
     },
     "upstream_head": {
-      "head_sha": "f6e9b980a455f09a38994792d21ca6d0f9ae5ae3",
+      "head_sha": "c08b745420deb3532a3774720d6e2b28fad50531",
       "result": "failed",
-      "commands": [
-        "Build Microsoft.CmdPal.UI.ViewModels.UnitTests at the pinned upstream head"
+      "details": "Validated fork-only fixes are not present on the upstream head."
+    },
+    "suggestion_patch": {
+      "head_sha": "c08b745420deb3532a3774720d6e2b28fad50531",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "refresh-selected-context",
+        "preserve-context-item-compat-commanditem",
+        "preserve-context-item-compat-snapshot",
+        "anchor-hidden-more-menu",
+        "prevent-duplicate-shortcuts-xaml-closed",
+        "prevent-duplicate-shortcuts-commandbar-receiver",
+        "prevent-duplicate-shortcuts-commandbar-opened",
+        "prevent-duplicate-shortcuts-commandbar-closed",
+        "prevent-duplicate-shortcuts-contextmenu-state",
+        "prevent-duplicate-shortcuts-contextmenu-receiver",
+        "add-regression-assertion-commanditem",
+        "add-regression-assertion-contentpage"
       ],
-      "details": "Compilation fails with CS0103 because UnsafeMoreCommands is missing; the proposed suggestion fixes that exact failure."
+      "commands": [
+        "Applied all literal public suggestion blocks to the pinned upstream head.",
+        "Built src/modules/cmdpal/Microsoft.CmdPal.UI/Microsoft.CmdPal.UI.csproj with VS MSBuild Debug x64."
+      ],
+      "details": "The exact suggestion candidate built successfully at 2026-09-19T18:22:08Z; warnings only."
+    },
+    "line_ending_safety": {
+      "head_sha": "c08b745420deb3532a3774720d6e2b28fad50531",
+      "result": "passed",
+      "checked_comment_ids": [
+        "refresh-selected-context",
+        "preserve-context-item-compat-commanditem",
+        "preserve-context-item-compat-snapshot",
+        "anchor-hidden-more-menu",
+        "prevent-duplicate-shortcuts-xaml-closed",
+        "prevent-duplicate-shortcuts-commandbar-receiver",
+        "prevent-duplicate-shortcuts-commandbar-opened",
+        "prevent-duplicate-shortcuts-commandbar-closed",
+        "prevent-duplicate-shortcuts-contextmenu-state",
+        "prevent-duplicate-shortcuts-contextmenu-receiver",
+        "add-regression-assertion-commanditem",
+        "add-regression-assertion-contentpage"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandBarViewModel.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandItemViewModel.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/CommandContextSnapshot.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": true
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/CommandBar.xaml.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/ContextMenu.xaml.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/CommandItemViewModelTests.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/ContentPageViewModelTests.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "mixed": false,
+          "utf8_bom": false
+        }
+      ]
     }
   }
 }
