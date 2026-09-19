@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-19T22:13:44.9107879+08:00",
+  "generated_at": "2026-09-19T23:48:12.2028602+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1257
   },
   "impact": {
-    "as_of": "2026-09-19T22:13:44.9107879+08:00",
+    "as_of": "2026-09-19T23:48:12.2028602+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1385,8 +1385,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-19T13:47:38Z",
-      "updated_at": "2026-09-19T13:53:26Z",
-      "comments": 2,
+      "updated_at": "2026-09-19T14:11:32Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -6213,12 +6213,13 @@ window.BOARD_INDEX = {
         "label": "Request changes with inline suggestion"
       },
       "labels": [
+        "Needs-Author-Feedback",
         "Needs-Triage",
         "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-08-07T23:25:57Z",
-      "updated_at": "2026-09-19T13:04:39Z",
+      "updated_at": "2026-09-19T14:09:19Z",
       "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
