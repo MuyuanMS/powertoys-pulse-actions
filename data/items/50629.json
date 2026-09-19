@@ -2,36 +2,117 @@
   "number": 50629,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-19T05:47:09Z",
-  "evaluated_at": "2026-09-19T05:47:09Z",
+  "generated_at": "2026-09-19T07:48:00Z",
+  "evaluated_at": "2026-09-19T07:48:00Z",
   "source_updated_at": "2026-09-18T02:08:42Z",
   "head_sha": "0900e79a353d93407b3376f3ff37aaa2f61d5123",
   "title": "Fix bookmark placeholder values persisting after launch",
   "url": "https://github.com/microsoft/PowerToys/pull/50629",
   "status": {
     "glyph": "...",
-    "label": "Reviewing findings",
-    "detail": "The prior bookmark-reset race was fixed, built, pushed, and resolved. A fresh Copilot re-review produced two current high-confidence findings before the bounded cutoff."
+    "label": "Blocking inline findings ready for approval",
+    "detail": "Both current findings were fixed and built on the fork, and the fresh Copilot review returned zero new findings with zero unresolved threads. The upstream head remains unchanged, so the two fixes are drafted as author-facing inline requests."
   },
-  "next_action": "Release the submission callback when concurrent invocation is rejected, and prevent bound text edits from being silently discarded during submission; then rebuild and re-review.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Approve or hold the request-changes draft after a final freshness check.",
+  "proposed_comments": [
+    {
+      "id": "release-rejected-invocation-submission",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Release the submission state when a concurrent invocation is rejected",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ShellViewModel.cs",
+      "line": 388,
+      "side": "RIGHT",
+      "body": "### Release the submission state when a concurrent invocation is rejected\n\n**Severity:** `high`\n\nWhen `StartInvoke` returns because `_handleInvokeTask` is already active, the rejected `PerformCommandMessage` never receives `OnInvocationCompleted`. The submitting parameters page therefore remains suspended and cannot recover after the active invocation finishes.\n\nPlease invoke the completion callback on this rejection path before returning so the caller releases its submission gate and resumes its parameter inputs.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The fork fix was built and the fresh Copilot pass returned no new findings."
+      }
+    },
+    {
+      "id": "preserve-edits-during-submission",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Do not silently discard text edits during submission",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ParametersViewModels.cs",
+      "line": 243,
+      "side": "RIGHT",
+      "body": "### Do not silently discard text edits during submission\n\n**Severity:** `medium`\n\nReturning from `TextChanged` while submission is active lets the textbox display a new value without updating the extension model. If the command returns `KeepOpen`, the visible text and the stored parameter remain inconsistent.\n\nEither disable the bound input for the submission interval, or retain the latest deferred text and apply it through the normal write path when the page resumes. Preserve the successful dismissal/reset path so stale values are not restored after launch.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The inconsistency is directly reachable on the current diff; the fork correction built successfully and passed a fresh zero-finding review."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50629",
+      "type": "request_changes",
+      "label": "Request changes with inline comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50629,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "0900e79a353d93407b3376f3ff37aaa2f61d5123",
+        "body": "Please address the two invocation-state consistency issues in the selected inline comments."
+      },
+      "note": "Posts the selected inline findings after explicit approval and a final freshness check."
+    }
+  ],
   "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-19T05:47:09Z",
-    "unresolved_copilot_threads": 2
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-19T07:48:00Z",
+    "unresolved_copilot_threads": 0
   },
   "freshness": {
     "queued_at": "09/18/2026 07:11:22",
-    "checkpoint_at": "2026-09-19T05:47:09Z"
+    "checkpoint_at": "2026-09-19T07:48:00Z"
   },
   "fork_pr": {
     "number": 849,
     "url": "https://github.com/MuyuanMS/PowerToys/pull/849",
-    "head_sha": "16692c69def8abf733b6a0fba760035fbe222a0b"
+    "head_sha": "c75ec0d14d5f003dd24de6af7a1d177a5fcb8da4"
   },
-  "fork_branch": "pr-iterate/50629"
+  "fork_branch": "pr-iterate/50629",
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "0900e79a353d93407b3376f3ff37aaa2f61d5123",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "The two proposed inline comments contain no apply-ready suggestion blocks."
+    },
+    "line_ending_safety": {
+      "head_sha": "0900e79a353d93407b3376f3ff37aaa2f61d5123",
+      "result": "not_applicable",
+      "checked_comment_ids": [],
+      "files": []
+    },
+    "fork_review": {
+      "result": "passed",
+      "latest_copilot_new_comments": 0,
+      "unresolved_copilot_threads": 0
+    },
+    "fork_head": {
+      "head_sha": "c75ec0d14d5f003dd24de6af7a1d177a5fcb8da4",
+      "result": "passed",
+      "commands": [
+        "Build Microsoft.CmdPal.UI.ViewModels",
+        "Build Microsoft.CmdPal.UI.ViewModels.UnitTests",
+        "Build Microsoft.CmdPal.Ext.Bookmarks.UnitTests"
+      ],
+      "details": "All affected fork projects built successfully."
+    }
+  }
 }

@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-19T15:25:17.2837711+08:00",
+  "generated_at": "2026-09-19T15:59:59.3007248+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1255
   },
   "impact": {
-    "as_of": "2026-09-19T15:25:17.2837711+08:00",
+    "as_of": "2026-09-19T15:59:59.3007248+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1656,15 +1656,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 2,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with inline comments"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -3569,7 +3572,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "waiting_copilot",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -6751,7 +6754,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "reviewing_findings",
+      "stage": "waiting_copilot",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
