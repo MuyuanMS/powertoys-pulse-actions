@@ -1,35 +1,112 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50609",
   "number": 50609,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-18T23:33:54.8355653Z",
-  "evaluated_at": "09/18/2026 02:38:45",
+  "generated_at": "2026-09-19T01:46:00Z",
+  "evaluated_at": "2026-09-19T01:46:00Z",
   "source_updated_at": "2026-09-17T02:18:24Z",
   "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
   "title": "[Shortcut Guide] Manifest index creation refactor and bug fixing",
   "url": "https://github.com/microsoft/PowerToys/pull/50609",
+  "summary": "The current-head review is converged and the exact generator, UI, and unit-test projects build successfully. One coordinated out-of-diff request remains for approval to make manifest freshness and YAML validation deterministic.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Generator, UI, and unit-test builds now pass after resolving the Visual Studio v180 target path. The general review comment still needs implementation-ready section formatting and final artifact validation."
+    "glyph": "DRAFT",
+    "label": "General review note ready for approval",
+    "detail": "One implementation-ready companion request is ready for maintainer approval."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "After explicit maintainer approval and a freshness re-check, post the general review note as a REQUEST_CHANGES review companion.",
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "harden-manifest-index-validation",
+      "kind": "companion",
+      "in_diff": false,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Harden manifest index generation and validation",
+      "out_of_diff_reason": "The fix spans generator logic, project dependencies, startup callers, warnings, and regression tests; no single current RIGHT-side anchor covers the coordinated change.",
+      "body": "### Harden manifest index generation and validation\n\n**Severity:** `high`\n\n**Affected code:**\n- `src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ManifestIndexGenerator.cs`\n- `src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ShortcutGuide.IndexYmlGenerator.csproj`\n- `src/modules/ShortcutGuide/ShortcutGuide.Ui/Program.cs`\n- `src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs`\n- `src/modules/ShortcutGuide/ShortcutGuide.UnitTests/IndexGeneratorTests/IndexGeneratorTests.cs`\n\n**Problem:** The current manifest-index pipeline still accepts stale or malformed YAML by comparing timestamps and partially parsing generated output. A manifest can change while preserving its timestamp, and malformed or partially quoted YAML can be treated as valid instead of failing fast.\n\n**Why it matters:** Shortcut Guide can consume an out-of-date or inconsistent manifest, while invalid YAML can silently hide an indexing regression during cache regeneration and overlay initialization.\n\n**Suggested change:**\n1. Compute and persist a deterministic fingerprint for the manifest set instead of relying on timestamps alone.\n2. Validate every YAML document with YamlDotNet and reject malformed data with an explicit error.\n3. Parse quoted values, comments, and booleans strictly, and emit an explicit empty `Index` list.\n4. Update the startup caller and project dependency to use the final validation path and preserve sanitized warnings.\n5. Add regression coverage for fingerprint stability, quoted comments, malformed YAML, and empty-index behavior.\n\n**Verification:** Build the IndexYmlGenerator, ShortcutGuide UI, and ShortcutGuide unit-test projects in Debug x64. Run the focused index-generator tests and confirm the new fingerprint, quoted-comment, malformed-YAML, and empty-index cases pass.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The coordinated correction maps to the current head, the review loop is converged, and the exact generator, UI, and unit-test project builds pass."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50609",
+      "type": "request_changes",
+      "label": "Post general review notes",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50609,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
+        "body": "Please address the manifest freshness and YAML validation gap described in the selected general review note."
+      },
+      "note": "Posts one general review note as a separate PR conversation comment after explicit approval."
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-18T23:33:54.8355653Z"
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-19T01:46:00Z",
+    "fork_pr": 839,
+    "fork_branch": "pr-iterate/50609",
+    "unresolved_copilot_threads": 0
   },
   "freshness": {
-    "queued_at": "09/18/2026 07:01:28",
-    "checkpoint_at": "2026-09-18T23:33:54.8355653Z"
+    "status": "fresh",
+    "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
+    "source_updated_at": "2026-09-17T02:18:24Z",
+    "evaluated_at": "2026-09-19T01:46:00Z"
   },
-  "fork_pr": {
-    "number": 839,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/839"
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "The artifact contains no apply-ready suggestion block."
+    },
+    "line_ending_safety": {
+      "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
+      "result": "not_applicable",
+      "checked_comment_ids": [],
+      "files": []
+    },
+    "fork_review": {
+      "result": "passed",
+      "latest_copilot_new_comments": 0,
+      "unresolved_copilot_threads": 0
+    },
+    "upstream_head": {
+      "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
+      "result": "passed",
+      "commands": [
+        "Build ShortcutGuide.IndexYmlGenerator",
+        "Build ShortcutGuide.Ui",
+        "Build ShortcutGuide.UnitTests"
+      ],
+      "details": "All three exact current-head projects built successfully with Visual Studio v180 targets."
+    }
   },
-  "fork_branch": "pr-iterate/50609"
+  "fork": {
+    "repository": "MuyuanMS/PowerToys",
+    "pr": 839,
+    "branch": "pr-iterate/50609"
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
