@@ -1,116 +1,39 @@
 {
-  "schemaVersion": 5,
   "number": 49793,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_on_author",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-19T03:16:43.8249219Z",
+  "stage": "review_in_progress",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-09-19T21:39:36.935376+08:00",
   "evaluated_at": "2026-09-19T03:16:43.8249219Z",
   "source_updated_at": "2026-09-19T02:01:48Z",
-  "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-  "title": "CmdPal: Add command deep links",
-  "url": "https://github.com/microsoft/PowerToys/pull/49793",
-  "state": "OPEN",
-  "draft": false,
-  "summary": "The saved fork review was resumed without issuing a duplicate Copilot request. The existing Copilot review on fork PR 742 was consumed: it had no pending reviewer request, zero published inline comments, and zero unresolved Copilot threads, but its suppressed body feedback still identified two current-head issues absent from the live upstream head. Those two issues are now drafted as current-head apply-ready REQUEST_CHANGES suggestions and the literal suggestion candidate built successfully from the pinned upstream head.",
-  "confidence": "High",
-  "processVerdict": "proceed",
   "status": {
-    "glyph": "WAIT",
-    "label": "Waiting on author after upstream changes request",
-    "detail": "A maintainer requested a current-head concurrency correction on 2026-09-19: nested-command cleanup must not block the approved command and queued links."
+    "detail": "Live PR activity no longer supports the previous author-wait state (no current needs-author label, changes-requested review, or posted Pulse action remains after author activity). Re-run powertoys-pr-review before posting another maintainer action.",
+    "label": "Author responded — review needed",
+    "glyph": "🔄"
   },
   "next_action": {
-    "glyph": "WAIT",
-    "label": "Wait for the author to address the current review",
-    "reason": "Revalidate the head and the existing draft findings after the author pushes or replies."
+    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision.",
+    "label": "Run PR review",
+    "glyph": "🔄"
   },
-  "needs_revalidation": false,
-  "source": {
-    "repository": "microsoft/PowerToys",
-    "headRefOid": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-    "updatedAt": "2026-09-11T16:28:30Z"
-  },
-  "proposed_comments": [
-    {
-      "id": "use-stable-command-id-for-links",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Use only stable command IDs in copied links",
-      "confidence": {
-        "score": 96,
-        "rationale": "The current method passes TopLevelViewModel.Id into the protocol route, while TopLevelViewModel.Id falls back to a generated value when the underlying command ID is blank. The activation path resolves through provider command IDs and requires the returned command ID to match exactly, so generated top-level IDs can produce links that cannot be resolved later."
-      },
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/CommandPaletteContextMenuFactory.cs",
-      "line": 209,
-      "start_line": 198,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Use only stable command IDs in copied links\n\n**Severity:** `high`\n\n`TryAddCommandLink` currently builds `x-cmdpal://commands/...` links from `TopLevelViewModel.Id`, but that property falls back to a generated ID when the wrapped command has no stable provider-assigned ID. Activation later resolves through the provider's command IDs and requires an exact ID match, so these copied links can be accepted, remembered, and then fail to resolve. Use the wrapped command's stable ID for command-link routes and skip the copy action when that ID is missing.\n\n```suggestion\n        var commandId = topLevelItem.ItemViewModel.Command.Id;\n        if (topLevelItem.IsFallback ||\n            topLevelItem.IsDockBand ||\n            string.IsNullOrWhiteSpace(commandId) ||\n            string.IsNullOrWhiteSpace(providerId))\n        {\n            return;\n        }\n\n        Uri uri;\n        try\n        {\n            uri = _protocolActivation.CreateUri(new CmdPalProtocolRoute.ExecuteCommand(providerId, commandId));\n        }\n```",
-      "disposition": "proposed"
-    },
-    {
-      "id": "replace-filter-placeholder",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Resolve the filter failure-mode placeholder",
-      "confidence": {
-        "score": 94,
-        "rationale": "The current command-link contract still contains a visible '(???)' placeholder in the new filter behavior section. Replacing it with explicit user recovery behavior is a localized documentation fix."
-      },
-      "path": "src/modules/cmdpal/doc/command-links.md",
-      "line": 98,
-      "start_line": 98,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Resolve the filter failure-mode placeholder\n\n**Severity:** `medium`\n\nThe new command-link contract still contains a visible `(???)` placeholder in the filter failure behavior. That leaves an unresolved design note in published documentation for a user-facing deep-link contract. Replace it with the concrete recovery behavior so the contract is ready to ship.\n\n```suggestion\n  unfiltered results; users can reopen the link after updating it with a valid filter.\n```",
-      "disposition": "proposed"
-    }
-  ],
   "actions": [],
+  "needs_revalidation": true,
+  "schemaVersion": 5,
+  "confidence": "High",
+  "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
+  "judgment": {
+    "status": "review_comments_ready",
+    "rationale": "The fork review loop state is clean but divergent from upstream. The live upstream head remains reviewable and green, and two validated fork-review findings are absent from the upstream tree. Because both are current-diff, apply-ready, and build-validated on the exact suggestion candidate, the furthest valid state is an approval-gated REQUEST_CHANGES draft, not review_ready.",
+    "zero_upstream_writes": true
+  },
+  "proposed_comments": [],
   "author_wait_evidence": {
     "author": "michaeljolley",
     "created_at": "2026-09-19T01:57:13Z",
     "url": "https://github.com/microsoft/PowerToys/pull/49793#discussion_r4051878862",
     "requested_evidence": "Let queued command-link execution proceed independently of blocked nested-command event cleanup and add a regression test for blocked unsubscribe."
-  },
-  "safe_actions": [
-    "Present the drafted REQUEST_CHANGES review for explicit maintainer approval",
-    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
-    "Hold the review without changing labels, review state, CI, merge state, or PR state"
-  ],
-  "workflow": {
-    "phase": "waiting_on_author",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-19T03:16:43.8249219Z",
-    "reviewed_upstream_head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-    "resume_action": "revalidate-after-author-activity",
-    "fork_pr": 742,
-    "fork_branch": "pr-iterate/49793-v3",
-    "fork_head_sha": "0a41d9d3a9106409458bbc6913f2652974ff6945",
-    "fork_upstream_divergence": {
-      "upstream_head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-      "fork_head_sha": "0a41d9d3a9106409458bbc6913f2652974ff6945",
-      "left_right_commit_count": "12\t16",
-      "detail": "Known divergence preserved: the durable fork review PR remains on the older review head while the live upstream PR advanced through later author commits. Fork validation is not transferred to upstream; only the exact upstream-head suggestion candidate is claimed."
-    },
-    "latest_copilot_review_at": "2026-09-11T10:49:29Z",
-    "latest_copilot_commit_id": "0a41d9d3a9106409458bbc6913f2652974ff6945",
-    "latest_copilot_new_published_comments": 0,
-    "unresolved_copilot_threads": 0,
-    "build_result": "passed",
-    "advancement_evidence": [
-      "Read the prior dashboard checkpoint and preserved the existing fork PR 742 / pr-iterate/49793-v3 trace.",
-      "Ran Get-ReviewResumeState.ps1 for PR 49793; it reported upstream cd54aff228b1ebc3a55ce1e71aae909b5ce80b11, fork head 0a41d9d3a9106409458bbc6913f2652974ff6945, latest Copilot review 2026-09-11T10:49:29Z, zero unresolved threads, no local local checkout, and resumeAction create-local checkout.",
-      "Performed one immediate fork check: requested_reviewers was empty, latest Copilot review body was consumed, published Copilot inline comments were empty, and unresolved Copilot thread count was zero.",
-      "Did not request a duplicate Copilot review because there was no pending fork thread state requiring another request and the latest review was already available to consume.",
-      "Confirmed live upstream PR 49793 is open, non-draft, at head cd54aff228b1ebc3a55ce1e71aae909b5ce80b11 with updatedAt 2026-09-11T16:28:30Z.",
-      "Confirmed Phase 0 process disposition is proceed: author association is COLLABORATOR, so community process asks are skipped; license/cla, dependency-review, detect-telemetry-events, pr-intake, and PowerToys CI checks were successful.",
-      "Mapped the two still-valid Copilot suppressed findings to current RIGHT-side upstream diff anchors.",
-      "Materialized both suggestion blocks literally on a clean detached local checkout at the pinned upstream head and ran git diff --check plus the affected Microsoft.CmdPal.UI build successfully."
-    ]
   },
   "fork_pr": {
     "number": 742,
@@ -119,118 +42,5 @@
     "head_sha": "0a41d9d3a9106409458bbc6913f2652974ff6945",
     "base_branch": "review-base/49793-current-v2",
     "branch": "pr-iterate/49793-v3"
-  },
-  "phase0": {
-    "authorAssociation": "COLLABORATOR",
-    "disposition": "Proceed",
-    "processGates": "Skipped for collaborator author; upstream CI, license/cla, dependency-review, detect-telemetry-events, and pr-intake checks are green."
-  },
-  "validation": {
-    "upstream_head": {
-      "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-      "result": "passed-for-patched-candidate",
-      "checks": [
-        "license/cla: success",
-        "dependency-review: success",
-        "detect-telemetry-events: success",
-        "pr-intake: success",
-        "PowerToys CI: success",
-        "PowerToys CI (Build x64 Build Release_x64): success",
-        "PowerToys CI (Build arm64 Build Release_arm64): success",
-        "PowerToys CI (Build Command Palette Toolkit SDK Build SDK): success"
-      ],
-      "notes": [
-        "The live upstream CI is green for the pinned head.",
-        "No clean zero-finding upstream result is claimed because two validated suggestions are still absent from the upstream tree."
-      ]
-    },
-    "suggestion_patch": {
-      "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-      "result": "passed",
-      "applied_comment_ids": [
-        "use-stable-command-id-for-links",
-        "replace-filter-placeholder"
-      ],
-      "minimal_ranges_reviewed": true,
-      "commands": [
-        "git diff --check",
-        "build-essentials.cmd (restore target succeeded; runner build initially exposed inherited GIT_CONFIG_* vcpkg environment issue)",
-        "Microsoft.CmdPal.UI build.cmd with inherited GIT_CONFIG_* variables cleared"
-      ],
-      "validated_at": "2026-09-15T06:23:14Z",
-      "notes": [
-        "Both suggestion blocks were applied literally to the pinned upstream head before the affected-project build.",
-        "The final Microsoft.CmdPal.UI build exited 0 after clearing inherited GIT_CONFIG_* variables; POWERTOYS_DISABLE_SPECTRE=1 was set and no repository file workaround was committed.",
-        "Suggestion ranges were minimized to the smallest independently valid replacements: one method block for the multi-site command ID change and one documentation line for the placeholder."
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-      "result": "passed",
-      "checked_comment_ids": [
-        "use-stable-command-id-for-links",
-        "replace-filter-placeholder"
-      ],
-      "files": [
-        {
-          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/CommandPaletteContextMenuFactory.cs",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 629,
-          "cr_only_count": 0
-        },
-        {
-          "path": "src/modules/cmdpal/doc/command-links.md",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 213,
-          "cr_only_count": 0
-        }
-      ]
-    },
-    "fork_review": {
-      "fork_pr": 742,
-      "fork_head_sha": "0a41d9d3a9106409458bbc6913f2652974ff6945",
-      "latest_copilot_review_at": "2026-09-11T10:49:29Z",
-      "latest_copilot_review_commit_id": "0a41d9d3a9106409458bbc6913f2652974ff6945",
-      "published_inline_comments": 0,
-      "unresolved_threads": 0,
-      "result": "consumed",
-      "detail": "Existing review was consumed before considering any new request; no duplicate Copilot request was made."
-    }
-  },
-  "copilot_review": {
-    "latest_submitted_at": "2026-09-11T10:49:29Z",
-    "latest_commit_id": "0a41d9d3a9106409458bbc6913f2652974ff6945",
-    "latest_new_published_comments": 0,
-    "unresolved_threads": 0,
-    "suppressed_comments_consumed": 2,
-    "policy_note": "Suppressed body feedback does not count as published inline comments, but the two still-valid current-head issues were converted into draft author-facing suggestions instead of being reported as a clean review."
-  },
-  "freshness": {
-    "evaluated_at": "2026-09-17T06:49:08Z",
-    "head_sha": "cd54aff228b1ebc3a55ce1e71aae909b5ce80b11",
-    "head_updated_at": "2026-09-11T16:28:30Z",
-    "status": "fresh-at-draft-time",
-    "stale_expectation": "This item should no longer be treated as a stale review item after the dashboard data consumer reloads this artifact, because it has a current-head approval-gated request_changes action. No emit, sanitize, index regeneration, commit, or push was performed."
-  },
-  "test_instructions": [
-    "Launch the already-built executable at <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe after the full runner/module chain is built if manual UI validation is needed.",
-    "Enable CmdPal external command links and open the context menu for top-level commands with and without provider-assigned command IDs.",
-    "Verify that Copy command link appears only for commands with a stable command ID and that copied links resolve through x-cmdpal://commands/{provider-id}/{command-id}.",
-    "Open the command-link documentation and verify the filter failure behavior is explicit, with no '(???)' placeholder."
-  ],
-  "judgment": {
-    "status": "review_comments_ready",
-    "rationale": "The fork review loop state is clean but divergent from upstream. The live upstream head remains reviewable and green, and two validated fork-review findings are absent from the upstream tree. Because both are current-diff, apply-ready, and build-validated on the exact suggestion candidate, the furthest valid state is an approval-gated REQUEST_CHANGES draft, not review_ready.",
-    "zero_upstream_writes": true
-  },
-  "upstream_safety": {
-    "public_actions_taken": false,
-    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
   }
 }

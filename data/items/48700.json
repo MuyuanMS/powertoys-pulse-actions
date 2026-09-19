@@ -5,8 +5,8 @@
   "stage": "building",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-19T11:46:45.0460795Z",
-  "evaluated_at": "2026-09-19T11:46:45.0460795Z",
+  "generated_at": "2026-09-19T13:52:56.8050517Z",
+  "evaluated_at": "2026-09-19T13:52:56.8050517Z",
   "source_updated_at": "2026-08-14T16:00:42Z",
   "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
   "title": "Migrate Workspaces Launcher UI from WPF to WinUI 3",
@@ -14,19 +14,19 @@
   "status": {
     "glyph": "...",
     "label": "Local validation running",
-    "detail": "Authenticated package restore and the focused Launcher native build now pass. Exact-upstream-head Workspaces test execution remains blocked earlier in the build graph by unrelated ZoomIt source-encoding and precompiled-header failures. Copilot remains clean with zero unresolved threads."
+    "detail": "Both focused Workspaces test suites now build and pass on the converged fork: 135 Launcher UI tests and 50 WorkspacesLib tests. Exact-upstream-head validation remains blocked before compilation by a local vcpkg registry initialization error involving a missing inherited Git configuration value. Copilot remains clean with zero unresolved threads."
   },
-  "next_action": "Resume exact-head Workspaces test validation after the ZoomIt encoding and precompiled-header environment failures are resolved or bypassed without changing the reviewed source.",
+  "next_action": "Repair or clear the inherited Git configuration used by vcpkg in a clean exact-upstream checkout, then rerun both focused Workspaces test suites before declaring the upstream head clean.",
   "proposed_comments": [],
   "actions": [],
   "workflow": {
     "phase": "building",
-    "checkpoint_at": "2026-09-19T11:46:45.0460795Z",
+    "checkpoint_at": "2026-09-19T13:52:56.8050517Z",
     "unresolved_copilot_threads": 0
   },
   "freshness": {
     "queued_at": "09/18/2026 07:11:35",
-    "checkpoint_at": "2026-09-19T11:46:45.0460795Z"
+    "checkpoint_at": "2026-09-19T13:52:56.8050517Z"
   },
   "fork_pr": {
     "number": 760,
@@ -44,12 +44,13 @@
       "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
       "result": "blocked",
       "commands": [
-        "dotnet restore src\\modules\\Workspaces\\WorkspacesLauncherUI.UnitTests\\WorkspacesLauncherUI.UnitTests.csproj -p:Platform=x64",
-        "msbuild src\\modules\\launcher\\Microsoft.Launcher\\Microsoft.Launcher.vcxproj /p:Configuration=Debug /p:Platform=x64",
-        "msbuild src\\modules\\Workspaces\\WorkspacesLauncherUI.UnitTests\\WorkspacesLauncherUI.UnitTests.csproj /p:Configuration=Debug /p:Platform=x64",
-        "msbuild src\\modules\\Workspaces\\WorkspacesLauncherUI.UnitTests\\WorkspacesLauncherUI.UnitTests.csproj /p:Configuration=Debug /p:Platform=x64 /p:AdditionalOptions=/utf-8"
+        "Build WorkspacesLauncherUI.UnitTests in the converged fork local checkout",
+        "vstest.console.exe PowerToys.WorkspacesLauncherUI.Tests.dll /Platform:x64 /InIsolation",
+        "Build WorkspacesLib.UnitTests in the converged fork local checkout",
+        "vstest.console.exe Workspaces.Lib.UnitTests.dll /Platform:x64 /InIsolation",
+        "Restore and build both focused projects from a temporary exact-upstream-head local checkout"
       ],
-      "details": "Authenticated exact-head restore passed, Microsoft.Windows.CppWinRT.2.0.250303.1 is available, and the focused Microsoft.Launcher native build passed. The Workspaces unit-test build still stops before Workspaces compilation in unrelated ZoomIt dependencies: the default CP936 build reports C4819 source-encoding errors, while the /utf-8 retry reports C2855 precompiled-header option mismatches."
+      "details": "The converged fork built and passed 135 WorkspacesLauncherUI tests and 50 WorkspacesLib tests while bypassing the unrelated ZoomIt build graph. In a clean temporary local checkout pinned to the exact upstream head, restore passed but vcpkg manifest initialization failed before Workspaces compilation because inherited Git configuration referenced a missing GIT_CONFIG_VALUE_2. This environment failure is not treated as a source finding."
     }
   }
 }
