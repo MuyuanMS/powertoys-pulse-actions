@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-19T10:02:06.369894+08:00",
+  "generated_at": "2026-09-19T11:09:29.3007672+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 170,
+    "open_prs": 169,
     "open_issues": 12668,
     "community": 11829,
-    "artifacts": 1256
+    "artifacts": 1255
   },
   "impact": {
-    "as_of": "2026-09-19T10:02:06.369894+08:00",
+    "as_of": "2026-09-19T11:09:29.3007672+08:00",
     "issues_helped": 10,
     "prs_iterated": 17,
     "constructive_comments_posted": 3,
@@ -136,7 +136,6 @@ window.BOARD_INDEX = {
     50472,
     50399,
     50398,
-    50397,
     50377,
     50333,
     50268,
@@ -3555,12 +3554,12 @@ window.BOARD_INDEX = {
         "michaeljolley"
       ],
       "created_at": "2026-09-05T00:23:25Z",
-      "updated_at": "2026-09-08T02:44:58Z",
+      "updated_at": "2026-09-19T02:38:20Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 801,
@@ -3568,54 +3567,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50398-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/801"
-      }
-    },
-    {
-      "id": "pr-50397",
-      "kind": "pr",
-      "number": 50397,
-      "url": "https://github.com/microsoft/PowerToys/pull/50397",
-      "title": "CmdPal: filter static pages in the background",
-      "author": "michaeljolley",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 5,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post current-head review requests"
-      },
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [
-        "michaeljolley"
-      ],
-      "created_at": "2026-09-05T00:22:50Z",
-      "updated_at": "2026-09-08T02:45:00Z",
-      "comments": 4,
-      "priority": null,
-      "review_decision": "CHANGES_REQUESTED",
-      "ci_state": null,
-      "merge_state": "DIRTY",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 803,
-        "fork_title": "[PR 50397] CmdPal: filter static pages in the background (current-head review)",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50397-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/803"
       }
     },
     {
@@ -4757,7 +4708,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-26T22:08:09Z",
-      "updated_at": "2026-09-13T01:39:14Z",
+      "updated_at": "2026-09-19T01:53:43Z",
       "comments": 7,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
@@ -5037,7 +4988,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-21T15:13:26Z",
-      "updated_at": "2026-09-18T13:47:11Z",
+      "updated_at": "2026-09-19T02:00:37Z",
       "comments": 9,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
@@ -6155,7 +6106,7 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-08-09T23:26:48Z",
-      "updated_at": "2026-09-11T16:28:30Z",
+      "updated_at": "2026-09-19T02:01:48Z",
       "comments": 3,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
@@ -6796,12 +6747,12 @@ window.BOARD_INDEX = {
         "michaeljolley"
       ],
       "created_at": "2026-07-21T03:56:38Z",
-      "updated_at": "2026-09-04T01:55:44Z",
+      "updated_at": "2026-09-19T02:14:10Z",
       "comments": 5,
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 691,
