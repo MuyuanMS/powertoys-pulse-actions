@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-19T18:26:26.2073301+08:00",
+  "generated_at": "2026-09-19T19:32:23.008131+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1257
   },
   "impact": {
-    "as_of": "2026-09-19T18:26:26.2073301+08:00",
+    "as_of": "2026-09-19T19:32:23.008131+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1499,7 +1499,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-18T12:51:16Z",
-      "updated_at": "2026-09-18T14:13:25Z",
+      "updated_at": "2026-09-19T10:56:36Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1511,7 +1511,7 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 50637,
       "url": "https://github.com/microsoft/PowerToys/pull/50637",
-      "title": "[PTRun][UnitConverter] Fix sqmi/sqmil resolving to invalid units",
+      "title": "[PTRun][UnitConverter] Fix sqmi resolving to an invalid unit",
       "author": "sanskarIN",
       "state": "open",
       "is_draft": false,
@@ -1537,8 +1537,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-18T12:50:33Z",
-      "updated_at": "2026-09-18T14:13:17Z",
-      "comments": 4,
+      "updated_at": "2026-09-19T10:56:04Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1557,7 +1557,7 @@ window.BOARD_INDEX = {
       "kind": "pr",
       "number": 50636,
       "url": "https://github.com/microsoft/PowerToys/pull/50636",
-      "title": "[Peek] Fix async void Dispose in WebBrowserPreviewer",
+      "title": "[Peek] Fix non-deterministic async void Dispose in WebBrowserPreviewer",
       "author": "sanskarIN",
       "state": "open",
       "is_draft": false,
@@ -1583,7 +1583,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-18T12:44:23Z",
-      "updated_at": "2026-09-18T14:13:44Z",
+      "updated_at": "2026-09-19T10:45:28Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -154943,13 +154943,14 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Peek"
       ],
       "assignees": [],
       "created_at": "2026-09-18T14:09:26Z",
-      "updated_at": "2026-09-18T14:15:40Z",
-      "comments": 1,
+      "updated_at": "2026-09-19T10:44:49Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -154977,8 +154978,8 @@ window.BOARD_INDEX = {
       "labels": [],
       "assignees": [],
       "created_at": "2026-09-18T14:08:46Z",
-      "updated_at": "2026-09-18T14:08:46Z",
-      "comments": 0,
+      "updated_at": "2026-09-19T10:55:08Z",
+      "comments": 1,
       "priority": null
     },
     {
