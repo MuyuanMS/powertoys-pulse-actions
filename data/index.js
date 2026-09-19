@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-20T06:41:04.3971931+08:00",
+  "generated_at": "2026-09-20T07:16:24.263903+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 170,
     "open_issues": 12676,
     "community": 11835,
-    "artifacts": 1256
+    "artifacts": 1257
   },
   "impact": {
-    "as_of": "2026-09-20T06:41:04.3971931+08:00",
+    "as_of": "2026-09-20T07:16:24.263903+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50663,
     50659,
     50649,
     50637,
@@ -1368,13 +1369,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "reviewing_findings",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1412,7 +1413,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "reviewing_findings",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -1450,7 +1451,7 @@ window.BOARD_INDEX = {
       "title": "[UITests][LightSwitch] Migrate UI tests",
       "author": "khmyznikov",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
@@ -1466,11 +1467,12 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Product-ZoomIt",
-        "Product-LightSwitch"
+        "Product-LightSwitch",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-09-19T03:01:18Z",
-      "updated_at": "2026-09-19T05:48:26Z",
+      "updated_at": "2026-09-19T22:34:39Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -3341,15 +3343,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve"
+      },
       "labels": [
         "Product-Peek",
         "Ready for review"
@@ -6750,7 +6755,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "waiting_copilot",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -154732,12 +154737,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Author-Feedback",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-09-19T22:33:35Z",
-      "updated_at": "2026-09-19T22:33:35Z",
-      "comments": 0,
+      "updated_at": "2026-09-19T22:39:32Z",
+      "comments": 1,
       "priority": null
     },
     {
