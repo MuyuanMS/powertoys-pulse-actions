@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-19T18:00:34.9313774+08:00",
+  "generated_at": "2026-09-19T18:15:58.158183+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 170,
-    "open_issues": 12670,
-    "community": 11829,
-    "artifacts": 1257
+    "open_issues": 12671,
+    "community": 11830,
+    "artifacts": 1256
   },
   "impact": {
-    "as_of": "2026-09-19T18:00:34.9313774+08:00",
+    "as_of": "2026-09-19T18:15:58.158183+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -570,7 +570,6 @@ window.BOARD_INDEX = {
     48971,
     14596,
     14351,
-    50657,
     50656,
     50653,
     50650,
@@ -3574,7 +3573,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "waiting_copilot",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -4682,15 +4681,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 2,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request changes with inline comments"
+      },
       "labels": [
         "Needs-Author-Feedback",
         "Product-Command Palette"
@@ -7844,7 +7846,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "building",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -154621,6 +154623,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50658",
+      "kind": "issue",
+      "number": 50658,
+      "url": "https://github.com/microsoft/PowerToys/issues/50658",
+      "title": "[Hosts File Editor] IP validation rebuilds a 665-character Regex on every call",
+      "author": "sanskarIN",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Hosts File Editor"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-19T10:03:10Z",
+      "updated_at": "2026-09-19T10:08:05Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-50657",
       "kind": "issue",
       "number": 50657,
@@ -154637,22 +154670,19 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-09-19T08:43:49Z",
-      "updated_at": "2026-09-19T08:48:34Z",
-      "comments": 1,
+      "updated_at": "2026-09-19T10:01:52Z",
+      "comments": 2,
       "priority": null
     },
     {
