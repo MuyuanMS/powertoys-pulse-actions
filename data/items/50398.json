@@ -3,32 +3,153 @@
   "number": 50398,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-19T09:39:00Z",
-  "evaluated_at": "2026-09-19T09:39:00Z",
+  "generated_at": "2026-09-19T11:51:10.0203619Z",
+  "evaluated_at": "2026-09-19T11:51:10.0203619Z",
   "source_updated_at": "2026-09-19T02:38:20Z",
   "head_sha": "9256d4fcd2c519e550bcff94e80c9ebe34b0f341",
   "title": "CmdPal: Fix repeated details loading in Command Palette",
   "url": "https://github.com/microsoft/PowerToys/pull/50398",
+  "repository": "microsoft/PowerToys",
+  "confidence": "high",
+  "processVerdict": "proceed",
+  "summary": "The current-head review is converged and validated, but six author-facing corrections remain: four exact RIGHT-side inline findings and two implementation-ready companion comments covering lifecycle regression tests and foreground-rights disposal synchronization.",
   "status": {
-    "glyph": "...",
-    "label": "Review mapping in progress",
-    "detail": "The outstanding fork Copilot review was consumed and returned zero new findings with zero unresolved threads. Focused builds and all 28 DetailsLifecycleTests pass, but seven fork-only paths still require exact current-diff author-facing mapping."
+    "glyph": "DRAFT",
+    "label": "Review findings ready for approval",
+    "detail": "Four exact inline findings and two general review notes are ready for maintainer approval."
   },
-  "next_action": "Materialize exact current-upstream RIGHT-side anchors for the validated fork-only corrections, consolidate them by root cause, and validate the resulting review payload.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "After explicit maintainer approval and a freshness re-check, submit the six drafted findings in a REQUEST_CHANGES review and separate PR conversation comments.",
+  "proposed_comments": [
+    {
+      "id": "selection-publication-generation",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Guard queued selection publication by the current selection generation",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListViewModel.cs",
+      "start_line": 953,
+      "line": 953,
+      "side": "RIGHT",
+      "body": "### Guard queued selection publication by the current selection generation\n\n**Severity:** `high`\n\nThe asynchronous selection path can still publish details or a suggestion after a newer selection has won: the cancellation token is checked before the background work and before the first publication, but the queued UI callbacks do not carry a selection generation, and the details object is read before the UI callback runs. Increment a generation whenever the selected item changes or is cleared, capture it for this request, and re-check it inside every UI callback; read `item.Details` inside the callback before sending `ShowDetailsMessage`. Keep the hide-details and suggestion notifications on the same guarded UI path so an older selection cannot overwrite the current result.",
+      "confidence": {
+        "score": 96,
+        "rationale": "The pinned upstream method checks only the cancellation token around background work, while the converged fork adds a selection generation and moves details and suggestion publication behind guarded UI callbacks."
+      }
+    },
+    {
+      "id": "queued-selection-error-completion",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Publish queued selection failure after marking the item unhealthy",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListItemViewModel.cs",
+      "start_line": 147,
+      "line": 154,
+      "side": "RIGHT",
+      "body": "### Publish queued selection failure after marking the item unhealthy\n\n**Severity:** `medium`\n\nIf selected-property initialization throws, the current catch closes the lifetime but leaves the item without the error flag and completes the waiting task in `finally`. That lets a queued caller observe completion before the failure state and before notifications raised by initialization have drained. Mark the item as errored, complete the task with `false` on the failure path, and queue successful completion through the lifetime after initialization notifications have finished; expose the protected error-state transition from `CommandItemViewModel`.",
+      "confidence": {
+        "score": 95,
+        "rationale": "The upstream catch/finally sequence is directly visible at the pinned RIGHT-side range, and the converged fix changes both the error state and completion ordering."
+      }
+    },
+    {
+      "id": "snapshot-refresh-rollback",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "high",
+      "title": "Refresh non-observable details through a replacement graph",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/ListItemViewModel.cs",
+      "start_line": 269,
+      "line": 272,
+      "side": "RIGHT",
+      "body": "### Refresh non-observable details through a replacement graph\n\n**Severity:** `high`\n\nFor a matching non-observable details model, reinitializing the existing `DetailsViewModel` mutates the live graph in place. If a later property or child read fails, the healthy graph can be partially torn down and its existing subscribers lose their content. Build a replacement `DetailsViewModel`, initialize it before publishing, clean it up and report the exception if initialization fails, then swap it in and clean up the previous graph only after the replacement succeeds; keep the current in-place refresh behavior for observable details.",
+      "confidence": {
+        "score": 97,
+        "rationale": "The pinned upstream branch reuses the existing graph for the matching-model path, while the converged fork adds a replacement-and-rollback path and a focused failure test."
+      }
+    },
+    {
+      "id": "tag-initialization-rollback",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Clean up tags that initialized before a later tag failed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DetailsTagsViewModel.cs",
+      "start_line": 42,
+      "line": 42,
+      "side": "RIGHT",
+      "body": "### Clean up tags that initialized before a later tag failed\n\n**Severity:** `medium`\n\nThe current LINQ projection initializes each `TagViewModel` but does not clean up the earlier view models if a later tag throws. Build the list in a temporary collection, clean every already-created view model in a catch block, and assign `Tags` only after the complete collection has initialized so a failed refresh cannot leak subscriptions or expose a partial list.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The failure window is localized to the changed projection, and the converged fork replaces it with explicit two-phase construction and cleanup."
+      }
+    },
+    {
+      "id": "foreground-rights-disposal-race",
+      "kind": "companion",
+      "in_diff": false,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Serialize foreground-rights calls with extension disposal",
+      "out_of_diff_reason": "ExtensionWrapper.cs is fork-only and has no current RIGHT-side anchor in PR 50398.",
+      "body": "### Serialize foreground-rights calls with extension disposal\n\n**Severity:** `medium`\n\n**Affected code:**\n`src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Models/ExtensionWrapper.cs`, `ExtensionWrapper.TryAllowSetForeground(bool)` and the `SignalDispose`, `GetExtensionObject`, and `IsRunning` lifetime paths.\n\n**Problem:**\nThe current method reads `_extensionObject` and checks liveness outside the wrapper lock, then uses the native WinRT pointer while another thread may dispose and clear the object. That creates a disposal/use race and can pass a stale native pointer to `CoAllowSetForegroundWindow`.\n\n**Why it matters:**\nForeground activation can fail intermittently during extension shutdown or concurrent provider calls, and the existing exception handler cannot make a use-after-dispose window safe.\n\n**Suggested change:**\n1. Enter `_lock` before checking liveness or reading `_extensionObject`.\n2. Return `false` when the selected object is null; otherwise keep the lock while converting it to `IWinRTObject`, calling `CoAllowSetForegroundWindow`, retaining it with `GC.KeepAlive`, and logging a failing HRESULT.\n3. Preserve the existing outer exception log and do not expose the object or release the lock between selecting it and the native call.\n\n**Verification:**\nAdd or run a focused concurrency test that races `TryAllowSetForeground(true)` with `SignalDispose()` and verifies no stale object is used, then build the CmdPal ViewModels project.",
+      "confidence": {
+        "score": 93,
+        "rationale": "The fork-only implementation adds exactly this lock scope, and the wrapper's disposal and native-call paths share the same `_lock` as the current object state."
+      }
+    },
+    {
+      "id": "lifecycle-regression-coverage",
+      "kind": "companion",
+      "in_diff": false,
+      "disposition": "proposed",
+      "severity": "low",
+      "title": "Keep regression coverage for the queued lifecycle failures",
+      "out_of_diff_reason": "The fork-only test additions are not a safe standalone production-code suggestion and several test helpers are outside the current RIGHT-side ranges.",
+      "body": "### Keep regression coverage for the queued lifecycle failures\n\n**Severity:** `low`\n\n**Affected code:**\n`src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/DetailsLifecycleTests.cs`, especially the queued-selection, non-observable refresh, and tracked-model helper tests.\n\n**Problem:**\nThe current upstream test file does not cover the newly identified failure windows: a queued selection that throws, a property notification that must precede selection completion, a failed non-observable snapshot refresh that must preserve the original graph, or cleanup of partially initialized tags.\n\n**Why it matters:**\nWithout these tests, later lifecycle changes can silently reintroduce stale UI publication, leaked subscriptions, or destructive refresh failures while the main happy-path tests continue to pass.\n\n**Suggested change:**\n1. Block initialization, queue selection, force a details failure, and assert `SafeSlowInitAsync()` is false and `IsInErrorState` is true.\n2. Block a queued property notification and assert the selection task remains incomplete until the notification is released.\n3. Make a snapshot details body read throw and assert the original `DetailsViewModel` and content remain subscribed while the error is reported.\n4. Make a later tag initialization throw and assert every previously created tag is cleaned up; keep helper failure hooks deterministic and release all gates in `finally` blocks.\n\n**Verification:**\nRun `Microsoft.CmdPal.UI.ViewModels.UnitTests` and confirm the focused lifecycle tests pass without leaked subscribers or hung tasks.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The converged fork adds these exact regression scenarios and the stated assertions directly exercise the production failure paths."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50398",
+      "type": "request_changes",
+      "label": "Request the details-lifecycle corrections",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50398,
+        "pr": 50398,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "9256d4fcd2c519e550bcff94e80c9ebe34b0f341",
+        "body": "Thanks for the details-lifecycle fix. The current change covers the main replacement path, but the complete lifecycle behavior also needs to protect queued selection publication, preserve a healthy details graph when a snapshot refresh fails, clean up partially initialized tag view models, and serialize foreground-rights access with extension disposal."
+      },
+      "note": "Posts four inline review comments and two general review notes as separate PR conversation comments after explicit approval."
+    }
+  ],
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-19T09:39:00Z",
+    "phase": "review_drafted",
+    "checkpoint_at": "2026-09-19T11:51:10.0203619Z",
     "unresolved_copilot_threads": 0
   },
   "freshness": {
     "headRefOid": "9256d4fcd2c519e550bcff94e80c9ebe34b0f341",
     "updatedAt": "2026-09-19T02:38:20Z",
-    "checkedAt": "2026-09-19T09:39:00Z"
+    "latestCopilotReviewAt": "2026-09-19T07:37:43Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-19T11:51:10.0203619Z"
   },
   "fork_pr": {
     "number": 801,
@@ -56,13 +177,18 @@
       ],
       "details": "The ViewModels and unit-test projects built successfully and all 28 DetailsLifecycleTests passed."
     },
+    "upstream_diff_mapping": {
+      "head_sha": "9256d4fcd2c519e550bcff94e80c9ebe34b0f341",
+      "result": "passed",
+      "details": "All four inline findings map to exact current RIGHT-side ranges; the remaining two findings include concrete out-of-diff reasons and implementation-ready guidance."
+    },
     "suggestion_patch": {
       "head_sha": "9256d4fcd2c519e550bcff94e80c9ebe34b0f341",
       "result": "not_applicable",
-      "minimal_ranges_reviewed": false,
+      "minimal_ranges_reviewed": true,
       "applied_comment_ids": [],
       "commands": [],
-      "details": "No apply-ready suggestions are emitted until exact current-diff anchors are materialized."
+      "details": "No apply-ready suggestion blocks are emitted."
     },
     "line_ending_safety": {
       "head_sha": "9256d4fcd2c519e550bcff94e80c9ebe34b0f341",

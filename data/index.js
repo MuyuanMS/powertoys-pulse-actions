@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-19T19:32:23.008131+08:00",
+  "generated_at": "2026-09-19T20:13:34.7569433+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1257
   },
   "impact": {
-    "as_of": "2026-09-19T19:32:23.008131+08:00",
+    "as_of": "2026-09-19T20:13:34.7569433+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1519,18 +1519,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_ready",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "waiting_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-09-19T02:55:56Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve",
-        "label": "Approve the validated Unit Converter fix"
-      },
+      "primary_action": null,
       "labels": [
         "Product-PowerToys Run",
         "Ready for review"
@@ -3574,15 +3571,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 6,
+      "primary_action": {
+        "type": "request_changes",
+        "label": "Request the details-lifecycle corrections"
+      },
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -6759,7 +6759,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "waiting_copilot",
+      "stage": "reviewing_findings",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
