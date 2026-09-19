@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50666",
+  "number": 50666,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-19T22:20:00Z",
+  "evaluated_at": "2026-09-19T22:20:00Z",
+  "source_updated_at": "2026-09-19T21:44:01Z",
+  "title": "[Shortcut Guide] Taskbar indicators obscure items when taskbar is set to auto-hide",
+  "url": "https://github.com/microsoft/PowerToys/issues/50666",
+  "summary": "Shortcut Guide positions indicators from the monitor work-area edge, which overlaps a temporarily revealed auto-hidden taskbar.",
+  "pending_author": false,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report is deterministic, and the current layout anchors indicator tails to rcWork rather than the actual taskbar rectangle or auto-hide state.",
+    "evidence": [
+      "The issue supplies current-main reproduction steps and a screenshot.",
+      "The taskbar is auto-hidden, then revealed before Shortcut Guide opens.",
+      "TaskbarPaneControl anchors indicators a fixed margin inside the work-area edge.",
+      "OverlayWindow obtains the monitor work area but does not pass an actual taskbar rectangle or auto-hide state to layout."
+    ],
+    "recommended_action": "Position the indicator strip from the actual taskbar bounds when a taskbar is present and visible, with work-area fallback only when shell geometry is unavailable.",
+    "evaluated_at": "2026-09-19T22:20:00Z",
+    "source_updated_at": "2026-09-19T21:44:01Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked implementation covers auto-hidden taskbar geometry."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Anchor taskbar indicators outside the live taskbar rectangle",
+      "root_cause": "Indicator layout assumes the work-area edge represents the taskbar boundary. With auto-hide enabled, rcWork can extend to the screen edge while the temporarily shown taskbar overlays that area, so the indicators cover taskbar buttons.",
+      "plan": [
+        "Expose the target monitor's taskbar window rectangle and edge from the native taskbar discovery helper.",
+        "Pass the actual taskbar bounds into TaskbarPaneControl.UpdateTasklistButtons.",
+        "Place the indicator tail just outside the live taskbar rectangle toward the monitor interior, falling back to work-area placement only when taskbar geometry is unavailable.",
+        "Add layout tests for bottom, top, left, and right auto-hidden taskbars."
+      ],
+      "verification": [
+        "Enable auto-hide, reveal the taskbar, and invoke Shortcut Guide on every supported taskbar edge.",
+        "Confirm indicator bodies do not obscure taskbar icons and tails still point to their buttons.",
+        "Verify normal non-auto-hidden taskbar placement and mixed-DPI monitors."
+      ],
+      "confidence": {
+        "score": 78,
+        "level": "yellow",
+        "rationale": "The layout calculation explains the overlap, but runtime shell geometry must confirm the correct boundary while auto-hide animation is active."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "When an auto-hidden taskbar is revealed, Shortcut Guide's numbered indicators are drawn on top of its buttons rather than adjacent to them.",
+    "known_information": [
+      "The report uses current main and includes exact steps and a screenshot.",
+      "The taskbar is explicitly revealed before Shortcut Guide activation.",
+      "Indicator placement uses the monitor work area and a fixed edge margin.",
+      "The layout does not consume the taskbar window rectangle or auto-hide state."
+    ],
+    "inferences": [
+      "The monitor work area does not represent the temporarily visible auto-hidden taskbar boundary.",
+      "Using live taskbar geometry should handle both auto-hide and non-auto-hide placement consistently."
+    ],
+    "analysis": "The current fixed work-area offset is appropriate only when rcWork excludes the taskbar. Auto-hide breaks that assumption, so the layout needs shell taskbar geometry rather than another hard-coded offset.",
+    "initial_investigation": [
+      "Inspected OverlayWindow.UpdateTaskbarPaneLayout and TaskbarPaneControl.UpdateTasklistButtons.",
+      "Confirmed horizontal and vertical placement are calculated solely from workAreaPhysical and a fixed edge margin."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50666",
+      "type": "approve_design",
+      "label": "Design auto-hide indicator placement fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Approval starts fork-side design work only; no upstream write occurs automatically."
+    },
+    {
+      "id": "reproduce-50666",
+      "type": "reproduce",
+      "label": "Verify auto-hidden taskbar placement",
+      "primary": false,
+      "confirm": false,
+      "reproduce": {
+        "module": "Shortcut Guide",
+        "version": "Current main",
+        "prerequisites": [
+          "Automatically hide the taskbar enabled",
+          "Shortcut Guide taskbar indicators enabled"
+        ],
+        "steps": [
+          "Move the pointer to the taskbar edge so the taskbar is fully visible.",
+          "Invoke Shortcut Guide while the taskbar remains shown.",
+          "Repeat for each available taskbar edge and on a secondary monitor."
+        ],
+        "expected_result": "Indicator bodies sit adjacent to taskbar buttons without covering them.",
+        "actual_result_reported": "Indicator bodies obscure the taskbar items."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Shortcut Guide"
+  ],
+  "assignees": [
+    "daverayment"
+  ],
+  "comments": 0,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
+}

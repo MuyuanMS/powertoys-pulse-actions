@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50664",
+  "number": 50664,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-19T22:20:00Z",
+  "evaluated_at": "2026-09-19T22:20:00Z",
+  "source_updated_at": "2026-09-19T21:30:15Z",
+  "title": "[Shortcut Guide] The taskbar indicators show on displays which do not have a taskbar",
+  "url": "https://github.com/microsoft/PowerToys/issues/50664",
+  "summary": "Shortcut Guide can reuse taskbar-button automation state from another monitor when the cursor monitor has no taskbar, causing indicators to appear over empty space.",
+  "pending_author": false,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report is deterministic and the current interop code retains static UI Automation state and a static button vector when taskbar discovery fails for the selected monitor.",
+    "evidence": [
+      "The indicators appear on a secondary display only when that display has no taskbar.",
+      "GetTaskbarHwndForCursorMonitor returns null when no taskbar exists on the cursor monitor.",
+      "update returns early without clearing the static UI Automation element.",
+      "get_buttons reuses a static button vector, and update_buttons can return false before clearing it.",
+      "The managed layer displays any returned buttons without independently confirming that the monitor owns a taskbar."
+    ],
+    "recommended_action": "Clear cached tasklist state before every monitor lookup and return an empty result when the selected monitor has no taskbar.",
+    "evaluated_at": "2026-09-19T22:20:00Z",
+    "source_updated_at": "2026-09-19T21:30:15Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix exists, and the stale static-state path directly explains the cross-monitor indicators."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Clear stale tasklist state when the target monitor has no taskbar",
+      "root_cause": "The native tasklist enumerator keeps static automation and button state. A monitor lookup that finds no taskbar returns early, leaving the previous monitor's element and buttons available to the caller.",
+      "plan": [
+        "Clear the cached UI Automation element before resolving the target monitor's taskbar.",
+        "Clear the static button vector before each enumeration attempt.",
+        "Return an empty array immediately when neither primary nor secondary taskbar belongs to the requested monitor.",
+        "Add focused native or managed coverage that switches from a monitor with a taskbar to one without a taskbar."
+      ],
+      "verification": [
+        "Disable taskbars on secondary displays and invoke Shortcut Guide on each monitor.",
+        "Confirm indicators appear only on the monitor that owns a taskbar.",
+        "Re-enable multi-monitor taskbars and confirm each monitor enumerates its own buttons."
+      ],
+      "confidence": {
+        "score": 94,
+        "level": "green",
+        "rationale": "The stale static-state control flow exactly matches indicators from a previous monitor appearing where no taskbar exists."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Taskbar indicators are rendered on a monitor with no taskbar when Windows is configured to show the taskbar only on the primary display.",
+    "known_information": [
+      "The report uses current main and provides exact multi-monitor reproduction steps and a screenshot.",
+      "The cursor monitor determines the Shortcut Guide overlay monitor.",
+      "Native tasklist enumeration stores automation objects and button data in static state.",
+      "A missing taskbar causes an early return without clearing all prior state."
+    ],
+    "inferences": [
+      "The displayed indicators likely belong to the last successfully enumerated taskbar.",
+      "Clearing state at the monitor boundary should also prevent stale results after Explorer/taskbar restarts."
+    ],
+    "analysis": "The bug is not only a layout issue: the enumerator can return stale taskbar buttons after monitor-specific discovery fails. Fixing the cache lifetime at the native boundary gives the managed overlay a correct empty result.",
+    "initial_investigation": [
+      "Inspected TasklistPositions.GetButtons and the native get_buttons, update, update_new, and update_buttons functions.",
+      "Traced the early-return paths and static state reuse across monitor changes."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50664",
+      "type": "approve_design",
+      "label": "Design taskbar-state reset fix",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Approval starts fork-side design work only; no upstream write occurs automatically."
+    },
+    {
+      "id": "reproduce-50664",
+      "type": "reproduce",
+      "label": "Verify indicators on taskbar-less monitor",
+      "primary": false,
+      "confirm": false,
+      "reproduce": {
+        "module": "Shortcut Guide",
+        "version": "Current main",
+        "prerequisites": [
+          "At least two displays",
+          "Show my taskbar on all displays disabled",
+          "Shortcut Guide taskbar indicators enabled"
+        ],
+        "steps": [
+          "Invoke Shortcut Guide on the primary monitor and close it.",
+          "Move focus and the cursor to a display without a taskbar.",
+          "Invoke Shortcut Guide again."
+        ],
+        "expected_result": "No taskbar indicators are shown on a display that has no taskbar.",
+        "actual_result_reported": "Indicators from the taskbar layout appear floating over empty space."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Shortcut Guide"
+  ],
+  "assignees": [
+    "daverayment"
+  ],
+  "comments": 1,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
+}

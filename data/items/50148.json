@@ -1,151 +1,81 @@
 {
   "schemaVersion": 5,
+  "id": "issue-50148",
   "number": 50148,
   "kind": "issue",
-  "track": "fix",
-  "evaluated_at": "2026-09-04T03:00:00Z",
-  "source_updated_at": "2026-09-02T14:34:48Z",
+  "track": "triage",
+  "stage": "awaiting_author",
+  "generated_at": "2026-09-19T22:20:00Z",
+  "evaluated_at": "2026-09-19T22:20:00Z",
+  "source_updated_at": "2026-09-19T20:56:08Z",
+  "title": "[Shortcut Guide] Default \"Hold Windows key\" behavior interferes with Win+V and Win+H",
+  "url": "https://github.com/microsoft/PowerToys/issues/50148",
+  "summary": "A maintainer identified existing Shortcut Guide settings that may avoid the reported interference and asked the reporter to confirm whether changing them resolves the problem.",
+  "pending_author": true,
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "Maintainer-reproduced interference affects several Windows hold-triggered features.",
+    "status": "waiting_on_author",
+    "rationale": "The latest maintainer comment asks the reporter to test the existing close-on-Windows-key-release and hold-duration controls. The Needs-Author-Feedback label is current, so no duplicate request or fix design should be exposed until the reporter answers.",
     "evidence": [
-      "Win+V and Win+H fail with Hold Windows key enabled.",
-      "Find My Mouse is also affected.",
-      "Disabling the setting removes the issue.",
-      "Status-Reproducible label is present."
+      "The issue remains reproducible with the default Hold Windows key behavior.",
+      "A collaborator explained that Clipboard History and Voice typing close when Shortcut Guide takes foreground and then closes.",
+      "The latest maintainer comment points to two existing controls and asks whether disabling close-on-release or increasing the hold duration helps.",
+      "Needs-Author-Feedback is currently applied."
     ],
-    "recommended_action": "Approve a pass-through design for bare Win-key holds."
+    "recommended_action": "Wait for the reporter to confirm whether the existing controls resolve the interference.",
+    "evaluated_at": "2026-09-19T22:20:00Z",
+    "source_updated_at": "2026-09-19T20:56:08Z"
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No existing fix attempt covers bare Win-key ownership."
+    "status": "not_applicable",
+    "rationale": "A code change is not yet selectable because the current maintainer request is to determine whether supported settings already provide the required behavior."
   },
-  "proposed_fixes": [
-    {
-      "title": "Stop intercepting bare Win-key holds used by Windows",
-      "root_cause": "Shortcut Guide activates and takes foreground/input ownership before Windows completes its own hold gesture.",
-      "plan": [
-        "Trace ShortcutGuideActivationPolicy and OverlayWindow input ownership.",
-        "Require a Guide-specific chord or pass through once a non-Guide Windows chord is detected.",
-        "Add Win+V, Win+H, and pointer-feature tests."
-      ],
-      "verification": [
-        "With default settings, hold Win through Win+V and Win+H and confirm built-in UI remains usable."
-      ],
-      "confidence": {
-        "score": 86,
-        "level": "green",
-        "rationale": "Multiple independent Windows features reproduce the same shared hold-path failure."
-      }
-    }
-  ],
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "Shortcut Guide's default bare-Win hold interferes with Windows 11 features that also use Win-key hold timing.",
+    "summary": "Shortcut Guide's Windows-key hold behavior can interfere with Win+V, Win+H, and other Windows hold gestures, but existing settings may provide an acceptable workaround.",
     "known_information": [
-      "Reproduced on Windows 11 25H2 and PowerToys 0.101.2362.",
-      "Affected features include Clipboard History, Voice typing, and Find My Mouse.",
-      "Disabling Hold Windows key avoids the problem.",
-      "Discussion identifies foreground takeover as the likely mechanism."
+      "The behavior is reported on PowerToys 0.101.2362 and Windows 11 25H2.",
+      "Disabling Hold Windows key avoids the interference.",
+      "Shortcut Guide can be configured not to close when the Windows key is released.",
+      "The hold duration can be increased.",
+      "A maintainer has asked the reporter to test those controls."
     ],
     "inferences": [
-      "Shortcut Guide cannot safely own the bare hold gesture.",
-      "Modifier-qualified activation or early pass-through is safer than feature-specific exceptions."
+      "If the settings resolve the workflow, the remaining question may be discoverability or defaults rather than an input-hook defect.",
+      "If they do not resolve it, the activation and foreground-ownership policy remains the likely investigation boundary."
     ],
-    "analysis": "The shared trigger across multiple built-in features makes ownership, not Clipboard History, the correct fix boundary.",
+    "analysis": "The newest upstream activity changes the next action from approving a design to waiting for a focused author confirmation. Repeating the maintainer's request would add no value.",
     "initial_investigation": [
-      "Relevant areas are ShortcutGuideActivationPolicy.cs, OverlayWindow.xaml.cs, and ActivationTests.",
-      "No linked PR or fork fix exists."
+      "Read the complete issue discussion and current labels.",
+      "Re-evaluated the prior activation-policy design against the maintainer's newly identified configuration controls."
     ],
-    "information_gaps": []
-  },
-  "design": {
-    "root_cause": "The bare Windows-key hold timer takes foreground/input ownership before Windows-owned gestures complete.",
-    "evidence": [
-      "Observed: multiple Windows features fail.",
-      "Observed: disabling the hold setting fixes them.",
-      "Inferred: overlay ownership is the shared mechanism."
-    ],
-    "affected_files": [
+    "information_gaps": [
       {
-        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/ShortcutGuideActivationPolicy.cs",
-        "purpose": "Decides activation timing and ownership.",
-        "symbols": [
-          "ShortcutGuideActivationPolicy"
-        ]
-      },
-      {
-        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs",
-        "purpose": "Owns overlay foreground/input lifecycle.",
-        "symbols": [
-          "OverlayWindow"
-        ]
-      },
-      {
-        "path": "src/modules/ShortcutGuide/ShortcutGuide.UnitTests/ActivationTests/ShortcutGuideActivationPolicyTests.cs",
-        "purpose": "Activation policy coverage.",
-        "symbols": [
-          "ShortcutGuideActivationPolicyTests"
-        ]
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether disabling close-on-Windows-key-release or increasing the hold duration makes Win+V and Win+H usable",
+        "why_needed": "This determines whether a code change is still required or the issue is addressed by existing configuration.",
+        "how_to_collect": "Test the two controls identified in the latest maintainer comment and report the result."
       }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/ShortcutGuideActivationPolicy.cs",
-        "symbols": [
-          "ShortcutGuideActivationPolicy"
-        ],
-        "current_behavior": "Bare Win hold can activate after a timeout.",
-        "change": "Cancel or pass through bare holds when a non-Guide Windows chord is observed; activate only for the configured Guide trigger.",
-        "code_block": "if (IsBareWindowsHold && IsWindowsOwnedChordObserved) return PassThrough;\n+if (IsConfiguredGuideChord(input)) return Activate;",
-        "edge_cases": [
-          "Preserve configured activation.",
-          "Do not swallow Win-up events.",
-          "Keep accessibility behavior explicit."
-        ],
-        "tests": [
-          "Policy tests for Win+V, Win+H, and genuine Guide activation."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs",
-        "symbols": [
-          "OverlayWindow"
-        ],
-        "current_behavior": "Overlay can take foreground/input during a Windows shortcut.",
-        "change": "Take ownership only after policy approval and release it immediately on pass-through.",
-        "code_block": "if (policy.Decision == PassThrough) { ReleaseOverlayInputOwnership(); return; }",
-        "edge_cases": [
-          "Avoid flicker for genuine activation.",
-          "Clean up hooks on unexpected close."
-        ],
-        "tests": [
-          "Manual UI test for built-in dialogs after Win release."
-        ]
-      }
-    ],
-    "verify": [
-      "Build Shortcut Guide and run ActivationTests.",
-      "Test Win+V, Win+H, and Find My Mouse on Windows 11 25H2 with default settings.",
-      "Confirm normal Shortcut Guide activation remains functional."
-    ],
-    "risks": [
-      "Default trigger behavior is user-visible.",
-      "Windows behavior varies by OS build."
-    ],
-    "alternatives": [
-      "Special-case Win+V/Win+H; rejected because future hold gestures remain vulnerable.",
-      "Increase timeout; rejected because timing remains unreliable."
     ]
   },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve Shortcut Guide fix design",
-      "design": {
-        "title": "Pass through bare Win-key holds used by Windows"
-      }
-    }
-  ]
+  "actions": [],
+  "author_wait_evidence": {
+    "author": "daverayment",
+    "created_at": "2026-09-19T20:55:55Z",
+    "url": "https://github.com/microsoft/PowerToys/issues/50148#issuecomment-5745242044",
+    "requested_evidence": "Confirm whether disabling close-on-Windows-key-release or increasing the hold duration resolves the interference."
+  },
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Product-Shortcut Guide",
+    "Status-Reproducible"
+  ],
+  "assignees": [
+    "noraa-junker"
+  ],
+  "comments": 4,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
