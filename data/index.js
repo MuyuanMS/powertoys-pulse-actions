@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-20T02:10:01.1308596+08:00",
+  "generated_at": "2026-09-20T02:20:15.0442112+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 170,
-    "open_issues": 12672,
-    "community": 11832,
+    "open_issues": 12671,
+    "community": 11831,
     "artifacts": 1256
   },
   "impact": {
-    "as_of": "2026-09-20T02:10:01.1308596+08:00",
+    "as_of": "2026-09-20T02:20:15.0442112+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -261676,41 +261676,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-03-19T18:21:50Z",
       "updated_at": "2026-04-30T08:34:43Z",
       "comments": 2,
-      "priority": null
-    },
-    {
-      "id": "issue-46299",
-      "kind": "issue",
-      "number": 46299,
-      "url": "https://github.com/microsoft/PowerToys/issues/46299",
-      "title": "Command Palette: Pin to Dock",
-      "author": "chrismjohnston",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Author-Feedback",
-        "Product-Command Palette",
-        "duplicate",
-        "CmdPal - Dock"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-19T17:52:41Z",
-      "updated_at": "2026-03-23T18:03:41Z",
-      "comments": 4,
       "priority": null
     },
     {
