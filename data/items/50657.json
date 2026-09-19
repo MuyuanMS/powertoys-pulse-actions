@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50657",
+  "number": 50657,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-19T09:27:38Z",
+  "evaluated_at": "2026-09-19T09:27:38Z",
+  "source_updated_at": "2026-09-19T08:48:34Z",
+  "title": "UX issue when mapping shortcuts (niche)",
+  "url": "https://github.com/microsoft/PowerToys/issues/50657",
+  "summary": "Keyboard Manager can retain an EmptyAppName validation error after a valid app name is entered because that text change does not trigger the existing validation flow.",
+  "confidence": "High",
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The supplied steps and video are reproducible, and source inspection identifies missing application-name TextChanged validation wiring in the Keyboard Manager editor.",
+    "evidence": [
+      "The reporter says entering a valid application does not clear the app-specific validation error, while switching the right-side shortcut type does.",
+      "AppNameTextBox has a GotFocus handler but no TextChanged handler.",
+      "MainPage re-runs ValidateMapping when UnifiedMappingControl raises ValidationStateChanged.",
+      "ValidationHelper returns EmptyAppName when app-specific scope is enabled and the application name is blank.",
+      "Existing UI coverage does not assert that the validation error clears immediately after typing a valid application name."
+    ],
+    "recommended_action": "Approve a focused Keyboard Manager editor fix and regression test for immediate app-name revalidation.",
+    "evaluated_at": "2026-09-19T09:27:38Z",
+    "source_updated_at": "2026-09-19T08:48:34Z",
+    "confidence": {
+      "score": 93,
+      "level": "green",
+      "rationale": "The reported behavior directly matches the missing TextChanged-to-validation wiring in the live source."
+    }
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No open or merged fix, linked pull request, assignee, or other concrete public work covering this issue was found."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Revalidate app-specific mappings when the application name changes",
+      "root_cause": "AppNameTextBox changes are not connected to UnifiedMappingControl.ValidationStateChanged, while EmptyAppName is checked by MainPage.ValidateMapping. The initial invalid state therefore remains stale after a valid application name is entered.",
+      "plan": [
+        "Add an AppNameTextBox TextChanged handler in UnifiedMappingControl.xaml.",
+        "Raise the existing validation-state notification from the handler while preserving focus and keyboard-hook behavior.",
+        "Avoid unwanted validation during internal initialization or SetAppSpecific.",
+        "Extend KeyboardManagerEditorTests to prove the error clears and Save becomes enabled immediately after a valid application name is entered."
+      ],
+      "verification": [
+        "Run the focused Keyboard Manager editor UI test covering app-specific validation.",
+        "Manually reproduce the reported sequence and verify the error disappears immediately after entering a valid application name.",
+        "Confirm the mapping can be saved without changing the right-side shortcut type."
+      ],
+      "confidence": {
+        "score": 93,
+        "level": "green",
+        "rationale": "The source event wiring and validation flow directly explain the reported stale state."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A Keyboard Manager app-specific shortcut dialog can retain the missing-application validation error after a valid application name is entered. Changing the action type clears the stale state.",
+    "known_information": [
+      "The issue reports PowerToys 0.100.0 installed through auto-update on Windows 11.",
+      "The affected area is Keyboard Manager shortcut creation.",
+      "The reporter supplied numbered reproduction steps, a video, and a diagnostic ZIP.",
+      "The issue has no assignee and no linked fix.",
+      "The likely owning area is KeyboardManagerEditorUI and its UI tests."
+    ],
+    "inferences": [
+      "The stale error is most likely caused by missing validation notification from AppNameTextBox.TextChanged rather than incorrect application-name validation.",
+      "The reset after switching shortcut type is consistent with another control raising ValidationStateChanged."
+    ],
+    "analysis": "ValidationHelper correctly rejects a blank app name, but AppNameTextBox does not notify the validation flow when its text changes. Other control changes do notify validation, explaining why an unrelated shortcut-type change clears the stale error.",
+    "initial_investigation": [
+      "Read the complete issue, labels, attachments, and public comment.",
+      "Checked the public timeline and references for duplicate or covering work.",
+      "Inspected AppNameTextBox XAML, MainPage validation handling, ValidationHelper, and existing Keyboard Manager UI tests.",
+      "Reviewed the history introducing the WinUI 3 Keyboard Manager editor."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50657",
+      "type": "approve_design",
+      "label": "Design fix for stale app-specific validation",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "rationale": "The investigation identifies a high-confidence localized fix path with no known ownership conflict."
+    },
+    {
+      "id": "reproduce-50657",
+      "type": "reproduce",
+      "label": "Reproduce stale app-specific validation",
+      "primary": false,
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version": "PowerToys 0.100.0 or the current build under test",
+        "prerequisites": [
+          "Windows 11",
+          "Keyboard Manager enabled",
+          "A non-conflicting shortcut profile"
+        ],
+        "steps": [
+          "Open Keyboard Manager and create a new shortcut mapping.",
+          "Choose a multi-key trigger and a valid action shortcut.",
+          "Enable app-specific scope and observe the missing-application error.",
+          "Enter a valid application name.",
+          "Check whether the error clears and Save becomes enabled without changing another control."
+        ],
+        "expected_result": "Typing a valid application name immediately clears EmptyAppName and enables Save when the other inputs are valid.",
+        "actual_result_reported": "The error remains until the right-side shortcut type is changed.",
+        "setup_prompt": null,
+        "attachments": [
+          "https://github.com/user-attachments/assets/97f065a7-e03f-49aa-94a4-6a60761e90ba",
+          "https://github.com/user-attachments/files/32412161/PowerToysReport_2026-09-19-10-32-48.zip"
+        ]
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "author": "Linus-Baumann",
+  "pending_author": false,
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
+}
