@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-20T06:29:22.3193264+08:00",
+  "generated_at": "2026-09-20T06:41:04.3971931+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -87,11 +87,11 @@ window.BOARD_INDEX = {
   "counts": {
     "open_prs": 170,
     "open_issues": 12676,
-    "community": 11836,
+    "community": 11835,
     "artifacts": 1256
   },
   "impact": {
-    "as_of": "2026-09-20T06:29:22.3193264+08:00",
+    "as_of": "2026-09-20T06:41:04.3971931+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -154710,6 +154710,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50667",
+      "kind": "issue",
+      "number": 50667,
+      "url": "https://github.com/microsoft/PowerToys/issues/50667",
+      "title": "allow second shortcut to launch",
+      "author": "gnagga",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-19T22:33:35Z",
+      "updated_at": "2026-09-19T22:33:35Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-50666",
       "kind": "issue",
       "number": 50666,
@@ -159075,7 +159106,7 @@ window.BOARD_INDEX = {
       "author": "jiripolasek",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": "triage",
@@ -159093,7 +159124,9 @@ window.BOARD_INDEX = {
         "Needs-Triage",
         "Product-Command Palette"
       ],
-      "assignees": [],
+      "assignees": [
+        "jiripolasek"
+      ],
       "created_at": "2026-09-09T12:12:53Z",
       "updated_at": "2026-09-09T12:12:53Z",
       "comments": 0,
@@ -264823,37 +264856,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-03-17T18:42:02Z",
       "updated_at": "2026-04-30T08:35:53Z",
       "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-46182",
-      "kind": "issue",
-      "number": 46182,
-      "url": "https://github.com/microsoft/PowerToys/issues/46182",
-      "title": "Proposal: Deep PowerToys × Files Integration to Make Files a Top‑Tier Windows File Manager",
-      "author": "CYB3RN3T1C12",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-17T18:41:54Z",
-      "updated_at": "2026-03-23T22:24:11Z",
-      "comments": 0,
       "priority": null
     },
     {
