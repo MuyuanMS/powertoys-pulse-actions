@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-19T23:48:12.2028602+08:00",
+  "generated_at": "2026-09-20T00:25:25.9742915+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,18 +86,19 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 171,
-    "open_issues": 12673,
-    "community": 11833,
-    "artifacts": 1257
+    "open_issues": 12672,
+    "community": 11832,
+    "artifacts": 1258
   },
   "impact": {
-    "as_of": "2026-09-19T23:48:12.2028602+08:00",
+    "as_of": "2026-09-20T00:25:25.9742915+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50659,
     50649,
     50637,
     50636,
@@ -1369,13 +1370,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": true,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "waiting_copilot",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1390,7 +1391,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 858,
+        "fork_title": "[PR 50659] CmdPal: Honor the PowerToys language setting",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50659",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/858"
+      }
     },
     {
       "id": "pr-50654",
@@ -6200,18 +6209,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "maintainer",
+      "stage": "waiting_copilot",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with inline suggestion"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Needs-Triage",
@@ -6227,11 +6233,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 756,
-        "fork_title": "[PR 49769] CmdPal: Hide redundant More button for a single secondary command",
+        "fork_number": 859,
+        "fork_title": "[PR 49769] CmdPal: Hide redundant More button for a single secondary command (current head)",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49769-v4",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/756"
+        "fork_branch": "pr-iterate/49769-v5",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/859"
       }
     },
     {
@@ -6793,7 +6799,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "waiting_copilot",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -258547,37 +258553,6 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-03-23T15:17:35Z",
       "updated_at": "2026-04-30T08:33:28Z",
-      "comments": 2,
-      "priority": null
-    },
-    {
-      "id": "issue-46428",
-      "kind": "issue",
-      "number": 46428,
-      "url": "https://github.com/microsoft/PowerToys/issues/46428",
-      "title": "Image Converter",
-      "author": "trajano",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-23T14:28:00Z",
-      "updated_at": "2026-03-23T15:43:53Z",
       "comments": 2,
       "priority": null
     },
