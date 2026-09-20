@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-21T02:30:10.4157724+08:00",
+  "generated_at": "2026-09-21T02:54:54.0538639+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 170,
-    "open_issues": 12678,
+    "open_prs": 171,
+    "open_issues": 12677,
     "community": 11841,
-    "artifacts": 1260
+    "artifacts": 1259
   },
   "impact": {
-    "as_of": "2026-09-21T02:30:10.4157724+08:00",
+    "as_of": "2026-09-21T02:54:54.0538639+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -821,7 +821,6 @@ window.BOARD_INDEX = {
     49461,
     49454,
     49435,
-    49434,
     49422,
     49421,
     49418,
@@ -1361,6 +1360,43 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-50680",
+      "kind": "pr",
+      "number": 50680,
+      "url": "https://github.com/microsoft/PowerToys/pull/50680",
+      "title": "CmdPal: Add app language selector",
+      "author": "jiripolasek",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "CmdPal-HostUX"
+      ],
+      "assignees": [
+        "jiripolasek"
+      ],
+      "created_at": "2026-09-20T18:34:52Z",
+      "updated_at": "2026-09-20T18:41:03Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
       "id": "pr-50672",
       "kind": "pr",
       "number": 50672,
@@ -1459,7 +1495,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "reviewing_findings",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -4831,7 +4867,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-26T22:08:09Z",
-      "updated_at": "2026-09-19T01:53:43Z",
+      "updated_at": "2026-09-20T18:33:34Z",
       "comments": 7,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
@@ -5048,7 +5084,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": "review",
       "stage": "review_in_progress",
-      "owes": "us",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -5075,7 +5111,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50054-v3",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/810"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50029",
@@ -184479,15 +184516,12 @@ window.BOARD_INDEX = {
       "stage": "needs_information",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "09/09/2026 18:14:34",
-      "has_artifact": true,
-      "agent_status": "triage",
+      "waiting_since": "09/20/2026 18:47:30",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Area-Setup/Install",
@@ -184496,8 +184530,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-21T12:28:00Z",
-      "updated_at": "2026-09-09T18:14:34Z",
-      "comments": 4,
+      "updated_at": "2026-09-20T18:47:30Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -272330,43 +272364,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-02-28T12:06:57Z",
       "updated_at": "2026-04-30T08:39:53Z",
       "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-45848",
-      "kind": "issue",
-      "number": 45848,
-      "url": "https://github.com/microsoft/PowerToys/issues/45848",
-      "title": "CmdPal: App search results can't be pinned",
-      "author": "jiripolasek",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Status-In progress",
-        "Needs-Triage",
-        "Product-Command Palette",
-        "0.98",
-        "CmdPal - Dock",
-        "0.98.1"
-      ],
-      "assignees": [],
-      "created_at": "2026-02-28T11:23:21Z",
-      "updated_at": "2026-03-24T18:30:54Z",
-      "comments": 2,
       "priority": null
     },
     {
