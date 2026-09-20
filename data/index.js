@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-20T15:14:11.1448112+08:00",
+  "generated_at": "2026-09-20T15:31:24.1871713+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 171,
+    "open_prs": 170,
     "open_issues": 12679,
     "community": 11836,
-    "artifacts": 1260
+    "artifacts": 1257
   },
   "impact": {
-    "as_of": "2026-09-20T15:14:11.1448112+08:00",
+    "as_of": "2026-09-20T15:31:24.1871713+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -136,7 +136,6 @@ window.BOARD_INDEX = {
     50487,
     50485,
     50479,
-    50472,
     50399,
     50398,
     50377,
@@ -624,7 +623,6 @@ window.BOARD_INDEX = {
     49677,
     50477,
     50476,
-    50471,
     50454,
     50447,
     50445,
@@ -757,7 +755,6 @@ window.BOARD_INDEX = {
     49809,
     49808,
     49807,
-    49805,
     49799,
     49796,
     49789,
@@ -1393,7 +1390,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 867,
@@ -1436,7 +1433,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 863,
@@ -1459,7 +1456,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "reviewing_findings",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -1479,7 +1476,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 860,
@@ -1525,7 +1522,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 858,
@@ -1657,7 +1654,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50638",
@@ -1691,7 +1688,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN"
+      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50637",
@@ -2074,12 +2071,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-16T10:35:01Z",
-      "updated_at": "2026-09-20T06:56:48Z",
+      "updated_at": "2026-09-20T07:21:30Z",
       "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 836,
@@ -2125,7 +2122,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 835,
@@ -3386,54 +3383,6 @@ window.BOARD_INDEX = {
       }
     },
     {
-      "id": "pr-50472",
-      "kind": "pr",
-      "number": 50472,
-      "url": "https://github.com/microsoft/PowerToys/pull/50472",
-      "title": "[Peek] Fix title bar button being focused on start up, and fix scrolling and interaction in interactive previewers",
-      "author": "daverayment",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": {
-        "type": "approve",
-        "label": "Approve"
-      },
-      "labels": [
-        "Product-Peek",
-        "Ready for review"
-      ],
-      "assignees": [
-        "MuyuanMS"
-      ],
-      "created_at": "2026-09-08T23:36:38Z",
-      "updated_at": "2026-09-19T18:56:43Z",
-      "comments": 4,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 720,
-        "fork_title": "[PR 50472] [Peek] Fix title bar button being focused on start up, and fix scrolling and interaction in interactive previewers",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50472",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/720"
-      }
-    },
-    {
       "id": "pr-50463",
       "kind": "pr",
       "number": 50463,
@@ -3934,7 +3883,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 815,
@@ -3980,7 +3929,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 672,
@@ -4026,7 +3975,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 804,
@@ -4109,7 +4058,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 681,
@@ -4199,7 +4148,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 526,
@@ -4247,7 +4196,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 527,
@@ -5200,7 +5149,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 745,
@@ -5451,7 +5400,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 717,
@@ -6233,7 +6182,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "UNKNOWN",
+      "merge_state": "DIRTY",
       "mirror": {
         "kind": "pr",
         "fork_number": 859,
@@ -6463,7 +6412,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 820,
@@ -6696,7 +6645,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49472",
@@ -6779,7 +6728,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 655,
@@ -6871,7 +6820,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 817,
@@ -7011,7 +6960,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49333",
@@ -7875,7 +7824,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48700",
@@ -8112,7 +8061,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-47888",
@@ -8187,7 +8136,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 591,
@@ -8266,7 +8215,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 696,
@@ -8430,7 +8379,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 593,
@@ -159609,7 +159558,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/50471",
       "title": "[Peek] Arrow keys navigate between files instead of scrolling or changing caret",
       "author": "daverayment",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -159619,8 +159568,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -159633,7 +159582,7 @@ window.BOARD_INDEX = {
         "daverayment"
       ],
       "created_at": "2026-09-08T23:04:03Z",
-      "updated_at": "2026-09-08T23:16:54Z",
+      "updated_at": "2026-09-20T07:07:45Z",
       "comments": 1,
       "priority": null
     },
@@ -176215,7 +176164,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/49805",
       "title": "Space activated Peek may press the Pin Window Size button unintentionally",
       "author": "AkazaRenn",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -176225,14 +176174,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "mirror",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -176242,7 +176188,7 @@ window.BOARD_INDEX = {
         "daverayment"
       ],
       "created_at": "2026-08-10T14:25:55Z",
-      "updated_at": "2026-09-10T22:31:24Z",
+      "updated_at": "2026-09-20T07:07:45Z",
       "comments": 0,
       "priority": null,
       "mirror": {
