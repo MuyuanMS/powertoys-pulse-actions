@@ -3,69 +3,40 @@
   "number": 50659,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "reviewing_findings",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-20T00:54:59Z",
-  "evaluated_at": "2026-09-20T00:54:59Z",
-  "source_updated_at": "2026-09-19T14:11:32Z",
+  "generated_at": "2026-09-20T20:48:38Z",
+  "evaluated_at": "2026-09-20T20:48:38Z",
+  "source_updated_at": "2026-09-20T19:08:45Z",
   "head_sha": "8418c4dce29f15707f1daa19bd19fdf29ffb2b08",
   "title": "CmdPal: Honor the PowerToys language setting",
   "url": "https://github.com/microsoft/PowerToys/pull/50659",
   "status": {
     "glyph": "...",
-    "label": "General review note ready for approval",
-    "detail": "The current upstream head and converged fork both build successfully, and the latest Copilot pass has zero published findings and zero unresolved threads. One implementation-ready companion request remains because out-of-process providers can construct localized objects before the host applies the language override."
+    "label": "Reviewing current design direction",
+    "detail": "The completed fork Copilot review has zero published inline comments and zero unresolved Copilot threads. The latest maintainer discussion identifies PR 50680 as the intended solution and notes that extension language propagation needs an explicit IDL contract, so the prior companion request was withdrawn pending current-head design grounding."
   },
-  "next_action": "Approve or hold the request-changes draft after deciding that Command Palette should honor the PowerToys language setting and performing a final freshness check.",
+  "next_action": "On the next bounded run, compare the intended design in PR 50680 with this current upstream head and retain only a finding that is independently supported by the agreed product direction.",
   "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "initialize-extension-language-before-provider-construction",
-      "kind": "companion",
-      "in_diff": false,
-      "disposition": "proposed",
-      "severity": "high",
-      "title": "Initialize extension language before localized providers are constructed",
-      "out_of_diff_reason": "The current diff exposes the host language override in AppExtensionHost, but the required correction crosses the extension-process startup boundary and provider construction sites that are not represented by one safe current RIGHT-side range.",
-      "body": "### Initialize extension language before localized providers are constructed\n\n**Severity:** `high`\n\n**Affected code:**\n- `src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/AppExtensionHost.cs` (`LanguageOverride` and extension initialization)\n- Out-of-process extension startup and provider construction, including `PowerToysExtensionCommandsProvider`\n\n**Problem:** The host applies `LanguageOverride` after an out-of-process extension has already started. Providers can construct localized titles, commands, and other cached objects before receiving that override, so changing the PowerToys language does not reliably affect those objects.\n\n**Why it matters:** The PR can produce a partially localized Command Palette: host-owned UI follows the PowerToys language while extension-provided content remains in the Windows language until the provider is recreated.\n\n**Suggested change:**\n1. Define the product boundary first: if Command Palette should honor the PowerToys language, make the selected language part of extension-process initialization rather than a late host property assignment.\n2. Deliver and apply the language before constructing localized providers or cached command objects.\n3. Ensure an already-running extension either rebuilds its localized state when the override changes or is restarted through the normal extension lifecycle.\n4. Keep Windows display language as the fallback when no PowerToys override is configured.\n5. Add focused coverage that starts an out-of-process provider under a non-default override and verifies its first constructed strings use that language.\n\n**Verification:** Build the CmdPal module chain in Debug x64, launch with a PowerToys language different from the Windows display language, and verify both host UI and out-of-process provider content use the override on first load and after a language change.",
-      "confidence": {
-        "score": 91,
-        "rationale": "The current diff applies language at the host boundary after extension startup, while existing provider construction caches localized objects. Both the exact upstream head and converged fork build successfully."
-      }
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50659",
-      "type": "request_changes",
-      "label": "Post general review notes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50659,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "8418c4dce29f15707f1daa19bd19fdf29ffb2b08",
-        "body": "Please address the extension-process language initialization gap described in the selected general review note."
-      },
-      "note": "Posts one general review note as a separate PR conversation comment after explicit approval."
-    }
-  ],
+  "needs_revalidation": true,
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
-    "phase": "review_drafted",
-    "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-20T00:54:59Z",
+    "phase": "reviewing_findings",
+    "previous_phase": "awaiting_review_approval",
+    "advanced_under_scheduled_run_definition": false,
+    "checkpoint_at": "2026-09-20T20:48:38Z",
+    "run_tag": "schedule8-20260921-0420",
     "review_requested_at": "2026-09-19T20:16:53Z",
-    "unresolved_copilot_threads": 0
+    "unresolved_copilot_threads": 0,
+    "blocker_reason": "The prior general request depended on an unproven product boundary. A maintainer states that Command Palette is intentionally disconnected from PowerToys settings, names PR 50680 as the intended solution, and notes that the required extension ABI is not present in this PR."
   },
   "freshness": {
     "headRefOid": "8418c4dce29f15707f1daa19bd19fdf29ffb2b08",
-    "updatedAt": "2026-09-19T14:11:32Z",
+    "updatedAt": "2026-09-20T19:08:45Z",
     "latestCopilotReviewAt": "2026-09-19T20:16:53Z",
-    "checkedAt": "2026-09-20T00:54:59Z"
+    "checkedAt": "2026-09-20T20:48:38Z"
   },
   "fork_pr": {
     "number": 858,
@@ -78,11 +49,11 @@
   "fork_head_sha": "7cb19b1a49d12821e4e40eeede96b53ddbeb9dc3",
   "phase0": {
     "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
-    "disposition": "Ask",
+    "disposition": "Align first",
     "cla": "passed",
     "intake": "passed",
     "linkedIssue": 38389,
-    "detail": "A collaborator stated that Command Palette is intentionally disconnected from PowerToys settings; the author asked whether Windows display language should remain authoritative and offered to close the PR."
+    "detail": "The maintainer states that Command Palette is intentionally disconnected from PowerToys settings, identifies PR 50680 as the intended solution, and says propagation to extensions requires an IDL contract absent from this PR."
   },
   "validation": {
     "fork_review": {
@@ -90,18 +61,16 @@
       "rounds_completed": 4,
       "review_requested_at": "2026-09-19T20:16:53Z",
       "latest_copilot_review_submitted_at": "2026-09-19T20:16:53Z",
-      "latest_copilot_new_comments": 0,
-      "body_findings_remaining": 0,
-      "unresolved_copilot_threads": 0
+      "reviewed_head_sha": "7cb19b1a49d12821e4e40eeede96b53ddbeb9dc3",
+      "latest_copilot_new_published_comments": 0,
+      "unresolved_copilot_threads": 0,
+      "details": "This run consumed the existing completed Copilot review for fork PR 858. The review was for the current fork head; the fork comments endpoint contained no Copilot inline comments and the durable resume check reported zero unresolved Copilot threads. No duplicate request was made."
     },
-    "fork_head": {
-      "head_sha": "7cb19b1a49d12821e4e40eeede96b53ddbeb9dc3",
-      "result": "passed",
-      "commands": [
-        "POWERTOYS_DISABLE_SPECTRE=1 .\\tools\\build\\build-essentials.cmd",
-        "POWERTOYS_DISABLE_SPECTRE=1 src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\build.cmd"
-      ],
-      "details": "The full CmdPal build passed on the converged fork after clearing inherited GIT_CONFIG_* variables. The same build also passed in a detached local checkout pinned to the exact upstream head; PowerToys.exe and CmdPal outputs were produced."
+    "fork_delta": {
+      "base_upstream_head_sha": "8418c4dce29f15707f1daa19bd19fdf29ffb2b08",
+      "fork_head_sha": "7cb19b1a49d12821e4e40eeede96b53ddbeb9dc3",
+      "result": "divergent",
+      "details": "The retained fork contains eight changed CmdPal files, including an extension IDL and toolkit contract update, culture-handling changes, startup ordering, and tests. Those fork-only changes are not treated as upstream defects or as author-facing requests."
     },
     "upstream_head": {
       "head_sha": "8418c4dce29f15707f1daa19bd19fdf29ffb2b08",
@@ -110,11 +79,15 @@
         "POWERTOYS_DISABLE_SPECTRE=1 .\\tools\\build\\build-essentials.cmd",
         "POWERTOYS_DISABLE_SPECTRE=1 src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\build.cmd"
       ],
-      "details": "The exact detached upstream head completed the CmdPal build after inherited GIT_CONFIG_* variables were removed."
+      "details": "A prior detached checkout pinned to this exact head completed the CmdPal build after inherited GIT_CONFIG_* variables were removed. This scheduled run did not start another build because it consumed the completed current-head review and stopped before the bounded-run cutoff."
+    },
+    "lineEndingSafety": {
+      "result": "not_applicable",
+      "details": "No apply-ready suggestion is emitted in this artifact."
     }
   },
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
+    "detail": "No mutation was made to microsoft/PowerToys. No dashboard emit, sanitize, commit, or push was performed."
   }
 }

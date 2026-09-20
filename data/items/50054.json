@@ -3,49 +3,90 @@
   "number": 50054,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "reviewing_findings",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-21T02:39:00+08:00",
+  "generated_at": "2026-09-21T04:31:01+08:00",
   "evaluated_at": "2026-09-20T14:01:24Z",
   "source_updated_at": "2026-09-20T14:01:24Z",
   "head_sha": "95e73e47965686c02a90688dc14579ac36208df4",
   "title": "[CmdPal] Window Walker: match app name and window title together",
   "url": "https://github.com/microsoft/PowerToys/pull/50054",
+  "summary": "The current upstream head is Copilot-converged and builds successfully, but one supported performance finding remains: WindowSearchScorer reparses and prepares the same query state once per window instead of reusing it across the filtering pass.",
   "status": {
     "glyph": "!",
     "label": "Current-head finding drafted",
-    "detail": "Fresh Copilot review on the current upstream head found one supported performance issue in WindowSearchScorer: query parsing and prepared-needle work repeat for every window. The fork fix built and received a fresh zero-comment Copilot review, but that fix is not present upstream, so the issue remains a maintainer-facing request rather than review_ready."
+    "detail": "Fresh Copilot review on the current upstream head found one medium performance issue in WindowSearchScorer. The fork-only fix built and received a fresh zero-comment Copilot review, so the issue remains a maintainer-facing request rather than review_ready."
   },
   "next_action": {
     "reason": "Approve or edit the single current-head performance request before any upstream action; no write has been made to microsoft/PowerToys.",
     "label": "Review proposed request",
     "glyph": "!"
   },
-  "actions": [],
+  "actions": [
+    {
+      "id": "request-changes-window-search-scoring-state-50054",
+      "type": "request_changes",
+      "label": "Reuse prepared Window Walker query state",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50054,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "95e73e47965686c02a90688dc14579ac36208df4"
+      },
+      "note": "Draft only. One current-head performance finding requires explicit maintainer approval; no upstream write has occurred."
+    }
+  ],
   "needs_revalidation": true,
-  "confidence": "High",
-  "scheduled_run": {
-    "tag": "schedule8-20260921-0205",
-    "previous_phase": "review_in_progress",
-    "final_phase": "reviewing_findings",
-    "advanced": true,
-    "definition": "Advanced from queued current-head review into a fresh Copilot-converged finding state with exact upstream validation completed.",
-    "deadline_utc": "2026-09-20T18:58:09Z"
+  "confidence": {
+    "score": 91,
+    "level": "high"
   },
+  "proposed_comments": [
+    {
+      "id": "window-search-scoring-state-50054",
+      "kind": "inline",
+      "title": "Prepare query scoring state once before filtering windows",
+      "severity": "medium",
+      "body": "### Prepare query scoring state once before filtering windows\n\n**Severity:** `medium`\n\n`WindowSearchScorer.Score` is invoked once per window by `FilterListWithScores`, so `query.Split`, `string.Join`, and every `FuzzyStringMatcher.ScoreFuzzy` call repeat for the same query on every keystroke. The new typed/normalized whole-query pass and per-word loop also alternate multiple needles through `FuzzyStringMatcher`'s single prepared-needle cache, so the scorer repeatedly prepares the same query data instead of reusing it as the previous whole-query path did.\n\nPlease parse and normalize the query once before iterating the window list, prepare the typed query, normalized query, and word needles once, and pass that immutable scoring state into the per-window scorer. Preserve the current scoring semantics, including the typed-query fallback and the normalized-query maximum. Add or extend a focused test that exercises the reusable state across at least two windows and verifies the same scores as the current implementation. Validate the Window Walker build and focused tests after the change.",
+      "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowWalker/Helpers/WindowSearchScorer.cs",
+      "start_line": 30,
+      "line": 79,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 91,
+        "rationale": "The exact upstream scorer performs query splitting, normalization, and all fuzzy preparation inside the per-window Score call; the fork-only reusable-state fix removed that repeated work and passed the affected-module build plus a fresh zero-comment Copilot review."
+      },
+      "disposition": "proposed"
+    }
+  ],
   "workflow": {
     "phase": "reviewing_findings",
     "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-20T18:39:00Z",
+    "checkpoint_at": "2026-09-21T04:31:01+08:00",
     "review_requested_at": "2026-09-20T18:18:00Z",
     "latest_copilot_review_submitted_at": "2026-09-20T18:29:18Z",
     "latest_copilot_new_comments": 0,
-    "unresolved_copilot_threads": 0
+    "advancement_evidence": [
+      "Resumed existing fork PR 810 on pr-iterate/50054-v3 without duplicating fork work or requesting another Copilot review.",
+      "Consumed the completed Copilot review 5261360000 for fork head aae7c46926eb8678c5b81f55ccf432ba93794176; it returned zero new published comments.",
+      "Fork PR 810 has zero unresolved Copilot threads.",
+      "The exact upstream head 95e73e47965686c02a90688dc14579ac36208df4 was separately validated with the affected Window Walker build.",
+      "The fork-only reusable scoring-state fix is not present upstream, so the current-head finding remains actionable."
+    ],
+    "fork_head_sha": "aae7c46926eb8678c5b81f55ccf432ba93794176",
+    "unresolved_copilot_threads": 0,
+    "latest_copilot_review_at": "2026-09-20T18:29:18Z",
+    "copilot_review_count": 3
   },
   "freshness": {
     "headRefOid": "95e73e47965686c02a90688dc14579ac36208df4",
     "updatedAt": "2026-09-20T14:01:24Z",
-    "checkedAt": "2026-09-20T18:39:00Z"
+    "checkedAt": "2026-09-21T04:31:01+08:00"
   },
   "fork_pr": {
     "number": 810,
@@ -61,7 +102,7 @@
     "latest_copilot_review_state": "COMMENTED",
     "latest_copilot_review_result": "zero_published_comments",
     "unresolved_copilot_threads": 0,
-    "resume_action": "rebuild-and-draft",
+    "resume_action": "create-local checkout",
     "validation": "current_head_converged_but_fork_contains_review_fix"
   },
   "validation": {
@@ -73,7 +114,7 @@
       "latest_copilot_review_submitted_at": "2026-09-20T18:29:18Z",
       "latest_copilot_new_comments": 0,
       "unresolved_copilot_threads": 0,
-      "details": "Copilot's current fork review returned approval recommended with no new published findings after the reusable scoring-state fix. The prior performance thread was replied to and resolved."
+      "details": "The latest Copilot review returned approval recommended with no new published findings after the reusable scoring-state fix. The prior performance thread was replied to and resolved."
     },
     "fork_head": {
       "head_sha": "aae7c46926eb8678c5b81f55ccf432ba93794176",
@@ -93,27 +134,71 @@
         "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd",
         "<PowerToysCheckout>\\src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.WindowWalker\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
       ],
-      "details": "The exact pinned upstream checkout restored/build essentials and then built the affected Window Walker project successfully."
+      "details": "The exact pinned upstream checkout restored/build essentials and then built the affected Window Walker project successfully. This is compile/build validation; the performance issue is grounded by source inspection and the fork-side remediation."
     },
-    "line_ending_safety": {
+    "lineEndingSafety": {
       "result": "not_applicable_no_suggestion",
       "head_sha": "95e73e47965686c02a90688dc14579ac36208df4",
       "target_paths": [
         "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowWalker/Helpers/WindowSearchScorer.cs",
         "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowWalker/Pages/WindowWalkerListPage.cs"
       ],
-      "details": "No apply-ready suggestion block was emitted; the proposed action is inline implementation-ready prose."
+      "details": "No apply-ready suggestion block was emitted; the finding is inline implementation-ready prose."
     },
     "fork_to_upstream_delta": {
       "result": "one_supported_upstream_fix_not_present",
       "fork_only_commit": "aae7c46926eb8678c5b81f55ccf432ba93794176",
-      "details": "The fork-only changes add reusable prepared-query scoring in FuzzyStringMatcher and pass one ScoringState through Window Walker filtering. They address the current-head performance finding and are not treated as upstream evidence."
+      "details": "The fork-only changes add reusable prepared-query scoring in FuzzyStringMatcher and pass one scoring state through Window Walker filtering. They address the current-head performance finding and are not treated as upstream evidence."
+    },
+    "findingGrounding": {
+      "version": 1,
+      "head_sha": "95e73e47965686c02a90688dc14579ac36208df4",
+      "findings": [
+        {
+          "id": "window-search-scoring-state-50054",
+          "origin": "upstream",
+          "body_sha256": "2cd883771cde5c9ad240ebab617c6f4419fa91517130b313697af0160c102293",
+          "claim": "Window Walker repeats query parsing and fuzzy-query preparation for every window.",
+          "upstream_failure": "The exact upstream WindowSearchScorer.Score method is called per window by the filtering path. It splits the query, joins normalized words, scores the typed and normalized whole query, and calls ScoreBothFields for each word inside that method, repeating the work for the same query across all windows.",
+          "counterevidence": "The current implementation preserves the intended scoring behavior and the exact upstream build passes. That does not remove the repeated hot-path work. The fork-only fix was reviewed by Copilot and returned zero new comments, but its clean review is not used as proof that the upstream tree already contains the fix.",
+          "why_not_already_fixed": "The upstream head still contains the per-window Score(query, title, processName) API and no reusable scoring-state object is passed from FilterListWithScores.",
+          "verification": "Source inspection at the pinned upstream head confirmed the repeated operations; the exact upstream Window Walker build passed. The fork-only prepared-state implementation also passed the focused Window Walker build and a fresh Copilot review with zero new published comments. No performance benchmark was run, so the finding is a source-grounded hot-path performance request rather than a measured latency claim.",
+          "sources": [
+            {
+              "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowWalker/Helpers/WindowSearchScorer.cs",
+              "start_line": 30,
+              "end_line": 43,
+              "excerpt": "    internal static int Score(string? query, string? title, string? processName)\n    {\n        if (string.IsNullOrWhiteSpace(query))\n        {\n            return 0;\n        }\n\n        title ??= string.Empty;\n        processName ??= string.Empty;\n\n        // Split on every kind of Unicode whitespace rather than just the space bar: a pasted\n        // query can carry a non-breaking space, and folding that into a word would silently\n        // drop the query back to single-word behavior.\n        var words = query.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);",
+              "symbols": [
+                "WindowSearchScorer.Score"
+              ]
+            },
+            {
+              "path": "src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowWalker/Helpers/WindowSearchScorer.cs",
+              "start_line": 49,
+              "end_line": 79,
+              "excerpt": "        var wholeQueryScore = ScoreBothFields(query, title, processName);\n        var normalizedQuery = string.Join(' ', words);\n        if (!string.Equals(normalizedQuery, query, StringComparison.Ordinal))\n        {\n            wholeQueryScore = Math.Max(wholeQueryScore, ScoreBothFields(normalizedQuery, title, processName));\n        }\n\n        if (words.Length < 2)\n        {\n            return wholeQueryScore;\n        }\n\n        var total = 0;\n        foreach (var word in words)\n        {\n            var wordScore = ScoreBothFields(word, title, processName);\n            if (wordScore == 0)\n            {\n                return wholeQueryScore;\n            }\n\n            total += wordScore;\n        }\n\n        // Average rather than sum, to keep the per-word score on the same scale as the\n        // whole-query score the two are compared against.\n        return Math.Max(wholeQueryScore, total / words.Length);\n    }\n\n    private static int ScoreBothFields(string needle, string title, string processName)\n        => Math.Max(\n            FuzzyStringMatcher.ScoreFuzzy(needle, title),\n            FuzzyStringMatcher.ScoreFuzzy(needle, processName));",
+              "symbols": [
+                "WindowSearchScorer.Score",
+                "WindowSearchScorer.ScoreBothFields"
+              ]
+            }
+          ]
+        }
+      ]
     }
   },
-  "proposed_comments": [],
   "phase0": {
     "disposition": "Proceed",
     "detail": "The scheduled worker resumed the existing review; no new process gate was identified."
+  },
+  "scheduled_run": {
+    "tag": "schedule8-20260921-0420",
+    "previous_phase": "review_in_progress",
+    "final_phase": "reviewing_findings",
+    "advanced": true,
+    "definition": "Advanced from review_in_progress into a current-head grounded finding state after consuming the existing converged Copilot review and confirming exact upstream validation.",
+    "deadline_utc": "2026-09-20T21:12:40Z"
   },
   "upstream_safety": {
     "public_actions_taken": false,
