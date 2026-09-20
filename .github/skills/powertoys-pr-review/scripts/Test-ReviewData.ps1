@@ -13,14 +13,19 @@
 .PARAMETER AllowIncomplete
     Allow queued or in-progress PR entries. Ready entries are still fully validated.
 .PARAMETER CheckGitHub
-    Verify pinned heads and inline ranges against the current upstream PR diff.
+    Verify pinned heads and inline ranges against the current upstream PR diff,
+    and source excerpts when RequireFindingGrounding is enabled.
+.PARAMETER RequireFindingGrounding
+    Require private per-item upstream provenance, counterevidence and body hashes.
+    Combine with CheckGitHub to verify exact pinned upstream source excerpts.
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$DataPath,
     [string]$DecisionsPath,
     [switch]$AllowIncomplete,
-    [switch]$CheckGitHub
+    [switch]$CheckGitHub,
+    [switch]$RequireFindingGrounding
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,7 +33,7 @@ $ErrorActionPreference = 'Stop'
 
 $reviewData = Read-JsonFile -Path $DataPath
 $errors = [System.Collections.Generic.List[string]]::new()
-foreach ($errorMessage in Test-ReviewDataDocument -Document $reviewData -AllowIncomplete:$AllowIncomplete -CheckGitHub:$CheckGitHub) {
+foreach ($errorMessage in Test-ReviewDataDocument -Document $reviewData -AllowIncomplete:$AllowIncomplete -CheckGitHub:$CheckGitHub -RequireFindingGrounding:$RequireFindingGrounding) {
     $errors.Add($errorMessage)
 }
 

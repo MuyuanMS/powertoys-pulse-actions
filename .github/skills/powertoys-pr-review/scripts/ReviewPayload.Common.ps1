@@ -1,3 +1,5 @@
+. (Join-Path $PSScriptRoot 'FindingGrounding.Common.ps1')
+
 $script:AllowedReviewActions = @('comment', 'request-changes', 'hold', 'close', 'custom')
 $script:AllowedItemKinds = @('inline', 'companion')
 $script:AllowedSeverities = @('critical', 'high', 'medium', 'low')
@@ -391,6 +393,7 @@ function Test-ReviewDataDocument {
         [Parameter(Mandatory)]$Document,
         [switch]$AllowIncomplete,
         [switch]$CheckGitHub,
+        [switch]$RequireFindingGrounding,
         [hashtable]$LiveData
     )
 
@@ -613,6 +616,13 @@ function Test-ReviewDataDocument {
             [string]$_.body -match '(?i)```suggestion'
         })
         $validation = $pullRequest.internalEvidence.validation
+        if ($RequireFindingGrounding) {
+            foreach ($errorMessage in Test-FindingGrounding -Items $items `
+                -Grounding $validation.findingGrounding -HeadSha $pullRequest.headSha `
+                -CheckSources:$CheckGitHub) {
+                $errors.Add("$prefix $errorMessage")
+            }
+        }
         if ($suggestionItems.Count -gt 0) {
             $suggestionPatch = $validation.suggestionPatch
             $lineEndingSafety = $validation.lineEndingSafety

@@ -133,6 +133,31 @@ $liveData = @{
 $errors = @(Test-ReviewDataDocument -Document $reviewData)
 Assert-True ($errors.Count -eq 0) "Valid review data should pass: $($errors -join '; ')"
 
+$errors = @(Test-ReviewDataDocument -Document $reviewData -RequireFindingGrounding)
+Assert-True (($errors -join "`n") -match 'finding grounding requires') 'Strict ready-review validation requires finding evidence.'
+
+$grounded = Copy-JsonObject $reviewData
+$grounded.prs[0].internalEvidence.validation | Add-Member findingGrounding ([pscustomobject]@{
+    version = 1
+    head_sha = $headSha
+    findings = @($grounded.prs[0].publicPayload.items | ForEach-Object {
+        [pscustomobject]@{
+            id = $_.id; origin = 'upstream'; body_sha256 = Get-FindingBodyHash $_.body
+            claim = 'The persisted value is renumbered.'
+            upstream_failure = 'Old serialized values resolve to the wrong member.'
+            counterevidence = 'Checked the deserializer and existing regression coverage.'
+            why_not_already_fixed = 'No migration preserves the old mapping.'
+            verification = 'A source trace identified the unconverted numeric mapping.'
+            sources = @(@{ path = 'src/Test.cs'; start_line = 2; end_line = 2; excerpt = 'Existing = 2,' })
+        }
+    })
+})
+$errors = @(Test-ReviewDataDocument -Document $grounded -RequireFindingGrounding)
+Assert-True ($errors.Count -eq 0) "Strict review accepts grounded inline and out-of-diff companion items: $($errors -join '; ')"
+$grounded.prs[0].publicPayload.items[1].body += "`nAdditional claim."
+$errors = @(Test-ReviewDataDocument -Document $grounded -RequireFindingGrounding)
+Assert-True (($errors -join "`n") -match 'body changed') 'Rewriting a companion invalidates ready-review grounding.'
+
 $errors = @(Test-ReviewDataDocument -Document $reviewData -CheckGitHub -LiveData $liveData)
 Assert-True ($errors.Count -eq 0) "Valid current diff range should pass: $($errors -join '; ')"
 

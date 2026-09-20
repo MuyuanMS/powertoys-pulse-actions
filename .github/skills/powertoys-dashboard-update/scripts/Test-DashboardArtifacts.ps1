@@ -6,7 +6,10 @@ param(
   }),
   [int[]]$Numbers,
   [switch]$RequireDetailedDesign,
-  [switch]$RequireIssueContext
+  [switch]$RequireIssueContext,
+  [switch]$RequireFindingGrounding,
+  [string]$GroundingPath,
+  [string]$SourceRepository
 )
 
 $ErrorActionPreference = 'Stop'
@@ -26,6 +29,14 @@ $allowedJudgments = @(
 )
 
 $errors = [System.Collections.Generic.List[string]]::new()
+$groundingRecords = @()
+if ($RequireFindingGrounding) {
+  if (-not $Numbers) { throw 'Finding grounding requires explicit processed -Numbers; do not invalidate the entire legacy feed.' }
+  . (Join-Path $PSScriptRoot '..\..\powertoys-pr-review\scripts\FindingGrounding.Common.ps1')
+  if ($GroundingPath) {
+    $groundingRecords = @((Get-Content -LiteralPath $GroundingPath -Raw | ConvertFrom-Json).prs)
+  }
+}
 $paths = if ($Numbers) {
   foreach ($number in $Numbers | Sort-Object -Unique) {
     $path = Join-Path $itemsPath "$number.json"
@@ -193,6 +204,24 @@ foreach ($path in @($paths)) {
       $artifact.actions |
         Where-Object { $_.type -in @('post_review', 'request_changes') }
     )
+    if ($RequireFindingGrounding) {
+      $groundedItems = @($proposedComments)
+      foreach ($action in $reviewActions) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$action.review.body_prefix)) {
+          $groundedItems += [pscustomobject]@{ id = "review-body:$($action.id)"; body = $action.review.body_prefix }
+        }
+      }
+      $records = @($groundingRecords | Where-Object { $_.number -eq $artifact.number })
+      if ($groundedItems.Count -gt 0 -and $records.Count -ne 1) {
+        $errors.Add("$prefix requires exactly one private grounding record in -GroundingPath")
+      } elseif ($groundedItems.Count -gt 0) {
+        foreach ($message in Test-FindingGrounding -Items $groundedItems `
+          -Grounding $records[0].findingGrounding -HeadSha $artifact.head_sha `
+          -CheckSources -SourceRepository $SourceRepository) {
+          $errors.Add("$prefix $message")
+        }
+      }
+    }
     if ($artifact.stage -eq 'review_ready' -and
         ($proposedComments.Count -gt 0 -or $reviewActions.Count -gt 0)) {
       $errors.Add("$prefix stage review_ready requires zero proposed comments and no post_review/request_changes action")

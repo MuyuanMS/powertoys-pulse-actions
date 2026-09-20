@@ -40,7 +40,11 @@ If Copilot review cannot be enabled, first guide the user to turn it on (see [pr
 For each review comment from Copilot:
 
 1. **Fetch new comments**: `gh api repos/<FORK_REPO>/pulls/<fork_pr_number>/comments`, filtered to `copilot-pull-request-reviewer[bot]` and newer than the last round.
-2. **Assess validity** — is the suggestion correct, in-scope (on files this PR changed, not pre-existing issues), and safe?
+2. **Assess validity and origin** — follow [finding-grounding.md](./finding-grounding.md).
+   Inspect the pinned upstream source and first affected commit. Is this an
+   upstream defect, an agent-introduced regression, already fixed, optional,
+   or unsupported? Check the existing guards and the author's stated intent.
+   Fixing a review-introduced regression never creates an upstream finding.
 3. **If valid — actually fix the code.** Open the referenced file and make the change. Do not just acknowledge — fix it.
 4. **If invalid / not applicable** — note a clear reason for the reply (e.g., "intentional because...", "out of scope for this fix because...").
 5. **After processing all comments in the round:**
@@ -127,10 +131,14 @@ git diff <upstream-head>..<converged-fork-head>
 Classify every fork-only hunk:
 
 - **Already upstream** — no action.
-- **Apply-ready localized fix** — draft an inline suggestion.
+- **Apply-ready localized upstream fix** — draft an inline suggestion only
+  after independent upstream defect and remedy validation.
 - **Required but not safely suggestible** — draft an exact inline prose or
   companion request and keep the PR pending review approval.
-- **Review-only experiment/noise** — revert it from the converged fork branch.
+- **Review-introduced regression / rejected alternative / optional experiment**
+  — keep the reason in the private ledger and remove it with an ordinary commit
+  if retaining that branch. Do not reset shared history or export it as a
+  required upstream change.
 
 The accounting must reach zero unexplained fork-only hunks. A clean
 zero-finding result is allowed only when the validated tree is the exact

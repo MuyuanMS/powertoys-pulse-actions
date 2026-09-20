@@ -55,10 +55,12 @@ deployment is verified.
 First confirm gh/git/PowerShell and GitHub authentication. Check that
 powertoys-dashboard-update, powertoys-pr-review, powertoys-issue-to-design, and
 powertoys-design-to-pr exist in `.github/skills` or `$HOME/.copilot/skills`.
-If any are missing, clone
-https://github.com/MuyuanMS/powertoys-pulse-actions and run:
-pwsh -NoProfile -File .\\powertoys-pulse-actions\\Install-Skills.ps1
-Then reload skills or restart Copilot CLI.
+On every run, fetch and fast-forward a clean canonical main checkout of
+https://github.com/MuyuanMS/powertoys-pulse-actions and run its
+Install-Skills.ps1 -Update. Read the current skill entry points and references;
+do not reuse an older in-memory prompt. Stop on dirty/divergent state instead
+of overwriting work. Follow the complete UPDATE_DASHBOARD_PROMPT.md from that
+checkout; production action data always comes from main.
 
 Locate or clone https://github.com/MuyuanMS/powertoys-pulse-actions and the
 PowerToys Pulse repository or private preview branch you are authorized to
