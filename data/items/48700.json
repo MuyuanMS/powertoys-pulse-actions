@@ -1,56 +1,83 @@
 {
+  "schemaVersion": 5,
   "number": 48700,
   "kind": "pr",
   "track": "review",
   "stage": "building",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-20T01:18:20Z",
-  "evaluated_at": "2026-09-20T01:18:20Z",
+  "generated_at": "2026-09-20T11:32:00Z",
+  "evaluated_at": "2026-09-20T11:32:00Z",
   "source_updated_at": "2026-08-14T16:00:42Z",
   "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
   "title": "Migrate Workspaces Launcher UI from WPF to WinUI 3",
   "url": "https://github.com/microsoft/PowerToys/pull/48700",
   "status": {
     "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Both focused Workspaces test suites pass on the converged fork. The exact upstream local checkout remains clean and pinned to the current head, but required .NET runtime packages are absent from the checked caches and no noninteractive Azure Artifacts credential is available. The prior restore failed with HTTP 401 responses and corrupted partial downloads."
+    "label": "Exact upstream validation remains blocked",
+    "detail": "The upstream head is unchanged. The existing fork review is converged with zero new Copilot comments and zero unresolved threads; focused fork validation passed. Exact-head package restore now succeeds, but the standard focused build stops in the transitive ZoomItSettingsInterop project because zoomit.h emits C4819 as an error under the host code page 936. No author-facing action is emitted until the exact upstream tree is validated.",
+    "severity": "info"
   },
-  "next_action": "Restore authenticated Azure Artifacts access for the clean exact-upstream checkout, clear the corrupted partial package downloads, and rerun both focused Workspaces test suites.",
+  "next_action": "Resume from the pinned exact-head checkout with a UTF-8/MSBuild environment or an equivalent non-source environment fix for the C4819 warning, then rerun the WorkspacesLauncherUI and WorkspacesLib focused builds/tests. Do not transfer fork validation to upstream and do not mark review_ready until that exact-head validation passes.",
   "proposed_comments": [],
   "actions": [],
   "workflow": {
     "phase": "building",
-    "checkpoint_at": "2026-09-20T01:18:20Z",
-    "unresolved_copilot_threads": 0
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-20T11:32:00Z",
+    "unresolved_copilot_threads": 0,
+    "latest_copilot_new_comments": 0
   },
   "freshness": {
-    "queued_at": "09/18/2026 07:11:35",
-    "checkpoint_at": "2026-09-20T01:18:20Z"
+    "headRefOid": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
+    "updatedAt": "2026-08-14T16:00:42Z",
+    "checkedAt": "2026-09-20T11:17:00Z"
   },
   "fork_pr": {
     "number": 760,
+    "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/760",
+    "state": "OPEN",
     "head_sha": "e5496b76f96bb4655e2a142c405487296eccc54a"
   },
   "fork_branch": "pr-iterate/48700-v7",
+  "fork_head_sha": "e5496b76f96bb4655e2a142c405487296eccc54a",
   "validation": {
     "fork_review": {
       "result": "passed",
+      "latest_copilot_review_at": "2026-09-10T05:43:45Z",
       "latest_copilot_new_comments": 0,
-      "unresolved_copilot_threads": 0
+      "unresolved_copilot_threads": 0,
+      "details": "Existing fork Copilot reviews were consumed before any new request. The latest review on the durable fork head returned zero new published comments and zero unresolved threads."
+    },
+    "fork_head": {
+      "head_sha": "e5496b76f96bb4655e2a142c405487296eccc54a",
+      "result": "passed",
+      "details": "Prior focused WorkspacesLauncherUI and WorkspacesLib validation passed on the converged fork tree. This evidence is not transferred to the upstream tree."
     },
     "upstream_head": {
       "head_sha": "f4c16f21783f6a79c865457f0b1384b509cad3a7",
       "result": "blocked",
       "commands": [
-        "Build WorkspacesLauncherUI.UnitTests in the converged fork local checkout",
-        "vstest.console.exe PowerToys.WorkspacesLauncherUI.Tests.dll /Platform:x64 /InIsolation",
-        "Build WorkspacesLib.UnitTests in the converged fork local checkout",
-        "vstest.console.exe Workspaces.Lib.UnitTests.dll /Platform:x64 /InIsolation",
-        "Restore and build both focused projects from a temporary exact-upstream-head local checkout"
+        "dotnet restore src\\modules\\Workspaces\\WorkspacesLauncherUI.UnitTests\\WorkspacesLauncherUI.UnitTests.csproj --configfile nuget.config --runtime win-x64 --verbosity minimal --force-evaluate",
+        "tools\\build\\build.cmd from src\\modules\\Workspaces\\WorkspacesLauncherUI.UnitTests with POWERTOYS_DISABLE_SPECTRE=1",
+        "Retry after clearing inherited GIT_CONFIG_* variables",
+        "Retry under code page 65001"
       ],
-      "details": "The converged fork built and passed 135 WorkspacesLauncherUI tests and 50 WorkspacesLib tests. The clean exact-upstream local checkout remains pinned to the current head, but required .NET runtime packages are missing from both checked caches and no noninteractive Azure Artifacts credential is available. Resume by supplying feed credentials, removing only the known corrupted partial package entries, and rerunning the exact-head restore and focused tests."
+      "details": "Exact-head restore passed. The exact-head build still fails before the focused tests because the transitive ZoomItSettingsInterop project treats C4819 in src\\modules\\ZoomIt\\ZoomIt\\zoomit.h as an error under code page 936. No source or upstream files were modified. Remediation: use a UTF-8-capable MSBuild/compiler environment or another repository-standard environment fix that does not alter the pinned upstream source, then rerun both focused Workspaces test suites."
     }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, or other writes were made to microsoft/PowerToys."
+  },
+  "dashboard_safety": {
+    "worker_artifact_only": true,
+    "index_regenerated": false,
+    "sanitized": false,
+    "dashboard_data_committed": false,
+    "dashboard_data_pushed": false,
+    "pulse_synced": false,
+    "schedules_changed": false
   }
 }
