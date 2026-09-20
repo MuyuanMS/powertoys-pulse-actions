@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50677",
+  "number": 50677,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "needs_information",
+  "owes": "author",
+  "pending_author": false,
+  "generated_at": "2026-09-20T13:28:01.6285244Z",
+  "evaluated_at": "2026-09-20T13:28:01.6285244Z",
+  "source_updated_at": "2026-09-20T11:12:36Z",
+  "title": "CTRL+Z stop working if zoomit is active (erroneous association with draw function makes it useless)",
+  "url": "https://github.com/microsoft/PowerToys/issues/50677",
+  "summary": "The report says ZoomIt can start intercepting Ctrl+Z after the options dialog is saved, but the public issue does not yet establish that this is the PowerToys ZoomIt module on a supported PowerToys version rather than standalone Sysinternals ZoomIt or an invalid version entry.",
+  "status": {
+    "glyph": "💬",
+    "label": "Needs product/version confirmation",
+    "detail": "The report contains a detailed workaround and mentions DrawToggleKey, but it lists PowerToys version 12.22, area Keyboard Manager, and a standalone ZoomIt64.exe path. Maintainers need a current PowerToys ZoomIt repro and diagnostics before choosing a fix path."
+  },
+  "next_action": {
+    "glyph": "💬",
+    "label": "Request PowerToys ZoomIt repro details",
+    "reason": "Ask the reporter to confirm they are using PowerToys ZoomIt, provide a valid PowerToys version, reproduce from a clean PowerToys start, and attach /bugreport diagnostics."
+  },
+  "confidence": {
+    "score": 45,
+    "level": "red"
+  },
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The symptom could plausibly involve ZoomIt hotkey reload and shortcut registration, but the public report mixes PowerToys and standalone ZoomIt evidence: version 12.22 is not a normal PowerToys version, the selected area is Keyboard Manager, and the workaround launches C:\\Tools\\ZoomIt\\ZoomIt64.exe. A concrete PowerToys repro and diagnostic archive are required before approving a code fix design.",
+    "evidence": [
+      "Issue #50677 is open, labeled Issue-Bug and Needs-Triage, with no public comments yet.",
+      "The body describes Ctrl+Z being intercepted after opening ZoomIt options and clicking OK, and identifies DrawToggleKey as the suspected setting.",
+      "The body lists PowerToys version 12.22 and installation method Microsoft Store, which does not match the normal PowerToys 0.x version format.",
+      "The body selected Keyboard Manager even though the described component and registry key are ZoomIt.",
+      "The workaround terminates and starts ZoomIt64.exe from C:\\Tools\\ZoomIt, which may be standalone Sysinternals ZoomIt rather than the PowerToys-hosted module.",
+      "Focused source inspection found ZoomIt hotkeys are re-read from option controls, converted through GetKeyMod, unregistered/re-registered with RegisterHotKey, and skipped when the stored key value is zero."
+    ],
+    "recommended_action": "Request confirmation of the exact product/version and a fresh PowerToys ZoomIt reproduction before moving the issue to design or implementation.",
+    "evaluated_at": "2026-09-20T13:28:01.6285244Z",
+    "source_updated_at": "2026-09-20T11:12:36Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A PowerToys code fix is not selectable yet because the public issue has not confirmed a supported PowerToys ZoomIt build, the exact clean-start reproduction sequence, or diagnostic evidence from the PowerToys module."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A reporter says ZoomIt can hijack global Ctrl+Z after saving options when DrawToggleKey is empty or invalid, but the report does not confirm a valid PowerToys build or diagnostics.",
+    "known_information": [
+      "Reported PowerToys version: 12.22.",
+      "Reported installation method: Microsoft Store.",
+      "Selected area: Keyboard Manager.",
+      "The body describes ZoomIt, the HKCU\\\\Software\\\\Sysinternals\\\\ZoomIt registry key, and DrawToggleKey.",
+      "The workaround force-kills ZoomIt64.exe/ZoomIt.exe, writes DrawToggleKey, and starts C:\\Tools\\ZoomIt\\ZoomIt64.exe.",
+      "No bug report ZIP, screenshots, recordings, expected behavior, or actual behavior fields were provided beyond the prose workaround."
+    ],
+    "inferences": [
+      "The issue may be about the standalone Sysinternals ZoomIt executable rather than the PowerToys ZoomIt module.",
+      "If reproduced in PowerToys ZoomIt, the likely investigation area is hotkey reload/validation around DrawToggleKey and RegisterHotKey rather than Keyboard Manager."
+    ],
+    "analysis": "The report includes enough technical vocabulary to be useful, but not enough trustworthy PowerToys context to expose a design-fix action. The immediate maintainer action should be a precise evidence request that separates standalone ZoomIt from PowerToys ZoomIt and captures diagnostics after the options-dialog reload path.",
+    "initial_investigation": [
+      "Read the issue body, labels, assignees, comments, author, and updatedAt from GitHub.",
+      "Checked existing ZoomIt dashboard artifacts for related AltGr and generated-shortcut issues (#37143 and #50125) and found they address non-US layout collisions, not this Ctrl+Z/options-reload report.",
+      "Inspected src/modules/ZoomIt/ZoomIt/ZoomItSettings.h and confirmed DrawToggleKey defaults to Ctrl+2.",
+      "Inspected src/modules/ZoomIt/ZoomIt/Zoomit.cpp and confirmed options save reads HKM_GETHOTKEY, recomputes modifiers with GetKeyMod, validates with RegisterHotKey, and later applies hotkey settings by unregistering and re-registering all hotkeys.",
+      "Inspected src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettings.cpp and confirmed DrawToggleKey is serialized as a hotkey object from/to the registry DWORD."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "powertoys_version",
+        "information": "The exact supported PowerToys version and confirmation that the issue reproduces in the PowerToys ZoomIt module, not standalone Sysinternals ZoomIt.",
+        "why_needed": "The reported version 12.22 and C:\\Tools\\ZoomIt\\ZoomIt64.exe path make product ownership ambiguous.",
+        "how_to_collect": "Open PowerToys Settings > General and copy the PowerToys version; also confirm ZoomIt is launched/enabled through PowerToys Settings."
+      },
+      {
+        "evidence_type": "repro_steps",
+        "information": "Numbered steps from a clean PowerToys start that show Ctrl+Z failing after ZoomIt Options are saved, including the exact DrawToggleKey value before and after clicking OK.",
+        "why_needed": "Maintainers need to know whether a zero/invalid DrawToggleKey is actually written by PowerToys and which hotkey reload path causes the interception.",
+        "how_to_collect": "Exit PowerToys, start it again, reproduce the Options dialog sequence, then paste the numbered steps and observed registry values."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "Fresh PowerToys diagnostic archive captured immediately after reproducing the Ctrl+Z interception.",
+        "why_needed": "The archive can confirm the active PowerToys version, module state, settings path, and logs for the ZoomIt hotkey reload path.",
+        "how_to_collect": "Comment /bugreport immediately after reproducing the issue."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "request-powertoys-zoomit-repro-50677",
+      "type": "request_info",
+      "label": "Request PowerToys ZoomIt repro details",
+      "primary": true,
+      "confirm": true,
+      "comment": {
+        "target": "issue",
+        "number": 50677,
+        "body": "Thanks for the detailed notes about ZoomIt and DrawToggleKey. Before we can route this to a PowerToys fix, could you confirm a few details so we know this is the PowerToys ZoomIt module rather than standalone Sysinternals ZoomIt?\r\n\r\nPlease provide:\r\n1. The exact PowerToys version from PowerToys Settings > General, and confirm ZoomIt is enabled/launched through PowerToys Settings. The issue currently says version 12.22, which does not look like a normal PowerToys version.\r\n2. Numbered steps from a clean PowerToys start that reproduce Ctrl+Z being intercepted after opening ZoomIt Options and clicking OK, including the DrawToggleKey registry value before and after clicking OK.\r\n3. A fresh PowerToys diagnostic archive captured immediately after reproducing the issue by adding a comment containing /bugreport.\r\n\r\nThat will let maintainers decide whether the fix belongs in ZoomIt's hotkey reload/validation path and avoid chasing a standalone ZoomIt configuration issue."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "author": "abccorsicad",
+  "authorAssociation": null,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, labels, assignments, closures, or other public mutations were made to microsoft/PowerToys."
+  }
+}
