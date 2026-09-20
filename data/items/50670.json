@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50670",
+  "number": 50670,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_queued",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-20T07:08:00Z",
+  "evaluated_at": "2026-09-20T07:08:00Z",
+  "source_updated_at": "2026-09-20T03:22:12Z",
+  "title": "[Shortcut Guide] Taskbar indicators appear for all apps, instead of only when TASKBAR1-9 shortcuts are defined",
+  "url": "https://github.com/microsoft/PowerToys/issues/50670",
+  "summary": "Shortcut Guide shows taskbar indicators for an app without TASKBAR1-9 shortcuts because the full-guide activation path refreshes taskbar layout after MainPane selection collapsed the pane.",
+  "status": {
+    "glyph": "🎯",
+    "label": "Design fix candidate",
+    "detail": "The report includes clear reproduction, a plausible code pointer, and source inspection confirms OverlayWindow.UpdateTaskbarPaneLayout ends by setting TaskbarPane.Visibility to Visible after MainPaneControl can signal that the selected app has no TASKBAR1-9 shortcuts."
+  },
+  "next_action": {
+    "glyph": "➡️",
+    "label": "Queue targeted Shortcut Guide fix design",
+    "reason": "The issue appears localized to taskbar-pane visibility ownership after full-guide activation. Queue a focused design/fix workflow rather than asking for more reporter evidence."
+  },
+  "confidence": {
+    "score": 86,
+    "level": "green"
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The author supplied a concrete current-main repro and an implementation hypothesis. Focused source inspection supports the failure path: MainPaneControl determines that the selected app has no TASKBAR1-9 section and raises SelectedAppTaskbarVisibilityChanged(false), while OverlayWindow.UpdateTaskbarPaneLayout later sets TaskbarPane.Visibility = Visibility.Visible whenever taskbar layout exists.",
+    "evidence": [
+      "The report reproduces on PowerToys 0.102 current main by focusing an app without TASKBAR1-9 shortcuts and triggering Shortcut Guide.",
+      "The actual screenshot shows both the main overlay and taskbar indicators.",
+      "MainPaneControl.SelectionChanged computes exposesTaskbarSection from shortcuts whose SectionName starts with <TASKBAR1-9> and raises SelectedAppTaskbarVisibilityChanged.",
+      "OverlayWindow.OnMainPaneTaskbarVisibilityChanged collapses TaskbarPane when shouldShow is false.",
+      "OverlayWindow.UpdateTaskbarPaneLayout collapses only when layout is null, otherwise positions the pane and sets TaskbarPane.Visibility to Visible.",
+      "App.xaml.cs calls OverlayWindow.UpdateTaskbarPaneLayout during ShortcutGuideActivationAction.ShowFullGuide activation."
+    ],
+    "recommended_action": "Approve a focused Shortcut Guide fix that separates taskbar layout refresh from taskbar visibility ownership, then add regression coverage for apps with and without TASKBAR1-9 shortcuts.",
+    "evaluated_at": "2026-09-20T07:08:00Z",
+    "source_updated_at": "2026-09-20T03:22:12Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A localized PowerToys fix is plausible and no existing public fix attempt covers this new Shortcut Guide taskbar-pane visibility regression.",
+    "existing_fix_urls": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Shortcut Guide taskbar pane collapsed when the selected app exposes no taskbar shortcuts",
+      "root_cause": "Taskbar pane visibility is owned by two paths: MainPaneControl correctly signals that the selected app lacks TASKBAR1-9 shortcuts, but UpdateTaskbarPaneLayout later makes the pane visible whenever taskbar layout exists.",
+      "plan": [
+        "Move taskbar-pane visibility ownership out of UpdateTaskbarPaneLayout, or gate its final Visible assignment on the latest selected-app exposesTaskbarSection state.",
+        "Keep layout measurement/positioning available without forcing visibility for apps that do not expose TASKBAR1-9 shortcuts.",
+        "Ensure full-guide activation calls preserve the visibility decision made by MainPaneControl after the selected app manifest is loaded.",
+        "Add focused Shortcut Guide coverage for one app manifest with TASKBAR1-9 shortcuts and one without, verifying the taskbar pane is visible only for the former."
+      ],
+      "verification": [
+        "Run Shortcut Guide unit/UI coverage for app selection and full-guide activation.",
+        "Manual check: focus Chrome or another app without TASKBAR1-9 shortcuts, trigger Shortcut Guide, and verify only the main overlay appears; then verify an app with TASKBAR1-9 shortcuts still shows taskbar indicators."
+      ],
+      "confidence": {
+        "score": 86,
+        "level": "green",
+        "rationale": "The issue report names the suspected method and source inspection confirms the competing visibility assignments. The remaining risk is choosing the least invasive state owner without regressing taskbar layout refresh."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Shortcut Guide displays taskbar indicators even when the selected application manifest has no TASKBAR1-9 shortcuts.",
+    "known_information": [
+      "PowerToys version reported: 0.102 current main.",
+      "Installation method: dev build in Visual Studio.",
+      "Area: Shortcut Guide.",
+      "The author reproduced by focusing Chrome, whose manifest does not define TASKBAR1-9 shortcuts, then triggering Shortcut Guide.",
+      "The author identified OverlayWindow.UpdateTaskbarPaneLayout as unconditionally setting TaskbarPane.Visibility to Visible."
+    ],
+    "inferences": [
+      "The taskbar pane should follow the selected application manifest rather than raw taskbar layout availability.",
+      "The existing event path likely computes the right visibility, but a later layout refresh overrides it."
+    ],
+    "analysis": "This report has enough source-localized evidence for a targeted design/fix action. Asking for a bug report ZIP would not materially improve the decision because the failure is visible, current-main, and tied to deterministic Shortcut Guide control flow.",
+    "initial_investigation": [
+      "Read the issue body, screenshot context, labels, assignee, and automated triage comment.",
+      "Inspected src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Controls/MainPaneControl.xaml.cs and confirmed SelectedAppTaskbarVisibilityChanged is based on <TASKBAR1-9> shortcut sections.",
+      "Inspected src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/OverlayWindow.xaml.cs and confirmed UpdateTaskbarPaneLayout ends by setting TaskbarPane.Visibility to Visible when layout is non-null.",
+      "Inspected src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs and confirmed ShowFullGuide activation calls UpdateTaskbarPaneLayout."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50670",
+      "type": "approve_design",
+      "label": "Design Shortcut Guide taskbar visibility fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design/fix workflow; this action does not write upstream."
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Product-Shortcut Guide",
+    "Needs-Triage"
+  ],
+  "assignees": [
+    "daverayment"
+  ],
+  "comments": 1,
+  "author": "daverayment",
+  "authorAssociation": "MEMBER",
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, labels, assignments, closures, or other public mutations were made to microsoft/PowerToys."
+  }
+}
