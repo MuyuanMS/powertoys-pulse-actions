@@ -3,44 +3,96 @@
   "number": 50663,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "reviewing_findings",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-20T20:53:00Z",
-  "evaluated_at": "2026-09-20T20:53:00Z",
+  "generated_at": "2026-09-20T22:58:00Z",
+  "evaluated_at": "2026-09-20T22:58:00Z",
   "source_updated_at": "2026-09-20T19:09:43Z",
-  "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
+  "head_sha": "6f8b3c1b0078e6897cff204d2aaca1dfefd84bee",
   "title": "[WIP] Robocopy UI",
   "url": "https://github.com/microsoft/PowerToys/pull/50663",
   "status": {
     "glyph": "...",
-    "label": "Waiting for current-head Copilot review",
-    "detail": "The live upstream head 479d070ccab4410850030fe27b6799876f700b7d was merged into fork PR 860, producing fork head 769c2e70487381658fb439ae0bd4c04b465f5591. A fresh Copilot request was made after the fork refresh but timed out without a submitted review. Prior converged findings and exact upstream validation remain durable; no upstream or dashboard publication write was made."
+    "label": "Current-head findings awaiting approval",
+    "detail": "The exact live head 6f8b3c1b0078e6897cff204d2aaca1dfefd84bee was revalidated. The prior settings-file and ONNX findings were not carried forward; two native lifecycle/settings findings remain. The fork review completed on divergent head 769c2e70487381658fb439ae0bd4c04b465f5591, so no fresh matching-head Copilot round or build was started before the bounded cutoff."
   },
-  "next_action": "Resume by consuming the outstanding/current-head Copilot review on fork PR 860; only after a fresh zero-comment pass should the held findings be finalized.",
+  "next_action": "Await explicit approval for the current-head REQUEST_CHANGES draft; resume with a matching-head fork refresh/Copilot round and exact-head validation before any upstream publication.",
   "confidence": "High",
   "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "robocopy-settings-persistence-50663",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Persist Robocopy UI settings updates",
+      "confidence": {
+        "score": 96,
+        "rationale": "The exact upstream source discards the set_config payload and contains no persistence call."
+      },
+      "path": "src/modules/RobocopyUI/RobocopyUIModuleInterface/dllmain.cpp",
+      "line": 58,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Settings updates are discarded\n\n**Severity:** high\n\n`src/modules/RobocopyUI/RobocopyUIModuleInterface/dllmain.cpp` `set_config` ignores its `config` argument and never writes the module settings. Any Settings UI change sent through this interface is therefore lost immediately and the next read returns the previous value. Parse and persist the incoming settings using the module's established settings helper, then verify a set/read round trip for `UseLegacySaveMode` and the other module settings.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "robocopy-disable-process-50663",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Stop the Robocopy UI process when disabling",
+      "confidence": {
+        "score": 93,
+        "rationale": "The exact upstream disable hook only changes the enabled flag while the tracked process handle remains active."
+      },
+      "path": "src/modules/RobocopyUI/RobocopyUIModuleInterface/dllmain.cpp",
+      "line": 81,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Disabling Robocopy UI leaves its process running\n\n**Severity:** high\n\n`disable()` only flips `_enabled` to false; it does not close or signal the tracked `m_process`. If Robocopy UI is already running when the module is disabled, the UI remains alive and can continue launching copy jobs despite the disabled state. Stop the tracked process through the module's normal graceful-exit path before clearing or invalidating the handle, and verify disable behavior while the UI is active.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "request-changes-50663",
+      "type": "request_changes",
+      "label": "Request changes for current-head native lifecycle defects",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50663,
+        "event": "REQUEST_CHANGES",
+        "head_sha": "6f8b3c1b0078e6897cff204d2aaca1dfefd84bee",
+        "body": "Thanks for adding Robocopy UI. Before merge, please persist native module settings updates received by set_config and stop the tracked Robocopy UI process when disable() is called. Both behaviors are required to keep Settings state durable and to prevent disabled modules from continuing active copy operations."
+      },
+      "note": "Current-head REQUEST_CHANGES draft only. Explicit maintainer approval and Publish-ApprovedReview.ps1 are required before any upstream write."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-20T20:53:00Z",
-    "run_tag": "schedule8-20260921-0420",
+    "phase": "reviewing_findings",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-20T22:58:00Z",
+    "run_tag": "schedule8-20260921-0640",
     "advanced_under_scheduled_run_definition": true,
-    "deadline_utc": "2026-09-20T21:12:40Z",
-    "stop_new_rounds_after_utc": "2026-09-20T21:02:40Z",
+    "deadline_utc": "2026-09-20T23:32:30Z",
+    "stop_new_rounds_after_utc": "2026-09-20T23:22:30Z",
     "review_requested_at": "2026-09-20T20:42:30Z",
-    "review_submitted_at": null,
-    "latest_copilot_new_comments": 0,
+    "review_submitted_at": "2026-09-20T20:51:07Z",
+    "latest_copilot_new_comments": 1,
     "unresolved_copilot_threads": 0,
-    "blocker_next_run_reason": "Fresh Copilot review requested after fork refresh to 769c2e70487381658fb439ae0bd4c04b465f5591 timed out without a submitted review; do not duplicate the request until the next run consumes or confirms its state."
+    "fork_review_head": "769c2e70487381658fb439ae0bd4c04b465f5591",
+    "current_head_review_status": "not_requested",
+    "blocker_next_run_reason": "The consumed Copilot review was for a divergent fork head. Resume by refreshing the existing fork state to the exact live head, then request/consume a matching-head review before finalizing."
   },
   "freshness": {
-    "headRefOid": "479d070ccab4410850030fe27b6799876f700b7d",
+    "headRefOid": "6f8b3c1b0078e6897cff204d2aaca1dfefd84bee",
     "updatedAt": "2026-09-20T19:09:43Z",
-    "latestCopilotReviewAt": "2026-09-20T18:36:37Z",
-    "checkedAt": "2026-09-20T20:53:00Z"
+    "latestCopilotReviewAt": "2026-09-20T20:51:07Z",
+    "checkedAt": "2026-09-20T22:58:00Z"
   },
   "fork_pr": {
     "number": 860,
@@ -97,68 +149,27 @@
   },
   "validation": {
     "fork_review": {
-      "result": "converged",
-      "latest_copilot_review_id": 5261375270,
-      "latest_copilot_review_submitted_at": "2026-09-20T18:36:37Z",
-      "latest_copilot_review_commit": "723f060f43da6af9f2e8396c5749a36f130cb9ca",
-      "latest_copilot_new_comments": 0,
+      "result": "completed_divergent_head",
+      "latest_copilot_review_id": 5261707995,
+      "latest_copilot_review_submitted_at": "2026-09-20T20:51:07Z",
+      "latest_copilot_review_commit": "769c2e70487381658fb439ae0bd4c04b465f5591",
+      "latest_copilot_new_comments": 1,
       "unresolved_copilot_threads": 0,
-      "details": "Fresh Copilot review on fork commit 723f060f reported Findings: None and listed the two current-head findings as resolved since last review."
+      "details": "Consumed the outstanding review. Its ONNX attribution comment is not applicable to exact upstream head 6f8b3c1 because that head has no ONNX package entry."
     },
-    "current_head_request": {
-      "fork_head_sha": "769c2e70487381658fb439ae0bd4c04b465f5591",
-      "requested_at": "2026-09-20T20:42:30Z",
-      "result": "timed_out_waiting",
-      "submitted_at": null,
-      "details": "A fresh Copilot review was requested after pushing the live upstream head into fork PR 860. The bounded wait expired without a submitted review; no duplicate request was made."
-    },
-    "lineEndingSafety": {
-      "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
-      "result": "passed",
-      "files": [
-        {
-          "path": "src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/HomePage.xaml.cs",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 768,
-          "cr_only_count": 0
-        },
-        {
-          "path": "src/modules/RobocopyUI/RobocopyUIModuleInterface/dllmain.cpp",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 202,
-          "cr_only_count": 0
-        }
-      ],
-      "details": "Raw blobs for both exact suggestion target paths are LF-only with no BOM; the settings replacement is safe as an apply-ready suggestion. The coordinated native lifecycle fix is kept as an implementation-ready companion request."
+    "current_head_review": {
+      "result": "not_requested",
+      "details": "No fresh Copilot review was requested for the exact upstream head because the durable fork branch is divergent and the bounded run was at the cutoff window."
     },
     "upstream_head": {
-      "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
-      "result": "passed_focused",
-      "commands": [
-        "POWERTOYS_DISABLE_SPECTRE=1 with GIT_CONFIG_* removed: src\\modules\\RobocopyUI\\RobocopyUIModuleInterface\\build.cmd",
-        "POWERTOYS_DISABLE_SPECTRE=1 with GIT_CONFIG_* removed: src\\modules\\RobocopyUI\\RobocopyUI.UI\\build.cmd"
-      ],
-      "suggestionPatch": {
-        "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
-        "applied_item_ids": [
-          "robocopy-settings-module-name",
-          "robocopy-launch-lifecycle"
-        ],
-        "result": "passed",
-        "details": "Both proposed remedies were materialized on <PowerToysCheckout> The native interface and managed RobocopyUI projects built successfully in Debug x64. The full build-essentials runner step was attempted but was blocked by the host vcpkg Git environment until GIT_CONFIG_* variables were removed; the affected projects then passed."
-      },
-      "details": "Exact pinned upstream candidate validation passed for both affected projects. The first suggestion is a one-line replacement; the second remains a coordinated companion request rather than an unsafe partial suggestion."
+      "head_sha": "6f8b3c1b0078e6897cff204d2aaca1dfefd84bee",
+      "result": "source_revalidated_no_build",
+      "commands": [],
+      "details": "Exact pinned source inspection completed for the two retained native findings. No current-head build was started in this bounded checkpoint."
     },
-    "current_head_trace": {
-      "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
-      "result": "grounded_with_supported_findings",
-      "details": "The exact live upstream tree contains both defects. The clean candidate at that same head passed focused native and managed RobocopyUI builds with the proposed remedies; the fork-only fixes were not treated as upstream validation."
+    "lineEndingSafety": {
+      "result": "not_applicable",
+      "details": "No apply-ready suggestion is emitted; both items are inline prose."
     }
   },
   "candidate_findings": [
@@ -180,6 +191,6 @@
   "upstream_safety": {
     "public_actions_taken": false,
     "dashboard_emit_sanitize_commit_push_taken": false,
-    "detail": "No writes were made to microsoft/PowerToys and no dashboard emit/sanitize/commit/push was performed. Only data/items/50663.json was updated in the dashboard checkout."
+    "detail": "Zero writes were made to microsoft/PowerToys. No dashboard publish, sanitize, commit, or push was performed."
   }
 }

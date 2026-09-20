@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50682",
+  "number": 50682,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "design_queued",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-20T22:58:00Z",
+  "evaluated_at": "2026-09-20T22:58:00Z",
+  "source_updated_at": "2026-09-20T21:09:11Z",
+  "title": "[Crop And Lock] Reparent mode shows a different region than the crop (browser windows)",
+  "url": "https://github.com/microsoft/PowerToys/issues/50682",
+  "author": "CM-idea",
+  "authorAssociation": null,
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "summary": "Crop And Lock Reparent mode can show an offset region for maximized Chromium windows while hit-testing still targets the selected source area.",
+  "status": {
+    "glyph": "TARGET",
+    "label": "Detailed design candidate",
+    "detail": "The report gives a deterministic browser/maximized-window repro and the reparent implementation has a bounded coordinate-space path to investigate."
+  },
+  "next_action": {
+    "glyph": "NEXT",
+    "label": "Queue a focused implementation-grade design investigation.",
+    "reason": "Queue this issue for detailed design; a maintainer can also reproduce the maximized-browser reparent offset locally."
+  },
+  "confidence": {
+    "score": 72,
+    "level": "yellow"
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The public report is specific enough to start a focused design investigation: Reparent mode offsets the displayed region for maximized Edge/Chrome windows, Thumbnail mode is unaffected, and input hit-testing still maps to the original intended content. Source inspection shows Reparent mode has its own maximized-window adjustment before SetParent/SetWindowPos, while Thumbnail mode uses a different DWM thumbnail crop path.",
+    "evidence": [
+      "The issue reports PowerToys 0.101.2362, GitHub install, Windows 11 Pro build 26200, user install, admin run, and Edge 153.0.4234.32.",
+      "Reported reproduction: maximize a Chromium browser, start Crop And Lock Reparent mode, crop a browser region such as a video player, and compare the resulting Crop And Lock window to the selected region.",
+      "Reported result: the Reparent window shows a completely different region with a large offset, but mouse hit-testing still lands where the content would be in the original window.",
+      "Reported contrast: Thumbnail mode is unaffected because it does not touch the source window, and File Explorer almost never shows the issue.",
+      "Focused source review: OverlayWindow records crop rectangles relative to ClientAreaInScreenSpace; ReparentCropAndLockWindow then adjusts those coordinates with a special maximized-window branch using monitor work-area offsets before reparenting the source HWND; ThumbnailCropAndLockWindow uses a DWM thumbnail source rectangle instead."
+    ],
+    "recommended_action": "Queue this issue for detailed design and reproduce it against a maximized Chromium window before choosing the fix.",
+    "evaluated_at": "2026-09-20T22:58:00Z",
+    "source_updated_at": "2026-09-20T21:09:11Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys code fix is plausible in the Crop And Lock reparent coordinate path, and no existing linked fix attempt or duplicate is visible in the current issue.",
+    "existing_fix_urls": []
+  },
+  "issue_context": {
+    "summary": "A maximized Chromium browser cropped with Crop And Lock Reparent mode displays a different offset region than the selected crop, while clicks still hit the selected source area. Thumbnail mode does not show the problem.",
+    "known_information": [
+      "PowerToys version 0.101.2362 from GitHub is affected.",
+      "The reporter reproduced with Microsoft Edge 153.0.4234.32 on Windows 11 Pro build 26200.",
+      "The source window is maximized before using Reparent mode.",
+      "The visible output is offset by a large amount, but mouse hit-testing still maps to the selected original content.",
+      "Thumbnail mode is unaffected, and File Explorer almost never shows the behavior.",
+      "The issue currently has no comments and no linked fix or duplicate in the live metadata."
+    ],
+    "inferences": [
+      "The display/input asymmetry suggests the source HWND is being reparented and positioned in a coordinate space that does not match the selected client-area crop.",
+      "The browser/maximized-window specificity points to non-client frame, work-area, or client-origin handling in Reparent mode rather than the overlay selection itself.",
+      "Because Thumbnail mode uses DWM thumbnail source rectangles and is unaffected, the defect is likely isolated to the Reparent mode SetParent/SetWindowPos coordinate conversion."
+    ],
+    "analysis": "The report already supplies the version, app type, maximized-window precondition, expected and actual behavior, and a mode comparison. A maintainer-side reproduction is more useful than asking the reporter for generic logs. The next useful step is an implementation-grade design pass that instruments and compares OverlayWindow's client-relative crop rectangle, ReparentCropAndLockWindow's maximized adjustment, the Chromium client origin, and the final child-window offset.",
+    "initial_investigation": [
+      "Reviewed the complete live issue body, labels, author, updatedAt, and empty comment thread through 2026-09-20T21:09:11Z.",
+      "Read Crop And Lock source in OverlayWindow.cpp, ReparentCropAndLockWindow.cpp, ThumbnailCropAndLockWindow.cpp, WindowRectUtil.h, and CropAndLockTests.cs.",
+      "OverlayWindow::SetupOverlay derives the selection bounds from ClientAreaInScreenSpace, and OverlayWindow::OnLeftButtonUp passes cropRect relative to that client area.",
+      "ReparentCropAndLockWindow::CropAndLock reads both GetWindowRect and ClientAreaInScreenSpace, then overrides diffX/diffY for maximized windows with monitor work-area offsets before calculating the crop window position and moving the source HWND to -cropRect.left/-cropRect.top.",
+      "ThumbnailCropAndLockWindow::CropAndLock adjusts the same client-relative crop for a DWM thumbnail source rectangle and does not reparent or move the source window.",
+      "Existing UI tests cover Win32 and packaged fixture reparent behavior, but the fixture coverage does not appear to exercise maximized Chromium custom-frame windows."
+    ],
+    "information_gaps": []
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Reparent mode crop coordinates in the selected client coordinate space for maximized Chromium windows",
+      "root_cause": "Reparent mode appears to convert the overlay's client-relative crop rectangle through a maximized-window work-area adjustment before positioning the reparented source HWND. For maximized Chromium/custom-frame windows, that adjustment can shift the displayed pixels away from the selected client region even though input still targets the original source coordinates.",
+      "plan": [
+        "Reproduce with maximized Edge or Chrome and log the selected cropRect from OverlayWindow, GetWindowRect, ClientAreaInScreenSpace, monitor rcWork, and the final SetWindowPos target offset in ReparentCropAndLockWindow.",
+        "Remove or narrow the maximized-window special-case offset so Reparent mode uses the actual client-area origin that OverlayWindow used for selection, not a work-area approximation that can diverge for custom-framed browsers.",
+        "Keep the Crop And Lock window placement and child clipping rectangle separate from the source HWND offset; verify that the visible region and hit-testing use the same crop origin.",
+        "Add regression coverage with a maximized test source whose client origin differs from the window/work-area origin, and extend manual validation to Chromium browsers at common DPI/scaling settings."
+      ],
+      "verification": [
+        "Maximize Edge or Chrome, crop a recognizable page region with Reparent mode, and confirm the Crop And Lock window displays exactly the selected pixels.",
+        "Click controls inside the cropped window and confirm input still lands on the same visible content.",
+        "Repeat with Thumbnail mode to verify no regression.",
+        "Run the CropAndLockModuleInterface and CropAndLock builds plus the CropAndLock.UITests reparent scenarios where the local environment supports them."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The issue gives a deterministic repro and the source has a focused Reparent-only maximized coordinate branch that matches the symptom, but the exact Chromium frame metrics still need runtime confirmation before implementing."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "approve-design-50682",
+      "type": "approve_design",
+      "label": "Queue detailed design for Crop And Lock Reparent browser offset",
+      "primary": true,
+      "confirm": true,
+      "note": "Starts the fork-side detailed design workflow; no upstream write occurs."
+    },
+    {
+      "id": "reproduce-50682",
+      "type": "reproduce",
+      "label": "Reproduce maximized-browser Reparent offset",
+      "primary": false,
+      "confirm": true,
+      "reproduce": {
+        "module": "Crop and Lock",
+        "version_requirements": "PowerToys 0.101.2362 or a current local build with Crop And Lock enabled",
+        "prerequisites": [
+          "Use Windows 11 with Edge or Chrome installed.",
+          "Enable Crop And Lock and use Reparent mode, not Thumbnail mode.",
+          "Open a browser page with easily identifiable regions, such as a video player or large blocks of text."
+        ],
+        "steps": [
+          "1. Maximize the browser window.",
+          "2. Start Crop And Lock Reparent mode.",
+          "3. Select a recognizable client-area region in the browser and confirm the crop.",
+          "4. Compare the visible pixels in the Crop And Lock window with the selected region.",
+          "5. Click a visible element inside the crop and observe whether the input targets the corresponding original browser content."
+        ],
+        "expected_result": "The Reparent window shows exactly the selected browser client-area pixels, and click hit-testing targets the same visible content.",
+        "setup_prompt": "Create a local Crop And Lock repro page with high-contrast labeled regions, maximize Edge or Chrome, then run Reparent mode while recording the selected crop rectangle, client-area screen origin, window rectangle, monitor work area, and final SetWindowPos offset."
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comments, labels, assignments, closures, or other public mutations were made to microsoft/PowerToys."
+  }
+}

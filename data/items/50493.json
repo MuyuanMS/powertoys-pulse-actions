@@ -4,13 +4,13 @@
   "number": 50493,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "waiting_copilot",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-15T18:30:20Z",
-  "evaluated_at": "2026-09-15T18:30:20Z",
-  "source_updated_at": "2026-09-12T09:05:31Z",
-  "head_sha": "27473e046ebd32d56d1af99293a6fb4becc5078b",
+  "generated_at": "2026-09-20T22:58:58.86964Z",
+  "evaluated_at": "2026-09-20T22:58:58.86964Z",
+  "source_updated_at": "2026-09-20T21:47:16Z",
+  "head_sha": "e0949222650b0e1091b93d4af4d095e3f2316727",
   "title": "Laser pointer for mouse and pen",
   "url": "https://github.com/microsoft/PowerToys/pull/50493",
   "author": "hugener",
@@ -21,75 +21,24 @@
   "draft": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "summary": "The exact upstream head is unchanged at 27473e046ebd32d56d1af99293a6fb4becc5078b, and the live PR still shows no new head or review activity since 2026-09-12. The durable fork evidence still supports a current-head, non-blocking review focused on pen/input mapping and presenter lifecycle issues plus stroke retention and module-integration coverage.",
+  "summary": "The upstream head advanced from the previously reviewed revision to e0949222650b0e1091b93d4af4d095e3f2316727. Existing fork review fixes were replayed on the live head in fork PR 870; a fresh Copilot review was requested at 2026-09-20T22:58:42Z and has not arrived in the immediate check.",
   "status": {
-    "glyph": "!",
-    "label": "Current-head review drafted",
-    "detail": "The upstream head remains 27473e046ebd32d56d1af99293a6fb4becc5078b with no newer activity or review records; the durable fork review loop still converged with zero unresolved threads. The draft remains a non-blocking COMMENT review; no actionless queue was triggered because the live PR state did not change."
+    "glyph": "…",
+    "label": "Waiting for fresh Copilot review",
+    "detail": "Current-head validation is resumable. Do not draft or publish findings until the fresh Copilot pass is consumed."
   },
   "next_action": {
-    "glyph": "post",
-    "label": "Approve, edit, or hold the drafted review",
-    "reason": "The live upstream head and activity snapshot remain unchanged; obtain explicit maintainer approval before posting the current-head COMMENT review."
+    "glyph": "wait",
+    "label": "Resume after Copilot review",
+    "reason": "Consume the outstanding request on fork PR 870 before starting another request or drafting current-head findings."
   },
-  "actions": [
-    {
-      "id": "post-review-50493",
-      "type": "post_review",
-      "label": "Post general review notes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Current-head non-blocking COMMENT review. Keep the review pinned to the live upstream head and do not post until explicit maintainer approval.",
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pr": 50493,
-        "pullRequest": 50493,
-        "event": "COMMENT",
-        "head_sha": "27473e046ebd32d56d1af99293a6fb4becc5078b",
-        "body_prefix": "Thanks for the substantial Laser Pointer implementation and the follow-up fixes. The remaining current-head issues are limited to pointer/input isolation and lifecycle correctness, plus a few integration and diagnostic follow-ups; please address the general review notes below."
-      }
-    }
-  ],
-  "proposed_comments": [
-    {
-      "id": "50493-pen-input-and-presenter-lifecycle",
-      "kind": "companion",
-      "title": "Keep pen input and presenter retargeting safe",
-      "severity": "high",
-      "body": "### Keep pen input and presenter retargeting safe\n\n**Severity:** `high`\n\n**Affected code:**\n- `src/modules/MouseUtils/MouseUtils/Settings/MouseUtilsSettings.cpp` — `LaserPointerInput`\n- `src/modules/MouseUtils/MouseUtils/Presenter/ShareWindowPresenter.cpp` — `ShareWindowPresenter`\n\n**Problem:** The current head still mixes raw-input/device identity with the full-screen overlay while a pen is in range, and the retarget flow tears down the active presenter before the replacement capture has successfully started.\n\n**Why it matters:** A pen can be mapped to the unrelated mouse cursor path, the overlay can intercept unrelated mouse input, and a failed retarget can drop an otherwise valid active share when the target window is protected, elevated, or untitled.\n\n**Suggested change:**\n1. Resolve pen input to the supported pointer-device representation before the capture region is chosen, and keep the overlay click-through while using a bounded input-only capture region.\n2. Start the replacement presenter first and preserve the active share until the replacement capture succeeds.\n3. Allow valid untitled targets through and retain the existing localized untitled fallback when refreshing the presenter title.\n\n**Verification:** Exercise mouse and pen activation on a multi-monitor setup, confirm the pen follows pen input rather than the unrelated mouse cursor, and retarget Share Window to a protected or untitled target to verify the active share survives a failed retarget.",
-      "out_of_diff_reason": "The required corrections span raw-input resolution, pointer-device mapping, overlay hit-testing, presenter startup, and retarget failure handling; they are not safely expressible as a single current RIGHT-side suggestion.",
-      "outOfDiffReason": "The required corrections span raw-input resolution, pointer-device mapping, overlay hit-testing, presenter startup, and retarget failure handling; they are not safely expressible as a single current RIGHT-side suggestion.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 96,
-        "rationale": "The latest fork Copilot passes identified both incompatible handle domains and full-screen hit-testing risk; the converged fork contains targeted fixes for both paths."
-      }
-    },
-    {
-      "id": "50493-stroke-and-integration-coverage",
-      "kind": "companion",
-      "title": "Respect configured stroke decay and finish integration checks",
-      "severity": "medium",
-      "body": "### Respect configured stroke decay and finish integration checks\n\n**Severity:** `medium`\n\n**Affected code:**\n- `src/modules/MouseUtils/MouseUtils/Settings/MouseUtilsSettings.h` — `StrokeDecaySettings`\n- `src/modules/MouseUtils/MouseUtils/Presenter/LaserPointerPresenter.h` — `LaserPointerPresenter`\n- `src/settings-ui/Settings.UI/SettingsXAML/Views/MouseUtilsPage.xaml` — `MouseUtilities`\n\n**Problem:** The fixed 4,096-sample cap can truncate valid trails for the configured ten-second decay and high-rate pen input, and the current head still leaves a few integration and privacy gaps around Shortcut Guide/GPO wiring, pen telemetry, WinRT apartment initialization, and presenter logging.\n\n**Why it matters:** The retained trail can materially under-shoot the configured fade, and missing integration coverage leaves the module incomplete across surrounding PowerToys surfaces and diagnostics.\n\n**Suggested change:**\n1. Bound retained samples by the effective decay window instead of the fixed cap, with a defensive upper bound only for pathological input rates.\n2. Add the missing Shortcut Guide/GPO and pen-telemetry coverage, initialize the overlay worker apartment before WinRT APIs, and avoid logging user-controlled presenter titles.\n3. Validate the affected surfaces with the focused Mouse Utilities lifecycle, settings, activation, and presenter checks already called out by the review loop.\n\n**Verification:** Confirm the configured decay matches the visible trail length under high-rate pen input, then inspect Shortcut Guide/GPO output, pen telemetry, worker initialization, and presenter logs to verify the integration and privacy requirements are covered before merge.",
-      "out_of_diff_reason": "The needed fixes span decay policy, GPO integration, telemetry, threading, and privacy logging; this is a single root-level review note rather than a single line-level inline suggestion.",
-      "outOfDiffReason": "The needed fixes span decay policy, GPO integration, telemetry, threading, and privacy logging; this is a single root-level review note rather than a single line-level inline suggestion.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 93,
-        "rationale": "The findings were independently raised across the converged Copilot review history and are represented by concrete fork-side changes or explicitly retained coverage work."
-      }
-    }
-  ],
+  "actions": [],
+  "proposed_comments": [],
   "safe_actions": [
-    "Present the drafted current-head COMMENT review for explicit maintainer approval",
-    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
-    "Hold or edit the review without changing upstream labels, review state, or PR state",
-    "Re-run the fork review loop only if the upstream head or activity changes"
+    "Wait for and consume the outstanding Copilot review on fork PR 870",
+    "Do not publish upstream or dashboard data from this worker"
   ],
-  "needs_revalidation": false,
+  "needs_revalidation": true,
   "phase0": {
     "author": "hugener",
     "author_association": "FIRST_TIME_CONTRIBUTOR",
@@ -135,46 +84,40 @@
     }
   },
   "fork_pr": {
-    "number": 770,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/770",
+    "number": 870,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/870",
     "state": "OPEN",
-    "head_sha": "745726b6998dcf5e29bcec5f7ad57537e5accacd",
+    "head_sha": "cdb65f2f1317cb6c040358c404fab673a9d5a139",
     "base_sha": "f47af41de2837a9d588f84270ad521c26264ab40",
-    "changed_files": 72,
-    "additions": 7106,
-    "deletions": 32,
-    "checks": "passed"
+    "changed_files": null,
+    "additions": null,
+    "deletions": null,
+    "checks": "pending Copilot"
   },
-  "fork_branch": "pr-iterate/50493-v4",
+  "fork_branch": "pr-iterate/50493-v5",
   "copilot_review": {
-    "latest_submitted_at": "2026-09-12T19:14:03Z",
-    "latest_commit_id": "745726b6998dcf5e29bcec5f7ad57537e5accacd",
-    "latest_new_comments": 0,
-    "published_inline_comments": 0,
+    "request_at": "2026-09-20T22:58:42.2546392Z",
+    "latest_submitted_at": null,
+    "latest_commit_id": "cdb65f2f1317cb6c040358c404fab673a9d5a139",
+    "latest_new_comments": null,
+    "published_inline_comments": null,
     "unresolved_threads": 0,
-    "review_count": 6,
-    "policy_note": "The existing latest fork Copilot review was consumed before drafting. It reviewed the current fork head, generated zero new published comments, and all prior Copilot threads were replied to and resolved."
+    "status": "waiting",
+    "policy_note": "Fresh Copilot review requested for current fork head; immediate check found no submitted review."
   },
   "validation": {
     "upstream_head": {
-      "head_sha": "27473e046ebd32d56d1af99293a6fb4becc5078b",
-      "result": "passed",
-      "commands": [
-        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd (x64 Debug): passed",
-        "<PowerToysCheckout>\\src\\modules\\MouseUtils\\LaserPointer\\..\\..\\..\\..\\tools\\build\\build.cmd (x64 Debug): passed"
-      ],
-      "notes": [
-        "The first module attempt was blocked by the host's malformed GIT_CONFIG_VALUE_3 environment setting; the retry removed only that inherited setting and restored dependencies before the successful exact-head build.",
-        "The exact upstream checkout produced x64\\Debug\\PowerToys.exe and a zero-byte Laser Pointer errors log."
-      ]
+      "head_sha": "e0949222650b0e1091b93d4af4d095e3f2316727",
+      "result": "not rerun after head advance",
+      "commands": []
     }
   },
   "verification": {
-    "result": "passed",
+    "result": "waiting",
     "checks": [
-      "The existing fork review tree converged with zero new published Copilot comments and zero unresolved Copilot threads.",
-      "The exact upstream head 27473e046ebd32d56d1af99293a6fb4becc5078b built successfully after standard dependency restore.",
-      "The live upstream head, source_updated_at, and drafted review action are pinned to the same current revision."
+      "Live upstream head refreshed",
+      "Durable review fixes replayed onto current head",
+      "Fresh Copilot request submitted and not yet available"
     ]
   },
   "test_instructions": [
@@ -184,20 +127,20 @@
     "Start Share Window, retarget to a protected or untitled window, and verify a failed retarget preserves the existing share while the untitled target receives its localized fallback title."
   ],
   "workflow": {
-    "phase": "converged_draft_ready",
-    "checkpoint_at": "2026-09-14T12:02:06Z",
-    "resume_action": "awaiting_review_approval",
-    "fork_pr": 770,
-    "fork_branch": "pr-iterate/50493-v4",
-    "fork_head_sha": "745726b6998dcf5e29bcec5f7ad57537e5accacd",
+    "phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-20T22:58:58.86964Z",
+    "resume_action": "consume_copilot_request",
+    "fork_pr": 870,
+    "fork_branch": "pr-iterate/50493-v5",
+    "fork_head_sha": "cdb65f2f1317cb6c040358c404fab673a9d5a139",
     "unresolved_copilot_threads": 0,
-    "build_result": "passed",
-    "upstream_head_build_result": "passed"
+    "build_result": "not rerun after head advance",
+    "upstream_head_build_result": "not rerun after head advance"
   },
   "freshness": {
-    "status": "current_head_reviewed",
-    "evaluated_at": "2026-09-15T18:30:20Z",
-    "source_updated_at": "2026-09-12T09:05:31Z",
-    "head_sha": "27473e046ebd32d56d1af99293a6fb4becc5078b"
+    "status": "waiting_current_head_copilot",
+    "evaluated_at": "2026-09-20T22:58:58.86964Z",
+    "source_updated_at": "2026-09-20T21:47:16Z",
+    "head_sha": "e0949222650b0e1091b93d4af4d095e3f2316727"
   }
 }
