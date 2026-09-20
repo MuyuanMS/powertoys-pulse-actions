@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-20T15:43:07.0828819+08:00",
+  "generated_at": "2026-09-20T17:00:06.3484113+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 170,
-    "open_issues": 12679,
-    "community": 11836,
+    "open_issues": 12680,
+    "community": 11837,
     "artifacts": 1258
   },
   "impact": {
-    "as_of": "2026-09-20T15:43:07.0828819+08:00",
+    "as_of": "2026-09-20T17:00:06.3484113+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1429,8 +1429,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-20T00:47:44Z",
-      "updated_at": "2026-09-20T01:40:00Z",
-      "comments": 0,
+      "updated_at": "2026-09-20T08:21:28Z",
+      "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -154709,6 +154709,37 @@ window.BOARD_INDEX = {
       "created_at": "2021-11-08T14:49:11Z",
       "updated_at": "2026-01-10T14:05:24Z",
       "comments": 12,
+      "priority": null
+    },
+    {
+      "id": "issue-50674",
+      "kind": "issue",
+      "number": 50674,
+      "url": "https://github.com/microsoft/PowerToys/issues/50674",
+      "title": "[Dedupe Digest] 2026-09-20",
+      "author": "app/github-actions",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "dedupe-digest"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-20T08:17:07Z",
+      "updated_at": "2026-09-20T08:17:08Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -364035,8 +364066,8 @@ window.BOARD_INDEX = {
       "number": 50655,
       "url": "https://github.com/microsoft/PowerToys/issues/50655",
       "title": "[Dedupe Digest] 2026-09-19",
-      "author": "app/github-actions",
-      "state": "open",
+      "author": "github-actions[bot]",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -364054,10 +364085,12 @@ window.BOARD_INDEX = {
       "labels": [
         "dedupe-digest"
       ],
-      "assignees": [],
+      "assignees": [
+        "niels9001"
+      ],
       "created_at": "2026-09-19T08:16:24Z",
-      "updated_at": "2026-09-19T08:16:25Z",
-      "comments": 0,
+      "updated_at": "2026-09-20T08:17:10Z",
+      "comments": 1,
       "priority": null
     },
     {
