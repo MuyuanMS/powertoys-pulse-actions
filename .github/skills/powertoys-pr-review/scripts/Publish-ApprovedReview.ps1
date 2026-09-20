@@ -42,7 +42,7 @@ $decisions = Read-JsonFile -Path $DecisionsPath
 $reviewDataHash = Get-ReviewDataHash -Path $DataPath
 
 $errors = [System.Collections.Generic.List[string]]::new()
-foreach ($errorMessage in Test-ReviewDataDocument -Document $reviewData -CheckGitHub:(-not $Offline)) {
+foreach ($errorMessage in Test-ReviewDataDocument -Document $reviewData -CheckGitHub:(-not $Offline) -RequireFindingGrounding:(-not $Offline)) {
     $errors.Add($errorMessage)
 }
 foreach ($errorMessage in Test-ReviewDecisionDocument -Decisions $decisions -ReviewData $reviewData -ExpectedHash $reviewDataHash) {

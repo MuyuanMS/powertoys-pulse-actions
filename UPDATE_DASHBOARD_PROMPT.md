@@ -35,6 +35,10 @@ Before starting:
    `microsoft/PowerToys`, write access to their PowerToys fork and the dashboard
    repository, and Microsoft project 2445 access if project synchronization is
    expected.
+6. On every run, synchronize the skill source from canonical `main`, not merely
+   when a skill is missing. Run `Install-Skills.ps1 -Update` from that clean
+   checkout and read its current skill entry points/references. Record the
+   loaded source commit; do not continue with an older in-memory prompt.
 
 Use the `powertoys-dashboard-update` skill as the orchestrator. Follow all its
 dependency, freshness, artifact-schema, validation, publication, and approval
@@ -53,7 +57,7 @@ rules. In particular:
   transitions, eight minutes in normal mode, five minutes in drain mode, or a
   completed review, whichever comes first;
 - give every new or changed bug issue a lightweight explicit judgment and,
-  when actionable, schema-version-4 display-only issue context summarizing the
+  when actionable, schema-version-5 display-only issue context summarizing the
   discussion, known facts, qualified inferences, Copilot analysis, initial
   investigation, and exact information gaps;
 - make every request-info draft issue-specific: acknowledge useful evidence
@@ -65,6 +69,20 @@ rules. In particular:
   designs with the same checkpoint and publish guarantees;
 - preserve and resume existing fork work instead of duplicating it;
 - validate all newly processed artifacts and scan generated JSON for secrets;
+- follow `powertoys-pr-review/references/finding-grounding.md` for every PR
+  finding, including rewritten general comments: prove the defect on the pinned
+  upstream tree, check existing guards and author counterevidence, distinguish
+  upstream defects from agent-introduced regressions/optional experiments, and
+  keep a private source-and-body-hash dossier; no clean fork review or build can
+  substitute for that proof;
+- after emission/sanitization, run `Test-DashboardArtifacts.ps1` with explicit
+  processed `-Numbers`, `-RequireFindingGrounding`, and `-GroundingPath` pointing
+  to the private dossier (optionally `-SourceRepository` for pinned git blobs).
+  Never publish that dossier. Missing/contradictory evidence means withdraw the
+  proposal and checkpoint unfinished work, not invent a passing result;
+- author rebuttals require reassessing a finding even without a new commit:
+  revalidate substantively and preserve rejected-finding reasons against revival.
+  Explicit targeted reruns take priority over normal freshness skipping;
 - before emitting any apply-ready PR suggestion, run the PR review skill's
   raw-blob line-ending check against the exact pinned upstream head; reject
   suggestion blocks for files mixing LF, CRLF, or lone CR endings and retain

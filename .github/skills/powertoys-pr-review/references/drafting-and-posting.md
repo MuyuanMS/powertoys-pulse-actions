@@ -13,6 +13,10 @@ The drafted review combines the **Phase 0 context/process findings** and the **c
 **9b. Draft the code suggestion comments.** These will be posted publicly on the original PR and seen by the author, maintainers, and community. They must be clear, professional, and educational.
 
 Quality guidelines:
+- First complete [upstream finding grounding](./finding-grounding.md). Every
+  claimed defect needs exact upstream evidence and a contradiction check,
+  including when expanding an old general comment. Do not promote a
+  review-introduced regression, optional optimization or already-fixed behavior.
 - Write as a senior reviewer helping a contributor improve their PR.
 - Explain the *reasoning*, not just what to change.
 - Mention the observable symptom or user-facing impact (e.g., "users would see '1 minutes ago', which is grammatically incorrect").
@@ -206,10 +210,12 @@ Store author-facing text only in `publicPayload`. Store fork links, worktrees, b
 Before presenting the dashboard, run:
 
 ```powershell
-./scripts/Test-ReviewData.ps1 -DataPath <path>\review-data.json -AllowIncomplete
+./scripts/Test-ReviewData.ps1 -DataPath <path>\review-data.json -AllowIncomplete -RequireFindingGrounding
 ```
 
-Before marking a PR `ready`, run with `-CheckGitHub` so every pinned head and inline range is current.
+Before marking a PR `ready`, also run with `-CheckGitHub` so every pinned head,
+inline range and grounding excerpt is checked against upstream. The live
+publisher requires grounding; its offline dry-run is not publication evidence.
 
 For a payload containing suggestion blocks, also record:
 

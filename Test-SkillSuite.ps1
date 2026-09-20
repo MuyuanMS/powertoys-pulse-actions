@@ -185,6 +185,11 @@ foreach ($script in $scripts) {
   }
 }
 
+foreach ($testName in @('Test-FindingGrounding.ps1', 'Test-ReviewPayloads.ps1')) {
+  & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-pr-review\tests\$testName")
+  if ($LASTEXITCODE -ne 0) { $errors.Add("Review regression test failed: $testName") }
+}
+
 $runPlanScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-PrReviewRunPlan.ps1'
 $staleQueueScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-StalePrReviewQueue.ps1'
 $candidateScript = Join-Path $skillsRoot 'powertoys-dashboard-update\scripts\Get-DashboardUpdateCandidates.ps1'
