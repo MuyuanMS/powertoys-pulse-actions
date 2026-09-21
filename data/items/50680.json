@@ -3,40 +3,103 @@
   "number": 50680,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-20T23:07:30Z",
-  "evaluated_at": "2026-09-20T23:07:30Z",
+  "generated_at": "2026-09-21T09:52:00+08:00",
+  "evaluated_at": "2026-09-21T01:52:00Z",
   "source_updated_at": "2026-09-20T21:31:09Z",
   "head_sha": "355c8eb3f3a15cde0fb398339b8ad2a61db4c657",
   "title": "CmdPal: Add app language selector",
   "url": "https://github.com/microsoft/PowerToys/pull/50680",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Fresh fork review PR 871 is ready with the exact 31-file upstream scope. Copilot was requested at 2026-09-20T23:07:01Z and was not present in the immediate check; this bounded run does not poll."
+    "glyph": "review",
+    "label": "Review findings drafted",
+    "detail": "Fresh fork Copilot review returned zero findings after the worker resolved the two prior issues. Two current-head apply-ready inline suggestions are validated for maintainer approval."
   },
-  "next_action": "On the next bounded run, consume the outstanding Copilot review for fork PR 871 before requesting another round.",
+  "next_action": {
+    "glyph": "review",
+    "label": "Review two CmdPal language-selector suggestions",
+    "reason": "Approve or edit the two validated inline suggestions before any upstream write."
+  },
   "confidence": "Medium",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "50680-pseudolocalizer-culture-guard",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Reject non-pseudo cultures before pseudolocalizer writes",
+      "confidence": {
+        "score": 92,
+        "rationale": "The exact upstream validation accepts en-US and path aliases before output/delete paths are computed; the validated suggestion rejects non-qps cultures while preserving qps-test."
+      },
+      "path": "src/modules/cmdpal/pseudolocalizer.ps1",
+      "start_line": 93,
+      "line": 93,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**High:** `Assert-CultureName` currently accepts ordinary source cultures such as `en-US` and path-like aliases such as `.`, so `generate -Culture en-US` resolves an en-US RESW output back onto the source file and `clear -Culture en-US` can delete source RESW files. Please reject non-pseudo culture names before any write/delete path is computed.\n\n```suggestion\n    if (-not $Value.StartsWith('qps-', [StringComparison]::OrdinalIgnoreCase)) {\n        Write-Error \"Pseudo-localization culture must start with 'qps-'.\"\n        return $false\n    }\n\n    return $true\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50680-language-override-reconcile",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Persist the accepted language after startup fallback",
+      "confidence": {
+        "score": 88,
+        "rationale": "The exact upstream startup path applies a fallback language but leaves the failed persisted tag in settings; the validated suggestion reconciles settings to the accepted tag."
+      },
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
+      "start_line": 86,
+      "line": 86,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**Medium:** If `ApplyLanguageOverride` cannot apply a saved nonempty override, it returns the accepted fallback tag but `Settings.Language` remains persisted as the failed tag. On the next settings open, the selector reselects that failed tag and `LanguageChanged` stays true, so every restart returns to the fallback language with the restart banner still active. Persist the accepted tag after startup fallback so the saved selection matches the language that actually loaded.\n\n```suggestion\n        var languageOverride = languageService.ApplyLanguageOverride(settingsService.Settings.Language);\n        if (!string.Equals(settingsService.Settings.Language, languageOverride, StringComparison.OrdinalIgnoreCase))\n        {\n            settingsService.UpdateSettings(settings => settings with { Language = languageOverride }, hotReload: false);\n        }\n```",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50680",
+      "type": "post_review",
+      "label": "Post two CmdPal language selector suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50680,
+        "event": "COMMENT",
+        "head_sha": "355c8eb3f3a15cde0fb398339b8ad2a61db4c657"
+      },
+      "note": "Draft only. Two current-head inline suggestions require explicit maintainer approval; no upstream write has occurred."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "none",
-    "advanced_under_scheduled_run_definition": true,
-    "checkpoint_at": "2026-09-20T23:07:30Z",
-    "run_tag": "schedule8-20260921-0640",
-    "review_requested_at": "2026-09-20T23:07:01.9180486Z",
+    "phase": "awaiting_review_approval",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-21T01:52:00Z",
+    "run_tag": "schedule8-20260921-0856",
+    "latest_copilot_review_submitted_at": "2026-09-21T01:22:52Z",
+    "latest_copilot_new_comments": 0,
     "unresolved_copilot_threads": 0,
-    "blocker_reason": "Outstanding Copilot review request; no fresh review was present in the immediate check."
+    "fork_pr": 871,
+    "fork_head_sha": "d6033f08e373eae3f56ed8a9961b380f9f704015",
+    "advancement_evidence": [
+      "Resolved the two prior fork Copilot threads.",
+      "Fresh fork Copilot review returned zero findings.",
+      "Line-ending safety passed for both suggestion targets.",
+      "Exact suggestion candidate built successfully."
+    ]
   },
   "freshness": {
     "headRefOid": "355c8eb3f3a15cde0fb398339b8ad2a61db4c657",
     "updatedAt": "2026-09-20T21:31:09Z",
-    "latestCopilotReviewAt": null,
-    "checkedAt": "2026-09-20T23:07:30Z"
+    "checkedAt": "2026-09-21T01:52:00Z",
+    "latestCopilotReviewAt": "2026-09-21T01:22:52Z",
+    "unresolvedForkCopilotThreads": 0
   },
   "fork": {
     "repo": "MuyuanMS/PowerToys",
@@ -66,27 +129,59 @@
     "detail": "The author is a collaborator, the description includes a UI screenshot and linked issue 38389, CLA and required CI checks passed, and the changed files are within the CmdPal language-selector scope. No Phase 0 author ask was drafted."
   },
   "validation": {
-    "fork_scope": {
+    "fork_review": {
+      "result": "completed_clean",
+      "latest_copilot_review_submitted_at": "2026-09-21T01:22:52Z",
+      "latest_copilot_new_comments": 0,
+      "unresolved_copilot_threads": 0
+    },
+    "suggestion_patch": {
+      "head_sha": "355c8eb3f3a15cde0fb398339b8ad2a61db4c657",
       "result": "passed",
-      "details": "Fork PR 871 was rebased against a dedicated fork base at exact upstream main 7b6e82f4befdca0705a2313b5230de9681aead49 because fork main could not be force-updated under repository rules. The fork PR contains exactly the upstream 31 changed files."
-    },
-    "fork_build": {
-      "result": "blocked_environment",
-      "commands": [
-        "POWERTOYS_DISABLE_SPECTRE=1 .\\tools\\build\\build-essentials.cmd"
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "50680-pseudolocalizer-culture-guard",
+        "50680-language-override-reconcile"
       ],
-      "details": "Restore completed, but runner compilation stopped in Visual Studio vcpkg before PR code compilation because the environment contained malformed GIT_CONFIG_VALUE_3 state. No source error was reached."
+      "commands": [
+        "build-essentials.cmd",
+        "affected CmdPal UI unit-test project build"
+      ],
+      "details": "Literal public suggestion blocks were applied to the pinned upstream head and the candidate tree built successfully."
     },
-    "copilot": {
-      "result": "pending",
-      "fork_pr": 871,
-      "requested_at": "2026-09-20T23:07:01.9180486Z",
-      "immediate_fresh_review_found": false,
-      "unresolved_threads": 0
+    "line_ending_safety": {
+      "head_sha": "355c8eb3f3a15cde0fb398339b8ad2a61db4c657",
+      "result": "passed",
+      "checked_comment_ids": [
+        "50680-pseudolocalizer-culture-guard",
+        "50680-language-override-reconcile"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/pseudolocalizer.ps1",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    },
+    "upstream_head": {
+      "head_sha": "355c8eb3f3a15cde0fb398339b8ad2a61db4c657",
+      "result": "suggestion_candidate_passed",
+      "commands": [
+        "pseudolocalizer culture guard check",
+        "LanguageServiceTests 68/68",
+        "exact suggestion candidate build"
+      ],
+      "details": "Validation covered the exact suggestion result rather than an unrelated fork approximation."
     }
   },
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No reviews, comments, labels, assignments, CI triggers, merges, closures, cross-references, or other writes were made to microsoft/PowerToys. No dashboard publish, sanitize, commit, or push was performed."
+    "detail": "Zero writes were made to microsoft/PowerToys. The post_review action is approval-gated."
   }
 }
