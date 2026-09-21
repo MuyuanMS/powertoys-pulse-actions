@@ -3,46 +3,111 @@
   "number": 50663,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
-  "owes": "agent",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-21T09:25:00+08:00",
-  "evaluated_at": "2026-09-21T01:25:00Z",
+  "generated_at": "2026-09-21T02:37:02.2761685Z",
+  "evaluated_at": "2026-09-21T02:37:02.2761685Z",
   "source_updated_at": "2026-09-20T22:52:43Z",
   "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
   "title": "[WIP] Robocopy UI",
   "url": "https://github.com/microsoft/PowerToys/pull/50663",
   "status": {
-    "glyph": "...",
-    "label": "Fresh fork review requested",
-    "detail": "The live upstream head changed to 479d070ccab4410850030fe27b6799876f700b7d. The worker refreshed the fork-side branch, added the missing ONNX Runtime attribution, resolved the outstanding fork Copilot thread, and requested a fresh Copilot review. No review arrived within the bounded wait, so this remains queued for the next scheduled pass."
+    "glyph": "review",
+    "label": "Review findings drafted",
+    "detail": "The missed fork Copilot review 5262395623 was consumed for fork head 0d66394e940394eaa60a41c22412e19848af3e18. It returned zero new comments and zero unresolved Copilot threads; two previously accepted fork fixes remain supported against the current upstream head and are drafted as approval-gated inline prose."
   },
-  "next_action": "Wait for the fresh fork Copilot review, then consume it before drafting or publishing any new upstream review action.",
+  "next_action": {
+    "glyph": "review",
+    "label": "Review two Robocopy UI comments",
+    "reason": "Approve or edit the two current-head inline review comments before any upstream write."
+  },
   "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "50663-robocopy-settings-module-file",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Read Robocopy settings from the module settings file",
+      "confidence": {
+        "score": 91,
+        "rationale": "The current upstream line calls GetSettings without RobocopyUISettings.ModuleName, while the settings type defines a module file used by the UI toggle."
+      },
+      "path": "src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/HomePage.xaml.cs",
+      "start_line": 569,
+      "line": 569,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**High:** `SaveOptionsButton_Click` reads `RobocopyUISettings` without the Robocopy UI module name, so the legacy-save toggle is loaded from the root settings file instead of the module settings file. On a normal profile this leaves `UseLegacySaveMode` at its default or can fail to deserialize the intended module settings, so the setting exposed by this PR is not honored when saving `.rcj` files. Please read the module-specific settings file, for example by using `GetSettingsOrDefault<RobocopyUISettings>(RobocopyUISettings.ModuleName)`, before choosing the legacy save path.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50663-robocopy-launch-listener-disable",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Stop the launch event listener while Robocopy UI is disabled",
+      "confidence": {
+        "score": 89,
+        "rationale": "The current upstream constructor starts the public launch-event waiter and disable only flips _enabled, leaving the callback able to call StartProcess after disable and without process-handle synchronization."
+      },
+      "path": "src/modules/RobocopyUI/RobocopyUIModuleInterface/dllmain.cpp",
+      "start_line": 34,
+      "line": 34,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**High:** The constructor starts the named `ROBOCOPY_UI_LAUNCH_EVENT` waiter before the module is enabled, and the callback calls `StartProcess()` without checking `_enabled`. Since `disable()` only flips `_enabled` and never stops the waiter, any process that signals the public launch event can still start Robocopy UI while the module is disabled; the callback can also race with `disable()` over `m_process`. Please start the waiter only from `enable()`, stop it from `disable()`, ignore non-success callbacks, and serialize access to the tracked process handle.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50663",
+      "type": "post_review",
+      "label": "Post two Robocopy UI review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50663,
+        "event": "COMMENT",
+        "head_sha": "479d070ccab4410850030fe27b6799876f700b7d"
+      },
+      "note": "Draft only. Two current-head inline prose comments require explicit maintainer approval; no upstream write has occurred."
+    }
+  ],
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-21T01:25:00Z",
-    "run_tag": "schedule8-20260921-0856",
-    "advanced_under_scheduled_run_definition": true,
-    "deadline_utc": "2026-09-21T01:49:24Z",
-    "stop_new_rounds_after_utc": "2026-09-20T23:22:30Z",
-    "review_requested_at": "2026-09-21T01:10:00Z",
-    "review_submitted_at": "2026-09-20T20:51:07Z",
-    "latest_copilot_new_comments": null,
+    "phase": "awaiting_review_approval",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-21T02:37:02.2761685Z",
+    "run_tag": "recovery-50663-20260921",
+    "latest_copilot_review_id": 5262395623,
+    "latest_copilot_review_submitted_at": "2026-09-21T01:11:04Z",
+    "latest_copilot_new_comments": 0,
     "unresolved_copilot_threads": 0,
-    "fork_review_head": "0d66394e940394eaa60a41c22412e19848af3e18",
-    "current_head_review_status": "waiting_copilot",
-    "blocker_next_run_reason": "Fresh fork Copilot review requested for the refreshed branch; next run must consume it before any further request."
+    "fork_pr": 860,
+    "fork_head_sha": "0d66394e940394eaa60a41c22412e19848af3e18",
+    "advancement_evidence": [
+      "Get-CopilotReviewStatus.ps1 matched review 5262395623 to the saved fork head and request timestamp.",
+      "The matching review had zero inline comments.",
+      "Get-UnresolvedCopilotThreads.ps1 returned 0.",
+      "Two older accepted fork fixes were re-grounded against current upstream head 479d070ccab4410850030fe27b6799876f700b7d."
+    ]
   },
   "freshness": {
     "headRefOid": "479d070ccab4410850030fe27b6799876f700b7d",
     "updatedAt": "2026-09-20T22:52:43Z",
-    "latestCopilotReviewAt": "2026-09-20T20:51:07Z",
-    "checkedAt": "2026-09-21T01:25:00Z"
+    "checkedAt": "2026-09-21T02:37:02.2761685Z",
+    "latestCopilotReviewAt": "2026-09-21T01:11:04Z",
+    "unresolvedForkCopilotThreads": 0
+  },
+  "fork": {
+    "repo": "MuyuanMS/PowerToys",
+    "pr": 860,
+    "branch": "pr-iterate/50663",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/860",
+    "head_sha": "0d66394e940394eaa60a41c22412e19848af3e18"
   },
   "fork_pr": {
     "number": 860,
@@ -53,94 +118,44 @@
   },
   "fork_branch": "pr-iterate/50663",
   "fork_head_sha": "0d66394e940394eaa60a41c22412e19848af3e18",
-  "fork_trace": {
-    "resume_state": {
-      "review_pull_request_number": 860,
-      "previous_fork_head_sha": "b30a75a85a5b13907694f1da89b62c5e0e368a86",
-      "previous_upstream_head_sha": "5631f14ab1b7890c63960b22bc6541b4d7aa28a0",
-      "resume_action": "rebuild-and-draft",
-      "unresolved_copilot_threads": 0
-    },
-    "current_head_merge": {
-      "upstream_head_sha": "b2d8185510aa68a90fe10d4902a56120d4a21228",
-      "merge_commit_sha": "c87460e777a63b7166a76d0d1ed51d9579073d5e",
-      "conflicts_resolved": [
-        "src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/App.xaml",
-        "src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/Generic.xaml"
-      ],
-      "resolution_detail": "Kept the current upstream resource dictionary layout: App.xaml no longer merges the old RobocopyUIXAML AnimatedContentControl dictionary; Generic.xaml points to Controls/AnimatedContentControl.xaml and includes the Segmented control dictionary."
-    },
-    "accepted_fixes": [
-      {
-        "source_comment_id": 4057699988,
-        "path": "src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/HomePage.xaml.cs",
-        "summary": "Read RobocopyUISettings from RobocopyUISettings.ModuleName with GetSettingsOrDefault so UseLegacySaveMode honors the module settings file."
-      },
-      {
-        "source_comment_id": 4057700007,
-        "path": "src/modules/RobocopyUI/RobocopyUIModuleInterface/dllmain.cpp",
-        "summary": "Moved the launch EventWaiter from construction to enable/disable, guarded callbacks for non-success and disabled state, and serialized tracked process access."
-      }
-    ],
-    "fix_commit_sha": "723f060f43da6af9f2e8396c5749a36f130cb9ca",
-    "thread_resolution": {
-      "replied_and_resolved_comment_ids": [
-        4057699988,
-        4057700007
-      ],
-      "unresolved_copilot_threads_after_resolution": 0
-    }
-  },
   "phase0": {
+    "author": "noraa-junker",
     "authorAssociation": "COLLABORATOR",
     "disposition": "Proceed",
-    "cla": "passed",
-    "detail": "The author is a collaborator, so community-contributor process gates do not apply. At live inspection, PowerToys CI x64 and arm64 Release jobs were still in progress and mergeStateStatus was BLOCKED."
+    "detail": "The author is a collaborator, so community-contributor process gates do not block this code-review artifact. Live PR state remains open, non-draft, review-required, and CI is blocked/failing on the current head."
   },
   "validation": {
     "fork_review": {
-      "result": "waiting_copilot",
-      "latest_copilot_review_id": 5261707995,
-      "latest_copilot_review_submitted_at": "2026-09-20T20:51:07Z",
-      "latest_copilot_review_commit": "769c2e70487381658fb439ae0bd4c04b465f5591",
-      "latest_copilot_new_comments": null,
-      "unresolved_copilot_threads": 0,
-      "details": "Fresh Copilot review requested for the refreshed fork branch; no submitted review arrived within the bounded wait."
+      "result": "completed_clean",
+      "latest_copilot_review_id": 5262395623,
+      "latest_copilot_review_submitted_at": "2026-09-21T01:11:04Z",
+      "latest_copilot_new_comments": 0,
+      "unresolved_copilot_threads": 0
     },
     "current_head_review": {
-      "result": "waiting_copilot",
-      "details": "No current-head upstream review action is available until the fresh fork Copilot review is consumed."
+      "result": "drafted_findings",
+      "details": "The clean fork review was consumed; prior accepted findings were re-grounded against the current upstream head and drafted as inline prose."
     },
     "upstream_head": {
       "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
-      "result": "not_run_waiting_copilot",
-      "commands": [],
-      "details": "Build and exact-head validation deferred until the fresh Copilot review is consumed."
+      "result": "grounded_inline_prose",
+      "commands": [
+        "Get-CopilotReviewStatus.ps1 matched review 5262395623",
+        "Get-UnresolvedCopilotThreads.ps1 returned 0",
+        "Exact upstream source excerpts read with git show"
+      ],
+      "details": "No apply-ready suggestion is emitted; public comments are inline prose grounded to the pinned upstream head."
     },
-    "lineEndingSafety": {
+    "line_ending_safety": {
+      "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
       "result": "not_applicable",
-      "details": "No apply-ready suggestion is emitted while waiting for Copilot."
+      "checked_comment_ids": [],
+      "files": [],
+      "details": "No suggestion blocks are emitted."
     }
   },
-  "candidate_findings": [
-    {
-      "id": "candidate-robocopy-settings-module-file",
-      "origin": "fork_copilot_current_head",
-      "status": "supported_current_head_finding",
-      "source_comment_id": 4057699988,
-      "path": "src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/HomePage.xaml.cs"
-    },
-    {
-      "id": "candidate-robocopy-launch-listener-disable",
-      "origin": "fork_copilot_current_head",
-      "status": "supported_current_head_finding",
-      "source_comment_id": 4057700007,
-      "path": "src/modules/RobocopyUI/RobocopyUIModuleInterface/dllmain.cpp"
-    }
-  ],
   "upstream_safety": {
     "public_actions_taken": false,
-    "dashboard_emit_sanitize_commit_push_taken": false,
-    "detail": "Zero writes were made to microsoft/PowerToys. No dashboard publish, sanitize, commit, or push was performed by the worker."
+    "detail": "Zero writes were made to microsoft/PowerToys. The post_review action is approval-gated."
   }
 }
