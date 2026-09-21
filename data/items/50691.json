@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50691",
+  "number": 50691,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "generated_at": "2026-09-21T14:19:10Z",
+  "evaluated_at": "2026-09-21T14:19:10Z",
+  "source_updated_at": "2026-09-21T14:06:54Z",
+  "title": "Bug, while opening apps using PowerToys run",
+  "url": "https://github.com/microsoft/PowerToys/issues/50691",
+  "summary": "A PowerToys Run crash report on 0.95.0 records the same UWPApplication.Launch NullReferenceException that an existing open issue already tracks for failed packaged-application activation.",
+  "confidence": "High",
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "The report's exception type, generated Task.Run closure frame, owning UWPApplication.Launch method, and PowerToys Run area match open issue #49528. This issue supplies neither a distinct application nor a different activation condition that would justify a parallel investigation.",
+    "evidence": [
+      "Issue #50691 reports System.NullReferenceException in the Task.Run closure invoked by Microsoft.Plugin.Program.Programs.UWPApplication.Launch.",
+      "Open issue #49528 describes the same UWPApplication.Launch crash when PowerToys Run activates an unlaunchable MSIX/UWP application.",
+      "Open issue #39090 records the same UWPApplication.Launch closure-frame stack when launching Camera from PowerToys Run.",
+      "The current main-branch implementation still calls ApplicationActivationManager.ActivateApplication inside UWPApplication.Launch and handles activation failures in that Task.Run callback.",
+      "Earlier proposed fixes in pull requests #47412 and #47406 were closed without merging; neither is an existing fix attempt that covers this report."
+    ],
+    "recommended_action": "Post a consolidation comment that links this occurrence to #49528 and asks the reporter to add the affected packaged application and a fresh diagnostic capture there."
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A separate repository fix should not be designed for this report because the same failure signature is already tracked by open issue #49528; this issue provides no distinct trigger that would establish a competing code path."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter on PowerToys 0.95.0 from the Microsoft Store saw PowerToys Run crash while opening an application. The supplied stack identifies the packaged-app activation path but omits the application name, expected behavior, observed UI behavior, reproduction sequence, and diagnostic ZIP.",
+    "known_information": [
+      "The report identifies PowerToys Run as the affected area.",
+      "The reported PowerToys version is 0.95.0 and the installation method is Microsoft Store.",
+      "The report ran on 64-bit Windows build 26200.",
+      "The supplied stack is a System.NullReferenceException in UWPApplication.Launch's Task.Run callback.",
+      "There are no issue comments, assignees, linked pull requests, or diagnostic ZIP attachments.",
+      "Open issue #49528 already records the same UWPApplication.Launch crash for an unlaunchable MSIX/UWP application."
+    ],
+    "inferences": [
+      "The failed launch may be an instance of the packaged-application activation scenario in #49528, but the affected application and its Windows activation state are not recorded here.",
+      "The exception can occur while the UWP launch error path is handling a failed activation, but this report alone does not prove the precise failing expression or a new root cause."
+    ],
+    "analysis": "The source location and full exception signature align with an open, more reproducible report rather than a new independently scoped defect. Consolidating the occurrence avoids duplicate fix work while preserving the newer version and Windows-build evidence. The missing application identity and fresh diagnostics are useful to the canonical investigation, so the proposed comment directs the reporter there instead of issuing a generic request in a duplicate issue.",
+    "initial_investigation": [
+      "Read the complete live issue body and confirmed it has no discussion, attachments, assignees, linked pull requests, or additional reporter evidence.",
+      "Inspected the current main-branch UWPApplication.Launch implementation, including its ApplicationActivationManager.ActivateApplication call and error-handling callback.",
+      "Compared the stack and product area with open issues #49528 and #39090.",
+      "Reviewed earlier proposed fixes #47412 and #47406 and confirmed both were closed without merging because the actual root cause or required evidence was not established."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "repro_steps",
+        "information": "The affected packaged application's name, the PowerToys Run search query and activation action, expected result, actual result, and whether repairing or relaunching the application changes the outcome.",
+        "why_needed": "This confirms whether the occurrence is the unlaunchable MSIX/UWP scenario tracked by #49528 and identifies the Windows activation condition to investigate.",
+        "how_to_collect": "Add numbered reproduction details to issue #49528, including the application name, search query, expected and actual results, and whether repair or relaunch changes the behavior."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after reproducing the crash.",
+        "why_needed": "The diagnostic package can correlate the failing application and activation-error branch with the matching investigation.",
+        "how_to_collect": "Reproduce the crash on the current stable build, then submit a comment containing /bugreport on issue #49528 immediately afterward."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "link-duplicate-50691",
+      "type": "post_comment",
+      "label": "Link duplicate report to #49528",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "comment": {
+        "body": "Thanks for providing the PowerToys Run crash stack. The `UWPApplication.Launch` `NullReferenceException` matches the packaged-application launch failure already tracked in [#49528](https://github.com/microsoft/PowerToys/issues/49528), which remains the canonical investigation.\n\nPlease add the following details to #49528 so this occurrence can be included there:\n\n1. The packaged application's name, the PowerToys Run search query and exact activation action, plus the expected and actual result. Please also note whether repairing or relaunching the application changes the behavior.\n2. If possible, reproduce the crash again on the current stable build and submit a comment containing `/bugreport` immediately afterward so the diagnostic ZIP is captured with the failure.\n\nThis will establish whether the occurrence is the same failed MSIX/UWP activation scenario and avoids tracking a parallel investigation."
+      }
+    }
+  ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "author": "Duduka-INC",
+  "pending_author": false,
+  "linked_work": {
+    "duplicates": [
+      {
+        "number": 49528,
+        "url": "https://github.com/microsoft/PowerToys/issues/49528",
+        "state": "OPEN"
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 39090,
+        "url": "https://github.com/microsoft/PowerToys/issues/39090",
+        "state": "OPEN"
+      }
+    ],
+    "related_prs": [
+      {
+        "number": 47412,
+        "url": "https://github.com/microsoft/PowerToys/pull/47412",
+        "state": "CLOSED"
+      },
+      {
+        "number": 47406,
+        "url": "https://github.com/microsoft/PowerToys/pull/47406",
+        "state": "CLOSED"
+      }
+    ],
+    "covering_prs": []
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys. The consolidation comment is an approval-gated dashboard proposal only."
+  }
+}

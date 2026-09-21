@@ -3,7 +3,7 @@
   "number": 50683,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "agent",
   "pending_author": false,
   "generated_at": "2026-09-21T09:53:00Z",
@@ -13,20 +13,50 @@
   "title": "CropAndLock: Add maximized-window reparent regression coverage",
   "url": "https://github.com/microsoft/PowerToys/pull/50683",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "The saved Copilot review arrived cleanly for the current fork head. Remaining work is to account for the fork-only crop-inset correction, ground it against the current upstream diff, and validate the exact upstream tree before drafting any action."
+    "glyph": "!",
+    "label": "Review action drafted",
+    "detail": "The converged fork review found one upstream runtime correction: refresh the child frame before measuring client geometry and avoid applying the original client offset twice."
   },
-  "next_action": "Finish current-upstream grounding and exact-head validation; keep the artifact non-actionable until the fork-only correction is either supported or rejected.",
+  "next_action": "Approve or edit the drafted inline review comment; no upstream write has occurred.",
   "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "crop-client-frame-and-offset",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
+      "line": 146,
+      "start_line": 146,
+      "side": "RIGHT",
+      "title": "Refresh frame metrics before preserving the client crop",
+      "severity": "high",
+      "confidence": {
+        "score": 92,
+        "rationale": "The pinned upstream path changes the target to WS_CHILD, then reads client geometry without a frame refresh and later adds the already-applied diffX/diffY offset again. The converged fork correction builds successfully; exact-upstream and isolated-candidate builds were attempted but dependency restoration blocked them, and runtime UI execution was unavailable."
+      },
+      "body": "### Refresh frame metrics before preserving the client crop\n\n**Severity:** `high`\n\nAfter `SetParent` and `WS_CHILD` are applied, the code immediately measures `GetWindowRect`/`GetClientRect`. The frame metrics can still describe the pre-style-change frame, so the calculated non-client dimensions do not reliably preserve the original client area. The final `x`/`y` calculation also adds `cropRect`, which was already shifted by `diffX`/`diffY` above, and therefore applies that client-origin offset twice.\n\nPlease force a no-size `SetWindowPos` with `SWP_FRAMECHANGED` immediately after `SetWindowLongPtrW` and before the `GetClientRect` measurement. Then calculate the final child offset from the measured client origin while subtracting the earlier `diffX`/`diffY` conversion from `cropRect` (for both axes). Verify the maximized-browser case and retain the existing non-maximized reparent coverage.\n\nFocused verification: build the CropAndLock UI test project and run the maximized and non-maximized reparent scenarios when the Windows UI test environment is available; confirm the visible pixels and input hit-testing use the same selected client region."
+    }
+  ],
+  "actions": [
+    {
+      "id": "review-50683-crop-client-geometry",
+      "type": "post_review",
+      "label": "Post 1 inline review comment",
+      "primary": true,
+      "confirm": true,
+      "note": "Posts the selected current-head inline finding as a non-blocking review comment.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d"
+      }
+    }
+  ],
   "workflow": {
-    "phase": "reviewing_findings",
-    "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-21T09:53:00Z",
-    "run_tag": "schedule-20260921-1740",
+    "phase": "awaiting_review_approval",
+    "previous_phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-21T14:42:23Z",
+    "run_tag": "schedule-20260921-2218",
     "review_requested_at": "2026-09-21T05:07:43Z",
     "fork_pr": 874,
     "fork_branch": "pr-iterate/50683-v2",
@@ -39,12 +69,12 @@
       "resolve_fork_threads",
       "current_upstream_recheck"
     ],
-    "blocker_next_run_reason": "Current-upstream grounding and exact-head validation remain before any review action can be exposed."
+    "blocker_next_run_reason": "Bounded run cutoff. Paused at awaiting_review_approval; resume only after maintainer approval or a relevant head/state change. Do not initiate polling, builds, or review requests from this checkpoint."
   },
   "freshness": {
     "headRefOid": "282197767b1faaa769973ed6b1d5257cc5157b7d",
     "updatedAt": "2026-09-20T21:16:59Z",
-    "checkedAt": "2026-09-21T05:15:10.3696337Z",
+    "checkedAt": "2026-09-21T14:25:00Z",
     "unresolvedForkCopilotThreads": 0
   },
   "fork_pr": {
@@ -52,7 +82,7 @@
     "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/874",
     "state": "OPEN",
-    "head_sha": "667be7629894606321b314078e8e580a494b737d"
+    "head_sha": "861854b0d4b1f78207769848b0d91bcadb623c32"
   },
   "fork_branch": "pr-iterate/50683-v2",
   "fork_head_sha": "861854b0d4b1f78207769848b0d91bcadb623c32",
@@ -67,7 +97,17 @@
       "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
       "lineEndings": "lf"
     },
-    "upstreamExactHeadBuild": "blocked by vcpkg registry Git/config error"
+    "upstreamExactHeadBuild": {
+      "result": "blocked",
+      "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
+      "command": "Set-Location <ExactUpstreamCheckout>\\tools\\build\\build.cmd -Path src\\modules\\CropAndLock\\Tests\\CropAndLock.UITests -Platform x64 -Configuration Release",
+      "note": "The clean exact-upstream checkout could not restore the UI-test dependency graph: NETSDK1083 for win-anycpu, followed by missing ScreenRecorderLib/TestContext references. The converged fork build passed with its existing restored assets."
+    },
+    "suggestionPatch": {
+      "result": "not_applicable",
+      "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
+      "reason": "The finding is intentionally explanatory prose rather than an apply-ready suggestion because isolated candidate validation could not complete."
+    }
   },
   "upstream_safety": {
     "public_actions_taken": false,

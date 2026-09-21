@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-21T20:43:34.9034965+08:00",
+  "generated_at": "2026-09-21T22:39:45.7154298+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 170,
-    "open_issues": 12673,
+    "open_issues": 12674,
     "community": 11842,
-    "artifacts": 1260
+    "artifacts": 1261
   },
   "impact": {
-    "as_of": "2026-09-21T20:43:34.9034965+08:00",
+    "as_of": "2026-09-21T22:39:45.7154298+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -571,6 +571,7 @@ window.BOARD_INDEX = {
     48971,
     14596,
     14351,
+    50691,
     50686,
     50685,
     50684,
@@ -1408,8 +1409,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "reviewing_findings",
-      "owes": "agent",
+      "stage": "waiting_copilot",
+      "owes": "copilot",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -1451,15 +1452,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "agent",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post 1 inline review comment"
+      },
       "labels": [
         "Product-CropAndLock",
         "Ready for review"
@@ -2187,8 +2191,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "reviewing_findings",
-      "owes": "agent",
+      "stage": "waiting_copilot",
+      "owes": "copilot",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3767,10 +3771,10 @@ window.BOARD_INDEX = {
         "michaeljolley"
       ],
       "created_at": "2026-09-05T00:23:25Z",
-      "updated_at": "2026-09-19T02:38:20Z",
+      "updated_at": "2026-09-21T12:41:33Z",
       "comments": 3,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
       "merge_state": "BLOCKED",
       "mirror": {
@@ -23016,8 +23020,8 @@ window.BOARD_INDEX = {
         "jaimecbernardo"
       ],
       "created_at": "2024-10-02T15:24:34Z",
-      "updated_at": "2026-09-15T03:11:15Z",
-      "comments": 67,
+      "updated_at": "2026-09-21T12:59:06Z",
+      "comments": 68,
       "priority": null
     },
     {
@@ -154589,6 +154593,41 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50691",
+      "kind": "issue",
+      "number": 50691,
+      "url": "https://github.com/microsoft/PowerToys/issues/50691",
+      "title": "Bug, while opening apps using PowerToys run",
+      "author": "Duduka-INC",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "triage",
+      "stage": "triage_revalidated",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "post_comment",
+        "label": "Link duplicate report to #49528"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-21T14:06:54Z",
+      "updated_at": "2026-09-21T14:06:54Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-50690",
       "kind": "issue",
       "number": 50690,
@@ -155027,8 +155066,8 @@ window.BOARD_INDEX = {
       "labels": [],
       "assignees": [],
       "created_at": "2026-09-20T09:40:33Z",
-      "updated_at": "2026-09-20T10:53:29Z",
-      "comments": 1,
+      "updated_at": "2026-09-21T14:19:57Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -159027,7 +159066,7 @@ window.BOARD_INDEX = {
       "author": "noraa-junker",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": null,
@@ -163096,8 +163135,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-21T04:08:34Z",
-      "comments": 122,
+      "updated_at": "2026-09-21T14:12:21Z",
+      "comments": 123,
       "priority": null
     },
     {
