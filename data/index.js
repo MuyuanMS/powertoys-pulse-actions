@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-21T09:09:20.9804915+08:00",
+  "generated_at": "2026-09-21T09:28:11.0628461+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1260
   },
   "impact": {
-    "as_of": "2026-09-21T09:09:20.9804915+08:00",
+    "as_of": "2026-09-21T09:28:11.0628461+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1548,14 +1548,14 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "reviewing_findings",
-      "owes": "maintainer",
+      "stage": "waiting_copilot",
+      "owes": "agent",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 2,
+      "proposed_open": 0,
       "primary_action": null,
       "labels": [
         "Product-PowerToys Run",
@@ -3210,7 +3210,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "review",
       "stage": "waiting_copilot",
-      "owes": "maintainer",
+      "owes": "agent",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
