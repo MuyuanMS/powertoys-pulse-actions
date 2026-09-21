@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-21T22:39:45.7154298+08:00",
+  "generated_at": "2026-09-22T01:11:49.2144578+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,18 +86,19 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 170,
-    "open_issues": 12674,
-    "community": 11842,
-    "artifacts": 1261
+    "open_issues": 12672,
+    "community": 11841,
+    "artifacts": 1260
   },
   "impact": {
-    "as_of": "2026-09-21T22:39:45.7154298+08:00",
+    "as_of": "2026-09-22T01:11:49.2144578+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    50693,
     50689,
     50688,
     50683,
@@ -140,7 +141,6 @@ window.BOARD_INDEX = {
     50485,
     50479,
     50399,
-    50398,
     50377,
     50333,
     50268,
@@ -595,7 +595,6 @@ window.BOARD_INDEX = {
     50623,
     50619,
     50617,
-    50616,
     50604,
     50603,
     50594,
@@ -1362,6 +1361,49 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-50693",
+      "kind": "pr",
+      "number": 50693,
+      "url": "https://github.com/microsoft/PowerToys/pull/50693",
+      "title": "[CmdPal] Window Walker: show owned windows marked WS_EX_APPWINDOW",
+      "author": "Subhro-ai",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "review",
+      "stage": "waiting_copilot",
+      "owes": "copilot",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Command Palette",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-21T15:25:17Z",
+      "updated_at": "2026-09-21T15:36:35Z",
+      "comments": 3,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 878,
+        "fork_title": "[PR 50693] [CmdPal] Window Walker: show owned windows marked WS_EX_APPWINDOW",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50693",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/878"
+      }
+    },
+    {
       "id": "pr-50689",
       "kind": "pr",
       "number": 50689,
@@ -1409,8 +1451,8 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "waiting_copilot",
-      "owes": "copilot",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3739,54 +3781,6 @@ window.BOARD_INDEX = {
       }
     },
     {
-      "id": "pr-50398",
-      "kind": "pr",
-      "number": 50398,
-      "url": "https://github.com/microsoft/PowerToys/pull/50398",
-      "title": "CmdPal: Fix repeated details loading in Command Palette",
-      "author": "michaeljolley",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 6,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request the details-lifecycle corrections"
-      },
-      "labels": [
-        "Product-Command Palette",
-        "Ready for review"
-      ],
-      "assignees": [
-        "michaeljolley"
-      ],
-      "created_at": "2026-09-05T00:23:25Z",
-      "updated_at": "2026-09-21T12:41:33Z",
-      "comments": 3,
-      "priority": null,
-      "review_decision": "CHANGES_REQUESTED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 801,
-        "fork_title": "[PR 50398] CmdPal: Fix repeated details loading in Command Palette",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50398-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/801"
-      }
-    },
-    {
       "id": "pr-50395",
       "kind": "pr",
       "number": 50395,
@@ -5124,8 +5118,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-21T15:13:26Z",
-      "updated_at": "2026-09-20T14:01:24Z",
-      "comments": 10,
+      "updated_at": "2026-09-21T15:47:34Z",
+      "comments": 12,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
@@ -154593,6 +154587,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50692",
+      "kind": "issue",
+      "number": 50692,
+      "url": "https://github.com/microsoft/PowerToys/issues/50692",
+      "title": "PowerToys Settings Windowing Controls Do Not Work",
+      "author": "V2CAD",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Product-Settings",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-21T14:46:05Z",
+      "updated_at": "2026-09-21T15:03:30Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-50691",
       "kind": "issue",
       "number": 50691,
@@ -155066,7 +155093,7 @@ window.BOARD_INDEX = {
       "labels": [],
       "assignees": [],
       "created_at": "2026-09-20T09:40:33Z",
-      "updated_at": "2026-09-21T14:19:57Z",
+      "updated_at": "2026-09-21T15:52:49Z",
       "comments": 2,
       "priority": null
     },
@@ -156578,14 +156605,11 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve_design",
-        "label": "Start fixing"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Product-Settings",
@@ -156594,8 +156618,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-17T09:28:34Z",
-      "updated_at": "2026-09-17T20:17:27Z",
-      "comments": 3,
+      "updated_at": "2026-09-21T16:09:25Z",
+      "comments": 5,
       "priority": null
     },
     {
@@ -258094,40 +258118,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-46474",
-      "kind": "issue",
-      "number": 46474,
-      "url": "https://github.com/microsoft/PowerToys/issues/46474",
-      "title": "New Keyboard Manager preview should allow Tab character as text output",
-      "author": "DruhAnduh",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Product-Keyboard Shortcut Manager"
-      ],
-      "assignees": [
-        "zateutsch"
-      ],
-      "created_at": "2026-03-24T12:19:52Z",
-      "updated_at": "2026-03-25T16:34:45Z",
-      "comments": 2,
-      "priority": null
-    },
-    {
       "id": "issue-46471",
       "kind": "issue",
       "number": 46471,
@@ -262296,38 +262286,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-46288",
-      "kind": "issue",
-      "number": 46288,
-      "url": "https://github.com/microsoft/PowerToys/issues/46288",
-      "title": "Awake still has tons of poor implementation issues after the recent update",
-      "author": "anayaju1",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Author-Feedback",
-        "Product-Awake"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-19T12:46:43Z",
-      "updated_at": "2026-03-25T15:49:50Z",
-      "comments": 4,
-      "priority": null
-    },
-    {
       "id": "issue-46287",
       "kind": "issue",
       "number": 46287,
@@ -265914,38 +265872,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-03-15T10:50:49Z",
       "updated_at": "2026-04-19T12:58:59Z",
       "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-46132",
-      "kind": "issue",
-      "number": 46132,
-      "url": "https://github.com/microsoft/PowerToys/issues/46132",
-      "title": "Screenshot function",
-      "author": "SPERTMAN",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Author-Feedback",
-        "Status-No recent activity"
-      ],
-      "assignees": [],
-      "created_at": "2026-03-15T03:22:06Z",
-      "updated_at": "2026-03-25T15:02:08Z",
-      "comments": 2,
       "priority": null
     },
     {
