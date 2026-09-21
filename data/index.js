@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-21T13:02:35.115054+08:00",
+  "generated_at": "2026-09-21T13:13:34.3008108+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1260
   },
   "impact": {
-    "as_of": "2026-09-21T13:02:35.115054+08:00",
+    "as_of": "2026-09-21T13:13:34.3008108+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1600,7 +1600,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": "review",
       "stage": "align_first",
-      "owes": "maintainer",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3169,15 +3169,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "waiting_copilot",
-      "owes": "agent",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post Shortcut Guide general review note"
+      },
       "labels": [
         "Product-Mouse Utilities"
       ],
@@ -4835,7 +4838,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": true,
       "track": "review",
       "stage": "review_in_progress",
-      "owes": "agent",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -154680,14 +154683,15 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Needs-Author-Feedback",
         "Area-Localization",
         "Needs-Triage",
         "Issue-Translation"
       ],
       "assignees": [],
       "created_at": "2026-09-21T04:56:02Z",
-      "updated_at": "2026-09-21T04:56:02Z",
-      "comments": 0,
+      "updated_at": "2026-09-21T05:01:28Z",
+      "comments": 1,
       "priority": null
     },
     {
