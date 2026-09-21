@@ -12,7 +12,7 @@
     The fork PR number.
 .EXAMPLE
     ./Get-UnresolvedCopilotThreads.ps1 -ForkOwner octocat -PRNumber 12
-    Returns an integer count; 0 means the loop has converged.
+    Returns an integer count; 0 alone does not prove a fresh clean review or build.
 #>
 [CmdletBinding()]
 param(
@@ -22,10 +22,40 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$query = @"
-{ repository(owner:"$ForkOwner",name:"PowerToys"){ pullRequest(number:$PRNumber){ reviewThreads(first:100){ nodes{ isResolved comments(first:1){ nodes{ author{ login } } } } } } } }
-"@
-
-$count = gh api graphql -f query=$query --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.comments.nodes[0].author.login=="copilot-pull-request-reviewer") | select(.isResolved==false)] | length'
-
-[int]$count
+$query = @'
+query($owner:String!, $number:Int!, $cursor:String) {
+  repository(owner:$owner, name:"PowerToys") {
+    pullRequest(number:$number) {
+      reviewThreads(first:100, after:$cursor) {
+        nodes { isResolved comments(first:1) { nodes { author { login } } } }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+}
+'@
+$count = 0
+$cursor = ''
+do {
+    $arguments = @('api', 'graphql', '-f', "query=$query", '-f', "owner=$ForkOwner", '-F', "number=$PRNumber")
+    if ($cursor) { $arguments += @('-f', "cursor=$cursor") }
+    $output = & gh @arguments
+    if ($LASTEXITCODE -ne 0) { throw "Cannot read review threads for $ForkOwner/PowerToys PR $PRNumber." }
+    $response = ($output -join "`n") | ConvertFrom-Json
+    $connection = $response.data.repository.pullRequest.reviewThreads
+    if ($response.errors -or $null -eq $connection -or $null -eq $connection.pageInfo) {
+        throw "Incomplete review thread response for $ForkOwner/PowerToys PR $PRNumber."
+    }
+    foreach ($thread in @($connection.nodes)) {
+        if ($thread.isResolved -eq $false -and
+            $thread.comments.nodes[0].author.login -in @('copilot-pull-request-reviewer', 'copilot-pull-request-reviewer[bot]')) {
+            $count++
+        }
+    }
+    $nextCursor = [string]$connection.pageInfo.endCursor
+    if ($connection.pageInfo.hasNextPage -and (-not $nextCursor -or $nextCursor -eq $cursor)) {
+        throw 'Review thread pagination did not advance.'
+    }
+    $cursor = $nextCursor
+} while ($connection.pageInfo.hasNextPage)
+$count

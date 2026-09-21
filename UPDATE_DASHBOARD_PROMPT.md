@@ -51,6 +51,17 @@ rules. In particular:
   stop cleanly before the run deadline;
 - when a worker reaches a cloud Copilot wait, checkpoint that stage and release
   the slot instead of polling; resume it in the next scheduler pass;
+- use the PR skill's paginated Get-CopilotReviewStatus.ps1 to resume a saved
+  request by fork head and original timestamp (and baseline review ID when
+  saved). Do not call Request-CopilotReview.ps1 merely to check status. For a
+  genuinely new bounded round use -TimeoutMinutes 0 and persist its returned
+  identity. Recheck once before publishing waiting_copilot; consume an arrived
+  review instead of waiting/requesting again. Exhaust review/comment pages and
+  thread cursors; API failures must be reported, not labeled as pending reviews;
+- prioritize repeatedly deferred finalization: account for prior findings,
+  ground them against current upstream, validate the exact candidate, then
+  draft publishable comments. Recompute cutoffs from this run's deadline and
+  do not inherit expired deadlines or count timestamp-only rewrites as progress;
 - publish the fresh inventory before launching review workers and leave
   unselected PRs explicitly queued for later scheduled runs;
 - checkpoint every durable PR stage locally and push refreshed JSON after two

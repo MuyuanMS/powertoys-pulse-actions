@@ -360,6 +360,27 @@ function Get-GhPagedItems {
     return $items.ToArray()
 }
 
+function Get-LatestCopilotReview {
+    param(
+        [AllowEmptyCollection()][object[]]$Reviews,
+        [Parameter(Mandatory)][string]$HeadSha,
+        [datetimeoffset]$RequestedAt = [datetimeoffset]::MinValue,
+        [long]$AfterReviewId = 0
+    )
+
+    $Reviews | Where-Object {
+        $_.user.login -in @('copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer') -and
+        $_.state -in @('COMMENTED', 'APPROVED', 'CHANGES_REQUESTED') -and
+        $_.submitted_at -and
+        [string]$_.commit_id -ceq $HeadSha -and
+        [long]$_.id -gt $AfterReviewId -and
+        [datetimeoffset]$_.submitted_at -ge $RequestedAt
+    } | Sort-Object -Property `
+        @{ Expression = { [datetimeoffset]$_.submitted_at }; Descending = $true },
+        @{ Expression = { [long]$_.id }; Descending = $true } |
+        Select-Object -First 1
+}
+
 function Get-GitHubReviewState {
     param(
         [Parameter(Mandatory)][string]$Repository,

@@ -185,7 +185,7 @@ foreach ($script in $scripts) {
   }
 }
 
-foreach ($testName in @('Test-FindingGrounding.ps1', 'Test-ReviewPayloads.ps1')) {
+foreach ($testName in @('Test-FindingGrounding.ps1', 'Test-ReviewPayloads.ps1', 'Test-CopilotReviewDiscovery.ps1')) {
   & pwsh -NoProfile -File (Join-Path $skillsRoot "powertoys-pr-review\tests\$testName")
   if ($LASTEXITCODE -ne 0) { $errors.Add("Review regression test failed: $testName") }
 }

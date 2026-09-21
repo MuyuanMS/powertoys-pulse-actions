@@ -14,6 +14,12 @@ Run the bundled read-only discovery first:
 
 For a batch, pass every number in one call. Discovery is account-independent: it resolves the authenticated teammate's own PowerToys repository and finds durable `pr-iterate/<number>` branches, review PRs, local worktrees, Copilot review timestamps, commits, and unresolved threads. Follow its `resumeAction`; do not re-mirror an existing branch.
 
+For a saved outstanding request, also run `Get-CopilotReviewStatus.ps1` with its
+fork PR, fork `HeadSha`, original `RequestedAt` and optional `AfterReviewId`.
+This read-only check traverses all review pages. Consume an arrived result
+before changing the branch or requesting again; an empty assignment is not
+proof of absence. See [the review loop](./copilot-review-loop.md#step-4-request-copilot-review).
+
 **0a. Detect prior artifacts** for PR `N`:
 
 ```powershell
@@ -27,7 +33,7 @@ gh api "repos/<FORK_REPO>/git/ref/heads/pr-iterate/N" --jq '.ref' 2>$null
 git -C <CLONE_PATH> worktree list | Select-String "pr-iterate/N"
 ```
 
-If a fork PR exists, judge whether the Copilot **review loop** is finished with [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1) (unresolved Copilot threads must be 0, and the newest commit must not post-date the newest Copilot review).
+If a fork PR exists, use [scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1) to count all unresolved Copilot threads. Zero is necessary but insufficient: require a fresh submitted review on the exact fork head, inspect that review's findings, and validate the build.
 
 **0b. Classify the prior state and jump** (state it to the user first, e.g. "Found an existing fork PR 123 for PR N with 2 unresolved Copilot threads — resuming the review loop"):
 
