@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 5,
+  "number": 50684,
+  "kind": "issue",
+  "track": "issue",
+  "stage": "triaged",
+  "owes": "maintainer",
+  "generated_at": "2026-09-21T04:48:47.4980774Z",
+  "evaluated_at": "2026-09-21T04:48:47.4980774Z",
+  "source_updated_at": "2026-09-21T04:02:43Z",
+  "title": "[Screen Ruler] DIP measurement unit cannot be selected",
+  "url": "https://github.com/microsoft/PowerToys/issues/50684",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Screen Ruler"
+  ],
+  "status": {
+    "glyph": "design",
+    "label": "Fix design ready",
+    "detail": "The report includes exact repro steps, visual evidence, and points to the Settings UI normalization bug: DIP uses index 4, but the view model caps valid units at 3 and maps value 4 to centimeters for legacy migration."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The bug is reproducible from the supplied steps and confirmed by source: Settings UI normalizes UnitsOfMeasure value 4 away from DIP, so selecting DIP immediately persists/displays centimeters.",
+    "evidence": [
+      "Issue 50684 reports that selecting Display-independent pixels immediately reverts to Centimeters and includes visual evidence.",
+      "settings-ui/Settings.UI/ViewModels/MeasureToolViewModel.cs sets MaximumUnitsOfMeasureIndex = 3 while DIP is index 4.",
+      "NormalizeUnitsOfMeasureIndex maps value 4 to 2 for legacy Measurement::Unit migration, which collides with the new DIP combo-box index."
+    ],
+    "recommended_action": "Approve a focused Screen Ruler Settings fix so DIP can be selected without breaking legacy centimetre/millimetre migration."
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked existing fix covers the Settings UI normalization path for the new DIP option."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Separate legacy unit migration from the current combo-box DIP index",
+      "root_cause": "MeasureToolViewModel uses a single NormalizeUnitsOfMeasureIndex method for both current combo-box validation and legacy persisted enum migration. After adding DIP at index 4, the legacy migration rule 4 => 2 still runs for live UI values and MaximumUnitsOfMeasureIndex remains 3, so DIP is normalized back to centimeters.",
+      "plan": [
+        "Update MeasureToolViewModel so the current UnitsOfMeasure setter/getter accepts every current combo-box index, including DIP at index 4.",
+        "Restrict legacy enum migration to persisted values that can be distinguished from current combo-box values, or move migration behind an explicit version/one-time repair path so a user-selected DIP value is not rewritten to centimeters.",
+        "Update Settings UI unit tests so value 4 remains DIP after construction and setter normalization, while any truly legacy centimetre/millimetre persisted values still migrate as intended.",
+        "Manually verify Settings > Screen Ruler can select DIP and launching Screen Ruler displays pixel and DIP measurements."
+      ],
+      "verification": [
+        "Run Settings.UI.UnitTests ViewModelTests.MeasureTool and ModelsTests.MeasureToolSettingsTests.",
+        "Manual: enable Screen Ruler, choose Display-independent pixels under Extra units of measurement, close/reopen Settings, and confirm the selection remains DIP.",
+        "Manual: launch Screen Ruler and confirm measurements show pixels plus DIPs rather than centimeters."
+      ],
+      "confidence": {
+        "score": 92,
+        "level": "green",
+        "rationale": "The report identifies the exact normalization method and constants, and source inspection confirms value 4 is both the new DIP index and the legacy centimetre migration input."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Screen Ruler Settings cannot retain the new Display-independent pixels extra-unit option; selecting it immediately reverts to Centimeters and Screen Ruler shows centimeters.",
+    "known_information": [
+      "Reporter is on current main/0.102 dev build in Visual Studio.",
+      "Repro steps: enable Screen Ruler, select Display-independent pixels for Extra units of measurement.",
+      "Actual behavior: selection reverts to Centimeters and Screen Ruler measurements use pixels plus centimeters.",
+      "The issue includes a short recording/image and identifies NormalizeUnitsOfMeasureIndex and MaximumUnitsOfMeasureIndex as likely causes."
+    ],
+    "inferences": [
+      "The issue is in Settings persistence/normalization rather than Screen Ruler measurement rendering, because the selected Settings value is rewritten immediately.",
+      "The new DIP combo-box index collides with legacy Measurement::Unit enum migration value 4."
+    ],
+    "analysis": "Source inspection confirms the Settings view model accepts only indices 0..3 and rewrites value 4 to 2. Because DIP is now index 4, the current normalization path treats a valid UI selection as a legacy centimeters value.",
+    "initial_investigation": [
+      "settings-ui/Settings.UI/ViewModels/MeasureToolViewModel.cs defines MaximumUnitsOfMeasureIndex = 3.",
+      "NormalizeUnitsOfMeasureIndex returns 2 for value 4 before checking the valid combo-box range.",
+      "Existing unit tests assert value 4 repairs to 2, so tests must be updated with the new DIP behavior and any replacement legacy migration coverage."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "The Settings UI normalization code has not been updated for the new DIP option. It still treats integer value 4 as an old persisted Measurement::Unit enum value that should migrate to centimeters, and the valid combo-box maximum is still 3.",
+    "evidence": [
+      "Issue repro and screenshot show DIP cannot be retained.",
+      "MeasureToolViewModel.MaximumUnitsOfMeasureIndex is 3.",
+      "MeasureToolViewModel.NormalizeUnitsOfMeasureIndex maps 4 to 2.",
+      "Unit test ConstructorRepairsInvalidPersistedUnitsOfMeasureIndex currently expects 4 to become 2."
+    ],
+    "affected_files": [
+      {
+        "path": "settings-ui/Settings.UI/ViewModels/MeasureToolViewModel.cs",
+        "purpose": "Normalizes and persists the Screen Ruler extra units selected in Settings.",
+        "symbols": [
+          "MeasureToolViewModel::NormalizeUnitsOfMeasureIndex",
+          "MeasureToolViewModel::UnitsOfMeasure",
+          "MaximumUnitsOfMeasureIndex"
+        ]
+      },
+      {
+        "path": "settings-ui/Settings.UI.UnitTests/ViewModelTests/MeasureTool.cs",
+        "purpose": "Covers Screen Ruler Settings normalization behavior.",
+        "symbols": [
+          "MeasureTool.NormalizeUnitsOfMeasureIndexReturnsValidComboBoxIndex",
+          "MeasureTool.ConstructorRepairsInvalidPersistedUnitsOfMeasureIndex"
+        ]
+      },
+      {
+        "path": "settings-ui/Settings.UI.UnitTests/ModelsTests/MeasureToolSettingsTests.cs",
+        "purpose": "Covers serialization of Screen Ruler unit values.",
+        "symbols": [
+          "MeasureToolSettingsTests"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "settings-ui/Settings.UI/ViewModels/MeasureToolViewModel.cs",
+        "symbols": [
+          "MaximumUnitsOfMeasureIndex",
+          "NormalizeUnitsOfMeasureIndex"
+        ],
+        "current_behavior": "Valid values are capped at 3 and value 4 is always normalized to centimeters.",
+        "change": "Accept the DIP combo-box index as a current valid value. Do not apply the legacy 4 => 2 migration to a current DIP selection; either separate one-time legacy migration from UI normalization or gate migration on a persisted-version signal.",
+        "code_block": "// Sketch: keep current UI validation separate from legacy migration\\nprivate const int MaximumUnitsOfMeasureIndex = 4;\\n\\ninternal static int NormalizeUnitsOfMeasureIndex(int value)\\n{\\n    return value is >= DefaultUnitsOfMeasureIndex and <= MaximumUnitsOfMeasureIndex\\n        ? value\\n        : DefaultUnitsOfMeasureIndex;\\n}\\n\\n// If legacy enum migration is still needed, perform it in an explicit migration path\\n// that can distinguish old persisted settings from current combo-box indices.",
+        "edge_cases": [
+          "Existing users with millimetre legacy value 8 should still migrate correctly if that migration path is retained.",
+          "Invalid negative or out-of-range values should still fall back to default.",
+          "Do not rewrite a user-selected DIP value during constructor repair."
+        ],
+        "tests": [
+          "Add/adjust unit coverage so value 4 remains 4 for current combo-box normalization.",
+          "Keep coverage for invalid values falling back to default and legacy millimetre migration if supported."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "settings-ui/Settings.UI.UnitTests/ViewModelTests/MeasureTool.cs",
+        "symbols": [
+          "NormalizeUnitsOfMeasureIndexReturnsValidComboBoxIndex",
+          "ConstructorRepairsInvalidPersistedUnitsOfMeasureIndex"
+        ],
+        "current_behavior": "Tests currently encode 4 => 2, matching the broken DIP behavior.",
+        "change": "Update expectations for current DIP index 4 and add a separate migration-specific test only if the implementation keeps an explicit legacy migration path.",
+        "code_block": "// Assert.AreEqual(4, MeasureToolViewModel.NormalizeUnitsOfMeasureIndex(4));",
+        "edge_cases": [
+          "Ensure tests clarify whether they cover current combo-box indices or old persisted enum migration."
+        ],
+        "tests": [
+          "Run the MeasureTool Settings UI unit tests."
+        ]
+      }
+    ],
+    "verify": [
+      "dotnet test settings-ui/Settings.UI.UnitTests --filter MeasureTool",
+      "Manual Settings verification with Screen Ruler enabled and DIP selected."
+    ],
+    "risks": [
+      "Changing migration can affect users with old Screen Ruler unit settings; separate current index validation from legacy migration to avoid regressions."
+    ],
+    "alternatives": [
+      "If persisted settings cannot distinguish old enum value 4 from new DIP index 4, prefer preserving the user-visible current DIP selection and document/limit legacy centimetre migration rather than keeping DIP unusable."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-design-50684",
+      "type": "approve_design",
+      "label": "Design Screen Ruler DIP selection fix",
+      "primary": true,
+      "confirm": true,
+      "design": {
+        "repository": "microsoft/PowerToys",
+        "issue": 50684,
+        "title": "Fix Screen Ruler DIP unit normalization"
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "Zero writes were made to microsoft/PowerToys. The approve_design action is approval-gated."
+  }
+}
