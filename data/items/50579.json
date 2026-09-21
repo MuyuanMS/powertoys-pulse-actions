@@ -4,83 +4,114 @@
   "number": 50579,
   "kind": "issue",
   "track": "triage",
-  "stage": "needs_information",
-  "generated_at": "2026-09-16T07:14:43.0488141Z",
-  "evaluated_at": "2026-09-16T07:14:43.0488141Z",
-  "source_updated_at": "2026-09-15T12:20:06Z",
+  "stage": "reproducible",
+  "generated_at": "2026-09-21T19:06:36Z",
+  "evaluated_at": "2026-09-21T19:06:36Z",
+  "source_updated_at": "2026-09-21T17:40:16Z",
   "title": "A background container in command palette",
   "url": "https://github.com/microsoft/PowerToys/issues/50579",
-  "summary": "The scheduled lightweight pass found that Command Palette needs targeted public evidence before a reliable fix design can be selected.",
-  "status": {
-    "glyph": "❔",
-    "label": "Needs targeted reporter evidence",
-    "detail": "Ask for Command Palette diagnostics and exact extension/app launch path captured immediately after reproducing the failure before choosing a fix path."
-  },
-  "next_action": {
-    "glyph": "❔",
-    "label": "Request Command Palette diagnostics",
-    "reason": "The current report does not yet provide enough discriminating evidence for an implementation-grade fix."
-  },
-  "confidence": "Medium",
-  "pending_author": false,
+  "summary": "The author narrowed the intermittent extra mica-colored container to Command Palette reloads while Windhawk is running with multiple styling extensions; the symptom often disappears when CmdPal starts with Windhawk stopped.",
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The public report identifies a symptom, but the lightweight pass could not confirm the failing mechanism or affected code path without more issue-specific evidence.",
+    "status": "reproducible",
+    "rationale": "The new author comment supplies a bounded A/B condition that is sufficient for maintainer-side reproduction. The visual failing surface is still unconfirmed, so a code design would be speculative until the host HWND, DWM frame, and rounded card backdrop are compared between control and failing runs.",
     "evidence": [
-      "The public report title is: A background container in command palette.",
-      "The issue is open and labeled for Command Palette.",
-      "Latest public comment before this judgment was by jiripolasek at 09/15/2026 12:20:06.",
-      "Public body excerpt reviewed: ### Microsoft PowerToys version and release channel\n\nStable version\n\n### Installation method\n\nMicrosoft Store\n\n### Area(s) with issue?\n\nCommand Palette\n\n### Steps to reproduce\n\nOpening the command palette opens it as expected but the new version contains the w..."
+      "The author reports the issue is intermittent and now occurs far apart.",
+      "The author identifies Windhawk as the likely condition and lists extensions affecting window borders, taskbar styling, animations, and shell surfaces.",
+      "The author states the issue often stops when Command Palette loads while Windhawk is not running.",
+      "Current CmdPal code separates a transparent MainWindow host HWND from the visible rounded CmdPalMainControl card and its SystemBackdropElement.",
+      "No duplicate issue or linked PowerToys fix was found."
     ],
-    "recommended_action": "Ask the reporter for Command Palette diagnostics and exact extension/app launch path captured immediately after reproducing the failure."
+    "recommended_action": "Run the Windhawk-on/off reproduction and capture which HWND or XAML surface receives the unexpected mica/background before selecting a fix."
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A specific PowerToys code fix is not yet selectable until the requested evidence narrows the failing path."
+    "rationale": "A PowerToys-side interaction is plausible, but the failing surface and ownership are not confirmed. Do not expose an implementation approval until the focused reproduction distinguishes host-HWND/DWM styling from duplicate card-backdrop attachment."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "The issue reports: A background container in command palette",
+    "summary": "An intermittent mica-colored background container appears around Command Palette, most likely when Windhawk styling extensions are active; the author reports normal behavior more often when Windhawk is stopped.",
     "known_information": [
-      "The public report title is: A background container in command palette.",
-      "The issue is open and labeled for Command Palette.",
-      "Latest public comment before this judgment was by jiripolasek at 09/15/2026 12:20:06."
+      "The issue concerns the stable Microsoft Store Command Palette.",
+      "The author supplied an A/B condition involving Windhawk running versus stopped.",
+      "The author listed 14 active Windhawk extensions, including invisible window borders, taskbar styling, Windows animations, and Start/notification styling.",
+      "CmdPal MainWindow intentionally uses a transparent host while CmdPalMainControl owns the rounded visible card and backdrop.",
+      "No linked fix PR, duplicate, assignee, or existing fork fix is present."
     ],
     "inferences": [
-      "The symptom likely belongs to Command Palette, but the current public evidence does not isolate the failing implementation path."
+      "Windhawk may intermittently alter the borderless host HWND or DWM frame, but the report does not prove that it is the direct cause.",
+      "A duplicate or incorrectly retained SystemBackdropElement target is an alternative PowerToys-side hypothesis.",
+      "The correct next step is maintainer-side visual-tree and HWND comparison, not another generic log request."
     ],
-    "analysis": "The next useful maintainer action is to collect targeted evidence that can distinguish configuration/environment issues from a PowerToys code defect before starting a design.",
+    "analysis": "The report now contains the discriminating external-software condition needed for a focused reproduction. The reproduction should compare host bounds/material, DWM frame attributes, and the card backdrop target with Windhawk stopped and active. Only after that comparison should the workflow choose a PowerToys fix or classify the interaction as external.",
     "initial_investigation": [
-      "Reviewed the public title, body, labels, assignees, and latest comments during the scheduled lightweight pass.",
-      "No private diagnostics or local-only data were used; this judgment is limited to public issue evidence."
+      "Inspected CmdPal MainWindow and CmdPalMainControl ownership of the transparent host and rounded card backdrop.",
+      "Reviewed the recent backdrop/controller history around the host/card separation and fallback lifetime handling.",
+      "Searched current issue and PR context for a duplicate or covering fix; none was found."
     ],
     "information_gaps": [
       {
-        "evidence_type": "bugreport_zip",
-        "information": "Command Palette diagnostics and exact extension/app launch path captured immediately after reproducing the failure",
-        "why_needed": "This evidence determines the failing scenario and whether maintainers should reproduce locally, request a configuration fix, or start a code design.",
-        "how_to_collect": "Comment /bugreport immediately after reproducing the problem."
+        "evidence_type": "screenshot_image",
+        "information": "A cropped screenshot showing whether the extra container surrounds the rounded card or is inset within it.",
+        "why_needed": "This distinguishes host-HWND/DWM rendering from a duplicate card/backdrop surface.",
+        "how_to_collect": "Upload a cropped screenshot through the GitHub web UI with sensitive content hidden."
+      },
+      {
+        "evidence_type": "powertoys_version",
+        "information": "Exact PowerToys version/build on which the intermittent behavior occurred.",
+        "why_needed": "CmdPal backdrop ownership changed recently, so the affected build determines the applicable source path.",
+        "how_to_collect": "Copy the version from PowerToys About."
+      },
+      {
+        "evidence_type": "windows_version",
+        "information": "Windows edition and build.",
+        "why_needed": "DWM mica and border behavior can vary by Windows build.",
+        "how_to_collect": "Run winver and provide the edition/build."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-info-50579",
-      "type": "request_info",
-      "label": "Request Command Palette diagnostics",
+      "id": "reproduce-50579-windhawk-cmdpal",
+      "type": "reproduce",
+      "label": "Reproduce CmdPal with Windhawk styling",
       "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "comment": {
-        "repository": "microsoft/PowerToys",
-        "issue": 50579,
-        "body": "Thanks for the report. The current public details identify the affected area as Command Palette, but they do not yet provide enough diagnostic evidence to distinguish a product bug from configuration, environment, or an interaction with another component. Please reproduce the problem again and then comment /bugreport so the diagnostic ZIP captures the failure immediately after it occurs. Also include any exact trigger steps, expected result, actual result, and screenshots or a short recording if the symptom is visual."
+      "confirm": false,
+      "requiresApproval": false,
+      "reproduce": {
+        "module": "Command Palette",
+        "prerequisites": [
+          "Current upstream PowerToys build.",
+          "Windhawk installed with the author's listed extensions enabled.",
+          "A control run with Windhawk fully stopped."
+        ],
+        "steps": [
+          "Start Command Palette with Windhawk stopped and record the visible window shape and material.",
+          "Start Windhawk with the listed extensions enabled.",
+          "Reload or restart Command Palette repeatedly until the extra mica-colored container appears.",
+          "Compare host HWND bounds, DWM frame attributes, and CmdPalMainControl card bounds between control and failing runs.",
+          "Record whether the extra surface surrounds the card or is attached inside the card visual tree."
+        ],
+        "expected_result": "Only the rounded CmdPal card has the configured backdrop; the surrounding host region remains transparent.",
+        "actual_to_confirm": "An additional mica-colored background/container appears around or behind the card only intermittently with Windhawk active."
       },
-      "note": "Draft only. Explicit maintainer approval is required before posting."
+      "note": "Read-only maintainer reproduction; no upstream issue, comment, label, dashboard, or fork mutation was performed."
     }
   ],
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "author": "NileshAttili",
+  "pending_author": false,
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [],
+    "related_prs": []
+  },
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
+    "detail": "No upstream writes were made."
   }
 }

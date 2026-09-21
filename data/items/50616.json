@@ -4,120 +4,97 @@
   "number": 50616,
   "kind": "issue",
   "track": "fix",
-  "stage": "triaged",
-  "generated_at": "2026-09-18T02:06:44.9465281Z",
-  "evaluated_at": "2026-09-18T02:06:44.9465281Z",
-  "source_updated_at": "2026-09-17T20:17:27Z",
+  "stage": "revalidation_required",
+  "generated_at": "2026-09-21T19:06:36Z",
+  "evaluated_at": "2026-09-21T19:06:36Z",
+  "source_updated_at": "2026-09-21T16:09:25Z",
   "title": "PowerToys general settings lost on every restart unless manually exited from tray",
   "url": "https://github.com/microsoft/PowerToys/issues/50616",
-  "summary": "Two reporters show that normal Windows session-ending can leave General settings as an empty object while tray Exit preserves them, and public source history identifies a shutdown-specific cleanup path plus an unguarded final settings rewrite that need focused design and reproduction.",
+  "summary": "Independent reports now reproduce General settings loss across Windows 11 and Windows 10 ESU, including version 0.101.2432. The file is already empty before relaunch, but the responsible writer and cross-process ordering remain unproven, so the previous approval action is replaced by a focused maintainer trace.",
   "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue is reproducible across multiple systems and distinguishes normal session-ending from tray Exit with before/after logs. Current Runner code treats WM_ENDSESSION as a fast shutdown path, skips blocking Settings and Quick Access cleanup, then writes get_general_settings().to_json() directly to settings.json when the message loop returns normally. The public evidence proves an empty object is persisted during the prior shutdown, but does not yet identify which shutdown-time writer or state transition produces the empty snapshot. A focused design can add writer attribution, reject destructive empty snapshots, and make the final commit atomic without reintroducing the APPLICATION_HANG_QUIESCE regression that motivated the fast shutdown path.",
+    "status": "reproducible",
+    "rationale": "The public evidence is sufficient to reproduce a shutdown/WM_CLOSE persistence failure and to distinguish tray Exit as the known-good control. It is not yet sufficient to approve an implementation because native Runner and managed Settings UI writers can overwrite the same file and the exact producer of the empty or truncated snapshot has not been attributed.",
     "evidence": [
-      "The original reporter reproduced the loss after normal shutdown/restart and graceful WM_CLOSE, but not after tray Exit.",
-      "The original reporter confirmed settings.json was already empty before relaunch when Run at startup was disabled.",
-      "A second reporter reproduced the same behavior on a personal PC and a managed laptop and supplied a runner log showing populated settings before WM_DESTROY with system_session_ending=true and apply_general_settings: {} on the next launch.",
-      "Merged PR #48363 introduced the system-session-ending path that skips close_settings_window and QuickAccessHost::stop to avoid APPLICATION_HANG_QUIESCE.",
-      "runner/main.cpp still calls PTSettingsHelper::save_general_settings(get_general_settings().to_json()) after a normal message-loop return.",
-      "PTSettingsHelper::save_general_settings writes directly through json::to_file without a non-empty snapshot guard or an atomic replace contract."
+      "The original report reproduces empty settings.json after Windows restart/shutdown and graceful taskkill WM_CLOSE, but not after tray Exit.",
+      "The original reporter confirmed the file is already empty before relaunch when startup is disabled.",
+      "roy-t reproduced the sequence on two machines and supplied logs showing populated settings before WM_DESTROY with system_session_ending=true and apply_general_settings: {} on the next launch.",
+      "RonnyTNL reproduced the loss on multiple machines, including Windows 10 ESU with PowerToys 0.101.2432.",
+      "Making settings.json read-only prevents the reset, but is only a workaround and may interfere with legitimate updates.",
+      "Native and managed code have separate direct-to-destination General settings writers, so an empty-object guard in one writer would not establish ownership or prevent stale valid overwrites."
     ],
-    "recommended_action": "Approve a focused shutdown-persistence design and run the supplied maintainer reproduction to identify the writer/state transition before implementing the guard and atomic commit.",
-    "evaluated_at": "2026-09-18T02:06:44.9465281Z",
-    "source_updated_at": "2026-09-17T20:17:27Z"
+    "recommended_action": "Run a bounded writer-attribution and ordering trace for tray Exit, external WM_CLOSE, confirmed WM_ENDSESSION, and a final Settings UI mutation before shutdown; do not approve code work until the producer and safe ownership protocol are identified."
   },
   "fix_assessment": {
-    "status": "proposed",
-    "rationale": "The corruption occurs in PowerToys-owned Runner and settings persistence paths, no covering fix is linked, and the public source exposes concrete shutdown and file-write boundaries suitable for a targeted fix."
+    "status": "not_applicable",
+    "rationale": "A PowerToys persistence fix is plausible, but the implementation is not currently design-ready: the producer of the destructive write, cross-process ordering, and shutdown-safe ownership boundary must be established before an approval action can be exposed."
   },
-  "proposed_fixes": [
-    {
-      "title": "Preserve the last validated General settings snapshot during session-ending shutdown",
-      "root_cause": "The system-session-ending path can reach the unconditional final General settings write with an empty or incomplete in-memory snapshot while concurrent shutdown cleanup is intentionally skipped; the direct json::to_file call then replaces a previously valid settings.json with that destructive snapshot.",
-      "plan": [
-        "Instrument every General settings writer with a public-safe source identifier, session-ending state, and payload shape so the WM_ENDSESSION reproduction identifies which writer emits the empty object.",
-        "Capture and retain the last successfully loaded or saved non-empty General settings snapshot in the Runner before entering the message loop.",
-        "At shutdown, reject an empty/default snapshot that would replace a previously valid file unless the write is tied to an explicit user reset operation.",
-        "Replace direct destructive writes with a temp-file write, parse/read-back validation, and atomic replace that preserves the prior settings.json on failure.",
-        "Keep the fast WM_ENDSESSION path non-blocking: perform one bounded synchronous final commit from the validated snapshot and do not restore the cross-process waits removed by PR #48363.",
-        "Add regression tests for tray Exit, external WM_CLOSE, confirmed WM_ENDSESSION, a simulated empty shutdown snapshot, and atomic-write failure."
-      ],
-      "verification": [
-        "Run the issue's normal restart/shutdown reproduction repeatedly and confirm settings.json remains populated before the next PowerToys launch.",
-        "Run graceful taskkill /IM PowerToys.exe without /F and confirm General settings persist.",
-        "Confirm writer-attribution logs identify exactly one accepted final write and no rejected valid user reset.",
-        "Run focused common JSON/settings tests and Runner session-end tests, including preservation of the prior file after a failed temp-file validation or replace.",
-        "Verify tray Exit remains unchanged and the shutdown path does not regress APPLICATION_HANG_QUIESCE."
-      ],
-      "confidence": {
-        "score": 78,
-        "level": "yellow",
-        "rationale": "The shutdown boundary, destructive final write, and cross-machine reproduction are well supported, but a targeted trace is still needed to confirm which writer or state transition supplies the empty snapshot."
-      }
-    }
-  ],
+  "proposed_fixes": [],
   "issue_context": {
-    "summary": "General settings are intermittently replaced by an empty object during non-tray shutdown paths, with a second independent report corroborating the same WM_DESTROY session-ending sequence.",
+    "summary": "General settings can be replaced by an empty or truncated settings.json during non-tray shutdown paths, while tray Exit preserves the file. The latest reports confirm this is not limited to one machine or the original PowerToys build.",
     "known_information": [
-      "The original report uses PowerToys v0.101.2362 and Windows 11 25H2 and reproduces across user and system installation scopes.",
-      "Increasing Windows shutdown timeouts, changing elevation, disabling startup, and checking AV/EDR did not prevent the loss.",
-      "Tray Exit consistently preserves settings, while normal shutdown and graceful external WM_CLOSE can corrupt them.",
-      "The second reporter reproduced on two machines and attached a runner log with populated settings before session ending and an empty object on the next launch.",
-      "Current Runner code skips selected cleanup during confirmed system session ending and performs a final General settings save after the message loop returns.",
-      "No assignee, linked fix PR, or duplicate currently owns the behavioral fix."
+      "The issue is open, unassigned, and has no covering pull request.",
+      "The original report covers normal restart/shutdown and graceful external WM_CLOSE; tray Exit is a known-good control.",
+      "The file is empty before the next PowerToys launch, so startup initialization is not the initiating event.",
+      "The failure reproduces across user/system installation contexts and elevated/non-elevated execution.",
+      "A corroborating report covers PowerToys 0.101.2432 on Windows 10 ESU.",
+      "Current relevant writers include runner/main.cpp main, runner/general_settings.cpp, runner/settings_window.cpp, common/SettingsAPI/settings_helpers.cpp, Settings.UI MainWindow.xaml.cs, and Settings.UI.Library SettingsUtils.SaveSettings.",
+      "Native persistence uses direct JSON destination writes and managed persistence uses File.WriteAllText; no shared atomic cross-process protocol is established."
     ],
     "inferences": [
-      "The regression boundary may involve the shutdown cleanup changes from PR #48363, but the public evidence does not prove that commit alone creates the empty snapshot.",
-      "The final unguarded save makes an empty in-memory snapshot destructive even if another component or state transition is responsible for producing it.",
-      "A safe fix must preserve the quiesce-time improvement while preventing invalid snapshots from replacing the last valid file."
+      "The session-ending behavior introduced around PR 48363 may expose a race, but it is not proven to be the sole cause.",
+      "The unconditional final Runner save is suspicious, but an exact {} payload could also come from a stale or uninitialized writer.",
+      "Atomic replacement alone would not prevent a stale valid snapshot from overwriting a newer valid mutation.",
+      "The safe design likely avoids unbounded disk work after confirmed full session ending and establishes one ownership or synchronization protocol for remaining writers."
     ],
-    "analysis": "The report now has independent corroboration and exact log sequencing, so asking the reporters for generic diagnostics would not reduce uncertainty. The remaining discriminator is maintainer-side tracing of the finite General settings write sites during WM_ENDSESSION. The design should therefore combine writer attribution, a validated last-known-good snapshot, an explicit-empty/reset distinction, and atomic persistence.",
+    "analysis": "The issue now warrants maintainer-side instrumentation rather than a generic reporter request. The next discriminator is writer identity, payload shape, and ordering across native Runner and managed Settings UI writes. A defensive persistence design should not be approved until it preserves unknown fields, handles read-only and replacement failures, and does not reintroduce the shutdown hang that motivated the fast session-ending path.",
     "initial_investigation": [
-      "Reviewed the complete issue body, all three comments, labels, assignees, attachment references, and latest corroborating log excerpt.",
-      "Inspected runner/tray_icon.cpp session-end handling, runner/main.cpp final save, runner/general_settings.cpp write sites, and common/SettingsAPI/settings_helpers.cpp.",
-      "Traced the system_session_ending cleanup behavior to merged PR #48363 and confirmed the unconditional final save predates that change.",
-      "Searched upstream issues and PRs for settings.json shutdown loss and found no linked active fix for this exact corruption."
+      "Reviewed the complete issue body and all current comments, including the 0.101.2432 corroboration and read-only workaround.",
+      "Inspected runner/tray_icon.cpp session-ending handling, common/utils/window.h session-end state, runner/main.cpp final save, runner/general_settings.cpp, runner/settings_window.cpp, common/SettingsAPI/settings_helpers.cpp, Settings.UI MainWindow.xaml.cs, and SettingsUtils.SaveSettings.",
+      "Confirmed PR 48363 changed fast session-ending cleanup but did not establish a shared settings persistence protocol.",
+      "Checked public issue and PR context for a covering fix; none was found."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "module_trace",
+        "information": "The exact writer or truncation point, including process, function, session-ending state, payload byte count, top-level key count, and success/error result.",
+        "why_needed": "This determines whether the fix belongs in Runner, Settings UI, the shared persistence layer, or shutdown lifecycle ownership.",
+        "how_to_collect": "Maintainer-side diagnostic build: instrument every root General-settings write without logging setting values, then correlate the sequence for each shutdown path."
+      },
+      {
+        "evidence_type": "module_trace",
+        "information": "Whether a stale Runner snapshot overwrites a newer Settings UI mutation immediately before shutdown.",
+        "why_needed": "A simple empty-object guard or atomic replace would not prevent lost updates from two valid writers.",
+        "how_to_collect": "Repeat with Settings UI open and a module toggle immediately before tray Exit, external WM_CLOSE, and OS restart; correlate writer sequence numbers and file timestamps."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "approve-shutdown-settings-design-50616",
-      "type": "approve_design",
-      "label": "Approve shutdown-safe General settings design",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "design": {
-        "issue": 50616,
-        "title": "Preserve validated General settings during WM_ENDSESSION",
-        "prompt": "Design a focused fix for PowerToys issue #50616 using the public reproduction and source evidence. Trace every General settings writer during confirmed WM_ENDSESSION; retain the last validated non-empty snapshot; distinguish an explicit user reset from an accidental empty/default shutdown snapshot; write through a validated temporary file and atomic replace; keep the shutdown path bounded and non-blocking so PR #48363's APPLICATION_HANG_QUIESCE fix is preserved; and add regression coverage for tray Exit, WM_CLOSE, WM_ENDSESSION, empty snapshots, and failed replacement."
-      },
-      "note": "Approval starts fork-side design work only; no upstream write occurs automatically."
-    },
-    {
-      "id": "reproduce-shutdown-settings-loss-50616",
+      "id": "trace-general-settings-writer-50616",
       "type": "reproduce",
       "label": "Trace the shutdown settings writer",
+      "primary": true,
+      "confirm": false,
+      "requiresApproval": false,
       "reproduce": {
         "module": "PowerToys Runner and General Settings",
-        "version_requirement": "v0.101.2362.0 or a current build before the shutdown-persistence fix",
         "prerequisites": [
-          "A test account with at least one General setting and module-enabled state changed from defaults.",
-          "A diagnostic build that logs each General settings write source, payload key count, system_session_ending state, and success without logging sensitive values.",
+          "A current diagnostic build that records writer ID, PID, session-ending state, serialized byte count, top-level key count, and result without logging setting values.",
+          "At least one non-default General setting and module-enabled state.",
           "Run at startup disabled for the before-relaunch file check."
         ],
         "steps": [
-          "Start PowerToys, change a General setting and at least one module-enabled state, and verify settings.json is populated.",
-          "Restart Windows normally without using tray Exit.",
-          "Before relaunching PowerToys, inspect settings.json and correlate its final modification with the attributed write records.",
-          "Repeat using taskkill /IM PowerToys.exe without /F to exercise WM_CLOSE.",
-          "Repeat using tray Exit as the known-good control.",
-          "If corruption occurs, record which writer attempted the empty snapshot and whether the prior valid snapshot was still available."
+          "Change and save General settings, then verify settings.json is a populated valid object.",
+          "Exercise tray Exit as the known-good control and record every General-settings write.",
+          "Repeat with taskkill /IM PowerToys.exe without /F to exercise external WM_CLOSE.",
+          "Repeat with a normal Windows restart or shutdown to exercise confirmed WM_ENDSESSION.",
+          "Repeat each case with Settings UI open and a final module-toggle mutation immediately before shutdown.",
+          "Before relaunching PowerToys, inspect settings.json and correlate its final modification with the writer sequence."
         ],
-        "expected_result": "The trace identifies the shutdown-time writer/state transition, settings.json remains a populated valid object after every path, and the Runner exits within the Windows quiesce budget.",
-        "setup": []
-      }
+        "expected_result": "The trace identifies the writer, ordering, payload shape, and failure/truncation point that produces an empty or destructive file, while the confirmed session-ending path remains bounded and non-blocking.",
+        "actual_to_confirm": "Whether Runner or Settings UI emits the empty snapshot, whether a valid writer overwrites a newer mutation, and whether the file is truncated during direct replacement."
+      },
+      "note": "The prior approve_design action is intentionally withheld until this trace resolves the adversary's ownership and shutdown-safety objections."
     }
   ],
   "labels": [
@@ -127,7 +104,7 @@
     "Needs-Team-Response"
   ],
   "assignees": [],
-  "comments": 3,
+  "comments": 5,
   "author": "Maximilian-Siegl-zh-tech",
   "pending_author": false,
   "linked_work": {
