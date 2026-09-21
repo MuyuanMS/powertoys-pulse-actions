@@ -6,26 +6,49 @@ The fork Copilot loop is **not optional** and is independent of the posting deci
 
 ## Step 4: Request Copilot review
 
-Run [scripts/Request-CopilotReview.ps1](../scripts/Request-CopilotReview.ps1), or:
+**Resume before requesting.** For an existing checkpoint, use the read-only
+reader; do not invoke the request script to check whether a review finished:
 
-0. **Resume before requesting.** Inspect the durable checkpoint and existing
-   reviews for the current fork head. If an earlier request is outstanding,
-   consume a review submitted after that request timestamp. Do not submit a
-   second request merely because a prior bounded run returned while Copilot was
-   still working.
-1. Request Copilot as reviewer on the fork PR:
-   ```powershell
-   gh api repos/<FORK_REPO>/pulls/<fork_pr_number>/requested_reviewers -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]"
-   ```
-   The reviewer name **must** be `copilot-pull-request-reviewer[bot]` (not plain `copilot`, which silently returns 200 with an empty `requested_reviewers`). The `--add-reviewer copilot` flag also does not work for bot accounts.
-2. **Verify** the response's `requested_reviewers` array is non-empty. If empty, Copilot review is unavailable → see [Fallback: local review](#fallback-local-review).
-3. Wait for the review to complete — poll every 30–60 seconds for up to 10 minutes: `gh api repos/<FORK_REPO>/pulls/<fork_pr_number>/reviews`, looking for a new review from `copilot-pull-request-reviewer[bot]` with `submitted_at` after the request time.
+```powershell
+.\scripts\Get-CopilotReviewStatus.ps1 -ForkRepo <FORK_REPO> `
+  -PRNumber <fork_pr_number> -HeadSha <saved-fork-head> `
+  -RequestedAt <saved-UTC-request-time> -AsJson
+```
 
-For bounded dashboard workers, perform only the orchestrator-required immediate
-check. If no review has arrived, checkpoint `waiting_copilot` with the request
-timestamp and return the worker slot. This is resumable queue state, not
-`review_blocked`. A later scheduled run must inspect that existing request
-before creating another one.
+Pass `-AfterReviewId` too when the checkpoint contains the baseline returned by
+the request script. Discovery without a saved timestamp may omit `RequestedAt`,
+but never invent a new request time for old work. The reader exhausts REST pages
+and matches the exact **fork** head, bot identity and submitted timestamp.
+An upstream head and a fork head with review fixes are different identities.
+`Submitted: true` means the result arrived, not that it is clean: consume its
+review body/comments and inspect unresolved threads before proceeding.
+If `HeadMatches: false`, reconcile the changed branch; do not transfer the result.
+An API/pagination error is not evidence that the review is still pending.
+
+Only when a genuinely new round is needed:
+
+```powershell
+$request = .\scripts\Request-CopilotReview.ps1 -ForkRepo <FORK_REPO> `
+  -PRNumber <fork_pr_number> -TimeoutMinutes 0
+```
+
+Save `RequestedAt`, `HeadSha`, `AfterReviewId`, and, when available, `ReviewId`
+and `SubmittedAt`. The script uses the correct bot account, rejects an already
+pending Copilot request, checks immediately, and exhausts all review pages.
+Use the default 10-minute wait only outside bounded dashboard workers.
+An empty `requested_reviewers` array proves neither unavailability nor
+completion: the review may have completed asynchronously. Require the actual
+matching submitted review. Do not infer a clean pass from an empty first page
+or from the absence of an assignment.
+
+For bounded workers, if the immediate check finds no review, checkpoint
+`waiting_copilot` and return the slot. Before the coordinator republishes a
+waiting checkpoint, recheck once with the read-only reader; if a result arrived,
+record it and queue/continue `reviewing_findings` or `building`, not another wait.
+Do not request again merely because a timeout elapsed. Across all manual API
+fallbacks, reviews and comments must use `--paginate` (not just `per_page=100`);
+GraphQL threads must traverse `pageInfo`. This avoids the PR 50663 failure where
+review 39 was invisible to a 30-row default request.
 
 ### Fallback: local review
 
@@ -39,7 +62,7 @@ If Copilot review cannot be enabled, first guide the user to turn it on (see [pr
 
 For each review comment from Copilot:
 
-1. **Fetch new comments**: `gh api repos/<FORK_REPO>/pulls/<fork_pr_number>/comments`, filtered to `copilot-pull-request-reviewer[bot]` and newer than the last round.
+1. **Fetch new comments**: `gh api --paginate "repos/<FORK_REPO>/pulls/<fork_pr_number>/comments?per_page=100" --jq '.[]'`, filtered to the Copilot bot and the submitted `pull_request_review_id`. Inspect the matching review body too; never count only the first comments page or substitute another round's comments.
 2. **Assess validity and origin** — follow [finding-grounding.md](./finding-grounding.md).
    Inspect the pinned upstream source and first affected commit. Is this an
    upstream defect, an agent-introduced regression, already fixed, optional,

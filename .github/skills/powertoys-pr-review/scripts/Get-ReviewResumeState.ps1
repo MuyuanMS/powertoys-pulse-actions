@@ -112,15 +112,20 @@ foreach ($number in $PRNumber) {
     $unresolvedThreadCount = 0
     $newestCommitAt = $null
     $latestCopilotReviewAt = $null
+    $latestCopilotReview = $null
     if ($reviewPullRequestExists) {
         $reviews = @(Get-GhPagedItems -Endpoint "repos/$($config.ForkRepo)/pulls/$($reviewPullRequest.number)/reviews")
         $copilotReviews = @(
             $reviews |
-                Where-Object { $_.user.login -eq 'copilot-pull-request-reviewer[bot]' } |
+                Where-Object {
+                    $_.user.login -in @('copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer') -and
+                    $_.state -in @('COMMENTED', 'APPROVED', 'CHANGES_REQUESTED') -and $_.submitted_at
+                } |
                 Sort-Object submitted_at
         )
-        if ($copilotReviews.Count -gt 0) {
-            $latestCopilotReviewAt = [datetime]$copilotReviews[-1].submitted_at
+        $latestCopilotReview = Get-LatestCopilotReview -Reviews $copilotReviews -HeadSha $branchSha
+        if ($latestCopilotReview) {
+            $latestCopilotReviewAt = [datetime]$latestCopilotReview.submitted_at
         }
 
         $unresolvedThreadCount = & (Join-Path $PSScriptRoot 'Get-UnresolvedCopilotThreads.ps1') `
@@ -159,6 +164,8 @@ foreach ($number in $PRNumber) {
         worktreePath = $worktreePath
         copilotReviewCount = $copilotReviews.Count
         latestCopilotReviewAt = $latestCopilotReviewAt
+        latestCopilotReviewId = if ($latestCopilotReview) { [long]$latestCopilotReview.id } else { $null }
+        latestCopilotReviewCommit = if ($latestCopilotReview) { [string]$latestCopilotReview.commit_id } else { $null }
         newestCommitAt = $newestCommitAt
         unresolvedCopilotThreads = [int]$unresolvedThreadCount
         resumeAction = $resumeAction
