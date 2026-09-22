@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 5,
+  "id": "pr-50700",
+  "number": 50700,
+  "kind": "pr",
+  "track": "review",
+  "stage": "reviewing_findings",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-09-22T11:02:00Z",
+  "evaluated_at": "2026-09-22T11:02:00Z",
+  "source_updated_at": "2026-09-22T01:17:59Z",
+  "head_sha": "4f2b6935d0b3140a1b4096f88c5e7a3bc739919d",
+  "title": "DEPiP: Add Display Extended PiP module",
+  "url": "https://github.com/microsoft/PowerToys/pull/50700",
+  "summary": "The saved fork review produced nine open DEPiP findings. All nine were mapped to the current upstream diff at head 4f2b693. Essentials, DEPiP, and DEPiPModuleInterface built successfully on fork head 6d75ca1; exact upstream-tree build validation remains outstanding.",
+  "status": {
+    "glyph": "review",
+    "label": "Reviewing current-head findings",
+    "detail": "Saved Copilot review 5273742074 matched fork head 6d75ca1 and reported nine open findings. The findings were grounded against upstream head 4f2b693; the artifact remains resumable because exact upstream build validation is not recorded."
+  },
+  "next_action": "Resume by resolving the nine fork Copilot findings, re-requesting review to convergence, and separately validating the exact upstream head before any final approval-gated review.",
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "50700-versioninfo",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Add VERSIONINFO to the DEPiP executable",
+      "confidence": {
+        "score": 95,
+        "rationale": "The upstream DEPiP executable resource contains only an icon and STRINGTABLE, while the repository version/sign check rejects null FileVersion values."
+      },
+      "path": "src/modules/DEPiP/DEPiP/DEPiP.rc",
+      "start_line": 3,
+      "line": 3,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**High:** The DEPiP executable resource defines only the icon and string table, so `PowerToys.DEPiP.exe` has no `VERSIONINFO` metadata. The repository version/sign validation rejects binaries whose `FileVersion` is null, which will make the installed executable fail validation. Add the standard PowerToys `VERSIONINFO` block and metadata used by the other native executables.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50700-selector-exit-watcher",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Watch the exit event while the selector is open",
+      "confidence": {
+        "score": 91,
+        "rationale": "On the upstream path, the selector is activated before the mirror window is created, while exit-event handling is initialized only by the mirror lifetime."
+      },
+      "path": "src/modules/DEPiP/DEPiP/DEPiPXAML/App.xaml.cpp",
+      "start_line": 26,
+      "line": 36,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**High:** The selector window is activated at the end of `OnLaunched`, but no DEPiP exit watcher is established for that selector lifetime. If Runner disables the module or exits while the user is still choosing a display, the selector process can remain alive after the module drops its process handle, and a later enable can launch a duplicate. Start the process-exit watcher before activating the selector and keep it active until either window closes.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50700-module-lifecycle-lock",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Synchronize module lifecycle with the launch callback",
+      "confidence": {
+        "score": 94,
+        "rationale": "The EventWaiter callback reads m_enabled and calls launch while enable, disable, is_enabled, and destroy access m_enabled or m_process without synchronization."
+      },
+      "path": "src/modules/DEPiP/DEPiPModuleInterface/dllmain.cpp",
+      "start_line": 41,
+      "line": 49,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**High:** The `EventWaiter` callback reads `m_enabled` and calls `launch()` on its worker thread, while `enable`, `disable`, `is_enabled`, and `destroy` concurrently mutate or close `m_process` and the events. A show event can therefore race with disable and launch after disable has returned, or use a handle being closed. Serialize the callback and lifecycle methods around the enabled/process state rather than only making the boolean atomic.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50700-foreground-permission",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Restrict foreground permission to Runner",
+      "confidence": {
+        "score": 93,
+        "rationale": "`AllowSetForegroundWindow(-1)` is ASFW_ANY and grants every process permission to set the foreground window; the repository has a targeted Runner helper."
+      },
+      "path": "src/settings-ui/Settings.UI.Controls/QuickAccess/QuickAccessLauncher.cs",
+      "start_line": 27,
+      "line": 33,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**High:** `AllowSetForegroundWindow(-1)` passes `ASFW_ANY`, allowing any process to obtain foreground-window permission when Quick Access launches DEPiP. Use the existing targeted Runner helper instead, and remove this broad P/Invoke so launching DEPiP does not widen foreground activation permissions for unrelated processes.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50700-selector-localization",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Localize DEPiP selector strings",
+      "confidence": {
+        "score": 90,
+        "rationale": "The upstream DEPiP resource file hard-codes user-visible selector strings and the PR does not add the standard localized resource-generation inputs for this executable."
+      },
+      "path": "src/modules/DEPiP/DEPiP/DEPiP.rc",
+      "start_line": 8,
+      "line": 15,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**Medium:** The selector title, instructions, description, display labels, and cancel text are hard-coded in the executable resource, while this PR claims all user-facing strings are localizable. Add the DEPiP resource inputs to the standard localized resource pipeline and generate the native resource values from them so the selector is translated with the rest of PowerToys.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50700-installer-icon",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Package the DEPiP icon asset",
+      "confidence": {
+        "score": 89,
+        "rationale": "The project copies DEPiP.ico to its output Assets directory, but the current installer component list has no DEPiP asset harvest/reference."
+      },
+      "path": "src/modules/DEPiP/DEPiP/DEPiP.vcxproj",
+      "start_line": 116,
+      "line": 118,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**Medium:** The project copies `Assets\\\\DEPiP.ico` beside the executable, but the installer has no DEPiP asset component/reference. The installed package can therefore omit the file used by the application window icon, causing icon loading to fail after installation. Add the DEPiP asset to the installer component or use an embedded executable icon that is guaranteed to be installed.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50700-capture-error-callback",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Handle capture failures in the selector callback",
+      "confidence": {
+        "score": 88,
+        "rationale": "The capture setup runs from the later display-selection callback, outside the try/catch surrounding OnLaunched, so hresult failures escape the event callback."
+      },
+      "path": "src/modules/DEPiP/DEPiP/DEPiPXAML/App.xaml.cpp",
+      "start_line": 29,
+      "line": 34,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**Medium:** `MirrorWindow::Initialize` runs from the display-selection callback after `OnLaunched` has returned, so failures from capture-item creation or D3D startup are outside the surrounding `try`/`catch`. An initialization failure can consequently terminate the DEPiP process instead of showing the existing capture-error message. Catch failures inside this callback and report the localized capture error before closing the window.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50700-capture-resize",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Resize capture resources when the source size changes",
+      "confidence": {
+        "score": 86,
+        "rationale": "OnFrameArrived copies only the minimum source/target dimensions and never recreates the frame pool or swap chain when the frame content size changes."
+      },
+      "path": "src/modules/DEPiP/DEPiP/DEPiPXAML/MirrorWindow.xaml.cpp",
+      "start_line": 240,
+      "line": 257,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**Medium:** `OnFrameArrived` uses the frame texture dimensions only to clamp the copy rectangle; it never updates the frame pool or swap chain when `ContentSize()` changes. A resolution or orientation change can therefore leave the mirror cropped or display stale pixels. Detect a changed content size and resize/recreate the capture resources before copying the frame.",
+      "disposition": "proposed"
+    },
+    {
+      "id": "50700-topmost-churn",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Avoid repeated z-order changes when always-on-top is disabled",
+      "confidence": {
+        "score": 84,
+        "rationale": "ApplySettings runs on settings reload and repeatedly calls SetWindowPos with HWND_NOTOPMOST when the setting is false, changing z-order unnecessarily."
+      },
+      "path": "src/modules/DEPiP/DEPiP/DEPiPXAML/MirrorWindow.xaml.cpp",
+      "start_line": 322,
+      "line": 331,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "**Medium:** `ApplySettings` always calls `SetWindowPos` with `HWND_NOTOPMOST` when “Always on top” is disabled. Because settings are reapplied periodically, this repeatedly moves the normal DEPiP window in the non-topmost z-order even when its state has not changed. Compare the current extended style with the requested state and call `SetWindowPos` only when a topmost transition is needed.",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50700",
+      "type": "post_review",
+      "label": "Post nine DEPiP review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50700,
+        "event": "COMMENT",
+        "head_sha": "4f2b6935d0b3140a1b4096f88c5e7a3bc739919d"
+      },
+      "note": "Draft only. Nine current-head grounded inline prose comments require explicit approval; no upstream write has occurred."
+    }
+  ],
+  "workflow": {
+    "phase": "reviewing_findings",
+    "checkpoint_at": "2026-09-22T11:02:00Z",
+    "fork_pr": 879,
+    "fork_branch": "pr-iterate/50700-v2",
+    "fork_head_sha": "6d75ca191cd9050d09733062678ed57690a15b9f",
+    "latest_copilot_review_id": 5273742074,
+    "latest_copilot_review_submitted_at": "2026-09-22T02:49:40Z",
+    "latest_copilot_new_comments": 9,
+    "unresolved_copilot_threads": 9,
+    "fork_only_delta": {
+      "result": "excluded",
+      "detail": "Fork head differs from upstream only by unrelated CmdPal test/source deletions; no fork-only hunk was promoted as upstream evidence."
+    }
+  },
+  "freshness": {
+    "headRefOid": "4f2b6935d0b3140a1b4096f88c5e7a3bc739919d",
+    "updatedAt": "2026-09-22T01:17:59Z",
+    "checkedAt": "2026-09-22T02:53:56.3738072Z",
+    "forkHeadSha": "6d75ca191cd9050d09733062678ed57690a15b9f",
+    "latestCopilotReviewAt": "2026-09-22T02:49:40Z",
+    "unresolvedForkCopilotThreads": 9
+  },
+  "phase0": {
+    "author": "Mebibyte",
+    "authorAssociation": "MEMBER",
+    "disposition": "Proceed",
+    "detail": "Member PR: community-contributor process gates are skipped. Current intake has screenshots and the PR documents validation claims; CI/build evidence remains incomplete in this bounded run."
+  },
+  "validation": {
+    "fork_review": {
+      "result": "open_findings",
+      "review_id": 5273742074,
+      "submitted_at": "2026-09-22T02:49:40Z",
+      "head_sha": "6d75ca191cd9050d09733062678ed57690a15b9f",
+      "new_comments": 9,
+      "unresolved_copilot_threads": 9,
+      "detail": "Fully paginated fork review state reports nine open Copilot findings."
+    },
+    "current_head_review": {
+      "result": "grounded_findings",
+      "head_sha": "4f2b6935d0b3140a1b4096f88c5e7a3bc739919d",
+      "details": "All nine retained findings target files and RIGHT-side lines in the current upstream PR diff. Their source behavior was checked at the pinned upstream head; no fork-only changes were used.",
+      "finding_ids": [
+        "50700-versioninfo",
+        "50700-selector-exit-watcher",
+        "50700-module-lifecycle-lock",
+        "50700-foreground-permission",
+        "50700-selector-localization",
+        "50700-installer-icon",
+        "50700-capture-error-callback",
+        "50700-capture-resize",
+        "50700-topmost-churn"
+      ]
+    },
+    "upstream_exact_head": {
+      "result": "not_run",
+      "head_sha": "4f2b6935d0b3140a1b4096f88c5e7a3bc739919d",
+      "detail": "No exact upstream build was run or claimed in this bounded continuation."
+    },
+    "fork_build": {
+      "result": "passed",
+      "head_sha": "6d75ca191cd9050d09733062678ed57690a15b9f",
+      "configuration": "Debug x64",
+      "projects": [
+        "build-essentials.cmd (Runner and Settings)",
+        "src/modules/DEPiP/DEPiP/DEPiP.vcxproj",
+        "src/modules/DEPiP/DEPiPModuleInterface/DEPiPModuleInterface.vcxproj"
+      ],
+      "outputs": [
+        "x64/Debug/PowerToys.DEPiP.exe",
+        "x64/Debug/PowerToys.DEPiPModuleInterface.dll"
+      ],
+      "detail": "Builds completed with no errors after removing malformed inherited GIT_CONFIG_* variables and setting POWERTOYS_DISABLE_SPECTRE=1. One existing CsWinRT warning was reported by the essentials build."
+    },
+    "line_ending_safety": {
+      "result": "not_applicable",
+      "head_sha": "4f2b6935d0b3140a1b4096f88c5e7a3bc739919d",
+      "detail": "All proposed items are inline prose without suggestion blocks."
+    },
+    "findingGrounding": {
+      "version": 1,
+      "head_sha": "4f2b6935d0b3140a1b4096f88c5e7a3bc739919d",
+      "findings": [
+        {
+          "id": "50700-versioninfo",
+          "origin": "upstream",
+          "claim": "DEPiP executable lacks VERSIONINFO metadata.",
+          "sources": [
+            {
+              "path": "src/modules/DEPiP/DEPiP/DEPiP.rc",
+              "start_line": 1,
+              "end_line": 15,
+              "excerpt": "#include \"resource.h\"`n`nIDI_APP_ICON ICON \"Assets\\\\DEPiP.ico\"`n`nSTRINGTABLE`nBEGIN`n    IDS_APP_TITLE \"DEPiP\"`n    IDS_DISPLAY_SELECTOR_TITLE \"DEPiP: Display Extended PiP\"`n    IDS_DISPLAY_SELECTOR_INSTRUCTION \"Choose the display to mirror\"`n    IDS_DISPLAY_SELECTOR_DESCRIPTION \"DEPiP can mirror any connected display, including your primary display.\"`n    IDS_PRIMARY_DISPLAY \"Primary\"`n    IDS_CAPTURE_ERROR \"DEPiP could not start display capture.\"`n    IDS_DISPLAY_LABEL \"Display\"`n    IDS_CANCEL \"Cancel\"`nEND",
+              "symbols": [
+                "STRINGTABLE"
+              ]
+            }
+          ],
+          "counterevidence": "The module-interface resource uses the repository VERSIONINFO pattern; no executable VERSIONINFO block exists in this DEPiP resource."
+        },
+        {
+          "id": "50700-selector-exit-watcher",
+          "origin": "upstream",
+          "claim": "Selector lifetime is not covered by the exit watcher.",
+          "sources": [
+            {
+              "path": "src/modules/DEPiP/DEPiP/DEPiPXAML/App.xaml.cpp",
+              "start_line": 26,
+              "end_line": 36,
+              "excerpt": "auto selector = winrt::make<DisplaySelectorWindow>();`nwinrt::get_self<DisplaySelectorWindow>(selector)->Initialize(`n    std::move(displays),`n    [this](DisplayInfo const& source) {`n        auto mirror = winrt::make<MirrorWindow>();`n        winrt::get_self<MirrorWindow>(mirror)->Initialize(source);`n        m_window = mirror;`n        mirror.Activate();`n    });`nm_window = selector;`nselector.Activate();",
+              "symbols": [
+                "App::OnLaunched"
+              ]
+            }
+          ],
+          "counterevidence": "The callback starts the mirror only after selection; the selector is the active window before that point."
+        },
+        {
+          "id": "50700-module-lifecycle-lock",
+          "origin": "upstream",
+          "claim": "Event callback and lifecycle methods access enabled/process state without synchronization.",
+          "sources": [
+            {
+              "path": "src/modules/DEPiP/DEPiPModuleInterface/dllmain.cpp",
+              "start_line": 41,
+              "end_line": 49,
+              "excerpt": "m_exitEvent = CreateDefaultEvent(DEPiPConstants::ExitEvent);`nm_reloadSettingsEvent = CreateDefaultEvent(DEPiPConstants::ReloadSettingsEvent);`nm_showEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_DEPIP_EVENT);`nm_showEventWaiter.start(CommonSharedConstants::SHOW_DEPIP_EVENT, [this](DWORD error) {`n    if (m_enabled && error == ERROR_SUCCESS)`n    {`n        launch();`n    }`n});",
+              "symbols": [
+                "DEPiPModuleInterface"
+              ]
+            }
+          ],
+          "counterevidence": "disable and destroy close events/process handles while the waiter remains registered."
+        },
+        {
+          "id": "50700-foreground-permission",
+          "origin": "upstream",
+          "claim": "Quick Access grants ASFW_ANY.",
+          "sources": [
+            {
+              "path": "src/settings-ui/Settings.UI.Controls/QuickAccess/QuickAccessLauncher.cs",
+              "start_line": 15,
+              "end_line": 35,
+              "excerpt": "private const int AllowAnyProcess = -1;`n`n[DllImport(\"user32.dll\")]`nprivate static extern bool AllowSetForegroundWindow(int processId);`n...`ncase ModuleType.DEPiP:`n    AllowSetForegroundWindow(AllowAnyProcess);`n    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowDEPiPSharedEvent()))",
+              "symbols": [
+                "QuickAccessLauncher.Launch"
+              ]
+            }
+          ],
+          "counterevidence": "The code explicitly passes -1; the intended launch target is Runner, not every process."
+        },
+        {
+          "id": "50700-selector-localization",
+          "origin": "upstream",
+          "claim": "Selector strings are hard-coded in the native resource.",
+          "sources": [
+            {
+              "path": "src/modules/DEPiP/DEPiP/DEPiP.rc",
+              "start_line": 5,
+              "end_line": 15,
+              "excerpt": "STRINGTABLE`nBEGIN`n    IDS_APP_TITLE \"DEPiP\"`n    IDS_DISPLAY_SELECTOR_TITLE \"DEPiP: Display Extended PiP\"`n    IDS_DISPLAY_SELECTOR_INSTRUCTION \"Choose the display to mirror\"`n    IDS_DISPLAY_SELECTOR_DESCRIPTION \"DEPiP can mirror any connected display, including your primary display.\"`n    IDS_PRIMARY_DISPLAY \"Primary\"`n    IDS_CAPTURE_ERROR \"DEPiP could not start display capture.\"`n    IDS_DISPLAY_LABEL \"Display\"`n    IDS_CANCEL \"Cancel\"`nEND",
+              "symbols": [
+                "STRINGTABLE"
+              ]
+            }
+          ],
+          "counterevidence": "No generated/localized DEPiP resource input is present in the changed file set."
+        },
+        {
+          "id": "50700-installer-icon",
+          "origin": "upstream",
+          "claim": "DEPiP.ico is copied to output but not represented by an installer asset component.",
+          "sources": [
+            {
+              "path": "src/modules/DEPiP/DEPiP/DEPiP.vcxproj",
+              "start_line": 111,
+              "end_line": 118,
+              "excerpt": "<ItemGroup>`n  <Manifest Include=\"app.manifest\" />`n  <ResourceCompile Include=\"DEPiP.rc\" />`n</ItemGroup>`n<ItemGroup>`n  <Image Include=\"Assets\\\\DEPiP.ico\">`n    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>",
+              "symbols": [
+                "DEPiP.vcxproj"
+              ]
+            }
+          ],
+          "counterevidence": "The current installer component list has no DEPiP-specific asset reference."
+        },
+        {
+          "id": "50700-capture-error-callback",
+          "origin": "upstream",
+          "claim": "Capture initialization in the selection callback is outside OnLaunched try/catch.",
+          "sources": [
+            {
+              "path": "src/modules/DEPiP/DEPiP/DEPiPXAML/App.xaml.cpp",
+              "start_line": 15,
+              "end_line": 34,
+              "excerpt": "void App::OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&)`n{`n    try`n    {`n        ...`n        [this](DisplayInfo const& source) {`n            auto mirror = winrt::make<MirrorWindow>();`n            winrt::get_self<MirrorWindow>(mirror)->Initialize(source);`n            m_window = mirror;`n            mirror.Activate();`n        });",
+              "symbols": [
+                "App::OnLaunched"
+              ]
+            }
+          ],
+          "counterevidence": "The try/catch surrounds OnLaunched synchronously; the callback executes later from the selector interaction."
+        },
+        {
+          "id": "50700-capture-resize",
+          "origin": "upstream",
+          "claim": "Frame handling clamps copy dimensions but does not resize capture resources on content-size changes.",
+          "sources": [
+            {
+              "path": "src/modules/DEPiP/DEPiP/DEPiPXAML/MirrorWindow.xaml.cpp",
+              "start_line": 240,
+              "end_line": 269,
+              "excerpt": "auto frame = sender.TryGetNextFrame();`n...`nauto source = GetDXGIInterface<ID3D11Texture2D>(frame.Surface());`n...`nsource->GetDesc(&sourceDescription);`ntarget->GetDesc(&targetDescription);`nD3D11_BOX sourceBox{`n  0, 0, 0,`n  std::min(sourceDescription.Width, targetDescription.Width),`n  std::min(sourceDescription.Height, targetDescription.Height),`n  1,`n};`n...`nm_swapChain->Present(1, 0);",
+              "symbols": [
+                "MirrorWindow::OnFrameArrived"
+              ]
+            }
+          ],
+          "counterevidence": "The implementation only computes a minimum copy rectangle; no ContentSize-triggered recreation is present."
+        },
+        {
+          "id": "50700-topmost-churn",
+          "origin": "upstream",
+          "claim": "ApplySettings repeatedly sets HWND_NOTOPMOST when always-on-top is false.",
+          "sources": [
+            {
+              "path": "src/modules/DEPiP/DEPiP/DEPiPXAML/MirrorWindow.xaml.cpp",
+              "start_line": 322,
+              "end_line": 331,
+              "excerpt": "void MirrorWindow::ApplySettings()`n{`n    SetWindowPos(`n        m_window,`n        m_settings.alwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST,`n        0,`n        0,`n        0,`n        0,`n        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);",
+              "symbols": [
+                "MirrorWindow::ApplySettings"
+              ]
+            }
+          ],
+          "counterevidence": "ReloadSettings calls ApplySettings directly, so the z-order operation is repeated on each settings reload."
+        }
+      ]
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No review, comment, approval, label, close, dashboard emit, commit, or push was made by this bounded continuation."
+  }
+}
