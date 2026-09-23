@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Pulse · Settings</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="setup-workspace.css"></head>
+<body class="page settings-page">
+  <header class="topbar"><div class="page-heading"><div class="breadcrumb">Local workspace / Settings</div><h1>Settings</h1><p class="page-description">Choose your agent, task prompts, PowerToys workspace, and GitHub account.</p></div><button type="button" data-panel>Tasks</button></header>
+  <main>
+    <p id="connection" class="connection" role="status">Connecting to local Host…</p>
+    <nav class="settings-nav" aria-label="Settings sections">
+      <button id="show-overview" type="button" aria-current="page">Overview</button><button id="show-agents" type="button">Agents</button><button id="show-prompts" type="button">Workflows</button><button id="show-access" type="button">Task access</button><button id="show-workspace" type="button">Workspace</button><button id="show-github" type="button">GitHub</button><button id="show-host" type="button">Host &amp; storage</button>
+    </nav>
+    <p id="error" class="error" role="alert" tabindex="-1" hidden></p><p id="saved" class="success" role="status" hidden></p>
+    <section id="reload-confirmation" class="panel settings-recovery" aria-labelledby="reload-confirmation-title" hidden><h2 id="reload-confirmation-title">Keep your unsaved changes?</h2><p>Reloading replaces this draft with the saved settings.</p><div class="row"><button id="keep-editing" type="button">Keep editing</button><button id="discard-reload" type="button">Discard changes and reload</button></div></section>
+    <section id="save-recovery" class="panel settings-recovery" aria-labelledby="save-recovery-title" hidden><h2 id="save-recovery-title">Save outcome unconfirmed</h2><p id="save-recovery-message">Your draft is retained. Check the saved settings before submitting again.</p><div id="save-comparison" hidden></div><button id="check-saved" type="button">Check saved settings</button></section>
+    <section id="settings-overview" class="panel settings-section" aria-labelledby="overview-title">
+      <div class="row"><h2 id="overview-title">Your local setup</h2><span id="config-state" class="status">Loading settings</span></div>
+      <p id="setup-summary" class="muted">Reading your saved configuration…</p>
+      <p class="muted fine">Host connection, saved configuration, and task readiness are separate checks. Each task checks the setup it needs before starting.</p>
+      <div class="settings-overview-grid">
+        <button id="edit-agents" class="settings-summary" type="button"><strong>Agents</strong><span id="summary-agents">Loading…</span><span class="settings-edit">Edit agent settings →</span></button>
+        <button id="edit-workspace" class="settings-summary" type="button"><strong>PowerToys workspace</strong><span id="summary-workspace">Loading…</span><span class="settings-edit">Edit workspace →</span></button>
+        <button id="edit-prompts" class="settings-summary" type="button"><strong>Workflow prompts</strong><span id="summary-prompts">Loading…</span><span class="settings-edit">Review prompts →</span></button>
+        <button id="edit-access" class="settings-summary" type="button"><strong>Task access</strong><span id="summary-access">Loading…</span><span class="settings-edit">Edit task access →</span></button>
+        <button id="edit-github" class="settings-summary" type="button"><strong>GitHub account</strong><span id="summary-github">Loading…</span><span class="settings-edit">Edit GitHub account →</span></button>
+        <button id="edit-host" class="settings-summary" type="button"><strong>Host &amp; storage</strong><span id="summary-host">Checking local Host…</span><span class="settings-edit">View connection and storage →</span></button>
+      </div>
+    </section>
+    <form id="config-form">
+      <fieldset id="config-fields" disabled>
+        <section id="settings-agents" class="panel cli-settings settings-section" aria-labelledby="agents-title" hidden><div class="row"><h2 id="agents-title">Agents</h2><button id="refresh-installations" type="button">Refresh installations</button></div>
+          <label class="setting-short">Default agent<select id="agent"><option value="codex">Codex CLI</option><option value="copilot">GitHub Copilot CLI</option></select></label>
+          <p class="muted fine">Each CLI has its own defaults. A task can override its CLI, model, and reasoning effort without changing these settings. Empty values use that CLI’s own defaults.</p>
+          <p id="cli-installation-status" class="muted fine" role="status">Finding local CLI installations…</p>
+          <p id="cli-installation-error" class="error" role="alert" hidden></p>
+          <div class="agent-tests">
+            <details id="codex-profile" class="agent-test agent-profile" open>
+              <summary><strong id="codex-title">Codex CLI</strong><span id="codex-default-label" class="chip" hidden>Default agent</span><span id="codex-status" class="status">Not tested</span></summary>
+              <div class="agent-profile-content">
+              <label>Installation<select id="codex-installation" aria-describedby="codex-installation-help" disabled><option value="">Choose installation</option></select></label>
+              <dl id="codex-installation-detail" class="cli-installation-detail" hidden></dl>
+              <p id="codex-installation-help" class="muted fine cli-installation-help">Choose an installation before running tasks with Codex.</p>
+              <details class="cli-installation-inventory"><summary id="codex-inventory-title">All detected installations</summary><div id="codex-inventory"></div></details>
+              <div class="columns"><div><label>Default model<input id="codex-default-model" type="text" maxlength="128" autocomplete="off" spellcheck="false" placeholder="CLI default" aria-describedby="codex-model-help"></label><p id="codex-model-help" class="muted fine">Enter a supported model ID, or leave empty to use the Codex CLI default.</p></div><label>Default reasoning effort<select id="codex-default-effort"><option value="">CLI default</option></select></label></div>
+              <div class="settings-diagnostic"><h4>Optional connection test</h4><p class="muted fine">Asks <code>what's your model</code> with the selected installation and its CLI defaults. This does not test the model or reasoning effort entered above.</p>
+              <p id="codex-message" class="muted fine" role="status">Uses your local Codex sign-in.</p>
+              <p id="codex-info" class="muted fine path" hidden></p>
+              <pre id="codex-reply" class="log agent-reply" aria-label="Codex model response" hidden></pre>
+              <div class="test-actions"><button id="test-codex" type="button">Test Codex</button><button id="cancel-codex" type="button" hidden>Cancel test</button></div></div></div>
+            </details>
+            <details id="copilot-profile" class="agent-test agent-profile">
+              <summary><strong id="copilot-title">GitHub Copilot CLI</strong><span id="copilot-default-label" class="chip" hidden>Default agent</span><span id="copilot-status" class="status">Not tested</span></summary>
+              <div class="agent-profile-content">
+              <label>Installation<select id="copilot-installation" aria-describedby="copilot-installation-help" disabled><option value="">Choose installation</option></select></label>
+              <dl id="copilot-installation-detail" class="cli-installation-detail" hidden></dl>
+              <p id="copilot-installation-help" class="muted fine cli-installation-help">Choose an installation before running tasks with Copilot.</p>
+              <details class="cli-installation-inventory"><summary id="copilot-inventory-title">All detected installations</summary><div id="copilot-inventory"></div></details>
+              <div class="columns"><div><label>Default model<input id="copilot-default-model" type="text" maxlength="128" autocomplete="off" spellcheck="false" placeholder="CLI default" aria-describedby="copilot-model-help"></label><p id="copilot-model-help" class="muted fine">Enter a supported model ID, or leave empty to use the Copilot CLI default.</p></div><label>Default reasoning effort<select id="copilot-default-effort"><option value="">CLI default</option></select></label></div>
+              <div class="settings-diagnostic"><h4>Optional connection test</h4><p class="muted fine">Asks <code>what's your model</code> with the selected installation and its CLI defaults. This does not test the model or reasoning effort entered above.</p>
+              <p id="copilot-message" class="muted fine" role="status">Uses your local Copilot sign-in.</p>
+              <p id="copilot-info" class="muted fine path" hidden></p>
+              <pre id="copilot-reply" class="log agent-reply" aria-label="Copilot model response" hidden></pre>
+              <div class="test-actions"><button id="test-copilot" type="button">Test Copilot</button><button id="cancel-copilot" type="button" hidden>Cancel test</button></div></div></div>
+            </details>
+          </div>
+          <p class="muted fine">Choose any detected installation and save. Test is optional; it asks <code>what's your model</code> using the selected path.</p>
+        </section>
+        <section id="settings-prompts" class="panel settings-section" aria-labelledby="prompts-title" hidden><div class="row"><h2 id="prompts-title">Workflow prompts</h2><button id="reload-prompts" type="button">Reload prompts</button></div>
+          <p class="muted fine">Prompts are maintained with Pulse Extension and bundled with the local Host. PR review runs locally, including final code review and applicable validation.</p>
+          <p id="prompt-status" class="muted fine" role="status">Loading bundled prompts…</p><p id="prompt-error" class="error" role="alert" hidden></p>
+          <div class="columns">
+            <div><label>Review prompt<select id="pr-prompt"><option value="">Select a prompt</option></select></label><p id="pr-prompt-help" class="muted fine path"></p><button id="view-pr-prompt" type="button" disabled>View review prompt</button></div>
+            <div><label>Local fix prompt<select id="issue-prompt"><option value="">Select a prompt</option></select></label><p id="issue-prompt-help" class="muted fine path"></p><button id="view-issue-prompt" type="button" disabled>View fix prompt</button></div>
+            <div><label>E2E test prompt<select id="e2e-prompt"><option value="">Select a prompt</option></select></label><p id="e2e-prompt-help" class="muted fine path"></p><button id="view-e2e-prompt" type="button" disabled>View E2E prompt</button></div>
+            <div><label>Reproduce prompt<select id="reproduction-prompt"><option value="">Built-in reproduction instructions</option></select></label><p id="reproduction-prompt-help" class="muted fine path"></p><button id="view-reproduction-prompt" type="button" disabled>View reproduction prompt</button></div>
+          </div>
+          <p class="muted fine">New tasks use the selected bundled prompt and task context. Save your selection before starting a task. Prompt updates are included in Host updates.</p>
+          <details id="prompt-preview" hidden><summary id="prompt-preview-title">Prompt content</summary><p id="prompt-preview-status" class="muted fine" role="status"></p><p id="prompt-preview-error" class="error" role="alert" hidden></p><pre id="prompt-preview-content" class="log prompt-content" aria-label="Local prompt content"></pre></details>
+          <details class="settings-readonly"><summary>Other bundled workflows</summary><p class="muted fine">Feature research, bug investigation, implementation, and supplemental verification use their associated bundled workflows. These four selectors do not replace those workflow bindings.</p></details>
+        </section>
+        <section id="settings-access" class="panel settings-section" aria-labelledby="access-title" hidden><h2 id="access-title">Task access</h2>
+          <label class="setting-short">Local file permissions<select id="permission" aria-describedby="permission-help"><option value="read-only">Read only</option><option value="workspace-write">Allow workspace changes</option><option value="yolo" selected>Full access · No approvals</option></select></label>
+          <p id="permission-help" class="muted fine">Allow full local file and command access without approvals.</p>
+          <p class="muted fine">Applies to new tasks. Tasks run until completion and can be cancelled from their details page.</p>
+          <p class="muted fine">Full access uses the CLI’s <code>yolo</code> permission mode. Submitting a GitHub comment, review, or pull request remains a separate explicit action.</p>
+        </section>
+        <section id="settings-workspace" class="panel settings-section" aria-labelledby="workspace-title" hidden><div class="row"><h2 id="workspace-title">PowerToys workspace</h2><span class="chip">microsoft/PowerToys</span></div>
+          <label>Local main repository folder<input id="main-repo-folder" type="text" autocomplete="off" placeholder="C:\source\PowerToys" aria-describedby="main-repo-help"></label>
+          <p id="main-repo-help" class="muted fine">Use an absolute path to the main PowerToys checkout, not an existing task worktree. A fork can keep its origin and a microsoft/PowerToys upstream remote.</p>
+          <label>Worktree root folder<input id="worktree-root" type="text" autocomplete="off" placeholder="C:\source\PowerToys-worktrees" aria-describedby="worktree-root-help"></label>
+          <p id="worktree-root-help" class="muted fine">Use an absolute folder path outside the main checkout. Each task creates its own worktree and branch here. Worktrees remain after completion so you can inspect the changes.</p>
+          <p class="notice">You can save partial setup and return later. Tasks that need these folders will check them before starting.</p>
+        </section>
+        <section id="settings-github" class="panel settings-section" aria-labelledby="github-title" hidden><div class="row"><h2 id="github-title">GitHub account</h2><button id="detect-github" type="button">Detect gh accounts</button></div>
+          <p id="github-status" class="muted fine" role="status">Reading local gh accounts…</p>
+          <label class="setting-short">GitHub account for this extension<select id="github-account" disabled><option value="">Detecting…</option></select></label>
+          <p id="github-account-help" class="muted fine"></p>
+          <p id="github-terminal-default" class="muted fine"></p>
+          <p id="github-error" class="error" role="alert" hidden></p>
+          <p id="github-login-help" class="notice" hidden>Run <code>gh auth login --hostname github.com</code> in a terminal, then detect accounts again.</p>
+          <p class="muted fine">GitHub actions started on the Pulse website open a confirmation here and use this saved account. The default gh account stays unchanged.</p>
+        </section>
+      </fieldset>
+    </form>
+    <section id="settings-host" class="panel settings-section" aria-labelledby="host-title" hidden><div class="row"><h2 id="host-title">Host &amp; storage</h2><button id="detect" type="button">Check connection</button></div><dl id="capabilities" class="facts host-facts"></dl><p class="muted fine">Extension ID: <code id="extension-id"></code>. Register this ID with the Host installer separately for Chrome and Edge.</p><p id="host-detail" class="muted fine" role="status">Checking local Host…</p><p id="host-error" class="error" role="alert" hidden></p><h3>Local storage</h3><p class="muted fine">Chrome and Edge share settings and task records for the current Windows user. Completed task records can be deleted from their details page. Artifacts and worktrees remain. Uninstalling the Host preserves settings and task records by default.</p></section>
+    <div class="settings-savebar"><div><strong id="save-state" role="status">Loading saved settings…</strong><span id="save-help" class="muted fine">Your configuration applies to new tasks.</span></div><div class="settings-save-actions"><button id="reload" type="button">Reload settings</button><button class="primary" id="save" type="submit" form="config-form" disabled>Save settings</button></div></div>
+  </main><script type="module" src="options.js"></script>
+</body>
+</html>
