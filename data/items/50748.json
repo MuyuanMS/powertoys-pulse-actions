@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 5,
+  "number": 50748,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-23T21:12:47.3488583Z",
+  "evaluated_at": "2026-09-23T21:12:47.3488583Z",
+  "source_updated_at": "2026-09-23T14:54:53Z",
+  "title": "[Bugs] Won't Show New+",
+  "url": "https://github.com/microsoft/PowerToys/issues/50748",
+  "author": "Mored4u",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-New+"
+  ],
+  "confidence": "Green",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design approval",
+    "detail": "The supplied New+ log records the exact folder-creation failure that aborts submenu construction."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Approve a fork-side fix to create the complete template directory tree safely before enumerating templates."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The diagnostic archive contains a New+ error at the configured template path, and the current shell extension uses single-level directory creation before scanning that path. The exception is caught by submenu creation and explains why the New+ entry does not appear even though the module is enabled and registered.",
+    "evidence": [
+      "The issue reports PowerToys v0.101.2362 on Windows 11 25H2 and supplies a screenshot plus a PowerToys diagnostic ZIP.",
+      "The New+ log records `New+ create submenu error: create_directory: The system cannot find the path specified.: \"C:\\\\Users\\\\Mored4u\\\\AppData\\\\Local\\\\Microsoft\\\\PowerToys\\\\NewPlus\\\\Templates\"` on 2026-08-30.",
+      "The same diagnostic set shows New+ enabled and its context-menu handler repeatedly registered on 2026-09-23.",
+      "Current `shell_context_sub_menu::shell_context_sub_menu` calls `utilities::create_folder_if_not_exist(root)` before constructing `template_folder` and enumerating templates.",
+      "Current `newplus::utilities::create_folder_if_not_exist` calls `std::filesystem::create_directory`, which does not create missing parent directories.",
+      "Current `shell_context_menu::EnumSubCommands` catches the resulting exception and returns `E_FAIL`, preventing the New+ submenu from being built.",
+      "No linked fix, assignee, or duplicate handling is present in the live issue discussion."
+    ],
+    "recommended_action": "Approve a focused New+ fix design: create the complete configured template directory tree, preserve safe shell-extension error handling, and add regression coverage for a missing parent path.",
+    "evaluated_at": "2026-09-23T21:12:47.3488583Z",
+    "source_updated_at": "2026-09-23T14:54:53Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt covers Issue 50748. The failure is applicable to PowerToys code and has a concrete root cause in New+ template-folder initialization."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Create the complete New+ template directory tree before building the submenu",
+      "root_cause": "New+ uses single-level `std::filesystem::create_directory` for the configured template path. When an auto-update or fresh profile leaves the `NewPlus` parent directory absent, directory creation throws; submenu enumeration then returns `E_FAIL`, so Explorer cannot display New+.",
+      "plan": [
+        "Change the New+ folder initialization helper to create all missing parent directories for the configured template path and to treat an already-existing directory as success.",
+        "Keep submenu construction from throwing for normal missing-directory initialization, while preserving the existing outer error boundary for genuine filesystem failures.",
+        "Add regression coverage that starts with a nested template path whose parent directories do not exist, opens the Explorer context menu, and verifies the New+ submenu is present and empty rather than absent.",
+        "Retain the existing template enumeration and default-template behavior after the directory tree is created."
+      ],
+      "verification": [
+        "Run the focused NewPlus UI test project covering template-location creation and context-menu visibility.",
+        "Reproduce with a configured path whose `NewPlus` parent is absent; start or reload PowerToys, open an Explorer folder background context menu, and verify New+ appears with the Open templates command.",
+        "Add a template file after initialization and verify it appears in the New+ submenu and can still create a new file.",
+        "Verify an unrelated inaccessible or invalid template path still produces a logged failure rather than silently reporting a healthy menu."
+      ],
+      "confidence": {
+        "score": 94,
+        "level": "green",
+        "rationale": "The supplied log identifies the exact failing API and path, the current source has the corresponding single-level creation call, and the caller's error handling directly matches the reported missing-menu symptom."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The reporter says New+ does not appear after an auto-update on v0.101.2362. The diagnostic archive shows that New+ is enabled and registered, but one submenu construction attempt fails while creating the configured Templates directory because its parent path is missing.",
+    "known_information": [
+      "The reporter supplied version v0.101.2362, the auto-update installation channel, Windows 11 25H2 Home Edition, a screenshot, and a PowerToys diagnostic ZIP.",
+      "The issue body does not contain numbered reproduction steps; the only upstream discussion reply asks the reporter to provide concrete steps.",
+      "The general settings report has NewPlus enabled.",
+      "New+ logs show successful context-menu registration and enable/disable transitions on 2026-09-23.",
+      "The New+ settings report points TemplateLocation at `C:\\\\Users\\\\Mored4u\\\\AppData\\\\Local\\\\Microsoft\\\\PowerToys\\\\NewPlus\\\\Templates`.",
+      "The New+ log records a `create_directory` failure for that exact path because the system cannot find the path.",
+      "The current source creates the template path with `std::filesystem::create_directory` and then scans it during submenu construction.",
+      "A related older issue, 49316, reports missing templates but has no diagnostic evidence or linked fix; it does not establish duplicate handling for this issue."
+    ],
+    "inferences": [
+      "The missing New+ entry is likely caused by submenu construction failing before Explorer receives the submenu, rather than by the module's enabled state or registration.",
+      "The failure is most likely triggered when an update or profile transition leaves one or more parent directories absent; this is an evidence-supported mechanism, not a confirmed reproduction of the reporter's exact sequence.",
+      "The existing `create_directory` call may work when the parent already exists, which explains why the defect can be intermittent or specific to a fresh/updated installation."
+    ],
+    "analysis": "The public evidence is sufficient for a focused fix design. The log names the failing filesystem operation and path, and source inspection shows the same operation occurs immediately before template enumeration. The outer `EnumSubCommands` catch converts that exception to `E_FAIL`, so Explorer receives no New+ submenu. Replacing single-level creation with complete directory-tree creation addresses the failing mechanism without changing template sorting, filtering, or file creation behavior.",
+    "initial_investigation": [
+      "Read the complete live issue body and its only comment through source_updated_at 2026-09-23T14:54:53Z.",
+      "Downloaded and inspected the public diagnostic archive, including the New+ settings, New+ shell-extension logs, and runner logs.",
+      "Confirmed the New+ log's path-creation error and separately confirmed that runner JSON errors were for FancyZones and Hosts, not New+; the automated triage summary overstated those as New+ configuration errors.",
+      "Inspected `src/modules/NewPlus/NewShellExtensionContextMenu/shell_context_sub_menu.cpp`, `shell_context_menu.cpp`, `new_utilities.h`, `template_folder.cpp`, and the New+ UI test suite.",
+      "Checked recent New+ history and found the folder helper unchanged since the original New+ implementation; no linked public fix or assigned owner is present."
+    ],
+    "information_gaps": []
+  },
+  "design": {
+    "root_cause": "During New+ submenu construction, `shell_context_sub_menu::shell_context_sub_menu` obtains the configured template path and calls `newplus::utilities::create_folder_if_not_exist`. That helper uses `std::filesystem::create_directory`, which only creates the final directory when its parent already exists. For the reported path, the missing `NewPlus` parent causes a filesystem exception. `shell_context_menu::EnumSubCommands` catches the exception and returns `E_FAIL`, so Explorer cannot display the New+ submenu.",
+    "evidence": [
+      "Observed in the public diagnostic: `New+ create submenu error: create_directory: The system cannot find the path specified` for the reported Templates path.",
+      "Observed in `new_utilities.h`: `create_folder_if_not_exist` calls `std::filesystem::create_directory(path)`.",
+      "Observed in `shell_context_sub_menu.cpp`: directory creation occurs before `template_folder::rescan_template_folder` and menu-item creation.",
+      "Observed in `shell_context_menu.cpp`: submenu-construction exceptions are logged and converted to `E_FAIL`.",
+      "Observed in the diagnostic: New+ is enabled and its context-menu handler registers successfully, so registration alone does not explain the missing menu."
+    ],
+    "affected_files": [
+      {
+        "path": "src/modules/NewPlus/NewShellExtensionContextMenu/new_utilities.h",
+        "purpose": "Shared New+ filesystem/settings helpers used while building the Explorer submenu.",
+        "symbols": [
+          "newplus::utilities::create_folder_if_not_exist",
+          "newplus::utilities::get_new_template_folder_location"
+        ]
+      },
+      {
+        "path": "src/modules/NewPlus/NewShellExtensionContextMenu/shell_context_sub_menu.cpp",
+        "purpose": "Creates and enumerates the New+ submenu contents.",
+        "symbols": [
+          "shell_context_sub_menu::shell_context_sub_menu"
+        ]
+      },
+      {
+        "path": "src/modules/NewPlus/NewShellExtensionContextMenu/shell_context_menu.cpp",
+        "purpose": "Exposes the New+ root Explorer command and handles submenu-construction failures.",
+        "symbols": [
+          "shell_context_menu::EnumSubCommands"
+        ]
+      },
+      {
+        "path": "src/modules/NewPlus/Tests/NewPlus.UITests/NewPlusTests.cs",
+        "purpose": "Windows UI regression coverage for module state, template-folder creation, submenu contents, and template invocation.",
+        "symbols": [
+          "NewPlusTests.ChangingTemplateLocationCreatesAnEmptyFolder",
+          "NewPlusTests.ContextMenuTracksModuleEnabledState",
+          "NewPlusTests.FileTemplateCreatesAFileWithMatchingContents"
+        ]
+      },
+      {
+        "path": "src/modules/NewPlus/Tests/NewPlus.UITests/NewPlusTestHelpers.cs",
+        "purpose": "New+ UI-test setup and Explorer menu assertions.",
+        "symbols": [
+          "NewPlusTests.PrepareTestState",
+          "NewPlusTests.AssertTemplateMenu",
+          "NewPlusTests.ChooseNewTemplateFolder"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/modules/NewPlus/NewShellExtensionContextMenu/new_utilities.h",
+        "symbols": [
+          "newplus::utilities::create_folder_if_not_exist"
+        ],
+        "current_behavior": "The helper calls single-level `std::filesystem::create_directory(path)` and lets filesystem exceptions escape.",
+        "change": "Create the complete directory tree with `std::filesystem::create_directories`, or an equivalent error-code-aware implementation that reports failure explicitly. Preserve success when the final path already exists as a directory, and do not treat a file occupying the path as a valid template root.",
+        "code_block": "inline void create_folder_if_not_exist(const std::filesystem::path& path)\\n{\\n    std::error_code ec;\\n    std::filesystem::create_directories(path, ec);\\n    if (ec)\\n    {\\n        throw std::filesystem::filesystem_error(\\\"create_directories\\\", path, ec);\\n    }\\n}",
+        "edge_cases": [
+          "An existing directory must remain a successful no-op.",
+          "A file at the configured template path must remain an explicit failure and must not be silently replaced.",
+          "Access-denied, malformed, or unavailable paths must still reach the existing New+ logging boundary.",
+          "The helper runs while Explorer builds a shell menu, so the implementation should avoid unbounded retries or UI-blocking recovery."
+        ],
+        "tests": [
+          "Exercise a nested template path with missing parent directories and verify the path is created.",
+          "Exercise an existing template directory and verify no duplicate or destructive behavior occurs.",
+          "Exercise a path occupied by a file and verify the failure is logged and does not claim a usable submenu."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/modules/NewPlus/NewShellExtensionContextMenu/shell_context_sub_menu.cpp",
+        "symbols": [
+          "shell_context_sub_menu::shell_context_sub_menu"
+        ],
+        "current_behavior": "The constructor creates the configured root, immediately scans it, and populates the submenu. A creation failure aborts the entire constructor.",
+        "change": "Keep the existing ordering, but rely on the complete-tree helper so a missing parent is repaired before `template_folder::rescan_template_folder`. If initialization still fails for a genuinely unusable path, preserve the exception so `EnumSubCommands` logs the failure rather than presenting misleading template entries.",
+        "code_block": "const auto root = utilities::get_new_template_folder_location();\\nutilities::create_folder_if_not_exist(root);\\ntemplates = std::make_unique<template_folder>(root);\\ntemplates->rescan_template_folder();",
+        "edge_cases": [
+          "Do not change template ordering, variable filtering, or the Open templates command.",
+          "Do not swallow failures that would make later directory iteration unsafe.",
+          "Keep the existing shell-extension lifetime and COM command enumeration behavior unchanged."
+        ],
+        "tests": [
+          "Open Explorer with a newly created nested template path and assert the New+ root and submenu are visible.",
+          "Add a template after initialization and assert it appears without restarting the shell extension."
+        ]
+      },
+      {
+        "order": 3,
+        "file": "src/modules/NewPlus/Tests/NewPlus.UITests/NewPlusTests.cs",
+        "symbols": [
+          "NewPlusTests.ChangingTemplateLocationCreatesAnEmptyFolder",
+          "NewPlusTests.ContextMenuTracksModuleEnabledState"
+        ],
+        "current_behavior": "The existing location test relies on the Settings folder picker to create the selected directory, so it does not cover submenu-time creation when one or more ancestors are absent.",
+        "change": "Add a regression case that writes a nested, non-existent template path into New+ settings, removes the parent tree before opening Explorer, enables New+, and verifies the context menu is present with an empty template list. Reuse the existing setup and menu assertions.",
+        "code_block": "var templates = Path.Combine(SuiteRoot, \"MissingParent\", \"NewPlus\", \"Templates\");\\nDirectory.Delete(Path.GetDirectoryName(templates)!, recursive: true);\\nSettingsConfigHelper.SetTemplateLocation(ModuleName, templates);\\nAssertTemplateMenu(OpenExplorer(), []);\\nAssert.IsTrue(Directory.Exists(templates));",
+        "edge_cases": [
+          "The test must isolate its path under the test suite root and clean it up in the existing test lifecycle.",
+          "The assertion must distinguish an empty but present submenu from a missing New+ root command.",
+          "Keep the test non-parallel with the existing New+ suite because Explorer registration and settings are shared."
+        ],
+        "tests": [
+          "Run the NewPlus UI test project and confirm the new missing-parent case passes.",
+          "Retain the existing file, folder, deletion, and module-enable tests as regression coverage for normal paths."
+        ]
+      }
+    ],
+    "verify": [
+      "Build the New+ shell extension and the existing NewPlus UI test project using the repository's established test/build workflow; discover the exact invocation from the NewPlus.UITests project and CI configuration if implementation changes the project layout.",
+      "Start from a profile where the configured template path has missing ancestors, enable New+, open an Explorer background context menu, and verify New+ appears with Open templates.",
+      "Place a file in the newly created Templates directory, reopen the submenu, and verify the file appears and can be instantiated.",
+      "Verify an invalid or access-denied template path still produces a New+ diagnostic error and does not silently show an incorrect template list."
+    ],
+    "risks": [
+      "Creating parent directories changes behavior for custom template locations that were previously invalid only because an ancestor was absent; this is the intended repair but should remain limited to the configured New+ path.",
+      "The helper executes in Explorer's shell-extension process, so filesystem operations must remain bounded and error reporting must not block the shell.",
+      "A path collision with a file must not be converted into a directory or silently ignored."
+    ],
+    "alternatives": [
+      "Only catch the exception in `shell_context_sub_menu` and show an empty menu. Rejected because it hides the recoverable missing-parent condition and leaves the configured template path unusable.",
+      "Ask the reporter to manually create the parent directories. Rejected because the public log identifies a deterministic product initialization gap that can be repaired safely.",
+      "Change template enumeration to tolerate a missing root without creating it. Rejected because New+ already promises a usable template location and the existing Settings flow expects the directory to exist."
+    ]
+  },
+  "actions": [
+    {
+      "id": "design-50748",
+      "type": "approve_design",
+      "label": "Design fix",
+      "primary": true,
+      "confirm": false,
+      "description": "Approve the fork-side New+ directory-initialization fix design for Issue 50748.",
+      "note": "Approval starts the fork-side implementation workflow only; it does not write to the upstream repository."
+    }
+  ],
+  "adversary": {
+    "rounds": 1,
+    "status": "no_blocking_objections",
+    "signoff": "The public log, current source, and existing UI-test surface align on the missing-parent directory mechanism. No blocking objection remains to the proposed directory-tree initialization fix.",
+    "non_blocking_notes": [
+      "The reporter's exact numbered reproduction sequence is still absent, but it is not required to choose or verify this narrowly evidenced root cause.",
+      "The implementation should retain explicit logging for paths that fail for reasons other than missing ancestors."
+    ]
+  }
+}
