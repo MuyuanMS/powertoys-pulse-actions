@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50723",
+  "number": 50723,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-23T03:38:00Z",
+  "evaluated_at": "2026-09-23T03:38:00Z",
+  "source_updated_at": "2026-09-22T23:26:08Z",
+  "title": "[CmdPal Dock] Dock renders empty when bands resolve before DockControl loads (centre visibility never re-evaluated) — hit on every RDP reconnect",
+  "url": "https://github.com/microsoft/PowerToys/issues/50723",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report contains unusually strong code-level evidence and a deterministic maintainer-side repro, so it supports a high-confidence lightweight design candidate without requesting more reporter diagnostics.",
+    "evidence": [
+      "PowerToys v0.101.2632; the issue reproduces on startup and on every RDP monitor rebuild.",
+      "The report provides exact reproduction steps, UI Automation trees, timing, and a source-level hypothesis in DockControl.xaml.cs.",
+      "The workaround Edit Dock > Discard immediately makes the centre list appear without restart."
+    ],
+    "recommended_action": "Design CmdPal Dock visibility race fix",
+    "evaluated_at": "2026-09-23T03:38:00Z",
+    "source_updated_at": "2026-09-22T23:26:08Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The report identifies exact symbols and a narrow lifecycle fix; a full design can proceed without additional reporter evidence."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Re-evaluate Dock centre visibility after bands load",
+      "root_cause": "DockControl computes IsCenterVisible while CenterItems is still empty, subscribes to CollectionChanged only during Loaded, and misses the already-completed band population when initialization races ahead of Loaded.",
+      "plan": [
+        "Update DockControl_Loaded to subscribe to CenterItems.CollectionChanged and immediately call UpdateCenterVisibility after the subscription.",
+        "Keep the visibility calculation based on IsEditMode or the current CenterItems.Count so preloaded bands are reflected without requiring a later mutation.",
+        "Verify the subscription is removed with the existing unload/disposal lifecycle and does not duplicate handlers across monitor-window rebuilds.",
+        "Add a regression test or deterministic UI test covering InitializeBands before Loaded and monitor rebuild after RDP reconnect."
+      ],
+      "verification": [
+        "Kill and relaunch Microsoft.CmdPal.UI through x-cmdpal://background with pinned centre bands and verify the centre ListView appears on the first launch.",
+        "Reconnect RDP or trigger a monitor rebuild and verify the rebuilt dock shows the same pinned bands without Edit Dock > Discard.",
+        "Verify an empty centre list remains collapsed and edit mode still shows the intended layout."
+      ],
+      "confidence": {
+        "score": 91,
+        "level": "green",
+        "rationale": "The issue supplies a concrete ordering trace, UIA before/after evidence, deterministic workaround, and exact source symbols matching the symptom."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "The Command Palette Dock can create its window and resolve pinned bands while the centre region is still collapsed. Because collection-change subscription occurs only at Loaded and visibility is not recomputed afterward, the rebuilt dock remains an empty strip until edit mode or a later collection change triggers reevaluation.",
+    "known_information": [
+      "PowerToys v0.101.2632; the issue reproduces on startup and on every RDP monitor rebuild.",
+      "The report provides exact reproduction steps, UI Automation trees, timing, and a source-level hypothesis in DockControl.xaml.cs.",
+      "The workaround Edit Dock > Discard immediately makes the centre list appear without restart."
+    ],
+    "inferences": [
+      "The described ordering race is consistent with the missing centre ListView and the fact that a later visibility update fixes the same window.",
+      "The safest correction is to recompute visibility after subscription/load; constructor subscription may also work but has broader lifetime implications."
+    ],
+    "analysis": "The report contains unusually strong code-level evidence and a deterministic maintainer-side repro, so it supports a high-confidence lightweight design candidate without requesting more reporter diagnostics.",
+    "initial_investigation": [
+      "Read the full report and automated triage comment.",
+      "Validated the proposed sequence against the reported UIA state, workaround, and RDP rebuild timing.",
+      "Kept the monitor-identification change in PR 49814 separate from this DockControl visibility race."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50723",
+      "type": "approve_design",
+      "label": "Design CmdPal Dock visibility race fix",
+      "primary": true,
+      "confirm": true
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Design CmdPal Dock visibility race fix",
+    "detail": "The report contains unusually strong code-level evidence and a deterministic maintainer-side repro, so it supports a high-confidence lightweight design candidate without requesting more reporter diagnostics."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Design CmdPal Dock visibility race fix",
+    "reason": "The report contains unusually strong code-level evidence and a deterministic maintainer-side repro, so it supports a high-confidence lightweight design candidate without requesting more reporter diagnostics."
+  }
+}

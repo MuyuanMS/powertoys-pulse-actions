@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50705",
+  "number": 50705,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-23T03:38:00Z",
+  "evaluated_at": "2026-09-23T03:38:00Z",
+  "source_updated_at": "2026-09-22T11:03:57Z",
+  "title": "Mouse Without Borders - Use Service does not work before Windows login after fresh boot",
+  "url": "https://github.com/microsoft/PowerToys/issues/50705",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The public reproduction and eliminated alternatives support a targeted service-startup investigation. The lightweight plan should verify the service lifecycle and pre-logon listener initialization before any implementation-grade design.",
+    "evidence": [
+      "PowerToys 0.101.2362 Microsoft Store on Windows 11 remote PC; Use Service enabled and service account LocalSystem.",
+      "The reporter verified the service exists, binary path, firewall, network, policy, key, and service recreation.",
+      "The failure is limited to the first boot before the first user login; after login and on later Win+L lock screens it works.",
+      "A diagnostic ZIP is attached and the report references similar issue 29060."
+    ],
+    "recommended_action": "Design Mouse Without Borders pre-logon service startup",
+    "evaluated_at": "2026-09-23T03:38:00Z",
+    "source_updated_at": "2026-09-22T11:03:57Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repository change may be applicable to service startup/initialization, but the exact failing branch still needs maintainer-side tracing."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Start and initialize Mouse Without Borders service before first logon",
+      "root_cause": "The Use Service path appears to leave the MWB listener unavailable until the first interactive user session, despite the LocalSystem service being installed and enabled.",
+      "plan": [
+        "Trace service registration/startup and the first-logon initialization boundary for PowerToys.MWB.Service.",
+        "Verify whether listener/configuration initialization depends on the per-user runner or an interactive session.",
+        "Move only the required listener initialization into the service-safe pre-logon path and retain user-session handoff for settings/UI state.",
+        "Add coverage for a fresh boot at the Windows sign-in screen and for later Win+L lock-screen operation."
+      ],
+      "verification": [
+        "Reproduce a fresh boot with ports 15100 and 15101 unavailable before login, then verify they are listening and the peer controls the sign-in screen after the fix.",
+        "Verify later lock-screen reconnection and normal post-login settings behavior."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The first-logon boundary and verified service state strongly implicate lifecycle initialization, but code tracing is needed to confirm whether startup, configuration loading, or listener binding is the missing step."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "With Mouse Without Borders Use Service enabled, the LocalSystem service is present but ports 15100/15101 are unavailable at the first Windows logon screen after a fresh boot. The service becomes available immediately after the first interactive login, while later lock-screen use works.",
+    "known_information": [
+      "PowerToys 0.101.2362 Microsoft Store on Windows 11 remote PC; Use Service enabled and service account LocalSystem.",
+      "The reporter verified the service exists, binary path, firewall, network, policy, key, and service recreation.",
+      "The failure is limited to the first boot before the first user login; after login and on later Win+L lock screens it works.",
+      "A diagnostic ZIP is attached and the report references similar issue 29060."
+    ],
+    "inferences": [
+      "The service may be demand-started without a boot/session trigger that initializes the MWB listener before the first logon.",
+      "The existing service may start but defer listener initialization until the per-user PowerToys runner or configuration becomes available."
+    ],
+    "analysis": "The public reproduction and eliminated alternatives support a targeted service-startup investigation. The lightweight plan should verify the service lifecycle and pre-logon listener initialization before any implementation-grade design.",
+    "initial_investigation": [
+      "Reviewed the complete reproduction and all verified eliminations in the report.",
+      "Identified the service startup type and first-logon boundary as the primary control-flow discriminator.",
+      "Kept issue 29060 as related context, not proof of the same root cause."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50705",
+      "type": "approve_design",
+      "label": "Design Mouse Without Borders pre-logon service startup",
+      "primary": true,
+      "confirm": true
+    },
+    {
+      "id": "reproduce-prelogon-mwb-50705",
+      "type": "reproduce",
+      "label": "Reproduce Mouse Without Borders pre-logon failure",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Mouse Without Borders",
+        "version": "0.101.2362",
+        "prerequisites": [
+          "Windows 11 remote PC with Use Service enabled",
+          "Windows 10 peer already running Mouse Without Borders",
+          "LAN connectivity and ports 15100/15101 available after login"
+        ],
+        "steps": [
+          "Enable Use Service while PowerToys is elevated and confirm PowerToys.MWB.Service runs as LocalSystem.",
+          "Reboot the Windows 11 remote PC and remain at the first Windows sign-in screen without logging in.",
+          "From the Windows 10 peer, attempt to connect and inspect whether TCP ports 15100 and 15101 are listening.",
+          "Log in locally and repeat the connection test."
+        ],
+        "expected_result": "With Use Service enabled, the listener should be reachable before first logon; the current failure is that both ports become available only after interactive login."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Design Mouse Without Borders pre-logon service startup",
+    "detail": "The public reproduction and eliminated alternatives support a targeted service-startup investigation. The lightweight plan should verify the service lifecycle and pre-logon listener initialization before any implementation-grade design."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Design Mouse Without Borders pre-logon service startup",
+    "reason": "The public reproduction and eliminated alternatives support a targeted service-startup investigation. The lightweight plan should verify the service lifecycle and pre-logon listener initialization before any implementation-grade design."
+  }
+}

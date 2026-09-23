@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50712",
+  "number": 50712,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-23T03:38:00Z",
+  "evaluated_at": "2026-09-23T03:38:00Z",
+  "source_updated_at": "2026-09-22T12:59:34Z",
+  "title": "The keyboard manager does not work after I restart my computer",
+  "url": "https://github.com/microsoft/PowerToys/issues/50712",
+  "author": "",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The manual toggle is a strong signal that initialization is not reapplied after restart. A targeted maintainer repro can test the persisted-state load and hook startup without asking the reporter to perform maintainer profiling.",
+    "evidence": [
+      "Keyboard Manager remaps the Copilot key to Right Ctrl on Windows 11, installed from the Microsoft Store at 0.101.2362.",
+      "The toggle remains on after reboot, but the remap does not take effect until toggled off/on.",
+      "The report includes a screenshot but no diagnostic ZIP or discussion."
+    ],
+    "recommended_action": "Design Keyboard Manager restart reinitialization",
+    "evaluated_at": "2026-09-23T03:38:00Z",
+    "source_updated_at": "2026-09-22T12:59:34Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A code fix may be applicable to Keyboard Manager startup initialization, but the exact hook/service boundary is not confirmed."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reapply enabled Keyboard Manager remaps after restart",
+      "root_cause": "The enabled setting persists across restart, but the runtime hook/remap is not reinitialized until the user toggles Keyboard Manager, leaving configuration state and active interception out of sync.",
+      "plan": [
+        "Trace startup loading of the enabled state and the code path used by the manual toggle.",
+        "Ensure the same remap/hook initialization path runs after startup once required services and permissions are ready.",
+        "Make initialization idempotent and report failures rather than leaving the toggle falsely enabled.",
+        "Add restart/persisted-state coverage for the Copilot-to-Right-Ctrl mapping."
+      ],
+      "verification": [
+        "Restart with the remap enabled and verify it works before any Settings interaction.",
+        "Verify toggling off/on remains correct and that startup failures do not leave a false enabled state."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The toggle recovery strongly supports a missed initialization path, but the report does not identify whether the hook, service, or persisted remap load is responsible."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Keyboard Manager remains enabled after restart but the Copilot-key-to-Right-Ctrl remap is inactive until the user toggles the feature off and on. The report is reproducible across restarts but lacks startup diagnostics and exact remap state details.",
+    "known_information": [
+      "Keyboard Manager remaps the Copilot key to Right Ctrl on Windows 11, installed from the Microsoft Store at 0.101.2362.",
+      "The toggle remains on after reboot, but the remap does not take effect until toggled off/on.",
+      "The report includes a screenshot but no diagnostic ZIP or discussion."
+    ],
+    "inferences": [
+      "The persisted enabled state may be loaded before the keyboard hook/driver is ready, leaving a stale runtime state until a manual toggle reinitializes it.",
+      "A startup permission, service, or remap-specific issue remains possible."
+    ],
+    "analysis": "The manual toggle is a strong signal that initialization is not reapplied after restart. A targeted maintainer repro can test the persisted-state load and hook startup without asking the reporter to perform maintainer profiling.",
+    "initial_investigation": [
+      "Read the full report and screenshot reference.",
+      "Connected the restart-only failure and toggle recovery to a possible persisted-state/runtime initialization boundary."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-design-50712",
+      "type": "approve_design",
+      "label": "Design Keyboard Manager restart reinitialization",
+      "primary": true,
+      "confirm": true
+    },
+    {
+      "id": "reproduce-keyboard-manager-restart-50712",
+      "type": "reproduce",
+      "label": "Reproduce Keyboard Manager remap loss after restart",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Keyboard Manager",
+        "version": "0.101.2362",
+        "prerequisites": [
+          "Windows 11",
+          "Keyboard Manager enabled",
+          "Copilot key remapped to Right Ctrl"
+        ],
+        "steps": [
+          "Enable the remap and verify the Copilot key produces Right Ctrl.",
+          "Restart Windows and confirm the Keyboard Manager toggle still shows enabled.",
+          "Test the Copilot key before changing settings.",
+          "Toggle Keyboard Manager off and on, then test the key again."
+        ],
+        "expected_result": "The remap should work immediately after restart; the current behavior is inactive remapping until the toggle is cycled."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Design Keyboard Manager restart reinitialization",
+    "detail": "The manual toggle is a strong signal that initialization is not reapplied after restart. A targeted maintainer repro can test the persisted-state load and hook startup without asking the reporter to perform maintainer profiling."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Design Keyboard Manager restart reinitialization",
+    "reason": "The manual toggle is a strong signal that initialization is not reapplied after restart. A targeted maintainer repro can test the persisted-state load and hook startup without asking the reporter to perform maintainer profiling."
+  }
+}
