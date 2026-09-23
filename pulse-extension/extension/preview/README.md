@@ -1,0 +1,13 @@
+# Local UI preview
+
+From the `pulse-extension/` project directory, run `npm --prefix extension run preview` and open [the preview](http://127.0.0.1:4186/popup.html?expanded=1).
+
+The preview serves static assets from `extension/public`, JavaScript from `.tmp/extension-ui`, and injects `bridge.js` with sample task records. Tasks, Pull requests, Issues, results, activity, raw logs, and GitHub forms can be inspected. Task actions, GitHub submissions, saved settings, and draft edits only update the current browser session. The banner explicitly identifies fixture mode and provides a case selector and Reset samples. Reset also clears Pulse result drafts in this preview session.
+
+Default fixture mode blocks Host diagnostics, model requests, and GitHub writes. This allows browser interaction testing without a local Host or real account. To deliberately test the separate local diagnostics integration, open `options.html?diagnostics=1`; its banner identifies that mode. Only then do agent tests, gh account detection, and prompt operations call the local Host through `POST /__pulse/diagnostics`. The allowlist contains `agents.test.start/get/cancel`, `github.accounts`, and `prompts.list/sync/get`. A model test actually sends `what's your model`; an unavailable Host or CLI produces an error, never a fabricated successful reply. Prompt operations read the embedded bundle offline; the old sync method is a local reload alias. Settings remain session-only even in diagnostics mode.
+
+The fixture selector covers confirmed PR feedback and explicit code suggestions, no recommended action, required E2E with missing or ready prerequisites, a verified Issue candidate with editable Draft PR content, an Issue needing information, incomplete analysis, a report page that fails once before reload, an unconfirmed GitHub operation, and the original historical review format. These are product source pages with fixture responses, not an installed-extension, Native Messaging, PowerToys runtime, or live GitHub verification.
+
+Agent stdout and stderr in sample tasks are fixtures explicitly labeled Sample. They do not establish that a real agent task ran. The sample bridge uses independent UTF-8 byte cursors like the Host API.
+
+The server binds only to `127.0.0.1` and is not included in the extension package. Set `PULSE_PREVIEW_PORT` to use another local port. The server does not build automatically. The proxy uses the locally compiled `host/bin/Release/net10.0/Pulse.Host.exe` and stores its data in `.tmp/ui-preview-host`. Compile missing output only for final acceptance or an explicit user request, using the local validation steps in the root README. No published Host or release archive is required.
