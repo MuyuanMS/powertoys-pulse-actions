@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 5,
+  "number": 50728,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-23T05:47:51.2302698Z",
+  "evaluated_at": "2026-09-23T05:47:51.2302698Z",
+  "source_updated_at": "2026-09-23T04:34:06Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50728",
+  "title": "Power Display | Mouse Positions Not Updated",
+  "author": "1OTH3R",
+  "authorAssociation": "NONE",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "comments": 0,
+  "confidence": "Yellow",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix hypothesis ready for focused reproduction",
+    "detail": "The rotation path is identifiable, but the report does not yet establish whether the cursor mismatch is caused by PowerDisplay or Windows display-coordinate handling."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Confirm the coordinate-transform failure boundary before starting a fork-side design."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives deterministic steps and a clear PowerDisplay trigger, and the current rotation implementation is a focused code area. However, the described visual-versus-mathematical cursor mismatch may be produced by Windows display-coordinate handling rather than a PowerToys transform, so a targeted reproduction is needed before treating the hypothesis as confirmed.",
+    "evidence": [
+      "The reporter can reproduce after enabling PowerDisplay rotation control and selecting Portrait or Landscape (flipped).",
+      "The report states that the mathematical mouse position changes while the displayed cursor position becomes desynchronized.",
+      "The attached PowerDisplay.log is available, but there are no follow-up comments, recording, or linked fix/duplicate.",
+      "PowerDisplay currently applies orientation through ChangeDisplaySettingsEx and refreshes the monitor orientation; the inspected path does not itself show cursor-coordinate transformation logic."
+    ],
+    "recommended_action": "Run the focused rotation/cursor reproduction on a current build, compare it with the same Windows rotation performed outside PowerToys, and then determine whether the fix belongs in PowerDisplay or in an external display-coordinate boundary.",
+    "evaluated_at": "2026-09-23T05:47:51.2302698Z",
+    "source_updated_at": "2026-09-23T04:34:06Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No existing fix attempt is linked. A repository change may be applicable if the focused reproduction shows that PowerDisplay's rotation/update sequence leaves cursor coordinates stale; ownership remains uncertain until that comparison is made."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Reconcile cursor coordinates after PowerDisplay rotation",
+      "root_cause": "Hypothesis: changing the monitor orientation through the PowerDisplay rotation path updates the display geometry but leaves a cursor-coordinate transform or refresh boundary stale, so the cursor's reported coordinates and rendered position diverge for Portrait or flipped orientations.",
+      "plan": [
+        "Reproduce the mismatch on a current PowerDisplay build and compare it with an equivalent rotation performed through Windows Display Settings.",
+        "Trace the rotation completion and monitor refresh path around DisplayRotationService.SetRotation, MonitorManager.SetRotationAsync, and RefreshAllOrientations to identify whether PowerDisplay owns the stale coordinate state.",
+        "If PowerDisplay owns the boundary, update the rotation completion path to refresh or recompute the affected coordinate mapping after the display mode change, preserving multi-monitor and orientation-specific geometry.",
+        "Add focused coverage for normal, Portrait, Landscape (flipped), and Portrait (flipped) rotations, including cursor movement and coordinate reporting after each transition."
+      ],
+      "verification": [
+        "Run the focused PowerDisplay tests and verify the rotation path refreshes the affected monitor state.",
+        "Manually repeat the issue's four-step sequence for Portrait and Landscape (flipped) and confirm the displayed cursor and reported coordinates remain aligned.",
+        "Compare the result with the equivalent Windows Display Settings rotation to avoid attributing an operating-system cursor bug to PowerToys."
+      ],
+      "confidence": {
+        "score": 58,
+        "level": "yellow",
+        "rationale": "The symptom is deterministic and the rotation path is identifiable, but the inspected PowerDisplay code does not directly manipulate cursor coordinates, so targeted comparison is needed to confirm that a PowerToys change can resolve it."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerDisplay rotation can leave the mouse cursor's displayed position out of sync with its mathematical coordinates when the monitor is changed to Portrait or a flipped orientation.",
+    "known_information": [
+      "The issue is reported against PowerToys version 0.1012632 installed through auto-update.",
+      "The affected area is Power Display on Windows 11 Pro, system-wide installation, with no administrator elevation.",
+      "The reporter enables Show rotation control, rotates a monitor to Portrait or Landscape (flipped), and observes the mismatch.",
+      "The report includes a PowerDisplay.log attachment and no comments or linked work."
+    ],
+    "inferences": [
+      "The failure may occur at the boundary between a display-mode change and the cursor/display-coordinate mapping refresh, but this is not confirmed.",
+      "Because the inspected rotation path uses Windows ChangeDisplaySettingsEx without an obvious cursor transform, the defect may be outside PowerToys or may require a post-rotation refresh rather than a new coordinate formula."
+    ],
+    "analysis": "The report is reproducible enough to justify focused maintainer investigation, and the PowerDisplay rotation implementation provides a bounded ownership path. The missing discriminator is whether the same cursor desynchronization occurs when Windows rotates the display without PowerToys; that result determines whether a PowerDisplay fix is appropriate.",
+    "initial_investigation": [
+      "Read the complete issue body and confirmed there are no comments, labels beyond Issue-Bug and Needs-Triage, assignees, linked work, or existing fix attempt.",
+      "Reviewed the current PowerDisplay rotation path: DisplayRotationService.SetRotation uses EnumDisplaySettings and ChangeDisplaySettingsEx, while MonitorManager refreshes orientation state after a successful rotation.",
+      "Searched the current PowerDisplay sources for cursor-coordinate transformation logic; the identified rotation path does not directly transform cursor coordinates."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-50728",
+      "type": "approve_design",
+      "label": "Design cursor-coordinate fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side investigation after confirming whether the mismatch is PowerDisplay-owned; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce rotated-display cursor mismatch",
+      "reproduce": {
+        "title": "Compare cursor coordinates after PowerDisplay rotation",
+        "module": "Power Display",
+        "version_requirement": "Current development build and the reporter's 0.1012632 build when available",
+        "prerequisites": [
+          "Use Windows 11 with one monitor whose orientation can be changed.",
+          "Enable PowerDisplay and the Show rotation control setting for that monitor.",
+          "Have a way to observe both the visible cursor and a coordinate readout or screen-capture cursor position."
+        ],
+        "setup": [
+          "Capture the cursor position before rotation.",
+          "Prepare a short screen recording or an equivalent coordinate readout so visual and mathematical positions can be compared after each rotation."
+        ],
+        "steps": [
+          "Open the PowerDisplay rotation control.",
+          "Rotate the monitor to Portrait and move the cursor across known screen locations while recording the visible cursor and coordinate readout.",
+          "Repeat with Landscape (flipped), then return to the normal orientation.",
+          "Repeat the same rotations using Windows Display Settings instead of PowerDisplay.",
+          "Compare whether the mismatch occurs only after PowerDisplay rotation or also after the Windows-native rotation."
+        ],
+        "expected_result": "The visible cursor and reported coordinates remain aligned after every orientation change. If the mismatch occurs only through PowerDisplay, the rotation completion path should be investigated as the likely fix boundary; if both paths reproduce it, record it as likely Windows/display-driver behavior rather than assume a PowerToys code fix."
+      }
+    }
+  ]
+}

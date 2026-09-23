@@ -1,139 +1,34 @@
 {
-  "schemaVersion": 5,
-  "id": "pr-50184",
   "number": 50184,
   "kind": "pr",
   "track": "review",
   "stage": "review_in_progress",
-  "owes": "maintainer",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-23T03:35:22Z",
-  "evaluated_at": "2026-09-23T03:35:22Z",
+  "generated_at": "2026-09-23T05:47:38.0613834Z",
+  "evaluated_at": "09/23/2026 03:35:22",
   "source_updated_at": "2026-09-22T21:14:03Z",
   "head_sha": "fb46851f4aaf47cbd624aa48e68c7ebde42d1e93",
   "title": "CmdPal: Icons (4/n) - Prioritize live icon requests and load glyphs directly",
   "url": "https://github.com/microsoft/PowerToys/pull/50184",
-  "state": "OPEN",
-  "draft": false,
-  "summary": "The live upstream head moved to fb46851f4aaf47cbd624aa48e68c7ebde42d1e93 at 2026-09-22T21:14:03Z. The prior fork review state was preserved, but it is no longer current and must be resumed against the fresh head before any ready or approval-gated conclusion.",
-  "confidence": "High",
   "status": {
-    "glyph": "⏳",
-    "label": "Live head changed — resume review loop",
-    "detail": "Current upstream head fb46851f4aaf47cbd624aa48e68c7ebde42d1e93 moved since the saved review. The durable fork trace was preserved, but the saved review evidence is no longer current and the review loop must be resumed before claiming a ready state."
+    "glyph": "...",
+    "label": "Review in progress",
+    "detail": "Live head rechecked. Existing fork PR 498 and branch pr-iterate/50184 preserved; resume at local checkout creation and rebuild before revalidating prior review notes."
   },
-  "next_action": "Resume the saved fork review trace and validate the current live head before re-issuing or approving any review action.",
-  "needs_revalidation": true,
-  "proposed_comments": [
-    {
-      "id": "iconbox-xamlroot-and-stale-unload",
-      "kind": "companion",
-      "title": "Keep IconBox XamlRoot subscriptions and stale unload handling consistent",
-      "severity": "high",
-      "body": "**Affected code:**\n- `src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs` — `OnLoaded`, `OnUnloaded`, and the tracked `XamlRoot` lifecycle\n\n**Problem:** The current head subscribes to the visible XamlRoot directly on every load and does not consistently clear or rebind the tracked root when the control unloads or rebinds. The stale-unload guard also depends on the active-demand state, so a rebound control can incorrectly treat a valid unload as stale.\n\n**Why it matters:** Repeated load cycles can duplicate Changed callbacks, unsubscribe the wrong root after a root transition, or invalidate a rebound control after its request has already completed.\n\n**Suggested change:**\n1. Track the current XamlRoot explicitly, unsubscribe the previous root before subscribing to a new one, and clear the tracked root on unload.\n2. Treat any loaded, in-bounds unload as stale even when _activeRequestDemand is already null and keep the lifecycle guard idempotent across rebinds.\n3. Add or extend the lifecycle regression coverage to confirm repeated load/unload transitions do not duplicate callbacks or stomp the current root.\n\n**Verification:** Run the exact-head CmdPal icon tests and the lifecycle regression coverage; verify repeated load/unload transitions do not duplicate XamlRoot callbacks or invalidate a rebound control.",
-      "out_of_diff_reason": "The fix spans the XamlRoot subscription lifecycle and stale unload ownership, so it is safer and clearer as a consolidating review note than as a single inline anchor.",
-      "outOfDiffReason": "The fix spans the XamlRoot subscription lifecycle and stale unload ownership, so it is safer and clearer as a consolidating review note than as a single inline anchor.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 98,
-        "rationale": "The current code still subscribes directly on every load, removes the handler from the current rather than tracked root, and gates the stale-unload guard on the active request. The exact-head logic remains vulnerable to duplicate callbacks and rebound invalidation during repeated load cycles."
-      }
-    },
-    {
-      "id": "diagnostics-session-and-demand-reserve",
-      "kind": "companion",
-      "title": "Use the current diagnostics session accessor and release the demand reserve during completion",
-      "severity": "high",
-      "body": "**Affected code:**\n- `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadDiagnostics.cs` — `BeginSpeculativeDispatchDeferral`, `GetCurrentSession`, and `IsCurrentSession`\n- `src/modules/cmdpal/Microsoft.CmdPal.UI/Helpers/Icons/IconLoadQueue.cs` — `Complete()` and `_workerSlotsReservedForDemand`\n\n**Problem:** Speculative deferrals still read _activeSession directly in the ETW-only path, bypassing the GetCurrentSession()/IsCurrentSession(...) identity checks. Completion also leaves _workerSlotsReservedForDemand active even after it drains accepted speculative work, so shutdown can stall while the reserve still blocks dispatch.\n\n**Why it matters:** ETW-only listeners lose their speculative-deferral measurements, and accepted speculative work can remain stranded behind a stale demand reserve during shutdown.\n\n**Suggested change:**\n1. Use the current-session accessor for ETW-only speculative deferrals and keep the validity check aligned with the same session identity rules as the rest of the diagnostics lifecycle.\n2. Release the demand reserve during completion and stop recording reserve deferrals once accepted speculative work has drained, then add a shutdown regression test proving the queue can finish.\n3. Validate the queue with the exact-head completion regression covering the two-worker speculative drain case.\n\n**Verification:** Run the CmdPal icon and queue tests and verify the ETW-only speculative measurement path and the completion-with-speculative-work regression both pass without shutdown stalls.",
-      "out_of_diff_reason": "The fix spans diagnostic session identity and queue completion semantics, so the correct current-head guidance is a single general root prompt rather than several stale inline anchors.",
-      "outOfDiffReason": "The fix spans diagnostic session identity and queue completion semantics, so the correct current-head guidance is a single general root prompt rather than several stale inline anchors.",
-      "in_diff": false,
-      "disposition": "proposed",
-      "confidence": {
-        "score": 99,
-        "rationale": "The exact-head root cause is visible in both the ETW-only session accessor mismatch and the stale demand reserve during completion, and the prior queue regression coverage reproduces the shutdown deadlock and speculative drain behavior."
-      }
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-50184",
-      "type": "post_review",
-      "label": "Post the two current-head review comments",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50184,
-        "event": "COMMENT",
-        "head_sha": "0e513d04ab42ab02efe0884a2be1059644bbb575",
-        "body": "Thanks for the icon-loading work. Before merge, please keep the IconBox XamlRoot lifecycle and stale-unload handling consistent, and preserve the current diagnostics/session identity and demand-reserve completion path so speculative work can still drain. These are the two current-head implementation requirements before approval."
-      },
-      "note": "General-only review: posts two consolidated PR conversation comments. The exact upstream head is unchanged; explicit maintainer approval and a final live freshness check are required before posting."
-    }
-  ],
-  "fork_pr": {
-    "number": 498,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/498",
-    "head_sha": "b789892675538bcb24a6bc51792ea4940fb34f04"
-  },
-  "fork_branch": "pr-iterate/50184",
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
     "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-23T03:35:22Z",
-    "previous_phase": "awaiting_review_approval",
-    "advancement_evidence": [
-      "Live upstream head remains 0e513d04ab42ab02efe0884a2be1059644bbb575 and the updatedAt remains 2026-09-08T19:43:11Z.",
-      "Durable fork PR 498 remains converged at b789892675538bcb24a6bc51792ea4940fb34f04 with zero unresolved Copilot threads.",
-      "The earlier three companion findings were remapped to the current RIGHT-side diff and consolidated into two current-head general prompts.",
-      "Exact-head validation remains valid for the current upstream head and no fresh Copilot review or rebuild was requested because the live head and activity are unchanged.",
-      "No upstream write was made to microsoft/PowerToys."
-    ],
-    "resume_action": "resume_existing_review_trace",
-    "live_head_sha": "fb46851f4aaf47cbd624aa48e68c7ebde42d1e93",
-    "fork_trace_preserved": true
-  },
-  "review_fixes": [
-    {
-      "summary": "Track and idempotently manage IconBox XamlRoot subscriptions, and preserve rebound controls on stale unload."
-    },
-    {
-      "summary": "Use the current diagnostics session accessor for ETW-only speculative-dispatch measurements."
-    },
-    {
-      "summary": "Release the demand reserve during completion and add CompletionReleasesDemandReserveToDrainSpeculativeWork regression coverage."
-    }
-  ],
-  "validation": {
-    "upstream_head": {
-      "head_sha": "fb46851f4aaf47cbd624aa48e68c7ebde42d1e93",
-      "result": "pending_resume",
-      "validated_at": "2026-09-14T11:10:00Z",
-      "scope": "Exact upstream PR head, before candidate changes",
-      "detail": "Live upstream head changed; saved review evidence is stale and requires revalidation from the preserved fork trace."
-    }
-  },
-  "judgment": {
-    "status": "review_comments_ready",
-    "rationale": "The live head is unchanged and remains reviewable; the durable fork loop is converged, so this is a stale-draft recheck rather than a new fix. The earlier three findings are still valid and are now consolidated into two current-head general prompts for a COMMENT-only review.",
-    "evidence": [
-      "The live review head remains 0e513d04ab42ab02efe0884a2be1059644bbb575.",
-      "Fork PR 498 remains converged with zero unresolved Copilot threads.",
-      "The exact upstream head validation remains valid for the live tree.",
-      "No fresh Copilot review or rebuild was triggered because the live head and activity are unchanged.",
-      "No review, comment, commit, label, or other write was made to microsoft/PowerToys."
-    ],
-    "recommended_action": "After explicit maintainer approval and a final live freshness check, post the drafted COMMENT review."
+    "checkpoint_at": "2026-09-23T05:47:38.0613834Z"
   },
   "freshness": {
-    "status": "stale_head",
-    "headRefOid": "fb46851f4aaf47cbd624aa48e68c7ebde42d1e93",
-    "updatedAt": "2026-09-22T21:14:03Z",
-    "latestCopilotReviewAt": "2026-09-09T02:36:20Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-23T03:35:22Z",
-    "resume_action": "resume_existing_review_trace"
-  }
+    "queued_at": "2026-09-23T05:47:38.0613834Z",
+    "checkpoint_at": "2026-09-23T05:47:38.0613834Z"
+  },
+  "fork_pr": {
+    "number": 498
+  },
+  "fork_branch": "pr-iterate/50184"
 }
