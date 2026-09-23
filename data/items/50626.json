@@ -4,58 +4,89 @@
   "number": 50626,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-23T08:03:03.9902962Z",
-  "evaluated_at": "2026-09-23T08:03:03.9902962Z",
+  "generated_at": "2026-09-23T10:45:00Z",
+  "evaluated_at": "2026-09-23T10:45:00Z",
   "source_updated_at": "2026-09-23T04:15:56Z",
   "head_sha": "bbe8ee40cb4605d2227876dd55fa572e5beee2b6",
   "title": "Fix ghost checkmark on unchecked checkboxes after re-enabling a settings group",
   "url": "https://github.com/microsoft/PowerToys/pull/50626",
-  "summary": "The fork review converged after correcting an out-of-diff PowerAccent pressed-state regression. PowerToys.Settings built, affected XAML parsed successfully, the fresh Copilot review generated zero comments, and one self-contained general review comment is ready for approval.",
+  "summary": "Current upstream head was revalidated. The exact upstream Settings build passed, the changed blobs are LF-only, and one current-head medium companion finding remains for the PowerAccent selected-language checkmark.",
   "status": {
     "glyph": "...",
-    "label": "Review in progress",
-    "detail": "Live head changed after the saved fork review. Existing fork PR 846 and branch pr-iterate/50626 are preserved; prior findings and validation are not current for this upstream head. Resume by reconciling the fork trace, rebuilding the exact upstream head, and revalidating before any action."
+    "label": "Awaiting review approval",
+    "detail": "The current upstream head is bbe8ee40cb4605d2227876dd55fa572e5beee2b6. One grounded companion action is ready for approval; no upstream write has been made."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "next_action": "Obtain explicit approval before posting the current-head companion review action.",
   "confidence": "High",
-  "needs_revalidation": true,
+  "needs_revalidation": false,
   "phase0": {
     "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
     "disposition": "Proceed",
     "processGates": "The author supplied a linked issue, recording, automated-test result, and detailed manual validation; no process gate remains."
   },
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "preserve-poweraccent-pressed-checkmark",
+      "kind": "companion",
+      "severity": "medium",
+      "title": "Preserve the PowerAccent selected-language checkmark while pressed",
+      "in_diff": false,
+      "disposition": "proposed",
+      "out_of_diff_reason": "The affected ListViewItemPresenter binding is in src/settings-ui/Settings.UI/SettingsXAML/Views/PowerAccentPage.xaml, which is not changed by the upstream PR.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current upstream resource override and the out-of-diff PowerAccent binding were directly traced at the pinned head. The checked-state replacement was built successfully on the converged fork tree and the follow-up Copilot review returned zero new comments."
+      },
+      "body": "### Preserve the PowerAccent selected-language checkmark while pressed\n\n**Severity:** `medium`\n\n**Affected code:** `src/settings-ui/Settings.UI/SettingsXAML/Views/PowerAccentPage.xaml`, specifically the `ListViewItemPresenter.CheckPressedBrush` binding in the selected-language list item template.\n\n**Problem:** This PR makes `CheckBoxCheckGlyphForegroundUncheckedPressed` transparent globally. PowerAccent currently assigns that unchecked-state resource to `CheckPressedBrush`, even though the same presenter uses checked-state resources for its other selected checkmark states. Pressing a selected language therefore hides its checkmark.\n\n**Why it matters:** The ghost-glyph fix should apply only to unchecked checkboxes. Reusing the newly transparent unchecked brush for a selected list item introduces a visible regression in another Settings page and makes selection feedback disappear during pointer press.\n\n**Suggested change:**\n1. Change the PowerAccent `ListViewItemPresenter.CheckPressedBrush` binding from `CheckBoxCheckGlyphForegroundUncheckedPressed` to `CheckBoxCheckGlyphForegroundCheckedPressed`.\n2. Keep the four global unchecked-glyph overrides from this PR unchanged so disabled and re-enabled unchecked settings controls remain glyph-free.\n3. Do not add another global brush override; the PowerAccent presenter should explicitly use the checked-state resource that matches its selected state.\n\n**Verification:** Build `src/settings-ui/Settings.UI/PowerToys.Settings.csproj`. In PowerAccent, select one or more languages and verify their checkmarks remain visible while pressed in Dark, Light, and High Contrast themes. Then disable and re-enable a Settings group containing unchecked checkboxes and confirm the original ghost checkmark remains fixed."
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50626",
+      "type": "post_review",
+      "label": "Post general PowerAccent regression note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50626,
+        "event": "COMMENT",
+        "head_sha": "bbe8ee40cb4605d2227876dd55fa572e5beee2b6"
+      },
+      "note": "General review note only — this posts a separate PR conversation comment because the affected binding is outside the current diff. Revalidate the upstream head before publication."
+    }
+  ],
   "workflow": {
-    "phase": "review_in_progress",
-    "previous_phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-23T08:03:03.9902962Z",
+    "phase": "awaiting_review_approval",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-23T10:45:00Z",
     "advancement_evidence": [
-      "Created fork PR 846 and confirmed its initial two-file scope matched upstream.",
-      "Processed the valid Copilot finding that the global unchecked pressed brush hid PowerAccent selected-language checkmarks.",
-      "Changed PowerAccentPage.xaml to use CheckBoxCheckGlyphForegroundCheckedPressed, pushed fork commit 1c87bac144c40fa191a7dcc11d4d02bcbba3b816, replied to the finding, and resolved its thread.",
-      "Built PowerToys.Settings successfully and validated all affected XAML files as XML.",
-      "Consumed the fresh Copilot review submitted at 2026-09-18T02:26:52Z for the repaired fork head; it generated zero comments and left zero unresolved threads.",
-      "Confirmed the upstream head and check-run state remain current and green.",
+      "Rechecked microsoft/PowerToys PR 50626 live head: bbe8ee40cb4605d2227876dd55fa572e5beee2b6.",
+      "Consumed the saved fork Copilot request with Get-CopilotReviewStatus.ps1; review 5243646083 matched fork head 1c87bac144c40fa191a7dcc11d4d02bcbba3b816, returned zero new comments, and no request is pending.",
+      "Confirmed zero unresolved Copilot threads on fork PR 846.",
+      "Built the exact upstream head with tools/build/build-essentials.cmd after removing the inherited empty GIT_CONFIG_VALUE_3 override; exit code 0 with one pre-existing analyzer warning.",
+      "Ran Test-SuggestionLineEndings.ps1 against both changed upstream blobs; App.xaml and Themes/Colors.xaml are LF-only.",
+      "Grounded the current companion finding against the exact upstream PowerAccentPage.xaml excerpt at lines 136-139.",
       "No public upstream action was taken."
     ],
-    "resume_action": "revalidate_live_head",
+    "resume_action": "awaiting_review_approval",
     "live_recheck": "bbe8ee40cb4605d2227876dd55fa572e5beee2b6"
   },
   "freshness": {
-    "headRefOid": "aed7b7d0cd474b5ebd0eae77610017120d2e7a1b",
-    "updatedAt": "2026-09-17T20:22:10Z",
+    "headRefOid": "bbe8ee40cb4605d2227876dd55fa572e5beee2b6",
+    "updatedAt": "2026-09-23T04:15:56Z",
     "latestCopilotReviewAt": "2026-09-18T02:26:52Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-18T02:31:30Z",
-    "evaluated_at": "2026-09-23T08:03:03.9902962Z",
+    "checkedAt": "2026-09-23T10:45:00Z",
+    "evaluated_at": "2026-09-23T10:45:00Z",
     "source_updated_at": "2026-09-23T04:15:56Z",
     "head_sha": "bbe8ee40cb4605d2227876dd55fa572e5beee2b6",
-    "checked_at": "2026-09-23T08:03:03.9902962Z",
-    "status": "revalidation_required"
+    "checked_at": "2026-09-23T10:45:00Z",
+    "status": "current"
   },
   "fork_pr": {
     "number": 846,
@@ -71,28 +102,43 @@
       "result": "passed",
       "latestCopilotReviewAt": "2026-09-18T02:26:52Z",
       "unresolvedCopilotThreads": 0,
-      "details": "The fresh review covered the repaired fork head and generated zero published comments."
+      "details": "The saved Copilot review matched the durable fork head and generated zero new published comments."
     },
     "build": {
       "result": "passed",
       "commands": [
-        "Build src/settings-ui/Settings.UI/PowerToys.Settings.csproj in x64 Debug",
-        "Parse App.xaml, Themes/Colors.xaml, and Views/PowerAccentPage.xaml as XML",
-        "git diff --check"
+        "Set POWERTOYS_DISABLE_SPECTRE=1 and clear inherited GIT_CONFIG_* overrides",
+        "<PowerToysCheckout>\\tools\\build\\build-essentials.cmd"
       ],
-      "details": "The Settings project and the exact fork-only companion correction built successfully."
+      "details": "Exact upstream head built runner and PowerToys.Settings successfully with one pre-existing CsWinRT analyzer warning and no errors."
     },
     "upstream_head": {
-      "head_sha": "aed7b7d0cd474b5ebd0eae77610017120d2e7a1b",
-      "result": "not_applicable",
-      "details": "The required correction is outside the current upstream diff and is represented by the detailed companion comment."
+      "head_sha": "bbe8ee40cb4605d2227876dd55fa572e5beee2b6",
+      "result": "passed",
+      "details": "The exact upstream head completed the standard Debug x64 essentials build."
     },
     "suggestion_patch": {
-      "head_sha": "aed7b7d0cd474b5ebd0eae77610017120d2e7a1b",
+      "head_sha": "bbe8ee40cb4605d2227876dd55fa572e5beee2b6",
       "result": "not_applicable",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [],
-      "details": "The proposed companion comment contains no GitHub suggestion block."
+      "details": "The finding is a companion comment because its affected binding is outside the upstream diff."
+    },
+    "line_ending_safety": {
+      "head_sha": "bbe8ee40cb4605d2227876dd55fa572e5beee2b6",
+      "result": "passed",
+      "files": [
+        {
+          "path": "src/settings-ui/Settings.UI/SettingsXAML/App.xaml",
+          "line_endings": "lf",
+          "utf8_bom": false
+        },
+        {
+          "path": "src/settings-ui/Settings.UI/SettingsXAML/Themes/Colors.xaml",
+          "line_endings": "lf",
+          "utf8_bom": false
+        }
+      ]
     }
   },
   "upstream_safety": {
