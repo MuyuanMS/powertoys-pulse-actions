@@ -17,7 +17,7 @@
   "confidence": "High",
   "processVerdict": "proceed",
   "generated_at": "2026-09-15T11:55:00Z",
-  "evaluated_at": "2026-09-15T11:55:00Z",
+  "evaluated_at": "2026-09-24T06:35:00Z",
   "source_updated_at": "2026-09-09T15:52:49Z",
   "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
   "summary": "The outstanding fork-side Copilot review was consumed before drafting; fork PR 728 has five completed Copilot reviews, zero new comments on the latest pass, and zero unresolved threads. The unchanged upstream head still has two current-head request-changes findings: theme-listener startup/resource cleanup is not failure-safe, and the new general fan-out advertises unsupported cross-module behavior while retaining tray bitmap lifetime gaps.",
@@ -29,7 +29,7 @@
   "next_action": {
     "glyph": "ACTION",
     "label": "Approve, edit, or hold the drafted request-changes review",
-    "reason": "Recheck the live head and activity immediately before any publication. The two companion findings are unpublished and require explicit maintainer approval."
+    "reason": "Recheck the live head and activity immediately before any publication. The inline finding and companion finding are unpublished and require explicit maintainer approval."
   },
   "needs_revalidation": true,
   "source": {
@@ -49,13 +49,15 @@
   "proposed_comments": [
     {
       "id": "make-theme-listener-initialization-transactional",
-      "kind": "companion",
+      "kind": "inline",
       "severity": "high",
       "title": "Make theme-listener initialization transactional",
-      "body": "**Affected code:**\n- `src/common/ManagedCommon/ThemeListener.cs` - `ThemeListener` constructor and `Dispose`\n- `src/modules/MouseWithoutBorders/App/Form/frmScreen.cs` - `ConfigureTrayThemeListener`\n\n**Problem:** `ThemeListener` starts the app-theme WMI watcher before the system-theme watcher and initial theme reads have completed. If a later construction, `Start`, or theme read fails, the earlier watcher can remain subscribed because the fields are not assigned until construction succeeds. Mouse Without Borders constructs this listener during form startup, so an unavailable WMI service can both leak a watcher and abort the remaining tray-form initialization.\n\n**Why it matters:** A machine without usable WMI theme notifications should still start Mouse Without Borders with its current icon, and a failed listener construction must not leave an active subscription behind. Otherwise startup reliability and repeated enable/disable cycles degrade over time.\n\n**Suggested change:**\n1. Create both `ManagementEventWatcher` instances in locals and attach handlers only inside a guarded initialization block.\n2. Start both watchers and read the initial themes before assigning them to the fields.\n3. On any failure, detach handlers, dispose both locals, rethrow, and catch/log the failure in `ConfigureTrayThemeListener` so form initialization continues.\n4. Add focused coverage for failure after the first watcher starts and for disposal after a successful initialization.\n\n**Verification:** Run the ManagedCommon and Mouse Without Borders builds/tests, then exercise enabling the setting on a system where theme monitoring cannot start and confirm the form still initializes and no watcher remains subscribed.",
-      "out_of_diff_reason": "The required fix spans ThemeListener construction, event subscription, startup failure handling, disposal, and the Mouse Without Borders caller rather than one safe current diff hunk.",
-      "outOfDiffReason": "The required fix spans ThemeListener construction, event subscription, startup failure handling, disposal, and the Mouse Without Borders caller rather than one safe current diff hunk.",
-      "in_diff": false,
+      "body": "### Make theme-listener initialization transactional\n\n**Severity:** `high`\n\n`ThemeListener` starts the first WMI watcher before the second watcher and the initial theme reads have completed, but the constructor has no rollback path if a later `Start()` or read fails. Mouse Without Borders creates this listener during tray-form startup, so an unavailable theme-notification service can leave an active watcher behind even though startup should continue with the current icon.\n\nCreate both watchers in locals, attach handlers and start them inside a guarded initialization block, and assign the fields only after both watchers and the initial reads succeed. On failure, detach and dispose both locals, then let the caller log the failure and continue initializing the form.",
+      "path": "src/common/ManagedCommon/ThemeListener.cs",
+      "start_line": 29,
+      "line": 76,
+      "side": "RIGHT",
+      "in_diff": true,
       "confidence": {
         "score": 96,
         "rationale": "The upstream constructor starts watchers sequentially without rollback, while the changed Mouse Without Borders startup path constructs the listener directly during form initialization. The fork fixed this exact failure mode and the fix is absent from the upstream head."
@@ -106,14 +108,14 @@
       "Fork PR 728 has five completed Copilot reviews; the latest review at 2026-09-09T20:34:27Z returned zero new comments.",
       "The durable fork state reports zero unresolved Copilot threads.",
       "The upstream head remains 502db9b699572f54fefb65ec2829797fd02eec9e.",
-      "The legacy sparse action was replaced with two self-contained current-head companion findings and a pinned approval-gated request_changes action."
+      "The legacy sparse action was replaced with one current-head inline finding, one self-contained companion finding, and a pinned approval-gated request_changes action."
     ]
   },
   "actions": [
     {
       "id": "request-changes-49226",
       "type": "request_changes",
-      "label": "Request changes with two current-head implementation notes",
+      "label": "Request changes with one inline finding and one general implementation note",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -124,7 +126,7 @@
         "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
         "body": "Thanks for the theme-adaptive tray icon work. Before this can merge, please make theme-listener startup failure-safe and keep the setting propagation scoped to implemented consumers while closing the tray bitmap/icon lifetime gaps described in the two review notes."
       },
-      "note": "Companion-only review: posts the two self-contained current-head implementation notes as PR conversation comments. The draft is unpublished and requires explicit maintainer approval plus a final freshness check."
+      "note": "The transactional-listener finding is submitted inline; the cross-module fan-out/lifetime finding posts as a separate PR conversation comment. The draft is unpublished and requires explicit maintainer approval plus a final freshness check."
     }
   ],
   "safe_actions": [

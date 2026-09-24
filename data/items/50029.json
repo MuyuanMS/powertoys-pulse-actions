@@ -8,7 +8,7 @@
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-18T04:10:00Z",
-  "evaluated_at": "2026-09-18T04:10:00Z",
+  "evaluated_at": "2026-09-24T06:35:00Z",
   "source_updated_at": "2026-08-20T14:08:59Z",
   "head_sha": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
   "title": "Add setting to disable cursor wrap in Game Mode (full screen D3D application).",
@@ -21,13 +21,13 @@
   "draft": false,
   "confidence": "high",
   "processVerdict": "proceed",
-  "summary": "The live upstream head is unchanged. The resumed fork review moved the shell Game Mode query out of the low-level mouse hook, made live settings changes start and stop polling on the hook-owning event thread, and preserved CursorWrap operation if polling cannot start. Fork head 309f1714d06f5499630f2cdb0d6b78866762121d builds, the latest freshly requested Copilot review produced zero new comments, and unresolved fork Copilot threads are zero. The complete correction spans hook state, worker lifetime, settings updates, and failure handling, so it is represented as one implementation-ready companion request.",
+  "summary": "The live upstream head is unchanged. The resumed fork review moved the shell Game Mode query out of the low-level mouse hook, made live settings changes start and stop polling on the hook-owning event thread, and preserved CursorWrap operation if polling cannot start. Fork head 309f1714d06f5499630f2cdb0d6b78866762121d builds, the latest freshly requested Copilot review produced zero new comments, and unresolved fork Copilot threads are zero. The blocking shell query maps directly to the current MouseHookProc diff and is now drafted as exact inline prose.",
   "status": {
     "glyph": "DRAFT",
     "label": "Request changes drafted",
-    "detail": "One current-head Game Mode polling lifecycle correction is ready for maintainer approval as a general review comment."
+    "detail": "One current-head Game Mode hook-path correction is ready for maintainer approval as an inline review comment."
   },
-  "next_action": "After explicit maintainer approval and a freshness re-check, submit the selected general comment in a REQUEST_CHANGES review.",
+  "next_action": "After explicit maintainer approval and a freshness re-check, submit the selected inline comment in a REQUEST_CHANGES review.",
   "phase0": {
     "author": "mikehall-ms",
     "author_association": "MEMBER",
@@ -40,13 +40,16 @@
   "proposed_comments": [
     {
       "id": "move-game-mode-query-out-of-mouse-hook",
-      "kind": "companion",
-      "in_diff": false,
+      "kind": "inline",
+      "in_diff": true,
       "disposition": "proposed",
       "severity": "high",
-      "title": "Keep Game Mode detection and lifecycle work off the mouse hook",
-      "out_of_diff_reason": "The proven correction coordinates state fields, worker lifetime, live settings handoff, hook startup and shutdown, and error fallback across multiple methods; no single current RIGHT-side range can safely implement the complete change.",
-      "body": "### Keep Game Mode detection and lifecycle work off the mouse hook\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/MouseUtils/CursorWrap/dllmain.cpp`, especially `MouseHookProc`, `parse_settings`, `StartMouseHook`, `StopMouseHook`, and the event-listener loop; `src/modules/MouseUtils/CursorWrap/pch.h` for the worker exception type.\n\n**Problem:** The new option calls `detect_game_mode()` from `MouseHookProc`. That function invokes `SHQueryUserNotificationState` while processing `WH_MOUSE_LL`, so the shell query executes on the system-wide input callback. A simple timer check only reduces frequency; it does not make the blocking call safe. The setting can also change while the hook is active, so any background polling lifecycle must be updated on the hook-owning thread rather than raced from the runner settings thread.\n\n**Why it matters:** Low-level mouse hooks must return quickly. A delayed shell query can stall mouse delivery or cause Windows to stop delivering the hook. If live settings transitions do not start or stop polling safely, the checkbox can have no effect until restart, race teardown, or disable CursorWrap when the optional polling worker cannot start.\n\n**Suggested change:**\n1. Store the option and cached Game Mode result in atomics, and make `MouseHookProc` read only those cached values.\n2. Poll `detect_game_mode()` from a dedicated worker with an explicit stop event; start it only while the hook is active and the option is enabled.\n3. Signal live option changes through a module-lifetime event consumed by the existing hook-owning event loop, then start or stop the polling worker there.\n4. Join the polling worker and close its stop handle during hook shutdown; join the event thread before closing the settings-change event during module destruction.\n5. If polling setup fails, log the failure, clear the cached Game Mode state, and continue installing the mouse hook so normal CursorWrap behavior remains available.\n\n**Verification:** Build the Debug x64 runner/settings essentials and `CursorWrap.vcxproj`. With CursorWrap already active, toggle the Game Mode option off and on without restarting PowerToys and verify the behavior changes immediately. Enter and leave a fullscreen D3D application while moving the cursor across monitor edges; confirm wrapping is suppressed only while Game Mode is active and mouse input remains responsive. Exercise module disable/shutdown while settings updates are occurring and verify there is no hang, stale callback, or handle use after teardown.",
+      "title": "Keep Game Mode detection out of WH_MOUSE_LL",
+      "path": "src/modules/MouseUtils/CursorWrap/dllmain.cpp",
+      "start_line": 721,
+      "line": 729,
+      "side": "RIGHT",
+      "body": "### Keep Game Mode detection out of `WH_MOUSE_LL`\n\n**Severity:** `high`\n\n`MouseHookProc` calls `detect_game_mode()` here, and that helper directly invokes `SHQueryUserNotificationState`. This shell query now runs in the system-wide low-level mouse-hook callback, where delays can stall mouse input or cause Windows to stop delivering the hook.\n\nRefresh Game Mode state outside the hook and have the callback read only a cached result. Verify with a fullscreen D3D application that wrapping is suppressed while Game Mode is active without delaying ordinary mouse input.",
       "confidence": {
         "score": 97,
         "rationale": "The exact upstream head performs SHQueryUserNotificationState through detect_game_mode at lines 721-729 of the low-level hook. The coordinated fork correction builds, its two published lifecycle findings were fixed and resolved, and the final fresh Copilot review on fork head 309f1714d produced zero new comments."
@@ -57,7 +60,7 @@
     {
       "id": "request-changes-50029",
       "type": "request_changes",
-      "label": "Request the Game Mode polling lifecycle correction",
+      "label": "Request the inline Game Mode hook-path correction",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -67,9 +70,9 @@
         "pr": 50029,
         "event": "REQUEST_CHANGES",
         "head_sha": "40a0e8b21d39cb624edb1312dc2d6b9eca975a8e",
-        "body": "Please address the Game Mode detection and polling lifecycle issue described in the selected general comment before merge."
+        "body": "Please address the Game Mode detection issue identified in the selected inline comment before merge."
       },
-      "note": "Companion-only action: the implementation request is posted as a separate general PR comment. No write has been made to microsoft/PowerToys."
+      "note": "The implementation request is submitted as an inline review comment. No write has been made to microsoft/PowerToys."
     }
   ],
   "workflow": {

@@ -17,10 +17,10 @@
   "confidence": "High",
   "processVerdict": "proceed",
   "generated_at": "2026-09-15T13:21:19Z",
-  "evaluated_at": "2026-09-15T13:21:19Z",
+  "evaluated_at": "2026-09-24T06:35:00Z",
   "source_updated_at": "2026-09-05T00:24:33Z",
   "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
-  "summary": "The saved fork review loop was resumed and its existing Copilot results were consumed before any new request. The latest fork pass returned zero new published comments with zero unresolved Copilot threads. The exact upstream head remains unchanged and passed targeted Advanced Paste builds; five current-head findings are drafted for maintainer approval.",
+  "summary": "The saved fork review loop was resumed and its existing Copilot results were consumed before any new request. The latest fork pass returned zero new published comments with zero unresolved Copilot threads. The exact upstream head remains unchanged and passed targeted Advanced Paste builds; four independently grounded current-head inline findings are drafted for maintainer approval. The unsupported memory-pressure observation was withdrawn.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
@@ -29,7 +29,7 @@
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted review comments",
-    "reason": "The five proposed comments are pinned to the live upstream head and remain unpublished pending explicit maintainer approval."
+    "reason": "The four proposed inline comments are pinned to the live upstream head and remain unpublished pending explicit maintainer approval."
   },
   "needs_revalidation": false,
   "source": {
@@ -79,20 +79,6 @@
       "disposition": "proposed"
     },
     {
-      "id": "bound-large-image-jpeg-memory",
-      "kind": "companion",
-      "title": "Keep large-image JPEG conversion memory bounded",
-      "severity": "medium",
-      "body": "### Keep large-image JPEG conversion memory bounded\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs` (`PasteAsJpgFileAsync` and the bitmap-normalization path).\n\n**Problem:** Normalizing and encoding a large clipboard image can materialize several full-frame buffers at once. A 4000 x 3000 BGRA image is approximately 48 MB per copy, so repeated bitmap conversions plus managed copies can consume hundreds of megabytes.\n\n**Why it matters:** Large photos are a primary use case for JPEG output, and excessive transient allocation can make Advanced Paste slow, trigger memory pressure, or fail on otherwise valid input.\n\n**Suggested change:**\n1. Normalize pixels through a locked buffer, encoder-supported surface, or bounded row-wise conversion rather than creating repeated full-frame managed copies.\n2. Reuse or release intermediate surfaces before allocating the encoder output.\n3. Add a focused large transparent-image test or document and enforce a deliberate input-size limit.\n\n**Verification:** Convert a representative 4000 x 3000 transparent clipboard image, confirm the JPEG output is correct, and measure peak working-set growth to verify it remains bounded.",
-      "in_diff": false,
-      "out_of_diff_reason": "The concern spans allocation and conversion behavior across the method rather than one newly added RIGHT-side line, so no single current-diff anchor represents the required coordinated fix.",
-      "confidence": {
-        "score": 88,
-        "rationale": "The reviewed conversion approach can hold multiple full-frame representations; the exact peak depends on WinRT encoder internals."
-      },
-      "disposition": "proposed"
-    },
-    {
       "id": "preserve-legacy-hotkey-ids",
       "kind": "inline",
       "title": "Preserve hotkey IDs for legacy settings",
@@ -129,7 +115,7 @@
     {
       "id": "post-review-50081",
       "type": "post_review",
-      "label": "Post four inline findings and one general review note",
+      "label": "Post four inline findings",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -139,11 +125,11 @@
         "event": "COMMENT",
         "head_sha": "a877c02e63252545404b69398e4521867a1d7a29"
       },
-      "note": "The four inline findings are submitted in one COMMENT review. The memory-bounds finding posts as a separate PR conversation comment. Draft only; no public write has occurred."
+      "note": "The four independently grounded inline findings are submitted in one COMMENT review. The unsupported memory-bounds observation was withdrawn. Draft only; no public write has occurred."
     }
   ],
   "safe_actions": [
-    "Present the five drafted current-head comments for explicit maintainer approval",
+    "Present the four drafted current-head inline comments for explicit maintainer approval",
     "Post nothing upstream until the pinned head and activity snapshot are revalidated",
     "Hold the review without changing labels, review state, or PR state",
     "Re-run the fork review loop and exact-head validation after material upstream activity"

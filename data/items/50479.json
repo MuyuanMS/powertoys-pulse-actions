@@ -8,7 +8,7 @@
   "owes": "maintainer",
   "pending_author": false,
   "generated_at": "2026-09-15T12:09:34Z",
-  "evaluated_at": "2026-09-15T12:09:34Z",
+  "evaluated_at": "2026-09-24T06:35:00Z",
   "source_updated_at": "2026-09-09T09:42:37Z",
   "head_sha": "ff1dac981d70f489710a488da32df1de7bc0ff23",
   "title": "[Shortcut Guide] Restore keyboard tab order and accessible focus to shortcut items",
@@ -21,22 +21,22 @@
   "draft": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "summary": "The completed fork review was consumed before resuming and remains converged: the latest Copilot pass on fork head 37ad8759d6326877588fae80f0410ab1324f41c2 returned zero new comments, with zero unresolved Copilot threads. The live upstream head still lacks the current-head collection-navigation correction: TabFocusNavigation=Once belongs on MainItemsRepeater rather than ScrollViewer.",
+  "summary": "The completed fork review was consumed before resuming and remains converged: the latest Copilot pass on fork head 37ad8759d6326877588fae80f0410ab1324f41c2 returned zero new comments, with zero unresolved Copilot threads. The live upstream head still lacks grouped Tab navigation for MainItemsRepeater; the finding now maps to the current RIGHT-side ScrollViewer change as exact inline prose.",
   "status": {
     "glyph": "📝",
     "label": "Review complete — approval required",
-    "detail": "Upstream head ff1dac981d70f489710a488da32df1de7bc0ff23 remains current. Fork PR 755 is converged at 37ad8759d6326877588fae80f0410ab1324f41c2 with zero new Copilot comments and zero unresolved threads. One current-head companion request is drafted; nothing has been posted upstream."
+    "detail": "Upstream head ff1dac981d70f489710a488da32df1de7bc0ff23 remains current. Fork PR 755 is converged at 37ad8759d6326877588fae80f0410ab1324f41c2 with zero new Copilot comments and zero unresolved threads. One current-head inline request is drafted; nothing has been posted upstream."
   },
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "The companion request is pinned to the unchanged upstream head. Explicit maintainer approval and the safe publisher are required before any write to microsoft/PowerToys."
+    "reason": "The inline request is pinned to the unchanged upstream head. Explicit maintainer approval and the safe publisher are required before any write to microsoft/PowerToys."
   },
   "actions": [
     {
       "id": "request-changes-50479",
       "type": "request_changes",
-      "label": "Request changes with one current-head Shortcut Guide accessibility finding as a separate general PR comment",
+      "label": "Request changes with one current-head inline Shortcut Guide accessibility finding",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -47,22 +47,23 @@
         "head_sha": "ff1dac981d70f489710a488da32df1de7bc0ff23",
         "body": "Thanks for the focused accessibility improvement and the detailed validation evidence. Before merge, please address the current-head shortcut collection navigation finding: set TabFocusNavigation=\"Once\" on MainItemsRepeater so Tab enters and exits the collection as one group while arrow-key navigation remains available within the list."
       },
-      "note": "Draft only. The companion finding will post as a separate general PR comment, not an inline comment. No review, comment, label, close, or other public write has occurred on microsoft/PowerToys."
+      "note": "Draft only. The finding will be submitted as an inline review comment. No review, comment, label, close, or other public write has occurred on microsoft/PowerToys."
     }
   ],
   "proposed_comments": [
     {
       "id": "group-shortcut-collection-tab-navigation",
-      "kind": "companion",
+      "kind": "inline",
       "title": "Group shortcut collection tab navigation",
       "severity": "medium",
-      "body": "### Group shortcut collection tab navigation\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/ShortcutGuide/ShortcutGuide.Ui/Controls/ShortcutsPage.xaml`, specifically `MainItemsRepeater` and its surrounding `ScrollViewer`.\n\n**Problem:** The shortcut items are now individually focusable, but the collection still exposes every item as a separate Tab stop. For manifests with many shortcuts, keyboard users must tab through the entire list before leaving it, even though arrow keys already provide within-list navigation.\n\n**Why it matters:** A long shortcut manifest creates an unnecessarily long keyboard path and makes it difficult to leave the collection efficiently. The current `TabFocusNavigation=\"Once\"` placement on `ScrollViewer` does not group the repeater's realized item controls, so the accessibility improvement still leaves the collection behaving as many Tab stops.\n\n**Suggested change:**\n1. In `src/modules/ShortcutGuide/ShortcutGuide.Ui/Controls/ShortcutsPage.xaml`, move `TabFocusNavigation=\"Once\"` from the surrounding `ScrollViewer` to the `MainItemsRepeater` element.\n2. Keep the shortcut item controls focusable and preserve their existing arrow-key navigation behavior; do not remove the item-level automation name or focus visual changes.\n3. Verify that the `ScrollViewer` no longer carries the grouping property and that `MainItemsRepeater` is the single Tab-navigation group.\n\n```xml\n<ItemsRepeater x:Name=\"MainItemsRepeater\" TabFocusNavigation=\"Once\">\n```\n\n**Verification:**\n1. Build `ShortcutGuide.Ui` in Debug x64 from the current upstream head.\n2. Launch `<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe` and open Shortcut Guide.\n3. Tab into the shortcut collection and confirm Tab enters and exits the collection as one group instead of stopping on every shortcut.\n4. Use Down Arrow and Up Arrow inside the collection to confirm keyboard users can still move between shortcut cards, and verify each focused card retains its UI Automation name and system focus visual.",
-      "in_diff": false,
-      "out_of_diff_reason": "The required property belongs on MainItemsRepeater, while the current upstream diff only changes the surrounding ScrollViewer line; there is no safe current RIGHT-side diff anchor for an apply-ready inline suggestion.",
-      "outOfDiffReason": "The required property belongs on MainItemsRepeater, while the current upstream diff only changes the surrounding ScrollViewer line; there is no safe current RIGHT-side diff anchor for an apply-ready inline suggestion.",
+      "body": "### Group the shortcut collection's Tab navigation\n\n**Severity:** `medium`\n\nThis change makes the surrounding `ScrollViewer` non-tab-stop, but `MainItemsRepeater` still has no `TabFocusNavigation` grouping while each shortcut item remains individually tab-stop. The collection can therefore still become a long sequence of Tab stops.\n\nSet `TabFocusNavigation=\"Once\"` on `MainItemsRepeater`, while preserving the item focus behavior and arrow-key navigation. Verify that Tab enters and exits the collection as one group and that Up/Down still move between shortcut cards.",
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Pages/ShortcutsPage.xaml",
+      "line": 46,
+      "side": "RIGHT",
+      "in_diff": true,
       "confidence": {
-        "score": 96,
-        "rationale": "The consumed Copilot review identified the WinUI focus-navigation placement issue, the converged fork moved the property from ScrollViewer to MainItemsRepeater, and the exact candidate was previously built successfully on the pinned upstream head."
+        "score": 89,
+        "rationale": "The live diff makes the surrounding ScrollViewer non-tab-stop, while MainItemsRepeater has no grouping navigation property and the shortcut items remain individually tab-stop."
       },
       "disposition": "proposed"
     }
@@ -205,18 +206,21 @@
         "disposition": "Request changes",
         "phase0Note": "Community PR with visual evidence, documented automated validation, CLA success, and four visible checks green; no separate process ask is outstanding.",
         "publicPayload": {
-          "contextBody": "Thanks for the focused accessibility improvement and the detailed validation evidence. One keyboard-navigation edge case remains in the shortcut collection; please address the companion note below so the list does not become a long sequence of individual Tab stops.",
+          "contextBody": "Thanks for the focused accessibility improvement and the detailed validation evidence. One keyboard-navigation edge case remains in the shortcut collection; please address the inline note below so the list does not become a long sequence of individual Tab stops.",
           "items": [
             {
               "id": "group-shortcut-collection-tab-navigation",
-              "kind": "companion",
+              "kind": "inline",
               "severity": "medium",
               "title": "Group shortcut collection tab navigation",
-              "body": "### Group shortcut collection tab navigation\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/ShortcutGuide/ShortcutGuide.Ui/Controls/ShortcutsPage.xaml`, specifically `MainItemsRepeater` and its surrounding `ScrollViewer`.\n\n**Problem:** The shortcut items are now individually focusable, but the collection still exposes every item as a separate Tab stop. For manifests with many shortcuts, keyboard users must tab through the entire list before leaving it, even though arrow keys already provide within-list navigation.\n\n**Why it matters:** A long shortcut manifest creates an unnecessarily long keyboard path and makes it difficult to leave the collection efficiently. The current `TabFocusNavigation=\"Once\"` placement on `ScrollViewer` does not group the repeater's realized item controls, so the accessibility improvement still leaves the collection behaving as many Tab stops.\n\n**Suggested change:**\n1. In `src/modules/ShortcutGuide/ShortcutGuide.Ui/Controls/ShortcutsPage.xaml`, move `TabFocusNavigation=\"Once\"` from the surrounding `ScrollViewer` to the `MainItemsRepeater` element.\n2. Keep the shortcut item controls focusable and preserve their existing arrow-key navigation behavior; do not remove the item-level automation name or focus visual changes.\n3. Verify that the `ScrollViewer` no longer carries the grouping property and that `MainItemsRepeater` is the single Tab-navigation group.\n\n```xml\n<ItemsRepeater x:Name=\"MainItemsRepeater\" TabFocusNavigation=\"Once\">\n```\n\n**Verification:**\n1. Build `ShortcutGuide.Ui` in Debug x64 from the current upstream head.\n2. Launch `<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe` and open Shortcut Guide.\n3. Tab into the shortcut collection and confirm Tab enters and exits the collection as one group instead of stopping on every shortcut.\n4. Use Down Arrow and Up Arrow inside the collection to confirm keyboard users can still move between shortcut cards, and verify each focused card retains its UI Automation name and system focus visual.",
-              "outOfDiffReason": "The required property belongs on MainItemsRepeater, but the current upstream diff only changes the surrounding ScrollViewer line; there is no safe current RIGHT-side diff anchor for an apply-ready inline suggestion.",
+              "body": "### Group the shortcut collection's Tab navigation\n\n**Severity:** `medium`\n\nThis change makes the surrounding `ScrollViewer` non-tab-stop, but `MainItemsRepeater` still has no `TabFocusNavigation` grouping while each shortcut item remains individually tab-stop. The collection can therefore still become a long sequence of Tab stops.\n\nSet `TabFocusNavigation=\"Once\"` on `MainItemsRepeater`, while preserving the item focus behavior and arrow-key navigation. Verify that Tab enters and exits the collection as one group and that Up/Down still move between shortcut cards.",
+              "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/Pages/ShortcutsPage.xaml",
+              "startLine": 46,
+              "line": 46,
+              "side": "RIGHT",
               "confidence": {
-                "score": 96,
-                "rationale": "The latest Copilot review identified the WinUI focus-navigation placement issue, the fork fix moved the property from ScrollViewer to MainItemsRepeater, and the exact candidate built successfully on the pinned upstream head."
+                "score": 89,
+                "rationale": "The live diff makes the surrounding ScrollViewer non-tab-stop, while MainItemsRepeater has no grouping navigation property and the shortcut items remain individually tab-stop."
               }
             }
           ]
@@ -241,7 +245,7 @@
       "Unresolved Copilot thread count is zero.",
       "Resumed fork local checkout rebuilt successfully with build-essentials.cmd and ShortcutGuide.Ui build.cmd; PowerToys.exe is present.",
       "Live upstream head ff1dac981d70f489710a488da32df1de7bc0ff23 and activity remain unchanged.",
-      "The fork-only MainItemsRepeater correction is represented as one current-head companion request and is not attributed to upstream.",
+      "The MainItemsRepeater correction is independently grounded against the current upstream diff and represented as one current-head inline request.",
       "No dashboard emit, commit, push, or microsoft/PowerToys write was performed."
     ]
   },
