@@ -1,224 +1,35 @@
 {
-  "schemaVersion": 5,
-  "id": "pr-50183",
   "number": 50183,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
-  "owes": "maintainer",
+  "stage": "review_in_progress",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-17T13:54:07.8181573Z",
-  "evaluated_at": "2026-09-17T13:54:07.8181573Z",
-  "source_updated_at": "2026-09-08T19:43:10Z",
-  "head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
+  "generated_at": "2026-09-24T01:32:37.82812Z",
+  "evaluated_at": "2026-09-24T01:32:37.82812Z",
+  "source_updated_at": "2026-09-22T21:14:00Z",
+  "head_sha": "25f2a06813e5f16747cb1133e21d02c3d4fb8cda",
   "title": "CmdPal: Icons (3/n) - Harden icon caches and coalesce redundant refreshes",
   "url": "https://github.com/microsoft/PowerToys/pull/50183",
-  "summary": "The live upstream head remains unchanged. The existing fork review PR 807 was resumed without re-mirroring; its latest Copilot review has zero published comments and zero unresolved threads. The fork branch and exact upstream head both rebuilt successfully, and two localized fork-only correctness fixes are represented as approval-gated current-head REQUEST_CHANGES suggestions.",
   "status": {
-    "glyph": "📝",
-    "label": "Current-head REQUEST_CHANGES review drafted",
-    "detail": "Upstream head 8cc367d9d00d9aa91d2515f84ed64fa195561f41 is still live. Fork PR 807 at 712d92adb6a77442239c2a794e2e9e1f581f52dd rebuilt successfully with zero unresolved Copilot threads; exact upstream and suggestion-candidate builds passed, and IconBox.cs raw-blob EOL safety passed."
+    "glyph": "...",
+    "label": "Review in progress",
+    "detail": "Current upstream head verified; fork review PR 891 at a2144e0a3384477ee694b2907a7ab4b23e9291ed has clean Copilot review, zero unresolved threads, and passing CmdPal UI build/tests."
   },
-  "next_action": {
-    "glyph": "post",
-    "label": "Approve, edit, or hold the current-head REQUEST_CHANGES review",
-    "reason": "The review is pinned to the unchanged upstream head and requires explicit maintainer approval plus a final live freshness check before any original-repository write."
-  },
-  "needs_revalidation": false,
-  "source": {
-    "repository": "microsoft/PowerToys",
-    "headRefOid": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
-    "updatedAt": "2026-09-08T19:43:10Z",
-    "state": "OPEN",
-    "draft": false,
-    "baseRefOid": "b781101d3744c39c5359120453726be14e25e887"
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
+  "actions": [],
+  "workflow": {
+    "phase": "review_in_progress",
+    "checkpoint_at": "2026-09-24T01:32:37.82812Z"
   },
   "freshness": {
-    "status": "fresh",
-    "headRefOid": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
-    "updatedAt": "2026-09-08T19:43:10Z",
-    "latestCopilotReviewAt": "2026-09-14T16:17:54Z",
-    "latestForkCommitAt": "2026-09-14T16:06:36Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-17T13:54:07.8181573Z"
-  },
-  "proposed_comments": [
-    {
-      "id": "record-etw-only-icon-requests",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Start diagnostics when ETW is the only listener",
-      "body": "### Start diagnostics when ETW is the only listener\r\n\r\n**Severity:** `medium`\r\n\r\nWhen an ETW consumer enables `IconLoadEventSource` without starting the text report, `IconLoadDiagnostics.IsRecording` remains false and this request skips `BeginRequest`, so ETW-only sessions lose request and attribution events. Include the ETW provider enabled state in this gate so the same measurement is created whenever either diagnostics sink is active.\r\n\r\n```suggestion\r\n            diagnostics = IconLoadDiagnostics.IsRecording || IconLoadEventSource.Log.IsEnabled()\r\n```",
-      "in_diff": true,
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs",
-      "line": 440,
-      "side": "RIGHT",
-      "confidence": {
-        "score": 96,
-        "rationale": "The current condition directly controls request measurement creation, and the fork fix is a one-line localized replacement validated on the exact pinned head."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "reject-stale-icon-source-handler",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Reject completions from a replaced source handler",
-      "body": "### Reject completions from a replaced source handler\r\n\r\n**Severity:** `high`\r\n\r\nThe version and source-key checks do not detect a handler replacement when the same `SourceKey` is rebound. An earlier asynchronous completion can therefore assign its icon after the control has switched to a new `SourceRequested` handler. Include the handler identity in the stale-request check so only the request started by the current handler may update `Source`.\r\n\r\n```suggestion\r\n            if (requestVersion != iconBox._requestVersion ||\r\n                !ReferenceEquals(sourceKey, iconBox.SourceKey) ||\r\n                !ReferenceEquals(sourceRequested, iconBox._sourceRequested))\r\n```",
-      "in_diff": true,
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs",
-      "line": 456,
-      "start_line": 456,
-      "side": "RIGHT",
-      "confidence": {
-        "score": 97,
-        "rationale": "The async method captures the handler and the existing event accessor can replace it without changing SourceKey; the added identity check is the minimal validated fix."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50183",
-      "type": "request_changes",
-      "label": "Post the current-head REQUEST_CHANGES review with two inline fixes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pr": 50183,
-        "pullRequest": 50183,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41"
-      },
-      "note": "Current-head blocking review with two apply-ready inline suggestions. Explicit maintainer approval and a final live freshness check are required before posting."
-    }
-  ],
-  "validation": {
-    "fork_tree": {
-      "head_sha": "712d92adb6a77442239c2a794e2e9e1f581f52dd",
-      "result": "passed",
-      "configuration": "x64 Debug",
-      "commands": [
-        "tools\\build\\build-essentials.cmd with POWERTOYS_DISABLE_SPECTRE=1",
-        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd",
-        "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\..\\..\\..\\..\\..\\tools\\build\\build.cmd"
-      ],
-      "outputs": [
-        "<PowerToysCheckout>\\x64\\Debug\\PowerToys.exe was produced.",
-        "PowerToys essentials completed with 0 errors.",
-        "CmdPal UI and Microsoft.CmdPal.UI.UnitTests completed with 0 errors."
-      ]
-    },
-    "upstream_head": {
-      "head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
-      "result": "passed",
-      "configuration": "x64 Debug",
-      "commands": [
-        "tools\\build\\build-essentials.cmd with POWERTOYS_DISABLE_SPECTRE=1",
-        "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\..\\..\\..\\..\\tools\\build\\build.cmd"
-      ],
-      "outputs": [
-        "PowerToys essentials completed with 0 errors.",
-        "CmdPal UI completed with 0 errors."
-      ]
-    },
-    "suggestion_patch": {
-      "head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
-      "result": "passed",
-      "applied_comment_ids": [
-        "record-etw-only-icon-requests",
-        "reject-stale-icon-source-handler"
-      ],
-      "minimal_ranges_reviewed": true,
-      "commands": [
-        "Both suggestion blocks applied literally to a clean exact-head candidate, then tools\\build\\build-essentials.cmd and Microsoft.CmdPal.UI build.cmd passed."
-      ],
-      "validated_at": "2026-09-17T13:54:07.8181573Z"
-    },
-    "line_ending_safety": {
-      "head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
-      "result": "passed",
-      "checked_comment_ids": [
-        "record-etw-only-icon-requests",
-        "reject-stale-icon-source-handler"
-      ],
-      "files": [
-        {
-          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Controls/IconBox.cs",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": true,
-          "crlf_count": 0,
-          "lf_only_count": 488,
-          "cr_only_count": 0
-        }
-      ]
-    }
-  },
-  "fork_only_delta": {
-    "result": "fully_accounted",
-    "head_sha": "712d92adb6a77442239c2a794e2e9e1f581f52dd",
-    "upstream_head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
-    "files": 1,
-    "insertions": 4,
-    "deletions": 2,
-    "items": [
-      "record-etw-only-icon-requests",
-      "reject-stale-icon-source-handler"
-    ]
-  },
-  "workflow": {
-    "phase": "post_review",
-    "previous_phase": "building",
-    "checkpoint_at": "2026-09-17T13:54:07.8181573Z",
-    "resume_action": "approval_gated_request_changes_review",
-    "fork_pr": 807,
-    "fork_branch": "pr-iterate/50183-v2",
-    "fork_reviewed_head_sha": "712d92adb6a77442239c2a794e2e9e1f581f52dd",
-    "reviewed_upstream_head_sha": "8cc367d9d00d9aa91d2515f84ed64fa195561f41",
-    "latest_copilot_review_at": "2026-09-14T16:17:54Z",
-    "latest_copilot_new_comments": 0,
-    "unresolved_copilot_threads": 0,
-    "existing_review_consumed": true,
-    "duplicate_review_request_made": false,
-    "build_revalidated": true,
-    "advancement_evidence": [
-      "Live upstream head and updatedAt still match the pinned evidence.",
-      "The existing matching-head Copilot review was consumed before considering another request.",
-      "Fork PR 807 and branch pr-iterate/50183-v2 were preserved without re-mirroring.",
-      "The fork branch rebuilt successfully through essentials, CmdPal UI, and CmdPal UI unit-test Debug.",
-      "The exact upstream head and literal minimized suggestion candidate rebuilt successfully.",
-      "The two fork-only hunks are fully represented by the proposed inline suggestions.",
-      "No microsoft/PowerToys write was performed."
-    ]
+    "queued_at": "2026-09-24T01:32:37.82812Z",
+    "checkpoint_at": "2026-09-24T01:32:37.82812Z"
   },
   "fork_pr": {
-    "number": 807,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/807",
-    "state": "OPEN",
-    "head_sha": "712d92adb6a77442239c2a794e2e9e1f581f52dd"
+    "number": 891,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/891"
   },
-  "fork_branch": "pr-iterate/50183-v2",
-  "copilot_review": {
-    "review_count": 2,
-    "latest_submitted_at": "2026-09-14T16:17:54Z",
-    "latest_commit_id": "712d92adb6a77442239c2a794e2e9e1f581f52dd",
-    "latest_new_published_comments": 0,
-    "published_inline_comments": 0,
-    "unresolved_threads": 0,
-    "request_reused": true,
-    "note": "The durable completed review on the matching fork head was consumed first; no duplicate review request or polling was performed."
-  },
-  "test_instructions": [
-    "Launch <PowerToysCheckout>\\x64\\Debug\\PowerToys.exe.",
-    "Exercise CmdPal icon loading through virtualized lists and rebind an IconBox from one SourceRequested handler to another while an asynchronous request is in flight.",
-    "Enable the icon diagnostics ETW provider without starting a text report, exercise icon requests, and verify request and attribution events are emitted.",
-    "Repeat a theme or scale refresh while the source handler changes and verify an obsolete completion does not replace the current icon."
-  ],
-  "upstream_safety": {
-    "public_actions_taken": false,
-    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, commits, pushes, or other mutations were made to microsoft/PowerToys."
-  }
+  "fork_branch": "pr-iterate/50183-v3"
 }
