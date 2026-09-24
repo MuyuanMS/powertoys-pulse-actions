@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50766",
+  "number": 50766,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "reproduction_ready",
+  "generated_at": "2026-09-24T19:39:00Z",
+  "evaluated_at": "2026-09-24T19:39:00Z",
+  "source_updated_at": "2026-09-24T13:41:00Z",
+  "title": "Always stay on top behavior not working correctly",
+  "url": "https://github.com/microsoft/PowerToys/issues/50766",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report gives a direct current-version sequence and a clear expected/actual result. A maintainer reproduction can distinguish a Dock-specific topmost regression from an interaction with fullscreen or window activation policy.",
+    "evidence": [
+      "The reporter identifies Command Palette Dock and version 0.101.2652.0.",
+      "The steps enable Always stay on top, open another normal or maximized application, and observe the Dock.",
+      "The expected behavior is topmost placement except during fullscreen; the reported behavior is that the Dock goes behind ordinary windows.",
+      "The reporter states the behavior is reproducible."
+    ],
+    "recommended_action": "Reproduce on a current build with normal, maximized, and fullscreen windows, then inspect the Dock topmost update path if ordinary-window coverage fails.",
+    "evaluated_at": "2026-09-24T19:39:00Z",
+    "source_updated_at": "2026-09-24T13:41:00Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "A code fix may be applicable, but the lightweight pass does not establish whether the failure is in the setting, window activation handling, monitor lifecycle, or fullscreen exception logic."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Command Palette Dock reportedly loses topmost placement over ordinary windows even though Always stay on top is enabled.",
+    "known_information": [
+      "The issue targets Command Palette on PowerToys 0.101.2652.0 from the Microsoft Store.",
+      "Always stay on top is enabled in Dock settings.",
+      "The reporter observes the Dock behind another normal or maximized application.",
+      "Fullscreen behavior is explicitly intended to be an exception.",
+      "No diagnostic archive or discussion follow-up is attached."
+    ],
+    "inferences": [
+      "The failure may be caused by topmost state not being reapplied after activation or by an overly broad fullscreen/window-state check.",
+      "A controlled repro with ordinary and fullscreen windows can separate those possibilities."
+    ],
+    "analysis": "The issue is specific enough to reproduce without asking the reporter for generic logs. The next discriminating evidence is the Dock window state across ordinary, maximized, and fullscreen transitions.",
+    "initial_investigation": [
+      "Read the complete issue body and confirmed there are no comments or attachments.",
+      "Recorded the explicit fullscreen exception so reproduction does not treat expected fullscreen behavior as a failure."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-dock-topmost-50766",
+      "type": "reproduce",
+      "label": "Reproduce Dock topmost failure",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Command Palette Dock",
+        "version_requirement": "PowerToys 0.101.2652.0 or newer current build",
+        "prerequisites": [
+          "Command Palette Dock enabled",
+          "Always stay on top enabled",
+          "One ordinary window and one maximized window available",
+          "A fullscreen application available to verify the documented exception"
+        ],
+        "steps": [
+          "Open Command Palette Dock settings and enable Always stay on top.",
+          "Open an ordinary application window and verify whether the Dock remains above it.",
+          "Repeat with a maximized but non-fullscreen window.",
+          "Enter fullscreen in a test application and record whether the Dock hides as expected.",
+          "Leave fullscreen and check whether the Dock returns above ordinary windows.",
+          "If the failure reproduces, capture the Dock window state before and after each transition."
+        ],
+        "expected_result": "The Dock remains above ordinary and maximized non-fullscreen windows, may hide during fullscreen, and returns to topmost placement after leaving fullscreen.",
+        "setup_requirements": [
+          "Record PowerToys version and installation scope.",
+          "Record which window transition first causes the Dock to lose topmost placement."
+        ]
+      }
+    }
+  ],
+  "pending_author": false,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made."
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 5,
+  "number": 50773,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "Walt7",
+  "confidence": "Green",
+  "generated_at": "2026-09-24T19:44:03Z",
+  "evaluated_at": "2026-09-24T19:44:03Z",
+  "source_updated_at": "2026-09-24T18:44:07Z",
+  "title": "Mouse Without Borders: manually entered security key/PC name fields get wiped instantly on \"Connect\" click — must not clear user input",
+  "url": "https://github.com/microsoft/PowerToys/issues/50773",
+  "status": {
+    "glyph": "🎯",
+    "label": "Fix plan ready for design",
+    "detail": "The current Settings page unconditionally clears both input boxes after the async connection request returns, including failure paths."
+  },
+  "next_action": {
+    "glyph": "▶️",
+    "label": "Design fix",
+    "reason": "Preserve user-entered values unless the connection request succeeds, and add focused failure-path coverage before implementation."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives a deterministic reproduction and the current upstream code directly confirms the data-loss mechanism: Connect() awaits SubmitConnectionRequestAsync and then clears both text boxes without checking success or exception outcome.",
+    "evidence": [
+      "The reporter reproduces the issue by entering a security key and device name, clicking Connect, and observing both fields cleared with no visible connection or error.",
+      "MouseWithoutBordersPage.xaml.cs reads both fields, awaits SubmitConnectionRequestAsync, then unconditionally assigns String.Empty to ConnectPCNameTextBox.Text and ConnectSecurityKeyTextBox.Text.",
+      "The issue includes a successful Test-NetConnection to port 15101 and a current PowerToys 0.101.2362 WinGet installation, narrowing the report away from a simple reachability failure."
+    ],
+    "recommended_action": "Approve a focused design to preserve input on failed connection attempts and test both success and failure paths.",
+    "evaluated_at": "2026-09-24T19:44:03Z",
+    "source_updated_at": "2026-09-24T18:44:07Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix attempt is present. The defect is in PowerToys Settings UI behavior and is directly actionable in the current connection command path."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve Mouse Without Borders connection inputs on failure",
+      "root_cause": "MouseWithoutBordersPage.Connect clears both TextBox values after awaiting SubmitConnectionRequestAsync regardless of whether the request connected, failed, or reported an error.",
+      "plan": [
+        "Inspect the result and error contract of MouseWithoutBordersViewModel.SubmitConnectionRequestAsync.",
+        "Clear the security-key and device-name TextBox values only after a confirmed successful connection; preserve them and surface the existing error path otherwise.",
+        "Add focused Settings UI coverage for successful submission, failed submission, and exception/error return so manually entered values remain available for retry."
+      ],
+      "verification": [
+        "Run the focused Mouse Without Borders Settings UI tests.",
+        "Enter a key and device name, force a failed connection, and verify both values remain visible.",
+        "Repeat with a successful connection and verify the fields clear only after success."
+      ],
+      "confidence": {
+        "score": 93,
+        "level": "green",
+        "rationale": "The unconditional clear is visible in the exact current source method and matches the reported symptom; only the success-result API shape needs to be selected during design."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders loses both manually entered connection values immediately after Connect, even when the request does not connect or show an error.",
+    "known_information": [
+      "PowerToys version 0.101.2362 from WinGet is affected.",
+      "The affected module is Mouse Without Borders.",
+      "The reporter entered a security key and device name, clicked Connect, and saw both fields wiped with no connection.",
+      "Test-NetConnection to the target on TCP port 15101 succeeded.",
+      "The live issue has one automated triage comment and no linked fix."
+    ],
+    "inferences": [
+      "The field wipe is likely caused by unconditional UI cleanup after the async request rather than by the network failure itself.",
+      "The existing async request contract may need a success result or explicit error state before the UI can decide when to clear input."
+    ],
+    "analysis": "The current source confirms the core data-loss path, so a full design is more useful than requesting another generic log bundle. The remaining implementation choice is to use the existing request success/error contract without exposing or duplicating the security key.",
+    "initial_investigation": [
+      "Reviewed the full issue body and the automated triage comment through 2026-09-24T18:44:07Z.",
+      "Located MouseWithoutBordersPage.Connect in src/settings-ui/Settings.UI/SettingsXAML/Views/MouseWithoutBordersPage.xaml.cs.",
+      "Confirmed the XAML names ConnectSecurityKeyTextBox and ConnectPCNameTextBox and the code-behind clears both after SubmitConnectionRequestAsync."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "design-50773",
+      "type": "approve_design",
+      "label": "Design preserve-on-failure fix",
+      "primary": true,
+      "confirm": false,
+      "note": "Approve a focused fork-side design investigation; this action does not write upstream."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce connection field loss",
+      "reproduce": {
+        "title": "Verify Mouse Without Borders preserves failed connection input",
+        "module": "Mouse Without Borders",
+        "version_requirement": "PowerToys 0.101.2362 or current development build",
+        "prerequisites": [
+          "A second device name and security key that produce a failed or rejected connection attempt",
+          "Mouse Without Borders Settings open to the encryption-key connection fields"
+        ],
+        "setup": [],
+        "steps": [
+          "Enter the security key and device name manually.",
+          "Click Connect and wait for the request to finish or report failure.",
+          "Observe whether either field is cleared and whether an error is shown.",
+          "Repeat with a known successful connection if available."
+        ],
+        "expected_result": "Failed attempts preserve both manually entered values for correction/retry; successful connection clears them only after success."
+      }
+    }
+  ],
+  "design": {
+    "root_cause": "MouseWithoutBordersPage.Connect performs unconditional post-request cleanup instead of tying cleanup to a successful connection result.",
+    "evidence": [
+      "MouseWithoutBordersPage.xaml.cs reads both fields, awaits SubmitConnectionRequestAsync, then clears both TextBox values.",
+      "The issue reproduces the same sequence with no connection and no visible error."
+    ],
+    "affected_files": [
+      {
+        "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/MouseWithoutBordersPage.xaml.cs",
+        "purpose": "Owns the Connect command and currently clears the user inputs unconditionally.",
+        "symbols": [
+          "MouseWithoutBordersPage::Connect"
+        ]
+      },
+      {
+        "path": "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+        "purpose": "Defines the async connection request result/error behavior consumed by the page.",
+        "symbols": [
+          "MouseWithoutBordersViewModel::SubmitConnectionRequestAsync"
+        ]
+      }
+    ],
+    "implementation_steps": [
+      {
+        "order": 1,
+        "file": "src/settings-ui/Settings.UI/ViewModels/MouseWithoutBordersViewModel.cs",
+        "symbols": [
+          "SubmitConnectionRequestAsync"
+        ],
+        "current_behavior": "The page cannot distinguish successful completion from a failed or rejected request when deciding whether to clear inputs.",
+        "change": "Expose or preserve an explicit success/error outcome using the existing MVVM notification pattern without returning the security key.",
+        "code_block": "var result = await SubmitConnectionRequestAsync(pcName, securityKey);\\nif (!result.Succeeded)\\n{\\n    return result;\\n}\\nreturn result;",
+        "edge_cases": [
+          "Do not log or persist the raw security key.",
+          "Preserve values on exceptions and rejected connections.",
+          "Keep existing error notification behavior visible to the user."
+        ],
+        "tests": [
+          "Unit-test success, rejected connection, and exception outcomes."
+        ]
+      },
+      {
+        "order": 2,
+        "file": "src/settings-ui/Settings.UI/SettingsXAML/Views/MouseWithoutBordersPage.xaml.cs",
+        "symbols": [
+          "MouseWithoutBordersPage::Connect"
+        ],
+        "current_behavior": "Both TextBox values are set to String.Empty after every awaited request.",
+        "change": "Clear the fields only when the request outcome indicates a confirmed successful connection; otherwise leave the current user input intact.",
+        "code_block": "var result = await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);\\nif (result.Succeeded)\\n{\\n    ConnectPCNameTextBox.Text = string.Empty;\\n    ConnectSecurityKeyTextBox.Text = string.Empty;\\n}",
+        "edge_cases": [
+          "Do not clear either field if only one value is invalid.",
+          "Keep retry behavior available after a timeout or unreachable target.",
+          "Avoid changing the existing reconnect command semantics."
+        ],
+        "tests": [
+          "Add a focused page/view-model test proving values remain after failed submission and clear after success."
+        ]
+      }
+    ],
+    "verify": [
+      "Run the focused Mouse Without Borders Settings UI test project.",
+      "Manually reproduce a failed and successful connection attempt and inspect both fields."
+    ],
+    "risks": [
+      "Changing the async result contract may affect other callers of SubmitConnectionRequestAsync.",
+      "A success signal must not expose the security key or alter existing connection persistence."
+    ],
+    "alternatives": [
+      "A minimal try/catch around the existing call would preserve values on exceptions but would still risk clearing them on a rejected request; it is insufficient without an explicit success outcome."
+    ]
+  }
+}

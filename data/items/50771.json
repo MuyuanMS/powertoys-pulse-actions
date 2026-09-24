@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50771",
+  "number": 50771,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "reproduction_ready",
+  "generated_at": "2026-09-24T19:39:00Z",
+  "evaluated_at": "2026-09-24T19:39:00Z",
+  "source_updated_at": "2026-09-24T18:25:15Z",
+  "title": "Always on Top disables the window",
+  "url": "https://github.com/microsoft/PowerToys/issues/50771",
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report has a complete activation sequence, cross-application reproduction, a fresh diagnostic archive, and a current Windows build. The symptom is specific enough for maintainer reproduction and module-level tracing.",
+    "evidence": [
+      "Win-Ctrl-T activates Always on Top and leaves the affected window unable to receive mouse or keyboard input.",
+      "Window controls, scrolling, moving, and the toggle shortcut all fail.",
+      "The issue reproduces in Edge, Chrome, Git Bash, and Snipping Tool.",
+      "A PowerToys diagnostic ZIP was attached immediately after reproduction.",
+      "The report targets PowerToys 0.101.2362.0 on Windows 10.0.26200."
+    ],
+    "recommended_action": "Reproduce with Always on Top tracing and inspect the activation path for an unintended input-blocking or hit-test state applied to the target window.",
+    "evaluated_at": "2026-09-24T19:39:00Z",
+    "source_updated_at": "2026-09-24T18:25:15Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The symptom strongly indicates a PowerToys code issue, but a lightweight pass cannot safely identify whether the cause is an extended style, hit-test change, input capture, or foreground-window handling."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "Activating Always on Top leaves otherwise normal windows non-interactive across several applications until the window is closed externally.",
+    "known_information": [
+      "The reporter uses Win-Ctrl-T to activate Always on Top.",
+      "Mouse, keyboard, scrolling, window movement, and window controls stop working.",
+      "The toggle shortcut no longer works after activation.",
+      "The behavior reproduces across Edge, Chrome, Git Bash, and Snipping Tool.",
+      "A PowerToys diagnostic ZIP is attached.",
+      "The report includes Windows 10.0.26200 and PowerToys 0.101.2362.0."
+    ],
+    "inferences": [
+      "The cross-application scope points to a module-level window-style, hit-test, or input-routing problem rather than an application-specific bug.",
+      "The fact that the taskbar can close the window suggests the process remains alive while normal target-window interaction is blocked."
+    ],
+    "analysis": "The evidence is sufficient for a controlled maintainer reproduction and targeted tracing. Requesting another generic bug report would duplicate evidence already supplied.",
+    "initial_investigation": [
+      "Read the complete report, labels, automated triage comment, and attached diagnostic reference.",
+      "Confirmed the issue is cross-application and therefore suitable for module-level Always on Top investigation."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-always-on-top-input-block-50771",
+      "type": "reproduce",
+      "label": "Reproduce Always on Top input blocking",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "module": "Window Walker / Always on Top",
+        "version_requirement": "PowerToys 0.101.2362.0 or newer current build",
+        "prerequisites": [
+          "A normal interactive window such as Notepad, Edge, or Snipping Tool",
+          "Always on Top enabled",
+          "Tracing or debugger access to the Always on Top activation path"
+        ],
+        "steps": [
+          "Open an ordinary interactive application window.",
+          "Press Win-Ctrl-T to enable Always on Top.",
+          "Try clicking the client area, title-bar buttons, and scrollable content.",
+          "Try typing and pressing Win-Ctrl-T again.",
+          "Repeat with Edge, Chrome, Git Bash, or Snipping Tool.",
+          "If interaction is lost, close the window from the taskbar and capture the applied window styles and hit-test/input state."
+        ],
+        "expected_result": "Always on Top changes z-order only; the target window continues to accept mouse and keyboard input and the shortcut can toggle the state off.",
+        "setup_requirements": [
+          "Compare the target window styles and input state before and after activation.",
+          "Record whether the failure occurs before or after the window is raised."
+        ]
+      }
+    }
+  ],
+  "pending_author": false,
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made."
+  }
+}

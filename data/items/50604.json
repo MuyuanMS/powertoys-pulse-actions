@@ -5,103 +5,87 @@
   "kind": "issue",
   "track": "triage",
   "stage": "reproduction_ready",
-  "generated_at": "2026-09-20T07:08:00Z",
-  "evaluated_at": "2026-09-20T07:08:00Z",
-  "source_updated_at": "2026-09-20T02:57:29Z",
+  "generated_at": "2026-09-24T19:39:00Z",
+  "evaluated_at": "2026-09-24T19:39:00Z",
+  "source_updated_at": "2026-09-24T13:44:10Z",
   "title": "No recovery on Auto Hide Cursor",
   "url": "https://github.com/microsoft/PowerToys/issues/50604",
-  "summary": "Auto Hide Cursor on PowerToys 0.101.2572 hides the cursor after typing or idle input, but the cursor reportedly stays hidden when the mouse moves and only recovers after disabling the utility.",
-  "status": {
-    "glyph": "🧪",
-    "label": "Current-build reproduction ready",
-    "detail": "The report includes clear steps and a video on a current build; maintainers should reproduce and inspect low-level mouse-hook delivery and cursor restore behavior before selecting a code fix."
-  },
-  "next_action": {
-    "glyph": "🧪",
-    "label": "Reproduce Auto Hide Cursor restore failure",
-    "reason": "The issue is visible and current-version, but source inspection leaves multiple plausible failure points that need a controlled repro trace."
-  },
-  "confidence": "Medium",
-  "pending_author": false,
   "judgment": {
     "status": "reproducible",
-    "rationale": "The reporter supplied current PowerToys version, concise steps, OS build, and a video showing the cursor remains hidden. A maintainer reproduction is the next useful action because the initial source check shows at least two plausible failure layers: low-level mouse hook movement filtering and system cursor restoration.",
+    "rationale": "The original report already provided clear reproduction steps and video evidence. The author’s follow-up now narrows the case to a physical Snapdragon Surface touchpad and identifies the likely simulated-input filtering branch, making a maintainer reproduction and trace the correct next step.",
     "evidence": [
-      "The issue targets PowerToys v0.101.2572 and Mouse Utilities Auto Hide Cursor.",
-      "The steps are concise: enable Auto Hide Cursor, trigger hiding by typing or idle input, wait for the cursor to hide, then move the cursor.",
-      "The expected behavior is for movement to show the cursor; the actual behavior is that the cursor remains hidden until Auto Hide Cursor is disabled.",
-      "The issue includes a public video attachment and Windows 11 build 26200.9457 details.",
-      "No comments or existing upstream author-wait request are present."
+      "Auto Hide Cursor is enabled and the cursor remains hidden after movement until the utility is disabled.",
+      "The original report includes PowerToys v0.101.2572, Windows 11 25H2, OS build 26200.9457, and a video.",
+      "The author confirmed the issue on a physical Snapdragon Surface Laptop using its touchpad.",
+      "Touchpad clicking and scrolling do not restore the cursor.",
+      "The author pointed to AutoHideCursorWorker.cpp line 291 and suspected simulated cursor actions are ignored."
     ],
-    "recommended_action": "Run a controlled maintainer reproduction on a current build with Auto Hide Cursor tracing enabled, then decide whether the failing layer is mouse input detection, injected-input filtering, movement thresholding, or SystemParametersInfo cursor restoration.",
-    "evaluated_at": "2026-09-20T07:08:00Z",
-    "source_updated_at": "2026-09-20T02:57:29Z"
+    "recommended_action": "Reproduce on a touchpad-equipped Snapdragon device and trace injected-input filtering, movement classification, and cursor restoration before selecting a fix.",
+    "evaluated_at": "2026-09-24T19:39:00Z",
+    "source_updated_at": "2026-09-24T13:44:10Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "A PowerToys code fix is likely applicable if reproduced, but the lightweight pass cannot yet distinguish whether the cursor stays hidden because movement events are filtered, movement never crosses the intentional threshold, or RestoreSystemCursors fails until module disable."
+    "rationale": "The new evidence makes the simulated-input branch a strong hypothesis, but the maintainer still needs to confirm whether the hook flags are the actual failing discriminator and whether changing them affects intentional automation input."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "Auto Hide Cursor does not restore the cursor on mouse movement after hiding; disabling the utility restores visibility.",
+    "summary": "Auto Hide Cursor does not restore visibility after touchpad movement on a Snapdragon Surface Laptop, and disabling the utility is the only known recovery.",
     "known_information": [
-      "PowerToys version reported: v0.101.2572.",
-      "Installation method: PowerToys auto-update.",
-      "Area selected: Mouse Utilities.",
-      "The reporter provided steps covering both typing-triggered and idle-triggered hiding.",
-      "The reporter attached a video showing the behavior.",
-      "Operating system details include Windows 11 Home 25H2, OS build 26200.9457.",
-      "Live upstream metadata was refreshed through 2026-09-20T02:57:29Z; no reporter comment or maintainer request was added after the original report."
+      "The report targets Auto Hide Cursor on PowerToys v0.101.2572.",
+      "The reporter supplied a video and clear hide-then-move steps.",
+      "The author confirmed the issue on a physical Snapdragon Surface Laptop using a touchpad.",
+      "Clicking and scrolling also fail to restore the cursor.",
+      "The author suspects the worker ignores simulated cursor actions at AutoHideCursorWorker.cpp line 291.",
+      "The issue was updated by the author on 2026-09-24."
     ],
     "inferences": [
-      "The worker is likely still alive because disabling Auto Hide Cursor restores the cursor.",
-      "The failure may involve the low-level mouse hook not treating the reported movement as non-injected movement, the state machine not seeing intentional movement, or repeated failure of SystemParametersInfo cursor restoration.",
-      "A direct fix design would be speculative until a repro trace identifies which branch fails."
+      "Touchpad-generated movement may be marked as injected or otherwise filtered before AutoHideCursorState::OnMouseInput can return Show.",
+      "The failure may instead occur in cursor restoration after the state transition, so both branches need tracing."
     ],
-    "analysis": "The report is specific enough for maintainer reproduction and does not need a duplicate generic information request. Source inspection shows the Auto Hide Cursor state machine should show on intentional movement or mouse button/wheel input, so a trace should confirm whether MouseHookProc queues Show and whether SystemCursorHider.Restore succeeds.",
+    "analysis": "The author supplied discriminating hardware and input-path evidence, so another generic information request would be wasteful. A controlled touchpad reproduction with hook flags and restore results recorded can confirm or reject the proposed branch.",
     "initial_investigation": [
-      "Reviewed the issue body, labels, assignees, comments, video attachment reference, and OS details.",
-      "Inspected src/modules/MouseUtils/AutoHideCursor/AutoHideCursorState.h and confirmed OnMouseInput returns Show after intentional movement while hidden.",
-      "Inspected src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.cpp and confirmed WH_MOUSE_LL events are ignored when LLMHF_INJECTED or LLMHF_LOWER_IL_INJECTED is set, and movement is classified from WM_MOUSEMOVE.",
-      "Inspected src/modules/MouseUtils/AutoHideCursor/SystemCursorHider.h and confirmed restoration reloads system cursors through SystemParametersInfoW(SPI_SETCURSORS) and refreshes the current cursor."
+      "Re-read the complete issue and all three comments, including the author’s source-line hypothesis.",
+      "Retained the earlier source observations that AutoHideCursorState::OnMouseInput should show on intentional movement and SystemCursorHider restores system cursors.",
+      "Updated the triage freshness to cover the author’s 2026-09-24 response."
     ],
     "information_gaps": []
   },
   "actions": [
     {
-      "id": "reproduce-auto-hide-restore-50604",
+      "id": "reproduce-touchpad-auto-hide-50604",
       "type": "reproduce",
-      "label": "Reproduce Auto Hide Cursor restore failure",
+      "label": "Reproduce touchpad cursor-restore failure",
       "primary": true,
       "confirm": true,
       "reproduce": {
         "module": "Mouse Utilities - Auto Hide Cursor",
         "version_requirement": "PowerToys v0.101.2572 or newer current build",
         "prerequisites": [
+          "Physical Snapdragon Surface Laptop or comparable touchpad device",
           "Auto Hide Cursor enabled",
-          "Test both Hide on typing and Hide on idle if available",
-          "Tracing or logging available for AutoHideCursor worker mouse-hook events and cursor restore failures"
+          "Tracing or logging for low-level mouse-hook flags and cursor restoration"
         ],
         "steps": [
           "Enable Auto Hide Cursor.",
           "Trigger hiding by typing and wait until the cursor disappears.",
-          "Move the mouse enough to exceed the intentional movement threshold.",
-          "Observe whether the cursor becomes visible.",
+          "Move the touchpad pointer beyond the intentional movement threshold.",
+          "Try touchpad left click, right click, and scrolling.",
           "Repeat after triggering hide through the idle timer.",
-          "If the cursor stays hidden, click or scroll once and observe whether button/wheel input restores it.",
-          "Disable Auto Hide Cursor and confirm whether the system cursor is restored."
+          "Disable Auto Hide Cursor and confirm that the cursor is restored."
         ],
-        "expected_result": "Any intentional mouse movement after hiding should restore the cursor without requiring the utility to be disabled.",
+        "expected_result": "Intentional touchpad movement, click, or scrolling restores the cursor without disabling the utility.",
         "setup_requirements": [
-          "Capture whether MouseHookProc receives WM_MOUSEMOVE with injected flags cleared.",
-          "Capture whether AutoHideCursorState::OnMouseInput returns Show.",
-          "Capture whether SystemCursorHider::Restore and RestoreSystemCursors succeed or report a Win32 error."
+          "Record whether the low-level hook marks touchpad events as LLMHF_INJECTED or LLMHF_LOWER_IL_INJECTED.",
+          "Record whether AutoHideCursorState::OnMouseInput returns Show.",
+          "Record whether SystemCursorHider::Restore and RestoreSystemCursors succeed."
         ]
       }
     }
   ],
+  "pending_author": false,
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No comments, labels, assignments, closures, or other public mutations were made to microsoft/PowerToys."
+    "detail": "No public mutation was made."
   }
 }
