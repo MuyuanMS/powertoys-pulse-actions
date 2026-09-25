@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-25T16:06:10.8964973+08:00",
+  "generated_at": "2026-09-26T04:40:25.1895095+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 163,
-    "open_issues": 12689,
-    "community": 11859,
-    "artifacts": 1219
+    "open_issues": 12692,
+    "community": 11862,
+    "artifacts": 1222
   },
   "impact": {
-    "as_of": "2026-09-25T16:06:10.8964973+08:00",
+    "as_of": "2026-09-26T04:40:25.1895095+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1316,7 +1316,10 @@ window.BOARD_INDEX = {
     14,
     10,
     8,
-    4
+    4,
+    50789,
+    50788,
+    50785
   ],
   "items": [
     {
@@ -1437,7 +1440,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 903,
+        "fork_title": "[PR 50764] CmdPal: Track pointer actions in the list/grid view harder and reset input source",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50764",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/903"
+      }
     },
     {
       "id": "pr-50757",
@@ -2350,11 +2361,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 899,
+        "fork_number": 904,
         "fork_title": "[PR 50629] Fix bookmark placeholder values persisting after launch",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50629-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/899"
+        "fork_branch": "pr-iterate/50629-v4",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/904"
       }
     },
     {
@@ -6413,7 +6424,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "review",
       "stage": "review_in_progress",
-      "owes": "maintainer",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -430266,6 +430277,109 @@ window.BOARD_INDEX = {
       "created_at": "2024-12-15T21:27:52Z",
       "updated_at": "2026-04-18T13:18:44Z",
       "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-50789",
+      "kind": "issue",
+      "number": 50789,
+      "url": "https://github.com/microsoft/PowerToys/issues/50789",
+      "title": "Fails to invoke even in unelevated windows, must be invoked twice",
+      "author": "srivard",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "triage",
+      "stage": "waiting_on_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "09/25/2026 14:06:39",
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-25T12:49:06Z",
+      "updated_at": "2026-09-25T14:06:39Z",
+      "comments": 3,
+      "priority": null
+    },
+    {
+      "id": "issue-50788",
+      "kind": "issue",
+      "number": 50788,
+      "url": "https://github.com/microsoft/PowerToys/issues/50788",
+      "title": "Alt + KEY Shortcuts Function Unexpectedly",
+      "author": "bwood4",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "triage",
+      "stage": "reproduction_ready",
+      "owes": "maintainer",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": {
+        "type": "reproduce",
+        "label": "Reproduce Alt+J remapping behavior"
+      },
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Keyboard Manager"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-25T12:33:48Z",
+      "updated_at": "2026-09-25T12:39:57Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
+      "id": "issue-50785",
+      "kind": "issue",
+      "number": 50785,
+      "url": "https://github.com/microsoft/PowerToys/issues/50785",
+      "title": "Command Palette Dock: Transparent line on the top",
+      "author": "ExiledEye",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": "triage",
+      "stage": "waiting_on_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "09/25/2026 09:41:45",
+      "has_artifact": true,
+      "agent_status": "triage",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-25T09:31:27Z",
+      "updated_at": "2026-09-25T09:41:45Z",
+      "comments": 1,
       "priority": null
     }
   ]

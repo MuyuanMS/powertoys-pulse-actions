@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50788",
+  "number": 50788,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "reproduction_ready",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-25T20:27:04.7349015Z",
+  "evaluated_at": "2026-09-25T20:27:04.7349015Z",
+  "source_updated_at": "2026-09-25T12:39:57Z",
+  "title": "Alt + KEY Shortcuts Function Unexpectedly",
+  "url": "https://github.com/microsoft/PowerToys/issues/50788",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Keyboard Manager"
+  ],
+  "comments": 1,
+  "status": {
+    "glyph": "?",
+    "label": "Reproduce Alt-modified Keyboard Manager shortcut",
+    "detail": "The report provides a direct Alt+J-to-Down reproduction. A maintainer can verify the low-level remap and native Alt-menu interaction before selecting a fix; the reporter's suggested synthetic-input sequence is not treated as a validated remedy."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Reproduce Alt+J remapping behavior",
+    "reason": "Capture the target application's Alt/system-key events and Keyboard Manager injected events for the supplied shortcut before proposing a code change."
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The issue gives a specific Keyboard Manager mapping, target application, cursor state, trigger, expected behavior, and observed Alt menu. The failure is sufficiently clear for maintainer-side reproduction, but the public evidence does not identify which event/state transition leaves the menu active.",
+    "evidence": [
+      "The reporter uses PowerToys 0.101.2652 Preview installed from GitHub.",
+      "The reported mapping is Alt+J as the trigger and a Down key press as the action.",
+      "The reporter opens Notepad, adds multiple lines, moves to the top, and presses Alt+J.",
+      "The expected result is that the caret moves down; the observed result is that the Alt menu is displayed.",
+      "The reporter wants other Alt chords, such as Alt+F, to continue opening application menus."
+    ],
+    "recommended_action": "Reproduce the exact mapping on a current build and inspect the low-level hook and injected-key sequence before deciding whether modifier suppression or restoration needs adjustment.",
+    "evaluated_at": "2026-09-25T20:27:04.7349015Z",
+    "source_updated_at": "2026-09-25T12:39:57Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report is reproducible enough for a maintainer investigation, but a safe code fix is not yet established. Focused code search located KeyboardEventHandlers::HandleShortcutRemapEvent and its SendVirtualInput path, but the report alone does not prove whether the target receives the original Alt system-key transition or retains injected modifier state. Do not treat the reporter's suggested dummy-key sequence as a validated fix."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "A Keyboard Manager shortcut that maps Alt+J to Down displays Notepad's Alt menu instead of moving the caret down.",
+    "known_information": [
+      "The report names Keyboard Manager and PowerToys 0.101.2652 Preview installed from GitHub.",
+      "The trigger is Alt+J and the action is a Down key press.",
+      "The reporter's Notepad sequence is to add several lines, move to the top, and press Alt+J.",
+      "The expected result is a one-line caret move; the observed result is the application Alt menu.",
+      "The reporter distinguishes the remapped Alt+J chord from an unbound Alt+F chord, which they expect to retain normal menu behavior."
+    ],
+    "inferences": [
+      "The failure may involve the relationship between the low-level hook's suppression of the physical Alt event and the synthetic action event, but this has not been confirmed.",
+      "The target application's menu behavior may depend on the Alt system-key down/up sequence, so the reporter's proposed synthetic sequence should be tested rather than adopted directly."
+    ],
+    "analysis": "The report is clear enough for a local reproduction and does not need another generic diagnostic request. The focused code search located KeyboardEventHandlers::HandleShortcutRemapEvent, which handles Alt modifiers and sends a constructed input list through SendVirtualInput. A maintainer should correlate that path with the target application's received system-key events before proposing a fix.",
+    "initial_investigation": [
+      "Read the complete issue body, labels, and automated triage comment; no author follow-up or linked fix is present.",
+      "Confirmed that the automated triage marks the reproduction sufficient and that the report includes the exact trigger/action and observed menu behavior.",
+      "Semantic code search located the low-level remapping path in src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.cpp, including HandleShortcutRemapEvent and SendVirtualInput.",
+      "The handler has explicit Alt-modifier checks and suppresses some physical modifier events; the precise interaction with the synthesized Down event remains to be verified."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-alt-shortcut-50788",
+      "type": "reproduce",
+      "label": "Reproduce Alt+J remapping behavior",
+      "primary": true,
+      "confirm": true,
+      "reproduce": {
+        "title": "Trace Keyboard Manager Alt+J remapping in Notepad",
+        "module": "Keyboard Manager",
+        "version_requirement": "PowerToys 0.101.2652 Preview or a current development build; record the exact PowerToys and Windows builds used.",
+        "prerequisites": [
+          "Keyboard Manager enabled with a shortcut mapping from Alt+J to a Down key press.",
+          "A Notepad document containing multiple lines, with the caret positioned at the first line.",
+          "A current Windows test environment where the Alt menu behavior can be observed."
+        ],
+        "steps": [
+          "Open Keyboard Manager and create or confirm the shortcut mapping Alt+J to Down.",
+          "Open Notepad, enter several lines, and move the caret to the top of the document.",
+          "Press Alt+J once and record whether the caret moves down, the Alt menu opens, or both occur.",
+          "Repeat while observing the target's system-key events and Keyboard Manager's injected input sequence, if the local debugging setup permits.",
+          "Test an unbound Alt+F chord to confirm whether the normal File menu still opens."
+        ],
+        "expected_result": "Alt+J performs the mapped Down action without opening Notepad's Alt menu, while an unbound Alt+F continues to open the File menu.",
+        "setup_requirements": [
+          "Record the exact Windows build and PowerToys build.",
+          "Do not apply the reporter's proposed dummy-key sequence as a fix before the event sequence has been observed."
+        ]
+      }
+    }
+  ],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
+}
