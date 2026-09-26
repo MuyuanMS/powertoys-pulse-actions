@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 5,
+  "number": 50795,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "sket88",
+  "confidence": "Yellow",
+  "generated_at": "2026-09-26T08:58:30.879Z",
+  "evaluated_at": "2026-09-26T08:58:30.879Z",
+  "source_updated_at": "2026-09-26T05:38:39Z",
+  "title": "[Mouse Without Borders] v0.101.2652.0: Settings rejects MWB with \"Rejected SettingsSync server: untrusted-signature\" because Settings.exe and MWB binaries are signed with different certificates",
+  "url": "https://github.com/microsoft/PowerToys/issues/50795",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "status": {
+    "glyph": "!",
+    "label": "Actionable fix hypothesis",
+    "detail": "The reported peer rejection matches the merged verifier's full leaf-certificate equality check; the safe signer policy needs focused validation."
+  },
+  "next_action": {
+    "glyph": "->",
+    "label": "Reproduce MWB signer mismatch",
+    "reason": "Validate the packaged signer split and run the user-mode and service-mode settings-sync paths before choosing the trust-policy correction."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives a current-build reproduction, exact differing Authenticode signer identities, valid Microsoft signature/chain results, and the relevant source method. The reported failure follows directly from code that validates each signer and then requires the complete leaf certificate bytes to match. A code fix is warranted, but the narrow safe policy for legitimate signer rotation requires maintainer validation; do not substitute a loose subject-only comparison.",
+    "evidence": [
+      "On PowerToys 0.101.2652.0, opening Mouse Without Borders Settings and generating a New key or connecting does nothing; the issue reports repeated `untrusted-signature` rejection.",
+      "The reporter states that Settings and PowerToys.exe use signer thumbprint AB172913A2960A224809EE8A0C371CD47A079B72 while MWB binaries use 1D77A9B9E8FE2075D9AD15123257FB90DB0DA4A1, and says both signatures and chains are valid.",
+      "The report says both service and non-service modes fail and that 0.101.2362.0, whose compared binaries shared a signer, works.",
+      "In `NamedPipePeerVerification.MeetsSigningPolicy`, a signed caller must pass `HaveSameTrustedMicrosoftSigner`; that helper delegates to `HaveMatchingSignerCertificate`, which uses FixedTimeEquals on the two signer RawData byte arrays.",
+      "PR #50480 merged the peer-verification feature on 2026-09-11; no current fix for the reported release signer split was found. Related #50615 concerns certificate revocation/offline verification, a different rejection."
+    ],
+    "recommended_action": "Reproduce with the signed 0.101.2652.0 package and choose a narrowly trusted signer-rotation policy or release-signing correction while preserving all existing peer identity and signature-validity checks.",
+    "evaluated_at": "2026-09-26T08:58:30.879Z",
+    "source_updated_at": "2026-09-26T05:38:39Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The merged peer verifier's strict leaf-certificate equality rejects the two distinct trusted signers reported within one official release. No linked fix attempt covers this signer mismatch; preserve the existing trust and process checks while validating a constrained correction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Accept the supported Microsoft signer rotation for MWB settings IPC",
+      "root_cause": "The verifier accepts trusted Microsoft signatures individually but then requires byte-identical leaf certificates for the two PowerToys processes. Different valid release signers therefore produce `untrusted-signature` even when the reported package and certificate chains are valid.",
+      "plan": [
+        "Reproduce the signed 0.101.2652.0 package and verify the Settings and MWB signer identities and the resulting SettingsSync rejection in both user and service modes.",
+        "Retain executable identity, process/session, signature-integrity, and trusted-Microsoft-chain checks; replace unconditional leaf equality only with a narrowly defined approved release-signer relationship, or correct release signing to keep mutually communicating binaries on a compatible signer.",
+        "Add verifier tests for two distinct approved release signers and for rejection of an untrusted signer, invalid signature, wrong executable, and wrong process identity.",
+        "Validate New key and peer connection using the final signed package in both MWB service modes."
+      ],
+      "verification": [
+        "Run the focused Settings UI and Mouse Without Borders IPC security/identity tests with two distinct approved signer certificates.",
+        "Install the official signed 0.101.2652.0 package and confirm New key and settings synchronization succeed with Use Service both enabled and disabled.",
+        "Confirm that an untrusted or invalidly signed peer remains rejected."
+      ],
+      "confidence": {
+        "score": 74,
+        "level": "yellow",
+        "rationale": "The source condition and the reporter's differing trusted signers match the rejection exactly. The issue does not establish which signer identity policy the release pipeline guarantees, so the safe alternative to raw leaf equality still needs maintainer validation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Without Borders settings synchronization rejects its MWB process in 0.101.2652.0 because the signed Settings and MWB binaries have different valid Microsoft leaf certificates.",
+    "known_information": [
+      "The issue gives Windows 11 25H2 builds 26200.9550/26200.9445, PowerToys 0.101.2652.0 per-user x64, and reproduces with MWB service mode both on and off.",
+      "The reported Settings/PowerToys signer thumbprint is AB172913A2960A224809EE8A0C371CD47A079B72; the MWB signer thumbprint is 1D77A9B9E8FE2075D9AD15123257FB90DB0DA4A1.",
+      "The reporter states both signatures are valid, share the Microsoft Corporation subject and Microsoft Code Signing PCA 2024 issuer, and the official installer hash matches the published release asset.",
+      "The reported log error is `Rejected SettingsSync server: untrusted-signature`; the same interaction worked on 0.101.2362.0.",
+      "The report includes no comments or assignees."
+    ],
+    "inferences": [
+      "The comparison of signer leaf-certificate bytes is the immediate rejection mechanism if the package's reported signatures are verified.",
+      "Comparing only certificate subject or issuer would be broader than the evidence supports and could weaken peer authentication; a safe signer-rotation policy or release-signing correction must be selected."
+    ],
+    "analysis": "The body already supplies the issue-specific evidence needed to avoid requesting generic logs. The source-level rejection condition agrees with the reported signer mismatch. Focused maintainer reproduction should establish the release-signing guarantee and drive a constrained change that keeps trust-chain and process checks intact.",
+    "initial_investigation": [
+      "Re-read the full live issue body, comments, labels, assignees, linked references, and update time immediately before judgment.",
+      "Inspected `NamedPipePeerVerification.MeetsSigningPolicy`, `HaveSameTrustedMicrosoftSigner`, and `HaveMatchingSignerCertificate` in the reported release source; the latter compares full certificate RawData.",
+      "Confirmed PR #50480 introduced the verifier and is merged; the open draft PR #49949 covers the general peer-validation feature but is not a fix for this post-merge release signer mismatch.",
+      "Compared #50615: it reports offline revocation rejection as `not-microsoft-signed`, a distinct failure mode; no matching duplicate or fork trace was found."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused MWB signer-policy design",
+      "note": "Approve a fork-side design investigation that preserves the existing trust and process checks; this does not write to microsoft/PowerToys."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce MWB release signer mismatch",
+      "reproduce": {
+        "title": "Verify signer mismatch and MWB settings-sync rejection",
+        "module": "Mouse Without Borders",
+        "version_requirement": "Official signed PowerToys 0.101.2652.0 x64 per-user package; compare with 0.101.2362.0 where the report says the signer identities matched.",
+        "prerequisites": [
+          "Use Windows 11 25H2 and the official PowerToys per-user x64 package.",
+          "Test Mouse Without Borders with Use Service enabled and disabled.",
+          "Use the same installed package for Settings and all Mouse Without Borders processes."
+        ],
+        "setup": [
+          "Record the Authenticode signer certificate and signature validity for PowerToys.Settings.exe, PowerToys.exe, and the MWB executable used by the running process."
+        ],
+        "steps": [
+          "Open Settings > Mouse Without Borders and click New key.",
+          "Attempt to connect to another machine and inspect whether settings synchronization starts.",
+          "Repeat once with Use Service enabled and once disabled.",
+          "Check whether the verifier reports `untrusted-signature` and compare the two process signer certificates.",
+          "Compare the same operations on 0.101.2362.0 or a current fixed signed package."
+        ],
+        "expected_result": "Confirm whether the official 0.101.2652.0 package contains different trusted leaf signers and whether that exact difference causes the reported rejection in both modes; record the comparison release outcome without weakening the trust policy."
+      }
+    }
+  ]
+}

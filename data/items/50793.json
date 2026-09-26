@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 5,
+  "number": 50793,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "reproducible",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "dully-ja",
+  "confidence": "Red",
+  "generated_at": "2026-09-26T08:58:30.879Z",
+  "evaluated_at": "2026-09-26T08:58:30.879Z",
+  "source_updated_at": "2026-09-26T00:41:02Z",
+  "title": "## Mouse Jump preview window does not respond to mouse clicks in v0.101.2362.0",
+  "url": "https://github.com/microsoft/PowerToys/issues/50793",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Utilities"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "status": {
+    "glyph": "!",
+    "label": "Reproducible; targeted fix hypothesis",
+    "detail": "The mirrored-display regression is fully described, but the failing click path still needs maintainer reproduction."
+  },
+  "next_action": {
+    "glyph": "->",
+    "label": "Reproduce Mouse Jump click failure",
+    "reason": "Check the reported build and the latest build on the same mirrored-monitor topology before selecting a code correction."
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The issue gives complete steps, a 100% reproduction report on 0.101.2362.0, an exact three-display topology with one mirrored pair, and a successful 0.100.2 comparison. A sanitized diagnostic subset was already analyzed by the issue-triage workflow. The likely hit-test or coordinate-mapping branch is not confirmed, so use a bounded maintainer reproduction rather than ask for another archive.",
+    "evidence": [
+      "The reporter says Mouse Jump opens with Shift+Alt+A but clicking the preview neither moves the cursor nor dismisses the unresponsive preview on Windows 11 25H2 build 26200.9457.",
+      "The reporter states the failure reproduced 100% on 0.101.2362.0 and the same setup worked on 0.100.2.",
+      "The display setup is three displays, with Displays 1 and 3 duplicated and Display 2 to their right.",
+      "The existing automated triage comment says reproduction is sufficient and a sanitized diagnostic subset was analyzed; the raw archive was discarded.",
+      "PreviewWindow.PreviewImage_PointerPressed maps a scaled pointer coordinate to ScreenLayouts and returns without moving the cursor when no screen bounds contain it.",
+      "The existing Mouse Jump UI test covers a center click on its test setup, not a mirrored three-display mapping. The handler file is unchanged between tags v0.101.2362.0 and v0.101.2652.0."
+    ],
+    "recommended_action": "Reproduce on 0.101.2362.0, compare the 0.100.2 control and latest 0.101.2652.0, and record whether pointer hit-testing or cursor placement diverges for the mirrored display.",
+    "evaluated_at": "2026-09-26T08:58:30.879Z",
+    "source_updated_at": "2026-09-26T00:41:02Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked fix or fork implementation covers this report. A repository correction is plausible, but the precise failing input or mapping path is unconfirmed and the current implementation must be reproduced first."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Resolve Mouse Jump preview clicks on mirrored displays",
+      "root_cause": "Hypothesis only: the WinUI 3 preview handler's DPI-scaled pointer coordinate may fail the ScreenLayout bounds lookup for the reported duplicated-display topology, taking the no-screen early return before cursor movement.",
+      "plan": [
+        "Replay the reported three-display setup and record whether PreviewImage_PointerPressed receives the click, the scaled pointer coordinate, and the ScreenLayout bounds that contain it.",
+        "Compare the failing hit-test and cursor target with the successful 0.100.2 control and the latest supported build to isolate a regression from a fixed release.",
+        "If the bounds lookup is the failing branch, make mirrored/duplicated preview regions resolve deterministically to a valid target display while preserving DPI scaling and screen bounds.",
+        "Add focused coverage for a click on a mirrored multi-display preview and retain the existing primary-display click regression test."
+      ],
+      "verification": [
+        "Repeat the exact 0.101.2362.0 failure and 0.100.2 working comparison on the reported topology.",
+        "Run the MouseUtils UITests.Next PreviewClickMovesCursorAndDisableStopsActivation test and add a mirrored-display case that checks cursor movement and preview dismissal.",
+        "Retest the current 0.101.2652.0 release to determine whether the old-build regression remains."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The issue establishes a strong regression and identifies a concrete pointer-to-screen mapping path, but it does not show whether the event is lost or the bounds lookup rejects the pointer. Maintainer instrumentation and current-build reproduction are needed before selecting the fix."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Mouse Jump's preview is responsive on the same setup in 0.100.2 but ignores clicks on 0.101.2362.0 with one mirrored display pair.",
+    "known_information": [
+      "The reporter supplies PowerToys versions 0.101.2362.0 and 0.100.2, Windows 11 25H2 build 26200.9457, the Shift+Alt+A shortcut, and exact reproduction steps.",
+      "The setup has three displays: two are duplicated/mirrored and the third is positioned to their right.",
+      "The preview opens, but on the failing version clicking does not move the cursor; the issue reports no error or crash.",
+      "A public triage comment confirms that the uploaded archive was analyzed from a sanitized subset and that the raw archive was discarded."
+    ],
+    "inferences": [
+      "The regression is plausibly in the new WinUI 3 preview click path or display-coordinate mapping, but the report does not establish that the pointer handler misses the click.",
+      "Because the handler is unchanged through 0.101.2652.0, testing that release can distinguish a still-current regression from an old-build-only issue."
+    ],
+    "analysis": "The original report already provides the evidence package that distinguishes the failure, including a working prior version and a multi-monitor layout. The next useful step is maintainer-side instrumentation around pointer receipt, bounds lookup, and cursor movement; asking the reporter for generic logs would not identify that branch.",
+    "initial_investigation": [
+      "Re-read the complete live issue body, its single automation comment, labels, assignees, and update time immediately before judgment.",
+      "Inspected PreviewWindow.PreviewImage_PointerPressed: it logs pointer input, scales coordinates for DPI, finds a containing screen layout, and returns early if no layout contains the point.",
+      "Inspected the existing Mouse Jump UI test, which verifies a center click and cursor move but does not cover the reported mirrored-display topology.",
+      "Compared the handler at v0.101.2362.0 and v0.101.2652.0; no edit to this file appears between those release tags.",
+      "Searched for related issue reports; the matching click behavior has no linked fix or active fork trace."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused Mouse Jump fix investigation",
+      "note": "Approve a test-first, fork-side investigation of the red coordinate-mapping hypothesis; this does not write to microsoft/PowerToys."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Mouse Jump click failure on mirrored displays",
+      "reproduce": {
+        "title": "Compare Mouse Jump preview clicks across reported builds",
+        "module": "Mouse Jump",
+        "version_requirement": "Reproduce on 0.101.2362.0, compare with 0.100.2, and retest the latest 0.101.2652.0 build.",
+        "prerequisites": [
+          "Use Windows 11 25H2 with three displays: duplicate Displays 1 and 3, with Display 2 to their right.",
+          "Enable Mouse Jump and use the reported Shift+Alt+A activation shortcut.",
+          "Use the same display arrangement and cursor starting position for each version comparison."
+        ],
+        "setup": [
+          "Record the display bounds and scaling for the duplicated pair and the third display."
+        ],
+        "steps": [
+          "On PowerToys 0.101.2362.0, press Shift+Alt+A and confirm the preview appears.",
+          "Click a point within each visible preview display image; record whether the cursor moves and the preview closes.",
+          "Repeat on 0.100.2 with the same display layout as the working control.",
+          "Repeat on 0.101.2652.0 and record the first build where behavior differs.",
+          "For a failing click, record whether PreviewImage_PointerPressed runs and whether the scaled point falls inside any ScreenLayout bounds."
+        ],
+        "expected_result": "The 0.101.2362.0 failure should be reproducible against the working 0.100.2 control; the latest-build result and whether failure occurs before hit-testing or during target mapping are recorded without assuming the root cause."
+      }
+    }
+  ]
+}
