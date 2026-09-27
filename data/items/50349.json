@@ -1,206 +1,77 @@
 {
   "schemaVersion": 5,
+  "id": "issue-50349",
   "number": 50349,
   "kind": "issue",
   "track": "fix",
-  "stage": "awaiting_design_approval",
-  "evaluated_at": "2026-09-11T15:08:39.7870394Z",
-  "source_updated_at": "2026-09-08T02:59:07Z",
-  "url": "https://github.com/microsoft/PowerToys/issues/50349",
+  "stage": "existing_fix_in_progress",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-27T13:12:00Z",
+  "evaluated_at": "2026-09-27T13:12:00Z",
+  "source_updated_at": "2026-09-27T02:58:56Z",
   "title": "CmdPal: App is not being properly disposed",
-  "judgment": {
-    "status": "actionable_design",
-    "rationale": "The issue identifies an asynchronous shutdown call followed by immediate process termination; ownership and disposal paths are visible in source.",
-    "evidence": [
-      "MainWindow_Closed calls SignalStopAsync without awaiting it.",
-      "Environment.Exit(0) follows immediately.",
-      "App owns the service provider and has a Dispose path that is bypassed.",
-      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T14:38:05.1052603Z.",
-      "Fast revalidation read the live issue body, labels, assignees, and 2 public comment(s) on 2026-09-11T15:08:39.7870394Z."
-    ],
-    "recommended_action": "Approve the App-owned bounded shutdown design.",
-    "evaluated_at": "2026-09-11T15:08:39.7870394Z",
-    "source_updated_at": "2026-09-08T02:59:07Z"
-  },
-  "fix_assessment": {
-    "status": "proposed",
-    "rationale": "No existing fix attempt fully coordinates extension stop, service-provider disposal, and process exit.",
-    "existing_fix_urls": []
-  },
-  "proposed_fixes": [
-    {
-      "title": "Move CmdPal shutdown orchestration to App",
-      "root_cause": "MainWindow starts asynchronous service shutdown but immediately calls Environment.Exit, so extension stop tasks and IDisposable DI singletons may never complete.",
-      "plan": [
-        "Add an idempotent App-owned shutdown coordinator.",
-        "Let MainWindow perform UI-thread cleanup and request shutdown rather than exiting directly.",
-        "Await extension stops with a bounded timeout, dispose the provider once, then exit."
-      ],
-      "verification": [
-        "Delayed fake services complete or time out before the process exits and service disposal occurs once for window, tray, and native exit paths."
-      ],
-      "confidence": {
-        "score": 88,
-        "level": "green",
-        "rationale": "The asynchronous call, immediate exit, App disposal path, and service registrations are directly confirmed."
-      }
-    }
-  ],
-  "issue_context": {
-    "summary": "CmdPal terminates from MainWindow before asynchronous extension shutdown and DI disposal can finish.",
-    "known_information": [
-      "The issue points to MainWindow_Closed and Environment.Exit.",
-      "IExtensionService.SignalStopAsync is asynchronous.",
-      "App.xaml.cs owns ConfigureServices and Dispose.",
-      "Multiple DI singletons implement IDisposable.",
-      "Fast revalidation covered live upstream activity through 09/08/2026 02:59:07.",
-      "Fast revalidation covered live upstream activity through 2026-09-08T02:59:07.0000000Z."
-    ],
-    "inferences": [
-      "Shutdown ownership belongs at App/process scope rather than a window.",
-      "A bounded wait is needed to avoid hanging on a broken extension."
-    ],
-    "analysis": "Keeping UI cleanup on the UI thread and moving process exit after bounded asynchronous shutdown addresses both missed signals and skipped container disposal while preserving the existing explicit-exit workaround.",
-    "initial_investigation": [
-      "Inspected MainWindow.xaml.cs, App.xaml.cs, IExtensionService, WinRTExtensionService, and ExtensionWrapper.",
-      "Reviewed local history containing a partial ProcessShutdownCoordinator pattern.",
-      "Fork mirror Issue 642 contains the detailed design and adversary conditions.",
-      "Revalidated selected issue metadata, labels, assignees, body, and 2 public comment(s) during the scheduled bounded run."
-    ],
-    "information_gaps": []
-  },
-  "design": {
-    "root_cause": "MainWindow_Closed invokes SignalStopAsync as fire-and-forget and then calls Environment.Exit(0). Pending extension cleanup and App/service-provider disposal are therefore not guaranteed.",
-    "evidence": [
-      "[Observed] MainWindow_Closed does not await SignalStopAsync.",
-      "[Observed] App.Dispose disposes Services but is not called by the direct exit path.",
-      "[Observed] WinRTExtensionService performs asynchronous extension shutdown.",
-      "[Inferred] A single idempotent process coordinator can unify all exit sources."
-    ],
-    "affected_files": [
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
-        "purpose": "Performs window-affine cleanup and currently owns direct exit.",
-        "symbols": [
-          "MainWindow_Closed",
-          "Dispose"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
-        "purpose": "Owns service provider and process lifetime.",
-        "symbols": [
-          "ConfigureServices",
-          "Dispose",
-          "new RequestProcessExit"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Services/WinRTExtensionService.cs",
-        "purpose": "Stops running extension services.",
-        "symbols": [
-          "SignalStopAsync",
-          "Dispose"
-        ]
-      },
-      {
-        "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests",
-        "purpose": "Tests shutdown ordering and timeout.",
-        "symbols": [
-          "ProcessShutdownCoordinatorTests"
-        ]
-      }
-    ],
-    "implementation_steps": [
-      {
-        "order": 1,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/App.xaml.cs",
-        "symbols": [
-          "RequestProcessExit",
-          "Dispose"
-        ],
-        "current_behavior": "App constructs services and can dispose them, but the normal close path bypasses that disposal.",
-        "change": "Expose an idempotent process shutdown request that gathers service stop operations, waits with a bounded timeout, disposes the provider once, then exits.",
-        "code_block": "if (Interlocked.Exchange(ref shutdownRequested, 1) != 0) return;\\nawait Task.WhenAll(stopOperations).WaitAsync(timeout);\\nDispose();\\nEnvironment.Exit(0);",
-        "edge_cases": [
-          "Log individual stop failures and continue.",
-          "Do not block the UI thread.",
-          "Capture service delegates before provider disposal.",
-          "Reuse the path for native and tray exits."
-        ]
-      },
-      {
-        "order": 2,
-        "file": "src/modules/cmdpal/Microsoft.CmdPal.UI/MainWindow.xaml.cs",
-        "symbols": [
-          "MainWindow_Closed"
-        ],
-        "current_behavior": "The handler stops services without awaiting and exits immediately.",
-        "change": "Retain tray, hook, acrylic, and placement cleanup, then call App.Current.RequestProcessExit.",
-        "code_block": "- extensionService.SignalStopAsync();\\n- Environment.Exit(0);\\n+ App.Current.RequestProcessExit();",
-        "edge_cases": [
-          "All UI-affine cleanup remains on the UI thread.",
-          "Repeated close events must be harmless."
-        ]
-      },
-      {
-        "order": 3,
-        "file": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests",
-        "symbols": [
-          "ProcessShutdownCoordinatorTests"
-        ],
-        "current_behavior": "No coverage proves shutdown completion before exit.",
-        "change": "Test reentrancy, delayed services, timeout, failures, and exactly-once disposal.",
-        "code_block": "RequestExit(); RequestExit();\\nAssert.Equal(1, exitCount); Assert.Equal(1, disposeCount);",
-        "edge_cases": [
-          "A stop failure must not prevent disposal or exit.",
-          "A timeout must still invoke the exit callback."
-        ]
-      }
-    ],
-    "verify": [
-      "Build CmdPal UI and unit tests with the existing tools\\build\\build.cmd workflow.",
-      "Run targeted tests with vstest.console.exe after locating the produced test DLL.",
-      "Close via window, tray, and native exit paths; verify stop operations complete or time out before exit and disposal occurs once.",
-      "Verify tray removal, keyboard unhooking, acrylic cleanup, and window placement remain intact."
-    ],
-    "risks": [
-      "A bounded wait can lengthen shutdown; the timeout prevents hangs.",
-      "Provider disposal may expose latent ordering defects, which tests should surface."
-    ],
-    "alternatives": [
-      "Removing Environment.Exit changes an existing crash workaround.",
-      "Keeping shutdown in MainWindow cannot correctly cover process-wide exit sources."
-    ]
-  },
-  "mirror": {
-    "kind": "issue",
-    "fork_number": 642,
-    "fork_title": "[Issue 50349] CmdPal App is not being properly disposed",
-    "fork_state": "OPEN",
-    "url": "https://github.com/MuyuanMS/PowerToys/issues/642"
-  },
-  "adversary": {
-    "rounds": 1,
-    "verdict": "No blocking objections if shutdown ownership is App-level, bounded, and idempotent.",
-    "notes": "A fire-and-forget call in MainWindow remains unacceptable."
-  },
-  "actions": [
-    {
-      "type": "approve_design",
-      "label": "Approve design for Issue 50349",
-      "mirror_issue": 642,
-      "comment": {
-        "body": "Approve the fork-side App-owned shutdown design for Issue 50349."
-      }
-    }
-  ],
-  "generated_at": "2026-09-11T15:08:39.7870394Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50349",
+  "author": "michaeljolley",
   "labels": [
     "Issue-Bug",
     "Needs-Triage",
     "Product-Command Palette"
   ],
-  "assignees": null,
-  "comments": 2
+  "assignees": [
+    "michaeljolley"
+  ],
+  "comments": 2,
+  "status": {
+    "glyph": "...",
+    "label": "Fix in progress in PR #50811",
+    "detail": "Open PR #50811 covers the shutdown/disposal issue and is held for maintainer review. The former design-approval action is no longer current."
+  },
+  "next_action": {
+    "glyph": "...",
+    "label": "Track maintainer review of PR #50811",
+    "reason": "An open fix PR already covers the issue."
+  },
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "Open PR #50811 covers the App shutdown and disposal problem described by this issue. The item is already in fix progress and should not expose a competing design-approval action.",
+    "evidence": [
+      "The issue discussion identifies fire-and-forget asynchronous shutdown before process exit as the concern.",
+      "Open PR #50811, https://github.com/microsoft/PowerToys/pull/50811, covers CmdPal cleanup before exit.",
+      "The current workflow state provided for PR #50811 is held for maintainer review."
+    ],
+    "recommended_action": "Continue tracking PR #50811 through maintainer review; do not start another fix design.",
+    "evaluated_at": "2026-09-27T13:12:00Z",
+    "source_updated_at": "2026-09-27T02:58:56Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "The open linked PR covers the shutdown/disposal behavior and is awaiting maintainer review.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50811"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The report concerns Command Palette shutdown beginning asynchronous service cleanup but terminating before the cleanup and disposal path can finish. Open PR #50811 is the existing fix path and awaits maintainer review.",
+    "known_information": [
+      "The issue discussion questions whether asynchronous stop calls complete before the process exits.",
+      "Open PR #50811 is linked as the current fix attempt.",
+      "The current workflow state provided for PR #50811 is held for maintainer review."
+    ],
+    "inferences": [
+      "The existing PR is intended to address the issue, but the fix is not complete until the maintainer review and merge process finishes."
+    ],
+    "analysis": "The open linked PR supersedes a separate design proposal. Keep the issue in existing-fix progress and do not expose the stale approve-design action.",
+    "initial_investigation": [
+      "Read current live issue metadata and discussion.",
+      "Confirmed the provided linked-work state for PR #50811 and removed the competing design-approval proposal."
+    ],
+    "information_gaps": []
+  },
+  "actions": [],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No comment, label, assignment, closure, or other public mutation was made."
+  }
 }
