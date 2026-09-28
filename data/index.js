@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-28T10:49:49.3142816+08:00",
+  "generated_at": "2026-09-28T11:10:54.398559+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 151,
+    "open_prs": 152,
     "open_issues": 12711,
     "community": 11882,
     "artifacts": 1192
   },
   "impact": {
-    "as_of": "2026-09-28T10:49:49.3142816+08:00",
+    "as_of": "2026-09-28T11:10:54.398559+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1292,6 +1292,38 @@ window.BOARD_INDEX = {
     4
   ],
   "items": [
+    {
+      "id": "pr-50834",
+      "kind": "pr",
+      "number": 50834,
+      "url": "https://github.com/microsoft/PowerToys/pull/50834",
+      "title": "[Advanced Paste] Add headless CLI for deterministic transformations",
+      "author": "MuyuanMS",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": true,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [],
+      "assignees": [],
+      "created_at": "2026-09-28T03:00:55Z",
+      "updated_at": "2026-09-28T03:00:56Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
     {
       "id": "pr-50833",
       "kind": "pr",
@@ -3358,7 +3390,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-11T06:25:44Z",
-      "updated_at": "2026-09-24T06:43:15Z",
+      "updated_at": "2026-09-28T02:26:09Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -4245,10 +4277,10 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_ready",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "waiting_copilot",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "09/26/2026 22:32:31",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -5287,7 +5319,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "waiting_copilot",
       "owes": "reviewer",
       "pending_author": false,
       "waiting_since": null,
@@ -5380,7 +5412,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "waiting_copilot",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -5405,11 +5437,11 @@ window.BOARD_INDEX = {
       "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
-        "fork_number": 687,
-        "fork_title": "[PR 49932] CmdPal: Shelf (3/n) - Add drag-and-drop support to the quick access shelf",
+        "fork_number": 914,
+        "fork_title": "[PR 49932] CmdPal Shelf drag-and-drop current-head review",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49932-v4",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/687"
+        "fork_branch": "pr-iterate/49932-v5",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/914"
       }
     },
     {
@@ -208796,7 +208828,7 @@ window.BOARD_INDEX = {
       "stage": "needs_information",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "09/28/2026 02:05:29",
+      "waiting_since": "09/28/2026 02:27:09",
       "has_artifact": false,
       "agent_status": "none",
       "issue_type": "bug",
@@ -208810,8 +208842,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-06-11T19:56:49Z",
-      "updated_at": "2026-09-28T02:05:29Z",
-      "comments": 9,
+      "updated_at": "2026-09-28T02:27:09Z",
+      "comments": 10,
       "priority": null
     },
     {
@@ -366357,7 +366389,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2020-07-01T12:39:15Z",
-      "updated_at": "2026-09-24T06:43:35Z",
+      "updated_at": "2026-09-28T02:27:40Z",
       "comments": 28,
       "priority": null
     },
