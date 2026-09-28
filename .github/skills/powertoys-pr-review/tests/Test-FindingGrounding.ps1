@@ -28,6 +28,21 @@ $grounding = [pscustomobject]@{
         })
     })
 }
+$inlineProse = [pscustomobject]@{ id = $item.id; kind = 'inline'; body = $item.body }
+Assert-True ((@(Test-InlineSuggestionTriage -Items @($inlineProse) -Grounding $grounding) -join "`n") -match 'suggestion_assessment') 'Unexplained prose-only inline findings fail.'
+$grounding.findings[0] | Add-Member suggestion_assessment ([pscustomobject]@{
+    reason = 'mixed_line_endings'
+    detail = 'The pinned source blob contains both LF and CRLF; an Apply suggestion could rewrite the full file.'
+})
+Assert-True (@(Test-InlineSuggestionTriage -Items @($inlineProse) -Grounding $grounding).Count -eq 0) 'A concrete unsafe-blob assessment passes.'
+$badAssessment = Copy-Object $grounding
+$badAssessment.findings[0].suggestion_assessment.reason = 'cross_file'
+Assert-True ((@(Test-InlineSuggestionTriage -Items @($inlineProse) -Grounding $badAssessment) -join "`n") -match 'suggestion_assessment') 'A generic cross-file dismissal fails.'
+$badAssessment.findings[0].suggestion_assessment.reason = 'mixed_line_endings'
+$badAssessment.findings[0].suggestion_assessment.detail = ''
+Assert-True ((@(Test-InlineSuggestionTriage -Items @($inlineProse) -Grounding $badAssessment) -join "`n") -match 'suggestion_assessment') 'Assessment requires a concrete detail.'
+$withSuggestion = [pscustomobject]@{ id = $item.id; kind = 'inline'; body = 'Review. ```suggestion fixed' }
+Assert-True (@(Test-InlineSuggestionTriage -Items @($withSuggestion) -Grounding $null).Count -eq 0) 'Apply-ready blocks use existing patch and EOL gates.'
 $reader = { param($sha, $path) $source }.GetNewClosure()
 function Check($Evidence, $Items = @($item)) {
     @(Test-FindingGrounding -Items $Items -Grounding $Evidence -HeadSha $head -CheckSources -SourceReader $reader)
@@ -115,6 +130,13 @@ try {
     @{ prs = @(@{ number = 50472; findingGrounding = $evidence }) } | ConvertTo-Json -Depth 30 | Set-Content $dossierPath
     $output = & pwsh -NoProfile -File $validator -Dashboard $temp -Numbers 50472 -RequireFindingGrounding -GroundingPath $dossierPath -SourceRepository $temp 2>&1
     Assert-True ($LASTEXITCODE -eq 0) "Real git source passes despite divergent worktree: $output"
+    $missingAssessment = Copy-Object $evidence
+    $missingAssessment.findings[0].PSObject.Properties.Remove('suggestion_assessment')
+    @{ prs = @(@{ number = 50472; findingGrounding = $missingAssessment }) } | ConvertTo-Json -Depth 30 | Set-Content $dossierPath
+    $artifact.proposed_comments[0].body = $item.body
+    $output = & pwsh -NoProfile -File $validator -Dashboard $temp -Numbers 50472 -RequireFindingGrounding -GroundingPath $dossierPath -SourceRepository $temp 2>&1
+    Assert-True ($LASTEXITCODE -ne 0 -and "$output" -match 'suggestion_assessment') 'Processed dashboard prose-only finding requires private triage.'
+    @{ prs = @(@{ number = 50472; findingGrounding = $evidence }) } | ConvertTo-Json -Depth 30 | Set-Content $dossierPath
     $output = & pwsh -NoProfile -File $validator -Dashboard $temp -Numbers 50472 -RequireFindingGrounding -SourceRepository $temp 2>&1
     Assert-True ($LASTEXITCODE -ne 0 -and "$output" -match 'exactly one private grounding record') 'Processed proposals require dossier; missing disposition is still proposed.'
     $artifact.actions[0].review.body_prefix = 'An additional overall claim.'

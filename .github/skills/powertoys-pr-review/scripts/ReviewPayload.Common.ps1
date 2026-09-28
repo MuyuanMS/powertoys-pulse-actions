@@ -643,6 +643,10 @@ function Test-ReviewDataDocument {
                 -CheckSources:$CheckGitHub) {
                 $errors.Add("$prefix $errorMessage")
             }
+            foreach ($errorMessage in Test-InlineSuggestionTriage -Items $items `
+                -Grounding $validation.findingGrounding) {
+                $errors.Add("$prefix $errorMessage")
+            }
         }
         if ($suggestionItems.Count -gt 0) {
             $suggestionPatch = $validation.suggestionPatch
