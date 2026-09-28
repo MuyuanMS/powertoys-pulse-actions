@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 5,
+  "number": 50822,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage_revalidated",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-28T01:43:44Z",
+  "evaluated_at": "2026-09-28T01:43:44Z",
+  "source_updated_at": "2026-09-27T18:52:12Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50822",
+  "title": "powershellf提权与命令面板冲突",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "status": {
+    "glyph": "▶",
+    "label": "Reproduce elevated-launch exit",
+    "detail": "The report contains a specific Command Palette elevated-child repro and a control test showing that unrelated elevated processes do not terminate the palette."
+  },
+  "next_action": {
+    "glyph": "▶",
+    "label": "Reproduce the elevated launch path",
+    "reason": "Confirm the clean parent-process exit on a current build before selecting the launcher or WinGet initialization fix boundary."
+  },
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report provides a detailed and repeatable elevated-terminal sequence, a non-elevated control, version and OS details, and a current triage comment confirming that reproduction is sufficient. It does not yet establish the failing symbol or safe implementation change.",
+    "evidence": [
+      "The issue is open, labeled Issue-Bug and Product-Command Palette, and updated by the triage comment on 2026-09-27.",
+      "The reporter describes an unelevated Command Palette launching an elevated terminal through Ctrl+Enter, after which only Microsoft.CmdPal.UI exits silently.",
+      "The report includes a control test showing that an elevated process launched outside Command Palette does not terminate it.",
+      "The report states there are no crash, WER, exception, or error-log records and that non-elevated launches continue to work.",
+      "The automated triage comment marks reproduction as sufficient and does not request another diagnostic archive."
+    ],
+    "recommended_action": "Reproduce the elevated-child launch on a current build, then trace the parent lifetime and elevation helper before designing a fix.",
+    "evaluated_at": "2026-09-28T01:43:44Z",
+    "source_updated_at": "2026-09-27T18:52:12Z"
+  },
+  "fix_assessment": {
+    "status": "not_applicable",
+    "rationale": "The report is reproducible, but the failing launcher or WinGet initialization boundary has not been confirmed from repository evidence; no speculative design is emitted in this lightweight pass."
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "An unelevated Command Palette exits silently after launching an elevated terminal through its own admin action, while the elevated child succeeds and externally launched elevated processes do not affect the palette.",
+    "known_information": [
+      "The report targets Command Palette 0.12.12365.0 shipped with PowerToys 0.101.2362.0.",
+      "The repro uses an unelevated PowerToys/Command Palette instance and Ctrl+Enter or an elevated terminal profile.",
+      "The elevated terminal opens, but Microsoft.CmdPal.UI disappears and must be relaunched.",
+      "The reporter supplied a control test, event-log/WER observations, locale, Windows build, UAC settings, and WinGet configuration.",
+      "The latest triage comment marks reproduction sufficient."
+    ],
+    "inferences": [
+      "The failure likely lies in the Command Palette elevation or child-process lifetime path rather than the mere presence of an elevated process, but the exact failing branch is unconfirmed."
+    ],
+    "analysis": "The public evidence is sufficient for maintainer-side reproduction and narrows the investigation to the in-process elevated-launch path. A design should wait until a current build confirms whether the parent exits through launcher error handling, package activation, or WinGet initialization.",
+    "initial_investigation": [
+      "Read the full issue body, the single triage comment, labels, and live update timestamp.",
+      "Confirmed the issue already contains a control test and does not need a repeated request for generic diagnostics.",
+      "Checked the local CmdPal source tree for elevation-related paths; no exact root cause was established during the lightweight pass."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "reproduce-elevated-cmdpal-50822",
+      "type": "reproduce",
+      "label": "Reproduce elevated Command Palette launch",
+      "primary": true,
+      "reproduce": {
+        "title": "Replay issue #50822",
+        "module": "Command Palette",
+        "version_requirement": "PowerToys 0.101.2362.0 or current development build",
+        "prerequisites": [
+          "Run PowerToys and Command Palette unelevated.",
+          "Have an elevated terminal profile or use the Ctrl+Enter run-as-administrator action."
+        ],
+        "setup": [],
+        "steps": [
+          "Open Command Palette and search for a terminal.",
+          "Launch the terminal with the elevated/admin action.",
+          "Confirm that the elevated terminal opens.",
+          "Check whether Microsoft.CmdPal.UI remains running and whether the Command Palette hotkey can reopen it.",
+          "Repeat with a non-elevated terminal launch and with an elevated process started outside Command Palette as controls."
+        ],
+        "expected_result": "The elevated child opens and Command Palette remains running and reusable.",
+        "attachments": []
+      }
+    }
+  ]
+}
