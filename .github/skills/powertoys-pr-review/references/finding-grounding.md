@@ -74,6 +74,10 @@ write a separate **private session file**, not under public `data/`, containing
       "counterevidence": "Existing guards, PR intent and author validation checked; explain the result.",
       "why_not_already_fixed": "Why the current guard/fallthrough does not solve this defect.",
       "verification": "Actual test/trace results and limitations, not merely a proposed test.",
+      "suggestion_assessment": {
+        "reason": "replacement_outside_diff",
+        "detail": "Required replacement is in unchanged src/example.cs:OtherMethod; the changed line only calls it."
+      },
       "sources": [
         {
           "path": "src/example.cs",
@@ -94,6 +98,16 @@ the upstream evidence for the claim, including the relevant guard/caller when
 needed. Missing-behavior claims cite the actual existing path, not fabricated
 lines containing the requested new method. `symbols` lists existing symbols
 claimed in each excerpt; suggested new symbols belong in the remedy instead.
+`suggestion_assessment` is required only for a proposed inline item without a
+`suggestion` block. Its reason must be one of `mixed_line_endings`,
+`replacement_outside_diff`, `nonlocal_rewrite`, `atomic_patch_not_safe`, or
+`exact_patch_validation_failed`; its detail describes the specific impediment
+and evidence/attempt. A localized edit that merely belongs to a larger fix
+should be extracted and validated, not automatically classified as nonlocal.
+Keep the assessment in this private dossier, never in `data/items/` or the
+author-facing body. For processed reviews, the grounding validators check this
+decision as well as the source and body hash. Legacy whole-feed validation
+does not retroactively invalidate older drafts.
 
 The body digest is SHA-256 of UTF-8 text with CRLF normalized to LF, preserving
 all other whitespace. Dot-source `scripts/FindingGrounding.Common.ps1` and use

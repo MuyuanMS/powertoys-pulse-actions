@@ -4,6 +4,36 @@ function Get-FindingBodyHash {
     [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
 }
 
+function Test-InlineSuggestionTriage {
+    param(
+        [AllowEmptyCollection()][object[]]$Items,
+        [AllowNull()]$Grounding
+    )
+    $errors = [Collections.Generic.List[string]]::new()
+    $allowedReasons = @(
+        'mixed_line_endings',
+        'replacement_outside_diff',
+        'nonlocal_rewrite',
+        'atomic_patch_not_safe',
+        'exact_patch_validation_failed'
+    )
+    foreach ($item in @($Items | Where-Object {
+        $null -ne $_ -and $_.kind -eq 'inline' -and
+        [string]$_.body -notmatch '(?i)```suggestion'
+    })) {
+        $finding = @($Grounding.findings | Where-Object {
+            [string]$_.id -ceq [string]$item.id
+        })
+        if ($finding.Count -ne 1) { continue }
+        $assessment = $finding[0].suggestion_assessment
+        if ([string]$assessment.reason -notin $allowedReasons -or
+            [string]::IsNullOrWhiteSpace([string]$assessment.detail)) {
+            $errors.Add("finding '$($item.id)' is inline prose without a suggestion; private suggestion_assessment needs a concrete reason and detail")
+        }
+    }
+    return $errors.ToArray()
+}
+
 function Get-GroundingSource {
     param([string]$HeadSha, [string]$Path, [string]$SourceRepository)
     if ($SourceRepository) {

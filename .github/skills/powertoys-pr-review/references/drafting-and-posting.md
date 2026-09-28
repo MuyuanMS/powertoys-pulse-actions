@@ -192,6 +192,26 @@ mandatory line-mapping pass against the live head: try a safe apply-ready
 suggestion first, otherwise emit exact inline prose, otherwise use a companion
 with `outOfDiffReason`. If no inline item is possible, label the approval
 action clearly as general review notes with no inline suggestions.
+For **each** mapped inline finding, inspect the converged fix alongside the
+exact upstream lines. Extract the smallest localized replacement and attempt
+to validate it on the pinned upstream tree, including a single-line call or
+condition change even if the full fix also needs tests or out-of-diff edits.
+Do not use "cross-file" or "the build would take too long" as an untested reason
+to default to prose. Check raw-blob endings, apply the literal block, minimize
+its range and run the focused build/syntax check; for dependent edits use an
+atomic group and test the group together. If validation cannot be completed,
+checkpoint the draft as in progress rather than silently declaring an
+unverified candidate unsafe.
+If an inline comment has no suggestion block, record
+`suggestion_assessment` on its **private finding-grounding record** with a
+specific `reason` and `detail`: `mixed_line_endings` (cite the checked blob),
+`replacement_outside_diff` (name the actual target), `nonlocal_rewrite`
+(explain why no localized replacement exists),
+`atomic_patch_not_safe` (explain why the coordinated edits cannot form a
+safe complete group), or `exact_patch_validation_failed` (record the attempted
+block and failing command). This is not public comment text. An unexplained
+prose-only inline item fails the processed-review gate. Do not invent a
+failure or label an unattempted patch as failed; finish its validation instead.
 When the same root-cause fix requires two or more independently line-addressable
 edits, emit one suggestion per location and bind them with an atomic
 `selectionGroup`. Number the public headings `(1/N)` through `(N/N)`, keep the

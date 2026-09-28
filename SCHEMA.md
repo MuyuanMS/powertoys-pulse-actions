@@ -251,6 +251,12 @@ and the resulting candidate tree passed the relevant syntax/build check.
 suggestion target were scanned before publication. Mixed LF/CRLF/CR blobs are
 unsafe for GitHub's server-side Apply suggestion and must be emitted as prose
 instead of an apply-ready block.
+For newly processed reviews, an inline comment without an apply-ready block
+also requires a private `findingGrounding.findings[].suggestion_assessment`
+with a specific reason and detail explaining why its localized replacement
+cannot be safely offered. This decision is verified alongside upstream
+grounding before publication, but is never placed in the public artifact.
+Existing artifacts are not retroactively invalidated by this gate.
 
 Issue artifacts with `schemaVersion: 5` include a fix-coverage decision and
 display-only proposed fix plans in addition to the issue context:

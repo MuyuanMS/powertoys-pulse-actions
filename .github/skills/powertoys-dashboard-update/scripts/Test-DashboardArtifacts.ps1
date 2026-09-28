@@ -220,6 +220,10 @@ foreach ($path in @($paths)) {
           -CheckSources -SourceRepository $SourceRepository) {
           $errors.Add("$prefix $message")
         }
+        foreach ($message in Test-InlineSuggestionTriage -Items $proposedComments `
+          -Grounding $records[0].findingGrounding) {
+          $errors.Add("$prefix $message")
+        }
       }
     }
     if ($artifact.stage -eq 'review_ready' -and

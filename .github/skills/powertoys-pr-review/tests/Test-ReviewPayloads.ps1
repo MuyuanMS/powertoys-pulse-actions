@@ -154,6 +154,19 @@ $grounded.prs[0].internalEvidence.validation | Add-Member findingGrounding ([psc
 })
 $errors = @(Test-ReviewDataDocument -Document $grounded -RequireFindingGrounding)
 Assert-True ($errors.Count -eq 0) "Strict review accepts grounded inline and out-of-diff companion items: $($errors -join '; ')"
+$proseOnly = Copy-JsonObject $grounded
+$proseOnly.prs[0].publicPayload.items[0].body = '### Keep the value stable' + "`n`n" + '**Severity:** `high`' + "`n`n" + 'The existing value must remain stable for upgrades.'
+$proseOnly.prs[0].internalEvidence.validation.findingGrounding.findings[0].body_sha256 =
+    Get-FindingBodyHash $proseOnly.prs[0].publicPayload.items[0].body
+$errors = @(Test-ReviewDataDocument -Document $proseOnly -RequireFindingGrounding)
+Assert-True (($errors -join "`n") -match 'suggestion_assessment') 'Standalone ready review rejects unexplained prose-only inline finding.'
+$proseOnly.prs[0].internalEvidence.validation.findingGrounding.findings[0] |
+    Add-Member suggestion_assessment ([pscustomobject]@{
+        reason = 'replacement_outside_diff'
+        detail = 'The necessary change belongs to an unchanged target in src/Test.cs.'
+    })
+$errors = @(Test-ReviewDataDocument -Document $proseOnly -RequireFindingGrounding)
+Assert-True ($errors.Count -eq 0) "Grounded and assessed prose-only inline item passes: $($errors -join '; ')"
 $grounded.prs[0].publicPayload.items[1].body += "`nAdditional claim."
 $errors = @(Test-ReviewDataDocument -Document $grounded -RequireFindingGrounding)
 Assert-True (($errors -join "`n") -match 'body changed') 'Rewriting a companion invalidates ready-review grounding.'
