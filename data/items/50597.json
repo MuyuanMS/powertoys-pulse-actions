@@ -7,22 +7,22 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-23T10:50:54Z",
-  "evaluated_at": "2026-09-23T10:50:54Z",
+  "generated_at": "2026-09-28T04:41:52Z",
+  "evaluated_at": "2026-09-28T04:41:52Z",
   "source_updated_at": "2026-09-23T02:23:11Z",
   "head_sha": "bc64d33433b6636957067b20a73b3ba6b1810951",
   "title": "feat(Window Hopper): mouse hover and click to select windows",
   "url": "https://github.com/microsoft/PowerToys/pull/50597",
-  "summary": "Consumed the saved fork Copilot review without issuing a duplicate request, rebuilt the durable fork branch and the exact live upstream head bc64d33433b6636957067b20a73b3ba6b1810951, and re-grounded the fork-only lifecycle changes. One current-head high-severity mouse-hook finding remains, plus the Phase 0 request for visual evidence and completed validation.",
+  "summary": "The prior fork PR 835 closed; successor PR 890 is open at 9ff0bbfb88c228e701106fe47bfa087cff913b53 with a saved current-head Copilot review returning zero new inline findings and zero unresolved threads. Four atomic minimal RIGHT-side mouse-hook suggestions were applied literally, each alone and all together, on exact upstream head bc64d33433b6636957067b20a73b3ba6b1810951; every resulting AltWindowCycle.vcxproj build passed. The first-time-contributor visual-evidence and validation request remains drafted. No upstream action was taken.",
   "status": {
     "glyph": "🔄",
-    "label": "Review finding drafted",
-    "detail": "The exact live upstream head and existing fork review branch build successfully. One current-head mouse-hook lifecycle finding is grounded at the outside-click teardown path; stale fork-only findings were not carried forward."
+    "label": "Four independently built suggestions drafted",
+    "detail": "Each exact literal RIGHT-side edit independently builds on the pinned head, and all four build together. Raw target endings are LF-only; the saved fork review has no new inline findings or unresolved Copilot threads. Interactive mouse behavior remains untested."
   },
   "next_action": {
     "glyph": "review",
-    "label": "Request changes",
-    "reason": "Approve, edit, or hold the one grounded mouse-hook finding and the Phase 0 demo/validation ask before any upstream write."
+    "label": "Review four atomic inline suggestions",
+    "reason": "Approve, edit, or hold all four together, plus the Phase 0 visual-evidence/validation ask, before any upstream write."
   },
   "confidence": "High",
   "needs_revalidation": false,
@@ -33,14 +33,89 @@
   },
   "proposed_comments": [
     {
-      "id": "mouse-hook-release-after-dismissal",
+      "id": "mouse-release-pending-guard",
       "kind": "inline",
       "in_diff": true,
       "severity": "high",
       "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
-      "line": 885,
-      "body": "### Preserve the swallowed mouse-up after outside-click dismissal\n\n**Severity:** `high`\n\nWhen a left-button down is swallowed by `MouseHookProc`, clicking outside the panel calls `Cancel()` and `HideOverlayWindow()`, whose `RemoveEscapeHook()` immediately unhooks the mouse hook and clears `g_swallowedLeftDown`. The physical `WM_LBUTTONUP` can then reach the underlying application without its matching down, leaving its button state inconsistent. Keep the mouse hook and pending-release state alive until the matching up is consumed, while retaining a forced teardown path for final shutdown.",
-      "side": "RIGHT"
+      "line": 443,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "50597-mouse-release-lifecycle",
+        "title": "Preserve the matching mouse-up through dismissal",
+        "position": 1,
+        "total": 4,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 88,
+        "rationale": "Upstream hook guard and teardown are traced at the pinned head; the literal edit built both alone and in the atomic group, but the interaction was not run."
+      },
+      "body": "### Preserve the matching mouse-up through dismissal (1/4)\n\n**Severity:** `high`\n\nAn outside click can swallow `WM_LBUTTONDOWN`, then hide the overlay before the physical release. Keep `MouseHookProc` active for that pending `WM_LBUTTONUP` even while the overlay is hidden; otherwise it cannot swallow the matching up. Apply all four grouped suggestions together.\n\n```suggestion\n    if (code == HC_ACTION && g_uiThreadId &&\n        (g_overlayVisible.load(std::memory_order_relaxed) ||\n         (wParam == WM_LBUTTONUP && g_swallowedLeftDown.load(std::memory_order_relaxed))))\n```"
+    },
+    {
+      "id": "mouse-release-unhook-after-up",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "high",
+      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "line": 476,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "50597-mouse-release-lifecycle",
+        "title": "Preserve the matching mouse-up through dismissal",
+        "position": 2,
+        "total": 4,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 88,
+        "rationale": "Upstream return path and hook removal are traced at the pinned head; the literal edit built both alone and in the atomic group, but the interaction was not run."
+      },
+      "body": "### Remove the deferred hook after consuming the release (2/4)\n\n**Severity:** `high`\n\nOnce the hidden overlay's matching `WM_LBUTTONUP` is swallowed, remove the deferred mouse hook before returning so it does not remain installed for unrelated desktop input. The unchanged `return 1` is the required anchor for this insertion. Apply all four grouped suggestions together.\n\n```suggestion\n                if (g_mouseHook && !g_overlayVisible.load(std::memory_order_relaxed))\n                {\n                    UnhookWindowsHookEx(g_mouseHook);\n                    g_mouseHook = nullptr;\n                }\n                return 1;\n```"
+    },
+    {
+      "id": "mouse-release-final-shutdown",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "high",
+      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "line": 628,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "50597-mouse-release-lifecycle",
+        "title": "Preserve the matching mouse-up through dismissal",
+        "position": 3,
+        "total": 4,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 88,
+        "rationale": "Upstream Shutdown and RemoveEscapeHook paths are traced; the literal edit built both alone and in the atomic group, but shutdown while pressed was not tested interactively."
+      },
+      "body": "### Force cleanup on final shutdown (3/4)\n\n**Severity:** `high`\n\nOrdinary overlay dismissal must defer unhooking while a swallowed release is pending, but final `Switcher::Shutdown()` must still remove the hook and clear that state before the module exits. The unchanged `ReleaseLayeredBuffer()` is the current RIGHT-side anchor for this insertion. Apply all four grouped suggestions together.\n\n```suggestion\n    if (g_mouseHook)\n    {\n        UnhookWindowsHookEx(g_mouseHook);\n        g_mouseHook = nullptr;\n    }\n    g_swallowedLeftDown.store(false, std::memory_order_relaxed);\n    ReleaseLayeredBuffer();\n```"
+    },
+    {
+      "id": "mouse-release-defer-teardown",
+      "kind": "inline",
+      "in_diff": true,
+      "severity": "high",
+      "path": "src/modules/AltWindowCycle/AltWindowCycle.cpp",
+      "start_line": 912,
+      "line": 913,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "50597-mouse-release-lifecycle",
+        "title": "Preserve the matching mouse-up through dismissal",
+        "position": 4,
+        "total": 4,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 88,
+        "rationale": "Upstream HideOverlayWindow unconditionally calls RemoveEscapeHook after the swallowed down; the literal edit built both alone and in the atomic group, but the physical mouse path was not exercised."
+      },
+      "body": "### Defer teardown while the button-up is pending (4/4)\n\n**Severity:** `high`\n\n`HideOverlayWindow()` calls `RemoveEscapeHook()` immediately after an outside click. Clearing `g_swallowedLeftDown` and removing the mouse hook here lets the physical `WM_LBUTTONUP` reach the underlying app without its matching down. Defer that unhook until the release is consumed; the shutdown suggestion still forces cleanup. Apply all four grouped suggestions together.\n\n```suggestion\n    if (g_mouseHook && !g_swallowedLeftDown.load(std::memory_order_relaxed))\n```"
     }
   ],
   "actions": [
@@ -49,24 +124,27 @@
       "type": "request_changes",
       "status": "draft_only",
       "item_ids": [
-        "mouse-hook-release-after-dismissal"
+        "mouse-release-pending-guard",
+        "mouse-release-unhook-after-up",
+        "mouse-release-final-shutdown",
+        "mouse-release-defer-teardown"
       ],
-      "reason": "One current-head code finding remains approval-gated; the Phase 0 demo and validation request is also pending. No upstream write was made."
+      "reason": "One grounded mouse-hook lifecycle finding is expressed as four atomic independently and jointly built RIGHT-side suggestions. The Phase 0 visual-evidence and completed-validation ask remains pending. No upstream write was made."
     }
   ],
   "fork_pr": {
-    "number": 835,
+    "number": 890,
     "repo": "MuyuanMS/PowerToys",
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/835",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/890",
     "state": "OPEN",
-    "head_sha": "e04e996d235961619195753f6ece733c12e76e83"
+    "head_sha": "9ff0bbfb88c228e701106fe47bfa087cff913b53"
   },
-  "fork_branch": "pr-iterate/50597-v2",
-  "fork_head_sha": "e04e996d235961619195753f6ece733c12e76e83",
+  "fork_branch": "pr-iterate/50597-v3",
+  "fork_head_sha": "9ff0bbfb88c228e701106fe47bfa087cff913b53",
   "workflow": {
     "phase": "awaiting_review_approval",
-    "previous_phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-23T10:50:54Z",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-28T04:41:52Z",
     "advancement_evidence": [
       "Consumed the fresh fork Copilot review submitted at 2026-09-16T10:53:13Z on fork head e04e996d235961619195753f6ece733c12e76e83; it had zero published comments.",
       "Confirmed zero unresolved fork Copilot threads.",
@@ -80,29 +158,43 @@
       "Recreated the existing pr-iterate/50597-v2 local checkout and rebuilt AltWindowCycle.vcxproj plus AltWindowCycleUnitTests.vcxproj successfully.",
       "Built the exact live upstream head bc64d33433b6636957067b20a73b3ba6b1810951 in a fresh clean detached validation checkout; x64/Debug/PowerToys.exe exists.",
       "Raw upstream blobs for all three changed files are LF-only; no mixed-line-ending suggestion safety issue was present.",
-      "No upstream public action was taken."
+      "No upstream public action was taken.",
+      "Live fork PR 835 is CLOSED after its reviewed head changed; open successor PR 890 has head 9ff0bbfb88c228e701106fe47bfa087cff913b53.",
+      "Successor Copilot review submitted 2026-09-24T00:34:46Z reports no new inline findings at that head; all Copilot threads are resolved.",
+      "Prepared a four-location atomic RIGHT-side candidate on the pinned upstream head; no suggestion is publishable until its exact patch builds.",
+      "Raw target AltWindowCycle.cpp blob is LF-only. Initial candidate build stopped for missing local NuGet package; after linking the existing package cache, bounded exclusive-lock acquisition timed out.",
+      "No upstream public action or dashboard publication was taken.",
+      "Reconfirmed upstream head bc64d33433b6636957067b20a73b3ba6b1810951 and open fork PR 890 head 9ff0bbfb88c228e701106fe47bfa087cff913b53.",
+      "Get-CopilotReviewStatus.ps1 matched saved request 2026-09-24T00:27:27Z after baseline review 5298296066: review 5298356817 arrived 2026-09-24T00:34:46Z with zero new inline findings; zero unresolved Copilot threads.",
+      "Built the exact four-location minimal literal RIGHT-side suggestion result for AltWindowCycle.vcxproj at the pinned upstream head under the shared exclusive lock; released the lock in finally.",
+      "Rechecked raw upstream AltWindowCycle.cpp: LF-only with zero CRLF, lone CR, or BOM. Interactive mouse behavior remains untested.",
+      "Before targeted repair: one prose-only inline finding and zero apply-ready suggestions. Four atomic apply-ready suggestions were temporarily drafted after their combined literal build but withheld under the new per-member validation requirement.",
+      "Each of four literal author-facing suggestion blocks was applied independently in its own exact-upstream-head worktree. Two bounded attempts failed to acquire the shared exclusive build lock; individual builds have not run. The current checkpoint restores one prose-only inline finding, zero apply-ready suggestions, zero review actions, and the building stage.",
+      "Private suggestion_assessment recorded atomic_patch_not_safe while independent validation was blocked; no patch failure was claimed.",
+      "Once the shared lock became available, compiled each of the four isolated, literal, pinned-head member worktrees in sequence. All four AltWindowCycle.vcxproj builds passed with zero errors and produced PowerToys.AltWindowCycle.dll; exclusive lock released in finally.",
+      "Rechecked unchanged live upstream and fork heads, restored the four-member atomic RIGHT-side suggestion group, and removed the provisional prose-only finding. No upstream action or dashboard publication was taken."
     ],
-    "resume_action": "continue_existing_trace",
+    "resume_action": "await_maintainer_approval_without_upstream_write",
     "live_recheck": "bc64d33433b6636957067b20a73b3ba6b1810951"
   },
   "freshness": {
     "headRefOid": "bc64d33433b6636957067b20a73b3ba6b1810951",
     "updatedAt": "2026-09-23T02:23:11Z",
-    "latestCopilotReviewAt": "2026-09-16T10:53:13Z",
+    "latestCopilotReviewAt": "2026-09-24T00:34:46Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-23T10:50:54Z",
-    "evaluated_at": "2026-09-23T10:50:54Z",
+    "checkedAt": "2026-09-28T04:41:52Z",
+    "evaluated_at": "2026-09-28T04:41:52Z",
     "source_updated_at": "2026-09-23T02:23:11Z",
     "head_sha": "bc64d33433b6636957067b20a73b3ba6b1810951",
-    "checked_at": "2026-09-23T10:50:54Z",
-    "status": "current_head_grounded_finding_drafted"
+    "checked_at": "2026-09-28T04:41:52Z",
+    "status": "independent_and_group_literal_builds_passed"
   },
   "validation": {
     "fork_review": {
       "result": "passed",
-      "latestCopilotReviewAt": "2026-09-16T10:53:13Z",
+      "latestCopilotReviewAt": "2026-09-24T00:34:46Z",
       "unresolvedCopilotThreads": 0,
-      "details": "Existing latest fork Copilot review remains clean; one status recheck found no newer submitted review, so no duplicate request was made."
+      "details": "Open successor fork PR 890: saved request 2026-09-24T00:27:27Z, baseline review 5298296066, current-head review 5298356817 at 2026-09-24T00:34:46Z. Five reviews fully scanned; zero new inline findings and zero unresolved Copilot threads. Its overview's broad 'needs a closer look' line is not an additional inline finding. The old review on closed fork PR 835 was not reused."
     },
     "upstream_head": {
       "head_sha": "bc64d33433b6636957067b20a73b3ba6b1810951",
@@ -116,17 +208,29 @@
     },
     "suggestion_patch": {
       "head_sha": "bc64d33433b6636957067b20a73b3ba6b1810951",
-      "result": "not_applicable",
+      "result": "passed",
       "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [],
-      "commands": [],
-      "details": "No apply-ready suggestion blocks were emitted in this bounded continuation."
+      "applied_comment_ids": [
+        "mouse-release-pending-guard",
+        "mouse-release-unhook-after-up",
+        "mouse-release-final-shutdown",
+        "mouse-release-defer-teardown"
+      ],
+      "commands": [
+        "Apply all four selected current RIGHT-side suggestion replacements verbatim on a detached bc64d33433b6636957067b20a73b3ba6b1810951 local checkout",
+        "Set POWERTOYS_DISABLE_SPECTRE=1; tools\\build\\build.ps1 -Path src\\modules\\AltWindowCycle -Platform x64 -Configuration Debug",
+        "In each of four additional detached bc64d33433b6636957067b20a73b3ba6b1810951 local checkouts, apply only one exact literal author-facing suggestion block and run the same x64 Debug AltWindowCycle.vcxproj build while holding the exclusive cross-process lock"
+      ],
+      "details": "All four author-facing suggestion blocks were applied verbatim in four separate exact-upstream-head worktrees, one member per tree; each member independently built AltWindowCycle.vcxproj x64 Debug with zero errors and produced PowerToys.AltWindowCycle.dll. The four blocks together also reproduce the previously built pinned-head candidate byte-for-byte, with zero build errors. All builds used the shared exclusive lock released in finally. These compile-only results do not prove interactive mouse-hook behavior."
     },
     "line_ending_safety": {
       "head_sha": "bc64d33433b6636957067b20a73b3ba6b1810951",
       "result": "passed",
-      "checked_item_ids": [
-        "mouse-hook-release-after-dismissal"
+      "checked_comment_ids": [
+        "mouse-release-pending-guard",
+        "mouse-release-unhook-after-up",
+        "mouse-release-final-shutdown",
+        "mouse-release-defer-teardown"
       ],
       "files": [
         {
@@ -135,7 +239,7 @@
           "line_endings": "lf"
         }
       ],
-      "details": "The grounded finding is inline prose without an apply-ready suggestion. The checked upstream target blob is LF-only; no mixed-EOL safety blocker exists."
+      "details": "Raw pinned upstream AltWindowCycle.cpp blob has 2153 LF-only line endings, zero CRLF or lone CR and no BOM; no mixed-EOL blocker exists for the four candidate edits."
     }
   },
   "upstream_safety": {

@@ -3,59 +3,29 @@
   "number": 50683,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "agent",
   "pending_author": false,
-  "generated_at": "2026-09-21T09:53:00Z",
-  "evaluated_at": "2026-09-21T09:53:00Z",
+  "generated_at": "2026-09-28T03:41:00Z",
+  "evaluated_at": "2026-09-28T03:41:00Z",
   "source_updated_at": "2026-09-20T21:16:59Z",
   "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
   "title": "CropAndLock: Add maximized-window reparent regression coverage",
   "url": "https://github.com/microsoft/PowerToys/pull/50683",
   "status": {
-    "glyph": "!",
-    "label": "Review action drafted",
-    "detail": "The converged fork review found one upstream runtime correction: refresh the child frame before measuring client geometry and avoid applying the original client offset twice."
+    "glyph": "⏳",
+    "label": "Exact suggestion candidate build pending",
+    "detail": "The converged fork review is clean. Two localized RIGHT-side suggestion patches apply literally on the pinned upstream blob and the target is LF-only, but the exact candidate build cannot run while the shared build lock is held."
   },
-  "next_action": "Approve or edit the drafted inline review comment; no upstream write has occurred.",
+  "next_action": "Run the exact pinned-upstream suggestion candidate build under the shared build lock, then re-ground and draft the two localized suggestions.",
   "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "crop-client-frame-and-offset",
-      "kind": "inline",
-      "in_diff": true,
-      "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
-      "line": 146,
-      "start_line": 146,
-      "side": "RIGHT",
-      "title": "Refresh frame metrics before preserving the client crop",
-      "severity": "high",
-      "confidence": {
-        "score": 92,
-        "rationale": "The pinned upstream path changes the target to WS_CHILD, then reads client geometry without a frame refresh and later adds the already-applied diffX/diffY offset again. The converged fork correction builds successfully; exact-upstream and isolated-candidate builds were attempted but dependency restoration blocked them, and runtime UI execution was unavailable."
-      },
-      "body": "### Refresh frame metrics before preserving the client crop\n\n**Severity:** `high`\n\nAfter `SetParent` and `WS_CHILD` are applied, the code immediately measures `GetWindowRect`/`GetClientRect`. The frame metrics can still describe the pre-style-change frame, so the calculated non-client dimensions do not reliably preserve the original client area. The final `x`/`y` calculation also adds `cropRect`, which was already shifted by `diffX`/`diffY` above, and therefore applies that client-origin offset twice.\n\nPlease force a no-size `SetWindowPos` with `SWP_FRAMECHANGED` immediately after `SetWindowLongPtrW` and before the `GetClientRect` measurement. Then calculate the final child offset from the measured client origin while subtracting the earlier `diffX`/`diffY` conversion from `cropRect` (for both axes). Verify the maximized-browser case and retain the existing non-maximized reparent coverage.\n\nFocused verification: build the CropAndLock UI test project and run the maximized and non-maximized reparent scenarios when the Windows UI test environment is available; confirm the visible pixels and input hit-testing use the same selected client region."
-    }
-  ],
-  "actions": [
-    {
-      "id": "review-50683-crop-client-geometry",
-      "type": "post_review",
-      "label": "Post 1 inline review comment",
-      "primary": true,
-      "confirm": true,
-      "note": "Posts the selected current-head inline finding as a non-blocking review comment.",
-      "review": {
-        "event": "COMMENT",
-        "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d"
-      }
-    }
-  ],
+  "needs_revalidation": true,
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
-    "phase": "awaiting_review_approval",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-21T14:42:23Z",
+    "phase": "reviewing_findings",
+    "previous_phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-28T03:57:00Z",
     "run_tag": "schedule-20260921-2218",
     "review_requested_at": "2026-09-21T05:07:43Z",
     "fork_pr": 874,
@@ -69,12 +39,12 @@
       "resolve_fork_threads",
       "current_upstream_recheck"
     ],
-    "blocker_next_run_reason": "Bounded run cutoff. Paused at awaiting_review_approval; resume only after maintainer approval or a relevant head/state change. Do not initiate polling, builds, or review requests from this checkpoint."
+    "blocker_next_run_reason": "Exact upstream suggestion candidate build is pending because the shared build lock is held. Resume after the lock is released; do not publish suggestions from patch-check-only evidence."
   },
   "freshness": {
     "headRefOid": "282197767b1faaa769973ed6b1d5257cc5157b7d",
     "updatedAt": "2026-09-20T21:16:59Z",
-    "checkedAt": "2026-09-21T14:25:00Z",
+    "checkedAt": "2026-09-28T03:57:00Z",
     "unresolvedForkCopilotThreads": 0
   },
   "fork_pr": {
@@ -104,9 +74,14 @@
       "note": "The clean exact-upstream checkout could not restore the UI-test dependency graph: NETSDK1083 for win-anycpu, followed by missing ScreenRecorderLib/TestContext references. The converged fork build passed with its existing restored assets."
     },
     "suggestionPatch": {
-      "result": "not_applicable",
+      "result": "pending_exact_candidate_build",
       "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
-      "reason": "The finding is intentionally explanatory prose rather than an apply-ready suggestion because isolated candidate validation could not complete."
+      "applied_items": [
+        "crop-client-frame-refresh",
+        "crop-client-offset-conversion"
+      ],
+      "literal_patch_check": "passed",
+      "reason": "Both localized replacements applied cleanly to an isolated exact-head candidate and git diff --check passed. The required exact candidate build remains pending because <PowerToysCheckout>\\.pr-review-build.lock is still held by another worker after a 90-second wait."
     }
   },
   "upstream_safety": {
