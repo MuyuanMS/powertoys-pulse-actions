@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-28T10:19:01.7584514+08:00",
+  "generated_at": "2026-09-28T10:49:49.3142816+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1192
   },
   "impact": {
-    "as_of": "2026-09-28T10:19:01.7584514+08:00",
+    "as_of": "2026-09-28T10:49:49.3142816+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -4905,18 +4905,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "maintainer",
+      "stage": "waiting_copilot",
+      "owes": "copilot",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 2,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Post two current-head review findings"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -4933,11 +4930,11 @@ window.BOARD_INDEX = {
       "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
-        "fork_number": 713,
-        "fork_title": "[PR 49988] CmdPal: Shelf (7/n) - It's the final polish, da da da",
+        "fork_number": 913,
+        "fork_title": "[PR 49988] CmdPal Shelf final polish review iteration",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49988-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/713"
+        "fork_branch": "pr-iterate/49988-v4",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/913"
       }
     },
     {
@@ -5290,18 +5287,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "maintainer",
+      "stage": "review_in_progress",
+      "owes": "reviewer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 3,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with three current-head CmdPal shelf findings"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Needs-Author-Feedback",
         "Product-Command Palette"
@@ -5386,18 +5380,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 5,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post five inline review comments"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
@@ -5479,18 +5470,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "maintainer",
+      "stage": "review_in_progress",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 5,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with five current-head CmdPal shelf findings"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Command Palette",
         "Ready for review"
