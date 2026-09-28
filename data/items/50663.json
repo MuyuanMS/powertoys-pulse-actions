@@ -6,21 +6,21 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-28T04:51:00Z",
-  "evaluated_at": "2026-09-28T04:51:00Z",
-  "source_updated_at": "2026-09-21T23:42:55Z",
+  "generated_at": "2026-09-28T06:22:47.7935522Z",
+  "evaluated_at": "2026-09-28T06:22:47.7935522Z",
+  "source_updated_at": "2026-09-22T19:08:09Z",
   "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
-  "title": "[WIP] Robocopy UI",
+  "title": "Robocopy UI",
   "url": "https://github.com/microsoft/PowerToys/pull/50663",
   "status": {
     "glyph": "review",
     "label": "Review findings drafted",
-    "detail": "Fresh live recheck confirms upstream head 479d070ccab4410850030fe27b6799876f700b7d and fork head 0d66394e940394eaa60a41c22412e19848af3e18 are unchanged. Saved Copilot review 5262395623 remains submitted for the matching fork head with zero unresolved Copilot threads; 12 live unresolved fork threads are non-Copilot spelling/code-scanning findings. One of two prose findings is a validated literal RIGHT-side suggestion. Preserve the approval-gated post_review action."
+    "detail": "Live revalidation confirms upstream head 479d070ccab4410850030fe27b6799876f700b7d and fork head 0d66394e940394eaa60a41c22412e19848af3e18. Saved Copilot review 5262395623 matches the fork head with zero new comments and zero unresolved Copilot threads; 12 open fork threads are unrelated non-Copilot findings. Both upstream comments are re-grounded; the settings comment carries the tested one-line suggestion."
   },
   "next_action": {
     "glyph": "review",
     "label": "Review two Robocopy UI comments",
-    "reason": "Approve or edit the two current-head inline review comments before any upstream write."
+    "reason": "Approve or edit the two current-head inline comments. The settings comment contains one tested suggestion; the lifecycle comment remains prose-only because its correction spans the event-waiter and process-handle lifecycle."
   },
   "confidence": "High",
   "needs_revalidation": false,
@@ -29,34 +29,34 @@
       "id": "50663-robocopy-settings-module-file",
       "kind": "inline",
       "severity": "high",
-      "title": "Read Robocopy settings from the module settings file",
+      "title": "Read the Robocopy UI module settings file",
       "confidence": {
         "score": 91,
-        "rationale": "The current upstream line calls GetSettings without RobocopyUISettings.ModuleName, while the settings type defines a module file used by the UI toggle."
+        "rationale": "At the pinned head GetSettings<T> defaults its module argument to an empty string, but module settings are stored by module name; the literal module-aware replacement is compiled in the exact-head candidate."
       },
       "path": "src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/HomePage.xaml.cs",
       "start_line": 569,
       "line": 569,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "**High:** `SaveOptionsButton_Click` reads `RobocopyUISettings` without the Robocopy UI module name, so the legacy-save toggle is loaded from the root settings file instead of the module settings file. On a normal profile this leaves `UseLegacySaveMode` at its default or can fail to deserialize the intended module settings, so the setting exposed by this PR is not honored when saving `.rcj` files.\n\n```suggestion\n        if (SettingsUtils.Default.GetSettingsOrDefault<RobocopyUISettings>(RobocopyUISettings.ModuleName).Properties.UseLegacySaveMode.Value)\n```",
+      "body": "### Read the Robocopy UI module settings file\n\n**Severity:** `high`\n\n`GetSettings<RobocopyUISettings>()` uses the default settings overload, whose module name defaults to an empty string. The `UseLegacySaveMode` setting belongs to the Robocopy UI module, so this reads the root settings file instead and can ignore the value configured for `.rcj` saves. Pass `RobocopyUISettings.ModuleName` to the module-aware settings accessor.\n\n```suggestion\n        if (SettingsUtils.Default.GetSettingsOrDefault<RobocopyUISettings>(RobocopyUISettings.ModuleName).Properties.UseLegacySaveMode.Value)\n```",
       "disposition": "proposed"
     },
     {
       "id": "50663-robocopy-launch-listener-disable",
       "kind": "inline",
       "severity": "high",
-      "title": "Stop the launch event listener while Robocopy UI is disabled",
+      "title": "Gate the launch waiter on the module lifecycle",
       "confidence": {
         "score": 89,
-        "rationale": "The current upstream constructor starts the public launch-event waiter and disable only flips _enabled, leaving the callback able to call StartProcess after disable and without process-handle synchronization."
+        "rationale": "The pinned constructor starts the event waiter unconditionally, disable only clears _enabled, the callback ignores wait errors, and StartProcess/IsProcessActive access the process handle without synchronization."
       },
       "path": "src/modules/RobocopyUI/RobocopyUIModuleInterface/dllmain.cpp",
       "start_line": 34,
       "line": 34,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "**High:** The constructor starts the named `ROBOCOPY_UI_LAUNCH_EVENT` waiter before the module is enabled, and the callback calls `StartProcess()` without checking `_enabled`. Since `disable()` only flips `_enabled` and never stops the waiter, any process that signals the public launch event can still start Robocopy UI while the module is disabled; the callback can also race with `disable()` over `m_process`. Please start the waiter only from `enable()`, stop it from `disable()`, ignore non-success callbacks, and serialize access to the tracked process handle.",
+      "body": "### Gate the launch waiter on the module lifecycle\n\n**Severity:** `high`\n\nThe constructor starts a global named-event waiter unconditionally, but `disable()` only clears `_enabled` and `StartProcess()` does not check it. A signal can therefore launch Robocopy UI while the module is disabled; the callback also ignores wait failures, and concurrent event/custom-action launches can race while checking and storing `m_process`. Start the waiter during `enable()`, stop it during `disable()`, return on unsuccessful wait results, and synchronize access to the tracked process handle across launch and shutdown.",
       "disposition": "proposed"
     }
   ],
@@ -74,13 +74,13 @@
         "event": "COMMENT",
         "head_sha": "479d070ccab4410850030fe27b6799876f700b7d"
       },
-      "note": "Draft only. Two current-head inline prose comments require explicit maintainer approval; no upstream write has occurred."
+      "note": "Draft only. Two grounded current-head inline comments require explicit maintainer approval; the first contains one apply-ready suggestion. No upstream write has occurred."
     }
   ],
   "workflow": {
     "phase": "awaiting_review_approval",
     "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-22T00:10:00.6135706Z",
+    "checkpoint_at": "2026-09-28T06:22:47.7935522Z",
     "run_tag": "recovery-50663-20260921",
     "latest_copilot_review_id": 5262395623,
     "latest_copilot_review_submitted_at": "2026-09-21T01:11:04Z",
@@ -95,9 +95,9 @@
       "Two older accepted fork fixes were re-grounded against current upstream head 479d070ccab4410850030fe27b6799876f700b7d."
     ],
     "revalidation": {
-      "evaluated_at": "2026-09-22T00:10:00.6135706Z",
+      "evaluated_at": "2026-09-28T06:22:47.7935522Z",
       "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
-      "live_pr_updated_at": "2026-09-21T23:42:55Z",
+      "live_pr_updated_at": "2026-09-22T19:08:09Z",
       "upstream_head": "479d070ccab4410850030fe27b6799876f700b7d",
       "fork_head": "0d66394e940394eaa60a41c22412e19848af3e18",
       "saved_review": {
@@ -117,7 +117,7 @@
         "latest_comment_id": 5769121843,
         "latest_comment_author": "LanceMcCarthy",
         "latest_comment_created_at": "2026-09-21T23:42:09Z",
-        "new_activity_summary": "Latest upstream comment asks about unrelated AdvancedPaste UI test timing; no Robocopy-specific maintainer or author discussion supersedes the drafted findings."
+        "new_activity_summary": "The latest upstream discussion remains an unrelated AdvancedPaste UI-test timing question; no Robocopy-specific comment or review supersedes the findings."
       },
       "diff_mapping": {
         "result": "passed",
@@ -152,8 +152,8 @@
   },
   "freshness": {
     "headRefOid": "479d070ccab4410850030fe27b6799876f700b7d",
-    "updatedAt": "2026-09-21T23:42:55Z",
-    "checkedAt": "2026-09-22T00:10:00.6135706Z",
+    "updatedAt": "2026-09-22T19:08:09Z",
+    "checkedAt": "2026-09-28T06:22:47.7935522Z",
     "latestCopilotReviewAt": "2026-09-21T01:11:04Z",
     "unresolvedForkCopilotThreads": 0,
     "forkHeadSha": "0d66394e940394eaa60a41c22412e19848af3e18",
@@ -199,8 +199,8 @@
     },
     "current_head_review": {
       "result": "revalidated_drafted_findings",
-      "details": "Read-only resume status matched saved review 5262395623 to fork head 0d66394e940394eaa60a41c22412e19848af3e18; current upstream head remains unchanged and both Robocopy findings remain current-diff grounded.",
-      "revalidated_at": "2026-09-28T04:51:00Z",
+      "details": "Read-only resume status matched saved review 5262395623 to fork head 0d66394e940394eaa60a41c22412e19848af3e18. The full upstream discussion was rechecked through source_updated_at 2026-09-22T19:08:09Z; the newest comment remains unrelated to Robocopy. Both findings were re-grounded against exact commit blobs.",
+      "revalidated_at": "2026-09-28T06:22:47.7935522Z",
       "live_discussion": {
         "issue_comments": 6,
         "review_comments": 0,
@@ -219,7 +219,7 @@
         "Get-UnresolvedCopilotThreads.ps1 returned 0",
         "Exact upstream source excerpts read with git show"
       ],
-      "details": "One localized apply-ready suggestion was extracted and validated against the exact pinned upstream tree; the launch-listener finding remains inline prose because its fix requires coordinated lifecycle, callback, and synchronization edits."
+      "details": "The settings finding is a tested one-line suggestion against the exact pinned upstream tree. The launch-listener finding remains inline prose because its fix requires coordinated lifecycle, callback, and synchronization edits; a local _enabled guard would remain racy."
     },
     "suggestion_patch": {
       "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",
@@ -227,15 +227,15 @@
       "applied_comment_ids": [
         "50663-robocopy-settings-module-file"
       ],
-      "candidate_worktree": "C:\\PowerToys-50663-suggestion",
+      "candidate_worktree": "<PowerToysCheckout>",
       "candidate_diff": "src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/HomePage.xaml.cs:569",
       "commands": [
-        "Test-SuggestionLineEndings.ps1 -Checkout C:\\PowerToys-50663-current -HeadSha 479d070ccab4410850030fe27b6799876f700b7d -Path src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/HomePage.xaml.cs",
+        "Test-SuggestionLineEndings.ps1 -Checkout <PowerToysCheckout> -HeadSha 479d070ccab4410850030fe27b6799876f700b7d -Path src/modules/RobocopyUI/RobocopyUI.UI/RobocopyUIXAML/HomePage.xaml.cs",
         "tools\\build\\build-essentials.cmd",
         "src\\modules\\RobocopyUI\\RobocopyUI.UI\\..\\..\\..\\..\\tools\\build\\build.cmd"
       ],
       "minimal_ranges_reviewed": true,
-      "details": "The candidate applies only the changed conditional expression at the current RIGHT-side line 569 and builds successfully with the repository Visual Studio wrapper."
+      "details": "The fenced block exactly matches the candidate line, git diff --check passed, the resulting if statement is syntactically valid, and the exact upstream candidate builds successfully with the repository Visual Studio wrapper and an empty errors log. This is a single suggestion member; atomic group validation is not applicable."
     },
     "line_ending_safety": {
       "head_sha": "479d070ccab4410850030fe27b6799876f700b7d",

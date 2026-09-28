@@ -1,25 +1,28 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50333",
   "number": 50333,
   "kind": "pr",
   "track": "review",
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-16T01:35:00Z",
-  "evaluated_at": "2026-09-16T01:35:00Z",
+  "generated_at": "2026-09-28T04:58:59Z",
+  "evaluated_at": "2026-09-28T04:58:59Z",
   "source_updated_at": "2026-09-02T13:51:47Z",
   "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
   "title": "Feature/advanced paste text case part2",
   "url": "https://github.com/microsoft/PowerToys/pull/50333",
+  "summary": "On the unchanged upstream head, the native Text Case hotkey traversal can lose positions for omitted or null persisted groups while Settings retains default action accessors. Shortcut Guide omits the new configured actions and the root notice omits the vendored Unicode license. Fork PR 815 remains current-head Copilot-clean with zero unresolved threads. A prior migration-test request was withdrawn because its version-2 premise is absent upstream. The remaining hotkey fix crosses unchanged code and has no safe localized RIGHT-side suggestion; no apply-ready block is proposed.",
   "status": {
     "glyph": "...",
-    "label": "Review complete — approval required",
-    "detail": "Fork PR 815 converged with zero published findings and zero unresolved threads. The complete exact-head correction candidate passes the Advanced Paste, Settings, Shortcut Guide, and focused test builds."
+    "label": "Grounded review drafted — approval required",
+    "detail": "Fork PR 815 has a current-head Copilot review with zero new comments and zero unresolved threads. One implementation-ready inline prose finding and two grounded out-of-diff comments remain; no safe literal RIGHT-side replacement was isolated."
   },
   "next_action": {
     "glyph": "📝",
     "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "The native/UI slot contract, Shortcut Guide integration, Unicode notice, and migration coverage remain incomplete on the upstream head."
+    "reason": "The native/UI hotkey slot contract, Shortcut Guide integration, and Unicode notice remain incomplete on the upstream head; the version-2 migration-test premise was withdrawn."
   },
   "proposed_comments": [
     {
@@ -32,10 +35,10 @@
       "line": 430,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Keep native and Settings hotkey slots aligned\n\n**Severity:** `critical`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, `src/settings-ui/Settings.UI.Library/AdvancedPasteAdditionalActions.cs`, `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`, and `src/settings-ui/Settings.UI/ViewModels/ShortcutConflictViewModel.cs`.\n\n**Problem:** Adding `text-case` to the native traversal makes hotkey IDs depend on the shape of the persisted `additional-actions` JSON. Settings, however, deserializes omitted or null groups and leaves to defaults, while the native loader currently skips missing or malformed groups and leaves. The resulting vectors can have different lengths, so a Text Case or custom-action conflict can be assigned to the wrong action or shown with the wrong localized header. The optional coaching shortcut must also occupy the same slot on both sides whenever it is enabled and has a non-zero key, even when its parent action is hidden.\n\n**Why it matters:** A user can save a valid older or partially written settings file, then have conflict detection and hotkey routing disagree about which shortcut is being edited or invoked.\n\n**Suggested change:**\n1. Define the native additional-action traversal in the same fixed order as `AdvancedPasteAdditionalActions.GetAllActions()`.\n2. Reserve a disabled placeholder for every missing or non-object action group and leaf, including all ten Text Case leaves, rather than omitting it from the native vector.\n3. Append exactly one slot for each leaf that has a shortcut; do not duplicate the vector insertion.\n4. Keep the optional coaching slot condition identical between native registration and `GetAllHotkeyAccessors()`.\n5. Add regression coverage for v1 and partial settings payloads, asserting that Settings accessor positions and native hotkey positions remain aligned.\n\n**Verification:** Build `AdvancedPasteModuleInterface` and Settings, then test an older settings file with omitted `fix-spelling-and-grammar`, a null or incomplete `text-case` group, hidden Fix Spelling with coaching enabled, and a custom action. Confirm each conflict is labeled and routed to its actual shortcut.",
+      "body": "### Keep native and Settings hotkey slots aligned\n\n**Severity:** `critical`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, `src/settings-ui/Settings.UI.Library/AdvancedPasteAdditionalActions.cs`, `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`, and `src/settings-ui/Settings.UI/ViewModels/ShortcutConflictViewModel.cs`.\n\n**Problem:** Adding `text-case` to the native traversal makes hotkey IDs depend on the shape of persisted `additional-actions` JSON. Settings defaults omitted or null groups and leaves, while native `read_settings` skips missing groups and `process_additional_action` skips non-object values or absent leaf shortcuts. Their slot counts can diverge, shifting Text Case or custom-action conflicts to the wrong action or localized header. The coaching shortcut also needs the same enabled, non-zero-key condition and position on both sides, even when its parent action is hidden.\n\n**Why it matters:** A valid older or partial settings file can cause conflict metadata and native hotkey routing to refer to different actions.\n\n**Suggested change:**\n1. In `dllmain.cpp`, traverse known additional groups and leaves in the fixed depth-first order used by `AdvancedPasteAdditionalActions.GetAllActions()`, rather than enumerating arbitrary JSON properties.\n2. For every known leaf, append exactly one native slot, using a disabled placeholder when its group, value or shortcut is absent or malformed; reserve all ten Text Case positions. Do not insert a leaf twice when it has a shortcut.\n3. Keep the optional Fix Spelling coaching slot immediately after that leaf on both sides when coaching is enabled and its key is non-zero, including when the parent is hidden.\n4. In `ShortcutConflictViewModel`, calculate the start of custom-action headers from the same fixed Settings accessor count, including the optional coaching slot, instead of the hard-coded ID threshold.\n5. Cover v1, null and incomplete groups, hidden coaching, and custom actions with ordered native/Settings slot and localization assertions.\n\n**Verification:** Build `AdvancedPasteModuleInterface` and Settings; load an older file omitting `fix-spelling-and-grammar`, a null or incomplete `text-case` group, hidden Fix Spelling with coaching enabled, and a custom action. Confirm each conflict and direct shortcut is labeled and routed to its actual action.",
       "confidence": {
         "score": 98,
-        "rationale": "The exact correction candidate aligns the fixed slot schema across native and managed code and passes all affected builds and focused tests."
+        "rationale": "The pinned native/managed traversal differs on omitted and null groups; the earlier exact-upstream correction candidate built, but no safe standalone current-diff replacement covers its unchanged native and managed sites."
       },
       "disposition": "proposed"
     },
@@ -58,23 +61,10 @@
       "severity": "moderate",
       "title": "Add the vendored Unicode notice to the root notice file",
       "out_of_diff_reason": "NOTICE.md is not changed by this PR, so there is no current RIGHT-side range for the required release-notice update.",
-      "body": "### Add the vendored Unicode notice to the root notice file\n\n**Affected code:** `NOTICE.md`, `src/modules/AdvancedPaste/UnicodeData/LICENSE.txt`, and `src/modules/AdvancedPaste/UnicodeData/SentenceBreakProperty.txt`.\n\n**Problem:** This PR vendors Unicode `SentenceBreakProperty.txt` and compiles generated data derived from it, but the root `NOTICE.md` has no Advanced Paste or Unicode entry. The sibling license file is not a substitute for the root notice distributed with the product.\n\n**Why it matters:** The release artifact needs to carry the required attribution and license notice for the third-party Unicode data it incorporates.\n\n**Suggested change:**\n1. Add Advanced Paste to the utilities listed by `NOTICE.md`.\n2. Add an Advanced Paste section containing the Unicode data source and Unicode License V3 text from `UnicodeData/LICENSE.txt`.\n3. Keep the source and copyright year consistent with the vendored Unicode 17 data.\n\n**Verification:** Compare the new root notice entry against `UnicodeData/LICENSE.txt` and confirm a packaged build includes the updated root `NOTICE.md`.",
+      "body": "### Add the vendored Unicode notice to the root notice file\n\n**Affected code:** `NOTICE.md`, `src/modules/AdvancedPaste/UnicodeData/LICENSE.txt`, and `src/modules/AdvancedPaste/UnicodeData/SentenceBreakProperty.txt`.\n\n**Problem:** This PR vendors Unicode `SentenceBreakProperty.txt` and generated data derived from it, but the repository's root `NOTICE.md` has no Advanced Paste or Unicode-data entry. Its existing utility sections are the project's central place for third-party notices; the sibling source license does not update that central list.\n\n**Why it matters:** Without the root entry, a reader of the project's central third-party notices will not find the attribution for this newly incorporated data.\n\n**Suggested change:**\n1. Add Advanced Paste to the utilities listed by `NOTICE.md`.\n2. Add an Advanced Paste section containing the Unicode data source and the Unicode License V3 notice from `UnicodeData/LICENSE.txt`.\n3. Keep the source and copyright year consistent with the vendored Unicode 17 data.\n\n**Verification:** Compare the new root entry against `UnicodeData/LICENSE.txt`; check whether the product package includes the root `NOTICE.md` and, if it does not, include the required notice in its distributed documentation.",
       "confidence": {
         "score": 99,
         "rationale": "The repository vendors Unicode data and its license but omits the corresponding root distribution notice."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "migration-shape-regression-test",
-      "kind": "companion",
-      "severity": "moderate",
-      "title": "Test the persisted v1-to-v2 settings shape",
-      "out_of_diff_reason": "The PR adds no Settings migration test file, so there is no current RIGHT-side range for the missing regression coverage.",
-      "body": "### Test the persisted v1-to-v2 settings shape\n\n**Affected code:** `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`, `src/settings-ui/Settings.UI.Library/AdvancedPasteAdditionalActions.cs`, `src/settings-ui/Settings.UI.Library/AdvancedPasteTextCaseAction.cs`, and `src/settings-ui/Settings.UI.UnitTests/ModelsTests/AdvancedPasteSettingsTests.cs`.\n\n**Problem:** Updating `Version` from `1` to `2` alone does not prove that an existing on-disk v1 payload is deserialized, upgraded, and persisted with the new `text-case` group and all ten leaves. A future serializer or initialization change could leave the runtime and Settings UI with different action shapes while a version-only assertion still passes.\n\n**Why it matters:** Persisted settings compatibility is part of the hotkey-ID contract; a malformed migrated shape can shift shortcut conflict metadata and native routing.\n\n**Suggested change:**\n1. Deserialize a representative v1 Advanced Paste JSON payload that omits `text-case`.\n2. Run `UpgradeSettingsConfiguration`, serialize the result, and deserialize it again.\n3. Assert version `2`, the Text Case group, all ten leaves, and their default visibility and empty shortcuts.\n4. Add a partial or null group case covering the settings model's null-coalescing behavior.\n\n**Verification:** Run the focused `AdvancedPasteSettingsTests` suite and confirm both v1 and partial-payload round trips produce the expected ordered accessor shape.",
-      "confidence": {
-        "score": 88,
-        "rationale": "The version changes without an end-to-end persisted-shape regression; the candidate test demonstrates the required compatibility contract."
       },
       "disposition": "proposed"
     }
@@ -83,7 +73,7 @@
     {
       "id": "request-changes-50333",
       "type": "request_changes",
-      "label": "Request four Advanced Paste integration corrections",
+      "label": "Request three Advanced Paste integration corrections",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -92,15 +82,15 @@
         "pullRequest": 50333,
         "event": "REQUEST_CHANGES",
         "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
-        "body": "The implementation needs its native and Settings hotkey registration contract, Shortcut Guide population, third-party notice, and migration regression coverage completed before merge."
+        "body": "The native and Settings hotkey registration contract, Shortcut Guide population, and third-party Unicode notice need attention before merge."
       },
-      "note": "Draft only. One inline review comment and three separate PR conversation comments require explicit maintainer approval."
+      "note": "Draft only. One prose-only inline review comment and two separate PR conversation comments require explicit maintainer approval."
     }
   ],
   "workflow": {
-    "phase": "review_drafted",
-    "previous_phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-16T01:35:00Z",
+    "phase": "awaiting_review_approval",
+    "previous_phase": "review_drafted",
+    "checkpoint_at": "2026-09-28T04:58:59Z",
     "advancement_evidence": [
       "Consumed the completed review on fork head 09d2ecaa678001dca9b249f3aa0e6f808942c588 before requesting another.",
       "Assessed its single suppressed finding and restored independent counting of the enabled non-zero coaching shortcut.",
@@ -113,14 +103,23 @@
       "Materialized the complete four-root correction set onto the exact live upstream head.",
       "Passed the runner, Settings, AdvancedPasteModuleInterface, Shortcut Guide, and Settings unit-test Debug builds.",
       "Passed 2/2 focused AdvancedPasteSettingsTests.",
-      "Represented every meaningful fork-only correction as one inline and three implementation-ready companion comments."
+      "Prior review drafted one inline and three companion comments.",
+      "Rechecked unchanged upstream head 3a34ad99de1802df74e5110335f1609dbf35bd9f and discussion; no later upstream comments or reviews.",
+      "Fully paginated fork PR 815 reviews and threads: the current fork head 9bc039daae719a7cfab1a1c237fcdcc9e9420056 has a Copilot review submitted 2026-09-15T23:33:48Z with zero new comments and zero unresolved Copilot threads.",
+      "Triaged the sole RIGHT-side native addition at dllmain.cpp:430; the necessary placeholder/group traversal, coaching and managed localization changes are outside the diff. No localized line-430 replacement alone would repair the shared slot contract, so retained inline prose with private replacement_outside_diff assessment.",
+      "Raw pinned upstream dllmain.cpp blob is LF-only (1165 LF, no CRLF, lone CR or BOM). No apply-ready suggestion was emitted, so no literal suggestion builds were represented as passed.",
+      "Re-grounded and retained Shortcut Guide and root Unicode notice companions. Withdrew the separate migration v1-to-v2 comment: upstream AdvancedPasteSettings.Version remains 1 and UpgradeSettingsConfiguration returns false; its alleged version-2 premise is absent."
     ]
   },
   "freshness": {
     "queued_at": "2026-09-15T13:43:53.0186544Z",
     "checkpoint_at": "2026-09-16T01:35:00Z",
     "review_request_attempt_at": "2026-09-15T23:28:16.5672409Z",
-    "unresolvedForkCopilotThreads": 0
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-28T04:58:59Z",
+    "latestCopilotReviewAt": "2026-09-15T23:33:48Z",
+    "headRefOid": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+    "source_updated_at": "2026-09-02T13:51:47Z"
   },
   "fork_pr": {
     "number": 815,
@@ -129,6 +128,36 @@
   "fork_branch": "pr-iterate/50333-v3",
   "fork_head_sha": "9bc039daae719a7cfab1a1c237fcdcc9e9420056",
   "validation": {
+    "fork_review": {
+      "result": "passed",
+      "fork_head_sha": "9bc039daae719a7cfab1a1c237fcdcc9e9420056",
+      "review_id": 5216946048,
+      "submitted_at": "2026-09-15T23:33:48Z",
+      "new_comments": 0,
+      "unresolved_copilot_threads": 0,
+      "details": "Eight reviews and three threads checked with complete GraphQL page cursors; no current-head review was requested anew."
+    },
+    "line_ending_safety": {
+      "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+      "result": "passed",
+      "checked_comment_ids": [],
+      "files": [
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ],
+      "details": "Raw pinned blob has 1165 LF-only endings and no CRLF, lone CR or UTF-8 BOM. No apply-ready suggestion is emitted because the repair spans unchanged sites."
+    },
+    "suggestion_patch": {
+      "head_sha": "3a34ad99de1802df74e5110335f1609dbf35bd9f",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [],
+      "commands": [],
+      "details": "No independently safe localized RIGHT-side suggestion replaces the unchanged native parsing and managed metadata changes; no literal suggestion build is claimed."
+    },
     "fork_candidate": {
       "result": "passed",
       "commands": [
