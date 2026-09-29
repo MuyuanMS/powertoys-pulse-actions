@@ -4,70 +4,125 @@
   "number": 50609,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-29T15:19:21.1755252+08:00",
-  "evaluated_at": "2026-09-29T15:19:21.1755252+08:00",
+  "generated_at": "2026-09-29T15:30:14.5613028+08:00",
+  "evaluated_at": "2026-09-29T15:30:14.5613028+08:00",
   "source_updated_at": "2026-09-23T03:31:43+08:00",
   "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
   "title": "[Shortcut Guide] Manifest index creation refactor and bug fixing",
   "url": "https://github.com/microsoft/PowerToys/pull/50609",
-  "summary": "The retained parser remedy was corrected to preserve apostrophes in plain and double-quoted values while handling hash characters. The generator and test projects built, and 24 focused generator cases passed. The correction remains under review; public literal suggestions and the separate cache finding are not finalized.",
+  "summary": "One minimal inline suggestion preserves hash characters in executable-name filters without breaking plain or double-quoted apostrophes. The literal generator candidate compiled and passed five controlled cases. The separate manifest-deletion cache finding remains unfinished; this is not a clean whole-PR assessment.",
   "status": {
-    "label": "Parser remedy corrected; final review and suggestions pending",
-    "detail": "The original upstream parsing/cache defects remain grounded. The two review-introduced parser regressions now pass focused tests and are not separate author requests. This does not establish a clean upstream result or end-to-end UI validation.",
-    "glyph": "..."
+    "detail": "The latest requested review has no published findings and no unresolved threads. Only the independently validated scalar correction is proposed; no end-to-end UI result is claimed.",
+    "glyph": "COMMENT",
+    "label": "Parsing suggestion ready; cache follow-up unfinished"
   },
-  "next_action": "Consume the saved corrected-head review without requesting again; finish exact upstream literal-patch validation and decide the remaining cache finding.",
+  "next_action": "Review the scalar suggestion; finish the independent manifest-deletion cache remedy and its validation.",
   "confidence": "High",
-  "needs_revalidation": true,
-  "proposed_comments": [],
-  "actions": [],
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "start_line": 324,
+      "disposition": "proposed",
+      "kind": "inline",
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ManifestIndexGenerator.cs",
+      "line": 328,
+      "id": "preserve-hash-in-executable-filter",
+      "body": "### Preserve hash characters in executable filters\n\n**Severity:** `medium`\n\n`CleanScalarSpan` currently treats every `#` as a comment, including a hash inside a quoted value or an unquoted executable name such as `app#1.exe`. Those legal names are silently truncated in the generated filter, so the matching application does not receive its shortcuts.\n\nRecognize comments only outside a leading quoted scalar and after whitespace (or at the start). Apostrophes inside plain values must remain ordinary characters. This retains the existing quoted-escape-decoding limitation; it does not add YAML escape decoding.\n\n```suggestion\n            bool inSingleQuotes = !span.IsEmpty && span[0] == '\\'';\n            bool inDoubleQuotes = !span.IsEmpty && span[0] == '\"';\n            for (int i = inSingleQuotes || inDoubleQuotes ? 1 : 0; i < span.Length; i++)\n            {\n                if (inDoubleQuotes && span[i] == '\\\\')\n                {\n                    i++;\n                    continue;\n                }\n\n                if (inSingleQuotes && span[i] == '\\'')\n                {\n                    if (i + 1 < span.Length && span[i + 1] == '\\'')\n                    {\n                        i++;\n                        continue;\n                    }\n\n                    inSingleQuotes = false;\n                    continue;\n                }\n\n                if (inDoubleQuotes && span[i] == '\"')\n                {\n                    inDoubleQuotes = false;\n                    continue;\n                }\n\n                if (span[i] == '#' &&\n                    !inSingleQuotes &&\n                    !inDoubleQuotes &&\n                    (i == 0 || char.IsWhiteSpace(span[i - 1])))\n                {\n                    span = span[..i].TrimEnd();\n                    break;\n                }\n            }\n```",
+      "side": "RIGHT",
+      "in_diff": true,
+      "severity": "medium",
+      "title": "Preserve hash characters in executable filters",
+      "confidence": {
+        "score": 95,
+        "rationale": "Exact upstream generator execution reproduces truncation; the isolated literal replacement preserves both failing names and the previously working apostrophe controls."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50609-scalar",
+      "type": "post_review",
+      "confirm": true,
+      "requiresApproval": true,
+      "label": "Post executable-filter inline suggestion",
+      "primary": true,
+      "review": {
+        "pullRequest": 50609,
+        "event": "COMMENT",
+        "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
+        "repository": "microsoft/PowerToys"
+      }
+    }
+  ],
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-09-29T15:19:21.1755252+08:00",
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-09-29T15:30:14.5613028+08:00",
     "fork_pr": 839,
     "fork_branch": "pr-iterate/50609",
     "unresolved_copilot_threads": 0,
-    "latest_copilot_review_id": 5245083068,
-    "latest_copilot_review_head_sha": "7ecf7323ac2d75b196e56816530854d26d460773",
-    "resume_action": "consume-corrected-head-review-and-finalize-literal-suggestions",
+    "latest_copilot_review_id": 5349068542,
+    "latest_copilot_review_head_sha": "0aa502d0cf1784417a973ce26b25957d8f8119df",
+    "resume_action": "finalize-cache-remedy-while-scalar-action-awaits-approval",
     "request": {
       "head_sha": "0aa502d0cf1784417a973ce26b25957d8f8119df",
       "requested_at": "2026-09-29T07:18:02Z",
       "after_review_id": 5245083068,
-      "timestamp_source": "GitHub review-request timeline event"
+      "timestamp_source": "GitHub review-request timeline event",
+      "submitted_review_id": 5349068542,
+      "submitted_at": "2026-09-29T15:23:36+08:00"
     },
-    "review_round": 7
+    "review_round": 7,
+    "consumed_review_id": 5349068542,
+    "consumed_review_head_sha": "0aa502d0cf1784417a973ce26b25957d8f8119df"
   },
   "freshness": {
-    "status": "grounding_and_suggestion_validation_pending",
+    "status": "current_scalar_action_cache_followup_pending",
     "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
     "source_updated_at": "2026-09-23T03:31:43+08:00",
-    "evaluated_at": "2026-09-29T15:19:21.1755252+08:00"
+    "evaluated_at": "2026-09-29T15:30:14.5613028+08:00"
   },
   "validation": {
     "suggestion_patch": {
       "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
-      "result": "not_applicable",
+      "result": "passed",
+      "commands": [
+        "tools\\build\\build.cmd -Platform x64 -Configuration Debug -ExtraArgs /restore"
+      ],
+      "applied_comment_ids": [
+        "preserve-hash-in-executable-filter"
+      ],
+      "details": "Only literal RIGHT lines 324-328 were replaced on the untouched upstream head. The generator project compiled; isolated execution of the exact candidate passed five hash, apostrophe, and trailing-comment cases. No retained cache, YAML dependency, quote decoding, or UI changes were applied.",
       "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [],
-      "commands": [],
-      "details": "The artifact contains no apply-ready suggestion block."
+      "patch_sha256": "ec0478c128c1989db169282fdc1959d64328c2720b227b66c4908ea9924e1784"
     },
     "line_ending_safety": {
       "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
-      "result": "not_applicable",
-      "checked_comment_ids": [],
-      "files": []
+      "result": "passed",
+      "files": [
+        {
+          "path": "src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ManifestIndexGenerator.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 348,
+          "cr_only_count": 0
+        }
+      ],
+      "checked_comment_ids": [
+        "preserve-hash-in-executable-filter"
+      ]
     },
     "fork_review": {
-      "latest_copilot_new_comments": 0,
-      "latest_review_id": 5245083068,
-      "detail": "Four suppressed overview concerns remain in the received review. No duplicate review request was made.",
+      "head_sha": "0aa502d0cf1784417a973ce26b25957d8f8119df",
+      "result": "zero_published_findings",
       "unresolved_copilot_threads": 0,
-      "result": "needs_finding_audit"
+      "latest_review_id": 5349068542,
+      "latest_copilot_new_comments": 0,
+      "detail": "All 20 reviews, all comment pages, and all thread cursors were checked. No additional review was requested."
     },
     "upstream_head": {
       "commands": [
