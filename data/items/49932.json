@@ -16,20 +16,20 @@
   "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "generated_at": "2026-09-29T14:51:35.4498574+08:00",
-  "evaluated_at": "2026-09-29T14:51:35.4498574+08:00",
+  "generated_at": "2026-09-29T15:55:37.0429201+08:00",
+  "evaluated_at": "2026-09-29T15:55:37.0429201+08:00",
   "source_updated_at": "2026-09-25T09:52:12Z",
   "head_sha": "365eeb9899a732875a8a02d4172c43a05df1bd3c",
-  "summary": "Two directory-bookmark drag suggestions are ready for a non-blocking review, grouped so the implementation and regression test are selected together. Resource-transfer and pin-target follow-up remains unfinished and has no proposed action.",
+  "summary": "Fourteen apply-ready suggestions are available as two complete atomic groups: two directory-bookmark changes and twelve shelf ResourceMap changes. Each group and their combined result passed focused validation. A separate pin-target investigation remains unfinished and has no public proposal.",
   "status": {
     "glyph": "COMMENT",
-    "label": "Directory bookmark COMMENT review drafted",
-    "detail": "Only the independently validated two-member directory-bookmark group is proposed. The broader review is not concluded."
+    "label": "Directory and ResourceMap COMMENT review drafted",
+    "detail": "Two atomic groups are proposed: directory bookmark 2/2 and shelf ResourceMap 12/12. The pin-target no-op is behaviorally reproduced but not included."
   },
   "next_action": {
     "glyph": "COMMENT",
-    "label": "Review two directory bookmark suggestions",
-    "reason": "Both literal suggestions were applied together to the untouched pinned head, the affected bookmark projects built, and Microsoft.CmdPal.Ext.Bookmarks.UnitTests passed 227/227."
+    "label": "Review fourteen atomic suggestions",
+    "reason": "Both literal groups were applied to the untouched pinned head. ResourceMap-only and merged candidates built, both focused ResourceMap and directory tests passed, and raw upstream blobs are LF-only."
   },
   "needs_revalidation": false,
   "source": {
@@ -41,9 +41,9 @@
     "status": "fresh",
     "headRefOid": "365eeb9899a732875a8a02d4172c43a05df1bd3c",
     "updatedAt": "2026-09-25T09:52:12Z",
-    "latestCopilotReviewAt": "2026-09-28T03:33:21Z",
+    "latestCopilotReviewAt": "2026-09-29T07:53:49Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-29T14:51:35.4498574+08:00",
+    "checkedAt": "2026-09-29T15:55:37.0429201+08:00",
     "upstreamReviewDecision": "APPROVED",
     "upstreamReviewCount": 9,
     "upstreamIssueCommentCount": 1,
@@ -97,6 +97,294 @@
         "total": 2,
         "atomic": true
       }
+    },
+    {
+      "id": "resource-map-transfer-stream-using",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
+      "side": "RIGHT",
+      "start_line": 6,
+      "line": 6,
+      "in_diff": true,
+      "title": "Import the ResourceMap stream reference type (1/12)",
+      "body": "### Import the ResourceMap stream reference type (1/12)\n\n**Severity:** `medium`\n\nThe resource map stores `RandomAccessStreamReference` values, so the transfer helper needs the WinRT streams namespace before it can copy those entries.\r\n\r\n```suggestion\r\nusing Windows.ApplicationModel.DataTransfer;\r\nusing Windows.Storage.Streams;\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 1,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-transfer-async-copy",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
+      "side": "RIGHT",
+      "start_line": 12,
+      "line": 13,
+      "in_diff": true,
+      "title": "Read the source ResourceMap before copying (2/12)",
+      "body": "### Read the source ResourceMap before copying (2/12)\n\n**Severity:** `medium`\n\n`AvailableFormats` does not include `DataPackageView.ResourceMap`. Add an awaited shelf-copy entry point while retaining the synchronous overload for existing list drags.\r\n\r\n```suggestion\r\n    public static async Task CopyAsync(DataPackageView source, DataPackage destination)\r\n    {\r\n        IReadOnlyDictionary<string, RandomAccessStreamReference>? resourceMap = null;\r\n        try\r\n        {\r\n            resourceMap = await source.GetResourceMapAsync();\r\n        }\r\n        catch (Exception ex)\r\n        {\r\n            Logger.LogError(\"Failed to get the resource map during drag-and-drop\", ex);\r\n        }\r\n\r\n        Copy(source, destination, resourceMap);\r\n    }\r\n\r\n    public static void Copy(DataPackageView source, DataPackage destination)\r\n    {\r\n        Copy(source, destination, null);\r\n    }\r\n\r\n    private static void Copy(\r\n        DataPackageView source,\r\n        DataPackage destination,\r\n        IReadOnlyDictionary<string, RandomAccessStreamReference>? resourceMap)\r\n    {\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 2,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-transfer-copy-entries",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
+      "side": "RIGHT",
+      "start_line": 28,
+      "line": 28,
+      "in_diff": true,
+      "title": "Copy ResourceMap entries into the drag package (3/12)",
+      "body": "### Copy ResourceMap entries into the drag package (3/12)\n\n**Severity:** `medium`\n\nDeferred format providers can refer to keys in the source resource map. Copy those references before registering the providers so resource-backed payloads remain self-contained.\r\n\r\n```suggestion\r\n        if (resourceMap is not null)\r\n        {\r\n            foreach (var (key, value) in resourceMap)\r\n            {\r\n                destination.ResourceMap[key] = value;\r\n            }\r\n        }\r\n\r\n        foreach (var format in source.AvailableFormats)\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 3,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-shelf-async-handler",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "side": "RIGHT",
+      "start_line": 1069,
+      "line": 1069,
+      "in_diff": true,
+      "title": "Allow the shelf drag handler to await the complete payload (4/12)",
+      "body": "### Allow the shelf drag handler to await the complete payload (4/12)\n\n**Severity:** `medium`\n\nResourceMap retrieval is asynchronous, so the new shelf drag handler must be asynchronous before it can finish constructing the package.\r\n\r\n```suggestion\r\n    private async void QuickAccessShelfItem_DragStarting(UIElement sender, DragStartingEventArgs args)\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 4,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-shelf-deferral",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "side": "RIGHT",
+      "start_line": 1071,
+      "line": 1071,
+      "in_diff": true,
+      "title": "Hold DragStarting open while ResourceMap is read (5/12)",
+      "body": "### Hold DragStarting open while ResourceMap is read (5/12)\n\n**Severity:** `medium`\n\nWithout a drag-start deferral, the event can complete at the first `await` and expose an incomplete package. Acquire the supported deferral before entering the existing error-handling path.\r\n\r\n```suggestion\r\n        var deferral = args.GetDeferral();\r\n        try\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 5,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-shelf-copy-call",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "side": "RIGHT",
+      "start_line": 1083,
+      "line": 1083,
+      "in_diff": true,
+      "title": "Use the complete shelf copy path (6/12)",
+      "body": "### Use the complete shelf copy path (6/12)\n\n**Severity:** `medium`\n\nThe synchronous overload intentionally preserves the pre-existing list-drag behavior. The newly added shelf path can await the ResourceMap-aware overload under its drag-start deferral.\r\n\r\n```suggestion\r\n                await DataPackageTransfer.CopyAsync(item.DataPackage, args.Data);\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 6,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-shelf-complete-deferral",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "side": "RIGHT",
+      "start_line": 1113,
+      "line": 1113,
+      "in_diff": true,
+      "title": "Always complete the shelf drag deferral (7/12)",
+      "body": "### Always complete the shelf drag deferral (7/12)\n\n**Severity:** `medium`\n\nComplete the deferral on success, cancellation, and exception so the drag operation is never left waiting.\r\n\r\n```suggestion\r\n        finally\r\n        {\r\n            deferral.Complete();\r\n        }\r\n    }\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 7,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-test-stream-using",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
+      "side": "RIGHT",
+      "start_line": 10,
+      "line": 10,
+      "in_diff": true,
+      "title": "Import the ResourceMap test value type (8/12)",
+      "body": "### Import the ResourceMap test value type (8/12)\n\n**Severity:** `medium`\n\nThe regression test needs `RandomAccessStreamReference` to create a concrete resource-map entry.\r\n\r\n```suggestion\r\nusing Windows.ApplicationModel.DataTransfer;\r\nusing Windows.Storage.Streams;\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 8,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-test-source-entry",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
+      "side": "RIGHT",
+      "start_line": 86,
+      "line": 86,
+      "in_diff": true,
+      "title": "Give the source package a ResourceMap entry (9/12)",
+      "body": "### Give the source package a ResourceMap entry (9/12)\n\n**Severity:** `medium`\n\nExercise the missing payload component alongside the existing requested-operation, property, and deferred-format coverage.\r\n\r\n```suggestion\r\n        source.ResourceMap[\"TestResource\"] = RandomAccessStreamReference.CreateFromUri(new Uri(\"https://example.com/resource\"));\r\n        source.SetText(\"Test payload\");\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 9,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-test-async-copy",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
+      "side": "RIGHT",
+      "start_line": 91,
+      "line": 91,
+      "in_diff": true,
+      "title": "Exercise the ResourceMap-aware copy path (10/12)",
+      "body": "### Exercise the ResourceMap-aware copy path (10/12)\n\n**Severity:** `medium`\n\nAwait the same complete copy path used by shelf dragging so the assertion observes the finalized package.\r\n\r\n```suggestion\r\n        await DataPackageTransfer.CopyAsync(shelfItem.DataPackage!, destination);\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 10,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-test-read-destination",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
+      "side": "RIGHT",
+      "start_line": 94,
+      "line": 94,
+      "in_diff": true,
+      "title": "Read the copied ResourceMap (11/12)",
+      "body": "### Read the copied ResourceMap (11/12)\n\n**Severity:** `medium`\n\nFetch the destination map before checking the existing payload fields.\r\n\r\n```suggestion\r\n        var destinationResourceMap = await destinationView.GetResourceMapAsync();\r\n        Assert.AreEqual(DataPackageOperation.Link, destinationView.RequestedOperation);\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 11,
+        "total": 12,
+        "atomic": true
+      }
+    },
+    {
+      "id": "resource-map-test-assert-entry",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
+      "side": "RIGHT",
+      "start_line": 96,
+      "line": 96,
+      "in_diff": true,
+      "title": "Assert the ResourceMap entry survives (12/12)",
+      "body": "### Assert the ResourceMap entry survives (12/12)\n\n**Severity:** `medium`\n\nThe regression should fail when only formats and properties are copied, and pass only when the referenced resource is present in the destination.\r\n\r\n```suggestion\r\n        Assert.IsTrue(destinationResourceMap.ContainsKey(\"TestResource\"));\r\n        Assert.AreEqual(\"Test payload\", await destinationView.GetTextAsync().AsTask());\r\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The new shelf drag path synchronously copies formats without the source ResourceMap; the complete literal group was applied to the exact upstream head, built independently and with the directory group, and its focused regression test passed."
+      },
+      "selection_group": {
+        "id": "shelf-resource-map",
+        "title": "Preserve resource-backed shelf drag payloads",
+        "position": 12,
+        "total": 12,
+        "atomic": true
+      }
     }
   ],
   "validation": {
@@ -107,29 +395,53 @@
     },
     "suggestions": {
       "result": "passed",
-      "old_apply_ready": 0,
-      "new_apply_ready": 2,
-      "details": "Two directory-bookmark suggestions passed focused literal-candidate validation; other findings are not proposed."
+      "old_apply_ready": 2,
+      "new_apply_ready": 14,
+      "details": "The two published directory suggestions are preserved. Twelve complete shelf-scoped ResourceMap suggestions were added without requiring hidden companion edits."
     },
     "suggestion_patch": {
       "head_sha": "365eeb9899a732875a8a02d4172c43a05df1bd3c",
       "result": "passed",
-      "checked_at": "2026-09-29T14:40:18.4689303+08:00",
+      "checked_at": "2026-09-29T15:55:37.0429201+08:00",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
         "directory-bookmark-path",
-        "directory-bookmark-regression-test"
+        "directory-bookmark-regression-test",
+        "resource-map-transfer-stream-using",
+        "resource-map-transfer-async-copy",
+        "resource-map-transfer-copy-entries",
+        "resource-map-shelf-async-handler",
+        "resource-map-shelf-deferral",
+        "resource-map-shelf-copy-call",
+        "resource-map-shelf-complete-deferral",
+        "resource-map-test-stream-using",
+        "resource-map-test-source-entry",
+        "resource-map-test-async-copy",
+        "resource-map-test-read-destination",
+        "resource-map-test-assert-entry"
       ],
-      "patch_sha256": "28214a04f14eea2f9623dd9916defa851845560de66d03ce9a3a29ec3ce339b1",
-      "details": "Applied the two literal public suggestion blocks together to the untouched pinned head. Microsoft.CmdPal.Ext.Bookmarks and Microsoft.CmdPal.Ext.Bookmarks.UnitTests built, and the focused suite passed 227/227."
+      "patch_sha256": "707edaaac492cb77a92011433c681dab9599b980f5bc8f9575717aed10545f22",
+      "details": "Applied both final literal groups to the untouched pinned head. The five affected projects built; focused ResourceMap and directory tests each passed."
     },
     "line_ending_safety": {
       "head_sha": "365eeb9899a732875a8a02d4172c43a05df1bd3c",
       "result": "passed",
-      "checked_at": "2026-09-29T14:51:35.4498574+08:00",
+      "checked_at": "2026-09-29T15:55:37.0429201+08:00",
       "checked_comment_ids": [
         "directory-bookmark-path",
-        "directory-bookmark-regression-test"
+        "directory-bookmark-regression-test",
+        "resource-map-transfer-stream-using",
+        "resource-map-transfer-async-copy",
+        "resource-map-transfer-copy-entries",
+        "resource-map-shelf-async-handler",
+        "resource-map-shelf-deferral",
+        "resource-map-shelf-copy-call",
+        "resource-map-shelf-complete-deferral",
+        "resource-map-test-stream-using",
+        "resource-map-test-source-entry",
+        "resource-map-test-async-copy",
+        "resource-map-test-read-destination",
+        "resource-map-test-assert-entry"
       ],
       "files": [
         {
@@ -143,27 +455,73 @@
           "result": "passed",
           "line_endings": "lf",
           "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/DataPackageTransfer.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/QuickAccessShelfResolverTests.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false
         }
       ]
     },
     "source_builds": [
       {
-        "target": "Atomic directory-bookmark literal group",
+        "target": "Atomic shelf ResourceMap literal group",
         "result": "passed",
-        "patch_sha256": "28214a04f14eea2f9623dd9916defa851845560de66d03ce9a3a29ec3ce339b1",
+        "patch_sha256": "befa01fed59152855a7003a662923eee3fb884168ac8268322124a68cc164598",
         "builds": [
+          "Microsoft.CmdPal.UI.ViewModels",
+          "Microsoft.CmdPal.UI",
+          "Microsoft.CmdPal.UI.ViewModels.UnitTests"
+        ],
+        "tests": [
+          {
+            "suite": "QuickAccessShelfResolverTests.ShelfItemDataPackage_PreservesRequestedOperationPropertiesAndDeferredFormats",
+            "passed": 1,
+            "failed": 0,
+            "total": 1
+          }
+        ],
+        "details": "ResourceMap 12/12 group only, on the exact upstream head."
+      },
+      {
+        "target": "Merged directory bookmark and shelf ResourceMap literal groups",
+        "result": "passed",
+        "patch_sha256": "707edaaac492cb77a92011433c681dab9599b980f5bc8f9575717aed10545f22",
+        "builds": [
+          "Microsoft.CmdPal.UI.ViewModels",
+          "Microsoft.CmdPal.UI",
           "Microsoft.CmdPal.Ext.Bookmarks",
+          "Microsoft.CmdPal.UI.ViewModels.UnitTests",
           "Microsoft.CmdPal.Ext.Bookmarks.UnitTests"
         ],
         "tests": [
           {
-            "suite": "Microsoft.CmdPal.Ext.Bookmarks.UnitTests",
-            "passed": 227,
+            "suite": "QuickAccessShelfResolverTests.ShelfItemDataPackage_PreservesRequestedOperationPropertiesAndDeferredFormats",
+            "passed": 1,
             "failed": 0,
-            "total": 227
+            "total": 1
+          },
+          {
+            "suite": "BookmarksCommandProviderTests.BookmarkListItem_LocalDirectoryDataPackageContainsFolder",
+            "passed": 1,
+            "failed": 0,
+            "total": 1
           }
         ],
-        "details": "Scoped evidence for the two proposed comments only."
+        "details": "Both public atomic groups together, on the exact upstream head."
       }
     ]
   },
@@ -177,26 +535,36 @@
   "workflow": {
     "phase": "awaiting_review_approval",
     "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-29T14:51:35.4498574+08:00",
-    "resume_action": "finalize-remaining-findings-while-directory-action-awaits-approval",
+    "checkpoint_at": "2026-09-29T15:55:37.0429201+08:00",
+    "resume_action": "await-directory-resource-comment-review-approval",
+    "advancement_evidence": [
+      "Applied the final ResourceMap 12/12 literal group independently to the exact upstream head; three affected projects built and the focused shelf DataPackage test passed.",
+      "Applied the unchanged directory 2/2 group together with ResourceMap 12/12; five affected projects built and both focused tests passed.",
+      "Checked exact upstream Git blobs for all five suggestion targets; every blob is LF-only without a BOM.",
+      "Ran an exact-upstream focused pin control-flow test: a persisted command excluded by a zero pinned limit appears as an unpinned recent item, makes the pin target predicate true, and fails the settings guard used by TryPinItem.",
+      "Reconciled the fork with ordinary commit a6a2cf7651ef3c67923394445be254f36224d23c, removing the obsolete list-prefetch dependency while preserving unrelated fixes.",
+      "The reconciled fork built and Microsoft.CmdPal.UI.ViewModels.UnitTests passed 591/591.",
+      "Fresh Copilot review 5349379777 at 2026-09-29T07:53:49Z reported zero findings on the reconciled fork head; zero unresolved Copilot threads remain.",
+      "No upstream or canonical dashboard write occurred."
+    ],
     "copilot_request": {
-      "head_sha": "5ced7423fc7ba72de8f8f5b2156b9c832f17a06e",
+      "head_sha": "a6a2cf7651ef3c67923394445be254f36224d23c",
       "fork_pr": 914,
-      "baseline_review_id": 5333695922,
-      "received_review_id": 5333705994,
-      "received_at": "2026-09-28T11:33:21+08:00",
-      "requested_at": "2026-09-28T11:31:46+08:00"
+      "baseline_review_id": 5333705994,
+      "received_review_id": 5349379777,
+      "received_at": "2026-09-29T07:53:49Z",
+      "requested_at": "2026-09-29T07:50:27Z"
     }
   },
   "actions": [
     {
-      "id": "post-review-49932-directory-bookmarks",
+      "id": "post-review-49932-directory-resource",
       "type": "post_review",
-      "label": "Post 2 directory bookmark suggestions as COMMENT",
+      "label": "Post 14 directory and ResourceMap suggestions as COMMENT",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Draft only. This action contains only the independently validated atomic directory-bookmark group; ResourceMap and pin-target work are not included.",
+      "note": "Draft only; explicit maintainer approval is required. Select and post every member of each chosen atomic group together.",
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 49932,
@@ -209,22 +577,23 @@
   "safe_actions": [],
   "judgment": {
     "status": "comment_review_ready",
-    "rationale": "Directory bookmark classification excludes CommandKind.Directory and File.Exists rejects directory targets even though the shared helper supports StorageFolder. The exact two-member literal group compiles and its focused regression suite passes. Other candidate findings do not meet the independent-public-patch or behavioral-evidence gates.",
+    "rationale": "Directory bookmarks are filtered before the existing StorageFolder helper, and the new shelf drag path omits DataPackageView.ResourceMap while transferring formats that can reference it. Both complete literal groups pass exact-head focused builds/tests. The pin-target no-op is reproduced but intentionally excluded.",
     "evidence": [
       "Pinned upstream head remains unchanged.",
       "Directory group patch SHA-256 28214a04f14eea2f9623dd9916defa851845560de66d03ce9a3a29ec3ce339b1.",
-      "Microsoft.CmdPal.Ext.Bookmarks.UnitTests passed 227/227 on the exact directory-only candidate.",
-      "ResourceMap10 omitted because its literal public group is incomplete without an out-of-diff dependency.",
-      "Pin-target omitted because no focused behavior proof establishes the asserted no-op."
+      "ResourceMap group patch SHA-256 befa01fed59152855a7003a662923eee3fb884168ac8268322124a68cc164598.",
+      "Merged patch SHA-256 707edaaac492cb77a92011433c681dab9599b980f5bc8f9575717aed10545f22.",
+      "ResourceMap and directory focused tests passed on exact literal candidates.",
+      "All five raw upstream suggestion target blobs are LF-only."
     ],
-    "recommended_action": "After explicit approval, post only the two directory bookmark suggestions as a COMMENT review."
+    "recommended_action": "After explicit approval, post the two complete atomic groups as a COMMENT review."
   },
   "review_fixes": [
     {
-      "summary": "Allow CommandKind.Directory targets and Directory.Exists when constructing bookmark drag payloads."
+      "summary": "Allow directory bookmark targets and verify their StorageFolder payload."
     },
     {
-      "summary": "Add a focused regression test proving a local directory bookmark exposes one StorageFolder."
+      "summary": "Preserve ResourceMap entries while constructing shelf drag payloads under a DragStarting deferral."
     }
   ]
 }

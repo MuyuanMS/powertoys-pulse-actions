@@ -4,11 +4,11 @@
   "number": 47871,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "review_blocked",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-29T11:40:13.8811973+08:00",
-  "evaluated_at": "2026-09-29T11:40:13.8811973+08:00",
+  "generated_at": "2026-09-29T07:30:41Z",
+  "evaluated_at": "2026-09-29T07:30:41Z",
   "source_updated_at": "2026-08-10T14:40:03Z",
   "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
   "title": "[Runner] Make tray icon context menu theme aware",
@@ -17,14 +17,26 @@
   "authorAssociation": "CONTRIBUTOR",
   "state": "OPEN",
   "draft": false,
-  "summary": "The unchanged upstream head, complete discussion, theme-change notification path, and fork review state were rechecked. Fork PR 897 remains converged at 576d04eaad8bc62e901d92a0bea3d9d8691db50b with zero new Copilot findings and zero unresolved threads. The system-theme finding is already covered by upstream comment 3636887446. The separate ordinal-104 claim is withdrawn: the author reports successful live switching, the registry listener provides no evidence of a stale-policy ordering failure, and the already-posted system-theme replacement reads the registry directly instead of querying ordinal 132. No additional nonduplicate finding is proposed.",
+  "summary": "No new supported suggestion remains after reassessment; existing public system-theme, brush-ownership and callback-lifetime comments are not duplicated. Exact-head Themes validation passed. Runner validation remains blocked by an incompatible installed compiler and pinned spdlog/fmt dependency; this is not a clean-review result.",
   "confidence": "High",
   "status": {
-    "glyph": "review",
-    "label": "No additional justified finding",
-    "detail": "The additional cached-policy claim was withdrawn after source and author-counterevidence review. The existing system-theme comment must not be duplicated; overall review finalization remains pending."
+    "glyph": "blocked",
+    "label": "Exact runner build requires a compatible toolchain",
+    "detail": "Themes.vcxproj passes on exact upstream head 81dbef8734f533a3497c2771193eef53aa692bf4. runner.vcxproj fails in the pinned deps/spdlog bundled fmt headers under Visual Studio 2026 because stdext::checked_array_iterator is unavailable; no PR source file fails."
   },
-  "next_action": "No additional finding is supported. Validate the unchanged upstream tree and reconcile the already-posted system-theme comment before concluding the overall review.",
+  "next_action": {
+    "glyph": "blocked",
+    "label": "Rebuild the exact head with VS 2022/v143",
+    "reason": "Use Visual Studio 2022/v143 Desktop C++ tools for the pinned head, then recheck the outcome and disposition of already-posted findings before finalizing the review."
+  },
+  "blockers": [
+    {
+      "id": "exact-runner-build-toolchain",
+      "terminal": true,
+      "detail": "Exact upstream runner validation fails before PR-specific compilation in deps\\spdlog\\include\\spdlog\\fmt\\bundled\\format.h because Visual Studio 2026 removed stdext::checked_array_iterator. vswhere reports no Visual Studio 2022 installation. Themes.vcxproj succeeds with zero errors.",
+      "remediation": "Use Visual Studio 2022/v143 Desktop C++ tools to restore and build head 81dbef8734f533a3497c2771193eef53aa692bf4: run tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\common\\Themes and again with -Path src\\runner. Reassess outstanding posted findings before finalizing."
+    }
+  ],
   "phase0": {
     "authorAssociation": "CONTRIBUTOR",
     "disposition": "Proceed",
@@ -43,16 +55,16 @@
   "fork_branch": "pr-iterate/47871-clean-20260924",
   "fork_head_sha": "576d04eaad8bc62e901d92a0bea3d9d8691db50b",
   "workflow": {
-    "phase": "review_in_progress",
-    "previous_phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-29T03:26:00Z",
+    "phase": "review_blocked",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-29T07:30:41Z",
     "reviewed_upstream_head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
     "latest_copilot_review_at": "2026-09-24T06:57:21Z",
     "latest_copilot_review_id": 5300875621,
     "latest_copilot_new_comments": 0,
     "unresolved_copilot_threads": 0,
-    "resume_action": "validate_upstream_and_reconcile_posted_comment",
-    "note": "No new Copilot review was requested. Historical fork PR 591 remains historical only. The compiled ordinal-104 patch is not a publishable finding without behavioral proof."
+    "resume_action": "rebuild_exact_upstream_with_vs2022_v143",
+    "note": "No new review was requested and no duplicate comment is proposed. After compatible exact-head runner validation, reassess the current disposition of already-posted findings; build success alone is not approval."
   },
   "validation": {
     "fork_review": {
@@ -65,15 +77,47 @@
       "reviews_scanned": 4,
       "review_comments_scanned": 4,
       "thread_cursors_exhausted": true
+    },
+    "upstream_head": {
+      "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
+      "result": "blocked_environment",
+      "restore": {
+        "result": "passed",
+        "warnings": 0,
+        "errors": 0
+      },
+      "submodules": {
+        "result": "initialized",
+        "expected_lite": "95b9cb015fa17baa749c2b396b335906e1596a9e",
+        "spdlog": "616866fcf40340ea25a8f218369bad810ef58e72"
+      },
+      "themes_build": {
+        "result": "passed",
+        "configuration": "Debug",
+        "platform": "x64",
+        "output": "src\\common\\Themes\\x64\\Debug\\Themes.lib",
+        "errors_log_bytes": 0
+      },
+      "runner_build": {
+        "result": "blocked",
+        "configuration": "Debug",
+        "platform": "x64",
+        "compiler": "Visual Studio Enterprise 2026 18.9.3",
+        "failure_project": "src\\logging\\logging.vcxproj",
+        "failure_path": "deps\\spdlog\\include\\spdlog\\fmt\\bundled\\format.h",
+        "failure": "stdext::checked_array_iterator is unavailable",
+        "pr_source_errors": 0,
+        "remediation": "Use Visual Studio 2022/v143 for the exact pinned dependency tree."
+      }
     }
   },
   "freshness": {
-    "status": "fresh-at-private-evaluation-time",
+    "status": "fresh_current_head",
     "head_sha": "81dbef8734f533a3497c2771193eef53aa692bf4",
     "source_updated_at": "2026-08-10T14:40:03Z",
     "latestCopilotReviewAt": "2026-09-24T06:57:21Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-29T03:26:00Z"
+    "checkedAt": "2026-09-29T07:30:41Z"
   },
   "discussion_counts": {
     "issue_comments": 1,
@@ -85,6 +129,7 @@
   },
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No write was made to microsoft/PowerToys."
+    "canonical_dashboard_changed": false,
+    "detail": "No write was made to microsoft/PowerToys and no canonical dashboard artifact was changed, emitted, committed, or pushed."
   }
 }
