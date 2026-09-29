@@ -16,20 +16,20 @@
   "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "generated_at": "2026-09-29T15:55:37.0429201+08:00",
-  "evaluated_at": "2026-09-29T15:55:37.0429201+08:00",
+  "generated_at": "2026-09-29T16:36:11.1994064+08:00",
+  "evaluated_at": "2026-09-29T16:36:11.1994064+08:00",
   "source_updated_at": "2026-09-25T09:52:12Z",
   "head_sha": "365eeb9899a732875a8a02d4172c43a05df1bd3c",
-  "summary": "Fourteen apply-ready suggestions are available as two complete atomic groups: two directory-bookmark changes and twelve shelf ResourceMap changes. Each group and their combined result passed focused validation. A separate pin-target investigation remains unfinished and has no public proposal.",
+  "summary": "Fifteen apply-ready suggestions are available: two directory-bookmark changes, twelve coordinated shelf ResourceMap changes, and one independent guard that hides a pin target when the command is already pinned in settings. The existing fourteen suggestions are unchanged; the new guard was validated independently and with both groups.",
   "status": {
     "glyph": "COMMENT",
-    "label": "Directory and ResourceMap COMMENT review drafted",
-    "detail": "Two atomic groups are proposed: directory bookmark 2/2 and shelf ResourceMap 12/12. The pin-target no-op is behaviorally reproduced but not included."
+    "label": "Directory, ResourceMap, and pin-target COMMENT review drafted",
+    "detail": "Two atomic groups and one independent pin-target suggestion are proposed. The pin guard prevents a visible drop target whose operation is rejected by persisted settings."
   },
   "next_action": {
     "glyph": "COMMENT",
-    "label": "Review fourteen atomic suggestions",
-    "reason": "Both literal groups were applied to the untouched pinned head. ResourceMap-only and merged candidates built, both focused ResourceMap and directory tests passed, and raw upstream blobs are LF-only."
+    "label": "Review fifteen validated suggestions",
+    "reason": "The pin-only candidate and the exact merged 15-comment candidate built on the pinned head; the merged candidate also passed the focused ResourceMap and directory tests."
   },
   "needs_revalidation": false,
   "source": {
@@ -385,6 +385,23 @@
         "total": 12,
         "atomic": true
       }
+    },
+    {
+      "id": "persisted-pin-no-op-target",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
+      "side": "RIGHT",
+      "start_line": 1100,
+      "line": 1100,
+      "in_diff": true,
+      "title": "Hide the pin target for commands already persisted",
+      "body": "### Hide the pin target for commands already persisted\n\n**Severity:** `medium`\n\nWith a zero pinned-item display limit, a command that remains pinned in settings can reappear in Recent with `CanPin=true`. This exposes the pin target, but `TryPinItem` immediately rejects the same provider/command identity. Check the persisted setting before advertising an operation that cannot succeed.\n\n```suggestion\n            QuickAccessShelfPinDropTarget.Visibility = item.CanPin &&\n                !_settingsService.Settings.IsCommandPinned(item.ProviderId, item.CommandId) &&\n                !QuickAccessShelf.VisibleItems.Any(visibleItem => visibleItem.IsPinned)\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "Exact pinned-head control-flow tracing and an executable reproduction prove that a persisted command can be rendered in Recent with CanPin=true while TryPinItem rejects it. The minimal literal guard built independently and with all accepted suggestions."
+      }
     }
   ],
   "validation": {
@@ -395,14 +412,14 @@
     },
     "suggestions": {
       "result": "passed",
-      "old_apply_ready": 2,
-      "new_apply_ready": 14,
-      "details": "The two published directory suggestions are preserved. Twelve complete shelf-scoped ResourceMap suggestions were added without requiring hidden companion edits."
+      "old_apply_ready": 14,
+      "new_apply_ready": 15,
+      "details": "The accepted directory 2/2 and ResourceMap 12/12 groups are unchanged. One independently validated pin-target guard is appended."
     },
     "suggestion_patch": {
       "head_sha": "365eeb9899a732875a8a02d4172c43a05df1bd3c",
       "result": "passed",
-      "checked_at": "2026-09-29T15:55:37.0429201+08:00",
+      "checked_at": "2026-09-29T16:36:11.1994064+08:00",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
         "directory-bookmark-path",
@@ -418,15 +435,16 @@
         "resource-map-test-source-entry",
         "resource-map-test-async-copy",
         "resource-map-test-read-destination",
-        "resource-map-test-assert-entry"
+        "resource-map-test-assert-entry",
+        "persisted-pin-no-op-target"
       ],
-      "patch_sha256": "707edaaac492cb77a92011433c681dab9599b980f5bc8f9575717aed10545f22",
-      "details": "Applied both final literal groups to the untouched pinned head. The five affected projects built; focused ResourceMap and directory tests each passed."
+      "patch_sha256": "6df1994e47b3ef366dd5f71a4c2fc237903da5b1fa5c85ef9540824dde46bcba",
+      "details": "Applied all fifteen literal suggestions to the untouched pinned head. The five affected projects built; focused ResourceMap and directory tests each passed. The pin-only Microsoft.CmdPal.UI candidate also built independently."
     },
     "line_ending_safety": {
       "head_sha": "365eeb9899a732875a8a02d4172c43a05df1bd3c",
       "result": "passed",
-      "checked_at": "2026-09-29T15:55:37.0429201+08:00",
+      "checked_at": "2026-09-29T16:36:11.1994064+08:00",
       "checked_comment_ids": [
         "directory-bookmark-path",
         "directory-bookmark-regression-test",
@@ -441,7 +459,8 @@
         "resource-map-test-source-entry",
         "resource-map-test-async-copy",
         "resource-map-test-read-destination",
-        "resource-map-test-assert-entry"
+        "resource-map-test-assert-entry",
+        "persisted-pin-no-op-target"
       ],
       "files": [
         {
@@ -522,6 +541,43 @@
           }
         ],
         "details": "Both public atomic groups together, on the exact upstream head."
+      },
+      {
+        "target": "Persisted pin-target guard only",
+        "result": "passed",
+        "patch_sha256": "5847517e9e87ea44c8ddcf8a108e05cc8b52cf5a8cd95d1644d99eab687bf803",
+        "builds": [
+          "Microsoft.CmdPal.UI"
+        ],
+        "tests": [],
+        "details": "The one-location pin guard only, on the exact upstream head. The UI project built after solution restore."
+      },
+      {
+        "target": "Merged directory, shelf ResourceMap, and pin-target suggestions",
+        "result": "passed",
+        "patch_sha256": "6df1994e47b3ef366dd5f71a4c2fc237903da5b1fa5c85ef9540824dde46bcba",
+        "builds": [
+          "Microsoft.CmdPal.UI.ViewModels",
+          "Microsoft.CmdPal.UI",
+          "Microsoft.CmdPal.Ext.Bookmarks",
+          "Microsoft.CmdPal.UI.ViewModels.UnitTests",
+          "Microsoft.CmdPal.Ext.Bookmarks.UnitTests"
+        ],
+        "tests": [
+          {
+            "suite": "QuickAccessShelfResolverTests.ShelfItemDataPackage_PreservesRequestedOperationPropertiesAndDeferredFormats",
+            "passed": 1,
+            "failed": 0,
+            "total": 1
+          },
+          {
+            "suite": "BookmarksCommandProviderTests.BookmarkListItem_LocalDirectoryDataPackageContainsFolder",
+            "passed": 1,
+            "failed": 0,
+            "total": 1
+          }
+        ],
+        "details": "All fifteen proposed comments together on the exact upstream head."
       }
     ]
   },
@@ -535,8 +591,8 @@
   "workflow": {
     "phase": "awaiting_review_approval",
     "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-29T15:55:37.0429201+08:00",
-    "resume_action": "await-directory-resource-comment-review-approval",
+    "checkpoint_at": "2026-09-29T16:36:11.1994064+08:00",
+    "resume_action": "await-final15-comment-review-approval",
     "advancement_evidence": [
       "Applied the final ResourceMap 12/12 literal group independently to the exact upstream head; three affected projects built and the focused shelf DataPackage test passed.",
       "Applied the unchanged directory 2/2 group together with ResourceMap 12/12; five affected projects built and both focused tests passed.",
@@ -545,6 +601,10 @@
       "Reconciled the fork with ordinary commit a6a2cf7651ef3c67923394445be254f36224d23c, removing the obsolete list-prefetch dependency while preserving unrelated fixes.",
       "The reconciled fork built and Microsoft.CmdPal.UI.ViewModels.UnitTests passed 591/591.",
       "Fresh Copilot review 5349379777 at 2026-09-29T07:53:49Z reported zero findings on the reconciled fork head; zero unresolved Copilot threads remain.",
+      "No upstream or canonical dashboard write occurred.",
+      "Built the exact pin-only literal candidate on the pinned upstream head.",
+      "Built the exact merged 15-comment candidate across all five affected projects and passed both focused accepted-group tests.",
+      "The pin no-op is supported by an exact-head executable reproduction and the public guard mirrors the persisted-settings identity used by TryPinItem.",
       "No upstream or canonical dashboard write occurred."
     ],
     "copilot_request": {
@@ -558,13 +618,13 @@
   },
   "actions": [
     {
-      "id": "post-review-49932-directory-resource",
+      "id": "post-review-49932-final15",
       "type": "post_review",
-      "label": "Post 14 directory and ResourceMap suggestions as COMMENT",
+      "label": "Post 15 directory, ResourceMap, and pin-target suggestions as COMMENT",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
-      "note": "Draft only; explicit maintainer approval is required. Select and post every member of each chosen atomic group together.",
+      "note": "Draft only. Two validated atomic groups and one independently validated pin-target guard are included.",
       "review": {
         "repository": "microsoft/PowerToys",
         "pullRequest": 49932,
@@ -577,16 +637,19 @@
   "safe_actions": [],
   "judgment": {
     "status": "comment_review_ready",
-    "rationale": "Directory bookmarks are filtered before the existing StorageFolder helper, and the new shelf drag path omits DataPackageView.ResourceMap while transferring formats that can reference it. Both complete literal groups pass exact-head focused builds/tests. The pin-target no-op is reproduced but intentionally excluded.",
+    "rationale": "Directory bookmarks are filtered before the existing StorageFolder helper, the new shelf drag path omits DataPackageView.ResourceMap, and a persisted command can expose a pin target that TryPinItem must reject. The complete literal result passes exact-head focused builds/tests.",
     "evidence": [
       "Pinned upstream head remains unchanged.",
       "Directory group patch SHA-256 28214a04f14eea2f9623dd9916defa851845560de66d03ce9a3a29ec3ce339b1.",
       "ResourceMap group patch SHA-256 befa01fed59152855a7003a662923eee3fb884168ac8268322124a68cc164598.",
       "Merged patch SHA-256 707edaaac492cb77a92011433c681dab9599b980f5bc8f9575717aed10545f22.",
       "ResourceMap and directory focused tests passed on exact literal candidates.",
-      "All five raw upstream suggestion target blobs are LF-only."
+      "All five raw upstream suggestion target blobs are LF-only.",
+      "Pin-only patch SHA-256 5847517e9e87ea44c8ddcf8a108e05cc8b52cf5a8cd95d1644d99eab687bf803.",
+      "Merged 15-comment patch SHA-256 6df1994e47b3ef366dd5f71a4c2fc237903da5b1fa5c85ef9540824dde46bcba.",
+      "Pin-only and merged candidates built; focused ResourceMap and directory tests passed on the merged candidate."
     ],
-    "recommended_action": "After explicit approval, post the two complete atomic groups as a COMMENT review."
+    "recommended_action": "After explicit approval, post the two complete atomic groups and the independent pin-target guard as a COMMENT review."
   },
   "review_fixes": [
     {
@@ -594,6 +657,9 @@
     },
     {
       "summary": "Preserve ResourceMap entries while constructing shelf drag payloads under a DragStarting deferral."
+    },
+    {
+      "summary": "Hide the pin drop target when the command is already persisted in pinned settings."
     }
   ]
 }
