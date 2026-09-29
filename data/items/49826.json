@@ -1,130 +1,234 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-49826",
   "number": 49826,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "reviewing_findings",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-28T11:15:07.2885662Z",
-  "evaluated_at": "2026-09-28T11:15:07.2885662Z",
+  "generated_at": "2026-09-29T12:59:40.8256268+08:00",
+  "evaluated_at": "2026-09-29T12:59:40.8256268+08:00",
   "source_updated_at": "2026-08-11T14:31:43Z",
   "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
   "title": "Add PowerToys installation cleanup tool",
   "url": "https://github.com/microsoft/PowerToys/pull/49826",
-  "summary": "The latest matching review still contains a finding. Review convergence and supported comment drafting must finish before any proposed upstream action is available.",
-  "status": {
-    "detail": "The latest matching review still contains a finding. Review convergence and supported comment drafting must finish before any proposed upstream action is available.",
-    "glyph": "...",
-    "label": "Review evidence incomplete"
-  },
-  "next_action": "Finish the named evidence gap and re-ground the preserved candidate before drafting an upstream action.",
+  "author": "niels9001",
+  "authorAssociation": "MEMBER",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
   "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "validate-msi-database-identity",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Validate the cached MSI identity from the signed database",
-      "body": "### Validate the cached MSI identity from the signed database\n\n**Severity:** `high`\n\n**Affected code:** `tools/CleanUp/Uninstall-PowerToys.ps1`, `Test-PowerToysMsiProduct`.\n\n**Problem:** The current check trusts `ProductName` and `Publisher` from Windows Installer registration and only verifies that `LocalPackage` is Microsoft-signed. A user-controlled per-user registration can claim to be PowerToys while pointing at a different Microsoft-signed MSI, and the later elevated uninstall can run that package.\n\n**Suggested change:** Open the exact `LocalPackage` file, validate its `ProductCode` and expected PowerToys `UpgradeCode` from the signed MSI database, and bind validation to the same protected file passed to `msiexec`. Do not rely on registry product metadata for identity.\n\n**Verification:** Cover a PowerToys-looking registry entry whose cached MSI has a different ProductCode or UpgradeCode and confirm it is rejected without invoking `msiexec`.",
-      "path": "tools/CleanUp/Uninstall-PowerToys.ps1",
-      "start_line": 180,
-      "line": 182,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 98,
-        "rationale": "The elevated uninstall trusts registry-derived identity separately from the signed cached package it executes."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "bind-bundle-validation-to-execution",
-      "kind": "inline",
-      "severity": "critical",
-      "title": "Close the staged bundle check-then-execute race",
-      "body": "### Close the staged bundle check-then-execute race\n\n**Severity:** `critical`\n\n**Affected code:** `tools/CleanUp/Uninstall-PowerToys.ps1`, `Get-BundleExecutable` and the bundle execution path.\n\n**Problem:** The script validates a candidate by pathname, closes the file, and later starts that pathname elevated. Per-user cache paths and HKCU uninstall values are user-writable, so another process can replace the executable after signature and version checks but before `Start-Process`.\n\n**Suggested change:** Bind verification to the bytes that execute: copy the validated bundle into an administrator-owned, reparse-safe staging directory and revalidate the staged copy's Microsoft signature and PowerToys/Burn identity immediately before execution, or keep a write/delete-locked handle alive through process creation. Never execute the original user-controlled pathname after a path-only check.\n\n**Verification:** Attempt replacement between discovery and execution and confirm the elevated process can only launch the protected, identity-validated bytes.",
-      "path": "tools/CleanUp/Uninstall-PowerToys.ps1",
-      "start_line": 331,
-      "line": 333,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 99,
-        "rationale": "The candidate comes from user-controlled uninstall data and is validated by path before a later elevated process launch."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "allow-current-user-cleanup-before-elevation",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Separate per-user cleanup from machine-wide elevation",
-      "body": "### Separate per-user cleanup from machine-wide elevation\n\n**Severity:** `high`\n\n**Affected code:** `tools/CleanUp/Uninstall-PowerToys.ps1`, the unconditional elevation guard.\n\n**Problem:** Requiring elevation for every destructive run makes the documented per-user recovery impossible for a standard account. Over-the-shoulder elevation changes HKCU, `%LOCALAPPDATA%`, and the per-user MSI context to the administrator profile, so the affected user's registration is never removed.\n\n**Suggested change:** Allow a non-elevated pass to enumerate and remove only the current profile's per-user MSI, bundle, registry, and local artifacts. Skip machine-wide targets in that pass and require elevation only for a separate machine-wide cleanup run; make the two passes explicit in output and documentation.\n\n**Verification:** Run from a standard-user profile with both scopes present and confirm the per-user registration is removed without elevation while machine-wide registrations remain for the elevated pass.",
-      "path": "tools/CleanUp/Uninstall-PowerToys.ps1",
-      "start_line": 473,
-      "line": 474,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 97,
-        "rationale": "Alternate-credential elevation operates on a different profile's registry, local data, and MSI context."
-      },
-      "disposition": "withdrawn"
-    }
-  ],
+  "processVerdict": "proceed",
+  "summary": "Recovered the incomplete review and added isolated cleanup-path tests. An exact upstream literal exception-handling candidate passes syntax and controlled aggregation checks, but it remains private because the latest review returned two new findings plus another missed error path. The existing three upstream comments are not duplicated. This is substantive in-progress work, not a completed review.",
+  "status": {
+    "detail": "Review 5347869090 arrived for the saved candidate head and has two unresolved published findings. Its overview also identifies a second MSI lookup outside failure aggregation. The worker is distinguishing existing upstream behavior from changes introduced during review before further drafting.",
+    "glyph": "...",
+    "label": "Review received; additional findings under examination"
+  },
+  "next_action": {
+    "label": "Resolve received findings and finish candidate review",
+    "reason": "Process review 5347869090, validate justified corrections with isolated tests, then request a new review only after a changed and verified candidate. Do not retain an external-wait state or post the private suggestion yet."
+  },
+  "proposed_comments": [],
   "actions": [],
-  "workflow": {
-    "phase": "reviewing_findings",
-    "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-29T11:12:47.8140775+08:00",
-    "advancement_evidence": [
-      "Live upstream head and activity re-read; head remains d04212440178404943f4bc75994ca07cb79de29d.",
-      "Existing fork PR 590 and branch pr-iterate/49826 resumed without remirroring; fork head remains 69a0c6485714e1f857f783f2eb4bb1f356a5fce0.",
-      "Read-only Copilot status scanned all 29 reviews with no newer matching review and no pending request.",
-      "GraphQL reviewThreads pagination completed with zero unresolved Copilot-authored threads.",
-      "Exact upstream parser, WhatIf, diff-check, and raw-blob EOL validation passed.",
-      "All three prose-only findings received concrete private suggestion_assessment triage; apply-ready count remains 0."
-    ]
+  "phase0": {
+    "authorAssociation": "MEMBER",
+    "disposition": "Proceed",
+    "processGates": "Member-authored maintenance tool; no community-contributor process request is proposed."
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
+    "base_sha": "c4431304c4ecb359b95092c118ef504f94f1239d",
+    "commit_count": 1,
+    "changed_file_count": 4,
+    "additions": 664,
+    "deletions": 5,
+    "issue_comment_count": 0,
+    "review_count": 1,
+    "review_comment_count": 3,
+    "review_thread_count": 3,
+    "unresolved_review_threads": 3,
+    "unresolved_copilot_threads": 3
   },
   "freshness": {
-    "headRefOid": "d04212440178404943f4bc75994ca07cb79de29d",
-    "updatedAt": "2026-08-11T14:31:43Z",
-    "latestCopilotReviewAt": "2026-09-07T06:09:34Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-28T11:15:07.2885662Z"
+    "evaluated_at": "2026-09-29T12:59:40.8256268+08:00",
+    "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
+    "head_updated_at": "2026-08-11T14:31:43Z",
+    "status": "received_review_findings_pending"
   },
   "fork_pr": {
     "number": 590,
+    "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/590",
-    "state": "OPEN"
+    "state": "OPEN",
+    "branch": "pr-iterate/49826",
+    "head_sha": "a6bf1e8c3c0b958e372b64d87cbc4623039b9526",
+    "previous_head_sha": "e693dd7702d397ca711451a273edd83aa20ed175"
   },
   "fork_branch": "pr-iterate/49826",
-  "fork_head_sha": "69a0c6485714e1f857f783f2eb4bb1f356a5fce0",
-  "validation": {
-    "suggestionPatch": {
-      "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
-      "result": "not_applicable",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [],
-      "commands": [],
-      "details": "Concrete literal extraction was attempted for each prose-only RIGHT-side finding. No apply-ready block is safe: the MSI identity and per-user elevation fixes are nonlocal rewrites, and bundle staging is an atomic multi-site fix. See private dossier 49826-grounding-20260928.json."
+  "fork_head_sha": "a6bf1e8c3c0b958e372b64d87cbc4623039b9526",
+  "workflow": {
+    "phase": "reviewing_findings",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-29T12:59:40.8256268+08:00",
+    "reviewed_upstream_head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
+    "consumed_review_id": 5347869090,
+    "consumed_review_head_sha": "a6bf1e8c3c0b958e372b64d87cbc4623039b9526",
+    "consumed_review_comment_ids": [
+      4129769349,
+      4129769394
+    ],
+    "consumed_review_new_comments": 2,
+    "consumed_review_suppressed_important_findings": 1,
+    "consumed_review_suppressed_disposition": "fixed_fork_only",
+    "fork_thread_count_before_request": 25,
+    "unresolved_fork_threads_before_request": 0,
+    "thread_cursors_exhausted": true,
+    "request": {
+      "head_sha": "a6bf1e8c3c0b958e372b64d87cbc4623039b9526",
+      "requested_at": "2026-09-29T04:48:21Z",
+      "after_review_id": 5347742436,
+      "submitted_review_id": 5347869090,
+      "request_pending_flag": false,
+      "reviews_scanned_at_request": 35,
+      "bounded_timeout_minutes": 0,
+      "submitted_at": "2026-09-29T12:56:30+08:00"
     },
-    "upstreamHead": {
+    "duplicate_review_request_avoided": true,
+    "resume_action": "process-received-review-and-reconcile-suppressed-error-path",
+    "unresolved_fork_threads": 2
+  },
+  "validation": {
+    "fork_head": {
+      "head_sha": "a6bf1e8c3c0b958e372b64d87cbc4623039b9526",
+      "result": "tests_passed_review_findings_pending",
+      "commands": [
+        "PowerShell Parser::ParseFile on tools\\CleanUp\\Uninstall-PowerToys.ps1",
+        "PowerShell Parser::ParseFile on tools\\CleanUp\\Uninstall-PowerToys.Tests.ps1",
+        "Invoke-Pester tools\\CleanUp\\Uninstall-PowerToys.Tests.ps1",
+        "tools\\CleanUp\\Uninstall-PowerToys.ps1 -WhatIf -Confirm:$false",
+        "git diff --check"
+      ],
+      "pester": {
+        "version": "3.4.0",
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "coverage": [
+          "WhatIf prevents destructive entry",
+          "non-elevated scope filtering",
+          "staged bundle identity rejection",
+          "successful, reboot-required, and failed uninstall exit codes",
+          "failure aggregation",
+          "mixed-scope per-user bundle deferral"
+        ]
+      },
+      "environment_restored": true,
+      "what_if_exit_code": 0,
+      "parser_errors": 0,
+      "diff_check": "passed"
+    },
+    "upstream_head": {
       "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
       "result": "passed",
       "commands": [
-        "PowerShell Parser::ParseFile on tools\\\\CleanUp\\\\Uninstall-PowerToys.ps1",
-        "tools\\\\CleanUp\\\\Uninstall-PowerToys.ps1 -WhatIf -Confirm:$false",
-        "git diff --check",
-        "Test-SuggestionLineEndings.ps1 -HeadSha d04212440178404943f4bc75994ca07cb79de29d -Path tools/CleanUp/Uninstall-PowerToys.ps1"
+        "PowerShell Parser::ParseFile on tools\\CleanUp\\Uninstall-PowerToys.ps1",
+        "tools\\CleanUp\\Uninstall-PowerToys.ps1 -WhatIf -Confirm:$false",
+        "git diff --check"
       ],
-      "details": "Exact pinned upstream script parsed successfully, completed WhatIf validation with exit code 0, passed git diff --check, and its raw blob is LF-only; no apply-ready suggestion was emitted after concrete triage of all three findings."
+      "parser_errors": 0,
+      "what_if_exit_code": 0,
+      "diff_check": "passed"
+    },
+    "suggestion_patch": {
+      "applied_comment_ids": [],
+      "details": "The tested candidate is retained privately; no public suggestion is proposed before review convergence.",
+      "result": "not_applicable",
+      "minimal_ranges_reviewed": true,
+      "head_sha": "d04212440178404943f4bc75994ca07cb79de29d"
+    },
+    "line_ending_safety": {
+      "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
+      "result": "passed",
+      "checked_comment_ids": [],
+      "files": [
+        {
+          "path": "tools/CleanUp/Uninstall-PowerToys.ps1",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 593,
+          "cr_only_count": 0
+        }
+      ]
     }
+  },
+  "existing_upstream_findings": [
+    {
+      "comment_id": 3758870513,
+      "disposition": "posted_unresolved",
+      "finding": "Validate the signed cached MSI database identity",
+      "reason_not_reproposed": "The exact current-head defect is already posted upstream. The fork validates the staged MSI ProductCode and expected UpgradeCode, but the test-only convergence commit is not a new upstream finding."
+    },
+    {
+      "comment_id": 3758870556,
+      "disposition": "posted_unresolved",
+      "finding": "Bind bundle validation to the bytes executed",
+      "reason_not_reproposed": "The exact current-head check-then-execute defect is already posted upstream. The fork now uses protected staging and revalidates both signature and PowerToys Burn identity on the protected copy."
+    },
+    {
+      "comment_id": 3758870594,
+      "disposition": "posted_unresolved",
+      "finding": "Allow current-user cleanup before machine-wide elevation",
+      "reason_not_reproposed": "The exact current-head standard-user recovery failure is already posted upstream. The fork separates the non-elevated per-user pass from elevated machine-wide work."
+    }
+  ],
+  "fork_changes_this_run": [
+    {
+      "commit": "697c23d929ead5c4628918c2c38d5859bef5bb83",
+      "subject": "Add cleanup destructive-path tests",
+      "classification": "review_convergence_and_existing_upstream_fix",
+      "details": "Adds five focused Pester scenarios, makes the orchestration dot-sourceable for isolated tests, extracts uninstall exit-code accounting, and revalidates the protected bundle copy's PowerToys Burn identity before execution."
+    },
+    {
+      "commit": "e693dd7702d397ca711451a273edd83aa20ed175",
+      "subject": "Handle cleanup validation failures",
+      "classification": "review_convergence_and_new_upstream_fix",
+      "details": "Restores process-level environment variables after tests, proves aggregation with a validation exception plus a later uninstall failure, and catches MSI validation exceptions per product so cleanup continues."
+    },
+    {
+      "commit": "a6bf1e8c3c0b958e372b64d87cbc4623039b9526",
+      "subject": "Correct mixed-scope cleanup order",
+      "classification": "fork_only_review_convergence",
+      "details": "Documents machine-wide cleanup before per-user cleanup, defers per-user bundles while a machine-wide target remains, and adds a no-launch focused test. This corrects behavior introduced by the fork's non-elevated recovery flow and is not a new upstream defect."
+    }
+  ],
+  "exact_candidate_controlled_test": {
+    "path": "<local-artifact>",
+    "result": "passed",
+    "total": 1,
+    "passed": 1,
+    "production_ast_extracted": [
+      "Test-PowerToysMsiProduct",
+      "foreach product loop at candidate lines 483-517",
+      "final failure aggregation block at candidate lines 586-594"
+    ],
+    "mocked_commands": [
+      "Get-MsiProductProperty",
+      "Test-MicrosoftSignedFile",
+      "Invoke-Uninstaller",
+      "Write-Host"
+    ],
+    "limitations": "This controlled proof validates PowerShell control flow and failure preservation on the literal candidate. It does not call Windows Installer, validate a real MSI signature, launch msiexec, alter the registry, remove files, elevate, or reproduce a real damaged Windows Installer registration."
   },
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
-  },
-  "phase": "reviewing_findings"
+    "canonical_dashboard_changed": false,
+    "detail": "No write was made to microsoft/PowerToys and no canonical dashboard artifact was edited, emitted, committed, or pushed."
+  }
 }
