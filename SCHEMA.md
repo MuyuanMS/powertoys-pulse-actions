@@ -169,6 +169,13 @@ newer author commit/comment/review. If the author has responded after the
 author-wait signal, the next emit clears `pending_author`, sets
 `needs_revalidation`, and returns the PR to the review queue.
 
+An explicit `pending_author: false` may preserve posted review history beside a
+new review decision only when the artifact has a valid `source_updated_at`,
+its full `head_sha` matches the live PR head, and `needs_revalidation` is not
+set. Missing or invalid source coverage and changed heads requeue the review
+even when the recorded author activity is older. Artifacts already marked
+`needs_revalidation` remain queued without repeatedly rewriting their status.
+
 ## `data/items/<number>.json` (agent artifact)
 
 ```jsonc
