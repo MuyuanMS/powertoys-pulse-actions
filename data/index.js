@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-29T13:08:50.526559+08:00",
+  "generated_at": "2026-09-29T13:47:17.1887143+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1171
   },
   "impact": {
-    "as_of": "2026-09-29T13:08:50.526559+08:00",
+    "as_of": "2026-09-29T13:47:17.1887143+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -4013,7 +4013,7 @@ window.BOARD_INDEX = {
       "stage": "review_in_progress",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "09/28/2026 23:59:42",
+      "waiting_since": "09/29/2026 05:34:38",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
@@ -4031,7 +4031,7 @@ window.BOARD_INDEX = {
         "zadjii-msft"
       ],
       "created_at": "2026-08-28T16:03:48Z",
-      "updated_at": "2026-09-28T23:59:42Z",
+      "updated_at": "2026-09-29T05:34:38Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -5093,7 +5093,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "reviewing_findings",
+      "stage": "waiting_copilot",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
