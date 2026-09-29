@@ -4,11 +4,11 @@
   "number": 49826,
   "kind": "pr",
   "track": "review",
-  "stage": "waiting_copilot",
+  "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-29T13:38:47.7565339+08:00",
-  "evaluated_at": "2026-09-29T05:35:53Z",
+  "generated_at": "2026-09-29T07:14:28Z",
+  "evaluated_at": "2026-09-29T07:14:28Z",
   "source_updated_at": "2026-08-11T14:31:43Z",
   "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
   "title": "Add PowerToys installation cleanup tool",
@@ -21,19 +21,54 @@
   "draft": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "summary": "The received cleanup-review findings were addressed and a follow-up review is outstanding. Ten isolated mock-based tests pass; these do not establish real installer, elevation, or destructive filesystem behavior. The exact upstream exception-handling suggestion remains private until review convergence. Existing upstream comments are not duplicated.",
+  "summary": "Final automated review 5348775080 matched fork head 829d2d8415070678e14127818efc1d9234e57083 and returned zero published findings. Exhaustive checks found 44 fork reviews, 52 fork review comments, and 29 fork threads with zero unresolved; upstream remains unchanged at d04212440178404943f4bc75994ca07cb79de29d with the three previously posted comments preserved and not duplicated. The only proposed action is the independently grounded MSI-validation exception suggestion at RIGHT line 489. Its literal exact-upstream candidate passed parsing, -WhatIf, diff, and LF-only checks; a controlled AST-extracted mock test proves only the isolated continuation and failure-aggregation behavior, not global cleanup correctness or real Windows Installer behavior.",
   "status": {
-    "detail": "The saved request has no matching submitted review after all 40 review records were checked. A cleared reviewer assignment does not establish completion. No author-facing action is available yet.",
-    "label": "Waiting for post-fix review",
-    "glyph": "..."
+    "glyph": "📝",
+    "label": "Review complete — approval required",
+    "detail": "Review 5348775080 covered fork head 829d2d8415070678e14127818efc1d9234e57083 with zero published findings. All 29 fork threads are resolved, and the exact upstream head remains pinned to d04212440178404943f4bc75994ca07cb79de29d."
   },
   "next_action": {
-    "glyph": "...",
-    "label": "Consume the post-fix Copilot request",
-    "reason": "Use Get-CopilotReviewStatus.ps1 with head ff01aa1422541e97a57d9de472dd6ef8b897e02b, request time 2026-09-29T05:35:53Z, and baseline review ID 5348128616. If it has zero published findings and threads remain resolved, finalize the approval-gated COMMENT action; do not request again merely to check."
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted COMMENT review",
+    "reason": "The draft contains only the nonduplicate per-product MSI-validation exception suggestion. Explicit maintainer approval and a final publisher freshness check are required before any upstream write."
   },
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "continue-after-msi-validation-error",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Continue after an MSI validation error",
+      "body": "### Continue after an MSI validation error\n\n**Severity:** `medium`\n\n`Test-PowerToysMsiProduct` can throw when Windows Installer returns an error other than `ERROR_UNKNOWN_PRODUCT`. Because this call is outside a per-product `try` block, one damaged registration aborts the script before later MSI products or bundles are attempted, bypassing the cleanup result's failure aggregation.\n\nCatch validation exceptions for each product, add a failure that identifies its scope and product code, and continue. This keeps the existing rejection path for a clean `false` result while allowing independent targets to be processed.\n\n```suggestion\n    try {\n        $isValidPowerToysMsi = Test-PowerToysMsiProduct -Product $product\n    } catch {\n        $script:failures.Add(\n            \"Could not validate $($product.Scope) MSI $($product.ProductCode): $($_.Exception.Message)\")\n        continue\n    }\n\n    if (-not $isValidPowerToysMsi) {\n```",
+      "path": "tools/CleanUp/Uninstall-PowerToys.ps1",
+      "start_line": 489,
+      "line": 489,
+      "side": "RIGHT",
+      "in_diff": true,
+      "confidence": {
+        "score": 97,
+        "rationale": "The exact upstream call can throw before the existing failure list and later-target loops complete; a two-product focused test proves the proposed per-product catch continues to an independent uninstall failure."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49826-msi-validation",
+      "type": "post_review",
+      "label": "Post the MSI validation continuation suggestion",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49826,
+        "pr": 49826,
+        "event": "COMMENT",
+        "head_sha": "d04212440178404943f4bc75994ca07cb79de29d"
+      },
+      "note": "Draft only. The focused mock proof covers continuation after one validation exception and preservation of a subsequent independent uninstall failure; it does not exercise a real MSI API, signature verification, process launch, registry or filesystem mutation, elevation, damaged registration, or overall cleanup correctness."
+    }
+  ],
   "phase0": {
     "authorAssociation": "MEMBER",
     "disposition": "Proceed",
@@ -67,44 +102,44 @@
     "url": "https://github.com/MuyuanMS/PowerToys/pull/590",
     "state": "OPEN",
     "branch": "pr-iterate/49826",
-    "head_sha": "ff01aa1422541e97a57d9de472dd6ef8b897e02b",
-    "previous_head_sha": "2054c150740d6045a11fb3044f69540a6cd07b83"
+    "head_sha": "829d2d8415070678e14127818efc1d9234e57083",
+    "previous_head_sha": "864f1e07876f3b12d52c68c9d23fd8dd79b599e7"
   },
   "fork_branch": "pr-iterate/49826",
-  "fork_head_sha": "ff01aa1422541e97a57d9de472dd6ef8b897e02b",
+  "fork_head_sha": "829d2d8415070678e14127818efc1d9234e57083",
   "workflow": {
-    "phase": "waiting_copilot",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-29T13:38:47.7565339+08:00",
+    "phase": "awaiting_review_approval",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-29T07:14:28Z",
     "reviewed_upstream_head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
-    "consumed_review_id": 5347924795,
-    "consumed_review_head_sha": "2054c150740d6045a11fb3044f69540a6cd07b83",
-    "consumed_review_comment_ids": [
-      4129817252
-    ],
-    "consumed_review_new_comments": 1,
-    "consumed_review_suppressed_important_findings": 1,
+    "consumed_review_id": 5348775080,
+    "consumed_review_head_sha": "829d2d8415070678e14127818efc1d9234e57083",
+    "consumed_review_comment_ids": [],
+    "consumed_review_new_comments": 0,
+    "consumed_review_suppressed_important_findings": 0,
     "consumed_review_suppressed_disposition": "fixed_fork_only",
-    "fork_thread_count_before_request": 28,
+    "fork_thread_count_before_request": 29,
     "unresolved_fork_threads_before_request": 0,
     "thread_cursors_exhausted": true,
     "request": {
-      "head_sha": "ff01aa1422541e97a57d9de472dd6ef8b897e02b",
-      "requested_at": "2026-09-29T05:35:53Z",
-      "after_review_id": 5348128616,
-      "submitted_review_id": null,
+      "head_sha": "829d2d8415070678e14127818efc1d9234e57083",
+      "requested_at": "2026-09-29T06:47:04Z",
+      "after_review_id": 5348700377,
+      "submitted_review_id": 5348775080,
+      "submitted_at": "2026-09-29T06:55:01Z",
       "request_pending_flag": false,
-      "reviews_scanned_at_request": 40,
-      "bounded_timeout_minutes": 0,
-      "reviews_scanned_at_recheck": 40
+      "reviews_scanned_at_request": 43,
+      "bounded_timeout_minutes": 0
     },
     "duplicate_review_request_avoided": true,
-    "resume_action": "consume_saved_request_without_requesting_again"
+    "automated_review_round_limit_reached": true,
+    "suppressed_findings_after_round_five_not_processed": true,
+    "resume_action": "await_explicit_publication_approval"
   },
   "validation": {
     "fork_head": {
-      "head_sha": "ff01aa1422541e97a57d9de472dd6ef8b897e02b",
-      "result": "passed_waiting_review",
+      "head_sha": "829d2d8415070678e14127818efc1d9234e57083",
+      "result": "passed_clean_published_findings",
       "commands": [
         "PowerShell Parser::ParseFile on tools\\CleanUp\\Uninstall-PowerToys.ps1",
         "PowerShell Parser::ParseFile on tools\\CleanUp\\Uninstall-PowerToys.Tests.ps1",
@@ -114,8 +149,8 @@
       ],
       "pester": {
         "version": "3.4.0",
-        "total": 10,
-        "passed": 10,
+        "total": 13,
+        "passed": 13,
         "failed": 0,
         "coverage": [
           "WhatIf prevents destructive entry",
@@ -128,7 +163,10 @@
           "API-backed msiexec path despite mutated SystemRoot",
           "second LocalPackage lookup failure aggregation",
           "elevated pass excludes profile-owned recursive deletion",
-          "non-elevated RemoveSettings removes HKCU PowerToys settings"
+          "non-elevated RemoveSettings removes HKCU PowerToys settings",
+          "MSI COM objects close and release after successful property read",
+          "MSI COM objects close and release after query failure",
+          "API-backed machine roots despite poisoned process environment variables"
         ]
       },
       "environment_restored": true,
@@ -149,16 +187,20 @@
       "diff_check": "passed"
     },
     "suggestion_patch": {
-      "applied_comment_ids": [],
-      "minimal_ranges_reviewed": true,
       "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
-      "details": "The literal tested candidate is retained privately, not proposed before review convergence.",
-      "result": "not_applicable"
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "continue-after-msi-validation-error"
+      ],
+      "details": "The literal replacement of upstream RIGHT line 489 was materialized on exact head d04212440178404943f4bc75994ca07cb79de29d. Parser validation, live -WhatIf, and git diff --check passed. A separate Pester 3.4.0 harness AST-extracted the exact candidate Test-PowerToysMsiProduct function, product loop, and final aggregate-failure block; with all external/destructive commands mocked, it proved one validation exception is recorded, a second product still reaches an independently failed uninstall, both failures remain, and the final aggregate throw occurs."
     },
     "line_ending_safety": {
       "head_sha": "d04212440178404943f4bc75994ca07cb79de29d",
       "result": "passed",
-      "checked_comment_ids": [],
+      "checked_comment_ids": [
+        "continue-after-msi-validation-error"
+      ],
       "files": [
         {
           "path": "tools/CleanUp/Uninstall-PowerToys.ps1",
@@ -222,6 +264,18 @@
       "subject": "Separate privileged and profile cleanup",
       "classification": "fork_only_review_convergence",
       "details": "Eliminates elevated recursive deletion of profile-owned paths, defers -RemoveSettings to the non-elevated affected-profile pass, removes HKCU\\Software\\Microsoft\\PowerToys there, and documents the boundary. This avoids an unsafe, unverified handle-relative deletion redesign."
+    },
+    {
+      "commit": "864f1e07876f3b12d52c68c9d23fd8dd79b599e7",
+      "subject": "Release installer COM objects",
+      "classification": "fork_only_review_convergence",
+      "details": "Closes the Windows Installer view and deterministically releases record, view, database, and installer COM objects in reverse order on success and exception paths. Tests use fake COM-shaped objects and mocked releases; no MSI is opened."
+    },
+    {
+      "commit": "829d2d8415070678e14127818efc1d9234e57083",
+      "subject": "Resolve cleanup roots from Windows",
+      "classification": "fork_only_review_convergence",
+      "details": "Replaces every cleanup filesystem environment root with Environment.GetFolderPath-backed resolution. Elevated staging and logs use CommonApplicationData; machine installation cleanup uses ProgramFiles and ProgramFilesX86; user cleanup uses LocalApplicationData. An adversarial mock test verifies poisoned process environment variables are ignored."
     }
   ],
   "exact_candidate_controlled_test": {
@@ -242,6 +296,15 @@
     ],
     "limitations": "This controlled proof validates PowerShell control flow and failure preservation on the literal candidate. It does not call Windows Installer, validate a real MSI signature, launch msiexec, alter the registry, remove files, elevate, or reproduce a real damaged Windows Installer registration."
   },
+  "new_upstream_findings": [
+    {
+      "id": "continue-after-msi-validation-error",
+      "disposition": "proposed_nonduplicate",
+      "finding": "Per-product MSI validation errors abort cleanup instead of being aggregated",
+      "existing_upstream_duplicate": false,
+      "suggestion_validated": true
+    }
+  ],
   "upstream_safety": {
     "public_actions_taken": false,
     "canonical_dashboard_changed": false,
