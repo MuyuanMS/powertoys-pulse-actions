@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-29T11:37:51.9345645+08:00",
+  "generated_at": "2026-09-29T11:55:37.7270722+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 138,
-    "open_issues": 12709,
-    "community": 11889,
+    "open_issues": 12710,
+    "community": 11890,
     "artifacts": 1171
   },
   "impact": {
-    "as_of": "2026-09-29T11:37:51.9345645+08:00",
+    "as_of": "2026-09-29T11:55:37.7270722+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -479,7 +479,6 @@ window.BOARD_INDEX = {
     20255,
     20235,
     20220,
-    16395,
     20153,
     20117,
     20036,
@@ -510,6 +509,7 @@ window.BOARD_INDEX = {
     48990,
     16613,
     16490,
+    16395,
     16231,
     16018,
     15990,
@@ -2548,7 +2548,7 @@ window.BOARD_INDEX = {
       "proposed_open": 4,
       "primary_action": {
         "type": "request_changes",
-        "label": null
+        "label": "Post four atomic inline suggestions"
       },
       "labels": [
         "Ready for review",
@@ -92533,6 +92533,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-5863",
+      "kind": "issue",
+      "number": 5863,
+      "url": "https://github.com/microsoft/PowerToys/issues/5863",
+      "title": "Run At Startup + Always Run As Administrator does not work if Admin User is different user",
+      "author": "MichaelPeter",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Settings"
+      ],
+      "assignees": [],
+      "created_at": "2020-08-11T11:45:06Z",
+      "updated_at": "2026-04-19T10:04:57Z",
+      "comments": 27,
+      "priority": null
+    },
+    {
       "id": "issue-26921",
       "kind": "issue",
       "number": 26921,
@@ -131584,39 +131615,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-16395",
-      "kind": "issue",
-      "number": 16395,
-      "url": "https://github.com/microsoft/PowerToys/issues/16395",
-      "title": "FancyZones used to remember the layout for different screen resolutions, now it keeps the same when changing resolution.",
-      "author": "seFausto",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "FancyZones-Layouts",
-        "Product-FancyZones"
-      ],
-      "assignees": [],
-      "created_at": "2022-02-16T15:21:34Z",
-      "updated_at": "2024-01-16T16:47:42Z",
-      "comments": 7,
-      "priority": null
-    },
-    {
       "id": "issue-20153",
       "kind": "issue",
       "number": 20153,
@@ -145768,34 +145766,36 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-5863",
+      "id": "issue-16395",
       "kind": "issue",
-      "number": 5863,
-      "url": "https://github.com/microsoft/PowerToys/issues/5863",
-      "title": "Run At Startup + Always Run As Administrator does not work if Admin User is different user",
-      "author": "MichaelPeter",
-      "state": "closed",
+      "number": 16395,
+      "url": "https://github.com/microsoft/PowerToys/issues/16395",
+      "title": "FancyZones used to remember the layout for different screen resolutions, now it keeps the same when changing resolution.",
+      "author": "seFausto",
+      "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "fix",
+      "stage": "owned_elsewhere",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
+      "has_artifact": true,
+      "agent_status": "fix",
+      "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Settings"
+        "Issue-Bug",
+        "FancyZones-Layouts",
+        "Product-FancyZones"
       ],
       "assignees": [],
-      "created_at": "2020-08-11T11:45:06Z",
-      "updated_at": "2026-04-19T10:04:57Z",
-      "comments": 27,
+      "created_at": "2022-02-16T15:21:34Z",
+      "updated_at": "2024-01-16T16:47:42Z",
+      "comments": 7,
       "priority": null
     },
     {
@@ -152344,6 +152344,37 @@ window.BOARD_INDEX = {
       "created_at": "2020-08-05T16:32:05Z",
       "updated_at": "2026-04-21T15:21:46Z",
       "comments": 28,
+      "priority": null
+    },
+    {
+      "id": "issue-50859",
+      "kind": "issue",
+      "number": 50859,
+      "url": "https://github.com/microsoft/PowerToys/issues/50859",
+      "title": "[Feature Request] Add Customizable Windows Profiles to PowerToys",
+      "author": "Prath-Digital",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-29T03:37:15Z",
+      "updated_at": "2026-09-29T03:37:15Z",
+      "comments": 0,
       "priority": null
     },
     {
@@ -164825,8 +164856,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-29T02:49:40Z",
-      "comments": 175,
+      "updated_at": "2026-09-29T03:43:20Z",
+      "comments": 176,
       "priority": null
     },
     {
@@ -219405,13 +219436,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage",
+        "Needs-Author-Feedback",
         "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-05-22T19:12:01Z",
-      "updated_at": "2026-05-22T19:15:34Z",
-      "comments": 0,
+      "updated_at": "2026-09-29T03:40:52Z",
+      "comments": 3,
       "priority": null
     },
     {
