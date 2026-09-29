@@ -1,0 +1,187 @@
+{
+  "number": 50832,
+  "kind": "pr",
+  "track": "review",
+  "stage": "merged",
+  "owes": "none",
+  "pending_author": false,
+  "generated_at": "2026-09-29T11:10:57.560234+08:00",
+  "evaluated_at": "2026-09-28T13:15:15.3348796Z",
+  "source_updated_at": "2026-09-29T03:24:59+08:00",
+  "head_sha": "f72ef84cab391c7fe1d2608f5cb96ef37d81666b",
+  "title": "Add clipboard helpers to the Command Palette extensions toolkit",
+  "url": "https://github.com/microsoft/PowerToys/pull/50832",
+  "status": {
+    "detail": "Upstream PR is merged; retained review history is no longer actionable.",
+    "glyph": "closed",
+    "label": "PR merged"
+  },
+  "next_action": "No review action; upstream PR is closed.",
+  "proposed_comments": [
+    {
+      "id": "clipboard-background-setcontent",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/ClipboardHelper.cs",
+      "line": 54,
+      "start_line": 52,
+      "end_line": 57,
+      "side": "RIGHT",
+      "body": "### Use the windowless-safe clipboard API\n\n**Severity:** `high`\n\n`ClipboardHelper` is explicitly intended for extensions without a foreground window, but `Clipboard.SetContent(DataPackage)` is documented to throw unless the application is foreground or a debugger is attached. Command Palette extensions are activated as COM local servers, so `SetContent`/`SetImage` can fail in the background case this helper targets; this call also bypasses `ExecuteOnStaThread`'s `false`-result retries. Use `SetContentWithOptions`, retry its `false` result, and surface exhaustion while preserving `Flush` after success.\n\n```suggestion\n        var succeeded = false;\n        ExecuteOnStaThread(() =>\n        {\n            succeeded = Clipboard.SetContentWithOptions(content, new ClipboardContentOptions());\n            if (succeeded)\n            {\n                Clipboard.Flush();\n            }\n\n            return succeeded;\n        });\n        if (!succeeded)\n        {\n            throw new InvalidOperationException(\"Failed to set clipboard content.\");\n        }\n```",
+      "confidence": {
+        "score": 92,
+        "rationale": "The helper comment describes a windowless extension context, the extension is activated out-of-process, and the documented SetContent foreground precondition is explicit. No end-to-end background-host clipboard reproduction was run."
+      },
+      "disposition": "withdrawn"
+    },
+    {
+      "id": "native-text-write-result",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/ClipboardHelper.cs",
+      "line": 24,
+      "start_line": 24,
+      "end_line": 24,
+      "side": "RIGHT",
+      "body": "### Surface exhausted text writes (1/3)\n\n**Severity:** `medium`\n\n`SetClipboardData` returns `false` when a native clipboard operation fails, and `ExecuteOnStaThread` retries that result but discards the final outcome. This call therefore returns normally after all attempts fail, so an extension can report a successful copy while the clipboard was not updated. Capture the delegate's final result and throw or otherwise surface failure after the retries; apply it with the RTF and caught-failure suggestions.\n\n```suggestion\n        var succeeded = false;\n        ExecuteOnStaThread(() => succeeded = SetClipboardData(Tuple.Create(text, CF_UNICODETEXT)));\n        if (!succeeded)\n        {\n            throw new InvalidOperationException(\"Failed to set clipboard text.\");\n        }\n```",
+      "selection_group": {
+        "id": "native-write-failure",
+        "title": "Surface native clipboard write failures",
+        "position": 1,
+        "total": 3,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "The pinned control flow shows false is returned by native write paths, retried, and then dropped by a void helper; the literal candidate compiles in the focused project."
+      },
+      "disposition": "withdrawn"
+    },
+    {
+      "id": "native-rtf-write-result",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/ClipboardHelper.cs",
+      "line": 36,
+      "start_line": 34,
+      "end_line": 36,
+      "side": "RIGHT",
+      "body": "### Surface exhausted RTF writes (2/3)\n\n**Severity:** `medium`\n\nThe RTF path has the same lost-result behavior as `SetText`: `SetClipboardData` can return `false` after the bounded retries, but this public method still completes normally. Preserve and check the final delegate result so callers can distinguish a completed write from a failed or partial text/RTF update. Apply it together with the paired text and caught-failure suggestions.\n\n```suggestion\n        var succeeded = false;\n        ExecuteOnStaThread(() => succeeded = SetClipboardData(\n            Tuple.Create(plainText, CF_UNICODETEXT),\n            Tuple.Create(rtfText, s_CF_RTF)));\n        if (!succeeded)\n        {\n            throw new InvalidOperationException(\"Failed to set clipboard RTF.\");\n        }\n```",
+      "selection_group": {
+        "id": "native-write-failure",
+        "title": "Surface native clipboard write failures",
+        "position": 2,
+        "total": 3,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "The same ignored Boolean path is visible at the RTF call site and its literal replacement compiles in isolation and with the atomic group."
+      },
+      "disposition": "withdrawn"
+    },
+    {
+      "id": "native-exception-write-result",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/ClipboardHelper.cs",
+      "line": 245,
+      "start_line": 245,
+      "end_line": 245,
+      "side": "RIGHT",
+      "body": "### Keep caught native failures on the failure path (3/3)\n\n**Severity:** `medium`\n\n`SetSingleClipboardData` catches allocation/interop exceptions but then falls through to `return true`, so the caller treats a failed format write as successful and never retries it. Return `false` here so the retry loop can observe the failure, and apply it with the matching `SetText` and `SetRtf` result checks so exhaustion is surfaced to callers.\n\n```suggestion\n            return false;\n```",
+      "selection_group": {
+        "id": "native-write-failure",
+        "title": "Surface native clipboard write failures",
+        "position": 3,
+        "total": 3,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 95,
+        "rationale": "The catch falls through to an unconditional true return after releasing memory; returning false preserves cleanup via finally and feeds the existing retry loop. Its literal replacement compiles independently and in the atomic group."
+      },
+      "disposition": "withdrawn"
+    }
+  ],
+  "actions": [],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "f72ef84cab391c7fe1d2608f5cb96ef37d81666b",
+      "result": "passed",
+      "details": "The focused Command Palette toolkit unit-test project and its toolkit project reference built on the exact upstream head using the repository build script."
+    },
+    "fork_head": {
+      "head_sha": "a962b64f54249072ba23c6396ed9e1b05da529e2",
+      "result": "passed",
+      "details": "The same focused project built on the current converged fork head."
+    },
+    "suggestion_patch": {
+      "head_sha": "f72ef84cab391c7fe1d2608f5cb96ef37d81666b",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "clipboard-background-setcontent",
+        "native-text-write-result",
+        "native-rtf-write-result",
+        "native-exception-write-result"
+      ],
+      "candidate_builds": [
+        "SetContentWithOptions and failure propagation suggestion alone: repository build.ps1 for the focused toolkit unit-test project; passed.",
+        "SetText result capture suggestion alone: repository build.ps1 for the focused toolkit unit-test project; passed.",
+        "SetRtf result capture suggestion alone: repository build.ps1 for the focused toolkit unit-test project; passed.",
+        "Minimal native exception return-false suggestion alone: repository build.ps1 for the focused toolkit unit-test project; passed.",
+        "SetText, SetRtf, and native exception suggestions together as the atomic group: repository build.ps1 for the focused toolkit unit-test project; passed.",
+        "All four final minimized suggestions together: repository build.ps1 for the focused toolkit unit-test project; passed."
+      ],
+      "limitations": "The builds validate compilation and syntax; no end-to-end test was run in an out-of-process extension host or with clipboard contention injected."
+    },
+    "line_ending_safety": {
+      "head_sha": "f72ef84cab391c7fe1d2608f5cb96ef37d81666b",
+      "result": "passed",
+      "checked_comment_ids": [
+        "clipboard-background-setcontent",
+        "native-text-write-result",
+        "native-rtf-write-result",
+        "native-exception-write-result"
+      ],
+      "files": [
+        {
+          "path": "src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/ClipboardHelper.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 303,
+          "cr_only_count": 0
+        }
+      ]
+    }
+  },
+  "workflow": {
+    "phase": "merged",
+    "checkpoint_at": "2026-09-29T11:10:57.560234+08:00"
+  },
+  "freshness": {
+    "queued_at": "2026-09-28T11:06:40Z",
+    "checkpoint_at": "2026-09-28T13:15:15.3348796Z"
+  },
+  "fork_pr": {
+    "number": 925,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/925"
+  },
+  "fork_branch": "pr-iterate/50832",
+  "fork_head_sha": "a962b64f54249072ba23c6396ed9e1b05da529e2",
+  "fork_review": {
+    "requested_at": "2026-09-28T11:50:39Z",
+    "head_sha": "a962b64f54249072ba23c6396ed9e1b05da529e2",
+    "after_review_id": 5338145301,
+    "submitted": true,
+    "review_id": 5338214156,
+    "submitted_at": "2026-09-28T11:56:15Z",
+    "reviews_scanned": 8
+  },
+  "state": "MERGED",
+  "needs_revalidation": false,
+  "summary": "Upstream PR is merged; retained review history is no longer actionable."
+}

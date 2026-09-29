@@ -9,99 +9,30 @@
   "authorAssociation": "COLLABORATOR",
   "isCommunity": false,
   "isMine": false,
-  "state": "OPEN",
+  "state": "MERGED",
   "draft": false,
-  "stage": "review_in_progress",
-  "owes": "reviewer",
+  "stage": "merged",
+  "owes": "none",
   "pending_author": false,
   "processVerdict": "proceed",
   "head_sha": "53c992974d5cdea19f71af43ec1444c37f3dcd35",
-  "source_updated_at": "2026-09-25T09:52:13Z",
-  "generated_at": "2026-09-28T04:42:01.3161137Z",
-  "evaluated_at": "2026-09-28T04:42:01.3161137Z",
-  "summary": "Three current-diff findings are under final literal-suggestion validation. The combined exact-head candidate builds, but independent builds of each public block remain unconfirmed; no review action is available. Focused keyboard and UIA runtime checks were not run.",
+  "source_updated_at": "2026-09-29T00:03:20+08:00",
+  "generated_at": "2026-09-29T11:10:57.560234+08:00",
+  "evaluated_at": "2026-09-28T11:32:00Z",
+  "summary": "Upstream PR is merged; retained review history is no longer actionable.",
   "status": {
-    "glyph": "📝",
-    "label": "Review in progress",
-    "detail": "Individual exact-head builds of three draft suggestions remain unconfirmed. No review action is available."
+    "detail": "Upstream PR is merged; retained review history is no longer actionable.",
+    "glyph": "closed",
+    "label": "PR merged"
   },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Continue review",
-    "reason": "Confirm each literal suggestion builds independently before restoring an approval-gated draft."
-  },
+  "next_action": "No review action; upstream PR is closed.",
   "confidence": "High",
   "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "preserve-filter-alt-down",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Preserve Alt+Down for the filter dropdown",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
-      "side": "RIGHT",
-      "start_line": 1149,
-      "line": 1160,
-      "in_diff": true,
-      "body": "### Preserve Alt+Down for the filter dropdown\n\n**Severity:** `medium`\n\nThe shell's `PreviewKeyDown` handler runs before the focused filter button's own preview handler and marks Alt+Down handled when collapsed compact mode expands, so the existing filter flyout handler cannot open. Let events originating inside `FiltersDropDown` reach that handler, while retaining compact expansion for other sources.\n\n```suggestion\n                {\n                    var source = e.OriginalSource as DependencyObject;\n                    while (source is not null && !ReferenceEquals(source, shellPage.FiltersDropDown))\n                    {\n                        source = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(source);\n                    }\n\n                    if (source is not null)\n                    {\n                        goto default;\n                    }\n\n                    if (shellPage.TryExpandCollapsedCompact())\n                    {\n                        e.Handled = true;\n                    }\n                    else\n                    {\n                        // Outside collapsed compact mode, Alt+Down remains available to requested\n                        // command keybindings just like every other unreserved chord.\n                        goto default;\n                    }\n\n                    break;\n                }\n\n```\n\n> If applying both `ShellPage.xaml.cs` suggestions individually, apply this lower Alt+Down change before the overflow-icon insertion, or batch them atomically.",
-      "confidence": {
-        "score": 91,
-        "rationale": "The pinned source directly shows a tunneling handler that consumes Alt+Down in collapsed compact mode and a child filter-button handler wired to open the flyout. No interactive reproduction was run, so confidence is based on the routed-event source path rather than runtime observation."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "hide-overflow-icons-from-uia",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Hide decorative overflow icons from UI Automation",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",
-      "side": "RIGHT",
-      "start_line": 1071,
-      "line": 1071,
-      "in_diff": true,
-      "body": "### Hide decorative overflow icons from UI Automation\n\n**Severity:** `medium`\n\nThe overflow command already exposes its title through the menu item, but this `IconBox` remains in the accessibility content view and can appear as a separate unlabeled UI Automation node. Mark the decorative icon as `AccessibilityView.Raw`, matching the inline shelf icon.\n\n```suggestion\niconBox.SourceRequested += IconProvider.SourceRequested16;\nMicrosoft.UI.Xaml.Automation.AutomationProperties.SetAccessibilityView(iconBox, Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);\n```",
-      "confidence": {
-        "score": 90,
-        "rationale": "The pinned code assigns the IconBox to the menu item without an accessibility-view setting, while the inline shelf icon uses Raw for the same decorative role. Runtime UIA enumeration remains unverified."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "name-custom-shelf-landmark",
-      "kind": "inline",
-      "severity": "medium",
-      "title": "Name the custom shelf landmark for assistive technology",
-      "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Strings/en-us/Resources.resw",
-      "side": "RIGHT",
-      "start_line": 420,
-      "line": 420,
-      "in_diff": true,
-      "body": "### Name the custom shelf landmark for assistive technology\n\n**Severity:** `medium`\n\n`QuickAccessShelfSurface` declares a custom landmark, but its current `x:Uid` resources provide only `AutomationProperties.Name`. Add `LocalizedLandmarkType` for the same `x:Uid` so assistive technology receives the localized landmark type, matching the existing `Details` landmark.\n\n```suggestion\n  </data>\n  <data name=\"QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.LocalizedLandmarkType\" xml:space=\"preserve\">\n    <value>Quick access shelf</value>\n  </data>\n```",
-      "confidence": {
-        "score": 93,
-        "rationale": "The pinned XAML declares a custom landmark and the same x:Uid resource has only a name; an existing Details landmark demonstrates the missing localized-type pattern. Screen-reader output remains unverified."
-      },
-      "disposition": "withdrawn"
-    }
-  ],
+  "proposed_comments": [],
   "actions": [],
   "workflow": {
-    "phase": "building",
-    "previous_phase": "building",
-    "checkpoint_at": "2026-09-28T04:42:01.3161137Z",
-    "resume_action": "validate-each-literal-suggestion",
-    "advancement_evidence": [
-      "Rechecked the live upstream PR: it remains open, its head is 53c992974d5cdea19f71af43ec1444c37f3dcd35, and updated_at is 2026-09-25T09:52:13Z.",
-      "Exhausted upstream reviews, inline comments, and issue comments: three historical approvals are on earlier commits, the last at 2026-09-08T16:05:09Z on c194623b992e6458472577ac41c941e97ca0baf6; no inline review comments exist, and the sole issue comment reports all intake checks passed.",
-      "Reused the existing fork PR and branch; advanced only that branch by a normal fast-forward to 76a18e3ac16196a3b5b138d1af1db7d6d47705d0. The fork's 16 changed paths exactly match the upstream PR's 16 paths.",
-      "Reverted the unsupported WM_MENUCHAR narrowing; retained the three independently grounded accessibility and Alt+Down corrections. Audited the net review-fork delta against current upstream main.",
-      "Built the literal three-suggestion candidate on the exact pinned upstream head and built the final fork review branch, both for CmdPal UI x64 Debug under the exclusive build mutex.",
-      "Raw upstream blobs for both suggestion target paths passed the line-ending gate: ShellPage.xaml.cs is LF without BOM; Resources.resw is LF with UTF-8 BOM.",
-      "Requested one bounded Copilot review on the pushed final fork head at 2026-09-28T04:30:33Z after baseline review ID 5333741407. Review 5333964334 arrived at 04:31:03Z with approval recommended and no findings.",
-      "Paginated review history, all 14 inline comments, all 6 issue comments, and all Copilot review threads; no comments arrived after the saved request and zero unresolved Copilot threads remain.",
-      "No upstream comment, review, label, or other write was made. Focused keyboard/UIA runtime validation was not run because a CmdPal process was already active in the shared desktop."
-    ]
+    "phase": "merged",
+    "checkpoint_at": "2026-09-29T11:10:57.560234+08:00"
   },
   "freshness": {
     "status": "fresh",
@@ -109,7 +40,7 @@
     "updatedAt": "2026-09-25T09:52:13Z",
     "latestCopilotReviewAt": "2026-09-28T04:31:03Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-28T04:42:01.3161137Z"
+    "checkedAt": "2026-09-28T11:32:00Z"
   },
   "fork_pr": {
     "number": 562,
@@ -148,9 +79,12 @@
     },
     "upstream_head": {
       "head_sha": "53c992974d5cdea19f71af43ec1444c37f3dcd35",
-      "result": "not_run",
-      "commands": [],
-      "details": "The unmodified upstream tree was not built. Validation instead built the exact pinned upstream tree after applying all three proposed suggestions; that compile result does not establish runtime keyboard or UIA behavior."
+      "result": "failed",
+      "commands": [
+        "dotnet restore src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj --verbosity minimal",
+        "tools\\build\\build.ps1 -Path src\\modules\\cmdpal\\Microsoft.CmdPal.UI -Platform x64 -Configuration Debug"
+      ],
+      "details": "A clean, unmodified local checkout at the exact upstream head fails in the unchanged src/modules/cmdpal/Microsoft.Terminal.UI/Converters.idl:7 with MIDL2025 (syntax error, expecting . near ]) and MIDL2026. The same errors occur in the literal Alt+Down candidate, so the suggestion has not been shown to cause or fix the failure."
     },
     "upstream_activity": {
       "state": "OPEN",
@@ -166,27 +100,19 @@
     },
     "suggestion_patch": {
       "head_sha": "53c992974d5cdea19f71af43ec1444c37f3dcd35",
-      "result": "passed",
+      "result": "incomplete",
       "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "preserve-filter-alt-down",
-        "hide-overflow-icons-from-uia",
-        "name-custom-shelf-landmark"
-      ],
+      "applied_comment_ids": [],
       "commands": [
-        "git diff --check on the exact suggestion candidate",
-        "Build src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj, x64 Debug"
+        "dotnet restore src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj --verbosity minimal (members missing assets)",
+        "pwsh -NoProfile -ExecutionPolicy Bypass -File .\\tools\\build\\build.ps1 -Path src\\modules\\cmdpal\\Microsoft.CmdPal.UI -Platform x64 -Configuration Debug (each member and combined candidate)"
       ],
-      "details": "The three minimal literal RIGHT-side suggestions produce the exact candidate tree at the pinned upstream head. The CmdPal UI project build passed after correcting StyleCop case-block formatting; the earlier failed formatting attempt was not treated as validation."
+      "details": "No apply-ready suggestion remains in the public artifact. Built each literal member independently and all three together on the exact upstream head under the exclusive lock. The combined candidate passed; all three member builds failed with MIDL2025/MIDL2026 in unchanged Microsoft.Terminal.UI/Converters.idl:7-9, matching the unmodified baseline. The shared dependency error does not show that any literal patch is defective, but individual build validation did not pass, so the suggestions remain withheld."
     },
     "line_ending_safety": {
       "head_sha": "53c992974d5cdea19f71af43ec1444c37f3dcd35",
       "result": "passed",
-      "checked_comment_ids": [
-        "preserve-filter-alt-down",
-        "hide-overflow-icons-from-uia",
-        "name-custom-shelf-landmark"
-      ],
+      "checked_comment_ids": [],
       "files": [
         {
           "path": "src/modules/cmdpal/Microsoft.CmdPal.UI/Pages/ShellPage.xaml.cs",

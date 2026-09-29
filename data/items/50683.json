@@ -3,29 +3,97 @@
   "number": 50683,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "agent",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-28T06:30:34.8199019Z",
-  "evaluated_at": "2026-09-28T06:30:34.8199019Z",
+  "generated_at": "2026-09-28T07:51:47Z",
+  "evaluated_at": "2026-09-28T07:51:47Z",
   "source_updated_at": "2026-09-20T21:16:59Z",
   "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
   "title": "CropAndLock: Add maximized-window reparent regression coverage",
   "url": "https://github.com/microsoft/PowerToys/pull/50683",
   "status": {
-    "glyph": "⏳",
-    "label": "Exact suggestion candidate build pending",
-    "detail": "Live upstream head, discussion, and fork head were rechecked. Copilot review 5265187628 is submitted on the exact fork head with zero findings and zero unresolved Copilot threads. Both literal RIGHT-side candidates and the LF-only raw blob remain valid; exact candidate build is still pending because the shared lock marker names PR50727 and must not be bypassed."
+    "glyph": "review",
+    "label": "Two geometry suggestions drafted",
+    "detail": "Live upstream head 282197767b1faaa769973ed6b1d5257cc5157b7d and discussion remain unchanged. Both grouped literal suggestions built independently and together on exact-head candidates; the pinned source blob is LF-only. The existing fork review is head-matched with zero new Copilot comments and zero unresolved Copilot threads."
   },
-  "next_action": "After the coordinator clears the shared PR50727 build lock through its established process, build the literal candidates independently and together, then draft the two comments.",
+  "next_action": {
+    "glyph": "review",
+    "label": "Review two atomic CropAndLock geometry suggestions",
+    "reason": "Approve, edit, or hold the two current-head inline suggestions as one atomic group. No upstream review or comment has been posted."
+  },
   "confidence": "High",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "crop-client-frame-refresh",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Refresh child frame metrics after changing the style",
+      "confidence": {
+        "score": 91,
+        "rationale": "The method measures the child client rectangle immediately after adding WS_CHILD but does not request a frame recalculation until after those measurements. The exact literal replacement builds."
+      },
+      "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
+      "line": 146,
+      "side": "RIGHT",
+      "in_diff": true,
+      "selection_group": {
+        "id": "crop-reparent-geometry",
+        "title": "Correct CropAndLock reparent geometry",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "body": "### (1/2) Refresh child frame metrics after changing the style\n\n**Severity:** `medium`\n\nThe next `GetWindowRect`/`GetClientRect` calls calculate the resized child frame immediately after `WS_CHILD` is added. Force Windows to recalculate the frame before measuring those dimensions; otherwise the non-client difference used to preserve the original client size is computed from stale top-level frame metrics. Apply both grouped geometry suggestions together.\n\n```suggestion\n    SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);\n    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, 0, 0, 0, 0,\n                                  SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE));\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "crop-client-offset-conversion",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Undo the client-origin offset before positioning the crop",
+      "confidence": {
+        "score": 90,
+        "rationale": "The function already adds diffX/diffY to cropRect before deriving adjustedCropRect, then reuses those adjusted coordinates as the final child offset. The exact two-line replacement removes that duplicate offset and builds."
+      },
+      "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
+      "start_line": 176,
+      "line": 177,
+      "side": "RIGHT",
+      "in_diff": true,
+      "selection_group": {
+        "id": "crop-reparent-geometry",
+        "title": "Correct CropAndLock reparent geometry",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "body": "### (2/2) Undo the client-origin offset before positioning the crop\n\n**Severity:** `medium`\n\nEarlier in `CropAndLock`, the maximized-window path adds `diffX`/`diffY` to `cropRect` when converting the selected client-area coordinates. These final offsets use that already-adjusted rectangle directly, applying the origin shift a second time and displacing the cropped content. Subtract the conversion once when deriving the final child position. Apply both grouped geometry suggestions together.\n\n```suggestion\n    auto x = -(cropRect.left - diffX + (clientOrigin.x - finalWindowRect.left));\n    auto y = -(cropRect.top - diffY + (clientOrigin.y - finalWindowRect.top));\n```",
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50683",
+      "type": "post_review",
+      "label": "Post two atomic CropAndLock geometry suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50683,
+        "event": "COMMENT",
+        "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d"
+      },
+      "note": "Draft only. Both inline suggestions address the same reparent-geometry defect and must be selected and applied together. No upstream write has occurred."
+    }
+  ],
   "workflow": {
-    "phase": "reviewing_findings",
+    "phase": "awaiting_review_approval",
     "previous_phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-09-28T06:30:34.8199019Z",
+    "checkpoint_at": "2026-09-28T07:51:47Z",
     "run_tag": "schedule-20260921-2218",
     "fork_pr": 874,
     "fork_branch": "pr-iterate/50683-v2",
@@ -36,16 +104,28 @@
     "latest_copilot_new_comments": 0,
     "unresolved_copilot_threads": 0,
     "advancement_evidence": [
-      "consume_saved_copilot_review",
-      "resolve_fork_threads",
-      "current_upstream_recheck"
+      "Rechecked the live upstream head and paginated discussion; the head remains unchanged and the latest comment is the author agreeing with the policy-service message.",
+      "Consumed the saved fork Copilot review on fork PR 874; review 5265187628 matches fork head 861854b0d4b1f78207769848b0d91bcadb623c32 with zero new findings and zero unresolved Copilot threads.",
+      "Built the literal frame-refresh suggestion independently, the literal offset-conversion suggestion independently, and both suggestions together on exact upstream-head candidates using the exclusive shared build lock.",
+      "Verified the pinned source blob is LF-only and each exact candidate passes git diff --check.",
+      "Updated only the 50683 dashboard artifact; no upstream action or dashboard publication occurred."
     ],
-    "blocker_next_run_reason": "Exact upstream suggestion candidate build is pending because the shared build lock is held. Resume after the lock is released; do not publish suggestions from patch-check-only evidence."
+    "suggestion_candidate_builds": {
+      "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
+      "target": "CropAndLock.UITests Debug/Release validation target",
+      "configuration": "Release x64",
+      "independent": {
+        "crop-client-frame-refresh": "passed",
+        "crop-client-offset-conversion": "passed"
+      },
+      "combined": "passed",
+      "diff_check": "passed"
+    }
   },
   "freshness": {
     "headRefOid": "282197767b1faaa769973ed6b1d5257cc5157b7d",
     "updatedAt": "2026-09-20T21:16:59Z",
-    "checkedAt": "2026-09-28T06:30:34.8199019Z",
+    "checkedAt": "2026-09-28T07:51:47Z",
     "unresolvedForkCopilotThreads": 0
   },
   "fork_pr": {
@@ -83,15 +163,42 @@
       "command": "Set-Location <ExactUpstreamCheckout>\\tools\\build\\build.cmd -Path src\\modules\\CropAndLock\\Tests\\CropAndLock.UITests -Platform x64 -Configuration Release",
       "note": "The clean exact-upstream checkout could not restore the UI-test dependency graph: NETSDK1083 for win-anycpu, followed by missing ScreenRecorderLib/TestContext references. The converged fork build passed with its existing restored assets."
     },
-    "suggestionPatch": {
-      "result": "pending_exact_candidate_build",
+    "suggestion_patch": {
+      "result": "passed",
       "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
-      "applied_items": [
+      "applied_comment_ids": [
         "crop-client-frame-refresh",
         "crop-client-offset-conversion"
       ],
+      "minimal_ranges_reviewed": true,
       "literal_patch_check": "passed",
-      "reason": "Both localized replacements applied cleanly to an isolated exact-head candidate and git diff --check passed. The required exact candidate build remains pending because <PowerToysCheckout>\\.pr-review-build.lock is still held by another worker after a 90-second wait."
+      "candidate_worktree": "<PowerToysCheckout>",
+      "candidate_diff": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp:146,176-177",
+      "commands": [
+        "tools\\build\\build.ps1 -Platform x64 -Configuration Release -Path src\\modules\\CropAndLock\\Tests\\CropAndLock.UITests (frame-refresh only)",
+        "tools\\build\\build.ps1 -Platform x64 -Configuration Release -Path src\\modules\\CropAndLock\\Tests\\CropAndLock.UITests (offset-conversion only)",
+        "tools\\build\\build.ps1 -Platform x64 -Configuration Release -Path src\\modules\\CropAndLock\\Tests\\CropAndLock.UITests (combined suggestions)"
+      ],
+      "reason": "The literal public suggestion blocks were applied on the exact upstream head. The frame-refresh and offset-conversion suggestions each built independently, and their combined candidate built successfully; git diff --check passed for each candidate."
+    },
+    "line_ending_safety": {
+      "head_sha": "282197767b1faaa769973ed6b1d5257cc5157b7d",
+      "result": "passed",
+      "checked_comment_ids": [
+        "crop-client-frame-refresh",
+        "crop-client-offset-conversion"
+      ],
+      "files": [
+        {
+          "path": "src/modules/CropAndLock/CropAndLock/ReparentCropAndLockWindow.cpp",
+          "line_endings": "lf",
+          "result": "passed",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 250,
+          "cr_only_count": 0
+        }
+      ]
     }
   },
   "upstream_safety": {

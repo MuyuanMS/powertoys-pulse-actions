@@ -7,9 +7,9 @@
   "stage": "awaiting_review_approval",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-14T11:30:00Z",
-  "evaluated_at": "2026-09-14T11:30:00Z",
-  "source_updated_at": "2026-09-13T06:08:59Z",
+  "generated_at": "2026-09-28T12:27:50Z",
+  "evaluated_at": "2026-09-28T12:27:50Z",
+  "source_updated_at": "2026-09-24T05:06:16Z",
   "head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
   "title": "feat(dsc): add ZoomIt settings function data",
   "url": "https://github.com/microsoft/PowerToys/pull/50551",
@@ -19,64 +19,46 @@
   "authorAssociation": "CONTRIBUTOR",
   "isCommunity": true,
   "processVerdict": "proceed",
-  "summary": "The fork review loop converged after five Copilot passes with zero new comments and zero unresolved Copilot threads. Exact upstream validation now reaches the affected DSC project and reports one PR-introduced StyleCop error; the live upstream tree also lacks the bounded ZoomIt validation and native invalid-input coverage fixes that were needed to converge the fork review.",
+  "summary": "Revalidated against current upstream head a8c0e5fc326981259c3bc344f224589bc930f449 and discussion through 2026-09-24. The existing fork review remains head-matched with zero new Copilot comments and zero unresolved fork threads; upstream discussion now has one unresolved Copilot finding about the production refresh-event test. Four findings remain: two in-diff suggestions for RecordScaling validation and SA1515, one out-of-diff native RecordFormat/test-coverage note, and one prose-only inline event-race finding with private nonlocal suggestion triage.",
   "status": {
     "glyph": "ACTION",
     "label": "Request changes draft ready",
-    "detail": "Live upstream head a8c0e5fc326981259c3bc344f224589bc930f449 is pinned. Restore, runner, Settings UI, and ZoomIt interop builds passed; the exact DSC build fails at SettingsResource.cs:64 with SA1515, and four current-head review items remain."
+    "detail": "Live upstream head a8c0e5fc326981259c3bc344f224589bc930f449 is pinned. Each literal suggestion was independently built on that exact head, then both were built together. The RecordScaling-only run suppresses only the separate SA1515 error at SettingsResource.cs:64; the blank-line-only and grouped candidates pass without suppression. The unmodified upstream DSC build still fails at SA1515, and three live current-head CI checks fail."
   },
   "next_action": {
     "glyph": "ACTION",
     "label": "Approve, edit, or hold the drafted REQUEST_CHANGES review",
-    "reason": "The current-head draft covers the StyleCop failure, unsafe RecordScaling and hotkey inputs, unvalidated native rejection paths, and the missing blank line. No upstream action has been posted."
+    "reason": "The current-head draft covers out-of-range RecordScaling, unknown native RecordFormat values and native-save coverage, the shared production refresh-event test race, and the SA1515 blank line. No upstream action has been posted."
   },
   "proposed_comments": [
     {
       "id": "add-zoomit-input-validation",
       "kind": "inline",
-      "severity": "high",
-      "title": "Validate bounded ZoomIt settings before writing",
+      "severity": "medium",
+      "title": "Reject out-of-range recording scale values",
       "confidence": {
-        "score": 97,
-        "rationale": "The converged fork review required explicit range checks for RecordScaling, nested hotkey codes, and the exposed ZoomIt slider and enum controls before interop writes."
+        "score": 94,
+        "rationale": "The DSC setter serializes the supplied value directly, the Settings UI clamps the effective display range to 10–100, and native recording uses the persisted value to scale frame dimensions."
       },
       "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/ZoomItSettingsFunctionData.cs",
       "line": 91,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Validate bounded ZoomIt settings before writing\n\n**Severity:** `high`\n\n`SetState` forwards the requested values directly to the native interop. The current UI and native code impose bounds that this DSC path does not enforce: `RecordScaling` must be 10–100, nested hotkey `value.code` must be 0–255, and the exposed sliders/enums must stay within their UI/native ranges. Reject invalid values before the first interop write and add boundary tests so a hand-authored DSC document cannot persist values that underflow, corrupt packed hotkeys, or produce invalid ZoomIt behavior.",
+      "body": "### Reject out-of-range recording scale values\n\n**Severity:** `medium`\n\n`ZoomItSettingsFunctionData.SetState` forwards the DSC `RecordScaling` value directly to the native interop. Unlike the Settings UI, this path does not constrain the value to 10–100 before writing it; the native code stores it unchanged, and recording uses it to scale frame dimensions. Reject values outside the supported range before `SaveSettingsJson`, and add boundary tests for the DSC setter.\n\n```suggestion\n        var recordScaling = _output.Settings?.Properties?.RecordScaling;\n        if (recordScaling?.Value is < 10 or > 100)\n        {\n            throw new ArgumentOutOfRangeException(nameof(ZoomItProperties.RecordScaling), \"RecordScaling must be between 10 and 100.\");\n        }\n\n        SaveSettingsJson(JsonSerializer.Serialize(_output.Settings, _serializerOptions));\n```",
       "disposition": "proposed"
     },
     {
       "id": "reject-invalid-record-format",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Reject unknown recording formats",
-      "confidence": {
-        "score": 96,
-        "rationale": "The current native branch maps every value other than GIF to MP4, so malformed input is silently accepted and persisted as a different format."
-      },
-      "path": "src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettings.cpp",
-      "line": 243,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Reject unknown recording formats\n\n**Severity:** `high`\n\nThis conversion treats every value other than `GIF` as `MP4`. A malformed `RecordFormat` therefore silently changes the requested state instead of failing validation. Accept only the supported `GIF` and `MP4` values and return an invalid-argument error for anything else before updating the registry-backed state.",
-      "disposition": "proposed"
-    },
-    {
-      "id": "cover-native-rejection-paths",
-      "kind": "inline",
+      "kind": "companion",
       "severity": "medium",
-      "title": "Exercise native rejection paths",
+      "title": "Validate native recording-format writes",
       "confidence": {
-        "score": 94,
-        "rationale": "The added tests replace the native save delegate with an in-memory function; they do not execute the native invalid-format, string-size, or binary-size rejection branches."
+        "score": 95,
+        "rationale": "The native conversion explicitly maps every non-GIF string to MP4, while the added tests replace the native save delegate and only call the real interop for a read."
       },
-      "path": "src/dsc/v3/PowerToys.DSC.UnitTests/SettingsResourceTests/SettingsResourceZoomItModuleTest.cs",
-      "line": 230,
-      "side": "RIGHT",
-      "in_diff": true,
-      "body": "### Exercise native rejection paths\n\n**Severity:** `medium`\n\nThe new tests validate the managed DSC wrapper and only read through the real interop. Save tests replace `SaveSettingsJson` with an in-memory delegate, so they cannot catch regressions in the native invalid-format, string-length, or binary-size rejection paths added by this change. Add focused native/interoperability coverage that invokes `SaveSettingsJson` with each malformed input and verifies rejection without mutating the registry.",
+      "in_diff": false,
+      "out_of_diff_reason": "The faulty native RecordFormat conversion is in pre-existing ZoomItSettingsInterop code that this PR does not change; the new test file also cannot exercise the native save path without a registry/test seam.",
+      "body": "### Validate native recording-format writes\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettings.cpp` (`ZoomItSettings::SaveSettingsJson`) and `src/dsc/v3/PowerToys.DSC.UnitTests/SettingsResourceTests/SettingsResourceZoomItModuleTest.cs` (`TestInitialize`, `Interop_LoadSettingsJson_DeserializesIntoSettingsModel`).\n\n**Problem:** The native `RecordFormat` conversion maps `GIF` to 0 and every other string to 1 (`MP4`), then persists the setting. The added unit tests replace `SaveSettingsJson` with an in-memory delegate; their real-interoperability test only reads settings, so this native write behavior is not covered.\n\n**Why it matters:** A misspelled or unsupported format can report a successful DSC set while silently switching ZoomIt to MP4, and the current tests cannot detect the native conversion or a regression in rejecting malformed values.\n\n**Suggested change:**\n1. Validate a supplied `RecordFormat` before mutating any native settings. Accept only `GIF` and `MP4`, and return an invalid-argument error for any other non-null value instead of coercing it to MP4.\n2. Add an isolated native-save test seam or registry fixture so the real interop validation can be exercised without writing to the developer's ZoomIt settings. Verify both supported formats and verify an unknown format is rejected before registry state changes.\n\n**Verification:** Build `ZoomItSettingsInterop` and `PowerToys.DSC` in Debug x64, then run the focused ZoomIt DSC unit tests. Confirm valid formats save, invalid input fails, and the test leaves the user's registry settings unchanged.",
       "disposition": "proposed"
     },
     {
@@ -92,7 +74,23 @@
       "line": 64,
       "side": "RIGHT",
       "in_diff": true,
-      "body": "### Fix the StyleCop blank-line violation\n\n**Severity:** `low`\n\nThe exact upstream DSC build reports `SA1515` on this comment because it follows the `Workspaces` registration without a separating blank line. Add the required blank line before the ZoomIt comment and rerun the DSC build.",
+      "body": "### Fix the StyleCop blank-line violation\n\n**Severity:** `low`\n\nThe exact upstream DSC build reports `SA1515` on this comment because it follows the `Workspaces` registration without a separating blank line. Add the required blank line before the ZoomIt comment and rerun the DSC build.\n\n```suggestion\n\n            // ZoomIt stores its settings in the registry rather than in settings.json\n```",
+      "disposition": "proposed"
+    },
+    {
+      "id": "avoid-refresh-event-test-race",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Isolate the refresh-event test from the production event",
+      "confidence": {
+        "score": 96,
+        "rationale": "The test and the running ZoomIt instance open the same auto-reset event, and the test explicitly resets and waits on that shared event."
+      },
+      "path": "src/dsc/v3/PowerToys.DSC.UnitTests/SettingsResourceTests/SettingsResourceZoomItModuleTest.cs",
+      "line": 218,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Isolate the refresh-event test from the production event\n\n**Severity:** `medium`\n\nThis test creates, resets, and waits on `RefreshSettingsEventName`, the same auto-reset event ZoomIt creates and waits on. If ZoomIt is running, it and the test can consume the single signal, and `Reset()` can clear a pending production notification. Inject the refresh signal or event into `ZoomItSettingsFunctionData` and assert against a test-owned event or callback instead of touching the production name.",
       "disposition": "proposed"
     }
   ],
@@ -100,7 +98,7 @@
     {
       "id": "request-changes-50551",
       "type": "request_changes",
-      "label": "Request changes with four current-head review items",
+      "label": "Request changes with four current-head review findings",
       "primary": true,
       "confirm": true,
       "requiresApproval": true,
@@ -109,7 +107,7 @@
         "pullRequest": 50551,
         "event": "REQUEST_CHANGES",
         "head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
-        "body": "Thanks for adding registry-backed ZoomIt DSC settings. Before merge, please address the current-head validation and build issues: enforce the supported RecordScaling, nested hotkey, slider, and enum bounds before native writes; reject unknown RecordFormat values instead of treating them as MP4; add coverage for the native invalid-input rejection paths; and fix the SA1515 blank-line error reported by the exact upstream DSC build."
+        "body": "Please address the current-head findings: reject out-of-range RecordScaling values before writing, validate native RecordFormat input and cover the native save path, isolate the refresh-event test from ZoomIt's production auto-reset event, and fix the SA1515 blank line."
       },
       "note": "Current-head REQUEST_CHANGES draft only. Explicit maintainer approval and Publish-ApprovedReview.ps1 are required before any upstream write."
     }
@@ -124,6 +122,49 @@
         "src\\dsc\\v3\\PowerToys.DSC\\..\\..\\..\\..\\tools\\build\\build.cmd"
       ],
       "detail": "Restore, runner, Settings UI, and ZoomItSettingsInterop Debug x64 builds passed. PowerToys.DSC.csproj reached compilation but failed with SA1515 at DSCResources/SettingsResource.cs:64; one pre-existing CsWinRT1028 warning was also reported."
+    },
+    "suggestion_patch": {
+      "head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
+      "result": "passed",
+      "commands": [
+        "Independent add-zoomit-input-validation candidate: tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\dsc\\v3\\PowerToys.DSC /p:NoWarn=SA1515 (exit 0; only the separate diagnostic from untouched SettingsResource.cs:64 was suppressed).",
+        "Independent fix-settingsresource-stylecop candidate: tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\dsc\\v3\\PowerToys.DSC (exit 0).",
+        "Grouped add-zoomit-input-validation + fix-settingsresource-stylecop candidate: tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\dsc\\v3\\PowerToys.DSC (exit 0)."
+      ],
+      "detail": "All candidates were clean worktrees at the pinned upstream head with only the named literal suggestion block(s) applied. The RecordScaling-only candidate otherwise encounters the independently reported SA1515 at the untouched SettingsResource.cs:64; the command suppresses only that diagnostic to validate this suggestion separately.",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "add-zoomit-input-validation",
+        "fix-settingsresource-stylecop"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
+      "result": "passed",
+      "checked_comment_ids": [
+        "add-zoomit-input-validation",
+        "fix-settingsresource-stylecop"
+      ],
+      "files": [
+        {
+          "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/ZoomItSettingsFunctionData.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 173,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/dsc/v3/PowerToys.DSC/DSCResources/SettingsResource.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "crlf_count": 0,
+          "lf_only_count": 249,
+          "cr_only_count": 0
+        }
+      ]
     }
   },
   "source_activity": {
@@ -132,12 +173,12 @@
     "upstream_updated_at": "2026-09-13T06:08:59Z",
     "upstream_head_sha": "a8c0e5fc326981259c3bc344f224589bc930f449",
     "changed_file_count": 6,
-    "issue_comment_count": 1,
-    "review_count": 0,
-    "review_comment_count": 0,
-    "unresolved_review_thread_count": 0,
+    "issue_comment_count": 6,
+    "review_count": 2,
+    "review_comment_count": 1,
+    "unresolved_review_thread_count": 1,
     "reported_checks": {
-      "summary": "The PR intake comment is present; no upstream review or Azure Pipelines result was posted in the retrieved snapshot."
+      "summary": "Current head has 10 check runs: 3 failures (the PowerToys CI aggregate and x64/arm64 Release builds) and 7 successes. The latest author comment says they will fix the PR later."
     }
   },
   "fork_pr": {
@@ -158,13 +199,17 @@
     "copilot_review_count": 5,
     "final_copilot_new_comments": 0,
     "unresolved_copilot_threads": 0,
+    "latest_copilot_review_id": 5195022815,
+    "latest_copilot_review_submitted_at": "2026-09-14T07:32:35Z",
+    "latest_copilot_review_head_sha": "09372ff79dc379138b36a3eaed732a729a9819bb",
     "advancement_evidence": [
-      "Consumed the existing fork review PR 792 and confirmed zero unresolved Copilot threads; no duplicate review request was made.",
+      "Rechecked the existing fork review PR 792: its head still matches 09372ff79dc379138b36a3eaed732a729a9819bb, its latest matching Copilot review has zero new comments, and exhaustive GraphQL pagination reports zero unresolved fork Copilot threads.",
+      "No duplicate Copilot review request was made; the existing fork loop was reused as requested.",
       "Preserved the converged fork branch pr-iterate/50551-v2 at 09372ff79dc379138b36a3eaed732a729a9819bb.",
-      "Cleared the inherited vcpkg failure by removing the empty GIT_CONFIG_VALUE_3 environment entry before running the standard build scripts.",
-      "Exact upstream restore, runner, Settings UI, and ZoomIt interop Debug x64 builds passed.",
-      "Exact upstream DSC validation reached source compilation and exposed SA1515 at SettingsResource.cs:64.",
-      "Converted the resumable building checkpoint into a current-head approval-gated request_changes draft."
+      "Refreshed all upstream issue comments, reviews, review comments, and head checks; found one open current-head Copilot refresh-event race finding and a later author comment committing to fix the PR later.",
+      "Corrected the native RecordFormat finding to an out-of-diff companion because ZoomItSettingsInterop/ZoomItSettings.cpp is unchanged by this PR; merged its native-save test-coverage concern instead of claiming nonexistent native rejection branches.",
+      "Applied the literal RecordScaling guard and SA1515 blank-line suggestions to the exact upstream head and built PowerToys.DSC Debug x64 successfully.",
+      "The exact unmodified upstream DSC build remains failed at SA1515; no upstream write or dashboard publication occurred."
     ]
   }
 }
