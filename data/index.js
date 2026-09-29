@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-29T12:10:34.039791+08:00",
+  "generated_at": "2026-09-29T12:20:50.9870336+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1171
   },
   "impact": {
-    "as_of": "2026-09-29T12:10:34.039791+08:00",
+    "as_of": "2026-09-29T12:20:50.9870336+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -2032,18 +2032,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "reviewing_findings",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
+      "stage": "waiting_on_author",
+      "owes": "author",
+      "pending_author": true,
+      "waiting_since": "2026-09-22T01:10:11Z",
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 9,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post nine DEPiP review comments"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-General",
         "Ready for review"
@@ -2492,18 +2489,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 1,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Post general review notes"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-Shortcut Guide",
         "Ready for review"

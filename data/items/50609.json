@@ -4,70 +4,42 @@
   "number": 50609,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-19T01:46:00Z",
-  "evaluated_at": "2026-09-19T01:46:00Z",
-  "source_updated_at": "2026-09-17T02:18:24Z",
+  "generated_at": "2026-09-29T12:09:30.4868267+08:00",
+  "evaluated_at": "2026-09-29T12:09:30.4868267+08:00",
+  "source_updated_at": "2026-09-23T03:31:43+08:00",
   "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
   "title": "[Shortcut Guide] Manifest index creation refactor and bug fixing",
   "url": "https://github.com/microsoft/PowerToys/pull/50609",
-  "summary": "The current-head review is converged and the exact generator, UI, and unit-test projects build successfully. One coordinated out-of-diff request remains for approval to make manifest freshness and YAML validation deterministic.",
+  "summary": "The new upstream approval does not change the head or resolve the retained parsing and cache concerns. Isolated execution of the exact production generator confirmed that quoted and embedded hash characters are truncated and deleting a manifest leaves the index considered current. The broad prior draft is withheld while these concrete cases are separated from optional or insufficiently proven claims and validated as literal suggestions.",
   "status": {
-    "glyph": "DRAFT",
-    "label": "General review note ready for approval",
-    "detail": "One implementation-ready companion request is ready for maintainer approval."
+    "label": "Concrete defects reproduced; precise suggestions unfinished",
+    "detail": "Two control cases passed; both hash-character cases produced incorrect executable-name filters without an error, and the deleted-manifest case incorrectly skipped regeneration. These are generator-only probes, not full UI validation. Existing broad candidate changes and their review require a final per-finding audit.",
+    "glyph": "..."
   },
-  "next_action": "After explicit maintainer approval and a freshness re-check, post the general review note as a REQUEST_CHANGES review companion.",
+  "next_action": "Reconcile the latest review overview and retained candidate delta; extract and test minimal current RIGHT-side parsing/cache fixes, account for the remaining suppressed concerns, and finish the exact candidate build before proposing a review.",
   "confidence": "High",
-  "needs_revalidation": false,
-  "proposed_comments": [
-    {
-      "id": "harden-manifest-index-validation",
-      "kind": "companion",
-      "in_diff": false,
-      "disposition": "proposed",
-      "severity": "high",
-      "title": "Harden manifest index generation and validation",
-      "out_of_diff_reason": "The fix spans generator logic, project dependencies, startup callers, warnings, and regression tests; no single current RIGHT-side anchor covers the coordinated change.",
-      "body": "### Harden manifest index generation and validation\n\n**Severity:** `high`\n\n**Affected code:**\n- `src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ManifestIndexGenerator.cs`\n- `src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ShortcutGuide.IndexYmlGenerator.csproj`\n- `src/modules/ShortcutGuide/ShortcutGuide.Ui/Program.cs`\n- `src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuideXAML/App.xaml.cs`\n- `src/modules/ShortcutGuide/ShortcutGuide.UnitTests/IndexGeneratorTests/IndexGeneratorTests.cs`\n\n**Problem:** The current manifest-index pipeline still accepts stale or malformed YAML by comparing timestamps and partially parsing generated output. A manifest can change while preserving its timestamp, and malformed or partially quoted YAML can be treated as valid instead of failing fast.\n\n**Why it matters:** Shortcut Guide can consume an out-of-date or inconsistent manifest, while invalid YAML can silently hide an indexing regression during cache regeneration and overlay initialization.\n\n**Suggested change:**\n1. Compute and persist a deterministic fingerprint for the manifest set instead of relying on timestamps alone.\n2. Validate every YAML document with YamlDotNet and reject malformed data with an explicit error.\n3. Parse quoted values, comments, and booleans strictly, and emit an explicit empty `Index` list.\n4. Update the startup caller and project dependency to use the final validation path and preserve sanitized warnings.\n5. Add regression coverage for fingerprint stability, quoted comments, malformed YAML, and empty-index behavior.\n\n**Verification:** Build the IndexYmlGenerator, ShortcutGuide UI, and ShortcutGuide unit-test projects in Debug x64. Run the focused index-generator tests and confirm the new fingerprint, quoted-comment, malformed-YAML, and empty-index cases pass.",
-      "confidence": {
-        "score": 94,
-        "rationale": "The coordinated correction maps to the current head, the review loop is converged, and the exact generator, UI, and unit-test project builds pass."
-      }
-    }
-  ],
-  "actions": [
-    {
-      "id": "request-changes-50609",
-      "type": "request_changes",
-      "label": "Post general review notes",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50609,
-        "event": "REQUEST_CHANGES",
-        "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
-        "body": "Please address the manifest freshness and YAML validation gap described in the selected general review note."
-      },
-      "note": "Posts one general review note as a separate PR conversation comment after explicit approval."
-    }
-  ],
+  "needs_revalidation": true,
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
-    "phase": "review_drafted",
-    "checkpoint_at": "2026-09-19T01:46:00Z",
+    "phase": "review_in_progress",
+    "checkpoint_at": "2026-09-29T12:09:30.4868267+08:00",
     "fork_pr": 839,
     "fork_branch": "pr-iterate/50609",
-    "unresolved_copilot_threads": 0
+    "unresolved_copilot_threads": 0,
+    "latest_copilot_review_id": 5245083068,
+    "latest_copilot_review_head_sha": "7ecf7323ac2d75b196e56816530854d26d460773",
+    "resume_action": "audit-suppressed-concerns-and-validate-minimal-literal-candidates",
+    "context_revalidation": "Read all current discussion; the only new review is an upstream approval. The latest candidate review has zero new inline comments and no unresolved threads, but its overview retains four suppressed concerns that must be accounted for rather than summarized as clean."
   },
   "freshness": {
-    "status": "fresh",
+    "status": "grounding_and_suggestion_validation_pending",
     "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
-    "source_updated_at": "2026-09-17T02:18:24Z",
-    "evaluated_at": "2026-09-19T01:46:00Z"
+    "source_updated_at": "2026-09-23T03:31:43+08:00",
+    "evaluated_at": "2026-09-29T12:09:30.4868267+08:00"
   },
   "validation": {
     "suggestion_patch": {
@@ -85,19 +57,19 @@
       "files": []
     },
     "fork_review": {
-      "result": "passed",
       "latest_copilot_new_comments": 0,
-      "unresolved_copilot_threads": 0
+      "latest_review_id": 5245083068,
+      "detail": "Four suppressed overview concerns remain in the received review. No duplicate review request was made.",
+      "unresolved_copilot_threads": 0,
+      "result": "needs_finding_audit"
     },
     "upstream_head": {
-      "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd",
-      "result": "passed",
       "commands": [
-        "Build ShortcutGuide.IndexYmlGenerator",
-        "Build ShortcutGuide.Ui",
-        "Build ShortcutGuide.UnitTests"
+        "Compile exact pinned ManifestIndexGenerator.cs and IndexGenerationResult.cs; execute controlled input and deletion probes"
       ],
-      "details": "All three exact current-head projects built successfully with Visual Studio v180 targets."
+      "details": "Exact generator source compiled and ran in isolation. Prior full-build claims cannot be reassigned from a candidate containing six modified files; exact full-project validation is not newly established by this probe.",
+      "result": "pending",
+      "head_sha": "7c64db4b104f91dbfcc79b9a21a03fe2bf68d1bd"
     }
   },
   "fork": {
