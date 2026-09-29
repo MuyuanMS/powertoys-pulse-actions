@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-29T11:55:37.7270722+08:00",
+  "generated_at": "2026-09-29T12:10:34.039791+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1171
   },
   "impact": {
-    "as_of": "2026-09-29T11:55:37.7270722+08:00",
+    "as_of": "2026-09-29T12:10:34.039791+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -4895,7 +4895,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": true,
       "track": "review",
-      "stage": "waiting_copilot",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
@@ -6776,18 +6776,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 2,
-      "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with selected review comments"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-FancyZones"
       ],
