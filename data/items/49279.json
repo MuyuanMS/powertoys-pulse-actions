@@ -1,50 +1,369 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "id": "pr-49279",
   "number": 49279,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "internal",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-28T12:03:29.161259Z",
-  "evaluated_at": "2026-09-28T12:03:29.161259Z",
-  "source_updated_at": "2026-09-14T19:55:17Z",
+  "generated_at": "2026-09-29T05:30:14Z",
+  "evaluated_at": "2026-09-29T05:30:14Z",
+  "source_updated_at": "2026-09-29T04:43:00Z",
   "head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
   "title": "Add Mouse Button Lock (ClickLock for left, right, and middle mouse buttons)",
   "url": "https://github.com/microsoft/PowerToys/pull/49279",
-  "summary": "Exact-head review state is refreshed, but literal suggestion candidates are not yet validated because the shared MSBuild lock is held. Public findings and actions are withheld fail-closed until the lock clears and each candidate is validated.",
+  "summary": "Six new DSC documentation suggestions are ready for maintainer review: a two-part timing-example correction and four YAML version corrections. The four version-only edits also require the property-shape fixes already requested in the existing upstream review. Seven posted comments are preserved as history and will not be reposted. Native X-button follow-up work remains private pending isolated validation.",
   "status": {
     "glyph": "⏳",
-    "label": "Review in progress — exact suggestion validation blocked",
-    "detail": "Upstream head 47d749bd… and full discussion are refreshed; seven findings remain private while the shared build lock blocks candidate validation."
+    "label": "Follow-up review drafted — 6 documentation suggestions await approval",
+    "detail": "Only six new documentation suggestions are proposed. The existing upstream review remains unanswered; its posted comments are excluded from this action. Native follow-up validation is not complete."
   },
   "next_action": {
     "glyph": "⏳",
-    "label": "Run exact-head candidate validation after the shared build lock clears",
-    "reason": "Do not publish unvalidated suggestions or executable review actions."
+    "label": "Review six DSC documentation suggestions",
+    "reason": "Each member and atomic group was applied literally to the untouched pinned documentation blob and YAML-parsed without applying any posted suggestion."
   },
   "confidence": "High",
   "needs_revalidation": false,
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "deferred-injection-failure",
+      "kind": "inline",
+      "severity": "high",
+      "disposition": "posted",
+      "path": "src/modules/MouseUtils/MouseButtonLock/dllmain.cpp",
+      "side": "RIGHT",
+      "start_line": 121,
+      "line": 121,
+      "in_diff": true,
+      "body": "### Complete deferred releases before committing engine state\n\n**Severity:** `high`\n\n`PostThreadMessageW` succeeding here only means that the synthetic release was queued. `PerformDeferred` later discards the actual `SendInput` result, after the engine has already cleared `locked` and may have set `swallowNextRealUp`. If the deferred injection is rejected—for example across a UIPI boundary—the physical down has been suppressed, its paired up can be swallowed, and the OS can remain in a pressed state while the engine believes the lock was released.\n\nPlease make this a coordinated change across `MouseButtonLockCore.h`, `dllmain.cpp`, and `EngineTests.cpp`:\n\n1. Add a deferred-failure callback to `IButtonUpInjector`; register it from `Engine` and clear it in the engine destructor.\n2. Have `WinInjector::PerformDeferred` report a failed `InjectUpNow` through that callback while preserving the existing context-menu-dismiss intent.\n3. On deferred failure, clear `swallowNextRealUp` for a same-button release tap; for another release path, restore the logical lock so cleanup can be retried.\n4. Serialize engine operations and serialize `set_config` parsing/enforcement with `HandleMouseMessage`, so disabling a button cannot race with a stale `OnButtonUp` that latches afterward.\n5. Add regression tests for both deferred failure paths.\n\n**Verification:** Build Runner, Settings, Mouse Button Lock, its unit-test project, and its fuzz target; run `MouseButtonLock.UnitTests`; then perform an elevated-window/UIPI pass and confirm a failed synthetic up cannot leave a button stuck.",
+      "posted_comment_id": 4129696941,
+      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696941",
+      "posted_at": "2026-09-29T04:42:50Z",
+      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec"
+    },
+    {
+      "id": "gpo-refresh-notification",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "posted",
+      "path": "src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel.cs",
+      "side": "RIGHT",
+      "start_line": 1587,
+      "line": 1587,
+      "in_diff": true,
+      "body": "### Refresh the GPO-managed warning state\n\n**Severity:** `medium`\n\n`InitializeEnabledValues()` updates both the effective enabled value and `_mouseButtonLockEnabledStateIsGPOConfigured`, but this refresh only notifies the former. If policy is added or retracted while Settings is open, the enable card and `GPOInfoControl` can retain their previous policy-managed state until the page is recreated.\n\n```suggestion\n            OnPropertyChanged(nameof(IsMouseButtonLockEnabled));\n            OnPropertyChanged(nameof(IsMouseButtonLockEnabledGpoConfigured));\n```",
+      "posted_comment_id": 4129696946,
+      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696946",
+      "posted_at": "2026-09-29T04:42:50Z",
+      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec"
+    },
+    {
+      "id": "dsc-accessibility",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "posted",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 203,
+      "line": 206,
+      "in_diff": true,
+      "body": "### Use the serialized DSC property shape (5/5)\n\n**Severity:** `medium`\n\nThese settings serialize with their snake_case `JsonPropertyName` keys and `IntProperty`/`BoolProperty` wrapper objects. Using C# member names and scalar values makes this accessibility example produce the wrong module-settings shape.\n\n```suggestion\n          lmb_lock_enabled:\n            value: true\n          rmb_lock_enabled:\n            value: true\n          hold_duration_ms:\n            value: 2000\n          move_cancel_pixels:\n            value: 15\n```",
+      "posted_comment_id": 4129696956,
+      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696956",
+      "posted_at": "2026-09-29T04:42:50Z",
+      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
+      "selection_group": {
+        "id": "dsc-settings-shapes-posted",
+        "title": "Correct the five posted DSC property examples",
+        "position": 5,
+        "total": 5,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-hands-free",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "posted",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 184,
+      "line": 186,
+      "in_diff": true,
+      "body": "### Use the serialized DSC property shape (4/5)\n\n**Severity:** `medium`\n\nThese settings serialize with their snake_case `JsonPropertyName` keys and `IntProperty`/`BoolProperty` wrapper objects. Using C# member names and scalar values makes this quick-drag example produce the wrong module-settings shape.\n\n```suggestion\n          rmb_lock_enabled:\n            value: true\n          hold_duration_ms:\n            value: 600\n          move_cancel_pixels:\n            value: 3\n```",
+      "posted_comment_id": 4129696963,
+      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696963",
+      "posted_at": "2026-09-29T04:42:50Z",
+      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
+      "selection_group": {
+        "id": "dsc-settings-shapes-posted",
+        "title": "Correct the five posted DSC property examples",
+        "position": 4,
+        "total": 5,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-middle-button",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "posted",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 166,
+      "line": 166,
+      "in_diff": true,
+      "body": "### Use the serialized DSC property shape (3/5)\n\n**Severity:** `medium`\n\nThis setting serializes as `mmb_lock_enabled` containing a `BoolProperty` object. The current scalar C# member name does not match the module's settings contract.\n\n```suggestion\n          mmb_lock_enabled:\n            value: true\n```",
+      "posted_comment_id": 4129696967,
+      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696967",
+      "posted_at": "2026-09-29T04:42:50Z",
+      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
+      "selection_group": {
+        "id": "dsc-settings-shapes-posted",
+        "title": "Correct the five posted DSC property examples",
+        "position": 3,
+        "total": 5,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-winget",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "posted",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 142,
+      "line": 143,
+      "in_diff": true,
+      "body": "### Use the serialized DSC property shape (2/5)\n\n**Severity:** `medium`\n\nThese settings serialize with their snake_case `JsonPropertyName` keys and wrapper objects. Using C# member names and scalar values makes this WinGet configuration produce the wrong module-settings shape.\n\n```suggestion\n          rmb_lock_enabled:\n            value: true\n          hold_duration_ms:\n            value: 1000\n```",
+      "posted_comment_id": 4129696975,
+      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696975",
+      "posted_at": "2026-09-29T04:42:50Z",
+      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
+      "selection_group": {
+        "id": "dsc-settings-shapes-posted",
+        "title": "Correct the five posted DSC property examples",
+        "position": 2,
+        "total": 5,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-enable-buttons",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "posted",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 80,
+      "line": 82,
+      "in_diff": true,
+      "body": "### Use the serialized DSC property shape (1/5)\n\n**Severity:** `medium`\n\nThe direct-execution payload must match the module's serialized settings contract. These properties use snake_case JSON names and each value is wrapped by `BoolProperty`; the current C# member names and bare booleans will not create that shape.\n\n```suggestion\n            lmb_lock_enabled = @{ value = $true }\n            rmb_lock_enabled = @{ value = $true }\n            mmb_lock_enabled = @{ value = $true }\n```",
+      "posted_comment_id": 4129696980,
+      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696980",
+      "posted_at": "2026-09-29T04:42:50Z",
+      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
+      "selection_group": {
+        "id": "dsc-settings-shapes-posted",
+        "title": "Correct the five posted DSC property examples",
+        "position": 1,
+        "total": 5,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-timing-properties",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 109,
+      "line": 110,
+      "in_diff": true,
+      "body": "### (1/2) Use the typed property shape in the timing example\n\n**Severity:** `medium`\n\nThe generated DSC schema treats nested `settings` as a generic object, so it does not rename these CLR member names. `SettingsFunctionData<MouseButtonLockSettings>` deserializes the payload directly; these keys leave both values at their defaults. Use the serialized names and `IntProperty.value` objects below, and apply the paired version correction so this full example deserializes.\n\n```suggestion\n          hold_duration_ms:\n            value: 1600\n          move_cancel_pixels:\n            value: 10\n```",
+      "confidence": {
+        "score": 96,
+        "rationale": "The pinned sample's field names and scalar values do not match the typed resource input contract; the actual factory probe confirms defaults."
+      },
+      "selection_group": {
+        "id": "dsc-timing-payload-version",
+        "title": "Correct the timing DSC example's nested payload and version",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-timing-version",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 112,
+      "line": 112,
+      "in_diff": true,
+      "body": "### (2/2) Keep the DSC version scalar a string\n\n**Severity:** `medium`\n\nYAML parses unquoted `1.0` as a number, while the resource's typed `version` property is a string. `SettingsFunctionData<T>` rejects this original input before applying settings; quote the scalar and apply it with the paired property-shape correction.\n\n```suggestion\n        version: \"1.0\"\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The original full YAML payload throws during typed resource deserialization; the corrected quoted version succeeds."
+      },
+      "selection_group": {
+        "id": "dsc-timing-payload-version",
+        "title": "Correct the timing DSC example's nested payload and version",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-version-winget",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 145,
+      "line": 145,
+      "in_diff": true,
+      "body": "### (1/4) Keep the WinGet example's version a string\n\n**Severity:** `medium`\n\nThe YAML parser turns bare `1.0` into a number, but `BasePTModuleSettings.Version` is a string and the resource deserializes the nested object directly. The literal sample therefore fails before applying its settings. Quote this scalar; apply all four version fixes together and with the posted property-shape correction for this example.\n\nThis fixes the version token only; the separate property-shape correction already requested on this example is also required for a functional payload.\n\n```suggestion\n        version: \"1.0\"\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The actual SettingsResource factory rejects the original numeric version and accepts the corrected string version."
+      },
+      "selection_group": {
+        "id": "dsc-yaml-version-scalars",
+        "title": "Quote the version scalar in the remaining DSC YAML examples",
+        "position": 1,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-version-middle",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 168,
+      "line": 168,
+      "in_diff": true,
+      "body": "### (2/4) Keep the middle-button example's version a string\n\n**Severity:** `medium`\n\nThe YAML parser turns bare `1.0` into a number, but `BasePTModuleSettings.Version` is a string and the resource deserializes the nested object directly. The literal sample therefore fails before applying its settings. Quote this scalar; apply all four version fixes together and with the posted property-shape correction for this example.\n\nThis fixes the version token only; the separate property-shape correction already requested on this example is also required for a functional payload.\n\n```suggestion\n        version: \"1.0\"\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The actual SettingsResource factory rejects the original numeric version and accepts the corrected string version."
+      },
+      "selection_group": {
+        "id": "dsc-yaml-version-scalars",
+        "title": "Quote the version scalar in the remaining DSC YAML examples",
+        "position": 2,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-version-quick-drag",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 188,
+      "line": 188,
+      "in_diff": true,
+      "body": "### (3/4) Keep the quick-drag example's version a string\n\n**Severity:** `medium`\n\nThe YAML parser turns bare `1.0` into a number, but `BasePTModuleSettings.Version` is a string and the resource deserializes the nested object directly. The literal sample therefore fails before applying its settings. Quote this scalar; apply all four version fixes together and with the posted property-shape correction for this example.\n\nThis fixes the version token only; the separate property-shape correction already requested on this example is also required for a functional payload.\n\n```suggestion\n        version: \"1.0\"\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The actual SettingsResource factory rejects the original numeric version and accepts the corrected string version."
+      },
+      "selection_group": {
+        "id": "dsc-yaml-version-scalars",
+        "title": "Quote the version scalar in the remaining DSC YAML examples",
+        "position": 3,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "dsc-version-accessibility",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "doc/dsc/modules/MouseButtonLock.md",
+      "side": "RIGHT",
+      "start_line": 208,
+      "line": 208,
+      "in_diff": true,
+      "body": "### (4/4) Keep the accessibility example's version a string\n\n**Severity:** `medium`\n\nThe YAML parser turns bare `1.0` into a number, but `BasePTModuleSettings.Version` is a string and the resource deserializes the nested object directly. The literal sample therefore fails before applying its settings. Quote this scalar; apply all four version fixes together and with the posted property-shape correction for this example.\n\nThis fixes the version token only; the separate property-shape correction already requested on this example is also required for a functional payload.\n\n```suggestion\n        version: \"1.0\"\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The actual SettingsResource factory rejects the original numeric version and accepts the corrected string version."
+      },
+      "selection_group": {
+        "id": "dsc-yaml-version-scalars",
+        "title": "Quote the version scalar in the remaining DSC YAML examples",
+        "position": 4,
+        "total": 4,
+        "atomic": true
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49279-follow-up",
+      "type": "post_review",
+      "label": "Post 6 additional DSC documentation suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49279,
+        "pr": 49279,
+        "event": "COMMENT",
+        "head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec"
+      },
+      "note": "Draft only. Review 5347786149 and its seven comments were observed as already posted; this session did not create them. This action contains only six unposted DSC documentation suggestions."
+    }
+  ],
   "workflow": {
-    "phase": "review_in_progress",
-    "previous_phase": "review_drafted",
-    "checkpoint_at": "2026-09-28T12:03:29.161259Z",
+    "phase": "awaiting_review_approval",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-29T05:30:14Z",
     "advancement_evidence": [
-      "Refreshed live upstream head and full REST discussion: 18 issue comments, 6 reviews, 6 inline comments.",
-      "Confirmed fork Copilot review is reusable at 1173fecfc144e03a6c389b8191b36dda235caaa6 with no newer matching review and zero unresolved Copilot threads.",
-      "Confirmed all six target blobs are LF-only and exact upstream affected projects were previously built.",
-      "Withheld all public findings/actions because new literal suggestion candidates require exact-head validation and the shared MSBuild lock is currently held."
+      "Rechecked every paginated upstream issue comment, pull-request review, inline review comment, and GraphQL review-thread cursor; found the live changes-requested review 5347786149 and seven posted comments on the pinned head.",
+      "Rechecked the saved fork Copilot review head 1173fecfc144e03a6c389b8191b36dda235caaa6 after review 5214025081; no newer matching review or unresolved fork Copilot thread exists.",
+      "Applied all six already-posted suggestions plus the 13 drafted suggestion blocks to the exact upstream head in memory; all six affected source files match the isolated candidate.",
+      "Built MouseButtonLock and passed all 18 native unit tests, including the no-context-menu regression.",
+      "Built and ran the actual DSC SettingsResource schema/function-data probe: all 17 payload cases passed (five numeric-version YAML inputs rejected, five isolated CLR-name inputs defaulted, and six corrected payloads applied).",
+      "Parsed all five original and five corrected full YAML resource examples with PyYAML; their extracted settings payloads exactly match the 10 actual factory-probe inputs. PowerShell ConvertTo-Json output for both original and corrected direct-execution examples also matches the corresponding factory-probe payloads.",
+      "Traced GetState/SetState/TestState/Schema through SettingsResource and SettingsFunctionData<T>; the probe invokes the same typed CreateFunctionData deserializer and generated schema without writing local settings.",
+      "Re-ran MouseButtonLock.UnitTests from the combined exact-head candidate: 18/18 passed, including ReleaseAllCanPreserveChordedClick and TapToReleaseInjectionFailureDropsLockAndPassesThrough. Re-ran the DSC SettingsResource probe with PT49279_DSC_PROBE_INPUTS configured: 1/1 passed across 17 payload cases.",
+      "Reconciled the GPO test claim: the Settings.UI.UnitTests build is blocked by missing WinUI XBF/PRI resources, and the emitted assembly lacks the new focused test. The GPO source binding finding was already posted as review comment 4129696946; no independent GPO test result is claimed.",
+      "Validated each of the six new DSC suggestion members and both atomic groups directly against the untouched upstream documentation blob; no previously posted suggestion was applied. Evidence: <local-artifact>"
     ]
   },
   "freshness": {
     "headRefOid": "47d749bd371e6db18502d34f9b8f619f738c97ec",
-    "updatedAt": "2026-09-24T17:47:08Z",
+    "updatedAt": "2026-09-29T04:43:00Z",
     "latestCopilotReviewAt": "2026-09-15T18:12:03Z",
     "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-28T12:03:29.161259Z"
+    "checkedAt": "2026-09-29T05:21:43Z",
+    "upstreamReviewDecision": "CHANGES_REQUESTED",
+    "existingReviewId": 5347786149,
+    "existingReviewAt": "2026-09-29T04:42:59Z",
+    "upstreamReviewThreads": {
+      "total": 10,
+      "unresolved": 8,
+      "outdated": 3,
+      "newUnresolvedFromExistingReview": 7,
+      "authorRepliedAfterExistingReview": false
+    }
   },
   "fork_pr": {
     "number": 695,
@@ -57,19 +376,120 @@
   "validation": {
     "upstream_head": {
       "head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
-      "result": "previously_passed",
-      "details": "Exact upstream Settings UI, native, fuzz, and unit-test projects previously built successfully."
+      "result": "partial",
+      "details": "This findings draft is documentation-only. Exact untouched-blob literal/YAML validation passed for all six executable suggestions. Historical native/DSC results are retained in source_builds but are not used to claim independent validation for removed X-button or GPO suggestions."
     },
     "suggestions": {
-      "result": "blocked",
-      "details": "Candidate validation deferred while <PowerToysCheckout>\\.pr-review-build.lock is held by active MSBuild processes.",
-      "old_apply_ready": 0,
-      "new_apply_ready": 0
-    }
+      "result": "passed",
+      "details": "Six unposted DSC documentation suggestions remain. Each member, each atomic group, and the six-suggestion set were applied independently to the untouched pinned blob and parsed as YAML. The four version fixes declare their dependency on the separately posted property-shape corrections.",
+      "old_apply_ready": 6,
+      "new_apply_ready": 6
+    },
+    "suggestion_patch": {
+      "head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
+      "result": "passed",
+      "checked_at": "2026-09-29T05:30:14Z",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "dsc-timing-properties",
+        "dsc-timing-version",
+        "dsc-version-accessibility",
+        "dsc-version-middle",
+        "dsc-version-quick-drag",
+        "dsc-version-winget"
+      ],
+      "details": "Documentation-only literal validation from the untouched upstream blob. No posted suggestion was applied. Both atomic groups and every member parsed successfully; timing group is functionally complete, while the four-version group fixes only the independent string-token defect and retains an explicit dependency on posted property-shape corrections."
+    },
+    "line_ending_safety": {
+      "head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
+      "result": "passed",
+      "checked_at": "2026-09-29T05:30:14Z",
+      "checked_comment_ids": [
+        "dsc-timing-properties",
+        "dsc-timing-version",
+        "dsc-version-accessibility",
+        "dsc-version-middle",
+        "dsc-version-quick-drag",
+        "dsc-version-winget"
+      ],
+      "files": [
+        {
+          "path": "doc/dsc/modules/MouseButtonLock.md",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false
+        }
+      ]
+    },
+    "source_builds": [
+      {
+        "target": "MouseButtonLock native module",
+        "result": "passed",
+        "command": "tools/build/build.cmd -Platform x64 -Configuration Debug"
+      },
+      {
+        "target": "MouseButtonLock.UnitTests",
+        "result": "passed",
+        "command": "tools/build/build.cmd -Platform x64 -Configuration Debug; vstest.console.exe",
+        "passed": 18,
+        "failed": 0
+      },
+      {
+        "target": "Settings.UI GPO notification test",
+        "result": "blocked",
+        "command": "vstest.console.exe Settings.UI.UnitTests.dll /TestCaseFilter:FullyQualifiedName~MouseUtilsViewModelGpoNotificationTests",
+        "reason": "The Settings.UI.UnitTests project failed during Common.UI.Controls PRI175/PRI252 generation because KeyCharPresenter.xbf/PowerToys.Settings.pri was missing. The emitted test assembly does not contain MouseUtilsViewModelGpoNotificationTests, so no GPO-specific test pass is claimed."
+      },
+      {
+        "target": "DSC SettingsResource schema/function-data probe",
+        "result": "passed",
+        "command": "tools/build/build.cmd -Platform x64 -Configuration Debug; vstest.console.exe PowerToys.DSC.UnitTests.dll /TestCaseFilter:FullyQualifiedName~TemporaryMouseButtonLockDscInputProbe",
+        "passed": 1,
+        "payload_cases": 17,
+        "original_yaml_numeric_version_rejections": 5,
+        "isolated_pascal_case_defaults": 5,
+        "corrected_payloads": 6,
+        "literal_full_yaml_documents_parsed": 5,
+        "schema_accepts_all_17_generic_nested_objects": true
+      },
+      {
+        "target": "Full Settings UI and runner packaging",
+        "result": "blocked",
+        "reason": "The standard full build fails at WinUI PRI175/PRI252 because Common.UI.Controls\\Controls\\KeyVisual\\KeyCharPresenter.xbf and the Common.UI.Controls PRI resource are missing. No GPO-specific test pass is claimed."
+      }
+    ]
   },
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
+    "detail": "This resume session performed no upstream write. A live review by MuyuanMS (5347786149) was already present and is recorded above; this draft excludes its seven existing comments."
   },
-  "phase": "reviewing_findings"
+  "phase": "reviewing_findings",
+  "existing_upstream_review": {
+    "id": 5347786149,
+    "user": "MuyuanMS",
+    "state": "CHANGES_REQUESTED",
+    "submitted_at": "2026-09-29T04:42:59Z",
+    "head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
+    "url": "https://github.com/microsoft/PowerToys/pull/49279#pullrequestreview-5347786149",
+    "body": "Please address the release-completion race, refresh the Mouse Button Lock GPO binding state, and correct the DSC examples as noted inline.",
+    "posted_comment_ids": [
+      4129696941,
+      4129696946,
+      4129696956,
+      4129696963,
+      4129696967,
+      4129696975,
+      4129696980
+    ]
+  },
+  "safe_actions": [
+    {
+      "id": "post-review-49279-follow-up",
+      "upstream_write": true,
+      "approval_required": true,
+      "publisher_required": "Publish-ApprovedReview.ps1",
+      "validator_required": "Test-ReviewData.ps1",
+      "head_pinned": "47d749bd371e6db18502d34f9b8f619f738c97ec"
+    }
+  ]
 }
