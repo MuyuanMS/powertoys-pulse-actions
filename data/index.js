@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-29T15:40:33.0760791+08:00",
+  "generated_at": "2026-09-29T16:01:46.1697121+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 137,
-    "open_issues": 12713,
+    "open_issues": 12714,
     "community": 11891,
     "artifacts": 1171
   },
   "impact": {
-    "as_of": "2026-09-29T15:40:33.0760791+08:00",
+    "as_of": "2026-09-29T16:01:46.1697121+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1316,7 +1316,7 @@ window.BOARD_INDEX = {
       "title": "[Advanced Paste] Add headless CLI for Advanced Paste actions",
       "author": "MuyuanMS",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": true,
       "is_cmdpal": false,
@@ -1331,13 +1331,14 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Author-Feedback",
         "Product-Advanced Paste",
         "Area-CLI"
       ],
       "assignees": [],
       "created_at": "2026-09-28T03:00:55Z",
-      "updated_at": "2026-09-29T03:25:15Z",
-      "comments": 0,
+      "updated_at": "2026-09-29T07:42:58Z",
+      "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -3064,7 +3065,7 @@ window.BOARD_INDEX = {
       "title": "[Settings] Add Settings CLI",
       "author": "MuyuanMS",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": true,
       "is_cmdpal": false,
@@ -3081,12 +3082,13 @@ window.BOARD_INDEX = {
       "labels": [
         "Product-Settings",
         "Product-General",
-        "Area-CLI"
+        "Area-CLI",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-09-11T06:25:44Z",
-      "updated_at": "2026-09-28T10:34:57Z",
-      "comments": 2,
+      "updated_at": "2026-09-29T07:35:34Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -4036,8 +4038,8 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 8,
       "primary_action": {
-        "type": "request_changes",
-        "label": "Request changes with eight comments and four inline suggestions"
+        "type": "post_review",
+        "label": "Post selected comments and four inline suggestions"
       },
       "labels": [
         "Needs-Author-Feedback",
@@ -152315,6 +152317,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50861",
+      "kind": "issue",
+      "number": 50861,
+      "url": "https://github.com/microsoft/PowerToys/issues/50861",
+      "title": "Customization the order of the function list",
+      "author": "ethanpixar",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-29T07:48:05Z",
+      "updated_at": "2026-09-29T07:48:05Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-50860",
       "kind": "issue",
       "number": 50860,
@@ -157022,7 +157055,7 @@ window.BOARD_INDEX = {
       "author": "daverayment",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": false,
       "track": null,
@@ -164857,8 +164890,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-09-29T07:22:15Z",
-      "comments": 177,
+      "updated_at": "2026-09-29T07:54:04Z",
+      "comments": 178,
       "priority": null
     },
     {
