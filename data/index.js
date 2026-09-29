@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-29T17:43:22.1565616+08:00",
+  "generated_at": "2026-09-29T17:59:49.4039638+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 137,
     "open_issues": 12717,
     "community": 11893,
-    "artifacts": 1170
+    "artifacts": 1169
   },
   "impact": {
-    "as_of": "2026-09-29T17:43:22.1565616+08:00",
+    "as_of": "2026-09-29T17:59:49.4039638+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -538,7 +538,6 @@ window.BOARD_INDEX = {
     50788,
     50785,
     50780,
-    50777,
     50774,
     50773,
     50771,
@@ -3151,7 +3150,7 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "review",
       "stage": "review_in_progress",
-      "owes": "maintainer",
+      "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
@@ -3178,7 +3177,8 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50497-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/780"
-      }
+      },
+      "needs_revalidation": true
     },
     {
       "id": "pr-50493",
@@ -4225,15 +4225,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post the atomic Cursor Wrap suggestion as COMMENT"
+      },
       "labels": [
         "0.102"
       ],
@@ -154584,14 +154587,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "triage",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "reproduce",
-        "label": "Reproduce Dock blank content"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -154601,8 +154601,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-24T22:35:18Z",
-      "updated_at": "2026-09-27T03:49:44Z",
-      "comments": 13,
+      "updated_at": "2026-09-29T09:56:39Z",
+      "comments": 14,
       "priority": null
     },
     {
