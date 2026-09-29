@@ -4,206 +4,218 @@
   "number": 49226,
   "kind": "pr",
   "track": "review",
-  "url": "https://github.com/microsoft/PowerToys/pull/49226",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-29T09:27:25Z",
+  "evaluated_at": "2026-09-29T09:27:25Z",
+  "source_updated_at": "2026-09-09T15:52:49Z",
+  "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
   "title": "[MouseWithoutBorders] Add theme-adaptive system tray icon setting",
+  "url": "https://github.com/microsoft/PowerToys/pull/49226",
+  "author": "JRScott812",
   "authorAssociation": "CONTRIBUTOR",
   "isCommunity": true,
   "isMine": false,
   "state": "OPEN",
   "draft": false,
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
   "confidence": "High",
   "processVerdict": "proceed",
-  "generated_at": "2026-09-28T13:00:00Z",
-  "evaluated_at": "2026-09-28T13:00:00Z",
-  "source_updated_at": "2026-09-09T15:52:49Z",
-  "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
-  "summary": "Recovered draft needs semantic revalidation of bitmap ownership and cross-module claims. Compilation alone did not establish these defects; unsupported proposals are withheld.",
+  "summary": "One localized suggestion keeps cursor and tray initialization running if WMI-backed theme monitoring cannot start. The unsafe shared-bitmap disposal claim and unsupported or optional earlier findings remain withdrawn.",
   "status": {
-    "detail": "Recovered draft needs semantic revalidation of bitmap ownership and cross-module claims. Compilation alone did not establish these defects; unsupported proposals are withheld.",
-    "glyph": "...",
-    "label": "Review evidence incomplete"
+    "glyph": "📝",
+    "label": "One suggestion awaits approval",
+    "detail": "One nonduplicate fail-open suggestion is grounded at current RIGHT line 738 and passed exact literal candidate validation."
   },
-  "next_action": "Finish the named evidence gap and re-ground the preserved candidate before drafting an upstream action.",
-  "needs_revalidation": true,
-  "source": {
-    "repository": "microsoft/PowerToys",
-    "headRefOid": "502db9b699572f54fefb65ec2829797fd02eec9e",
-    "updatedAt": "2026-09-09T15:52:49Z"
-  },
-  "freshness": {
-    "status": "fresh",
-    "headRefOid": "502db9b699572f54fefb65ec2829797fd02eec9e",
-    "updatedAt": "2026-09-09T15:52:49Z",
-    "latestCopilotReviewAt": "2026-09-09T20:34:27Z",
-    "latestForkCommitAt": "2026-09-09T20:24:58Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-28T13:00:00Z"
+  "next_action": {
+    "glyph": "📝",
+    "label": "Approve, edit, or hold the drafted COMMENT review",
+    "reason": "The draft contains only the localized ThemeListener construction guard. Explicit maintainer approval and a final publisher freshness check are required before any upstream write."
   },
   "proposed_comments": [
     {
-      "id": "make-theme-listener-initialization-transactional",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Make theme-listener initialization transactional",
-      "body": "### Make theme-listener initialization transactional\n\n**Severity:** `high`\n\nIf either watcher start or the initial theme read fails, the constructor can leave the earlier watcher running even though `ThemeListener` construction aborts. Because Mouse Without Borders creates this listener during tray startup, clean up both local watchers before rethrowing so a failed initialization cannot leak WMI subscriptions.\n\n```suggestion\nvar newAppThemeWatcher = new ManagementEventWatcher(appThemeQuery);\n\nvar systemThemeQuery = new WqlEventQuery(\n    $\"SELECT * FROM RegistryValueChangeEvent WHERE Hive='HKEY_USERS' AND \" +\n    $\"KeyPath='{keyPath}' AND ValueName='{ThemeHelpers.HValueSystemTheme}'\");\nvar newSystemThemeWatcher = new ManagementEventWatcher(systemThemeQuery);\n\ntry\n{\n    newAppThemeWatcher.EventArrived += OnAppThemeRegistryChanged;\n    newSystemThemeWatcher.EventArrived += OnSystemThemeRegistryChanged;\n\n    newAppThemeWatcher.Start();\n    newSystemThemeWatcher.Start();\n\n    AppTheme = ThemeHelpers.GetAppTheme();\n    SystemTheme = ThemeHelpers.GetSystemTheme();\n\n    appThemeWatcher = newAppThemeWatcher;\n    systemThemeWatcher = newSystemThemeWatcher;\n}\ncatch\n{\n    newAppThemeWatcher.EventArrived -= OnAppThemeRegistryChanged;\n    newSystemThemeWatcher.EventArrived -= OnSystemThemeRegistryChanged;\n    newAppThemeWatcher.Dispose();\n    newSystemThemeWatcher.Dispose();\n    throw;\n}\n```",
-      "suggestion": "var newAppThemeWatcher = new ManagementEventWatcher(appThemeQuery);\n\nvar systemThemeQuery = new WqlEventQuery(\n    $\"SELECT * FROM RegistryValueChangeEvent WHERE Hive='HKEY_USERS' AND \" +\n    $\"KeyPath='{keyPath}' AND ValueName='{ThemeHelpers.HValueSystemTheme}'\");\nvar newSystemThemeWatcher = new ManagementEventWatcher(systemThemeQuery);\n\ntry\n{\n    newAppThemeWatcher.EventArrived += OnAppThemeRegistryChanged;\n    newSystemThemeWatcher.EventArrived += OnSystemThemeRegistryChanged;\n\n    newAppThemeWatcher.Start();\n    newSystemThemeWatcher.Start();\n\n    AppTheme = ThemeHelpers.GetAppTheme();\n    SystemTheme = ThemeHelpers.GetSystemTheme();\n\n    appThemeWatcher = newAppThemeWatcher;\n    systemThemeWatcher = newSystemThemeWatcher;\n}\ncatch\n{\n    newAppThemeWatcher.EventArrived -= OnAppThemeRegistryChanged;\n    newSystemThemeWatcher.EventArrived -= OnSystemThemeRegistryChanged;\n    newAppThemeWatcher.Dispose();\n    newSystemThemeWatcher.Dispose();\n    throw;\n}",
-      "path": "src/common/ManagedCommon/ThemeListener.cs",
-      "start_line": 37,
-      "line": 49,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "withdrawn",
-      "confidence": {
-        "score": 96,
-        "rationale": "The upstream constructor starts watchers sequentially without rollback, while the changed Mouse Without Borders startup path constructs the listener directly during form initialization. The exact candidate replacement was built successfully."
-      }
-    },
-    {
-      "id": "dispose-tray-bitmap",
-      "kind": "inline",
-      "severity": "high",
-      "title": "Dispose the selected tray bitmap on every path",
-      "body": "### Dispose the selected tray bitmap on every path\n\n**Severity:** `high`\n\n`ChangeIcon` uses `Images.notify_default` when adaptive icons are disabled, but the current cleanup is conditional on `disposeBitmap`. Repeated normal tray updates therefore retain each bitmap-backed GDI object. Dispose the selected bitmap after creating the icon, while preserving the existing icon-handle ownership boundary.\n\n```suggestion\nbm.Dispose();\n```",
-      "suggestion": "bm.Dispose();",
-      "path": "src/modules/MouseWithoutBorders/App/Form/frmScreen.cs",
-      "start_line": 718,
-      "line": 721,
-      "side": "RIGHT",
-      "in_diff": true,
-      "disposition": "withdrawn",
-      "confidence": {
-        "score": 96,
-        "rationale": "The default bitmap path leaves the selected bitmap undisposed. The one-line exact candidate and combined candidate both built successfully."
-      }
-    },
-    {
-      "id": "guard-theme-read",
+      "id": "fail-open-when-theme-listener-startup-fails",
       "kind": "inline",
       "severity": "medium",
-      "title": "Avoid the system-theme read when adaptive icons are disabled",
-      "body": "### Avoid the system-theme read when adaptive icons are disabled\n\n**Severity:** `medium`\n\nThe non-adaptive path still calls `GetSystemTheme()` only to compute `darkShell`, even though the drawing branches already use the fixed non-adaptive colors. Guard this registry read with `themeAdaptive` so disabling the feature does not perform unnecessary theme-service work on every icon refresh.\n\n```suggestion\nvar darkShell = themeAdaptive && ManagedCommon.ThemeHelpers.GetSystemTheme() == ManagedCommon.AppTheme.Dark;\n```",
-      "suggestion": "var darkShell = themeAdaptive && ManagedCommon.ThemeHelpers.GetSystemTheme() == ManagedCommon.AppTheme.Dark;",
+      "title": "Keep tray setup running when theme monitoring fails",
+      "body": "### Keep tray setup running when theme monitoring fails\n\n**Severity:** `medium`\n\n`ThemeListener` starts WMI watchers and can throw when theme monitoring is unavailable. This new construction runs during `FrmScreen_Load` before cursor setup and `UpdateNotifyIcon()`, so letting the exception reach the outer catch skips the rest of that initialization. The settings reload path also calls this method on the UI thread.\n\nCatch and log construction failure locally, then return so the caller continues with the currently selected icon. This matches the existing fail-open behavior used by the Peek caller.\n\n```suggestion\n            try\n            {\n                themeListener = new ManagedCommon.ThemeListener();\n            }\n            catch (Exception e)\n            {\n                Logger.Log(e);\n                return;\n            }\n```",
       "path": "src/modules/MouseWithoutBorders/App/Form/frmScreen.cs",
-      "start_line": 672,
-      "line": 672,
+      "start_line": 738,
+      "line": 738,
       "side": "RIGHT",
       "in_diff": true,
-      "disposition": "withdrawn",
       "confidence": {
-        "score": 92,
-        "rationale": "The non-adaptive branches use fixed colors, so the unconditional theme read is unnecessary. The exact one-line candidate and combined candidate both built successfully."
-      }
-    },
-    {
-      "id": "limit-scope-and-fix-tray-icon-lifetimes",
-      "kind": "companion",
-      "severity": "high",
-      "title": "Keep theme-adaptive fan-out scoped to implemented consumers",
-      "body": "**Affected code:** `src/settings-ui/Settings.UI.Library/ThemeAdaptiveTrayIconFanOut.cs`, `ApplyToModules` and its module-specific helpers.\n\n**Severity:** `high`\n\n**Problem:** The new general setting writes and broadcasts `show_theme_adaptive_tray_icon` to Awake, ZoomIt, PowerDisplay, and Mouse Without Borders, but this change only proves the Mouse Without Borders consumer. A setting exposed as a cross-module master switch must either have a complete consumer and refresh path in every named module or be scoped to the modules implemented here; otherwise users can enable a setting that silently has no effect.\n\n**Why it matters:** Users can see and enable a global setting while one or more named modules ignore it, leaving tray behavior inconsistent and making the setting contract misleading.\n\n**Suggested change:**\n1. Add and test the missing module readers and refresh paths, or remove the unsupported fan-out and adjust the setting text to the implemented module set.\n2. In `ApplyToModules`, keep the invoked helpers aligned with consumers that deserialize and apply the property.\n3. Toggle the setting for each named module and confirm every supported consumer changes its tray icon.\n\n**Verification:** Build the exact upstream Settings and module projects, then perform the per-module toggle test. Confirm supported consumers refresh and unsupported modules are no longer advertised.",
-      "out_of_diff_reason": "The correction requires coordinated module consumers, refresh paths, and localized setting scope/text decisions across Settings.UI.Library and module implementations; no single current RIGHT-side range can safely apply the complete fix.",
-      "outOfDiffReason": "The correction requires coordinated module consumers, refresh paths, and localized setting scope/text decisions across Settings.UI.Library and module implementations; no single current RIGHT-side range can safely apply the complete fix.",
-      "in_diff": false,
-      "disposition": "withdrawn",
-      "confidence": {
-        "score": 94,
-        "rationale": "ApplyToModules names four module consumers, but the current change does not establish a complete cross-module contract. This is intentionally retained as implementation-ready prose after extracting the two localized tray fixes."
-      }
+        "score": 97,
+        "rationale": "The constructor starts WMI watchers and can throw; direct current-head control flow shows the exception reaches FrmScreen_Load's outer catch before cursor creation and UpdateNotifyIcon, while the repository's Peek caller already catches the same constructor."
+      },
+      "disposition": "proposed"
     }
   ],
+  "actions": [
+    {
+      "id": "post-review-49226-theme-listener-fail-open",
+      "type": "post_review",
+      "label": "Post the ThemeListener fail-open suggestion",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49226,
+        "pr": 49226,
+        "event": "COMMENT",
+        "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e"
+      },
+      "note": "Draft only. The validation proves current control flow and compilation of the literal patch; no real WMI outage or system-theme change was induced."
+    }
+  ],
+  "phase0": {
+    "authorAssociation": "CONTRIBUTOR",
+    "disposition": "Proceed",
+    "processGates": "CLA and current intake checks pass. The author supplied a Mouse Without Borders behavior video and reports a successful Settings build; no additional process request is proposed."
+  },
+  "source_activity": {
+    "state": "OPEN",
+    "draft": false,
+    "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
+    "base_sha": "d5fe397b058625700f8ba6df68abd10ce93d5e82",
+    "commit_count": 12,
+    "changed_file_count": 19,
+    "additions": 517,
+    "deletions": 35,
+    "issue_comment_count": 4,
+    "review_count": 0,
+    "review_comment_count": 0,
+    "review_thread_count": 0,
+    "unresolved_review_threads": 0,
+    "unresolved_copilot_threads": 0
+  },
+  "freshness": {
+    "evaluated_at": "2026-09-29T09:27:25Z",
+    "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
+    "head_updated_at": "2026-09-09T15:52:49Z",
+    "status": "fresh_current_head"
+  },
+  "fork_pr": {
+    "number": 728,
+    "repo": "MuyuanMS/PowerToys",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/728",
+    "state": "OPEN",
+    "branch": "pr-iterate/49226",
+    "head_sha": "4d216a1e602f18f425648e808d320b96d8b2c54b",
+    "base_sha": "071c25e115e8097117e26f6fcfe9901301307f7a"
+  },
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "previous_phase": "review_in_progress",
+    "checkpoint_at": "2026-09-29T09:27:25Z",
+    "reviewed_upstream_head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
+    "consumed_review_id": 5159573865,
+    "consumed_review_head_sha": "4d216a1e602f18f425648e808d320b96d8b2c54b",
+    "consumed_review_new_comments": 0,
+    "fork_reviews_scanned": 9,
+    "fork_copilot_rounds": 5,
+    "fork_review_comments_scanned": 15,
+    "fork_thread_count": 11,
+    "unresolved_fork_threads": 0,
+    "thread_cursors_exhausted": true,
+    "duplicate_review_request_avoided": true,
+    "automated_review_round_limit_reached": false,
+    "suppressed_findings_after_round_five_not_processed": true,
+    "resume_action": "await_explicit_publication_approval"
+  },
   "validation": {
+    "fork_head": {
+      "head_sha": "4d216a1e602f18f425648e808d320b96d8b2c54b",
+      "result": "converged",
+      "latest_review_id": 5159573865,
+      "latest_review_submitted_at": "2026-09-09T20:34:27Z",
+      "latest_review_new_findings": 0,
+      "unresolved_threads": 0
+    },
     "upstream_head": {
       "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
       "result": "passed",
-      "commands": [
-        "git diff --check 502db9b699572f54fefb65ec2829797fd02eec9e",
-        "Exact candidate application and current-diff validation"
-      ],
-      "details": "Pinned upstream source and diff were re-read at 502db9b699572f54fefb65ec2829797fd02eec9e. Exact raw-blob EOL gates passed for both suggestion target paths."
-    },
-    "fork_build": {
-      "result": "passed",
-      "configuration": "x64 Debug",
-      "evidence": [
-        "build-essentials.cmd",
-        "Mouse Without Borders build",
-        "PowerToys.exe and Mouse Without Borders outputs exist"
-      ]
-    },
-    "suggestionPatch": {
-      "result": "passed",
-      "independent": [
-        "make-theme-listener-initialization-transactional",
-        "dispose-tray-bitmap",
-        "guard-theme-read"
-      ],
-      "combined": "Three independent literal candidates and the combined candidate all passed git diff --check. ManagedCommon and Mouse Without Borders exact-head builds passed under Visual Studio MSBuild x64 Debug; the unrelated ZoomIt C4819 warning was temporarily suppressed only in Cpp.Build.props and restored."
+      "command": "tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\modules\\MouseWithoutBorders\\App /t:Rebuild",
+      "environment": "POWERTOYS_DISABLE_SPECTRE=1; CL=/utf-8",
+      "output": "x64\\Debug\\PowerToys.MouseWithoutBorders.exe",
+      "output_size": 301568,
+      "errors_log_bytes": 0
     },
     "suggestion_patch": {
       "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
       "result": "passed",
       "minimal_ranges_reviewed": true,
       "applied_comment_ids": [
-        "make-theme-listener-initialization-transactional",
-        "dispose-tray-bitmap",
-        "guard-theme-read"
-      ]
+        "fail-open-when-theme-listener-startup-fails"
+      ],
+      "patch_sha256": "d6bc3a9ab865bf58c0fa5cc43eca291dc061ddffa799de6ca16794fed4d900f8",
+      "command": "tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\modules\\MouseWithoutBorders\\App /t:Rebuild",
+      "environment": "POWERTOYS_DISABLE_SPECTRE=1; CL=/utf-8",
+      "output": "x64\\Debug\\PowerToys.MouseWithoutBorders.exe",
+      "output_size": 301568,
+      "errors_log_bytes": 0,
+      "limitations": "No real WMI failure, theme change, multi-PC session, or live settings reload was induced. Validation covers exact source control flow, repository precedent, uniform raw target EOL, diff integrity, and compilation of the verbatim minimal replacement."
     },
     "line_ending_safety": {
       "head_sha": "502db9b699572f54fefb65ec2829797fd02eec9e",
       "result": "passed",
       "checked_comment_ids": [
-        "make-theme-listener-initialization-transactional",
-        "dispose-tray-bitmap",
-        "guard-theme-read"
+        "fail-open-when-theme-listener-startup-fails"
       ],
       "files": [
         {
-          "path": "src/common/ManagedCommon/ThemeListener.cs",
-          "result": "passed",
-          "line_endings": "lf"
-        },
-        {
           "path": "src/modules/MouseWithoutBorders/App/Form/frmScreen.cs",
           "result": "passed",
-          "line_endings": "lf"
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "crlf_count": 0,
+          "lf_only_count": 1313,
+          "cr_only_count": 0
         }
       ]
+    },
+    "payload_validation": {
+      "result": "passed",
+      "command": "Test-ReviewData.ps1 -CheckGitHub -RequireFindingGrounding",
+      "validated_prs": 1
     }
   },
-  "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-29T11:12:47.758926+08:00",
-    "previous_phase": "converged_draft_ready",
-    "advancement_evidence": [
-      "Fork PR 728 has five completed Copilot reviews; the latest review at 2026-09-09T20:34:27Z returned zero new comments.",
-      "The durable fork state reports zero unresolved Copilot threads.",
-      "The upstream head remains 502db9b699572f54fefb65ec2829797fd02eec9e.",
-      "The legacy sparse action was replaced with one current-head inline finding, one self-contained companion finding, and a pinned approval-gated request_changes action."
-    ]
-  },
-  "actions": [],
-  "safe_actions": [
+  "withdrawn_findings": [
     {
-      "id": "request-changes-49226",
-      "upstream_write": true,
-      "approval_required": true,
-      "publisher_required": "Publish-ApprovedReview.ps1",
-      "head_pinned": "502db9b699572f54fefb65ec2829797fd02eec9e"
+      "id": "make-theme-listener-initialization-transactional",
+      "disposition": "withdrawn_unsupported",
+      "reason": "ManagementEventWatcher has a finalizer that calls Stop(), so the abandoned watcher is eventually unwound. Explicit rollback is deterministic cleanup, but the retained persistent-subscription leak claim was not established."
     },
     {
-      "id": "hold-review-49226",
-      "upstream_write": false,
-      "approval_required": false
+      "id": "dispose-tray-bitmap",
+      "disposition": "withdrawn_unsafe",
+      "reason": "Images.notify_default is a shared resource bitmap; unconditional disposal cannot be assumed safe."
+    },
+    {
+      "id": "guard-theme-read",
+      "disposition": "withdrawn_optional",
+      "reason": "Avoiding a registry read while adaptive icons are disabled is an optimization, not a demonstrated correctness defect."
+    },
+    {
+      "id": "limit-scope-and-fix-tray-icon-lifetimes",
+      "disposition": "withdrawn_unsupported",
+      "reason": "The broad cross-module fan-out was removed from the converged fork and exact upstream consumer evidence did not support retaining the recovered claim."
     }
   ],
-  "testInstructions": [
-    "Build the ManagedCommon and Mouse Without Borders projects in x64 Debug.",
-    "Open Settings > General and Mouse Without Borders settings, then verify the setting scope and localized description match the implemented consumers.",
-    "Enable the adaptive icon and verify the icon follows Windows light/dark theme changes.",
-    "Disable the setting and repeat tray updates while confirming startup still succeeds when WMI theme monitoring is unavailable and GDI handle usage remains stable."
+  "new_upstream_findings": [
+    {
+      "id": "fail-open-when-theme-listener-startup-fails",
+      "disposition": "proposed_nonduplicate",
+      "finding": "ThemeListener construction failure skips remaining Mouse Without Borders form initialization",
+      "existing_upstream_duplicate": false,
+      "suggestion_validated": true
+    }
   ],
-  "phase": "reviewing_findings"
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "new_copilot_review_requested": false,
+    "fork_push_performed": false,
+    "detail": "No write was made to microsoft/PowerToys."
+  }
 }

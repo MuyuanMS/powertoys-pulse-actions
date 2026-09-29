@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-29T17:06:16.8783139+08:00",
+  "generated_at": "2026-09-29T17:43:22.1565616+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 137,
     "open_issues": 12717,
     "community": 11893,
-    "artifacts": 1171
+    "artifacts": 1170
   },
   "impact": {
-    "as_of": "2026-09-29T17:06:16.8783139+08:00",
+    "as_of": "2026-09-29T17:43:22.1565616+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -545,7 +545,6 @@ window.BOARD_INDEX = {
     50769,
     50766,
     50765,
-    50760,
     50759,
     50751,
     50743,
@@ -1677,11 +1676,11 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-23T12:37:22Z",
-      "updated_at": "2026-09-23T12:51:52Z",
-      "comments": 1,
+      "updated_at": "2026-09-29T09:00:40Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "APPROVED",
-      "ci_state": "failed",
+      "ci_state": "pending",
       "merge_state": "BLOCKED"
     },
     {
@@ -5862,15 +5861,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
+      "stage": "awaiting_review_approval",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post the ThemeListener fail-open suggestion"
+      },
       "labels": [
         "Product-Mouse Without Borders",
         "Ready for review"
@@ -155058,23 +155060,20 @@ window.BOARD_INDEX = {
       "stage": "needs_information",
       "owes": "author",
       "pending_author": true,
-      "waiting_since": "09/24/2026 08:16:49",
-      "has_artifact": true,
-      "agent_status": "triage",
+      "waiting_since": "09/29/2026 09:21:49",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage"
       ],
       "assignees": [],
       "created_at": "2026-09-24T08:07:35Z",
-      "updated_at": "2026-09-24T08:16:49Z",
-      "comments": 0,
+      "updated_at": "2026-09-29T09:21:49Z",
+      "comments": 1,
       "priority": null
     },
     {
