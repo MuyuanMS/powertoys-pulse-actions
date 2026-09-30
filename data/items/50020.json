@@ -2,26 +2,139 @@
   "number": 50020,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-30T03:47:28.2285238Z",
-  "evaluated_at": "09/27/2026 12:46:05",
+  "generated_at": "2026-09-30T08:09:24Z",
+  "evaluated_at": "2026-09-30T08:09:24Z",
   "source_updated_at": "2026-09-28T13:04:48Z",
   "head_sha": "3975a9150ad00f30558f4ad3f2fd1d8505f8ce55",
   "title": "Add plain text fallback support to peek",
   "url": "https://github.com/microsoft/PowerToys/pull/50020",
   "status": {
-    "glyph": "...",
-    "label": "Waiting for Copilot review",
-    "detail": "Grounded the new maintainer finding about BOM-less UTF-8 outside/across the 64 KiB charset sample boundary. Added two fork regression tests and pushed fork head 1fc9808acbd4b6d319957d7251994d8fee644c41; the test project built and all 64 tests passed. Requested a fresh review at 2026-09-30T03:25:23Z after review 5328112333; the immediate read-only check found no matching review. Full-module and exact-upstream validation remain pending. Do not request another review; consume this request with Get-CopilotReviewStatus.ps1."
+    "glyph": "review",
+    "label": "Two atomic inline suggestions await approval",
+    "detail": "The current fork review is converged with zero new comments and zero unresolved Copilot threads. The exact upstream tree reproduces UTF-8 corruption when a multi-byte character crosses the 64-KiB detector boundary; the literal two-member fix passes 39/39 focused tests and the raw-blob line-ending gate."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "review",
+    "label": "Approve or hold the atomic inline group",
+    "reason": "Both suggestions are required together to keep the comment and detector behavior consistent."
+  },
+  "proposed_comments": [
+    {
+      "id": "50020-charset-boundary-comment",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/WebBrowserPreviewer/Helpers/ReadHelper.cs",
+      "side": "RIGHT",
+      "start_line": 22,
+      "line": 25,
+      "in_diff": true,
+      "body": "**P2 · Keep the detection limit description accurate (1/2)**\n\nThe paired fix scans large files under the existing preview-size limit instead of relying only on a 64-KiB prefix. Update the comment to describe both paths.\n\n```suggestion\n        // Small files can be sampled in full; larger files use bounded stream detection.\n```",
+      "selection_group": {
+        "id": "peek-charset-boundary",
+        "title": "Avoid splitting UTF-8 at the detector boundary",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 78,
+        "rationale": "The exact two-member patch was applied to the pinned upstream tree and passed the focused boundary regression and all 39 focused tests."
+      }
+    },
+    {
+      "id": "50020-charset-boundary-detection",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/WebBrowserPreviewer/Helpers/ReadHelper.cs",
+      "side": "RIGHT",
+      "start_line": 38,
+      "line": 47,
+      "in_diff": true,
+      "body": "**P2 · Avoid splitting UTF-8 at the detector boundary (2/2)**\n\nA valid multi-byte UTF-8 character can straddle the 64-KiB sample boundary. With 65,535 ASCII bytes before a 3-byte character, the exact upstream tree produces corrupted preview text. Detect larger files from the complete stream, bounded by the existing preview-size check, while sampling smaller files in full.\n\n```suggestion\n            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);\n            DetectionResult result;\n            if (fs.Length > CharsetSampleSizeBytes)\n            {\n                result = await CharsetDetector.DetectFromStreamAsync(fs, maxReadableFileSizeBytes, cancellationToken).ConfigureAwait(false);\n            }\n            else\n            {\n                int sampleSize = (int)fs.Length;\n                var sample = new byte[sampleSize];\n                int sampleRead = await fs.ReadAtLeastAsync(sample, sampleSize, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);\n                result = CharsetDetector.DetectFromBytes(sampleRead == sample.Length ? sample : sample[..sampleRead]);\n            }\n\n            Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;\n```",
+      "selection_group": {
+        "id": "peek-charset-boundary",
+        "title": "Avoid splitting UTF-8 at the detector boundary",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 78,
+        "rationale": "The exact upstream regression fails before the patch and passes after it; the complete focused Peek suite passes 39/39."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50020-charset-boundary",
+      "type": "post_review",
+      "label": "Post two atomic inline suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50020,
+        "event": "COMMENT",
+        "head_sha": "3975a9150ad00f30558f4ad3f2fd1d8505f8ce55"
+      },
+      "include_dispositions": [
+        "proposed"
+      ]
+    }
+  ],
+  "validation": {
+    "fork_review": {
+      "result": "passed",
+      "head_sha": "2fa4448adbed4916eb08419b66f89e408ce60510",
+      "review_id": 5363367841,
+      "details": "The latest freshly requested review generated zero new comments and there are zero unresolved Copilot threads."
+    },
+    "suggestion_patch": {
+      "head_sha": "3975a9150ad00f30558f4ad3f2fd1d8505f8ce55",
+      "result": "passed",
+      "applied_comment_ids": [
+        "50020-charset-boundary-comment",
+        "50020-charset-boundary-detection"
+      ],
+      "minimal_ranges_reviewed": true,
+      "commands": [
+        "tools/build/build.cmd from src/modules/peek/Peek.FilePreviewer.UnitTests",
+        "vstest.console.exe Peek.FilePreviewer.UnitTests.dll"
+      ],
+      "details": "The exact upstream reproduction fails before the literal atomic patch; the candidate passes the regression and all 39 focused tests."
+    },
+    "line_ending_safety": {
+      "head_sha": "3975a9150ad00f30558f4ad3f2fd1d8505f8ce55",
+      "result": "passed",
+      "checked_comment_ids": [
+        "50020-charset-boundary-comment",
+        "50020-charset-boundary-detection"
+      ],
+      "files": [
+        {
+          "path": "src/modules/peek/Peek.FilePreviewer/Previewers/WebBrowserPreviewer/Helpers/ReadHelper.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": true
+        }
+      ]
+    }
+  },
   "workflow": {
-    "phase": "waiting_copilot",
-    "checkpoint_at": "2026-09-30T03:47:28.2285238Z"
+    "phase": "review_drafted",
+    "previous_phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-30T08:09:24Z",
+    "latest_copilot_review_id": 5363367841,
+    "unresolved_copilot_threads": 0,
+    "remaining_work": [
+      "Await explicit maintainer approval before posting the drafted atomic review group."
+    ]
   },
   "freshness": {
     "queued_at": "09/27/2026 12:46:05",
