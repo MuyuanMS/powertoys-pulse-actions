@@ -3,236 +3,33 @@
   "kind": "pr",
   "track": "review",
   "stage": "review_in_progress",
-  "owes": "reviewer",
+  "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-28T07:40:22Z",
-  "evaluated_at": "2026-09-28T07:40:22Z",
-  "source_updated_at": "2026-09-16T18:28:47Z",
+  "generated_at": "2026-09-30T12:40:49.4517428Z",
+  "evaluated_at": "09/28/2026 07:40:22",
+  "source_updated_at": "09/16/2026 18:28:47",
   "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
   "title": "feat: Add Microsoft DSC FancyZonesLayouts resource",
   "url": "https://github.com/microsoft/PowerToys/pull/50545",
   "status": {
-    "glyph": "📝",
-    "label": "Review in progress; no review action proposed",
-    "detail": "The latest matching fork Copilot pass has zero new published comments and zero unresolved threads. Three localized literal suggestions built independently and together, but review-wide triage is incomplete: DSC behavior defects were reproduced and first-write reload lacks live integration evidence. No review action is ready."
+    "glyph": "...",
+    "label": "Local validation running",
+    "detail": "Six supported upstream candidates are privately grounded. Three remain previously validated; three new remedies need rebuild/retest after warning-routing correction. Latest run yielded to PR 50893 build ownership; no public drafts yet."
   },
-  "next_action": {
-    "glyph": "🔍",
-    "label": "Complete review triage before drafting an action",
-    "reason": "No public review action is available. Resolve reproduced DSC behavior and first-write evidence, check documentation hosting, and recheck the current upstream head before drafting a complete review."
-  },
-  "proposed_comments": [
-    {
-      "id": "stored-layout-validation",
-      "kind": "inline",
-      "title": "Validate stored custom layouts before exposing them as valid state",
-      "severity": "high",
-      "body": "### Validate stored custom layouts before exposing them as valid state\n\n**Severity:** `high`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (`FromCustomLayouts`).\n\n**Suggested change:** Validate every persisted grid and canvas layout with the same required-name, coordinate, dimension, percentage, and cell-topology rules used for DSC input before returning it from `get` or `export`. Skip invalid stored entries with a warning rather than returning data that the native FancyZones engine cannot load, and add regression coverage for malformed persisted layouts.",
-      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
-      "start_line": 191,
-      "line": 195,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 94,
-        "rationale": "The current conversion path returns persisted layouts without applying the validation used for incoming DSC state."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "blank-zone-count",
-      "kind": "inline",
-      "title": "Use the native zero-zone default for blank layouts",
-      "severity": "high",
-      "body": "### Use the native zero-zone default for `blank`\n\n**Severity:** `high`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (`ToDefaultLayouts` and `ValidateZoneCount`) and the corresponding DSC model descriptions.\n\n**Suggested change:** Use `0` as the omitted `zoneCount` default for the `blank` template and retain the normal default for other template types. Apply the same type-aware rule in conversion, validation, generated descriptions, and `doc/dsc/layouts-resource.md`, while continuing to reject explicitly invalid counts.",
-      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
-      "start_line": 257,
-      "line": 263,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 98,
-        "rationale": "The native FancyZones contract treats blank as a zero-zone template, while the generic fallback currently supplies three."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "grid-map-topology",
-      "kind": "inline",
-      "title": "Validate grid zone IDs and topology against the native contract",
-      "severity": "high",
-      "body": "### Validate grid zone IDs and topology against the native contract\n\n**Severity:** `high`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (grid cell-map validation).\n\n**Suggested change:** Collect the distinct zone IDs, require them to be contiguous from zero and within the native 128-zone limit, and verify that every ID occupies one rectangular region. The current per-cell range check accepts gaps and disconnected or repeated regions that pass DSC validation but cannot be represented by the native converter. Add tests for missing IDs and non-rectangular/disconnected regions.",
-      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
-      "start_line": 617,
-      "line": 635,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 97,
-        "rationale": "Range validation alone accepts maps that violate the native converter's contiguous rectangular-zone assumptions."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "percentage-overflow",
-      "kind": "inline",
-      "title": "Prevent percentage-sum integer overflow",
-      "severity": "medium",
-      "body": "### Prevent percentage-sum integer overflow\n\n**Severity:** `medium`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (percentage validation).\n\n**Suggested change:** Accumulate row and column percentages in `long`, and use the widened result in diagnostics, or reject individual values before summing. The current `int` accumulator can wrap before the equality check and allow an invalid set of large positive percentages to appear to total `10000`. Add a regression case whose `int` sum overflows.",
-      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
-      "start_line": 647,
-      "line": 658,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 99,
-        "rationale": "Unchecked Int32 addition can wrap and the code compares the wrapped result to the expected total."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "live-reload-notification",
-      "kind": "inline",
-      "title": "Ensure the first DSC write reloads a running FancyZones instance",
-      "severity": "high",
-      "body": "### Ensure the first DSC write reloads a running FancyZones instance\n\n**Severity:** `high`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs` (layout-file write and reload path).\n\n**Suggested change:** After a successful file write, send the appropriate FancyZones reload notification, or change the watcher initialization so its first observed modification is delivered. The existing watcher establishes its baseline on the first notification and suppresses that callback, so the first DSC `set` can leave a running FancyZones instance on stale in-memory layouts. Cover the first-write-while-running scenario in an integration test.",
-      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs",
-      "start_line": 202,
-      "line": 202,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 93,
-        "rationale": "The existing watcher initialization suppresses its first callback while the DSC path relies on file notification for immediate application."
-      },
-      "disposition": "withdrawn"
-    },
-    {
-      "id": "round-trip-defaults",
-      "kind": "inline",
-      "title": "Preserve effective defaults during layout round-trips",
-      "severity": "medium",
-      "body": "### Preserve effective defaults during layout round-trips\n\n**Severity:** `medium`\n\n**Affected code:** `src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs` (default-layout conversion).\n\n**Suggested change:** Preserve whether optional values were omitted, or apply the type-specific native defaults explicitly during conversion instead of treating non-nullable zero and false values as authored state. Verify `get`, `test`, and `export` round-trips for omitted properties across `blank`, `focus`, grid templates, and custom defaults so DSC does not repeatedly report and rewrite false drift.",
-      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
-      "start_line": 385,
-      "line": 392,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 91,
-        "rationale": "The shared non-nullable wire models erase presence information needed to distinguish omitted values from explicit zero or false."
-      },
-      "disposition": "withdrawn"
-    }
-  ],
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
   "actions": [],
   "workflow": {
-    "phase": "reviewing_findings",
-    "previous_phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-28T07:40:22Z",
-    "advancement_evidence": [
-      "Consumed the completed Copilot review for fork head 523baa97ddd9da869168919eeffa32b87a48158c before considering another request.",
-      "The latest of eight Copilot reviews returned zero new published comments and zero unresolved threads remain.",
-      "The exact upstream head passed the targeted PowerToys DSC x64 Debug build.",
-      "The converged fork head passed the same targeted DSC build.",
-      "Current-head recheck on 2026-09-28 found upstream 3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a and fork 523baa97ddd9da869168919eeffa32b87a48158c unchanged; all fork Copilot thread cursors yielded zero unresolved threads.",
-      "Retired the six ungrounded prose-only legacy proposals and their request-changes action pending literal suggestion triage; the previous dispositions remain in each withdrawn item and the private session archive.",
-      "Two coordinated minimal percentage-overflow replacements passed an exact upstream DSC x64 Debug project build and 23 focused invalid-layout tests, including an overflow regression. No suggestion is yet actionable while other findings are being assessed.",
-      "Additional literal grid-topology and persisted-layout candidate edits built together with the percentage fix; 25 invalid-layout regression cases passed with temporary missing-ID, disconnected-zone, and overflow rows, and 23 focused cases passed with a temporary malformed-persisted-grid converter test. Temporary rows were removed; independent group validation and private grounding remain.",
-      "Syntax-safe suggestion triage on a second clean upstream local checkout: the percentage fix was tested as one contiguous 647-660 block (two separate one-line blocks would not independently compile); a narrow persisted-layout validation replacement at line 243 also built and passed its regression independently. Applying both literal blocks together built and passed 24/24 focused cases. No ungrounded block is actionable yet.",
-      "A single contiguous grid-topology replacement at current RIGHT-side lines 617-635 independently built and passed 24/24 focused cases including missing-ID and non-rectangular-grid regressions. All three independent blocks together built and passed 26/26 focused cases with temporary regressions for each finding; temporary test edits were removed.",
-      "Native Layout::Init accepts a nonnegative zone count for Blank and creates no zones; the legacy blank-layout claim of native initialization failure requires correction or withdrawal.",
-      "Three literal candidates were independently and jointly validated on the pinned upstream source. The tentative review draft is held privately; no proposed public comment or action remains while review triage is unfinished.",
-      "Classified all nine suppressed observations from saved fork review 5196898114: nested-property typo acceptance and empty Set persistence were reproduced; a missing warning for stored {} was reproduced; canvas acceptance was reproduced but native effects remain untested. Two documentation-link claims depend on unconfirmed publication hosting, one CLI-name claim was disproved by the installer, one custom-default claim was fork-introduced or unsupported, and cross-file transactionality is not an established contract. No observation was promoted to a public proposal without complete grounding.",
-      "Saved fork review 5196898114 on unchanged head 523baa97ddd9da869168919eeffa32b87a48158c yielded zero new published inline comments and zero unresolved Copilot threads; this does not settle its nine suppressed observations.",
-      "Exact-upstream DSC regressions reproduced nested-property typo acceptance, malformed-file persistence after an empty Set, and missing warning for a stored empty wrapper; a negative canvas coordinate was accepted but native behavior was not live-tested. First-write reload remains source-traced, not live-reproduced. Review-wide triage is incomplete.",
-      "Archived the restored three-suggestion draft privately and withheld all proposed actions/comments. Individual and combined candidate validations remain historical evidence only until every substantive lead is disposed."
-    ]
+    "phase": "building",
+    "checkpoint_at": "2026-09-30T12:40:49.4517428Z"
   },
   "freshness": {
-    "headRefOid": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
-    "updatedAt": "2026-09-16T18:28:47Z",
-    "latestCopilotReviewAt": "2026-09-16T18:28:46Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-28T07:40:22Z",
-    "context_revalidation": "Both upstream and fork heads were rechecked unchanged on 2026-09-28. Tentative literal candidates are held privately, not proposed for action. Nine suppressed review observations were classified privately; first-write and behavioral leads need reproduction.",
-    "evaluated_at": "2026-09-28T07:40:22Z"
+    "queued_at": "2026-09-30T12:40:49.4517428Z",
+    "checkpoint_at": "2026-09-30T12:40:49.4517428Z"
   },
   "fork_pr": {
     "number": 785,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/785",
-    "state": "OPEN"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/785"
   },
-  "fork_branch": "pr-iterate/50545",
-  "fork_head_sha": "523baa97ddd9da869168919eeffa32b87a48158c",
-  "validation": {
-    "suggestionPatch": {
-      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "stored-grid-validation-suggestion",
-        "grid-topology-suggestion",
-        "percentage-overflow-suggestion"
-      ],
-      "commands": [
-        "tools\\build\\build.ps1 -Path src\\dsc\\v3\\PowerToys.DSC -Platform x64 -Configuration Debug",
-        "tools\\build\\build.ps1 -Path src\\dsc\\v3\\PowerToys.DSC.UnitTests -Platform x64 -Configuration Debug",
-        "dotnet vstest PowerToys.DSC.UnitTests.dll /TestCaseFilter:FullyQualifiedName~FromCustomLayouts_InvalidStoredGridIsSkipped|FullyQualifiedName~Set_InvalidLayouts_FailsAndLeavesFilesUntouched"
-      ],
-      "details": "Each final literal block built independently at the pinned upstream head. All three replay together byte-identically to the isolated candidate that built x64 Debug and passed 26/26 focused tests, including temporary persisted-grid, topology, and overflow regressions. Temporary test edits were removed. No fork approximation is counted."
-    },
-    "upstreamHead": {
-      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
-      "result": "passed",
-      "commands": [
-        "tools\\build\\build-essentials.cmd",
-        "src\\dsc\\v3\\PowerToys.DSC\\..\\..\\..\\..\\tools\\build\\build.cmd"
-      ],
-      "details": "The exact upstream head passed the targeted DSC project build. A direct dotnet test invocation was not treated as authoritative because it lacked the Visual Studio native-project environment."
-    },
-    "suggestion_patch": {
-      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
-      "result": "passed",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "stored-grid-validation-suggestion",
-        "grid-topology-suggestion",
-        "percentage-overflow-suggestion"
-      ],
-      "commands": [
-        "tools\\build\\build.ps1 -Path src\\dsc\\v3\\PowerToys.DSC -Platform x64 -Configuration Debug",
-        "tools\\build\\build.ps1 -Path src\\dsc\\v3\\PowerToys.DSC.UnitTests -Platform x64 -Configuration Debug",
-        "dotnet vstest PowerToys.DSC.UnitTests.dll /TestCaseFilter:FullyQualifiedName~FromCustomLayouts_InvalidStoredGridIsSkipped|FullyQualifiedName~Set_InvalidLayouts_FailsAndLeavesFilesUntouched"
-      ],
-      "details": "Each final literal block built independently at the pinned upstream head. All three replay together byte-identically to the isolated candidate that built x64 Debug and passed 26/26 focused tests, including temporary persisted-grid, topology, and overflow regressions. Temporary test edits were removed. No fork approximation is counted."
-    },
-    "line_ending_safety": {
-      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
-      "result": "passed",
-      "checked_comment_ids": [
-        "stored-grid-validation-suggestion",
-        "grid-topology-suggestion",
-        "percentage-overflow-suggestion"
-      ],
-      "files": [
-        {
-          "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 902,
-          "cr_only_count": 0
-        }
-      ]
-    }
-  },
-  "upstream_safety": {
-    "public_actions_taken": false,
-    "detail": "No comments, reviews, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
-  },
-  "needs_revalidation": true,
-  "summary": "Three exact-upstream literal suggestion candidates built independently and together, but nine suppressed fork observations and first-write behavior have not been conclusively disposed. Withheld the review action; six legacy findings remain withdrawn, with no upstream action taken.",
-  "confidence": "Partial: localized suggestions verified; full review unresolved"
+  "fork_branch": "pr-iterate/50545"
 }
