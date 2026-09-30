@@ -5,178 +5,31 @@
   "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-30T15:29:35.760606+08:00",
-  "evaluated_at": "2026-09-29T07:07:43Z",
-  "source_updated_at": "2026-09-29T04:43:00Z",
+  "generated_at": "2026-09-30T11:32:07.8233786Z",
+  "evaluated_at": "2026-09-30T11:32:07.8233786Z",
+  "source_updated_at": "2026-09-29T19:18:34Z",
+  "head_sha": "a5d2bfa9953b0d13c2ed4fb345e2ad66e995fadf",
+  "title": "",
+  "url": "",
   "status": {
-    "label": "Author responded — review needed",
-    "glyph": "🔄",
-    "detail": "Live PR activity no longer supports the previous author-wait state (author activity occurred after the posted Pulse review action). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "...",
+    "label": "Waiting for Copilot review",
+    "detail": "Fresh fork Copilot review requested at 2026-09-30T11:18:09Z for head 06854f67443442965892ade5900922eceb1672c4; status-only resume required. Thirteen exact-head candidates remain provisional until convergence."
   },
-  "next_action": {
-    "label": "Run PR review",
-    "glyph": "🔄",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
-  },
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
   "actions": [],
-  "needs_revalidation": true,
-  "schemaVersion": 5,
-  "confidence": "High",
-  "head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
-  "proposed_comments": [
-    {
-      "id": "deferred-injection-failure",
-      "kind": "inline",
-      "severity": "high",
-      "disposition": "posted",
-      "path": "src/modules/MouseUtils/MouseButtonLock/dllmain.cpp",
-      "side": "RIGHT",
-      "start_line": 121,
-      "line": 121,
-      "in_diff": true,
-      "body": "### Complete deferred releases before committing engine state\n\n**Severity:** `high`\n\n`PostThreadMessageW` succeeding here only means that the synthetic release was queued. `PerformDeferred` later discards the actual `SendInput` result, after the engine has already cleared `locked` and may have set `swallowNextRealUp`. If the deferred injection is rejected—for example across a UIPI boundary—the physical down has been suppressed, its paired up can be swallowed, and the OS can remain in a pressed state while the engine believes the lock was released.\n\nPlease make this a coordinated change across `MouseButtonLockCore.h`, `dllmain.cpp`, and `EngineTests.cpp`:\n\n1. Add a deferred-failure callback to `IButtonUpInjector`; register it from `Engine` and clear it in the engine destructor.\n2. Have `WinInjector::PerformDeferred` report a failed `InjectUpNow` through that callback while preserving the existing context-menu-dismiss intent.\n3. On deferred failure, clear `swallowNextRealUp` for a same-button release tap; for another release path, restore the logical lock so cleanup can be retried.\n4. Serialize engine operations and serialize `set_config` parsing/enforcement with `HandleMouseMessage`, so disabling a button cannot race with a stale `OnButtonUp` that latches afterward.\n5. Add regression tests for both deferred failure paths.\n\n**Verification:** Build Runner, Settings, Mouse Button Lock, its unit-test project, and its fuzz target; run `MouseButtonLock.UnitTests`; then perform an elevated-window/UIPI pass and confirm a failed synthetic up cannot leave a button stuck.",
-      "posted_comment_id": 4129696941,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696941",
-      "posted_at": "2026-09-29T04:42:50Z",
-      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec"
-    },
-    {
-      "id": "gpo-refresh-notification",
-      "kind": "inline",
-      "severity": "medium",
-      "disposition": "posted",
-      "path": "src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel.cs",
-      "side": "RIGHT",
-      "start_line": 1587,
-      "line": 1587,
-      "in_diff": true,
-      "body": "### Refresh the GPO-managed warning state\n\n**Severity:** `medium`\n\n`InitializeEnabledValues()` updates both the effective enabled value and `_mouseButtonLockEnabledStateIsGPOConfigured`, but this refresh only notifies the former. If policy is added or retracted while Settings is open, the enable card and `GPOInfoControl` can retain their previous policy-managed state until the page is recreated.\n\n```suggestion\n            OnPropertyChanged(nameof(IsMouseButtonLockEnabled));\n            OnPropertyChanged(nameof(IsMouseButtonLockEnabledGpoConfigured));\n```",
-      "posted_comment_id": 4129696946,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696946",
-      "posted_at": "2026-09-29T04:42:50Z",
-      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec"
-    },
-    {
-      "id": "dsc-accessibility",
-      "kind": "inline",
-      "severity": "medium",
-      "disposition": "posted",
-      "path": "doc/dsc/modules/MouseButtonLock.md",
-      "side": "RIGHT",
-      "start_line": 203,
-      "line": 206,
-      "in_diff": true,
-      "body": "### Use the serialized DSC property shape (5/5)\n\n**Severity:** `medium`\n\nThese settings serialize with their snake_case `JsonPropertyName` keys and `IntProperty`/`BoolProperty` wrapper objects. Using C# member names and scalar values makes this accessibility example produce the wrong module-settings shape.\n\n```suggestion\n          lmb_lock_enabled:\n            value: true\n          rmb_lock_enabled:\n            value: true\n          hold_duration_ms:\n            value: 2000\n          move_cancel_pixels:\n            value: 15\n```",
-      "posted_comment_id": 4129696956,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696956",
-      "posted_at": "2026-09-29T04:42:50Z",
-      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
-      "selection_group": {
-        "id": "dsc-settings-shapes-posted",
-        "title": "Correct the five posted DSC property examples",
-        "position": 5,
-        "total": 5,
-        "atomic": true
-      }
-    },
-    {
-      "id": "dsc-hands-free",
-      "kind": "inline",
-      "severity": "medium",
-      "disposition": "posted",
-      "path": "doc/dsc/modules/MouseButtonLock.md",
-      "side": "RIGHT",
-      "start_line": 184,
-      "line": 186,
-      "in_diff": true,
-      "body": "### Use the serialized DSC property shape (4/5)\n\n**Severity:** `medium`\n\nThese settings serialize with their snake_case `JsonPropertyName` keys and `IntProperty`/`BoolProperty` wrapper objects. Using C# member names and scalar values makes this quick-drag example produce the wrong module-settings shape.\n\n```suggestion\n          rmb_lock_enabled:\n            value: true\n          hold_duration_ms:\n            value: 600\n          move_cancel_pixels:\n            value: 3\n```",
-      "posted_comment_id": 4129696963,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696963",
-      "posted_at": "2026-09-29T04:42:50Z",
-      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
-      "selection_group": {
-        "id": "dsc-settings-shapes-posted",
-        "title": "Correct the five posted DSC property examples",
-        "position": 4,
-        "total": 5,
-        "atomic": true
-      }
-    },
-    {
-      "id": "dsc-middle-button",
-      "kind": "inline",
-      "severity": "medium",
-      "disposition": "posted",
-      "path": "doc/dsc/modules/MouseButtonLock.md",
-      "side": "RIGHT",
-      "start_line": 166,
-      "line": 166,
-      "in_diff": true,
-      "body": "### Use the serialized DSC property shape (3/5)\n\n**Severity:** `medium`\n\nThis setting serializes as `mmb_lock_enabled` containing a `BoolProperty` object. The current scalar C# member name does not match the module's settings contract.\n\n```suggestion\n          mmb_lock_enabled:\n            value: true\n```",
-      "posted_comment_id": 4129696967,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696967",
-      "posted_at": "2026-09-29T04:42:50Z",
-      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
-      "selection_group": {
-        "id": "dsc-settings-shapes-posted",
-        "title": "Correct the five posted DSC property examples",
-        "position": 3,
-        "total": 5,
-        "atomic": true
-      }
-    },
-    {
-      "id": "dsc-winget",
-      "kind": "inline",
-      "severity": "medium",
-      "disposition": "posted",
-      "path": "doc/dsc/modules/MouseButtonLock.md",
-      "side": "RIGHT",
-      "start_line": 142,
-      "line": 143,
-      "in_diff": true,
-      "body": "### Use the serialized DSC property shape (2/5)\n\n**Severity:** `medium`\n\nThese settings serialize with their snake_case `JsonPropertyName` keys and wrapper objects. Using C# member names and scalar values makes this WinGet configuration produce the wrong module-settings shape.\n\n```suggestion\n          rmb_lock_enabled:\n            value: true\n          hold_duration_ms:\n            value: 1000\n```",
-      "posted_comment_id": 4129696975,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696975",
-      "posted_at": "2026-09-29T04:42:50Z",
-      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
-      "selection_group": {
-        "id": "dsc-settings-shapes-posted",
-        "title": "Correct the five posted DSC property examples",
-        "position": 2,
-        "total": 5,
-        "atomic": true
-      }
-    },
-    {
-      "id": "dsc-enable-buttons",
-      "kind": "inline",
-      "severity": "medium",
-      "disposition": "posted",
-      "path": "doc/dsc/modules/MouseButtonLock.md",
-      "side": "RIGHT",
-      "start_line": 80,
-      "line": 82,
-      "in_diff": true,
-      "body": "### Use the serialized DSC property shape (1/5)\n\n**Severity:** `medium`\n\nThe direct-execution payload must match the module's serialized settings contract. These properties use snake_case JSON names and each value is wrapped by `BoolProperty`; the current C# member names and bare booleans will not create that shape.\n\n```suggestion\n            lmb_lock_enabled = @{ value = $true }\n            rmb_lock_enabled = @{ value = $true }\n            mmb_lock_enabled = @{ value = $true }\n```",
-      "posted_comment_id": 4129696980,
-      "posted_url": "https://github.com/microsoft/PowerToys/pull/49279#discussion_r4129696980",
-      "posted_at": "2026-09-29T04:42:50Z",
-      "posted_head_sha": "47d749bd371e6db18502d34f9b8f619f738c97ec",
-      "selection_group": {
-        "id": "dsc-settings-shapes-posted",
-        "title": "Correct the five posted DSC property examples",
-        "position": 1,
-        "total": 5,
-        "atomic": true
-      }
-    }
-  ],
+  "workflow": {
+    "phase": "waiting_copilot",
+    "checkpoint_at": "2026-09-30T11:32:07.8233786Z"
+  },
+  "freshness": {
+    "queued_at": "2026-09-30T11:32:07.8233786Z",
+    "checkpoint_at": "2026-09-30T11:32:07.8233786Z"
+  },
   "fork_pr": {
     "number": 695,
-    "repo": "MuyuanMS/PowerToys",
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/695",
-    "state": "OPEN"
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/695"
   },
   "fork_branch": "pr-iterate/49279-v4"
 }
