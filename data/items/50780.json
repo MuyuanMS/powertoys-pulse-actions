@@ -4,103 +4,136 @@
   "number": 50780,
   "kind": "issue",
   "track": "triage",
-  "stage": "needs_information",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-09-25T07:48:00Z",
-  "evaluated_at": "2026-09-25T07:48:00Z",
-  "source_updated_at": "2026-09-25T06:10:41Z",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-30T03:21:49Z",
+  "evaluated_at": "2026-09-30T03:21:49Z",
+  "source_updated_at": "2026-09-29T22:12:17Z",
   "title": "Peek does not work when viewing Gallery in File Explorer",
   "url": "https://github.com/microsoft/PowerToys/issues/50780",
   "labels": [
     "Issue-Bug",
-    "Needs-Author-Feedback",
     "Needs-Triage",
+    "Needs-Team-Response",
     "Product-Peek"
   ],
+  "assignees": [],
+  "comments": 2,
   "judgment": {
-    "status": "needs_information",
-    "rationale": "The report establishes the version, Store installation, Peek module, and a Gallery/Space-bar symptom, but it does not identify whether the failure is limited to Gallery items, all File Explorer selections, or a shortcut/preview-handler path. The current discussion requests concrete reproduction detail, and no diagnostic archive or follow-up evidence is present.",
+    "status": "actionable_design",
+    "rationale": "The reporter supplied a focused comparison: Space activates Peek for the same selected item in a normal folder but not in File Explorer Gallery. Peek's Explorer selection helper uses ShellWindows, IShellFolderViewDual2, IShellBrowser, and IFolderView to obtain selected items; Gallery may expose selection differently. This is a red, test-first fix hypothesis, not a confirmed root cause or converged design.",
     "evidence": [
-      "The reporter uses PowerToys v0.101.2362.0 from the Microsoft Store.",
-      "The report names Peek and says the failure occurs in Gallery in File Explorer when the Space-bar shortcut is pressed.",
-      "The expected result is that the Peek panel opens; the actual result is that nothing happens.",
-      "No bug report ZIP, screenshot, video, Windows version, File Explorer build, or follow-up reproduction detail is attached.",
-      "The latest upstream activity is the automated triage request for concrete reproduction steps at 2026-09-25T06:10:40Z."
+      "The issue reports PowerToys 0.101.2362.0 from the Microsoft Store with Peek enabled.",
+      "The reporter's 2026-09-29 comment gives numbered steps and states that Space works for the same item in Details/Large icons but not in Gallery.",
+      "The issue has no attachments or linked fix/duplicate.",
+      "At upstream commit 31bf904826709b81b4a9bd9756788a0596f2ff81, FileExplorerHelper.GetItemsFromFileExplorer obtains the active Explorer tab and uses IShellFolderViewDual2, IShellBrowser, and GetShellItemArray/IFolderView for selection."
     ],
-    "recommended_action": "Request a numbered reproduction that distinguishes Gallery selection from ordinary File Explorer selection and captures a fresh diagnostic ZIP immediately after reproducing.",
-    "evaluated_at": "2026-09-25T07:48:00Z",
-    "source_updated_at": "2026-09-25T06:10:41Z"
+    "recommended_action": "Approve a narrowly scoped Gallery-selection investigation and reproduce while checking whether Peek receives the selected IShellItemArray in Gallery versus an ordinary folder.",
+    "evaluated_at": "2026-09-30T03:21:49Z",
+    "source_updated_at": "2026-09-29T22:12:17Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A repository fix cannot be proposed until the failing activation path is distinguished from a shortcut, preview-handler, focus, or Gallery-specific selection issue."
+    "status": "proposed",
+    "rationale": "No linked fix currently covers the issue. A code correction is plausible if Gallery's selection is not returned through Peek's existing Explorer shell-view route, but the reporter has not established which interface or selection call fails."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Support Peek selection retrieval from File Explorer Gallery",
+      "root_cause": "The Gallery view may expose its selected item through a shell-view path that the current FileExplorerHelper selection lookup does not handle. This remains unverified; a shortcut or other activation difference is still possible.",
+      "plan": [
+        "Reproduce with the reporter's Gallery-versus-Details comparison and trace whether GetItemsFromFileExplorer finds the matching active tab and whether GetShellItemArray returns the selected item.",
+        "If Gallery does not provide the selected item through the current IShellFolderViewDual2/IFolderView route, add a Gallery-compatible selection retrieval path while preserving ordinary Explorer behavior.",
+        "Add focused coverage for one selected item in Gallery and in a standard folder, including a check that Peek does not preview a stale or unrelated item."
+      ],
+      "verification": [
+        "Repeat the reporter's exact Gallery and standard-folder steps on PowerToys 0.101.2362.0 or a current development build.",
+        "Verify Gallery returns the selected item to Peek and standard folder activation remains unchanged.",
+        "Run the focused Peek tests and build."
+      ],
+      "confidence": {
+        "score": 44,
+        "level": "red",
+        "rationale": "The view-specific comparison and existing Explorer selection path make this a useful hypothesis, but no trace yet proves Gallery selection retrieval is the failing step."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Peek does not open when the reporter presses Space in File Explorer's Gallery view, but the report does not yet establish whether the problem is Gallery-specific or affects Peek activation more generally.",
+    "summary": "Peek activation is reported to fail only in File Explorer Gallery; the same Space action works for a selected item in a standard folder.",
     "known_information": [
-      "PowerToys v0.101.2362.0 is installed from the Microsoft Store.",
-      "The affected module is Peek.",
-      "The reported sequence is to browse Gallery in File Explorer with Peek enabled and press the Space-bar activation shortcut.",
-      "The expected result is a Peek panel; the observed result is no visible response.",
-      "The issue has no attached diagnostic ZIP and no author follow-up beyond the original report."
+      "The reporter uses PowerToys 0.101.2362.0 from the Microsoft Store.",
+      "Peek is enabled and the reporter says the Space activation works in a standard Details or Large icons view.",
+      "The reporter supplied numbered Gallery steps and the expected/actual result in comment https://github.com/microsoft/PowerToys/issues/50780#issuecomment-5900076581.",
+      "The current Peek selection code resolves Explorer selection through FileExplorerHelper.GetItemsFromFileExplorer and GetShellItemArray."
     ],
     "inferences": [
-      "The failure may be related to how File Explorer Gallery exposes the selected item or focus, but this is not confirmed.",
-      "A shortcut-specific, preview-handler, or global Peek activation failure remains possible because the report does not compare Gallery with a normal folder or another supported file."
+      "Gallery may expose selection differently from the Explorer view interfaces used by Peek, but this is not confirmed.",
+      "Because the same action reportedly works in a standard folder, a Gallery-specific shell-view path is more likely than a general Peek shortcut failure."
     ],
-    "analysis": "The existing report is useful enough to request discriminating evidence, but not enough to select an owning code path or claim a root cause. The next response should compare the same Space-bar action in Gallery and an ordinary folder, identify the selected item type, and capture diagnostics immediately after each failing attempt.",
+    "analysis": "The author response answered the earlier request for reproduction detail and supplied a discriminating control case. The next uncertainty is maintainer-side: determine whether Gallery's active shell view yields a selected item to Peek. The reporter should not be asked again for generic steps or logs before that trace.",
     "initial_investigation": [
-      "Read the complete issue body, labels, and current discussion.",
-      "Confirmed the latest automated triage comment specifically requests concrete reproduction steps.",
-      "Found no linked fix PR, duplicate, attachment, or maintainer diagnosis to support a design."
+      "Read the complete issue body and both comments; the latest author reply supplies the Gallery-versus-standard-folder comparison.",
+      "Inspected FileExplorerHelper.GetItemsFromFileExplorer and GetShellItemArray at upstream commit 31bf904826709b81b4a9bd9756788a0596f2ff81.",
+      "The helper depends on active Explorer tab and shell-view selection interfaces; no Gallery-specific branch is visible in that path.",
+      "Found no linked duplicate, fix PR, or cross-reference."
     ],
-    "information_gaps": [
-      {
-        "evidence_type": "repro_steps",
-        "information": "A numbered comparison showing the selected Gallery item type/path, whether Peek is enabled, the exact Space-bar action, and whether the same action opens Peek for a file selected in an ordinary File Explorer folder.",
-        "why_needed": "This distinguishes a Gallery-specific selection/focus path from a general Peek activation failure.",
-        "how_to_collect": "Please reproduce once in Gallery and once in a normal folder, recording the selected item type and the result of each Space-bar press."
-      },
-      {
-        "evidence_type": "windows_version",
-        "information": "The Windows version and build running the affected File Explorer session.",
-        "why_needed": "Gallery and Peek activation behavior can depend on the File Explorer and Windows shell build.",
-        "how_to_collect": "Include the Windows version/build from Settings > System > About or winver."
-      },
-      {
-        "evidence_type": "bugreport_zip",
-        "information": "A fresh PowerToys diagnostic archive captured immediately after reproducing the failure.",
-        "why_needed": "The diagnostics may show the Peek activation, selected-item, and shell-integration path needed to choose the correct investigation.",
-        "how_to_collect": "Reproduce the failure, then add a comment containing /bugreport immediately afterward."
-      }
-    ]
+    "information_gaps": []
   },
   "actions": [
     {
-      "id": "request-gallery-peek-repro-and-bugreport-50780",
-      "type": "request_info",
-      "label": "Request Gallery Peek repro and diagnostics",
+      "id": "approve-peek-gallery-selection-investigation-50780",
+      "type": "approve_design",
+      "label": "Start Peek Gallery selection investigation",
       "primary": true,
-      "confirm": true,
-      "comment": {
-        "body": "Thanks for reporting this with the PowerToys version and the Gallery/Space-bar symptom. Please provide:\n1. A numbered comparison: select one item in File Explorer Gallery and press Space with Peek enabled, then select a supported file in an ordinary folder and press Space. For each attempt, state the item type and whether the Peek panel opens.\n2. Your Windows version and build (from Settings > System > About or winver).\n3. Reproduce the failure once more and immediately add a comment containing /bugreport so the generated ZIP captures the activation failure.\nThese details will distinguish a Gallery-specific selection/focus problem from a general Peek activation or shell-integration failure."
+      "confirm": true
+    },
+    {
+      "id": "reproduce-peek-gallery-selection-50780",
+      "type": "reproduce",
+      "label": "Reproduce Peek activation in Gallery",
+      "primary": false,
+      "confirm": false,
+      "note": "Trace the selected shell item in Gallery and compare it with the reporter's working standard-folder case.",
+      "reproduce": {
+        "title": "Compare Peek selection in Gallery and a standard folder",
+        "module": "Peek",
+        "version_requirement": "PowerToys 0.101.2362.0 or a current development build",
+        "prerequisites": [
+          "File Explorer with Gallery available.",
+          "Peek enabled and configured to use the same Space activation shortcut in both views.",
+          "One supported file selected without opening it."
+        ],
+        "steps": [
+          "Select one item in File Explorer Gallery and press Space.",
+          "Record whether Peek opens and whether FileExplorerHelper returns the selected item.",
+          "Select the same item in a standard Details or Large icons folder and press Space.",
+          "Compare the active Explorer tab, shell view, and selected-item result between the two cases."
+        ],
+        "expected_result": "Peek opens for the selected Gallery item, as it does for the same item in a standard folder."
       }
     }
   ],
   "status": {
-    "glyph": "?",
-    "label": "Request Gallery Peek repro and diagnostics",
-    "detail": "The report confirms a Gallery/Space-bar symptom but lacks a comparison repro, Windows build, and fresh diagnostics needed to identify the failing Peek activation path."
+    "glyph": "!",
+    "label": "Start Peek Gallery selection investigation",
+    "detail": "Fast triage only: a red, test-first hypothesis is grounded in the Gallery-only reproduction; no converged design exists."
   },
   "next_action": {
-    "glyph": "?",
-    "label": "Request Gallery Peek repro and diagnostics",
-    "reason": "Obtain the three recorded evidence items before proposing a code fix."
+    "glyph": "!",
+    "label": "Reproduce Peek activation in Gallery",
+    "reason": "Confirm where Gallery selection diverges before choosing an implementation."
   },
+  "history": [
+    {
+      "evaluated_at": "2026-09-25T07:48:00Z",
+      "source_updated_at": "2026-09-25T06:10:41Z",
+      "judgment_status": "needs_information",
+      "action_status": "superseded_unposted",
+      "summary": "The earlier candidate requested a comparison repro, Windows build, and diagnostics. The author later supplied a numbered comparison showing the same Space action works outside Gallery."
+    }
+  ],
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made."
+    "detail": "The earlier request-info action was not posted; this refreshed candidate has made no upstream mutation."
   }
 }

@@ -1,127 +1,99 @@
 {
   "schemaVersion": 5,
-  "id": "issue-50616",
   "number": 50616,
   "kind": "issue",
   "track": "fix",
-  "stage": "revalidation_required",
-  "generated_at": "2026-09-21T19:06:36Z",
-  "evaluated_at": "2026-09-21T19:06:36Z",
-  "source_updated_at": "2026-09-21T16:09:25Z",
-  "title": "PowerToys general settings lost on every restart unless manually exited from tray",
+  "stage": "pr_open_upstream",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-30T03:23:54Z",
+  "evaluated_at": "2026-09-30T03:23:54Z",
+  "source_updated_at": "2026-09-29T03:27:37Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50616",
-  "summary": "Independent reports now reproduce General settings loss across Windows 11 and Windows 10 ESU, including version 0.101.2432. The file is already empty before relaunch, but the responsible writer and cross-process ordering remain unproven, so the previous approval action is replaced by a focused maintainer trace.",
-  "judgment": {
-    "status": "reproducible",
-    "rationale": "The public evidence is sufficient to reproduce a shutdown/WM_CLOSE persistence failure and to distinguish tray Exit as the known-good control. It is not yet sufficient to approve an implementation because native Runner and managed Settings UI writers can overwrite the same file and the exact producer of the empty or truncated snapshot has not been attributed.",
-    "evidence": [
-      "The original report reproduces empty settings.json after Windows restart/shutdown and graceful taskkill WM_CLOSE, but not after tray Exit.",
-      "The original reporter confirmed the file is already empty before relaunch when startup is disabled.",
-      "roy-t reproduced the sequence on two machines and supplied logs showing populated settings before WM_DESTROY with system_session_ending=true and apply_general_settings: {} on the next launch.",
-      "RonnyTNL reproduced the loss on multiple machines, including Windows 10 ESU with PowerToys 0.101.2432.",
-      "Making settings.json read-only prevents the reset, but is only a workaround and may interfere with legitimate updates.",
-      "Native and managed code have separate direct-to-destination General settings writers, so an empty-object guard in one writer would not establish ownership or prevent stale valid overwrites."
-    ],
-    "recommended_action": "Run a bounded writer-attribution and ordering trace for tray Exit, external WM_CLOSE, confirmed WM_ENDSESSION, and a final Settings UI mutation before shutdown; do not approve code work until the producer and safe ownership protocol are identified."
-  },
-  "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "A PowerToys persistence fix is plausible, but the implementation is not currently design-ready: the producer of the destructive write, cross-process ordering, and shutdown-safe ownership boundary must be established before an approval action can be exposed."
-  },
-  "proposed_fixes": [],
-  "issue_context": {
-    "summary": "General settings can be replaced by an empty or truncated settings.json during non-tray shutdown paths, while tray Exit preserves the file. The latest reports confirm this is not limited to one machine or the original PowerToys build.",
-    "known_information": [
-      "The issue is open, unassigned, and has no covering pull request.",
-      "The original report covers normal restart/shutdown and graceful external WM_CLOSE; tray Exit is a known-good control.",
-      "The file is empty before the next PowerToys launch, so startup initialization is not the initiating event.",
-      "The failure reproduces across user/system installation contexts and elevated/non-elevated execution.",
-      "A corroborating report covers PowerToys 0.101.2432 on Windows 10 ESU.",
-      "Current relevant writers include runner/main.cpp main, runner/general_settings.cpp, runner/settings_window.cpp, common/SettingsAPI/settings_helpers.cpp, Settings.UI MainWindow.xaml.cs, and Settings.UI.Library SettingsUtils.SaveSettings.",
-      "Native persistence uses direct JSON destination writes and managed persistence uses File.WriteAllText; no shared atomic cross-process protocol is established."
-    ],
-    "inferences": [
-      "The session-ending behavior introduced around PR 48363 may expose a race, but it is not proven to be the sole cause.",
-      "The unconditional final Runner save is suspicious, but an exact {} payload could also come from a stale or uninitialized writer.",
-      "Atomic replacement alone would not prevent a stale valid snapshot from overwriting a newer valid mutation.",
-      "The safe design likely avoids unbounded disk work after confirmed full session ending and establishes one ownership or synchronization protocol for remaining writers."
-    ],
-    "analysis": "The issue now warrants maintainer-side instrumentation rather than a generic reporter request. The next discriminator is writer identity, payload shape, and ordering across native Runner and managed Settings UI writes. A defensive persistence design should not be approved until it preserves unknown fields, handles read-only and replacement failures, and does not reintroduce the shutdown hang that motivated the fast session-ending path.",
-    "initial_investigation": [
-      "Reviewed the complete issue body and all current comments, including the 0.101.2432 corroboration and read-only workaround.",
-      "Inspected runner/tray_icon.cpp session-ending handling, common/utils/window.h session-end state, runner/main.cpp final save, runner/general_settings.cpp, runner/settings_window.cpp, common/SettingsAPI/settings_helpers.cpp, Settings.UI MainWindow.xaml.cs, and SettingsUtils.SaveSettings.",
-      "Confirmed PR 48363 changed fast session-ending cleanup but did not establish a shared settings persistence protocol.",
-      "Checked public issue and PR context for a covering fix; none was found."
-    ],
-    "information_gaps": [
-      {
-        "evidence_type": "module_trace",
-        "information": "The exact writer or truncation point, including process, function, session-ending state, payload byte count, top-level key count, and success/error result.",
-        "why_needed": "This determines whether the fix belongs in Runner, Settings UI, the shared persistence layer, or shutdown lifecycle ownership.",
-        "how_to_collect": "Maintainer-side diagnostic build: instrument every root General-settings write without logging setting values, then correlate the sequence for each shutdown path."
-      },
-      {
-        "evidence_type": "module_trace",
-        "information": "Whether a stale Runner snapshot overwrites a newer Settings UI mutation immediately before shutdown.",
-        "why_needed": "A simple empty-object guard or atomic replace would not prevent lost updates from two valid writers.",
-        "how_to_collect": "Repeat with Settings UI open and a module toggle immediately before tray Exit, external WM_CLOSE, and OS restart; correlate writer sequence numbers and file timestamps."
-      }
-    ]
-  },
-  "actions": [
-    {
-      "id": "trace-general-settings-writer-50616",
-      "type": "reproduce",
-      "label": "Trace the shutdown settings writer",
-      "primary": true,
-      "confirm": false,
-      "requiresApproval": false,
-      "reproduce": {
-        "module": "PowerToys Runner and General Settings",
-        "prerequisites": [
-          "A current diagnostic build that records writer ID, PID, session-ending state, serialized byte count, top-level key count, and result without logging setting values.",
-          "At least one non-default General setting and module-enabled state.",
-          "Run at startup disabled for the before-relaunch file check."
-        ],
-        "steps": [
-          "Change and save General settings, then verify settings.json is a populated valid object.",
-          "Exercise tray Exit as the known-good control and record every General-settings write.",
-          "Repeat with taskkill /IM PowerToys.exe without /F to exercise external WM_CLOSE.",
-          "Repeat with a normal Windows restart or shutdown to exercise confirmed WM_ENDSESSION.",
-          "Repeat each case with Settings UI open and a final module-toggle mutation immediately before shutdown.",
-          "Before relaunching PowerToys, inspect settings.json and correlate its final modification with the writer sequence."
-        ],
-        "expected_result": "The trace identifies the writer, ordering, payload shape, and failure/truncation point that produces an empty or destructive file, while the confirmed session-ending path remains bounded and non-blocking.",
-        "actual_to_confirm": "Whether Runner or Settings UI emits the empty snapshot, whether a valid writer overwrites a newer mutation, and whether the file is truncated during direct replacement."
-      },
-      "note": "The prior approve_design action is intentionally withheld until this trace resolves the adversary's ownership and shutdown-safety objections."
-    }
-  ],
+  "title": "PowerToys general settings lost on every restart unless manually exited from tray",
   "labels": [
     "Issue-Bug",
     "Product-Settings",
     "Needs-Triage",
     "Needs-Team-Response"
   ],
-  "assignees": [],
+  "assignees": [
+    "daverayment"
+  ],
   "comments": 5,
-  "author": "Maximilian-Siegl-zh-tech",
-  "pending_author": false,
+  "judgment": {
+    "status": "duplicate_or_handled",
+    "rationale": "An open upstream PR now explicitly closes this issue and describes removing the unsafe Runner-exit settings write that raced OS shutdown. The PR is a concrete current fix attempt, so a competing design is not warranted.",
+    "evidence": [
+      "PR 50897 is open, non-draft, and its checklist explicitly says it closes #50616.",
+      "The PR describes the WM_ENDSESSION shutdown race, non-atomic settings writes, and removing Runner's final settings.json write.",
+      "The issue author had previously confirmed the file is empty before relaunch and that tray Exit preserves it; PR 50897 names the shutdown regression path and references the Runner teardown change."
+    ],
+    "recommended_action": "Avoid duplicate issue work; track PR 50897 through maintainer review and revalidate if it closes without the shutdown-persistence correction.",
+    "evaluated_at": "2026-09-30T03:23:54Z",
+    "source_updated_at": "2026-09-29T03:27:37Z"
+  },
+  "fix_assessment": {
+    "status": "existing_fix",
+    "rationale": "The open PR explicitly names this issue and removes the Runner-exit settings save implicated by the reported shutdown race.",
+    "existing_fix_urls": [
+      "https://github.com/microsoft/PowerToys/pull/50897"
+    ]
+  },
+  "proposed_fixes": [],
+  "issue_context": {
+    "summary": "The reporter provided controlled shutdown-versus-tray-exit evidence for settings.json loss; an open upstream PR now directly addresses the shutdown save path and also covers the related failed-module issue.",
+    "known_information": [
+      "The issue is open and assigned to daverayment; it has five comments and detailed shutdown/WM_CLOSE reproduction evidence.",
+      "The author reports settings.json is already empty before relaunch when startup is disabled, while tray Exit preserves it.",
+      "PR 50897 is open, explicitly closes this issue, and its description says Runner's final settings write races system shutdown."
+    ],
+    "inferences": [
+      "The PR's removal of Runner's exit save may address the reported race, but the fix is not confirmed until reviewed and merged."
+    ],
+    "analysis": "The PR body provides a concrete mechanism and live linked-work relationship. No second implementation plan should compete with it. Earlier concerns about multiple writers are acknowledged in the PR, but this fast pass does not independently validate its implementation.",
+    "initial_investigation": [
+      "Read the complete live body and all five comments, including the reporter's original controlled tests, a second reporter's log sequence, and the read-only workaround.",
+      "Issue timeline links both PR 50897 and related issue 50853; PR 50897 explicitly covers both and currently remains open.",
+      "Checked the configured MuyuanMS/PowerToys fork: no matching mirror or issue-fix PR was found; moooyo/PowerToys issue 10 is a test fixture, not a fix."
+    ],
+    "information_gaps": []
+  },
   "linked_work": {
     "duplicates": [],
-    "related_issues": [],
-    "related_prs": [
+    "related_issues": [
       {
-        "number": 48363,
-        "url": "https://github.com/microsoft/PowerToys/pull/48363",
-        "state": "MERGED",
-        "relationship": "Introduced the current fast system-session-ending cleanup path and is a relevant regression boundary, not a confirmed covering fix."
+        "number": 50853,
+        "url": "https://github.com/microsoft/PowerToys/issues/50853",
+        "relationship": "Related failed-module settings issue; PR 50897 explicitly covers both."
       }
     ],
-    "covering_prs": []
+    "related_prs": [
+      {
+        "number": 50897,
+        "url": "https://github.com/microsoft/PowerToys/pull/50897",
+        "state": "OPEN",
+        "relationship": "Open fix PR; checklist explicitly closes this issue and describes the shutdown-save correction."
+      }
+    ],
+    "covering_prs": [
+      {
+        "number": 50897,
+        "url": "https://github.com/microsoft/PowerToys/pull/50897",
+        "state": "OPEN",
+        "relationship": "Removes Runner's final settings write associated with the OS shutdown race."
+      }
+    ]
   },
-  "upstream_safety": {
-    "public_actions_taken": false,
-    "detail": "No comments, labels, assignments, closures, or other public mutations were made to microsoft/PowerToys."
+  "actions": [],
+  "status": {
+    "glyph": "link",
+    "label": "Existing fix in PR 50897",
+    "detail": "The open PR explicitly closes this issue and addresses the Runner-exit write path."
+  },
+  "next_action": {
+    "glyph": "link",
+    "label": "Track PR 50897",
+    "reason": "Revalidate if the PR is rejected or closes without the shutdown-persistence correction."
   }
 }

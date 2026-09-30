@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 5,
+  "number": 50848,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_author",
+  "owes": "author",
+  "pending_author": true,
+  "waiting_since": "2026-09-28T18:03:21Z",
+  "author": "DudaQuint",
+  "generated_at": "2026-09-30T03:12:18.579Z",
+  "evaluated_at": "2026-09-30T03:12:18.579Z",
+  "source_updated_at": "2026-09-28T18:03:24Z",
+  "title": "Mouse Pointer Crosshairs freezes/locks position when clicking inside application windows",
+  "url": "https://github.com/microsoft/PowerToys/issues/50848",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-Mouse Utilities"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "status": {
+    "glyph": "…",
+    "label": "Waiting on author",
+    "detail": "The author says this affects several versions; one targeted response about the clicked window's responsiveness would distinguish it from open issue #48442."
+  },
+  "next_action": {
+    "glyph": "->",
+    "label": "Confirm the affected window state",
+    "reason": "The existing ZIP contains environment metadata but no diagnostic trace, and #48442 describes a different trigger involving an unresponsive/loading window."
+  },
+  "judgment": {
+    "status": "waiting_on_author",
+    "rationale": "The report already supplies a reproducible trigger, desktop-click recovery, version history, screenshot, and a PowerToys report ZIP; the automated analysis says that ZIP contains environment metadata but no useful trace. The newest reporter reply only confirms the issue spans several versions. Open issue #48442 is a possible duplicate, but it describes a freeze when the underlying window becomes unresponsive/loading, while this report says clicking in a client area triggers the freeze. The current Needs-Author-Feedback label was applied by the triage response after the reporter's reply, so preserve author waiting. A targeted question about whether the clicked app remains responsive is materially different from repeating the existing generic request.",
+    "evidence": [
+      "The body reports PowerToys 0.101.2362, Windows build 26200, non-elevated per-machine install, .NET version details, and the crosshair freezing on a client-area click until a desktop click.",
+      "A PowerToys report ZIP and screenshot are attached; the automated triage summary says the ZIP contained environment metadata but no error logs, crash dump, or event trace.",
+      "The latest reporter comment says the issue predates the current PowerToys version and has occurred for several versions.",
+      "Open issue #48442 describes crosshair freeze/detachment when the underlying window becomes unresponsive/loading and also notes desktop-click recovery; the trigger is not established as the same.",
+      "Current upstream InclusiveCrosshairs.cpp installs a WH_MOUSE_LL hook; MouseHookProc directly calls UpdateCrosshairsPosition on WM_MOUSEMOVE, which calls SetWindowPos and reads cursor/monitor state."
+    ],
+    "recommended_action": "Keep the existing author-wait status, ask one discriminating question about whether the clicked window remains responsive, and use maintainer-side profiling if the report remains reproducible across responsive windows.",
+    "evaluated_at": "2026-09-30T03:12:18.579Z",
+    "source_updated_at": "2026-09-28T18:03:24Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The low-level mouse hook performs position/window work synchronously on each mouse-move event, which is a plausible responsiveness risk; the report does not establish that hook delay/removal explains the click-triggered freeze, so preserve yellow confidence and author wait."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep crosshair movement work bounded in the low-level mouse hook",
+      "root_cause": "Hypothesis: calling UpdateCrosshairsPosition synchronously from MouseHookProc can delay low-level mouse-hook processing under an affected foreground window, causing tracking to stall; current evidence does not establish this over the distinct unresponsive-window trigger in #48442.",
+      "plan": [
+        "Reproduce while logging hook callback duration, WM_MOUSEMOVE delivery, target-window responsiveness, and whether the hook remains installed before and after the freeze.",
+        "If hook work is blocking or being lost, capture the latest cursor position in the callback and coalesce/enqueue visual position updates onto the existing dispatcher queue rather than performing SetWindowPos/composition work in the callback.",
+        "Add regression coverage for continuous tracking over responsive windows and during an unresponsive/loading window, verifying updates resume without a desktop click."
+      ],
+      "verification": [
+        "Compare tracking over a responsive simple app and the originally affected app while measuring hook callback duration and hook lifetime.",
+        "Verify the crosshair follows the cursor during sustained movement and resumes without requiring a desktop click."
+      ],
+      "confidence": {
+        "score": 57,
+        "level": "yellow",
+        "rationale": "The low-level hook performs synchronous window-position work and a plausible duplicate shares the recovery symptom, but the report does not show that callback latency explains the specific click-triggered freeze."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Crosshairs freeze after a click in an application client area and resume after a desktop click; the reporter says this predates the reported build.",
+    "known_information": [
+      "The report provides exact trigger/recovery behavior, PowerToys 0.101.2362, Windows build 26200, and a non-elevated per-machine install.",
+      "A screenshot and PowerToys report ZIP are attached; the triage summary says the ZIP contained environment metadata but no diagnostic trace.",
+      "The reporter says the behavior has occurred across several PowerToys versions.",
+      "Open #48442 has a related crosshair freeze but specifically ties it to an underlying window becoming unresponsive/loading."
+    ],
+    "inferences": [
+      "The shared desktop-click recovery may indicate related crosshair tracking behavior, but the different reported trigger does not establish duplication.",
+      "Synchronous work in the WH_MOUSE_LL callback may contribute to lost or delayed updates, but callback timeout/removal has not been observed."
+    ],
+    "analysis": "The available issue and source evidence support a yellow hook-responsiveness hypothesis. The minimal reporter evidence that can distinguish the potential duplicate is whether the clicked window remains responsive while the overlay freezes. Because the issue still has Needs-Author-Feedback and the new comment did not answer that question, retain pending-author metadata; do not re-request logs or reproduce steps already supplied.",
+    "initial_investigation": [
+      "Read the complete live body, both comments, attached evidence links, labels, assignees, update time, and timeline.",
+      "Checked Dedupe Digest #50863 and live issue #48442; the possible duplicate's trigger is an underlying unresponsive/loading window, not simply a client-area click.",
+      "Inspected current upstream InclusiveCrosshairs.cpp: StartDrawing installs WH_MOUSE_LL; MouseHookProc directly calls UpdateCrosshairsPosition on WM_MOUSEMOVE; that method calls SetWindowPos and reads cursor/monitor state."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the clicked application remains responsive while the crosshair is frozen, and whether the same freeze occurs in a simple responsive app such as Notepad.",
+        "why_needed": "This distinguishes a general hook/tracking problem from the unresponsive/loading-window behavior already tracked by #48442.",
+        "how_to_collect": "Reproduce once in the originally affected application and once in Notepad; state whether each target accepts keyboard/input while the crosshair is frozen."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused crosshair tracking investigation",
+      "note": "This is a yellow-confidence fork-side investigation proposal, not a completed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Confirm whether the clicked window stays responsive",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50848,
+        "body": "Thanks for the exact click-in-window freeze and desktop-click recovery steps, the attached screenshot and report ZIP, and confirming that this predates the current PowerToys version. The report ZIP summary contains environment metadata but no tracking trace. Open issue #48442 describes a related freeze when the underlying window becomes unresponsive or is loading, so one distinction remains: while the crosshair is frozen, does the clicked application still respond to keyboard/input, and does the same behavior reproduce in a simple responsive app such as Notepad? Please compare those two cases and report which one freezes. This will determine whether the existing unresponsive-window investigation applies or whether this is a separate tracking-hook failure."
+      }
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 5,
+  "number": 50876,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "gbeshers",
+  "generated_at": "2026-09-30T03:12:18.579Z",
+  "evaluated_at": "2026-09-30T03:12:18.579Z",
+  "source_updated_at": "2026-09-29T17:04:09Z",
+  "title": "TargetInvocatonException while changing mouse point to \"Inverted\"",
+  "url": "https://github.com/microsoft/PowerToys/issues/50876",
+  "labels": [
+    "Issue-Bug",
+    "Product-PowerToys Run",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "status": {
+    "glyph": "!",
+    "label": "Actionable fix hypothesis",
+    "detail": "The attached stack identifies a WPF theme refresh failure in PowerToys Run; the reported trigger and module description do not fully agree."
+  },
+  "next_action": {
+    "glyph": "->",
+    "label": "Reproduce Run theme refresh failure",
+    "reason": "Confirm whether repeated system-theme notifications reapply the same WPF ThemeMode and trigger the duplicate resource-key exception."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The stack and attached text identify a concrete PowerToys Run theme-refresh path ending in a WPF duplicate SystemColorWindowColorBrush key. Current upstream ThemeManager handles every General user-preference notification by calling UpdateTheme, and SetSystemTheme assigns Application.Current.ThemeMode on each pass. That makes redundant theme reapplication a plausible fix target, but the issue labels PowerToys Run while its form describes a Mouse Utilities setting, and the reported 0.87.1.0 build is much older than current releases. This is a lightweight hypothesis, not a confirmed root cause or completed design.",
+    "evidence": [
+      "The issue body reports PowerToys 0.87.1.0 on Windows 11 build 26200 and shows a TargetInvocationException while changing the pointer style to Inverted.",
+      "The stack runs through SystemEvents.UserPreferenceChanged, PowerLauncher.Helper.ThemeManager.OnUserPreferenceChanged, UpdateTheme, and SetSystemTheme before WPF throws that SystemColorWindowColorBrush is already present.",
+      "The linked 2026-09-29 text attachment contains the same duplicate-key exception and PowerToys Run ThemeManager stack.",
+      "Current upstream src/modules/launcher/PowerLauncher/Helper/ThemeManager.cs calls UpdateTheme for General preference changes and assigns Application.Current.ThemeMode in SetSystemTheme without checking whether the mode is already set.",
+      "The Product-PowerToys Run label and stack conflict with the report's Mouse Utilities wording, leaving the precise triggering transition uncertain."
+    ],
+    "recommended_action": "Reproduce the exact pointer-style/system-theme transition on the reported and a current build; if redundant WPF ThemeMode application reproduces the duplicate key, design a narrowly guarded refresh and a repeated-notification regression test.",
+    "evaluated_at": "2026-09-30T03:12:18.579Z",
+    "source_updated_at": "2026-09-29T17:04:09Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A repeated WPF application-theme refresh is a code-level hypothesis directly supported by the exception stack and the current Run theme handler, but the trigger mismatch and old reported version require reproduction before selecting the exact correction."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Avoid redundant WPF theme reapplication after system preference changes",
+      "root_cause": "Hypothesis: a General user-preference event causes PowerToys Run to reassign an unchanged Application ThemeMode, provoking WPF to reload a system theme dictionary that contains a duplicate SystemColorWindowColorBrush key.",
+      "plan": [
+        "Reproduce the reported pointer-style change and an explicit Windows light/dark change while PowerToys Run is active, recording whether both reach ThemeManager.SetSystemTheme.",
+        "Compare the requested ThemeMode with the current application mode and test whether skipping an unchanged assignment prevents the duplicate-key exception; retain a different fix path if the duplicate occurs without redundant assignments.",
+        "Add focused coverage for repeated identical theme notifications and verify actual dark/light/high-contrast transitions still update the Run window."
+      ],
+      "verification": [
+        "Repeat the trigger on the reported 0.87.1.0 build if available and on a current stable build.",
+        "Verify multiple identical General preference notifications do not throw, while genuine light/dark/high-contrast changes still update PowerToys Run."
+      ],
+      "confidence": {
+        "score": 62,
+        "level": "yellow",
+        "rationale": "The failing code path and duplicate key are directly identified, but the mouse-style trigger, product-area label, and old version do not establish that a redundant ThemeMode assignment is the cause."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A reported pointer-style change produces a WPF duplicate system-brush exception in PowerToys Run's system-theme refresh path.",
+    "known_information": [
+      "The report gives version 0.87.1.0, Windows build 26200, and a stack trace for the exception.",
+      "The attached text contains the same duplicate SystemColorWindowColorBrush exception and PowerToys Run ThemeManager frames.",
+      "The issue has no discussion comments, assignees, or linked PR/duplicate references."
+    ],
+    "inferences": [
+      "The WPF exception may be triggered by applying the same system ThemeMode more than once, but the stack alone does not prove that redundant assignment is necessary for the failure.",
+      "The described pointer-style action may cause a General system-preference notification, but this transition has not been verified."
+    ],
+    "analysis": "The stack is substantially more specific than the issue title and points to a fixable PowerToys Run theme-refresh path. The action therefore asks a maintainer to reproduce that path rather than requesting generic logs. The version and module/trigger mismatch keep confidence yellow.",
+    "initial_investigation": [
+      "Read the complete issue body, labels, attachment link, discussion, and timeline; the issue is open, has no comments, and has no linked work.",
+      "Inspected the linked text attachment; it repeats the duplicate resource-key exception and Run ThemeManager call stack.",
+      "Checked current upstream ThemeManager.cs: General preference changes invoke UpdateTheme, and SetSystemTheme assigns Application.Current.ThemeMode each time."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused Run theme fix investigation",
+      "note": "This approves a fork-side investigation only; the candidate is not a completed implementation-grade design."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce Run theme refresh failure",
+      "reproduce": {
+        "title": "Verify the duplicate WPF resource during theme refresh",
+        "module": "PowerToys Run",
+        "version_requirement": "First use the reported PowerToys 0.87.1.0 build if obtainable, then repeat on current stable; Windows 11 build 26200 is the reported environment.",
+        "prerequisites": [
+          "Keep PowerToys Run active while changing a Windows user preference.",
+          "Record whether the pointer-style action also changes the Windows app theme or causes a General preference notification."
+        ],
+        "setup": [
+          "Open the Windows pointer-style settings and the Windows Personalization > Colors page so the reported transition and a direct light/dark transition can be tested separately."
+        ],
+        "steps": [
+          "With PowerToys Run active, change the pointer style to Inverted as described in the issue.",
+          "Repeat while changing the Windows app mode between Light and Dark.",
+          "Repeat an unchanged theme notification if it can be generated without changing the selected mode.",
+          "Check whether PowerToys Run logs the duplicate SystemColorWindowColorBrush exception and note which transition produces it."
+        ],
+        "expected_result": "No theme transition should throw the duplicate system-brush exception; genuine theme changes should still update PowerToys Run."
+      }
+    }
+  ]
+}

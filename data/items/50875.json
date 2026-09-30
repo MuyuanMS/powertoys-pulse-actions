@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 5,
+  "number": 50875,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-30T03:23:54Z",
+  "evaluated_at": "2026-09-30T03:23:54Z",
+  "source_updated_at": "2026-09-29T14:27:07Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50875",
+  "title": "Power Rename error in context menu.",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Product-PowerRename",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "reproducible",
+    "rationale": "The report includes concrete context-menu settings, trigger, expected appearance, two screenshots, and a diagnostic ZIP. The remaining uncertainty is whether Explorer's native menu renderer or PowerRename's inserted command path causes the transparent frame.",
+    "evidence": [
+      "The reporter describes PowerToys 0.101.2362 from Microsoft Store, with standard and extended context menus enabled, and right-clicking in Explorer.",
+      "Two screenshots show the reported context-menu border/width appearance.",
+      "The attached PowerToysReport ZIP was summarized by the automated triage comment as Windows 11 build 22000 with no crash/error signature; that summary says the issue looks like context-menu rendering.",
+      "The bot asked for repro steps, but the issue body already supplies the menu setting and triggering interaction."
+    ],
+    "recommended_action": "Reproduce the reported visual defect on the cited Windows build and compare the legacy and extended Explorer menu paths before proposing a PowerRename workaround.",
+    "evaluated_at": "2026-09-30T03:23:54Z",
+    "source_updated_at": "2026-09-29T14:27:07Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerRename-specific trigger is possible because its shell extension contributes a menu item, but Explorer paints the native menu and the issue does not establish which menu implementation produces the defect."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Isolate the PowerRename context-menu rendering trigger",
+      "root_cause": "The PowerRename shell extension contributes a caption and optional icon to Explorer's native context menu; a menu-width or rendering interaction may expose an Explorer frame-paint defect, but no application-owned border drawing is evident.",
+      "plan": [
+        "Reproduce on the reported Windows 11 build with both standard and extended context-menu settings, recording whether the defect appears in each menu surface and for blank-area versus selected-item menus.",
+        "Compare the legacy QueryContextMenu insertion with the IExplorerCommand title/icon path and determine whether the contributed item or its caption changes the native menu geometry.",
+        "If the PowerRename item is shown to trigger the defect, test the smallest shell-compatible insertion or caption workaround; otherwise route the rendering defect to the Windows shell owner rather than changing unrelated PowerRename code."
+      ],
+      "verification": [
+        "On Windows 11 build 22000 with PowerToys 0.101.2362, reproduce the context-menu appearance with the reported settings and compare it with the same Explorer menu without the PowerRename entry.",
+        "Repeat on a current Windows 11 build to establish whether the behavior is limited to the reported shell version."
+      ],
+      "confidence": {
+        "score": 36,
+        "level": "red",
+        "rationale": "The visual report is concrete, but PowerRename supplies menu metadata rather than drawing the Explorer frame; a PowerToys-specific workaround is unproven."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "PowerRename's context-menu entry is reported beside a transparent/invisible right border when the standard and extended menu option is enabled; the report includes screenshots and a diagnostic archive.",
+    "known_information": [
+      "The report identifies PowerToys 0.101.2362 from Microsoft Store and the standard-and-extended context-menu setting.",
+      "The issue includes two screenshots and a PowerToys diagnostic ZIP.",
+      "The automated triage comment reports Windows 11 build 22000 and no crash/error signatures in its sanitized diagnostic subset.",
+      "The issue's bot comment requests repro detail even though the body already specifies the setting and Explorer interaction."
+    ],
+    "inferences": [
+      "The native Explorer menu renderer likely owns the frame painting, while the PowerRename item may affect the menu width or layout.",
+      "A related 2024 issue #31280 discusses PowerRename context-menu rendering but does not establish that its high-DPI/context-menu symptoms are the same transparent-border defect."
+    ],
+    "analysis": "The existing report is reproducible enough for a maintainer to test without asking for another ZIP or generic steps. Source inspection shows PowerRename inserts a menu item/title and optional icon; it does not draw the Explorer menu border. The first discriminator is whether the issue follows the PowerRename item across the two shell menu paths and Windows builds.",
+    "initial_investigation": [
+      "Inspected src/modules/powerrename/dll/PowerRenameExt.cpp: CPowerRenameMenu::QueryContextMenu inserts the command string and optional bitmap; IExplorerCommand::GetTitle and GetIcon return menu metadata.",
+      "No PowerRename-owned context-menu frame/border painting path was found in the inspected shell extension.",
+      "Issue #31280 is still open but is a broad, older context-menu report; the available evidence does not justify classifying this report as a duplicate.",
+      "The Needs-Author-Feedback label is not treated as proof that new reporter information is required because the issue body already contains the repro sequence."
+    ],
+    "information_gaps": []
+  },
+  "linked_work": {
+    "duplicates": [],
+    "related_issues": [
+      {
+        "number": 31280,
+        "url": "https://github.com/microsoft/PowerToys/issues/31280",
+        "relationship": "Older broad PowerRename context-menu report; no matching transparent-border symptom established."
+      }
+    ],
+    "related_prs": [],
+    "covering_prs": []
+  },
+  "actions": [
+    {
+      "id": "approve-power-rename-menu-render-investigation-50875",
+      "type": "approve_design",
+      "label": "Approve context-menu rendering investigation"
+    },
+    {
+      "id": "reproduce-power-rename-context-menu-border-50875",
+      "type": "reproduce",
+      "label": "Reproduce transparent Explorer menu border",
+      "note": "Screenshots, diagnostics, and the menu configuration are already present; verify locally before asking the reporter for more evidence.",
+      "reproduce": {
+        "title": "Compare PowerRename shell menu rendering",
+        "module": "PowerRename",
+        "version_requirement": "PowerToys 0.101.2362; Windows 11 build 22000 as reported, then compare a current Windows 11 build",
+        "prerequisites": [
+          "Explorer with PowerRename enabled and its standard-and-extended context-menu option active.",
+          "Use a selected renamable item for the command-insertion path; separately test right-click on empty Explorer space as described in the report."
+        ],
+        "steps": [
+          "Open the Explorer context menu using the reported setting and capture the right border when the PowerRename entry is present.",
+          "Compare the standard and extended menu surfaces and note where the PowerRename item appears.",
+          "Repeat without the PowerRename entry, then repeat on a current Windows 11 build.",
+          "Determine whether the border defect follows the PowerRename item or the Explorer menu surface independently of it."
+        ],
+        "expected_result": "Explorer renders an opaque, complete context-menu border with and without the PowerRename entry.",
+        "actual_to_confirm": "Whether adding the PowerRename command changes menu width/layout and triggers the transparent border, and whether the result depends on the shell build."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Reproduce Explorer menu rendering",
+    "detail": "Repro evidence is present; maintainer comparison must identify whether PowerRename or Explorer owns the rendering defect."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Reproduce Explorer menu rendering",
+    "reason": "Establish the shell path and Windows-build dependency before approving a PowerRename change."
+  }
+}

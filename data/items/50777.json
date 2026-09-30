@@ -1,14 +1,15 @@
 {
   "schemaVersion": 5,
+  "id": "issue-50777",
   "number": 50777,
   "kind": "issue",
   "track": "triage",
-  "stage": "reproduction_ready",
+  "stage": "needs_information",
   "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-27T13:12:00Z",
-  "evaluated_at": "2026-09-27T13:12:00Z",
-  "source_updated_at": "2026-09-27T03:49:44Z",
+  "generated_at": "2026-09-30T03:21:49Z",
+  "evaluated_at": "2026-09-30T03:21:49Z",
+  "source_updated_at": "2026-09-30T01:47:43Z",
   "title": "Powertoys Dock not populating after update, w10 x64, top, always-ontop",
   "url": "https://github.com/microsoft/PowerToys/issues/50777",
   "labels": [
@@ -19,94 +20,88 @@
     "CmdPal - Dock"
   ],
   "assignees": [],
-  "comments": 7,
-  "status": {
-    "glyph": "▶",
-    "label": "Reproduce Dock blank content",
-    "detail": "The reporter has now supplied a fresh diagnostic ZIP, settings.json, and an additional PowerToys archive. Use these existing attachments; do not request another archive."
-  },
-  "next_action": {
-    "glyph": "▶",
-    "label": "Reproduce with the supplied Dock evidence",
-    "reason": "The public symptom is sufficiently concrete for maintainer-side comparison of Dock initialization and saved configuration."
-  },
+  "comments": 17,
   "judgment": {
-    "status": "reproducible",
-    "rationale": "The Dock appears and auto-hides but lacks its expected content. The reporter has now attached a fresh PowerToys report ZIP, settings.json, and an additional archive, so maintainer reproduction and inspection can proceed without another evidence request.",
+    "status": "needs_information",
+    "rationale": "The reporter has now supplied the Command Palette settings, recent state, and bookmarks. The settings save Dock bands for the built-in Core and Bookmarks providers while both providers are disabled. Current CmdPal code removes disabled-provider dock bands and omits saved bands whose commands are unavailable, which plausibly explains the blank Dock. Confirming the effect of re-enabling those providers is more discriminating than asking for another archive.",
     "evidence": [
-      "The reporter identifies PowerToys 0.101.2373 Preview on Windows 10 x64.",
-      "The Dock appears and auto-hides but its system information and shortcuts are absent.",
-      "The reporter tried restarting, deleting a PowerToys Run JSON file, restarting Explorer, and running PowerToys as administrator without changing the symptom.",
-      "The reporter supplied PowerToysReport_2026-09-26-20-42-05.zip in a comment at 2026-09-27T03:43:12Z.",
-      "The reporter then attached settings.json and PowerToys.zip in a comment at 2026-09-27T03:49:44Z."
+      "The reporter says the Dock window appears and auto-hides but its system information and shortcuts are blank; drag/drop and the plus controls do not restore items.",
+      "The latest author comment at https://github.com/microsoft/PowerToys/issues/50777#issuecomment-5902453453 attaches Command Palette settings.json, state.json, and bookmarks.json.",
+      "The attached settings include saved Dock bands for com.microsoft.cmdpal.builtin.core and Bookmarks, while ProviderSettings marks both providers disabled.",
+      "At upstream commit 31bf904826709b81b4a9bd9756788a0596f2ff81, TopLevelCommandManager.UpdateProviderEnabledStateAsyncCore removes dock bands for a disabled provider; DockViewModel.SetupBands omits saved bands when LookupDockBand cannot find the command.",
+      "Earlier PowerToys diagnostics and a general PowerToys settings file were also supplied, but maintainers clarified that Command Palette has its own settings; the latest attachments now include those CmdPal files."
     ],
-    "recommended_action": "Reproduce the blank Dock on Windows 10 x64 and inspect the already supplied report and configuration archives; do not request another /bugreport or settings file.",
-    "evaluated_at": "2026-09-27T13:12:00Z",
-    "source_updated_at": "2026-09-27T03:49:44Z"
+    "recommended_action": "Ask the reporter to enable the Core and Bookmarks providers in Command Palette settings, restart Command Palette, and confirm whether the Dock content returns; do not request another diagnostic archive yet.",
+    "evaluated_at": "2026-09-30T03:21:49Z",
+    "source_updated_at": "2026-09-30T01:47:43Z"
   },
   "fix_assessment": {
     "status": "not_applicable",
-    "rationale": "The symptom is reproducible, but the current evidence does not yet distinguish Dock state restoration, Command Palette content initialization, or an update/migration issue. Maintainer-side reproduction should identify the failing path before proposing a fix."
+    "rationale": "The supplied settings currently point to expected disabled-provider behavior rather than a demonstrated code defect. No code fix is justified unless the reporter confirms the providers are enabled and the Dock remains blank."
   },
   "proposed_fixes": [],
   "issue_context": {
-    "summary": "After updating to PowerToys 0.101.2373 Preview, the Command Palette Dock appears and auto-hides on Windows 10 x64 but shows no system information or shortcuts. The reporter has supplied fresh diagnostics and configuration archives.",
+    "summary": "The Dock is still blank after the reporter supplied its own Command Palette configuration. That configuration pins bands from providers currently marked disabled, and CmdPal's live band lookup omits unavailable commands.",
     "known_information": [
-      "The affected component is Command Palette Dock on Windows 10 x64.",
-      "The Dock bar appears and auto-hides, but the expected system-information and shortcut areas are blank.",
-      "Restarting, deleting a PowerToys Run JSON file, restarting Explorer, and elevated launch did not resolve the symptom.",
-      "The reporter supplied a fresh PowerToysReport ZIP, settings.json, and PowerToys.zip in the latest issue comments."
+      "The issue reports PowerToys 0.101.2373 Preview on Windows 10 x64.",
+      "The Dock appears and auto-hides, but the expected system-information and shortcut content is absent.",
+      "The reporter says the configured monitor did not change and attempted to add shortcuts through the Dock edit controls.",
+      "The latest attachments include Command Palette settings.json, state.json, and bookmarks.json.",
+      "The supplied settings save Dock bands for the built-in Core and Bookmarks providers while their ProviderSettings entries have IsEnabled=false."
     ],
     "inferences": [
-      "Dock window creation and auto-hide may succeed while content initialization or persisted-state restoration fails; the exact path remains unverified.",
-      "The attached settings and diagnostic archives may narrow the cause and should be inspected before asking for anything further."
+      "The disabled provider settings may explain why the saved bands are not available to the Dock after startup.",
+      "The settings do not establish why the providers became disabled or whether enabling them will restore the expected system-information and shortcut content."
     ],
-    "analysis": "The current public evidence supports maintainer-side reproduction and archive inspection. Asking again for /bugreport or settings would duplicate evidence the reporter has already supplied.",
+    "analysis": "The direct configuration/code correspondence is a stronger lead than the earlier general PowerToys settings file. The current implementation removes dock-band items when a provider is disabled and reconstructs visible bands only from commands that are loaded. The smallest useful next step is to enable the two referenced providers and confirm whether the symptom clears.",
     "initial_investigation": [
-      "Read the live issue and current comments through 2026-09-27T03:49:44Z.",
-      "Confirmed the fresh PowerToysReport ZIP, settings.json, and additional PowerToys archive are attached.",
-      "Kept the action on maintainer reproduction because the attachments do not yet establish the failing initialization path."
+      "Read all 17 live comments, including the latest three CmdPal attachment links.",
+      "Inspected the attached settings and state at a high level; avoided copying personal bookmark names or local paths into this artifact.",
+      "Inspected TopLevelCommandManager.UpdateProviderEnabledStateAsyncCore, DockViewModel.SetupBands, and the reporter's saved provider/band state at upstream commit 31bf904826709b81b4a9bd9756788a0596f2ff81.",
+      "Found no linked duplicate, fix PR, or cross-referenced work for #50777."
     ],
-    "information_gaps": []
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether the Dock's expected content returns after enabling the built-in Core and Bookmarks providers in Command Palette settings and restarting Command Palette.",
+        "why_needed": "This distinguishes the currently visible disabled-provider configuration from an independent Dock initialization or update regression.",
+        "how_to_collect": "Enable both providers in Command Palette settings, restart Command Palette, and report whether the system-information and shortcut bands appear."
+      }
+    ]
   },
   "actions": [
     {
-      "id": "reproduce-dock-blank-50777",
-      "type": "reproduce",
-      "label": "Reproduce Dock blank content",
+      "id": "confirm-cmdpal-disabled-dock-providers-50777",
+      "type": "request_info",
+      "label": "Test Dock with Core and Bookmarks enabled",
       "primary": true,
       "confirm": true,
-      "reproduce": {
-        "title": "Verify Command Palette Dock content after update",
-        "module": "Command Palette Dock",
-        "version_requirement": "PowerToys 0.101.2373 Preview or a current development build on Windows 10 x64",
-        "prerequisites": [
-          "Windows 10 x64 test environment.",
-          "Command Palette Dock enabled and configured as described in the issue.",
-          "Use the already attached diagnostic ZIP, settings.json, and PowerToys.zip; no new archive is needed."
-        ],
-        "steps": [
-          "Inspect the attached settings.json and diagnostic ZIP for the reported Dock configuration and environment.",
-          "On Windows 10 x64, launch the Dock with the reported configuration and observe whether the bar appears and auto-hides.",
-          "Check whether the expected system-information and shortcut areas populate.",
-          "Compare initialization and persisted-state behavior with the supplied archives if the Dock remains blank.",
-          "If the symptom reproduces, capture the first failing Dock initialization or state-restoration transition for a targeted fix assessment."
-        ],
-        "expected_result": "The Dock displays its system information and shortcuts while retaining the reported auto-hide behavior; if it remains blank, the failing initialization transition is identified.",
-        "setup_requirements": [
-          "Record the exact Windows build and PowerToys build used for reproduction.",
-          "Do not ask the reporter to submit another diagnostic ZIP, settings.json, or PowerToys archive."
-        ],
-        "attachments": [
-          "https://github.com/user-attachments/files/32693866/PowerToysReport_2026-09-26-20-42-05.zip",
-          "https://github.com/user-attachments/files/32693888/settings.json",
-          "https://github.com/user-attachments/files/32693904/PowerToys.zip"
-        ]
+      "comment": {
+        "body": "Thanks for adding the Command Palette settings, state, and bookmarks files. The settings save Dock bands for the built-in Core and Bookmarks providers, but both providers are currently marked disabled. In CmdPal, disabling a provider removes its Dock bands, so this may explain why the saved items are not appearing. Please enable Core and Bookmarks in Command Palette settings, restart Command Palette, and confirm whether the system-information and shortcut bands return. This will distinguish the saved provider state from a separate Dock update/initialization problem. No additional diagnostics or configuration export are needed for this check."
       }
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Test Dock with Core and Bookmarks enabled",
+    "detail": "The supplied settings show the providers referenced by saved Dock bands are disabled; confirm the effect before treating this as a code defect."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Test Dock with Core and Bookmarks enabled",
+    "reason": "The result will distinguish disabled-provider behavior from an independent initialization regression."
+  },
+  "history": [
+    {
+      "evaluated_at": "2026-09-27T13:12:00Z",
+      "source_updated_at": "2026-09-27T03:49:44Z",
+      "judgment_status": "reproducible",
+      "action_status": "superseded_unposted",
+      "summary": "The earlier candidate recommended maintainer reproduction using the then-available report and general settings. The reporter later supplied Command Palette settings, state, and bookmarks, enabling a more discriminating configuration check."
     }
   ],
   "upstream_safety": {
     "public_actions_taken": false,
-    "detail": "No public mutation was made to microsoft/PowerToys."
+    "detail": "The earlier candidate action was not posted; this refreshed candidate has made no upstream mutation."
   }
 }

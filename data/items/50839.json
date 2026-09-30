@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 5,
+  "number": 50839,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "thePier",
+  "generated_at": "2026-09-30T03:12:18.579Z",
+  "evaluated_at": "2026-09-30T03:12:18.579Z",
+  "source_updated_at": "2026-09-28T09:20:54Z",
+  "title": "No auto-update to v0.101",
+  "url": "https://github.com/microsoft/PowerToys/issues/50839",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage"
+  ],
+  "assignees": [],
+  "comments": 0,
+  "status": {
+    "glyph": "!",
+    "label": "Low-confidence updater hypothesis",
+    "detail": "The report confirms 0.100.2 does not prompt for 0.101.x, but does not say whether the update check reports up-to-date, network failure, or a suppressed notification."
+  },
+  "next_action": {
+    "glyph": "->",
+    "label": "Confirm updater result",
+    "reason": "The exact Settings update status and a fresh report captured after checking will distinguish release selection, update-state propagation, and notification/settings causes."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "Current updater code obtains stable release information, compares the parsed GitHub version with the compiled current version, then passes the result to the runner update state and Settings view model. The issue supplies only 0.100.2, a month-old 0.101.x release, and an absent prompt. It does not show the Settings status after Check for updates, whether notifications/downloads are disabled or policy-managed, or a failed network/version log. The best current code hypothesis is a stable-release selection/comparison or update-result propagation problem, but the alternatives remain equally plausible.",
+    "evidence": [
+      "The live report says PowerToys 0.100.2 stable was installed via the executable and Check for updates did not prompt for 0.101.x after its release.",
+      "The reporter gives Windows 11 Pro but no update-check result, install scope, update policy state, error message, or diagnostic attachment; there are no comments or linked work.",
+      "Current upstream `get_github_version_info_async` extracts a release version, compares it with the compiled current version, and returns either update-available or up-to-date; the runner callback updates state and logs network errors.",
+      "The updater code also has separate notification and GPO/settings controls, so absence of a prompt alone does not distinguish a bad version result from notification suppression."
+    ],
+    "recommended_action": "Keep a red hypothesis that the stable-release result or its Settings-state handoff is wrong, and ask for the exact update status plus a fresh `/bugreport` before selecting a code change.",
+    "evaluated_at": "2026-09-30T03:12:18.579Z",
+    "source_updated_at": "2026-09-28T09:20:54Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A PowerToys updater code path is applicable, but the current evidence cannot distinguish release lookup/comparison from network, Settings-state, policy, or notification causes; treat this as a red investigation hypothesis only."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Trace stable-release detection and update-status propagation",
+      "root_cause": "Hypothesis: the stable updater is failing to recognize or surface a newer GitHub release for an installed 0.100.2 build; the issue does not yet prove whether the version lookup, comparison, or UI result is the failing step.",
+      "plan": [
+        "Reproduce Check for updates on 0.100.2 and record the release endpoint result, parsed version comparison, runner UpdateState, and Settings UI state.",
+        "If a newer stable release is returned but the state is reported as up-to-date, correct the failing version/state handoff; if the check returns a network or policy error, address only that demonstrated branch.",
+        "Add a regression test for a current stable release newer than the installed 0.100.2 version and for the distinct network-error/up-to-date outcomes."
+      ],
+      "verification": [
+        "On the affected build, invoke Check for updates and verify 0.101.x is shown as available when a newer stable release is returned.",
+        "Verify network errors and policy-disabled notifications remain distinguishable from an up-to-date result."
+      ],
+      "confidence": {
+        "score": 38,
+        "level": "red",
+        "rationale": "The updater path is identified but there is no result text or diagnostic evidence identifying which of several independent causes prevented the prompt."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A stable 0.100.2 installation does not show the expected 0.101.x update prompt, but the actual result of its manual update check is unknown.",
+    "known_information": [
+      "The issue reports 0.100.2 stable installed from an executable, Windows 11 Pro, and no prompt after selecting Check for updates.",
+      "The issue has no discussion comments, assignees, or linked PR/duplicate references."
+    ],
+    "inferences": [
+      "The stable updater may be returning or displaying an incorrect version result, but a network failure or suppressed notification could produce the same report.",
+      "The report does not establish that update download or installation failed; it only says no prompt appeared."
+    ],
+    "analysis": "The updater implementation gives a focused path to investigate, but choosing a fix before seeing the Settings result would be speculation. Ask for the exact result shown and a fresh diagnostics package immediately after checking; this is narrower and more useful than requesting generic reproduction details.",
+    "initial_investigation": [
+      "Read the entire live body and discussion, labels, assignees, update time, and timeline; no attachment or linked work is present.",
+      "Inspected current upstream `src/common/updating/updating.cpp` release extraction/version comparison and `src/runner/UpdateUtils.cpp` update callback; the settings view model sends the check request and reflects asynchronous state.",
+      "Confirmed updater notification controls and GPO branches exist, so an absent prompt alone does not establish a version-selection bug."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact status or message visible in Settings > General > Updates immediately after clicking Check for updates, and whether update notifications or automatic downloads are disabled or policy-managed.",
+        "why_needed": "This distinguishes an up-to-date/version-selection result from a network error, an available update whose notification is suppressed, or a Settings-state handoff failure.",
+        "how_to_collect": "Repeat the check and report the exact visible text/state and the notification/automatic-download setting or policy state."
+      },
+      {
+        "evidence_type": "bugreport_zip",
+        "information": "A fresh PowerToys diagnostic ZIP captured immediately after the manual update check.",
+        "why_needed": "The updater log can show whether the stable release request failed, returned 0.101.x, or completed without a newer version.",
+        "how_to_collect": "Immediately after reproducing, submit a comment containing `/bugreport` and attach the generated ZIP; redact unrelated sensitive content."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused updater investigation",
+      "note": "This is a low-confidence fork-side investigation proposal, not a completed fix design."
+    },
+    {
+      "type": "request_info",
+      "label": "Request updater result and fresh bug report",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50839,
+        "body": "Thanks for reporting that the 0.100.2 stable installation did not prompt for 0.101.x after you selected Check for updates. The updater can report an up-to-date result, a network error, or an available update whose notification is suppressed, and the issue does not show which occurred. Could you please provide:\n\n1. The exact status or message shown in Settings > General > Updates immediately after clicking Check for updates, and whether update notifications or automatic downloads are disabled or managed by policy.\n2. A fresh diagnostic ZIP captured immediately after repeating the check: add a comment containing `/bugreport` and attach the generated ZIP.\n\nThis will distinguish release detection from a failed check or a suppressed prompt. Please remove unrelated sensitive information from any attachment."
+      }
+    }
+  ]
+}

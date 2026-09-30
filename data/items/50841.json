@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 5,
+  "number": 50841,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "ReginaldTang",
+  "generated_at": "2026-09-30T03:12:18.579Z",
+  "evaluated_at": "2026-09-30T03:12:18.579Z",
+  "source_updated_at": "2026-09-28T10:41:35Z",
+  "title": "Settings window fails to navigate to the Mouse Without Borders page",
+  "url": "https://github.com/microsoft/PowerToys/issues/50841",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Mouse Without Borders"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "status": {
+    "glyph": "!",
+    "label": "Reproducible navigation hypothesis",
+    "detail": "The page is explicitly registered in Settings navigation; a page-construction or initialization failure is plausible but not confirmed."
+  },
+  "next_action": {
+    "glyph": "->",
+    "label": "Reproduce MWB Settings navigation failure",
+    "reason": "Trace the frame navigation and page constructor to identify why selecting the registered page leaves the previous page visible."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue gives a clear route and expected/actual result, and includes a recording. Current Settings XAML explicitly maps the Mouse Without Borders navigation item to MouseWithoutBordersPage; its constructor creates the view model and settings file watcher before InitializeComponent. A synchronous page-construction or initialization exception is therefore a plausible explanation for the unchanged frame, but no exception or diagnostic trace is supplied and the single triage-bot comment adds no further evidence. This remains a red hypothesis, not a completed design.",
+    "evidence": [
+      "The report reproduces on Microsoft Store PowerToys 0.101.2362: open Settings and navigate to Mouse Without Borders; the previous page remains visible.",
+      "A video attachment is present and the only discussion comment is the automated triage summary.",
+      "Current upstream ShellPage.xaml registers MouseWithoutBordersNavigationItem with `views:MouseWithoutBordersPage`; the page constructor creates MouseWithoutBordersViewModel and a settings file watcher before InitializeComponent.",
+      "No linked PR, duplicate, assignee, or maintainer diagnosis appears in the issue timeline."
+    ],
+    "recommended_action": "Reproduce the recorded route on the reported and current Store builds while capturing Settings navigation/page-construction exceptions; fix the failing activation path and add focused navigation coverage only after that branch is identified.",
+    "evaluated_at": "2026-09-30T03:12:18.579Z",
+    "source_updated_at": "2026-09-28T10:41:35Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A Settings code fix is likely applicable; because the route is registered and no error trace is available, the suspected failure during page construction/initialization has red confidence and must be reproduced before design."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Repair the failing Mouse Without Borders Settings page activation",
+      "root_cause": "Hypothesis: Settings resolves the registered MouseWithoutBordersPage route but a synchronous exception during page/view-model construction or initialization prevents the frame from replacing the previous page.",
+      "plan": [
+        "Reproduce navigation from a working Settings page on the reported 0.101.2362 Store build and a current build; capture the NavigationService/frame failure and any exception from MouseWithoutBordersPage construction.",
+        "Trace the first failing constructor, settings IPC, or file-watcher operation and correct that specific activation failure without changing unrelated module navigation.",
+        "Add a focused Settings navigation test that opens Mouse Without Borders, verifies the page content and selected navigation item, and returns to the prior page."
+      ],
+      "verification": [
+        "Repeat the issue's navigation sequence on the affected and current builds and confirm the MWB page renders.",
+        "Run focused Settings navigation coverage for MWB and a neighboring module page."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The route and page construction sites are known, but no log or error identifies which activation operation fails."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Selecting the Mouse Without Borders Settings page leaves the previous page visible on the reported Store build.",
+    "known_information": [
+      "The issue gives PowerToys 0.101.2362 Stable from Microsoft Store and exact steps to navigate to the MWB page.",
+      "The reporter expects the MWB page to appear; the observed result is that the prior page stays visible.",
+      "A recording and one automated triage comment are present; no author/maintainer diagnosis or linked work is present."
+    ],
+    "inferences": [
+      "Because the navigation route is explicitly registered, page construction or initialization may be failing after selection, but the issue does not prove that route resolution succeeds.",
+      "The recording may help reproduce the visual symptom, but no exception or Settings log is supplied."
+    ],
+    "analysis": "The report is specific enough for a maintainer to reproduce without asking the reporter to repeat the same steps. The code path narrows the first inspection to route resolution and synchronous page construction; the source does not yet justify a more specific code change.",
+    "initial_investigation": [
+      "Read the full live report, video link, sole triage-bot comment, labels, and timeline; no linked PR or duplicate was found.",
+      "Checked current upstream ShellPage.xaml route registration and MouseWithoutBordersPage constructor; the page constructs its view model and watcher before XAML initialization."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused Settings navigation investigation",
+      "note": "This approves a fork-side investigation after reproduction; it is not an implementation-grade design."
+    },
+    {
+      "type": "reproduce",
+      "label": "Reproduce MWB Settings navigation failure",
+      "reproduce": {
+        "title": "Trace Settings navigation to Mouse Without Borders",
+        "module": "Settings — Mouse Without Borders",
+        "version_requirement": "Microsoft Store PowerToys 0.101.2362 Stable as reported, then the current stable build.",
+        "prerequisites": [
+          "Settings opens and at least one other Settings page can be selected.",
+          "Mouse Without Borders is installed/enabled as in the reported build."
+        ],
+        "steps": [
+          "Open PowerToys Settings and select a different page first.",
+          "Select Mouse Without Borders from Settings navigation and record whether the navigation item becomes selected.",
+          "Capture Settings logs or debugger output for NavigationService/frame navigation and MouseWithoutBordersPage construction.",
+          "Repeat by navigating to a neighboring module page to compare page activation."
+        ],
+        "expected_result": "The MWB page replaces the previous page and renders; any failure should identify the exact route or constructor/initialization exception."
+      }
+    }
+  ]
+}

@@ -1,60 +1,117 @@
 {
+  "schemaVersion": 5,
   "number": 49808,
   "kind": "issue",
   "track": "fix",
-  "stage": "owned_elsewhere",
-  "owes": "author",
-  "pending_author": true,
-  "generated_at": "2026-08-13T22:33:53.4392071+08:00",
-  "status": {
-    "glyph": "🔗",
-    "label": "Fix expected in the next version",
-    "detail": "A contributor says the next Power Display release contains bug fixes and compatibility improvements; the reporter agreed to retest."
-  },
-  "next_action": {
-    "glyph": "⏳",
-    "label": "Wait for author retest",
-    "reason": "The useful next signal is whether the triple-monitor problem remains after the announced update."
-  },
-  "actions": [],
-  "confidence": "High",
-  "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-  "source_updated_at": "2026-08-11T16:10:54Z",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-30T03:23:54Z",
+  "evaluated_at": "2026-09-30T03:23:54Z",
+  "source_updated_at": "2026-09-29T15:01:44Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/49808",
+  "title": "Power Display: Inconsistent triple monitor detection after Maximum Compatibility update",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
+  "comments": 4,
   "judgment": {
-    "status": "waiting_on_author",
-    "rationale": "A contributor says the next Power Display release contains bug fixes and compatibility improvements; the reporter agreed to retest.",
+    "status": "needs_information",
+    "rationale": "The reporter has now confirmed the third monitor is still missing on a latest build and suspects identical monitor names; a second user separately reports USB-C hub displays missing. The exact current version and per-display connection/discovery state are needed to distinguish inventory loss from unsupported control capabilities.",
     "evidence": [
-      "A contributor says the next Power Display release contains bug fixes and compatibility improvements; the reporter agreed to retest."
+      "The original report describes an intermittent missing third display in a triple-monitor setup and unavailable brightness/contrast/volume controls; the original version was PowerToys v0.100.2.",
+      "A maintainer said fixes/compatibility improvements would arrive in a later version; the reporter replied that the third monitor is still missing on the latest version and suspects the missing monitor shares a name with another.",
+      "A second user reports that PowerToys 0.101 does not detect displays attached through a USB-C hub.",
+      "Current Power Display source uses DevicePath-based monitor identity and classifies DisplayConfig inventory into WMI and DDC/CI routes; friendly name is logged separately."
     ],
-    "recommended_action": "The useful next signal is whether the triple-monitor problem remains after the announced update.",
-    "evaluated_at": "2026-08-14T00:05:43.6608691Z",
-    "source_updated_at": "2026-08-11T16:10:54Z"
+    "recommended_action": "Request the exact current version and a per-display topology/visibility comparison; use those details to decide whether the failure is inventory discovery or capability routing.",
+    "evaluated_at": "2026-09-30T03:23:54Z",
+    "source_updated_at": "2026-09-29T15:01:44Z"
   },
-  "schemaVersion": 5,
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "Fix proposal not applicable for issue in stage 'owned_elsewhere' / judgment 'waiting_on_author'."
+    "status": "proposed",
+    "rationale": "A discovery or WMI/DDC route mismatch is plausible, but the current thread combines direct and USB-C-connected monitor reports and lacks the exact topology needed to choose a safe fix."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Preserve every attached display through Power Display discovery and routing",
+      "root_cause": "A display may be lost between the Windows DisplayConfig inventory and Power Display's WMI/DDC controller classification, particularly on a dock/USB-C path; duplicate friendly names alone are less likely because current monitor identity is based on a DevicePath.",
+      "plan": [
+        "Compare DisplayConfigInventory.GetAllMonitorDisplayInfo output with MonitorManager.DiscoverFromAllControllersAsync classification for the reporter's exact topology.",
+        "Trace each display by DevicePath through MonitorIdentity.FromDevicePath and the WMI/DDC route; do not use friendly name or model ID as a unique monitor key.",
+        "If a path is dropped or capability-mapped incorrectly, preserve each distinct physical path and report unsupported controls per monitor; add tests for identical model/friendly names and docked displays."
+      ],
+      "verification": [
+        "With the reporter's three-monitor topology, verify that every display Windows enumerates appears in Power Display, and that only genuinely unsupported brightness/contrast/volume controls are disabled."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The current source separates monitor identity from friendly name, but the report does not identify whether Windows, DisplayConfig, or a Power Display controller omits the third monitor."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "Power Display: Inconsistent triple monitor detection after Maximum Compatibility update",
-    "initial_investigation": [
-      "Inspected upstream issue title and report metadata."
+    "summary": "The original triple-monitor report now has a current confirmation that one display is still missing; another commenter reports a similar detection problem through a USB-C hub, but the exact affected topology and build are not yet known.",
+    "known_information": [
+      "The original report describes a triple-monitor setup where the third display is intermittently absent and some controls are greyed out.",
+      "The original report lists PowerToys v0.100.2 and Windows build 26200.8973.",
+      "A maintainer promised compatibility fixes in a later version; the reporter subsequently says the latest version still misses the third monitor and suggests two monitors may share a name.",
+      "Another commenter separately reports that PowerToys 0.101 misses displays attached to a USB-C hub.",
+      "The current code's MonitorIdentity derives Monitor.Id from Windows DevicePath, while MonitorManager classifies DisplayConfig inventory into WMI and DDC/CI routes."
     ],
     "inferences": [
-      "Potential module or environment configuration conflict."
+      "A duplicate friendly name is not by itself proof of a collision because the inspected Power Display identity is DevicePath-based.",
+      "The missing display may be absent from the Windows inventory or lost during Power Display's controller/capability routing; current evidence does not select between them."
     ],
-    "known_information": [
-      "Issue reported on upstream PowerToys repository."
+    "analysis": "The previous artifact's author-wait state is no longer valid: the reporter responded that the issue persists after the promised update. A targeted monitor-topology request can determine whether Windows itself enumerates the display and whether the failure correlates with repeated models, a dock path, or controller capability.",
+    "initial_investigation": [
+      "Read the full issue body and all four comments, including the maintainer's later-version statement, the author's latest-build confirmation, and the separate USB-C hub report.",
+      "Inspected current src/modules/powerdisplay/PowerDisplay.Lib/Services/MonitorManager.cs and Models/MonitorIdentity.cs: discovery starts from DisplayConfig inventory, routes by DevicePath, and supports distinct physical devices that share an EDID/model ID.",
+      "No covering upstream PR, current fix, or configured MuyuanMS/PowerToys mirror was found; the earlier maintainer comment did not link a concrete fix."
     ],
     "information_gaps": [
       {
-        "information": "Fresh PowerToys diagnostic ZIP",
-        "why_needed": "Confirm exact module logs and environment state at crash time",
-        "how_to_collect": "Comment /bugreport immediately after reproducing",
-        "evidence_type": "bugreport_zip"
+        "evidence_type": "monitor_topology",
+        "information": "For the original reporter's current setup, the model/name and direct-versus-dock/USB-C connection of each display, whether Windows Display Settings lists all three, and which display Power Display omits.",
+        "why_needed": "This distinguishes a Windows/DisplayConfig enumeration failure from Power Display's WMI/DDC capability routing and tests whether the suspected same-name displays are actually distinct device paths.",
+        "how_to_collect": "List each display's model and connection path and compare the count/names in Windows Settings > System > Display with PowerToys > Power Display; omit serial numbers."
+      },
+      {
+        "evidence_type": "powertoys_version",
+        "information": "The exact PowerToys About version on which the reporter most recently confirmed the missing display.",
+        "why_needed": "The original report is from 0.100.2 and the latest reply does not name the build, so it is not possible to verify which compatibility changes were tested.",
+        "how_to_collect": "Read the version from PowerToys About and include it with the same topology comparison."
       }
-    ],
-    "analysis": "Lightweight revalidation pass confirmed issue report structure and metadata."
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-power-display-discovery-design-49808",
+      "type": "approve_design",
+      "label": "Approve monitor-discovery investigation"
+    },
+    {
+      "id": "request-power-display-topology-49808",
+      "type": "request_info",
+      "label": "Confirm Power Display monitor topology",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for confirming that the third display is still missing on a later build and for noting that it may share a name with another monitor. Another user separately reports a USB-C-hub case, so the connection path matters.\n\n**Needed**\n1. Please provide the exact PowerToys About version.\n2. List each monitor model and whether it is connected directly or through a dock/USB-C hub; omit serial numbers.\n3. Confirm whether Windows Settings > System > Display shows all three, and identify which one Power Display omits.\n\nThis will distinguish a Windows display-enumeration gap from Power Display's controller/capability routing and test whether the same-name suspicion is relevant."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Confirm Power Display monitor topology",
+    "detail": "The report persists after a later version, but the missing-display boundary and connection path are not established."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Confirm Power Display monitor topology",
+    "reason": "Use the exact version and Windows-versus-Power-Display monitor lists to select the failing discovery stage."
   }
 }

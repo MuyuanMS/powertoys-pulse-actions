@@ -2,13 +2,13 @@
   "schemaVersion": 5,
   "number": 50760,
   "kind": "issue",
-  "track": "triage",
-  "stage": "needs_information",
-  "owes": "author",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-25T03:39:54.16+08:00",
-  "evaluated_at": "2026-09-25T03:39:54.16+08:00",
-  "source_updated_at": "2026-09-24T08:16:49Z",
+  "generated_at": "2026-09-30T03:23:54Z",
+  "evaluated_at": "2026-09-30T03:23:54Z",
+  "source_updated_at": "2026-09-29T09:21:49Z",
   "url": "https://github.com/microsoft/PowerToys/issues/50760",
   "title": "MWB 'Encryption Key' UX is terrible",
   "labels": [
@@ -16,75 +16,100 @@
     "Needs-Triage"
   ],
   "assignees": [],
-  "comments": 0,
+  "comments": 1,
   "judgment": {
     "status": "needs_information",
-    "rationale": "A bounded interaction with expected feedback is needed to separate documentation/labeling issues from a functional connection failure and to define acceptance criteria.",
+    "rationale": "The screenshot and discussion establish confusing key/device terminology and a Connect action with no visible result, but they do not identify which Connect control/state transition failed or the acceptance criteria. The report is on an older build.",
     "evidence": [
-      "The report targets Mouse Without Borders on PowerToys v0.101.2362.0 installed through WinGet.",
-      "The attached screenshot shows the encryption-key UI.",
-      "The reporter says Connect appears to do nothing and asks what the key, device name, New key, and duplicate Connect buttons mean.",
-      "Actual Behavior is recorded as NA and there are no follow-up comments or diagnostics."
+      "The reporter supplied a screenshot and says the security key, New key, device name, and two Connect buttons are unclear.",
+      "The reporter says clicking Connect produces no feedback; Actual Behavior is recorded as NA and no concrete connected-peer state is described.",
+      "A second commenter agreed that setup and the security key were confusing.",
+      "The report targets Mouse Without Borders 0.101.2362.0 from WinGet."
     ],
-    "recommended_action": "Request bounded MWB Connect repro",
-    "evaluated_at": "2026-09-25T03:39:54.16+08:00",
-    "source_updated_at": "2026-09-24T08:16:49Z"
+    "recommended_action": "Ask for one bounded Connect scenario and the current version; do not request another generic repro checklist or a bug report ZIP.",
+    "evaluated_at": "2026-09-30T03:23:54Z",
+    "source_updated_at": "2026-09-29T09:21:49Z"
   },
   "fix_assessment": {
-    "status": "not_applicable",
-    "rationale": "No concrete repository fix can be proposed until the missing observable behavior and trigger are supplied."
+    "status": "proposed",
+    "rationale": "A focused UX fix is plausible because the report identifies ambiguous controls and absent feedback, but the specific page and failed transition are not yet mapped to the current UI."
   },
-  "proposed_fixes": [],
+  "proposed_fixes": [
+    {
+      "title": "Clarify the MWB key-sharing and Connect flow",
+      "root_cause": "The current user-facing flow may expose key-sharing and connection controls without making the remote-machine requirement, each Connect action, or its result obvious; the report does not yet identify the exact failing control.",
+      "plan": [
+        "Map the screenshot's two Connect controls and New key action to their current Mouse Without Borders handlers and state transitions.",
+        "Make the security-code and remote-device instructions explicit, provide a deliberate copy affordance with confirmation if key sharing is the intended flow, and distinguish the purpose of each Connect control.",
+        "Ensure connection attempts surface connecting, connected, invalid-key, and timeout/network outcomes at the control the user invoked; add focused UI coverage for those states."
+      ],
+      "verification": [
+        "On two physical computers running the same current PowerToys build, follow the documented key-sharing path and verify each Connect action has an unambiguous result for success, mismatched key, and unavailable peer."
+      ],
+      "confidence": {
+        "score": 48,
+        "level": "red",
+        "rationale": "The user-observed confusion is supported by a screenshot and another user's agreement, but the exact settings screen, control mapping, and failed behavior are not established."
+      }
+    }
+  ],
   "issue_context": {
-    "summary": "The Mouse Without Borders encryption-key screen is reported as unclear and provides no visible feedback for Connect, but the report bundles multiple UX questions without identifying one reproducible failure and expected outcome.",
+    "summary": "The report and one corroborating comment describe confusion around sharing the Mouse Without Borders security code and using Connect, but no single failed connection scenario or expected outcome is specified.",
     "known_information": [
-      "The report targets Mouse Without Borders on PowerToys v0.101.2362.0 installed through WinGet.",
-      "The attached screenshot shows the encryption-key UI.",
-      "The reporter says Connect appears to do nothing and asks what the key, device name, New key, and duplicate Connect buttons mean.",
-      "Actual Behavior is recorded as NA and there are no follow-up comments or diagnostics."
+      "The report is for Mouse Without Borders 0.101.2362.0 installed through WinGet and includes a screenshot of the key UI.",
+      "The reporter says the key is selectable/read-only, New key and device-name semantics are unclear, and clicking Connect appears to give no feedback.",
+      "Another commenter independently says setup and the security key were confusing.",
+      "The current source's SetupPage2a has SecurityCodeField, ComputerNameField, and a LinkButton; SetupPage3a performs an automatic connection attempt and displays Connecting, Connected, invalid-key, or connection-error status."
     ],
     "inferences": [
-      "The primary defect may be missing action status/validation feedback, but the intended workflow and exact failure are not confirmed."
+      "Missing explanatory copy or action feedback is plausible, but the inspected onboarding flow may not be the same page shown in the issue screenshot.",
+      "The issue may combine a documentation/labeling request with a real connection failure; the record does not distinguish them."
     ],
-    "analysis": "A bounded interaction with expected feedback is needed to separate documentation/labeling issues from a functional connection failure and to define acceptance criteria.",
+    "analysis": "The existing report is more useful than a generic request for logs: it includes the screen and the specific confusing controls. A narrowly scoped reporter answer about which button and the exact outcome can map the screenshot to a code path and determine whether this is a connection defect or a UX-only request.",
     "initial_investigation": [
-      "Read the complete issue body, screenshot reference, labels, and current activity.",
-      "No comments, linked work, diagnostics, or concrete code path are present."
+      "Inspected src/modules/MouseWithoutBorders/App/Form/Settings/SetupPage2a.cs and SetupPage2a.Designer.cs: the visible onboarding fields are SecurityCodeField and ComputerNameField; LinkButtonClick initializes the remote machine and proceeds to SetupPage3a.",
+      "Inspected SetupPage3a.OnLoad and UpdateAnimation: this path automatically attempts the connection and reports connecting, success, invalid key, or network/firewall failure.",
+      "The code path does not match the report's stated two Connect buttons/New key controls with enough certainty to claim a root cause; no linked fix, covering PR, or configured fork mirror was found."
     ],
     "information_gaps": [
       {
         "evidence_type": "behavior_confirmation",
-        "information": "One specific interaction that fails, including the entered values/state, what the reporter expected, and what actually happened after clicking Connect.",
-        "why_needed": "This distinguishes missing UX explanation from a connection or validation defect and supplies acceptance criteria.",
-        "how_to_collect": "Reply with one numbered scenario, beginning with the exact screen state and ending with the visible result."
+        "information": "One exact interaction: which Connect button/page was used, whether both machines were running Mouse Without Borders, which non-secret fields were populated, and what was visibly shown on each machine after the click.",
+        "why_needed": "This distinguishes a failed connection/validation transition from a UI-only explanation or feedback problem and identifies the current handler to investigate.",
+        "how_to_collect": "Reply with a short numbered scenario and mask the actual security key; include the screen state before clicking and the visible result afterward."
       },
       {
         "evidence_type": "powertoys_version",
-        "information": "Whether the same interaction reproduces on the latest stable PowerToys build.",
-        "why_needed": "The report is tied to an older build and may already have changed.",
-        "how_to_collect": "Retry the same scenario on the latest stable release and include the About version."
+        "information": "The exact About version used for the scenario and whether the same sequence reproduces on the latest stable build.",
+        "why_needed": "The report is tied to 0.101.2362.0; a newer build may already have changed the MWB setup UI.",
+        "how_to_collect": "Read the version from PowerToys About and repeat only the same scenario on the latest stable release."
       }
     ]
   },
   "actions": [
     {
-      "id": "request-bounded-mwb-connect-repro-50760",
+      "id": "approve-mwb-connect-ux-design-50760",
+      "type": "approve_design",
+      "label": "Approve MWB Connect UX investigation"
+    },
+    {
+      "id": "request-mwb-connect-scenario-50760",
       "type": "request_info",
-      "label": "Request bounded MWB Connect repro",
+      "label": "Clarify MWB Connect result",
       "primary": true,
       "comment": {
-        "body": "The screenshot and the questions about New key, Security key, Device name, and the two Connect buttons are useful. To turn this into an actionable fix, please provide:\n\n1. One numbered scenario focused on Connect: the exact screen state and values entered, what you expected to happen, and what actually happened after clicking the button, including any visible or missing feedback.\n2. The result of retrying that same scenario on the latest stable PowerToys release, including the About version.\n\nThis will distinguish unclear UX copy or controls from a connection or validation failure and define the acceptance criteria."
+        "body": "Thanks for the screenshot and for identifying the unclear Security key, New key, device-name, and Connect controls; another user also confirmed the setup is confusing.\n\n**Needed**\n1. Please provide one short numbered scenario: which Connect button and screen you used, whether Mouse Without Borders was running on both machines, which fields you filled (mask the actual security key), and what appeared on each machine after clicking.\n2. Give the exact PowerToys About version and confirm whether the same scenario reproduces on the latest stable release.\n\nThis will distinguish a connection failure from a UI-only explanation or feedback issue and identify the current handler to investigate."
       }
     }
   ],
   "status": {
     "glyph": "?",
-    "label": "Request bounded MWB Connect repro",
-    "detail": "A bounded interaction with expected feedback is needed to separate documentation/labeling issues from a functional connection failure and to define acceptance criteria."
+    "label": "Clarify MWB Connect result",
+    "detail": "The screenshot identifies confusing controls, but the exact page and connection outcome remain ambiguous."
   },
   "next_action": {
     "glyph": "?",
-    "label": "Request bounded MWB Connect repro",
-    "reason": "Obtain the missing discriminating evidence before designing changes."
+    "label": "Clarify MWB Connect result",
+    "reason": "Map the reported control to the correct UI path and acceptance criteria before a design is approved."
   }
 }

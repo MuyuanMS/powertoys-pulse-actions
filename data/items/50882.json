@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50882",
+  "number": 50882,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-30T03:21:49Z",
+  "evaluated_at": "2026-09-30T03:21:49Z",
+  "source_updated_at": "2026-09-29T17:55:01Z",
+  "title": "Recent monitor over nvidia GPU doesnt detect",
+  "url": "https://github.com/microsoft/PowerToys/issues/50882",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-PowerDisplay"
+  ],
+  "assignees": [],
+  "comments": 2,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report gives a concrete mixed-GPU topology, Windows build, PowerToys version, and the result that the secondary monitor is detected while the newer primary is not. This resembles open issue #47623's first-enumerated-monitor symptom, but the hybrid-adapter setup could be a distinct path. A red, test-first enumeration hypothesis is appropriate; a primary-only check can distinguish it from a monitor-specific detection problem.",
+    "evidence": [
+      "The reporter uses PowerToys 0.100.2 on Windows build 26200 with a dedicated NVIDIA GPU and an AMD integrated GPU.",
+      "The reported setup has a modern primary connected by HDMI to the NVIDIA GPU and a legacy secondary connected through an HDMI-to-VGA adapter to the integrated GPU; Power Display detects only the secondary.",
+      "The reporter says connecting the primary directly to the iGPU did not resolve the symptom, but does not state that the secondary was disconnected for that test.",
+      "The automated triage comment asked the reporter to confirm on the latest stable release; no author reply followed.",
+      "Open issue #47623 reports that only the first enumerated monitor is detected; #48898 reports no monitors at all, and #48977 concerns a monitor disappearing/duplicating around sleep. These are related but do not prove the same root cause.",
+      "At upstream commit 31bf904826709b81b4a9bd9756788a0596f2ff81, MainViewModel.InitializeAsync calls MonitorManager.DiscoverMonitorsAsync and DisplayConfigInventory.GetAllMonitorDisplayInfo enumerates active display paths keyed by device path."
+    ],
+    "recommended_action": "Approve a test-first investigation of mixed-adapter monitor enumeration and ask the reporter to test the primary monitor by itself, so the result can be compared with the open first-enumerated-monitor report #47623.",
+    "evaluated_at": "2026-09-30T03:21:49Z",
+    "source_updated_at": "2026-09-29T17:55:01Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked PR or concrete fix attempt is present. A possible enumeration/adapter-association defect fits the symptom and has a close open comparator in #47623, but an AOC-specific detection or topology path remains possible."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Preserve monitor targets across mixed-GPU discovery",
+      "root_cause": "Power Display may drop or misassociate an active monitor target when the system combines integrated and discrete GPU outputs. This is only a red hypothesis; the report does not establish whether the primary is absent from active display-path inventory or is rejected later by monitor discovery.",
+      "plan": [
+        "Reproduce the reported topology on a current PowerToys build and trace the primary target through DisplayConfigInventory.GetAllMonitorDisplayInfo and MonitorManager.DiscoverMonitorsAsync.",
+        "Compare the mixed-GPU result with a test where only the primary monitor is connected; identify whether the target is lost during active-path enumeration or later DDC/CI discovery.",
+        "If a target is dropped or collapsed, preserve each active monitor by its unique device path across discovery and controller routing rather than relying on adapter or enumeration order.",
+        "Add focused coverage for multiple active paths across integrated and discrete adapters and verify that existing single-adapter discovery remains unchanged."
+      ],
+      "verification": [
+        "Test the reporter's hybrid NVIDIA/AMD topology on the latest stable build and a current development build.",
+        "Verify both displays appear when connected together and determine whether the primary appears when it is the only monitor connected.",
+        "Run the focused PowerDisplay discovery tests and build."
+      ],
+      "confidence": {
+        "score": 39,
+        "level": "red",
+        "rationale": "The symptom resembles a known open enumeration report, but the supplied evidence does not isolate enumeration from monitor capability or adapter-specific behavior."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Power Display sees a legacy secondary display but not the modern primary in a mixed NVIDIA/iGPU setup; a similar first-enumerated-only issue is open, but the primary-only result is unknown.",
+    "known_information": [
+      "The report is for PowerToys 0.100.2 and Windows build 26200.",
+      "The primary monitor is connected to the dedicated NVIDIA output and the secondary to the AMD integrated output through an HDMI-to-VGA adapter.",
+      "The secondary is detected and the primary is not; routing the primary directly to the iGPU reportedly did not resolve it.",
+      "Open issue #47623 reports only the first enumerated monitor appearing; #48898 and #48977 describe related but different detection symptoms.",
+      "The automated triage comment already requested confirmation on the latest stable release; no author response is present."
+    ],
+    "inferences": [
+      "A multiple-adapter enumeration or association problem could explain the missing primary and may overlap #47623.",
+      "The available report does not prove that the primary alone fails or establish whether the failure occurs in active-path enumeration, monitor capability detection, or a later controller stage."
+    ],
+    "analysis": "The report is specific enough to propose a low-confidence PowerDisplay investigation, but the likely open duplicate cannot be asserted without a discriminating test. Asking whether the primary is detected with the secondary physically disconnected distinguishes a first-enumerated-only condition from primary-specific detection; this is separate from the already-posted latest-stable request.",
+    "initial_investigation": [
+      "Read the complete issue body and both comments; the latest author comment says moving the primary to the iGPU alone did not resolve the symptom but does not establish whether the secondary was disconnected.",
+      "Inspected MainViewModel.InitializeAsync and DisplayConfigInventory.GetAllMonitorDisplayInfo at upstream commit 31bf904826709b81b4a9bd9756788a0596f2ff81.",
+      "Rechecked #47623, #48898, and #48977, including their comments; all remain open, with #47623 the closest first-enumerated-only symptom but a different reported topology.",
+      "No linked PR or cross-reference provides an existing fix for #50882."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "monitor_topology",
+        "information": "Whether the primary AOC monitor appears in Power Display when it is the only connected display, with the secondary physically disconnected.",
+        "why_needed": "This distinguishes a first-enumerated/multiple-monitor issue similar to #47623 from primary-specific monitor detection or adapter behavior.",
+        "how_to_collect": "Disconnect the secondary display, connect only the primary, run a Power Display scan, and report whether the primary is listed; then reconnect the secondary."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-mixed-gpu-powerdisplay-investigation-50882",
+      "type": "approve_design",
+      "label": "Start mixed-GPU enumeration investigation",
+      "primary": true,
+      "confirm": true
+    },
+    {
+      "id": "request-primary-only-monitor-test-50882",
+      "type": "request_info",
+      "label": "Test Power Display with primary monitor alone",
+      "primary": false,
+      "confirm": true,
+      "comment": {
+        "body": "Thanks for recording the NVIDIA/iGPU topology and confirming that the secondary appears while the primary does not. Open issue #47623 also reports that only one enumerated monitor is shown, but your adapter setup may be different. Please disconnect the secondary monitor, scan Power Display with only the primary AOC connected, and report whether it appears; then reconnect the secondary. This will distinguish a first-enumerated/multiple-monitor problem from primary-specific detection. The existing triage comment already asked you to confirm on the latest stable release, so I am not repeating that request here."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Start mixed-GPU enumeration investigation",
+    "detail": "Fast triage only: a red hypothesis may overlap #47623; no duplicate or converged design is established."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Test Power Display with primary monitor alone",
+    "reason": "The result separates a multi-monitor enumeration symptom from primary-specific detection."
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No action from this candidate was posted."
+  }
+}

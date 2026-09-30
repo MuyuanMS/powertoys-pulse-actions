@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 5,
+  "id": "issue-50896",
+  "number": 50896,
+  "kind": "issue",
+  "track": "triage",
+  "stage": "triage",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-30T03:21:49Z",
+  "evaluated_at": "2026-09-30T03:21:49Z",
+  "source_updated_at": "2026-09-30T02:34:02Z",
+  "title": "Advanced Paste: Advanced AI fails with reasoning models requiring reasoning_effort:none for Chat Completions function tools",
+  "url": "https://github.com/microsoft/PowerToys/issues/50896",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Advanced Paste"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The report includes a repeatable comparison and the exact OpenAI 400 response. Current Advanced Paste code registers OpenAI Chat Completions and enables automatic function calling without setting a model/API compatibility policy. The evidence supports a compatibility fix hypothesis, but the appropriate endpoint/parameter policy still needs a maintainer reproduction; this is not a converged design.",
+    "evidence": [
+      "The reporter supplied six steps using PowerToys 0.100.2, OpenAI gpt-6-luna, and Advanced AI built-in functions.",
+      "The same configured model succeeds with Advanced AI disabled and fails with HTTP 400 after Advanced AI is enabled.",
+      "The reported API response says reasoning_effort is incompatible with function tools for gpt-6-luna on /v1/chat/completions and names reasoning_effort='none' or /v1/responses as alternatives.",
+      "At upstream source commit 31bf904826709b81b4a9bd9756788a0596f2ff81, AdvancedAIKernelService.AddChatCompletionService registers OpenAI with AddOpenAIChatCompletion and GetPromptExecutionSettings returns FunctionChoiceBehavior.Auto() without a reasoning-effort setting.",
+      "Related issue #49838 is closed and concerned an explicit reasoning_effort=minimal value in the custom-actions path; its report identifies a distinct failure from this Advanced AI function-tool request."
+    ],
+    "recommended_action": "Approve the bounded compatibility-fix investigation and reproduce the exact gpt-6-luna function-tool request before choosing model capability routing or request parameters.",
+    "evaluated_at": "2026-09-30T03:21:49Z",
+    "source_updated_at": "2026-09-30T02:34:02Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "No linked PR or other concrete fix attempt covers the Advanced AI function-tool request. The likely defect is an incompatibility between the configured Chat Completions request and reasoning-model tool support; a model-aware endpoint/parameter policy is a hypothesis, not a confirmed root cause."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Make Advanced AI tool calls compatible with reasoning-model APIs",
+      "root_cause": "AdvancedAIKernelService enables automatic function tools on the OpenAI Chat Completions path, while the reported reasoning model rejects that tool request unless reasoning is disabled or the Responses API is used. The correct compatibility policy is unverified.",
+      "plan": [
+        "Reproduce the issue with the reported OpenAI model, the same provider configuration, and Advanced AI toggled off/on; record the endpoint and serialized request settings without capturing credentials.",
+        "Determine which provider/model capability signal can select a supported tool-calling request without applying reasoning_effort=none to models that reject that parameter.",
+        "Implement capability-aware routing or request settings in the Advanced Paste OpenAI path while preserving existing Azure OpenAI and non-reasoning model behavior.",
+        "Add focused coverage for a reasoning model with function tools and for an ordinary model whose request must remain unchanged."
+      ],
+      "verification": [
+        "Repeat the reporter's gpt-6-luna sequence and verify the function-tool request succeeds through a supported API path.",
+        "Verify an unsupported reasoning_effort value is not sent to models that reject it.",
+        "Run the focused Advanced Paste tests and build."
+      ],
+      "confidence": {
+        "score": 72,
+        "level": "yellow",
+        "rationale": "The API error and current request setup align closely, but the correct compatibility signal and endpoint choice need a maintainer-side reproduction and validation."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Advanced Paste works with the reporter's OpenAI reasoning model until Advanced AI adds built-in function tools; the resulting Chat Completions request is rejected.",
+    "known_information": [
+      "The issue reports PowerToys 0.100.2 and OpenAI model gpt-6-luna.",
+      "With Advanced AI disabled, the same provider works; enabling it produces HTTP 400.",
+      "The error explicitly names reasoning_effort and offers disabling it or using /v1/responses as alternatives.",
+      "The current AdvancedAIKernelService code uses AddOpenAIChatCompletion and FunctionChoiceBehavior.Auto() for the reported request path.",
+      "Issue #49838 is closed and describes a separate custom-actions failure caused by explicitly setting reasoning_effort=minimal."
+    ],
+    "inferences": [
+      "The failure likely arises from a mismatch between Chat Completions tool-call settings and this model's reasoning support.",
+      "A capability-aware endpoint or request-setting change may address the mismatch, but neither the correct selection policy nor a general fix is confirmed."
+    ],
+    "analysis": "The exact error and off/on comparison are stronger than a generic failure report and identify the Advanced AI tool-call request as the discriminating path. The related closed issue should not be treated as a duplicate because it concerned a different request path and an explicitly hardcoded parameter. A maintainer reproduction should establish a safe compatibility policy before implementation.",
+    "initial_investigation": [
+      "Inspected AdvancedAIKernelService.AddChatCompletionService and GetPromptExecutionSettings at upstream commit 31bf904826709b81b4a9bd9756788a0596f2ff81.",
+      "Confirmed the source registers OpenAI Chat Completions and enables FunctionChoiceBehavior.Auto without setting ReasoningEffort.",
+      "Rechecked #49838: it is closed and describes the custom-actions path with an explicit minimal value, not this Advanced AI function-tool path.",
+      "Found no linked fix PR or cross-referenced work for #50896."
+    ],
+    "information_gaps": []
+  },
+  "actions": [
+    {
+      "id": "approve-advanced-ai-reasoning-compatibility-50896",
+      "type": "approve_design",
+      "label": "Start Advanced AI reasoning-model design",
+      "primary": true,
+      "confirm": true
+    },
+    {
+      "id": "reproduce-gpt6-luna-tool-request-50896",
+      "type": "reproduce",
+      "label": "Reproduce gpt-6-luna tool request",
+      "primary": false,
+      "confirm": false,
+      "note": "Maintainer-side reproduction is needed to choose a safe endpoint or request-setting policy.",
+      "reproduce": {
+        "title": "Compare Advanced Paste function-tool requests",
+        "module": "Advanced Paste",
+        "version_requirement": "PowerToys 0.100.2 or a current development build",
+        "prerequisites": [
+          "Configure an OpenAI gpt-6-luna provider using a locally held valid credential; never copy or publish the credential.",
+          "Keep the same provider/model configuration for both runs."
+        ],
+        "steps": [
+          "Run Paste with AI while Advanced AI built-in functions are disabled and record whether the model request succeeds.",
+          "Enable Advanced AI built-in functions, copy text, and run the same Paste with AI request.",
+          "Capture the returned HTTP error and determine whether the request used /v1/chat/completions or /v1/responses without recording credentials."
+        ],
+        "expected_result": "The Advanced AI tool-call request uses an API configuration supported by the selected model, while the non-Advanced-AI baseline remains unchanged."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "!",
+    "label": "Start Advanced AI reasoning-model design",
+    "detail": "Fast triage only: a yellow compatibility hypothesis is supported by the exact API error; no converged design exists."
+  },
+  "next_action": {
+    "glyph": "!",
+    "label": "Reproduce gpt-6-luna tool request",
+    "reason": "Confirm the request endpoint and compatibility policy before implementation."
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "Candidate only; no upstream comment, label, assignment, or pull request was created."
+  }
+}

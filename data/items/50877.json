@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 5,
+  "number": 50877,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-09-30T03:23:54Z",
+  "evaluated_at": "2026-09-30T03:23:54Z",
+  "source_updated_at": "2026-09-29T15:24:40Z",
+  "url": "https://github.com/microsoft/PowerToys/issues/50877",
+  "title": "Cursor Wrap not with Powertoys window closed",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Author-Feedback",
+    "Needs-Triage",
+    "Product-General"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "judgment": {
+    "status": "needs_information",
+    "rationale": "The report gives a repeatable monitor-edge sequence and a diagnostic ZIP, but it does not state whether Cursor Wrap's Auto activate option is enabled or whether its activation shortcut is used. The log summary identifies parse errors in other modules, not a Cursor Wrap hook failure.",
+    "evidence": [
+      "The reporter describes PowerToys 0.101.2362 on Windows 11 24H2 build 26100 with three side-by-side 1080p monitors and horizontal-only wrapping.",
+      "The reporter says wrapping stops after the PowerToys window is closed or minimized and the app remains in the tray; a diagnostic ZIP is attached.",
+      "The automated triage summary reports malformed JSON errors for several other modules, but does not identify a Cursor Wrap settings parse failure or mouse-hook stop.",
+      "Current CursorWrap source starts the mouse hook automatically only when auto_activate is enabled; otherwise it waits for its activation trigger."
+    ],
+    "recommended_action": "Ask for the Auto activate/shortcut state and a before-versus-after check while Runner remains in the tray; do not repeat the generic request for repro steps or logs.",
+    "evaluated_at": "2026-09-30T03:23:54Z",
+    "source_updated_at": "2026-09-29T15:24:40Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "A module activation or hook-lifecycle issue is plausible, but the report omits the setting that determines whether CursorWrap installs its mouse hook automatically."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Keep Cursor Wrap's active hook independent of the Settings window",
+      "root_cause": "The hook may never be started if Auto activate is off and the activation trigger was not pressed, or a Runner/module lifecycle transition may stop it after Settings closes; the current discussion does not distinguish these paths.",
+      "plan": [
+        "Confirm Auto activate and activation-shortcut state, then verify wrapping immediately before and after closing or minimizing Settings while Runner remains in the tray.",
+        "Trace CursorWrap::enable, its event thread, StartMouseHook, StopMouseHook, and Runner module state at the five-minute transition; correlate only Cursor Wrap events rather than unrelated module JSON errors.",
+        "If the hook stops while the module remains enabled and Auto activate is on, correct the demonstrated lifecycle transition and add a focused test for closing/minimizing Settings without stopping Cursor Wrap."
+      ],
+      "verification": [
+        "With horizontal wrapping and Auto activate enabled, cross a monitor edge before and after closing/minimizing Settings, wait five minutes, and verify Runner and the Cursor Wrap hook remain active."
+      ],
+      "confidence": {
+        "score": 43,
+        "level": "red",
+        "rationale": "The public sequence is useful, but hook startup depends on a setting absent from the report and the diagnostic summary is not specific to Cursor Wrap."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "Horizontal Cursor Wrap is reported to stop after the Settings window is closed or minimized while Runner remains in the tray; the diagnostic summary points to other modules and does not establish a Cursor Wrap failure.",
+    "known_information": [
+      "The report lists PowerToys 0.101.2362, Windows 11 24H2 build 26100, a user install, and three side-by-side 1080p displays.",
+      "The reporter selects horizontal-only wrapping and says the behavior is the same when the window is minimized rather than closed.",
+      "A PowerToys diagnostic ZIP is attached.",
+      "Current src/modules/MouseUtils/CursorWrap/dllmain.cpp starts WH_MOUSE_LL automatically only when auto_activate is true; otherwise the module waits for its activation trigger."
+    ],
+    "inferences": [
+      "The feature may be inactive because Auto activate is off or its trigger was not used; alternatively a module lifecycle transition may stop the hook later.",
+      "Malformed settings reported for other modules do not establish that Cursor Wrap settings or its hook failed."
+    ],
+    "analysis": "The next useful discriminator is a bounded behavior confirmation, not another log request. The Auto activate state and whether wrapping works immediately before closing Settings determine whether to investigate configuration/activation or a later Runner/hook lifecycle transition.",
+    "initial_investigation": [
+      "Read the full issue body and automated triage comment; no reporter follow-up or attachment-derived Cursor Wrap-specific finding is present in the thread.",
+      "Inspected src/modules/MouseUtils/CursorWrap/dllmain.cpp: CursorWrap::enable starts an event thread, calls StartMouseHook only when m_autoActivate is true, and otherwise waits for the activation trigger; disable stops the hook.",
+      "The automated summary's malformed JSON errors concern CmdNotFound, EnvironmentVariables, FancyZones, Hosts, and NewPlus, not a demonstrated Cursor Wrap parse or hook error."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "Whether Auto activate is enabled, whether the configured activation shortcut is pressed when it is disabled, and whether horizontal wrapping works immediately before closing/minimizing Settings while Runner remains in the tray.",
+        "why_needed": "This separates a hook that was never activated from a hook or module that stops after a Settings-window lifecycle event.",
+        "how_to_collect": "Check PowerToys Settings > Cursor Wrap, run the same monitor-edge test immediately before and after closing/minimizing Settings, and report whether Runner remains in the tray."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "id": "approve-cursor-wrap-lifecycle-design-50877",
+      "type": "approve_design",
+      "label": "Approve Cursor Wrap lifecycle investigation"
+    },
+    {
+      "id": "request-cursor-wrap-activation-state-50877",
+      "type": "request_info",
+      "label": "Confirm Cursor Wrap activation state",
+      "primary": true,
+      "comment": {
+        "body": "Thanks for the exact Windows build, three-monitor layout, horizontal-only setting, and the note that minimizing the window has the same result. The diagnostic summary mentions JSON errors in other modules but does not identify Cursor Wrap. Could you confirm whether Settings > Cursor Wrap has Auto activate enabled? If it is off, please say whether you press its activation shortcut before testing. Also, does wrapping work immediately before you close/minimize Settings, and does Runner remain in the tray during the later failure? This distinguishes a hook that was never activated from one that stops after the Settings-window transition."
+      }
+    }
+  ],
+  "status": {
+    "glyph": "?",
+    "label": "Confirm Cursor Wrap activation state",
+    "detail": "Auto-activation and the before/after hook behavior are needed to isolate the reported transition."
+  },
+  "next_action": {
+    "glyph": "?",
+    "label": "Confirm Cursor Wrap activation state",
+    "reason": "Use the activation state to choose between setup/configuration and module-lifecycle investigation."
+  }
+}

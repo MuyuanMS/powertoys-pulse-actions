@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 5,
+  "number": 50845,
+  "kind": "issue",
+  "track": "fix",
+  "stage": "awaiting_design_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "author": "jiripolasek",
+  "generated_at": "2026-09-30T03:12:18.579Z",
+  "evaluated_at": "2026-09-30T03:12:18.579Z",
+  "source_updated_at": "2026-09-28T16:07:44Z",
+  "title": "CmdPal: Possibly flaky unit test PerItemScore_SubAttribution_DpVsTierVsFrecency",
+  "url": "https://github.com/microsoft/PowerToys/issues/50845",
+  "labels": [
+    "Issue-Bug",
+    "Needs-Triage",
+    "Product-Command Palette"
+  ],
+  "assignees": [],
+  "comments": 1,
+  "status": {
+    "glyph": "!",
+    "label": "Actionable test-stability hypothesis",
+    "detail": "The named test measures a per-item timing ratio and asserts a 0.5 lower bound; the linked failed CI build does not expose which assertion failed."
+  },
+  "next_action": {
+    "glyph": "->",
+    "label": "Confirm timing assertion failure",
+    "reason": "Verify the named test and its ratio assertion across repeated runs before changing the test; the linked build summary alone does not isolate it."
+  },
+  "judgment": {
+    "status": "actionable_design",
+    "rationale": "The issue links the failed PowerToys CI run on PR #50186 and names a specific Command Palette test. Current upstream test source computes timing averages and asserts `threeDpNs >= twoDpNs * 0.5`; despite report-only timing elsewhere in the harness, this relative wall-clock ratio can vary with scheduling/JIT/machine load. However, the linked run summary reports only three build errors and 298 warnings, with no test-specific failure details, and PR #50186 changes icon handling rather than scoring. This supports a yellow test-stability hypothesis, not a confirmed flaky test.",
+    "evidence": [
+      "The live issue body links PR #50186 check run 108980878168 and names `PerItemScore_SubAttribution_DpVsTierVsFrecency`.",
+      "The linked PowerToys CI check is failed and its summary says three errors and 298 warnings; its output does not identify the named test or assertion.",
+      "PR #50186 is merged and its changed files are CmdPal icon conversion/classification files, not scoring.",
+      "Current upstream ScoringThroughputHarnessTests.cs times per-item scoring and asserts `threeDpNs >= twoDpNs * 0.5`; the test therefore includes a machine/timing-sensitive ratio assertion.",
+      "The automated triage comment requested reproduction details, but the issue has no test result, assertion message, or detailed failure log."
+    ],
+    "recommended_action": "Run the named test repeatedly and inspect the exact failing assertion; if the ratio assertion is the failure, replace the timing-dependent threshold with a stable structural assertion while retaining report-only measurements.",
+    "evaluated_at": "2026-09-30T03:12:18.579Z",
+    "source_updated_at": "2026-09-28T16:07:44Z"
+  },
+  "fix_assessment": {
+    "status": "proposed",
+    "rationale": "The test contains a wall-clock-derived ratio assertion that can plausibly vary by machine or run; the failed linked CI check does not yet prove that assertion caused the reported failure."
+  },
+  "proposed_fixes": [
+    {
+      "title": "Remove machine-sensitive timing from the CmdPal scoring test pass/fail contract",
+      "root_cause": "Hypothesis: the per-item scoring test can fail when measurement noise, JIT, or scheduling makes the measured three-DP ratio fall below its hard-coded 0.5 threshold, even though scoring behavior is correct.",
+      "plan": [
+        "Repeat the named test on the linked Windows x64 build and capture the exact failure output to confirm whether the 0.5 timing-ratio assertion failed.",
+        "If confirmed, keep elapsed-time values as report-only diagnostics and replace the wall-clock-derived pass/fail ratio with a deterministic behavioral or structural assertion.",
+        "Run the focused test repeatedly on CI and a local Windows build to verify that scoring determinism remains covered without machine-speed gating."
+      ],
+      "verification": [
+        "Run `PerItemScore_SubAttribution_DpVsTierVsFrecency` repeatedly and confirm it no longer fails solely because of timing variance.",
+        "Verify the test still checks deterministic scoring behavior and emits timing measurements for diagnosis."
+      ],
+      "confidence": {
+        "score": 64,
+        "level": "yellow",
+        "rationale": "The exact test has a machine-sensitive ratio assertion, but the linked failed build does not show that this test or assertion failed."
+      }
+    }
+  ],
+  "issue_context": {
+    "summary": "A named CmdPal per-item scoring test is suspected of flaking, but the linked CI result is a broader failed build without a test-specific failure record.",
+    "known_information": [
+      "The issue links the failed PowerToys CI check on PR #50186 and names the exact test method.",
+      "The check summary reports three errors and 298 warnings but not the error/test identity.",
+      "The current test averages timing samples and asserts a lower bound on the ratio between three-DP and two-DP measurements.",
+      "PR #50186 is merged and changes icon-handling code, not the scoring test."
+    ],
+    "inferences": [
+      "The ratio assertion may be machine-sensitive despite the test's report-only timing intent.",
+      "The CI build failure may be unrelated to the named test; the linked summary is insufficient to attribute the failure."
+    ],
+    "analysis": "The test source provides a plausible root cause for flakiness, so this should not be reduced to a generic request for repro steps. A targeted repeated run of the named test and its exact failing assertion is the right uncertainty-reducing step before changing the test.",
+    "initial_investigation": [
+      "Read the live issue body, full discussion, labels, assignees, and timeline; there is one automated triage reply and no linked issue/duplicate.",
+      "Checked PR #50186 and check run 108980878168: the PR is merged, the check failed with three build errors, and the check output has no test-specific detail.",
+      "Inspected current upstream ScoringThroughputHarnessTests.cs; the target test asserts `threeDpNs >= twoDpNs * 0.5` after timing measured loops."
+    ],
+    "information_gaps": [
+      {
+        "evidence_type": "behavior_confirmation",
+        "information": "The exact test-run result and assertion/error output for `PerItemScore_SubAttribution_DpVsTierVsFrecency` in the linked CI run, including confirmation that the test actually ran.",
+        "why_needed": "The check summary is for the whole build and does not establish whether the named test failed or whether its timing-ratio assertion was responsible.",
+        "how_to_collect": "Open PR #50186 check run 108980878168 / Azure DevOps build 389661 and provide the named test's result and exact failure output from the Tests or job log."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "approve_design",
+      "label": "Approve focused CmdPal test-stability investigation",
+      "note": "This is a yellow-confidence test hypothesis, not a completed design."
+    },
+    {
+      "type": "request_info",
+      "label": "Request failing CmdPal test output",
+      "comment": {
+        "target": "issue",
+        "repository": "microsoft/PowerToys",
+        "number": 50845,
+        "body": "Thanks for linking the failed PR #50186 check and naming `PerItemScore_SubAttribution_DpVsTierVsFrecency`. The linked check summary reports three build errors but does not show whether that test ran or which assertion failed. Please provide the test result and exact failure/assertion output for that method from check run 108980878168 (Azure DevOps build 389661), or confirm that the method did not run. This will determine whether the timing-ratio assertion is actually flaky or the linked build failed elsewhere."
+      }
+    }
+  ]
+}
