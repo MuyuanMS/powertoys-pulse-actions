@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-30T20:20:42.5382353+08:00",
+  "generated_at": "2026-09-30T20:33:19.2811626+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 141,
     "open_issues": 12732,
     "community": 11909,
-    "artifacts": 1168
+    "artifacts": 1169
   },
   "impact": {
-    "as_of": "2026-09-30T20:20:42.5382353+08:00",
+    "as_of": "2026-09-30T20:33:19.2811626+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -99,6 +99,7 @@ window.BOARD_INDEX = {
   },
   "artifact_numbers": [
     50899,
+    50897,
     50889,
     50833,
     50830,
@@ -1290,10 +1291,13 @@ window.BOARD_INDEX = {
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
-      "labels": [],
+      "labels": [
+        "Product-Settings",
+        "Ready for review"
+      ],
       "assignees": [],
       "created_at": "2026-09-30T12:10:30Z",
-      "updated_at": "2026-09-30T12:10:41Z",
+      "updated_at": "2026-09-30T12:12:43Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1365,7 +1369,7 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-09-30T10:32:07Z",
       "updated_at": "2026-09-30T10:44:13Z",
-      "comments": 2,
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1460,13 +1464,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
+      "track": "review",
+      "stage": "review_ready",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "mirror",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1944,7 +1948,6 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Product-Command Palette",
-        "Merge conflict 🙀",
         "CmdPal - Dock",
         "Ready for review"
       ],
@@ -1952,7 +1955,7 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-09-29T10:15:21Z",
-      "updated_at": "2026-09-30T11:57:01Z",
+      "updated_at": "2026-09-30T12:15:12Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -152346,13 +152349,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Needs-Author-Feedback",
         "Priority-0",
         "Product-Command Palette"
       ],
       "assignees": [],
       "created_at": "2026-09-30T11:51:01Z",
-      "updated_at": "2026-09-30T11:52:06Z",
-      "comments": 0,
+      "updated_at": "2026-09-30T12:20:07Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -152479,8 +152483,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-30T05:23:27Z",
-      "updated_at": "2026-09-30T11:19:35Z",
-      "comments": 1,
+      "updated_at": "2026-09-30T12:22:24Z",
+      "comments": 0,
       "priority": null
     },
     {
