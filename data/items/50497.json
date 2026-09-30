@@ -1,28 +1,38 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-50497",
   "number": 50497,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-30T15:29:35.760606+08:00",
+  "generated_at": "2026-09-29T09:39:30Z",
   "evaluated_at": "2026-09-29T09:39:30Z",
   "source_updated_at": "2026-09-22T21:04:22Z",
+  "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c",
+  "title": "[Shortcut Guide] Robustness improvements for index generation",
+  "url": "https://github.com/microsoft/PowerToys/pull/50497",
+  "author": "daverayment",
+  "authorAssociation": "COLLABORATOR",
+  "isCommunity": false,
+  "isMine": false,
+  "state": "OPEN",
+  "draft": false,
+  "confidence": "High",
+  "processVerdict": "proceed",
+  "needs_revalidation": false,
+  "summary": "Private approval draft preserving two existing upstream Copilot comments and replacing the withdrawn broad startup-order request with one exact apply-ready fix that keeps a transiently locked manifest from producing a successful incomplete index.",
   "status": {
-    "label": "Author responded — review needed",
-    "glyph": "🔄",
-    "detail": "Live PR activity no longer supports the previous author-wait state (author activity occurred after the posted Pulse review action). Re-run powertoys-pr-review before posting another maintainer action."
+    "glyph": "review",
+    "label": "One new inline suggestion awaits approval",
+    "detail": "The live upstream head is unchanged and approved. The current fork review remains converged. The literal one-line candidate passed an exact locked-manifest regression, focused build, diff check, and raw-blob line-ending gate."
   },
   "next_action": {
-    "label": "Run PR review",
-    "glyph": "🔄",
-    "reason": "The author-wait state was cleared by live activity; this PR needs a fresh review decision."
+    "glyph": "review",
+    "label": "Approve or hold the drafted non-blocking review",
+    "reason": "Only the new locked-manifest correction is executable. The two historical Copilot comments are retained as posted evidence and are excluded from publication."
   },
-  "actions": [],
-  "needs_revalidation": true,
-  "schemaVersion": 5,
-  "confidence": "High",
-  "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c",
   "proposed_comments": [
     {
       "id": "posted-enumeration-failure",
@@ -55,13 +65,133 @@
       "posted_url": "https://github.com/microsoft/PowerToys/pull/50497#discussion_r3982190574",
       "posted_at": "2026-09-10T18:20:01Z",
       "posted_head_sha": "8dcbd310c01d4de27e0955a2f8c411a84d664e67"
+    },
+    {
+      "id": "preserve-index-on-locked-manifest",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ManifestIndexGenerator.cs",
+      "side": "RIGHT",
+      "start_line": 83,
+      "line": 83,
+      "in_diff": true,
+      "body": "### Preserve the complete index when a manifest is temporarily locked\n\n**Severity:** `medium`\n\nA sharing violation from `File.ReadAllText` is currently caught as though the manifest were malformed, so generation reports success and replaces `index.yml` without that valid app. The new top-level handler already converts generation failures into a nonzero exit while the existing index remains untouched. Let `IOException` reach that handler, while continuing to skip YAML and validation errors, so a transient lock preserves the last complete index instead of publishing incomplete data.\n\n```suggestion\n                    when (ex is UnauthorizedAccessException or YamlException or NullReferenceException)\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "An exact production test with a valid manifest held under FileShare.None reproduced the upstream successful incomplete overwrite; the literal one-line candidate threw IOException and preserved the prior index, and the final minimized candidate compiled."
+      }
     }
   ],
+  "actions": [
+    {
+      "id": "post-review-50497-locked-manifest",
+      "type": "post_review",
+      "label": "Post one inline suggestion",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50497,
+        "event": "COMMENT",
+        "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c"
+      },
+      "include_dispositions": [
+        "proposed"
+      ],
+      "note": "Draft only. Existing posted comments and the withdrawn broad startup-order request are excluded from the executable review."
+    }
+  ],
+  "phase0": {
+    "author": "daverayment",
+    "author_association": "COLLABORATOR",
+    "bar": "collaborator; process nags skipped",
+    "disposition": "Proceed",
+    "gates_tripped": [],
+    "note": "The PR is open, non-draft, approved, and all visible checks pass. The author is a collaborator, so no separate process request is proposed."
+  },
+  "workflow": {
+    "phase": "review_drafted",
+    "previous_phase": "reviewing_findings",
+    "review_round": 5,
+    "checkpoint_at": "2026-09-29T09:39:30Z",
+    "advancement_evidence": [
+      "Rechecked the unchanged live upstream head, three issue comments, four reviews, two inline comments, and both resolved review threads.",
+      "Consumed fork Copilot review 5197500567 at head 05c97e02c7cd78a292b2ce590e5cd6160d0d6209 without making a duplicate request; it has zero new comments and zero unresolved threads.",
+      "Withdrew the earlier broad startup-order prose in favor of a one-line current-diff correction that matches the author-described nonzero-exit fallback.",
+      "Reproduced the upstream incomplete overwrite with a locked valid manifest and proved the literal candidate preserves the previous index by surfacing IOException.",
+      "Removed the private probe from the final candidate, rebuilt the final one-line production tree, and passed raw-blob EOL and diff checks."
+    ],
+    "remaining_work": [
+      "Await explicit maintainer approval before posting the drafted comment review."
+    ]
+  },
+  "freshness": {
+    "headRefOid": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c",
+    "updatedAt": "2026-09-22T21:04:22Z",
+    "reviewDecision": "APPROVED",
+    "latestUpstreamReviewId": 5283757961,
+    "latestUpstreamReviewAt": "2026-09-22T21:04:22Z",
+    "unresolvedUpstreamThreads": 0,
+    "checkedAt": "2026-09-29T09:39:30Z"
+  },
   "fork_pr": {
     "number": 780,
     "repo": "MuyuanMS/PowerToys",
     "url": "https://github.com/MuyuanMS/PowerToys/pull/780",
     "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/50497-v2"
+  "fork_branch": "pr-iterate/50497-v2",
+  "fork_head_sha": "05c97e02c7cd78a292b2ce590e5cd6160d0d6209",
+  "copilot_review": {
+    "review_id": 5197500567,
+    "submitted_at": "2026-09-14T12:15:22Z",
+    "head_sha": "05c97e02c7cd78a292b2ce590e5cd6160d0d6209",
+    "new_comments": 0,
+    "unresolved_threads": 0,
+    "request_pending": false
+  },
+  "validation": {
+    "fork_review": {
+      "result": "passed",
+      "head_sha": "05c97e02c7cd78a292b2ce590e5cd6160d0d6209",
+      "review_id": 5197500567,
+      "details": "The saved current-head review is submitted, generated zero new comments, and all Copilot threads are resolved."
+    },
+    "suggestion_patch": {
+      "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c",
+      "result": "passed",
+      "applied_comment_ids": [
+        "preserve-index-on-locked-manifest"
+      ],
+      "minimal_ranges_reviewed": true,
+      "commands": [
+        "Build ShortcutGuide.IndexYmlGenerator with the repository build script",
+        "Run focused MSTest locked-manifest regressions with vstest.console.exe",
+        "git diff --check"
+      ],
+      "details": "The upstream probe passed while demonstrating a successful incomplete overwrite. The candidate probe passed while proving IOException propagation and preservation of the prior index. After removing private test code, the final literal one-line candidate compiled successfully."
+    },
+    "line_ending_safety": {
+      "head_sha": "bbe5c91bb7a5d1abad5f89eaf8c192c9cdaf739c",
+      "result": "passed",
+      "checked_comment_ids": [
+        "preserve-index-on-locked-manifest"
+      ],
+      "files": [
+        {
+          "path": "src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ManifestIndexGenerator.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false
+        }
+      ]
+    }
+  },
+  "blockers": [],
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
