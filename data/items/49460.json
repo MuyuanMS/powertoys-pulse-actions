@@ -1,35 +1,209 @@
 {
+  "schemaVersion": 5,
+  "id": "pr-49460",
   "number": 49460,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
   "pending_author": false,
-  "generated_at": "2026-09-30T09:27:14.0874161Z",
-  "evaluated_at": "09/28/2026 11:46:29",
-  "source_updated_at": "08/10/2026 16:24:19",
+  "generated_at": "2026-09-30T09:49:00Z",
+  "evaluated_at": "2026-09-30T09:49:00Z",
+  "source_updated_at": "2026-08-10T16:24:19Z",
   "head_sha": "cd96df15a157628cde3a94954018d3220ce435d8",
   "title": "feat(AdvancedPaste): add Paste as Rich Text option natively",
   "url": "https://github.com/microsoft/PowerToys/pull/49460",
+  "summary": "One implementation-ready interop note and one atomic three-suggestion clipboard fallback group await maintainer approval. The telemetry claim was withdrawn after current-upstream grounding.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "The current fork Copilot review is converged with zero new comments and no unresolved Copilot threads. Three current-upstream findings remain private until exact upstream and candidate validation runs under the shared exclusive build lock. Lock-file existence alone is not a blocker; resume after the active serialized build completes."
+    "glyph": "review",
+    "label": "Three suggestions and one general note await approval",
+    "detail": "The current fork review is converged. Exact upstream validation reproduced the missing Rich Text interop linker failure, and the interop remedy plus the atomic clipboard fallback candidate compiled on the pinned upstream head."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": {
+    "glyph": "review",
+    "label": "Approve or hold the drafted non-blocking review",
+    "reason": "The clipboard suggestions must be selected together; the interop correction posts as a separate PR conversation comment."
+  },
+  "confidence": "High",
+  "needs_revalidation": false,
+  "proposed_comments": [
+    {
+      "id": "missing-rich-text-interop-implementation",
+      "kind": "companion",
+      "severity": "high",
+      "disposition": "proposed",
+      "title": "Implement the Rich Text interop message accessor",
+      "in_diff": false,
+      "out_of_diff_reason": "The required definitions belong in unchanged src/common/interop/Constants.cpp and src/common/interop/shared_constants.h, so no current RIGHT-side range can contain the complete fix.",
+      "body": "### Implement the Rich Text interop message accessor\n\n**Severity:** `high`\n\n**Affected code:** `src/common/interop/Constants.h` (`Constants::AdvancedPasteRichTextMessage`), `src/common/interop/Constants.cpp`, `src/common/interop/shared_constants.h`, and `src/modules/AdvancedPaste/AdvancedPaste/AdvancedPasteXAML/App.xaml.cs`.\n\n**Problem:** This PR declares and calls `Constants::AdvancedPasteRichTextMessage()`, but the pinned tree does not define the matching native accessor or shared message constant. The exact upstream `AdvancedPaste.UnitTests` build fails with `LNK2019` for that missing symbol.\n\n**Why it matters:** The Rich Text global shortcut cannot link into a working Advanced Paste binary until the native interop contract is complete.\n\n**Suggested change:**\n1. Add `ADVANCED_PASTE_RICH_TEXT_MESSAGE = L\"PasteRichText\"` beside the other Advanced Paste message constants in `src/common/interop/shared_constants.h`.\n2. Implement `Constants::AdvancedPasteRichTextMessage()` in `src/common/interop/Constants.cpp` and return that shared constant.\n3. Keep the existing declaration and `App.xaml.cs` dispatch call unchanged.\n\n**Verification:** Build `src/modules/AdvancedPaste/AdvancedPaste.UnitTests/AdvancedPaste.UnitTests.csproj` for Debug x64 and confirm the missing-symbol linker failure is gone; then invoke the Rich Text global shortcut and confirm it dispatches `PasteFormats.RichText`.",
+      "confidence": {
+        "score": 99,
+        "rationale": "The exact upstream build reproduces the missing-symbol linker failure, and the native interop candidate compiles and links after adding the matching constant and accessor."
+      }
+    },
+    {
+      "id": "rich-text-clipboard-fallback-1",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/DataPackageHelpers.cs",
+      "side": "RIGHT",
+      "start_line": 49,
+      "line": 49,
+      "in_diff": true,
+      "body": "### Preserve readable text fallback for Rich Text paste (1/3)\n\n**Severity:** `medium`\n\nPass the original clipboard text into the helper so the Rich Text package can expose both HTML and a readable Unicode-text fallback.\n\n```suggestion\n    internal static DataPackage CreateFromHtml(string html, string plainText)\n```",
+      "selection_group": {
+        "id": "rich-text-clipboard-fallback",
+        "title": "Preserve readable plain-text fallback for Rich Text paste",
+        "position": 1,
+        "total": 3,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 94,
+        "rationale": "The three-member exact candidate compiled together on the pinned upstream head; the API signature, package insertion, and caller update form one required contract."
+      }
+    },
+    {
+      "id": "rich-text-clipboard-fallback-2",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/DataPackageHelpers.cs",
+      "side": "RIGHT",
+      "start_line": 52,
+      "line": 52,
+      "in_diff": true,
+      "body": "### Preserve readable text fallback for Rich Text paste (2/3)\n\n**Severity:** `medium`\n\nPublish the original text alongside CF_HTML so text-only paste targets still receive readable clipboard content.\n\n```suggestion\n        dataPackage.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(html));\n        dataPackage.SetText(plainText);\n```",
+      "selection_group": {
+        "id": "rich-text-clipboard-fallback",
+        "title": "Preserve readable plain-text fallback for Rich Text paste",
+        "position": 2,
+        "total": 3,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact atomic candidate compiled with both clipboard formats present; this localized insertion is required with the signature and caller edits."
+      }
+    },
+    {
+      "id": "rich-text-clipboard-fallback-3",
+      "kind": "inline",
+      "severity": "medium",
+      "disposition": "proposed",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs",
+      "side": "RIGHT",
+      "start_line": 56,
+      "line": 56,
+      "in_diff": true,
+      "body": "### Preserve readable text fallback for Rich Text paste (3/3)\n\n**Severity:** `medium`\n\nRead the source text before converting it to HTML, then pass both representations into the package helper.\n\n```suggestion\n        var plainText = await clipboardData.GetTextOrEmptyAsync();\n        var html = await RichTextHelper.ToRichTextAsync(clipboardData);\n        return DataPackageHelpers.CreateFromHtml(html, plainText);\n```",
+      "selection_group": {
+        "id": "rich-text-clipboard-fallback",
+        "title": "Preserve readable plain-text fallback for Rich Text paste",
+        "position": 3,
+        "total": 3,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact atomic candidate compiled on the pinned upstream head and preserves the original readable text while generating the Rich Text HTML payload."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49460-rich-text",
+      "type": "post_review",
+      "label": "Post three atomic suggestions and one general review note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49460,
+        "event": "COMMENT",
+        "head_sha": "cd96df15a157628cde3a94954018d3220ce435d8"
+      },
+      "include_dispositions": [
+        "proposed"
+      ],
+      "note": "The companion posts as a separate PR conversation comment. The three inline suggestions are atomic and must be selected together."
+    }
+  ],
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-30T09:27:14.0874161Z"
+    "phase": "review_drafted",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-09-30T09:49:00Z",
+    "latest_copilot_review_id": 5129178300,
+    "unresolved_copilot_threads": 0,
+    "remaining_work": [
+      "Await explicit maintainer approval before posting the drafted review actions."
+    ]
   },
   "freshness": {
-    "queued_at": "2026-09-30T09:27:14.0874161Z",
-    "checkpoint_at": "2026-09-30T09:27:14.0874161Z"
+    "headRefOid": "cd96df15a157628cde3a94954018d3220ce435d8",
+    "updatedAt": "2026-08-10T16:24:19Z",
+    "latestCopilotReviewAt": "2026-09-07T07:27:37Z",
+    "unresolvedForkCopilotThreads": 0,
+    "checkedAt": "2026-09-30T09:49:00Z"
   },
   "fork_pr": {
     "number": 655,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/655"
+    "repo": "MuyuanMS/PowerToys",
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/655",
+    "state": "OPEN"
   },
-  "fork_branch": "pr-iterate/49460"
+  "fork_branch": "pr-iterate/49460-v3",
+  "fork_head_sha": "bea9847aeadae1dc806f1b1d08091cd8494bb85d",
+  "validation": {
+    "fork_review": {
+      "result": "passed",
+      "head_sha": "bea9847aeadae1dc806f1b1d08091cd8494bb85d",
+      "review_id": 5129178300,
+      "details": "The saved current-head review generated zero new comments and there are zero unresolved Copilot threads."
+    },
+    "suggestion_patch": {
+      "head_sha": "cd96df15a157628cde3a94954018d3220ce435d8",
+      "result": "passed",
+      "applied_comment_ids": [
+        "rich-text-clipboard-fallback-1",
+        "rich-text-clipboard-fallback-2",
+        "rich-text-clipboard-fallback-3"
+      ],
+      "minimal_ranges_reviewed": true,
+      "commands": [
+        "build.cmd src/common/interop/PowerToys.Interop.vcxproj",
+        "msbuild AdvancedPaste.csproj /p:BuildProjectReferences=false /p:RunAnalyzers=false /p:EnableNETAnalyzers=false"
+      ],
+      "details": "The exact candidate applied the interop repair and all three clipboard literals. Native interop compiled and linked, and AdvancedPaste managed compilation passed with inherited analyzers disabled."
+    },
+    "line_ending_safety": {
+      "head_sha": "cd96df15a157628cde3a94954018d3220ce435d8",
+      "result": "passed",
+      "checked_comment_ids": [
+        "rich-text-clipboard-fallback-1",
+        "rich-text-clipboard-fallback-2",
+        "rich-text-clipboard-fallback-3"
+      ],
+      "files": [
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/DataPackageHelpers.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false
+        },
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false
+        }
+      ]
+    }
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No public mutation was made to microsoft/PowerToys."
+  }
 }
