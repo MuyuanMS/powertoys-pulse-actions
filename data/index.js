@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-30T22:50:07.0786007+08:00",
+  "generated_at": "2026-09-30T23:01:26.5450484+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1176
   },
   "impact": {
-    "as_of": "2026-09-30T22:50:07.0786007+08:00",
+    "as_of": "2026-09-30T23:01:26.5450484+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -152418,11 +152418,12 @@ window.BOARD_INDEX = {
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
-        "Product-Command Palette"
+        "Product-Command Palette",
+        "CmdPal - Dock"
       ],
       "assignees": [],
       "created_at": "2026-09-30T13:25:21Z",
-      "updated_at": "2026-09-30T13:30:37Z",
+      "updated_at": "2026-09-30T14:53:10Z",
       "comments": 1,
       "priority": null
     },
