@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-09-30T22:00:49.1975618+08:00",
+  "generated_at": "2026-09-30T22:03:37.5208563+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 141,
-    "open_issues": 12731,
-    "community": 11908,
+    "open_issues": 12732,
+    "community": 11909,
     "artifacts": 1176
   },
   "impact": {
-    "as_of": "2026-09-30T22:00:49.1975618+08:00",
+    "as_of": "2026-09-30T22:03:37.5208563+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -152333,6 +152333,37 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-50911",
+      "kind": "issue",
+      "number": 50911,
+      "url": "https://github.com/microsoft/PowerToys/issues/50911",
+      "title": "Shortcut/s to change profiles in Power Display",
+      "author": "michaelbabich",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-09-30T14:01:39Z",
+      "updated_at": "2026-09-30T14:01:39Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-50910",
       "kind": "issue",
       "number": 50910,
@@ -156849,7 +156880,7 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2026-09-22T13:49:14Z",
       "updated_at": "2026-09-22T15:05:45Z",
-      "comments": 3,
+      "comments": 4,
       "priority": null
     },
     {
