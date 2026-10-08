@@ -2,29 +2,96 @@
   "number": 50551,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T02:53:28.071012Z",
-  "evaluated_at": "2026-10-08T02:53:28.071012Z",
-  "source_updated_at": "10/04/2026 23:03:20",
+  "generated_at": "2026-10-08T14:08:18.808Z",
+  "evaluated_at": "2026-10-08T14:08:18.808Z",
+  "source_updated_at": "2026-10-08T06:28:03Z",
   "head_sha": "ad22ba1ae0155445f9bb2cf7de1d910977b632ac",
   "title": "feat(dsc): add ZoomIt settings function data",
   "url": "https://github.com/microsoft/PowerToys/pull/50551",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Selected for the requested post-2026-09-29 non-draft, non-CmdPal PR drain; resume from the live upstream head."
+    "glyph": "!",
+    "label": "Review draft ready",
+    "detail": "Three grounded inline prose comments identify unsupported ZoomIt setting values, a lost combined recording-scale update, and missing release-mode bounds validation for fixed-size native settings."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Review and approve the proposed inline comments. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "zoomit-value-domain",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/ZoomItSettingsFunctionData.cs",
+      "line": 101,
+      "side": "RIGHT",
+      "body": "### Reject out-of-range ZoomIt values\n\n**Severity:** `high`\n\n`ZoominSliderLevel` is exposed as an unconstrained `IntProperty` and this new `SetState` path forwards it to the native settings writer; ZoomIt later indexes the six-entry `g_ZoomLevels` array directly with that value, so a value of 6 or greater can read past the array. `RecordFormat` is likewise an unconstrained string, while the interop maps every value other than `GIF` to MP4, silently treating unsupported input as a valid format. Validate numeric bounds and allowed format values before persisting, and return a validation error instead of accepting unsupported DSC input.",
+      "severity": "high",
+      "confidence": {
+        "score": 94,
+        "rationale": "The added save path forwards the declared setting directly; the pinned native implementation maps it to a six-entry index and accepts every non-GIF format as MP4."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "record-scaling-transition",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/ZoomItSettingsFunctionData.cs",
+      "line": 101,
+      "side": "RIGHT",
+      "body": "### Preserve requested scaling during a format change\n\n**Severity:** `medium`\n\nWhen DSC sets `RecordFormat` and `RecordScaling` together, `SetState` sends the complete settings object in one native call. The native writer switches `g_RecordScaling` to the target format's cached value and sets `formatChanged`, then skips the supplied `RecordScaling` value whenever that flag is true, so the explicit scale is not applied. Preserve the requested scale across the format transition and cover the combined update with a regression test.",
+      "severity": "medium",
+      "confidence": {
+        "score": 97,
+        "rationale": "The pinned writer explicitly suppresses the supplied scaling value whenever the same save changes format; the regression scenario is covered by the converged candidate tests."
+      },
+      "disposition": "proposed"
+    },
+    {
+      "id": "native-settings-bounds",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/ZoomItSettingsFunctionData.cs",
+      "line": 101,
+      "side": "RIGHT",
+      "body": "### Validate fixed-size settings before copying\n\n**Severity:** `high`\n\nThe new DSC path forwards caller-supplied settings to `SaveSettingsJson`; the interop copies string values into fixed-size buffers with `_tcscpy_s` and decodes `Font` before `memcpy`, but its size check is only an `assert`. In release builds an oversized string can invoke the secure-CRT invalid-parameter path, and oversized decoded font data can write beyond `g_LogFont`. Validate string capacity and require the decoded binary size to match the destination before the native save proceeds, returning an explicit input error for invalid values.",
+      "severity": "high",
+      "confidence": {
+        "score": 90,
+        "rationale": "The new call path accepts string-backed Font data and reaches native fixed-size copies; the binary-size condition is debug-only while memcpy uses the supplied length."
+      },
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50551",
+      "type": "post_review",
+      "label": "Post inline review comments",
+      "note": "Three grounded inline prose comments are proposed; they contain no apply-ready suggestion blocks.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "ad22ba1ae0155445f9bb2cf7de1d910977b632ac"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "ad22ba1ae0155445f9bb2cf7de1d910977b632ac",
+      "result": "passed",
+      "commands": [
+        "At the pinned upstream head, PowerToys essentials, ZoomIt interop, and the PowerToys.DSC.UnitTests project built successfully.",
+        "The focused SettingsResourceZoomItModuleTest suite passed 9/9 tests."
+      ]
+    }
+  },
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-10-08T02:53:28.071012Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-08T14:08:18.808Z"
   },
   "freshness": {
-    "queued_at": "2026-10-08T02:53:28.071012Z",
-    "checkpoint_at": "2026-10-08T02:53:28.071012Z"
+    "queued_at": "2026-10-08T14:08:18.808Z",
+    "checkpoint_at": "2026-10-08T14:08:18.808Z"
   }
 }
