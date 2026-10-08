@@ -2,34 +2,189 @@
   "number": 50907,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T18:41:24.0297719Z",
-  "evaluated_at": "2026-09-30T13:44:35Z",
-  "source_updated_at": "2026-09-30T12:55:48Z",
+  "generated_at": "2026-10-08T19:52:55.358Z",
+  "evaluated_at": "2026-10-08T19:52:55.358Z",
+  "source_updated_at": "09/30/2026 12:55:48",
   "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
   "title": "Grab and move right drag title bar",
   "url": "https://github.com/microsoft/PowerToys/pull/50907",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Fresh Copilot review 5460657939 on fork head c6c4b80bcf131bdfc6269727ee561e4827676e2a had zero open findings and zero unresolved threads; serial exact-head validation is next."
+    "glyph": "!",
+    "label": "Awaiting maintainer review",
+    "detail": "Five grounded current-head inline comments are drafted: three atomic timeout-budget suggestions, one root-hit-test fallback suggestion, and one prose finding on synchronous click replay paths. Exact upstream and literal suggestion candidate Essentials/GrabAndMove x64 Debug builds passed. Manual Windows interaction, slow-window timing, replay ordering, ARM64, mixed-DPI, and remote-session behavior remain unverified."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "A maintainer can review and select the proposed inline comments. Select all three timeout-budget suggestions together; the other two findings are independent.",
+  "proposed_comments": [
+    {
+      "id": "bound-titlebar-hit-test-budget-1",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "(1/3) Share one hit-test deadline",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "line": 2666,
+      "side": "RIGHT",
+      "body": "### (1/3) Share one hit-test deadline\n\n**Severity:** `medium`\n\n`ResolveTitleBarWindow` is called from the low-level `MouseProc` hook and can query up to 32 ancestors. Giving every `WM_NCHITTEST` call a fresh 100 ms timeout lets a chain of responsive-but-slow `HTTRANSPARENT` windows accumulate far beyond the intended budget, delaying mouse input and risking hook timeout. Rename this to a total budget and establish one deadline before the loop; apply this together with (2/3) and (3/3).\n\n```suggestion\n    constexpr UINT HIT_TEST_TOTAL_TIMEOUT_MS = 100;\n```",
+      "confidence": {
+        "score": 82,
+        "rationale": "The exact upstream loop gives every ancestor call the full 100 ms and can run from MouseProc; the cumulative worst case follows directly from the depth cap, though no slow-window timing test was run."
+      },
+      "start_line": 2666,
+      "selection_group": {
+        "id": "bound-titlebar-hit-test-budget",
+        "title": "Bound the complete title-bar hit-test walk",
+        "position": 1,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "bound-titlebar-hit-test-budget-2",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "(2/3) Start the deadline before the loop",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "line": 2669,
+      "side": "RIGHT",
+      "body": "### (2/3) Start the deadline before the loop\n\n**Severity:** `medium`\n\nThe hit-test loop currently has only a per-call timeout, so walking several transparent ancestors can consume a fresh 100 ms at each level while the low-level mouse hook is waiting. Record the shared deadline once before entering the loop, then use the remaining time for each call as in (3/3).\n\n```suggestion\n    const ULONGLONG deadline = GetTickCount64() + HIT_TEST_TOTAL_TIMEOUT_MS;\n    for (int depth = 0; hwnd && depth < MAX_DEPTH; depth++)\n```",
+      "confidence": {
+        "score": 82,
+        "rationale": "The upstream loop lacks a shared deadline; this one-line insertion is directly tied to the per-call timeout behavior and was included in the exact candidate build."
+      },
+      "start_line": 2669,
+      "selection_group": {
+        "id": "bound-titlebar-hit-test-budget",
+        "title": "Bound the complete title-bar hit-test walk",
+        "position": 2,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "bound-titlebar-hit-test-budget-3",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "(3/3) Pass only the remaining budget",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "line": 2675,
+      "side": "RIGHT",
+      "body": "### (3/3) Pass only the remaining budget\n\n**Severity:** `medium`\n\nThe existing `SendMessageTimeoutW` call receives the full timeout on every ancestor, so several slow-but-responsive windows can keep the low-level mouse hook waiting for multiple timeout periods. Compute the remaining time from the shared deadline before each send and stop once it expires; this must be applied with the deadline setup in (1/3) and (2/3).\n\n```suggestion\n        const ULONGLONG now = GetTickCount64();\n        if (now >= deadline)\n        {\n            return nullptr;\n        }\n\n        const UINT remainingTimeoutMs = static_cast<UINT>(deadline - now);\n        if (!SendMessageTimeoutW(\n                hwnd,\n                WM_NCHITTEST,\n                0,\n                MAKELPARAM(local.x, local.y),\n                SMTO_ABORTIFHUNG,\n                remainingTimeoutMs,\n                &hit))\n```",
+      "confidence": {
+        "score": 82,
+        "rationale": "The call site visibly resets the full timeout on every iteration; remaining-time propagation was applied literally and the minimized atomic candidate built successfully."
+      },
+      "start_line": 2675,
+      "selection_group": {
+        "id": "bound-titlebar-hit-test-budget",
+        "title": "Bound the complete title-bar hit-test walk",
+        "position": 3,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "custom-titlebar-root-hit-test",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Check the root hit-test after a child returns HTCLIENT",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "line": 2685,
+      "side": "RIGHT",
+      "body": "### Check the root hit-test after a child returns `HTCLIENT`\n\n**Severity:** `medium`\n\nWhen `WindowFromPoint` returns a child control, this loop stops on `HTCLIENT` without asking the root window for its non-client hit-test. A custom title bar can report `HTCAPTION` for its drag region only from the root, so right-dragging over an `HTCLIENT` child in that region is missed even though the top-level window identifies it as draggable. Query the root once for this child result before returning `nullptr`.\n\n```suggestion\n        if (hitTest == HTCLIENT && hwnd != root)\n        {\n            // A custom title bar may define its drag region only in the root window.\n            hwnd = root;\n            continue;\n        }\n        if (hitTest != HTTRANSPARENT || hwnd == root)\n```",
+      "confidence": {
+        "score": 73,
+        "rationale": "The pinned source stops on child HTCLIENT and the saved Win32 probe reproduces a child HTCLIENT/root HTCAPTION pair; no representative custom-title-bar application was exercised."
+      },
+      "start_line": 2685
+    },
+    {
+      "id": "defer-all-titlebar-click-replays",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "title": "Defer title-bar click replay on every pending exit",
+      "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+      "line": 2944,
+      "side": "RIGHT",
+      "body": "### Defer title-bar click replay on every pending exit\n\n**Severity:** `medium`\n\nThe normal pending title-bar release posts `WM_REPLAY_CLICK` so `SendInput` runs after `MouseProc` returns, but the same title-bar interaction can also exit through `RecoverStaleInteraction` or the failed-`BeginInteraction` branch in `HandleMouseEvent`; both still call `ReplayPendingClick` synchronously from the hook. Please route title-bar replay through the deferred message on those exits too, while preserving modifier completion and the ordering of any newly arriving button-down; leave the existing modifier-session replay behavior unchanged. Verify normal release, stale recovery with an overlapping button-down, and failed begin each deliver the click once and preserve input order.",
+      "confidence": {
+        "score": 79,
+        "rationale": "The pinned call paths show SendInput in ReplayPendingClick and synchronous calls from stale recovery and failed begin, contrasting with the deferred normal release; ordering requires coordinated control-flow changes and was not interaction-tested."
+      },
+      "start_line": 2944
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50907",
+      "type": "post_review",
+      "label": "Post validated inline suggestions and review comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Five current-head inline comments are grounded; the three timeout-budget suggestions form one complete atomic group. This is a non-blocking COMMENT review.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
+      "result": "passed",
+      "command": "Built exact upstream Essentials and GrabAndMove x64 Debug targets; both succeeded."
+    },
+    "suggestion_patch": {
+      "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
+      "result": "passed",
+      "candidate_tree_sha": "326004e9604e8400940f2239f6692e2a59285974",
+      "literal_patch_sha256": "855073CAA36AE61EB3B23552FF8EC015787DC65A3A0EF04CA9A40EA959D27829",
+      "command": "Applied the exact four public suggestion blocks to the pinned upstream head; git diff --check, Essentials x64 Debug, and GrabAndMove x64 Debug passed.",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "bound-titlebar-hit-test-budget-1",
+        "bound-titlebar-hit-test-budget-2",
+        "bound-titlebar-hit-test-budget-3",
+        "custom-titlebar-root-hit-test"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "5805e93d1cd0f84cd4a8a27c083db49716e949a0",
+      "result": "passed",
+      "checked_comment_ids": [
+        "bound-titlebar-hit-test-budget-1",
+        "bound-titlebar-hit-test-budget-2",
+        "bound-titlebar-hit-test-budget-3",
+        "custom-titlebar-root-hit-test"
+      ],
+      "files": [
+        {
+          "path": "src/modules/GrabAndMove/GrabAndMove/main.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ]
+    }
+  },
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-10-08T18:41:24.0297719Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-08T19:52:55.358Z",
+    "validation_conclusion": "Exact upstream and exact literal suggestion candidate validated."
   },
   "freshness": {
-    "queued_at": "2026-09-30T13:44:35Z",
-    "checkpoint_at": "2026-10-08T18:41:24.0297719Z"
-  },
-  "fork_pr": {
-    "number": 939,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/939"
-  },
-  "fork_branch": "pr-iterate/50907"
+    "queued_at": "2026-09-30T12:55:48Z",
+    "checkpoint_at": "2026-10-08T19:52:55.358Z"
+  }
 }
