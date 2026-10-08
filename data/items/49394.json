@@ -2,34 +2,304 @@
   "number": 49394,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T16:51:49.2444886Z",
-  "evaluated_at": "2026-10-08T14:43:33.5813312Z",
-  "source_updated_at": "2026-10-08T14:33:22Z",
+  "generated_at": "2026-10-08T18:25:48.472Z",
+  "evaluated_at": "2026-10-08T18:25:48.472Z",
+  "source_updated_at": "2026-10-08T17:58:07Z",
   "head_sha": "5ffa6afc8549b9f3c8334bd2d10f5c6288b78234",
   "title": "[Quick Accent] New character reference guide to show language set contents",
   "url": "https://github.com/microsoft/PowerToys/pull/49394",
   "status": {
     "glyph": "...",
-    "label": "Local validation running",
-    "detail": "The exact-upstream candidate is prepared for focused serial validation; no build result is claimed. Manual Windows runtime checks remain outstanding."
+    "label": "Awaiting maintainer review",
+    "detail": "Seven supported current-diff finding groups, including ten grounded inline comments and three atomic suggestion groups, are pinned to upstream 5ffa6afc. Exact upstream and literal-candidate builds passed; focused tests passed 35/35 Core and 10/10 reference-guide cases. Manual Windows UI behavior remains unverified."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-10-08T16:51:49.2444886Z"
-  },
-  "freshness": {
-    "queued_at": "2026-10-08T14:43:33.5813312Z",
-    "checkpoint_at": "2026-10-08T16:51:49.2444886Z"
-  },
-  "fork_pr": {
-    "number": 823,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/823"
-  },
-  "fork_branch": "pr-iterate/49394-v3"
+  "next_action": "A maintainer can review and select the proposed inline comments. Do not treat the dialog sizing, ICU runtime, or performance behaviors as manually reproduced.",
+  "proposed_comments": [
+    {
+      "id": "skip-disabled-unicode-descriptions",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs",
+      "line": 133,
+      "side": "RIGHT",
+      "body": "### [P2] Skip ICU lookups when descriptions are disabled\n\n`PrepareCharacters` constructs descriptions before reading `ShowUnicodeDescription`, and this newly added path reaches `UnicodeHelper.GetCharacterName` and native `u_charName` for every code point. When descriptions are disabled, the toolbar does not display them, so these uncached native calls add work to every activation without visible output. Read the setting first and avoid description construction when it is off, while preserving safe description indexing for selection updates.\n\n```suggestion\n        _showUnicodeDescription = _settingService.ShowUnicodeDescription;\n        _characterDescriptions = _showUnicodeDescription\n            ? GetCharacterDescriptions(_characters)\n            : Array.Empty<string>();\n```",
+      "confidence": {
+        "score": 91,
+        "rationale": "The exact source shows the unconditional description construction, the disabled-display flag, and the per-code-point native ICU call path."
+      },
+      "start_line": 132
+    },
+    {
+      "id": "fit-character-set-dialog-width",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/PowerAccentPage.xaml",
+      "line": 186,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "character-set-dialog-dimensions",
+        "title": "Allow both picker dimensions to fit available dialog space",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "body": "### [P2] (1/2) Let the character-set dialog content shrink horizontally\n\nThe new content grid fixes its width at 540 DIPs while Settings supports a 480-DIP minimum window width, before dialog chrome and margins are accounted for. Allow the grid to fit the dialog's available width; keep the paired list-height change selected as well. This is a constraint-based layout concern; clipping has not been claimed as runtime-reproduced.\n\n```suggestion\n                    <Grid MaxWidth=\"540\" RowSpacing=\"8\">\n```",
+      "confidence": {
+        "score": 86,
+        "rationale": "The fixed child dimensions and Settings minimum dimensions are explicit in the pinned source; runtime clipping remains unverified."
+      },
+      "start_line": 186
+    },
+    {
+      "id": "fit-character-set-dialog-height",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/PowerAccentPage.xaml",
+      "line": 212,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "character-set-dialog-dimensions",
+        "title": "Allow both picker dimensions to fit available dialog space",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "confidence": {
+        "score": 86,
+        "rationale": "The list's fixed height and Settings minimum height are explicit in the pinned source; runtime clipping remains unverified."
+      },
+      "body": "### [P2] (2/2) Let the character-set list shrink vertically\n\nThe new list fixes its height at 520 DIPs while Settings supports a 480-DIP minimum window height, before dialog chrome and the search/count rows are accounted for. Allow the list to fit the dialog's available height while retaining its own scrolling; keep the paired grid-width change selected as well. This is a constraint-based layout concern; clipping has not been claimed as runtime-reproduced.\n\n```suggestion\n                            MaxHeight=\"520\"\n```",
+      "start_line": 212
+    },
+    {
+      "id": "add-combining-mark-display-helper",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/poweraccent/PowerAccent.Common/UnicodeHelper.cs",
+      "line": 21,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "combining-mark-display",
+        "title": "Use dotted-circle display text for standalone combining marks",
+        "position": 1,
+        "total": 3,
+        "atomic": true
+      },
+      "body": "### [P2] (1/3) Add a shared display transform for standalone combining marks\n\nThe new preview and multi-code-point description paths both format raw mapped/code-point strings. Add one display-only helper that prefixes a dotted circle only when every code point is a combining mark, then use it at both call sites. Keep the mapped and copied values unchanged.\n\n```suggestion\n    /// <summary>\n    /// Returns display text for a character, prefixing a dotted circle when it contains\n    /// only combining marks.\n    /// </summary>\n    public static string GetDisplayText(string character)\n    {\n        if (string.IsNullOrEmpty(character))\n        {\n            return character;\n        }\n\n        for (var index = 0; index < character.Length;)\n        {\n            var category = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(character, index);\n            if (category is not System.Globalization.UnicodeCategory.NonSpacingMark\n                and not System.Globalization.UnicodeCategory.SpacingCombiningMark\n                and not System.Globalization.UnicodeCategory.EnclosingMark)\n            {\n                return character;\n            }\n\n            index += char.IsHighSurrogate(character[index]) ? 2 : 1;\n        }\n\n        return \"◌\" + character;\n    }\n\n    /// <summary>\n```",
+      "confidence": {
+        "score": 89,
+        "rationale": "Pinned source confirms the two raw display paths and existing combining-mark examples; this helper changes presentation only."
+      },
+      "start_line": 21
+    },
+    {
+      "id": "format-multi-codepoint-descriptions-with-dotted-circle",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs",
+      "line": 191,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "combining-mark-display",
+        "title": "Use dotted-circle display text for standalone combining marks",
+        "position": 2,
+        "total": 3,
+        "atomic": true
+      },
+      "body": "### [P2] (2/3) Render standalone marks in multi-code-point descriptions\n\n`GetCharacterDescription` formats each code point's raw string, so a standalone combining mark appears without a base glyph in a multi-code-point description. Use the shared display transform for this display segment; retain the original code point and Unicode-name data.\n\n```suggestion\n            string.Format(\n                CultureInfo.InvariantCulture,\n                \"{0}: (U+{1:X4})\",\n                UnicodeHelper.GetDisplayText(info.Str),\n                info.CodePoint)));\n```",
+      "confidence": {
+        "score": 88,
+        "rationale": "The added description formatter interpolates raw code-point strings; the shared helper is applied only to the displayed text."
+      },
+      "start_line": 191
+    },
+    {
+      "id": "render-combining-marks-in-character-preview",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/settings-ui/Settings.UI/ViewModels/PowerAccentViewModel.cs",
+      "line": 197,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "combining-mark-display",
+        "title": "Use dotted-circle display text for standalone combining marks",
+        "position": 3,
+        "total": 3,
+        "atomic": true
+      },
+      "body": "### [P2] (3/3) Render standalone marks in set previews\n\n`BuildCharacterPreview` joins raw mapped values with spaces, so Hebrew standalone marks U+05B0 and U+05B8 are shown without a base glyph. Apply the shared display transform to the preview strings only; preserve the underlying mapped and copied values.\n\n```suggestion\n                .Distinct(StringComparer.Ordinal)\n                .Select(UnicodeHelper.GetDisplayText)\n```",
+      "confidence": {
+        "score": 90,
+        "rationale": "The new preview path joins mapped values verbatim and the exact language data includes standalone Hebrew combining marks."
+      },
+      "start_line": 197
+    },
+    {
+      "id": "correct-surrogate-pair-documentation",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/poweraccent/PowerAccent.Common/UnicodeHelper.cs",
+      "line": 23,
+      "side": "RIGHT",
+      "body": "### [P2] Distinguish surrogate pairs from multi-code-point strings\n\nA UTF-16 surrogate pair encodes one Unicode code point, and this method decodes both code units together. The current XML example therefore conflates UTF-16 representation with code-point count. Use a true multi-code-point example such as `°C` and describe surrogate-pair decoding separately.\n\n```suggestion\n    /// For strings containing multiple code points (e.g. combining sequences or \"°C\"),\n```",
+      "confidence": {
+        "score": 97,
+        "rationale": "The method documentation and ConvertToUtf32 loop directly establish the mismatch."
+      },
+      "start_line": 23
+    },
+    {
+      "id": "restrict-icu-import-to-system32",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/modules/poweraccent/PowerAccent.Common/UnicodeHelper.cs",
+      "line": 103,
+      "side": "RIGHT",
+      "body": "### [P2] Restrict the system ICU import to System32\n\nThis import is documented as using the Windows system ICU library but resolves the bare `icu.dll` name without an explicit System32 search restriction. Apply the same `DefaultDllImportSearchPaths` policy used by the repository's other ICU import so resolution matches that system-library intent. This is a loader-policy hardening concern; no malicious load or runtime exploit is claimed.\n\n```suggestion\n        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]\n        [DllImport(\"icu.dll\", EntryPoint = \"u_charName\", CharSet = CharSet.None, CallingConvention = CallingConvention.Cdecl)]\n```",
+      "confidence": {
+        "score": 83,
+        "rationale": "The import target and repository's System32 ICU precedent are grounded; no exploit or malicious-load behavior has been reproduced."
+      },
+      "start_line": 103
+    },
+    {
+      "id": "render-special-key-symbol-labels",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/settings-ui/Settings.UI/ViewModels/PowerAccentReferenceGuideViewModel.cs",
+      "line": 157,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "distinct-special-key-labels",
+        "title": "Use key glyphs and preserve a distinct localized keypad-divide label",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      },
+      "body": "### [P2] (1/2) Show punctuation keys as glyphs and distinguish keypad divide\n\n`KeyLabel` currently exposes enum identifiers such as `COMMA`, `PERIOD`, and `DIVIDE` directly in the reference guide. Map punctuation keys to their glyphs, keep slash and keypad divide distinct, and use a localized label for keypad divide. Apply the matching resource addition with this change.\n\n```suggestion\n                            kvp.Key switch\n                            {\n                                LetterKey.VK_PLUS => \"+\",\n                                LetterKey.VK_COMMA => \",\",\n                                LetterKey.VK_PERIOD => \".\",\n                                LetterKey.VK_MINUS => \"-\",\n                                LetterKey.VK_MULTIPLY_ => \"*\",\n                                LetterKey.VK_SLASH_ => \"/\",\n                                LetterKey.VK_DIVIDE_ => getLocalizedString(\n                                    \"QuickAccent_ReferenceGuide_NumpadDivide\"),\n                                LetterKey.VK_BACKSLASH => \"\\\\\",\n                                _ => kvp.Key.ToString()\n                                    .Replace(\"VK_\", string.Empty, StringComparison.Ordinal)\n                                    .TrimEnd('_'),\n                            },\n```",
+      "confidence": {
+        "score": 86,
+        "rationale": "The new view model binds enum-derived labels directly and the exact mapping contains separate slash and keypad-divide keys."
+      },
+      "start_line": 155
+    },
+    {
+      "id": "add-localized-keypad-divide-label",
+      "kind": "inline",
+      "in_diff": true,
+      "path": "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw",
+      "line": 4078,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "distinct-special-key-labels",
+        "title": "Use key glyphs and preserve a distinct localized keypad-divide label",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      },
+      "body": "### [P2] (2/2) Add the localized keypad-divide label\n\nThe reference guide needs a separate localized name for the keypad-divide key so it is not conflated with the slash key's `/` glyph. Add the resource and keep it selected with the view-model mapping.\n\n```suggestion\n  </data>\n  <data name=\"QuickAccent_ReferenceGuide_NumpadDivide\" xml:space=\"preserve\">\n    <value>Numpad /</value>\n  </data>\n```",
+      "confidence": {
+        "score": 82,
+        "rationale": "The source defines separate slash and divide mappings; the proposed resource preserves that distinction in the UI."
+      },
+      "start_line": 4078
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-supported-current-diff-findings",
+      "type": "post_review",
+      "label": "Post validated inline suggestions and review comments",
+      "note": "Ten current-head inline comments across seven supported findings are grounded; all literal suggestions were applied and validated as three complete atomic groups.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "5ffa6afc8549b9f3c8334bd2d10f5c6288b78234"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "5ffa6afc8549b9f3c8334bd2d10f5c6288b78234",
+      "result": "passed",
+      "command": "Built the exact upstream head 5ffa6afc8549b9f3c8334bd2d10f5c6288b78234: build-essentials, PowerAccent.Core, PowerAccent.Core.UnitTests, and Settings.UI.UnitTests passed; PowerAccent.Core tests passed 35/35 and focused reference-guide tests passed 9/9."
+    },
+    "suggestion_patch": {
+      "head_sha": "5ffa6afc8549b9f3c8334bd2d10f5c6288b78234",
+      "result": "passed",
+      "candidate_tree_sha": "98a598da293e87afc6de447277d7d66ce4d71cec",
+      "candidate_commit_sha": "523078bca3ea25bb0c24e2702a3c785785b6273d",
+      "literal_patch_sha256": "2D504A954021AA620C865E54B8A3EB36BCBE17B787633139775A88A3C95F78FA",
+      "command": "Applied all ten public suggestion blocks to the exact upstream head (including complete atomic groups), producing the recorded candidate tree; built build-essentials, PowerAccent.Core, PowerAccent.Core.UnitTests, and Settings.UI.UnitTests; PowerAccent.Core tests passed 35/35 and focused reference-guide tests passed 10/10.",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "skip-disabled-unicode-descriptions",
+        "fit-character-set-dialog-width",
+        "fit-character-set-dialog-height",
+        "add-combining-mark-display-helper",
+        "format-multi-codepoint-descriptions-with-dotted-circle",
+        "render-combining-marks-in-character-preview",
+        "correct-surrogate-pair-documentation",
+        "restrict-icu-import-to-system32",
+        "render-special-key-symbol-labels",
+        "add-localized-keypad-divide-label"
+      ]
+    },
+    "manual_runtime": {
+      "result": "not_run",
+      "detail": "No Windows UI runtime validation was performed. Dialog sizing, enabled/disabled description behavior, and combining-mark preview behavior remain unverified; no clipping or performance impact is claimed as runtime-reproduced."
+    },
+    "line_ending_safety": {
+      "head_sha": "5ffa6afc8549b9f3c8334bd2d10f5c6288b78234",
+      "result": "passed",
+      "checked_comment_ids": [
+        "skip-disabled-unicode-descriptions",
+        "fit-character-set-dialog-width",
+        "fit-character-set-dialog-height",
+        "add-combining-mark-display-helper",
+        "format-multi-codepoint-descriptions-with-dotted-circle",
+        "render-combining-marks-in-character-preview",
+        "correct-surrogate-pair-documentation",
+        "restrict-icu-import-to-system32",
+        "render-special-key-symbol-labels",
+        "add-localized-keypad-divide-label"
+      ],
+      "files": [
+        {
+          "path": "src/modules/poweraccent/PowerAccent.Common/UnicodeHelper.cs",
+          "line_endings": "lf",
+          "result": "passed"
+        },
+        {
+          "path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs",
+          "line_endings": "lf",
+          "result": "passed"
+        },
+        {
+          "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/PowerAccentPage.xaml",
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "result": "passed"
+        },
+        {
+          "path": "src/settings-ui/Settings.UI/ViewModels/PowerAccentViewModel.cs",
+          "line_endings": "lf",
+          "result": "passed"
+        },
+        {
+          "path": "src/settings-ui/Settings.UI/ViewModels/PowerAccentReferenceGuideViewModel.cs",
+          "line_endings": "lf",
+          "result": "passed"
+        },
+        {
+          "path": "src/settings-ui/Settings.UI/Strings/en-us/Resources.resw",
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "result": "passed"
+        }
+      ]
+    }
+  }
 }
