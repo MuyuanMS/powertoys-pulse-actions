@@ -111,7 +111,7 @@ function Convert-LiveItem {
   }
 }
 function Get-PrReadiness {
-  $query = 'query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){pullRequests(first:30,after:$cursor,states:OPEN,orderBy:{field:UPDATED_AT,direction:DESC}){nodes{number reviewDecision mergeStateStatus} pageInfo{hasNextPage endCursor}}}}'
+  $query = 'query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){pullRequests(first:10,after:$cursor,states:OPEN,orderBy:{field:UPDATED_AT,direction:DESC}){nodes{number reviewDecision mergeStateStatus} pageInfo{hasNextPage endCursor}}}}'
   $results = [System.Collections.Generic.List[object]]::new()
   $cursor = $null
   do {
