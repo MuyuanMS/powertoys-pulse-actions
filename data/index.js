@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-09T02:36:47.2312833+08:00",
+  "generated_at": "2026-10-09T02:52:10.6761849+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 167,
+    "open_prs": 168,
     "open_issues": 12827,
     "community": 11987,
     "artifacts": 1142
   },
   "impact": {
-    "as_of": "2026-10-09T02:36:47.2312833+08:00",
+    "as_of": "2026-10-09T02:52:10.6761849+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1243,6 +1243,40 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51128",
+      "kind": "pr",
+      "number": 51128,
+      "url": "https://github.com/microsoft/PowerToys/pull/51128",
+      "title": "Mouse Jump settings: render preview from Windows wallpaper with acrylic taskbar",
+      "author": "niels9001",
+      "state": "open",
+      "is_draft": true,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-Settings"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-08T18:31:17Z",
+      "updated_at": "2026-10-08T18:35:48Z",
+      "comments": 0,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
       "id": "pr-51127",
       "kind": "pr",
       "number": 51127,
@@ -1704,8 +1738,8 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-10-07T22:18:27Z",
-      "updated_at": "2026-10-08T17:33:41Z",
-      "comments": 2,
+      "updated_at": "2026-10-08T18:41:04Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2712,7 +2746,7 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-10-05T13:20:23Z",
-      "updated_at": "2026-10-08T18:23:32Z",
+      "updated_at": "2026-10-08T18:30:54Z",
       "comments": 1,
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
