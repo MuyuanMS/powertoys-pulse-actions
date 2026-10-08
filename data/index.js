@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-08T14:05:41.0686975+08:00",
+  "generated_at": "2026-10-08T14:45:03.6454517+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,20 +85,19 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 171,
-    "open_issues": 12821,
-    "community": 11983,
-    "artifacts": 1157
+    "open_prs": 170,
+    "open_issues": 12820,
+    "community": 11982,
+    "artifacts": 1156
   },
   "impact": {
-    "as_of": "2026-10-08T14:05:41.0686975+08:00",
+    "as_of": "2026-10-08T14:45:03.6454517+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
-    51111,
     51108,
     51106,
     51105,
@@ -1258,40 +1257,6 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
-      "id": "pr-51111",
-      "kind": "pr",
-      "number": 51111,
-      "url": "https://github.com/microsoft/PowerToys/pull/51111",
-      "title": "build(release): advance release train to 0.102",
-      "author": "LegendaryBlair",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-08T05:16:31Z",
-      "updated_at": "2026-10-08T05:41:34Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "pending",
-      "merge_state": "BLOCKED"
-    },
-    {
       "id": "pr-51109",
       "kind": "pr",
       "number": 51109,
@@ -1497,7 +1462,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "CLEAN"
+      "merge_state": "CLEAN",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 950,
+        "fork_title": "[PR 51102] Installer: generate .wxs into obj with deterministic component GUIDs",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51102-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/950"
+      }
     },
     {
       "id": "pr-51100",
@@ -2148,7 +2121,7 @@ window.BOARD_INDEX = {
       "title": "[Settings] Fix memory leak when navigating between pages",
       "author": "dotMorten",
       "state": "open",
-      "is_draft": false,
+      "is_draft": true,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
@@ -2163,13 +2136,12 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Settings",
-        "Ready for review"
+        "Product-Settings"
       ],
       "assignees": [],
       "created_at": "2026-10-07T04:06:01Z",
-      "updated_at": "2026-10-07T05:51:05Z",
-      "comments": 4,
+      "updated_at": "2026-10-08T06:27:57Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -3556,7 +3528,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "trigger_ci",
+        "label": "Request Azure CI rerun"
+      },
       "labels": [
         "Needs-Triage",
         "Needs-Team-Response",
@@ -4567,8 +4542,8 @@ window.BOARD_INDEX = {
         "LegendaryBlair"
       ],
       "created_at": "2026-09-13T06:08:24Z",
-      "updated_at": "2026-10-08T04:17:47Z",
-      "comments": 7,
+      "updated_at": "2026-10-08T06:28:03Z",
+      "comments": 9,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -5721,11 +5696,11 @@ window.BOARD_INDEX = {
         "MuyuanMS"
       ],
       "created_at": "2026-08-19T21:40:14Z",
-      "updated_at": "2026-10-04T14:19:06Z",
+      "updated_at": "2026-10-08T05:49:09Z",
       "comments": 8,
       "priority": null,
-      "review_decision": "CHANGES_REQUESTED",
-      "ci_state": null,
+      "review_decision": "APPROVED",
+      "ci_state": "pending",
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
@@ -6834,8 +6809,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-12T03:53:18Z",
-      "updated_at": "2026-10-08T02:41:25Z",
-      "comments": 21,
+      "updated_at": "2026-10-08T06:16:37Z",
+      "comments": 22,
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
@@ -7427,15 +7402,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 599,
-        "fork_title": "[PR 48524] Added eraser tool with pixel and stroke modes in ZoomIt suite",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/48524",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/599"
-      }
+      "merge_state": "DIRTY"
     },
     {
       "id": "pr-48483",
@@ -255034,37 +255001,6 @@ window.BOARD_INDEX = {
       "created_at": "2026-04-10T11:58:59Z",
       "updated_at": "2026-04-26T13:11:21Z",
       "comments": 3,
-      "priority": null
-    },
-    {
-      "id": "issue-46876",
-      "kind": "issue",
-      "number": 46876,
-      "url": "https://github.com/microsoft/PowerToys/issues/46876",
-      "title": "Light Switch should remember previous setting of \"Show accent color on Start and taskbar\" when switching to dark mode",
-      "author": "JeffPaine4890",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Resolution-Duplicate"
-      ],
-      "assignees": [],
-      "created_at": "2026-04-10T11:18:43Z",
-      "updated_at": "2026-04-11T06:21:56Z",
-      "comments": 2,
       "priority": null
     },
     {
