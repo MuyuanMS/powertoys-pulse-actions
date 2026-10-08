@@ -1,198 +1,30 @@
 {
-  "schemaVersion": 4,
-  "id": "pr-50081",
   "number": 50081,
   "kind": "pr",
   "track": "review",
-  "url": "https://github.com/microsoft/PowerToys/pull/50081",
-  "title": "[AdvancedPaste] Add \"Paste as .jpg file\" action with configurable JPEG quality",
-  "authorAssociation": "NONE",
-  "isCommunity": true,
-  "isMine": false,
-  "state": "OPEN",
-  "draft": false,
   "stage": "review_in_progress",
-  "owes": "maintainer",
+  "owes": "us",
   "pending_author": false,
-  "confidence": "High",
-  "processVerdict": "proceed",
-  "generated_at": "2026-09-15T13:21:19Z",
-  "evaluated_at": "2026-09-24T06:35:00Z",
-  "source_updated_at": "2026-09-05T00:24:33Z",
+  "generated_at": "2026-10-08T02:53:31.0734662Z",
+  "evaluated_at": "09/24/2026 06:35:00",
+  "source_updated_at": "09/30/2026 17:29:01",
   "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
-  "summary": "The saved fork review loop was resumed and its existing Copilot results were consumed before any new request. The latest fork pass returned zero new published comments with zero unresolved Copilot threads. The exact upstream head remains unchanged and passed targeted Advanced Paste builds; four independently grounded current-head inline findings are drafted for maintainer approval. The unsupported memory-pressure observation was withdrawn.",
+  "title": "[AdvancedPaste] Add \"Paste as .jpg file\" action with configurable JPEG quality",
+  "url": "https://github.com/microsoft/PowerToys/pull/50081",
   "status": {
-    "glyph": "📝",
-    "label": "Review complete — approval required",
-    "detail": "Fork PR 440 is converged at 087c7fb7fe57e0274cc6b158d519bf202db0d47e with zero unresolved Copilot threads. Targeted x64 Debug builds passed for the exact upstream head and converged fork tree. Five findings remain for maintainer approval. No upstream write occurred."
+    "glyph": "...",
+    "label": "Review queued",
+    "detail": "Selected for the requested post-2026-09-29 non-draft, non-CmdPal PR drain; resume from the live upstream head."
   },
-  "next_action": {
-    "glyph": "📝",
-    "label": "Approve, edit, or hold the drafted review comments",
-    "reason": "The four proposed inline comments are pinned to the live upstream head and remain unpublished pending explicit maintainer approval."
-  },
-  "needs_revalidation": false,
-  "source": {
-    "repository": "microsoft/PowerToys",
-    "headRefOid": "a877c02e63252545404b69398e4521867a1d7a29",
-    "updatedAt": "2026-09-05T00:24:33Z"
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
+  "actions": [],
+  "workflow": {
+    "phase": "queued",
+    "checkpoint_at": "2026-10-08T02:53:31.0734662Z"
   },
   "freshness": {
-    "headRefOid": "a877c02e63252545404b69398e4521867a1d7a29",
-    "updatedAt": "2026-09-05T00:24:33Z",
-    "latestCopilotReviewAt": "2026-08-27T09:56:55Z",
-    "latestForkCommitAt": "2026-08-27T09:53:28Z",
-    "unresolvedForkCopilotThreads": 0,
-    "checkedAt": "2026-09-15T13:21:19Z"
-  },
-  "proposed_comments": [
-    {
-      "id": "preserve-paste-format-telemetry-ids",
-      "kind": "inline",
-      "title": "Preserve existing PasteFormats telemetry IDs",
-      "severity": "high",
-      "body": "### Preserve existing PasteFormats telemetry IDs\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs` (`PasteFormats`).\n\n**Suggested change:** Assign `PasteAsJpgFile` an explicit unused stable value instead of inserting it before the existing HTML and transcode values. These enum values are emitted directly in format-click and in-app-shortcut telemetry, so renumbering the following members makes existing dashboards and persisted numeric payloads interpret old actions as different formats. Keep display ordering separate from the persisted telemetry ID.",
-      "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
-      "line": 94,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 98,
-        "rationale": "The enum members are used as telemetry values, and insertion before existing members changes their numeric identities."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "normalize-jpeg-source-bitmap",
-      "kind": "inline",
-      "title": "Normalize clipboard bitmaps before JPEG encoding",
-      "severity": "high",
-      "body": "### Normalize clipboard bitmaps before JPEG encoding\n\n**Severity:** `high`\n\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs` (`PasteAsJpgFileAsync`).\n\n**Suggested change:** Convert the decoded clipboard bitmap to a JPEG-supported pixel format and define alpha compositing before calling `SetSoftwareBitmap`. `GetImageContentAsync()` can return valid grayscale or alpha-bearing images that the encoder cannot consume directly or cannot represent correctly. Add regression coverage for both a grayscale image and a transparent image.",
-      "path": "src/modules/AdvancedPaste/AdvancedPaste/Helpers/TransformHelpers.cs",
-      "line": 97,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 97,
-        "rationale": "The encoder path passes the decoded bitmap through without format normalization even though valid clipboard formats and JPEG alpha support differ."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "preserve-legacy-hotkey-ids",
-      "kind": "inline",
-      "title": "Preserve hotkey IDs for legacy settings",
-      "severity": "high",
-      "body": "### Preserve hotkey IDs for legacy settings\n\n**Severity:** `high`\n\n**Affected code:** `src/settings-ui/Settings.UI.Library/AdvancedPastePasteAsFileAction.cs` (`SubActions`).\n\n**Suggested change:** Preserve the existing serialized positions with an explicit migration or native placeholder before inserting the JPEG action into displayed order. For an older settings file with no JPEG property, the Settings model creates the missing backing field while the native module can still enumerate only actions physically present in the legacy JSON; inserting the child in the middle can therefore assign HTML and later actions the wrong hotkey IDs until settings are rewritten.",
-      "path": "src/settings-ui/Settings.UI.Library/AdvancedPastePasteAsFileAction.cs",
-      "line": 64,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 96,
-        "rationale": "The hotkey identity is positional across managed and native settings readers, and legacy JSON omits the newly introduced child."
-      },
-      "disposition": "proposed"
-    },
-    {
-      "id": "hide-disabled-jpeg-shortcut",
-      "kind": "inline",
-      "title": "Hide disabled JPEG shortcuts",
-      "severity": "medium",
-      "body": "### Hide disabled JPEG shortcuts\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs` (`PopulateAdvancedPasteShortcuts`).\n\n**Suggested change:** Guard the JPEG entry with `PasteAsJpgFile.IsShown` in addition to the parent Paste-as-file visibility. Advanced Paste checks both visibility levels when activating the action, so Shortcut Guide currently can advertise a shortcut that the user disabled.",
-      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs",
-      "line": 62,
-      "side": "RIGHT",
-      "in_diff": true,
-      "confidence": {
-        "score": 99,
-        "rationale": "The new Shortcut Guide entry checks only the parent group while the action has its own visibility setting."
-      },
-      "disposition": "proposed"
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-50081",
-      "type": "post_review",
-      "label": "Post four inline findings",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "review": {
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 50081,
-        "event": "COMMENT",
-        "head_sha": "a877c02e63252545404b69398e4521867a1d7a29"
-      },
-      "note": "The four independently grounded inline findings are submitted in one COMMENT review. The unsupported memory-bounds observation was withdrawn. Draft only; no public write has occurred."
-    }
-  ],
-  "safe_actions": [
-    "Present the four drafted current-head inline comments for explicit maintainer approval",
-    "Post nothing upstream until the pinned head and activity snapshot are revalidated",
-    "Hold the review without changing labels, review state, or PR state",
-    "Re-run the fork review loop and exact-head validation after material upstream activity"
-  ],
-  "validation": {
-    "upstream_head": {
-      "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
-      "result": "passed",
-      "configuration": "Debug",
-      "commands": [
-        "src\\modules\\AdvancedPaste\\AdvancedPaste\\..\\..\\..\\..\\tools\\build\\build.cmd (x64 Debug, exit 0)"
-      ],
-      "checks": [
-        "detect-telemetry-events: passed",
-        "license/cla: passed",
-        "pr-intake: passed"
-      ],
-      "full_build": {
-        "result": "not_run",
-        "detail": "Repository-wide build was not run to completion; targeted repository build scripts covering Advanced Paste passed on the exact upstream head and converged fork tree."
-      }
-    },
-    "fork_review": {
-      "fork_pr": 440,
-      "fork_head_sha": "087c7fb7fe57e0274cc6b158d519bf202db0d47e",
-      "latest_copilot_reviews": 8,
-      "latest_review_new_comments": 0,
-      "unresolved_threads": 0,
-      "result": "passed",
-      "detail": "Consumed the latest existing Copilot review before considering another request; no duplicate request was made."
-    }
-  },
-  "workflow": {
-    "phase": "awaiting_review_approval",
-    "previous_phase": "review_in_progress",
-    "checkpoint_at": "2026-09-15T13:21:19Z",
-    "fork_pr": 440,
-    "fork_branch": "pr-iterate/50081-v2",
-    "fork_reviewed_head_sha": "087c7fb7fe57e0274cc6b158d519bf202db0d47e",
-    "latest_copilot_review_at": "2026-08-27T09:56:55Z",
-    "copilot_final": "fresh existing review returned zero new published comments",
-    "unresolved_copilot_threads": 0,
-    "advancement_evidence": [
-      "Live upstream head and updatedAt were re-read.",
-      "Existing fork PR 440 and branch pr-iterate/50081-v2 were resumed.",
-      "The latest existing Copilot review was consumed before any new request.",
-      "The latest Copilot review returned zero new published comments.",
-      "Unresolved fork Copilot thread count is zero.",
-      "The exact upstream head matches the dashboard head_sha.",
-      "The exact upstream Advanced Paste x64 Debug build passed.",
-      "The converged fork tree passed build-essentials and the Advanced Paste x64 Debug build.",
-      "Five current-head findings were mapped to four RIGHT-side anchors and one independently actionable out-of-diff comment."
-    ]
-  },
-  "fork_pr": {
-    "number": 440,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/440",
-    "state": "OPEN",
-    "head_sha": "087c7fb7fe57e0274cc6b158d519bf202db0d47e"
-  },
-  "fork_branch": "pr-iterate/50081-v2",
-  "upstream_safety": {
-    "public_actions_taken": false,
-    "detail": "No comments, reviews, approvals, labels, assignments, CI triggers, merges, closes, cross-references, or other public mutations were made to microsoft/PowerToys."
+    "queued_at": "2026-10-08T02:53:31.0734662Z",
+    "checkpoint_at": "2026-10-08T02:53:31.0734662Z"
   }
 }
