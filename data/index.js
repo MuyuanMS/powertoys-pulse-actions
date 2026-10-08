@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-08T11:02:00.8447333+08:00",
+  "generated_at": "2026-10-08T11:35:52.1751668+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 172,
     "open_issues": 12819,
     "community": 11982,
-    "artifacts": 1158
+    "artifacts": 1157
   },
   "impact": {
-    "as_of": "2026-10-08T11:02:00.8447333+08:00",
+    "as_of": "2026-10-08T11:35:52.1751668+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -113,7 +113,6 @@ window.BOARD_INDEX = {
     51067,
     51065,
     51063,
-    51062,
     51061,
     51060,
     51057,
@@ -2108,8 +2107,8 @@ window.BOARD_INDEX = {
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -161297,8 +161296,8 @@ window.BOARD_INDEX = {
         "jiripolasek"
       ],
       "created_at": "2026-09-22T18:42:43Z",
-      "updated_at": "2026-09-22T19:41:10Z",
-      "comments": 0,
+      "updated_at": "2026-10-08T03:02:21Z",
+      "comments": 1,
       "priority": null
     },
     {
