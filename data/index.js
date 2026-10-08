@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-08T13:11:54.8367458+08:00",
+  "generated_at": "2026-10-08T13:41:14.6597419+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,19 +85,20 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 170,
+    "open_prs": 171,
     "open_issues": 12820,
     "community": 11983,
-    "artifacts": 1156
+    "artifacts": 1157
   },
   "impact": {
-    "as_of": "2026-10-08T13:11:54.8367458+08:00",
+    "as_of": "2026-10-08T13:41:14.6597419+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    51111,
     51108,
     51106,
     51105,
@@ -1257,6 +1258,40 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51111",
+      "kind": "pr",
+      "number": 51111,
+      "url": "https://github.com/microsoft/PowerToys/pull/51111",
+      "title": "build(release): advance release train to 0.102",
+      "author": "LegendaryBlair",
+      "state": "open",
+      "is_draft": false,
+      "is_community": false,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": "review",
+      "stage": "review_in_progress",
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": true,
+      "agent_status": "review",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-08T05:16:31Z",
+      "updated_at": "2026-10-08T05:17:01Z",
+      "comments": 1,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
       "id": "pr-51109",
       "kind": "pr",
       "number": 51109,
@@ -1457,12 +1492,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T23:26:56Z",
-      "updated_at": "2026-10-08T03:57:55Z",
+      "updated_at": "2026-10-08T05:12:57Z",
       "comments": 1,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN"
     },
     {
       "id": "pr-51100",
