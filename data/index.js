@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-09T05:22:41.1924913+08:00",
+  "generated_at": "2026-10-09T05:36:48.9024322+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1145
   },
   "impact": {
-    "as_of": "2026-10-09T05:22:41.1924913+08:00",
+    "as_of": "2026-10-09T05:36:48.9024322+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1434,8 +1434,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T17:27:13Z",
-      "updated_at": "2026-10-08T20:35:14Z",
-      "comments": 2,
+      "updated_at": "2026-10-08T21:25:37Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1584,7 +1584,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 968,
+        "fork_title": "[PR 51114] feat(workspaces): add list and launch CLI",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51114",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/968"
+      }
     },
     {
       "id": "pr-51109",
@@ -1772,12 +1780,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T23:26:56Z",
-      "updated_at": "2026-10-08T05:12:57Z",
+      "updated_at": "2026-10-08T21:13:01Z",
       "comments": 1,
       "priority": null,
-      "review_decision": null,
-      "ci_state": null,
-      "merge_state": null,
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
         "fork_number": 950,
@@ -1854,7 +1862,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T21:21:37Z",
-      "updated_at": "2026-10-07T21:22:17Z",
+      "updated_at": "2026-10-08T21:20:09Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
