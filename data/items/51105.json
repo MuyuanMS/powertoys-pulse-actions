@@ -2,29 +2,249 @@
   "number": 51105,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T20:11:09.9248232Z",
-  "evaluated_at": "2026-10-08T20:11:09.9248232Z",
+  "generated_at": "2026-10-09T19:18:15.4080782Z",
+  "evaluated_at": "2026-10-09T19:18:14.3823989Z",
   "source_updated_at": "2026-10-08T18:16:11Z",
   "head_sha": "191fbd1f3fb4251118235f78ddd17006ac4eabcd",
   "title": "[Build] Improve performance of deps.json DLL version verification script and fix bugs",
   "url": "https://github.com/microsoft/PowerToys/pull/51105",
+  "summary": "7 grounded review comments are available for maintainer selection. Five historical cloud rounds reached the limit; latest returned Lite with a full-agentic timeout. Seven substantive literal suggestions are validated on the exact upstream revision. No clean cloud review or approval readiness is claimed.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Fresh Copilot review 5461933515 on the current fork head returned zero new findings and zero unresolved threads. Eight grounded inline suggestions are drafted, including two complete atomic groups; raw-blob line-ending and exact-upstream/literal-candidate build validation remain pending after a nonblocking build-lock check found the mutex held."
+    "detail": "Five historical cloud rounds reached the limit; latest returned Lite with a full-agentic timeout. Seven substantive literal suggestions are validated on the exact upstream revision. No clean cloud review or approval readiness is claimed.",
+    "glyph": "!",
+    "label": "Validated review drafts ready"
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Select the grounded review comments for human approval. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "51105-ignored-access",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Fail instead of silently skipping inaccessible directories",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact upstream source suppresses inaccessible traversal errors, and an isolated ACL fixture reproduced false success upstream and fail-closed behavior with the literal replacement."
+      },
+      "body": "### Fail instead of silently skipping inaccessible directories\n\n**Severity:** `medium`\n\n`IgnoreInaccessible = true` makes the recursive scan omit directories it cannot read. If an omitted subtree contains a conflicting DLL version, the audit can report success based only on the readable portion; disable this suppression so the existing stop-on-error behavior fails an incomplete scan.\n\n```suggestion\n        var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = false };\n```",
+      "disposition": "proposed",
+      "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
+      "line": 199,
+      "side": "RIGHT"
+    },
+    {
+      "id": "51105-excluded-manifests-1",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Count discovered manifests before applying exclusions (1/2)",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The exact-upstream excluded-only fixture fails with the false missing-manifest error; this literal replacement preserves the discovered count before filtering."
+      },
+      "body": "### Count discovered manifests before applying exclusions (1/2)\n\n**Severity:** `medium`\n\nThe zero-manifest guard needs the number of files discovered, not only the files selected for auditing. When a target contains manifests that are intentionally excluded, counting after filtering incorrectly reports that no deps.json files were found. Preserve the discovery count before removing excluded files.\n\n```suggestion\n        var files = new List<string>(Directory.EnumerateFiles(root, \"*.deps.json\", options));\n        var scannedFilesCount = files.Count;\n        files.RemoveAll(f => IsExcluded(f, Path.GetFileName(f)));\n```",
+      "disposition": "proposed",
+      "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
+      "line": 204,
+      "side": "RIGHT",
+      "start_line": 200,
+      "selection_group": {
+        "id": "excluded-manifest-discovery",
+        "title": "Count discovered manifests before exclusions",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51105-excluded-manifests-2",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Return the discovery count for empty-input validation (2/2)",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The literal second member is required with member 1; the complete atomic patch changes the exact-upstream excluded-only fixture from exit 1 to exit 0."
+      },
+      "body": "### Return the discovery count for empty-input validation (2/2)\n\n**Severity:** `medium`\n\nAfter exclusions are applied, `files.Count` is the audit subset size rather than the number of discovered manifests. Returning that filtered count makes an intentionally excluded-only target look empty and causes a false failure; return the saved discovery count instead.\n\n```suggestion\n        return new AuditResult { ScannedFilesCount = scannedFilesCount, Versions = all };\n```",
+      "disposition": "proposed",
+      "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
+      "line": 239,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "excluded-manifest-discovery",
+        "title": "Count discovered manifests before exclusions",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51105-malformed-manifest-1",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Reject malformed top-level deps.json structures (1/4)",
+      "severity": "medium",
+      "confidence": {
+        "score": 95,
+        "rationale": "The exact-upstream malformed-root fixture exits 0; the literal grouped candidate exits nonzero with the structural error."
+      },
+      "body": "### Reject malformed top-level deps.json structures (1/4)\n\n**Severity:** `medium`\n\nA syntactically valid manifest with a missing or non-object `targets` property currently returns an empty result. Since the file still counts as discovered, the wrapper then reports a successful audit; throw a structural error rather than treating malformed input as an empty manifest.\n\n```suggestion\n                throw new InvalidDataException($\"Invalid deps.json structure in {path}: expected an object with an object-valued 'targets' property.\");\n```",
+      "disposition": "proposed",
+      "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
+      "line": 142,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "malformed-manifest-shapes",
+        "title": "Reject malformed deps.json structures",
+        "position": 1,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51105-malformed-manifest-2",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Reject non-object target values (2/4)",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "A malformed non-object target fixture exits 0 on exact upstream and fails with the structural error on the literal candidate."
+      },
+      "body": "### Reject non-object target values (2/4)\n\n**Severity:** `medium`\n\nA target-framework entry with a non-object value is silently skipped, so part of a malformed manifest is omitted from the audit. Reject that shape rather than allowing remaining entries to produce a successful result.\n\n```suggestion\n                    throw new InvalidDataException($\"Invalid deps.json structure in {path}: target '{target.Name}' must be an object.\");\n```",
+      "disposition": "proposed",
+      "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
+      "line": 150,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "malformed-manifest-shapes",
+        "title": "Reject malformed deps.json structures",
+        "position": 2,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51105-malformed-manifest-3",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Distinguish absent runtime data from malformed package values (3/4)",
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "Exact-source control flow distinguishes absent runtime from malformed types; focused package/runtime fixtures fail on the literal candidate."
+      },
+      "body": "### Distinguish absent runtime data from malformed package values (3/4)\n\n**Severity:** `medium`\n\nA package with no `runtime` property is valid and may be skipped, but a non-object package or a present non-object `runtime` value is malformed. The combined condition treats all of these cases as absent data and can hide DLL references; skip only the absent property and reject invalid present values.\n\n```suggestion\n                    if (package.Value.ValueKind != JsonValueKind.Object)\n                    {\n                        throw new InvalidDataException($\"Invalid deps.json structure in {path}: package '{package.Name}' must be an object.\");\n                    }\n\n                    if (!package.Value.TryGetProperty(\"runtime\", out var runtime))\n                    {\n                        continue;\n                    }\n\n                    if (runtime.ValueKind != JsonValueKind.Object)\n                    {\n                        throw new InvalidDataException($\"Invalid deps.json structure in {path}: package '{package.Name}' has a non-object runtime value.\");\n```",
+      "disposition": "proposed",
+      "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
+      "line": 159,
+      "side": "RIGHT",
+      "start_line": 155,
+      "selection_group": {
+        "id": "malformed-manifest-shapes",
+        "title": "Reject malformed deps.json structures",
+        "position": 3,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51105-malformed-manifest-4",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Reject malformed DLL entries and non-string versions (4/4)",
+      "severity": "medium",
+      "confidence": {
+        "score": 92,
+        "rationale": "Exact-upstream fixtures for malformed DLL entries and non-string fileVersion are accepted; the literal candidate rejects them."
+      },
+      "body": "### Reject malformed DLL entries and non-string versions (4/4)\n\n**Severity:** `medium`\n\nA DLL runtime entry with a non-object value is skipped, and a present non-string `fileVersion` is converted to an empty string. Either malformed shape can therefore pass when no valid conflict is found; continue only when `fileVersion` is absent and reject invalid entry/value types.\n\n```suggestion\n                        if (entry.Value.ValueKind != JsonValueKind.Object)\n                        {\n                            throw new InvalidDataException($\"Invalid deps.json structure in {path}: DLL runtime entry '{entry.Name}' must be an object.\");\n                        }\n\n                        if (!entry.Value.TryGetProperty(\"fileVersion\", out var fv))\n                        {\n                            continue;\n                        }\n\n                        if (fv.ValueKind != JsonValueKind.String)\n                        {\n                            throw new InvalidDataException($\"Invalid deps.json structure in {path}: DLL runtime entry '{entry.Name}' has a non-string fileVersion.\");\n                        }\n\n                        string version = fv.GetString();\n```",
+      "disposition": "proposed",
+      "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
+      "line": 175,
+      "side": "RIGHT",
+      "start_line": 169,
+      "selection_group": {
+        "id": "malformed-manifest-shapes",
+        "title": "Reject malformed deps.json structures",
+        "position": 4,
+        "total": 4,
+        "atomic": true
+      }
+    }
+  ],
+  "actions": [
+    {
+      "note": "Five historical cloud rounds reached the limit; latest returned Lite with a full-agentic timeout. Seven substantive literal suggestions are validated on the exact upstream revision. No clean cloud review or approval readiness is claimed.",
+      "type": "post_review",
+      "id": "post-review-51105",
+      "label": "Post 7 inline suggestions",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "191fbd1f3fb4251118235f78ddd17006ac4eabcd"
+      }
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "191fbd1f3fb4251118235f78ddd17006ac4eabcd",
+      "result": "passed",
+      "commands": [
+        "PowerShell parser check of the seven-block candidate: passed.",
+        "pwsh -NoLogo -NoProfile -NonInteractive -File .pipelines\\verifyDepsJsonLibraryVersions.ps1 -targetDir <isolated JSON fixture>; embedded C# compilation and focused assertions passed.",
+        "Paired exact-upstream/candidate fixtures covered valid and excluded-only manifests, six malformed shapes, sequential machine/user MSI calls, and a private inaccessible subtree."
+      ],
+      "applied_comment_ids": [
+        "51105-ignored-access",
+        "51105-excluded-manifests-1",
+        "51105-excluded-manifests-2",
+        "51105-malformed-manifest-1",
+        "51105-malformed-manifest-2",
+        "51105-malformed-manifest-3",
+        "51105-malformed-manifest-4"
+      ],
+      "scope": "Only the seven selected public blocks; embedded C# compilation and isolated runtime fixtures on their exact candidate.",
+      "minimal_ranges_reviewed": true
+    },
+    "line_ending_safety": {
+      "files": [
+        {
+          "path": ".pipelines/verifyDepsJsonLibraryVersions.ps1",
+          "line_endings": "lf",
+          "result": "passed"
+        }
+      ],
+      "result": "passed",
+      "head_sha": "191fbd1f3fb4251118235f78ddd17006ac4eabcd",
+      "checked_comment_ids": [
+        "51105-ignored-access",
+        "51105-excluded-manifests-1",
+        "51105-excluded-manifests-2",
+        "51105-malformed-manifest-1",
+        "51105-malformed-manifest-2",
+        "51105-malformed-manifest-3",
+        "51105-malformed-manifest-4"
+      ]
+    },
+    "limitations": [
+      "No full solution or installer build was run.",
+      "Current cloud coverage is Lite/incomplete at the five-round cap, not approval-ready.",
+      "Optional ordering, duplicate-report, and message-format edits are not part of this literal candidate."
+    ]
+  },
+  "review_coverage": {
+    "cap_reached": true,
+    "automated_round_cap": 5,
+    "cloud_effort": "Lite",
+    "approval_ready": false,
+    "cloud_complete": false
+  },
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-10-08T20:11:09.9248232Z"
-  },
-  "freshness": {
-    "queued_at": "2026-10-08T20:11:09.9248232Z",
-    "checkpoint_at": "2026-10-08T20:11:09.9248232Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-09T19:18:15.4080782Z"
   }
 }
