@@ -2,29 +2,195 @@
   "number": 51041,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T02:53:26.098921Z",
-  "evaluated_at": "2026-10-08T02:53:26.098921Z",
-  "source_updated_at": "10/07/2026 00:24:56",
+  "generated_at": "2026-10-09T21:49:51.4020104Z",
+  "evaluated_at": "2026-10-09T21:49:50.4227827Z",
+  "source_updated_at": "2026-10-07T00:24:56Z",
   "head_sha": "bbc4d96ab25bf21109af87cecbfc1824e5469090",
   "title": "test(mouse-without-borders): add the x64 two-endpoint Sandbox pilot",
   "url": "https://github.com/microsoft/PowerToys/pull/51041",
+  "summary": "4 grounded review comments are available for maintainer selection. The final Balanced review returned zero new comments and zero unresolved threads after three rounds. Four literal cleanup suggestions are offered as one atomic group. The exact public four-file candidate compiled; helper tests used byte-identical helper/test sources in a separate same-head candidate. The broad privileged Sandbox pilot still needs maintainer judgment; no full runtime or approval claim is made.",
   "status": {
-    "glyph": "...",
-    "label": "Review queued",
-    "detail": "Selected for the requested post-2026-09-29 non-draft, non-CmdPal PR drain; resume from the live upstream head."
+    "label": "Validated review drafts ready",
+    "glyph": "!",
+    "detail": "The final Balanced review returned zero new comments and zero unresolved threads after three rounds. Four literal cleanup suggestions are offered as one atomic group. The exact public four-file candidate compiled; helper tests used byte-identical helper/test sources in a separate same-head candidate. The broad privileged Sandbox pilot still needs maintainer judgment; no full runtime or approval claim is made."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Select the grounded review comments for human approval. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "mwb-control-parent-helper",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Add safe empty-parent cleanup",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact upstream test setup rejects a shared RunId directory; both recovery cleanup paths leave that parent behind. The helper preserves nonempty/reparse safety and is directly covered by passing deletion/refusal tests."
+      },
+      "body": "### (1/4) Add a safe empty RunId-parent remover\n\n**Severity:** `medium`\n\nThe recovery fixtures remove their per-test control directories but leave the shared `PowerToysUiTestControl/<RunId>` parent, which `Prepare` later rejects. This bounded helper validates the RunId, refuses a nonempty parent, and deletes only the empty directory; apply all four members of this atomic cleanup group together.\n\n```suggestion\n\n    public static void RemoveEmptyRunControlParent(string runId, TimeSpan timeout)\n    {\n        if (!Guid.TryParseExact(runId, \"D\", out var parsedRunId))\n        {\n            throw new ArgumentException(\"The run identifier must be a GUID.\", nameof(runId));\n        }\n\n        var path = Path.Combine(\n            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),\n            \"Microsoft\",\n            \"PowerToysUiTestControl\",\n            parsedRunId.ToString());\n        Wait(\n            () =>\n            {\n                if (!Directory.Exists(path))\n                {\n                    return true;\n                }\n\n                _ = WinAppSandboxPayload.PlainFiles(path).ToArray();\n                if (Directory.EnumerateFileSystemEntries(path).Any())\n                {\n                    throw new InvalidOperationException(\"Refusing to remove a nonempty run control parent: \" + path);\n                }\n\n                try\n                {\n                    Directory.Delete(path, recursive: false);\n                    return true;\n                }\n                catch (IOException error) when ((error.HResult & 0xffff) is 32 or 33 or 145)\n                {\n                    return false;\n                }\n            },\n            timeout,\n            \"An empty run control parent remained in use after bounded cleanup: \" + path);\n    }\n}\n```",
+      "disposition": "proposed",
+      "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/RunFiles.cs",
+      "line": 121,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "mwb-run-control-cleanup",
+        "title": "Clean the shared Sandbox RunId control directory",
+        "position": 1,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "mwb-endpoint-parent-cleanup",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Remove endpoint-recovery RunId parent",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The recovery fixture removes its owned child but leaves the parent that the smoke fixture rejects; the one-line call is built on the exact patch candidate."
+      },
+      "body": "### (2/4) Remove the endpoint-recovery RunId parent\n\n**Severity:** `medium`\n\nThis removes the recovery child but leaves its empty RunId parent; a later `TwoEndpointFixture.Prepare` rejects that shared path. Remove the parent only after the owned child cleanup succeeds, and apply all four members of this atomic group together.\n\n```suggestion\n            RunFiles.RemoveOwnedDirectory(controlRoot, TimeSpan.FromSeconds(45));\n            RunFiles.RemoveEmptyRunControlParent(RunId, TimeSpan.FromSeconds(45));\n```",
+      "disposition": "proposed",
+      "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/EndpointRecoveryFixture.cs",
+      "line": 278,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "mwb-run-control-cleanup",
+        "title": "Clean the shared Sandbox RunId control directory",
+        "position": 2,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "mwb-recovery-parent-cleanup",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Remove sandbox-recovery RunId parent",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The recovery test removes only its child and leaves the shared RunId parent; the one-line call is compiled with the exact patch."
+      },
+      "body": "### (3/4) Remove the sandbox-recovery RunId parent\n\n**Severity:** `medium`\n\nThis removes the `sandbox-recovery-*` child but leaves the shared RunId parent that blocks the smoke fixture on a later run. Remove the empty parent only after the owned child cleanup succeeds, and apply all four members of this atomic group together.\n\n```suggestion\n                    RunFiles.RemoveOwnedDirectory(control, TimeSpan.FromSeconds(45));\n                    RunFiles.RemoveEmptyRunControlParent(runId, TimeSpan.FromSeconds(45));\n```",
+      "disposition": "proposed",
+      "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/RecoveryTests.cs",
+      "line": 268,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "mwb-run-control-cleanup",
+        "title": "Clean the shared Sandbox RunId control directory",
+        "position": 3,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "mwb-smoke-control-cleanup",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Clear smoke-owned control state",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "Successful cleanup is the safe deletion gate, the directory is owned by this fixture, and the exact patch candidate compiles; cleanup-error paths retain recovery data."
+      },
+      "body": "### (4/4) Clear smoke-owned control state after success\n\n**Severity:** `medium`\n\n`controlRoot` is the shared RunId directory, so a successful smoke run otherwise leaves a path that a later fixture rejects. Remove only this owned control directory after cleanup and evidence attachment succeed; preserve it when cleanup has errors so recovery state remains available. Apply all four members of this atomic group together.\n\n```suggestion\n        if (cleanupErrors.Count == 0)\n        {\n            Attempt(\"Remove the owned control directory after successful cleanup\", () =>\n            {\n                if (Directory.Exists(controlRoot))\n                {\n                    _ = WinAppSandboxPayload.PlainFiles(controlRoot).ToArray();\n                    RunFiles.RemoveOwnedDirectory(controlRoot, TimeSpan.FromSeconds(45));\n                }\n            });\n        }\n\n        status = cleanupErrors.Count == 0 ? \"Cleaned\" : \"RecoveryRequired\";\n```",
+      "disposition": "proposed",
+      "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/TwoEndpointFixture.cs",
+      "line": 194,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "mwb-run-control-cleanup",
+        "title": "Clean the shared Sandbox RunId control directory",
+        "position": 4,
+        "total": 4,
+        "atomic": true
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51041",
+      "review": {
+        "head_sha": "bbc4d96ab25bf21109af87cecbfc1824e5469090",
+        "event": "COMMENT"
+      },
+      "label": "Post 4 inline suggestions",
+      "note": "The final Balanced review returned zero new comments and zero unresolved threads after three rounds. Four literal cleanup suggestions are offered as one atomic group. The exact public four-file candidate compiled; helper tests used byte-identical helper/test sources in a separate same-head candidate. The broad privileged Sandbox pilot still needs maintainer judgment; no full runtime or approval claim is made.",
+      "type": "post_review"
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "bbc4d96ab25bf21109af87cecbfc1824e5469090",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "mwb-control-parent-helper",
+        "mwb-endpoint-parent-cleanup",
+        "mwb-recovery-parent-cleanup",
+        "mwb-smoke-control-cleanup"
+      ],
+      "scope": "Only the four literal public cleanup edits were applied at the exact upstream head; the x64 Debug UI-test project rebuild passed. CsWinRT generation was disabled for the .NET test-only project. Two helper behavior tests passed using identical helper/test source hashes in a separate same-head seven-path candidate; this is not execution of the four-file candidate or a Sandbox order/UI test.",
+      "result": "passed",
+      "commands": [
+        "Apply all four selected literal blocks together to the pinned upstream head.",
+        "dotnet restore .\\src\\modules\\MouseWithoutBorders\\MouseWithoutBorders.UITests\\MouseWithoutBorders.UITests.csproj -p:Platform=x64 -p:Configuration=Debug -p:CsWinRTEnabled=false",
+        ".\\tools\\build\\build.cmd -Path .\\src\\modules\\MouseWithoutBorders\\MouseWithoutBorders.UITests -Platform x64 -Configuration Debug /t:Rebuild /p:CsWinRTEnabled=false",
+        "git diff --check"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "bbc4d96ab25bf21109af87cecbfc1824e5469090",
+      "result": "passed",
+      "checked_comment_ids": [
+        "mwb-control-parent-helper",
+        "mwb-endpoint-parent-cleanup",
+        "mwb-recovery-parent-cleanup",
+        "mwb-smoke-control-cleanup"
+      ],
+      "files": [
+        {
+          "line_endings": "lf",
+          "result": "passed",
+          "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/EndpointRecoveryFixture.cs"
+        },
+        {
+          "line_endings": "lf",
+          "result": "passed",
+          "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/RecoveryTests.cs"
+        },
+        {
+          "line_endings": "lf",
+          "result": "passed",
+          "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/RunFiles.cs"
+        },
+        {
+          "line_endings": "lf",
+          "result": "passed",
+          "path": "src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/TwoEndpointFixture.cs"
+        }
+      ]
+    },
+    "limitations": [
+      "No unfiltered Sandbox VM, privileged recovery, firewall or UI/order scenario was run locally.",
+      "The exact-upstream and broader same-head candidate unit suites each had three identical Sandbox command-start failures and one skipped test; neither full suite is claimed passing.",
+      "The 12/12 focused test result belongs to a broader seven-path candidate, not the public four-file candidate. Only the two byte-identical helper tests support this selected cleanup fix.",
+      "A preexisting policy-only mapping behavior gap was withheld rather than presented as a regression in this PR."
+    ]
+  },
+  "review_coverage": {
+    "cloud_effort": "Balanced",
+    "cloud_complete": true,
+    "cap_reached": false,
+    "automated_round_cap": 5,
+    "approval_ready": false
+  },
   "workflow": {
-    "phase": "queued",
-    "checkpoint_at": "2026-10-08T02:53:26.098921Z"
-  },
-  "freshness": {
-    "queued_at": "2026-10-08T02:53:26.098921Z",
-    "checkpoint_at": "2026-10-08T02:53:26.098921Z"
+    "checkpoint_at": "2026-10-09T21:49:51.4020104Z",
+    "phase": "awaiting_review_approval"
   }
 }

@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T04:58:07.4326518+08:00",
+  "generated_at": "2026-10-10T06:01:04.2323089+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 160,
-    "open_issues": 12642,
-    "community": 11809,
+    "open_prs": 161,
+    "open_issues": 12643,
+    "community": 11811,
     "artifacts": 1128
   },
   "impact": {
-    "as_of": "2026-10-10T04:58:07.4326518+08:00",
+    "as_of": "2026-10-10T06:01:04.2323089+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1229,6 +1229,41 @@ window.BOARD_INDEX = {
   ],
   "items": [
     {
+      "id": "pr-51162",
+      "kind": "pr",
+      "number": 51162,
+      "url": "https://github.com/microsoft/PowerToys/pull/51162",
+      "title": "[FancyZones] Let new windows settle before moving them to their last known zone",
+      "author": "panibor",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": null,
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-FancyZones",
+        "Ready for review"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-09T21:00:02Z",
+      "updated_at": "2026-10-09T21:28:26Z",
+      "comments": 3,
+      "priority": null,
+      "review_decision": "REVIEW_REQUIRED",
+      "ci_state": null,
+      "merge_state": "BLOCKED"
+    },
+    {
       "id": "pr-51153",
       "kind": "pr",
       "number": 51153,
@@ -1774,9 +1809,11 @@ window.BOARD_INDEX = {
         "Product-General",
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        "LegendaryBlair"
+      ],
       "created_at": "2026-10-08T07:29:09Z",
-      "updated_at": "2026-10-09T06:56:51Z",
+      "updated_at": "2026-10-09T21:03:44Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -2371,8 +2408,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T06:45:57Z",
-      "updated_at": "2026-10-09T13:11:08Z",
-      "comments": 5,
+      "updated_at": "2026-10-09T21:01:32Z",
+      "comments": 7,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2576,15 +2613,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 4,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post 4 inline suggestions"
+      },
       "labels": [
         "Needs-Author-Feedback",
         "Product-Mouse Without Borders"
@@ -4756,7 +4796,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-12T10:57:12Z",
-      "updated_at": "2026-10-09T09:42:22Z",
+      "updated_at": "2026-10-09T21:44:26Z",
       "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -6571,8 +6611,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-07-18T02:45:03Z",
-      "updated_at": "2026-10-09T09:51:16Z",
-      "comments": 15,
+      "updated_at": "2026-10-09T21:02:43Z",
+      "comments": 16,
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -94014,37 +94054,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-50511",
-      "kind": "issue",
-      "number": 50511,
-      "url": "https://github.com/microsoft/PowerToys/issues/50511",
-      "title": "Exclude APPs from ScreenSharing",
-      "author": "MatthiasKurtAppel",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2026-09-11T08:12:48Z",
-      "updated_at": "2026-09-11T14:39:24Z",
-      "comments": 0,
-      "priority": null
-    },
-    {
       "id": "issue-26487",
       "kind": "issue",
       "number": 26487,
@@ -134775,6 +134784,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-45757",
+      "kind": "issue",
+      "number": 45757,
+      "url": "https://github.com/microsoft/PowerToys/issues/45757",
+      "title": "Feature Request: Add SQLite (.db) File Preview Support to Peek",
+      "author": "thomastv",
+      "state": "closed",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage",
+        "Product-Peek"
+      ],
+      "assignees": [],
+      "created_at": "2026-02-23T15:34:45Z",
+      "updated_at": "2026-08-31T09:41:01Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
       "id": "issue-18899",
       "kind": "issue",
       "number": 18899,
@@ -149389,6 +149430,39 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51161",
+      "kind": "issue",
+      "number": 51161,
+      "url": "https://github.com/microsoft/PowerToys/issues/51161",
+      "title": "[FancyZones] \"Move newly created windows to their last known zone\" shows 3ds Max's hidden MAXScript Debugger at zone size on startup",
+      "author": "panibor",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-FancyZones",
+        "Needs-Triage",
+        "Needs-Team-Response"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-09T20:59:53Z",
+      "updated_at": "2026-10-09T21:49:20Z",
+      "comments": 2,
+      "priority": null
+    },
+    {
       "id": "issue-51160",
       "kind": "issue",
       "number": 51160,
@@ -149412,12 +149486,13 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Triage"
+        "Needs-Triage",
+        "Product-Mouse Without Borders"
       ],
       "assignees": [],
       "created_at": "2026-10-09T20:53:33Z",
-      "updated_at": "2026-10-09T20:53:33Z",
-      "comments": 0,
+      "updated_at": "2026-10-09T20:59:07Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -164279,12 +164354,12 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-45757",
+      "id": "issue-50511",
       "kind": "issue",
-      "number": 45757,
-      "url": "https://github.com/microsoft/PowerToys/issues/45757",
-      "title": "Feature Request: Add SQLite (.db) File Preview Support to Peek",
-      "author": "thomastv",
+      "number": 50511,
+      "url": "https://github.com/microsoft/PowerToys/issues/50511",
+      "title": "Exclude APPs from ScreenSharing",
+      "author": "MatthiasKurtAppel",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
@@ -164301,12 +164376,11 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Triage",
-        "Product-Peek"
+        "Needs-Triage"
       ],
       "assignees": [],
-      "created_at": "2026-02-23T15:34:45Z",
-      "updated_at": "2026-08-31T09:41:01Z",
+      "created_at": "2026-09-11T08:12:48Z",
+      "updated_at": "2026-09-11T14:39:24Z",
       "comments": 0,
       "priority": null
     },
@@ -189093,13 +189167,14 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Needs-Author-Feedback",
-        "Product-Shortcut Guide"
+        "Product-Shortcut Guide",
+        "Needs-Triage",
+        "Needs-Team-Response"
       ],
       "assignees": [],
       "created_at": "2026-07-23T01:54:32Z",
-      "updated_at": "2026-10-09T00:37:40Z",
-      "comments": 6,
+      "updated_at": "2026-10-09T21:08:03Z",
+      "comments": 7,
       "priority": null
     },
     {
@@ -426143,8 +426218,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2019-05-29T15:41:27Z",
-      "updated_at": "2026-08-21T09:29:37Z",
-      "comments": 6,
+      "updated_at": "2026-10-09T21:22:06Z",
+      "comments": 7,
       "priority": null
     },
     {
