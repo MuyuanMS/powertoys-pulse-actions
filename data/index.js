@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T04:13:28.6046255+08:00",
+  "generated_at": "2026-10-10T04:58:07.4326518+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1128
   },
   "impact": {
-    "as_of": "2026-10-10T04:13:28.6046255+08:00",
+    "as_of": "2026-10-10T04:58:07.4326518+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1508,7 +1508,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_iteration_cap_reached",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -57752,39 +57752,6 @@ window.BOARD_INDEX = {
       "created_at": "2024-02-08T12:53:03Z",
       "updated_at": "2026-06-06T13:19:27Z",
       "comments": 6,
-      "priority": null
-    },
-    {
-      "id": "issue-31350",
-      "kind": "issue",
-      "number": 31350,
-      "url": "https://github.com/microsoft/PowerToys/issues/31350",
-      "title": "Command Not found don't find winget",
-      "author": "AM-I-Human",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "fix",
-      "stage": "owned_elsewhere",
-      "owes": "maintainer",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Needs-Triage",
-        "Product-CommandNotFound"
-      ],
-      "assignees": [],
-      "created_at": "2024-02-08T09:58:59Z",
-      "updated_at": "2026-04-18T16:20:43Z",
-      "comments": 3,
       "priority": null
     },
     {
@@ -149419,6 +149386,38 @@ window.BOARD_INDEX = {
       "created_at": "2021-12-03T21:23:26Z",
       "updated_at": "2026-08-16T21:16:19Z",
       "comments": 19,
+      "priority": null
+    },
+    {
+      "id": "issue-51160",
+      "kind": "issue",
+      "number": 51160,
+      "url": "https://github.com/microsoft/PowerToys/issues/51160",
+      "title": "[Mouse Without Borders] Service mode fails to connect when username contains spaces (unquoted path)",
+      "author": "cesarlmt27",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-09T20:53:33Z",
+      "updated_at": "2026-10-09T20:53:33Z",
+      "comments": 0,
       "priority": null
     },
     {
