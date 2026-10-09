@@ -1,0 +1,110 @@
+{
+  "number": 51115,
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "us",
+  "pending_author": false,
+  "generated_at": "2026-10-09T15:17:29.3151544Z",
+  "evaluated_at": "2026-10-09T13:56:58Z",
+  "source_updated_at": "2026-10-09T06:56:51Z",
+  "head_sha": "bef01d7868e78279462b986d24fd685a3c8211be",
+  "title": "[Runner/Settings] Preserve general settings during startup and shutdown",
+  "url": "https://github.com/microsoft/PowerToys/pull/51115",
+  "summary": "2 grounded review comments are available for maintainer selection. The five-round limit is reached. The last Lite result covered a predecessor review revision, so no complete current-head cloud convergence or approval readiness is claimed. Two grounded findings remain; the exact literal file-sharing candidate compiled and all eight focused native tests passed.",
+  "status": {
+    "detail": "The five-round limit is reached. The last Lite result covered a predecessor review revision, so no complete current-head cloud convergence or approval readiness is claimed. Two grounded findings remain; the exact literal file-sharing candidate compiled and all eight focused native tests passed.",
+    "label": "Validated review drafts ready",
+    "glyph": "!"
+  },
+  "next_action": "Select the grounded review comments for human approval. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "51115-filewatch-delete-share",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Preserve subsequent settings saves during watcher callbacks",
+      "severity": "medium",
+      "confidence": {
+        "score": 98,
+        "rationale": "The pinned caller keeps the read guard alive through the callback, while the writer uses POSIX replacement. An isolated overlap test reproduced ERROR_SHARING_VIOLATION 32 without the flag and passed with the exact one-line replacement."
+      },
+      "body": "### Preserve subsequent settings saves during watcher callbacks\n\n**Severity:** `medium`\n\n`openForReadCallback` holds this read handle open while it invokes `m_callback`. If another settings save arrives during that callback, `atomic_file::write` needs delete sharing for its POSIX replacement; without it, the retry loop ends with `ERROR_SHARING_VIOLATION` and the save fails. Add `FILE_SHARE_DELETE` to this handle's sharing mask so the next save can replace the file while the callback finishes.\n\n```suggestion\n            wil::unique_hfile file(CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, 0, nullptr));\n```",
+      "disposition": "proposed",
+      "path": "src/common/SettingsAPI/FileWatcher.cpp",
+      "line": 14,
+      "side": "RIGHT"
+    },
+    {
+      "id": "51115-test-wil-package-restore",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Declare WIL for the CommonLib test project",
+      "severity": "low",
+      "confidence": {
+        "score": 92,
+        "rationale": "The changed project directly includes the WIL package path, its new source reaches WIL through FileWatcher.h, and a clean targeted restore/build failed on the missing target before succeeding after the package was declared."
+      },
+      "body": "### Declare WIL for the CommonLib test project\n\n**Severity:** `low`\n\nThe changed test project adds a WIL include path and its new tests include `FileWatcher.h`, but `src/common/UnitTests-CommonLib/packages.config` still declares only CppWinRT; the referenced SettingsAPI project also requires the WIL targets. Restoring and building this test project with only its declared packages fails on the missing `Microsoft.Windows.ImplementationLibrary.targets`; adding WIL 1.0.260126.7 to this test project's package list restores the dependency and the focused native build succeeds. Please add that package entry to `src/common/UnitTests-CommonLib/packages.config` so the project does not rely on unrelated consumers having restored WIL.",
+      "disposition": "proposed",
+      "path": "src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj",
+      "line": 30,
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "bef01d7868e78279462b986d24fd685a3c8211be"
+      },
+      "type": "post_review",
+      "note": "The five-round limit is reached. The last Lite result covered a predecessor review revision, so no complete current-head cloud convergence or approval readiness is claimed. Two grounded findings remain; the exact literal file-sharing candidate compiled and all eight focused native tests passed.",
+      "id": "post-review-51115",
+      "label": "Post 1 inline suggestions"
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "result": "passed",
+      "head_sha": "bef01d7868e78279462b986d24fd685a3c8211be",
+      "applied_comment_ids": [
+        "51115-filewatch-delete-share"
+      ],
+      "minimal_ranges_reviewed": true,
+      "scope": "One literal FILE_SHARE_DELETE replacement applied to the exact pinned upstream source; focused CommonLib native build and AtomicFile/FileWatcher tests passed.",
+      "commands": [
+        "MSBuild UnitTests-CommonLib.vcxproj /m /t:Build /p:Configuration=Debug /p:Platform=x64 /p:BuildTests=true",
+        "vstest.console.exe Common.Lib.UnitTests.dll /TestCaseFilter:FullyQualifiedName~AtomicFileTests|FullyQualifiedName~FileWatcherTests"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "bef01d7868e78279462b986d24fd685a3c8211be",
+      "files": [
+        {
+          "path": "src/common/SettingsAPI/FileWatcher.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ],
+      "result": "passed",
+      "checked_comment_ids": [
+        "51115-filewatch-delete-share"
+      ]
+    },
+    "limitations": [
+      "Overlap reproduction returned ERROR_SHARING_VIOLATION32 without delete sharing and succeeded with it. Exact candidate native tests:8of8passed. Relevant Settings tests:2of2passed. Apartment claims were withdrawn; no full solution, installer, or Runner build."
+    ]
+  },
+  "review_coverage": {
+    "cloud_effort": "Lite",
+    "approval_ready": false,
+    "cloud_complete": false,
+    "cap_reached": true,
+    "automated_round_cap": 5
+  },
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-09T15:17:29.3151544Z"
+  }
+}
