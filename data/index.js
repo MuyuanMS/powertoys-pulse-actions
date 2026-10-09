@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-09T12:21:31.7772721+08:00",
+  "generated_at": "2026-10-09T15:57:05.6388519+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 168,
-    "open_issues": 12645,
-    "community": 11804,
-    "artifacts": 1144
+    "open_prs": 154,
+    "open_issues": 12643,
+    "community": 11800,
+    "artifacts": 1128
   },
   "impact": {
-    "as_of": "2026-10-09T12:21:31.7772721+08:00",
+    "as_of": "2026-10-09T15:57:05.6388519+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -106,19 +106,11 @@ window.BOARD_INDEX = {
     51106,
     51105,
     51102,
-    51099,
     51097,
-    51090,
     51088,
-    51085,
     51080,
-    51073,
-    51067,
-    51065,
     51063,
-    51061,
     51060,
-    51056,
     51041,
     51033,
     50957,
@@ -132,8 +124,6 @@ window.BOARD_INDEX = {
     50905,
     50897,
     50884,
-    50883,
-    50880,
     50873,
     50834,
     50830,
@@ -150,7 +140,6 @@ window.BOARD_INDEX = {
     50637,
     50626,
     50597,
-    50551,
     50545,
     50539,
     50532,
@@ -160,7 +149,6 @@ window.BOARD_INDEX = {
     50493,
     50488,
     50479,
-    50459,
     50333,
     50253,
     50245,
@@ -194,7 +182,6 @@ window.BOARD_INDEX = {
     48904,
     48700,
     48658,
-    48627,
     48524,
     48223,
     47871,
@@ -485,7 +472,6 @@ window.BOARD_INDEX = {
     20405,
     20330,
     20312,
-    20255,
     20235,
     20220,
     16395,
@@ -587,7 +573,6 @@ window.BOARD_INDEX = {
     50564,
     50557,
     50555,
-    50550,
     50516,
     50515,
     50496,
@@ -707,7 +692,6 @@ window.BOARD_INDEX = {
     49829,
     49816,
     49809,
-    49808,
     49799,
     49796,
     49789,
@@ -1280,11 +1264,11 @@ window.BOARD_INDEX = {
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
-        "fork_number": 965,
+        "fork_number": 977,
         "fork_title": "[PR 51131] [Docs] Add notice for Boost and Boost.Regex under PowerRename",
         "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51131",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/965"
+        "fork_branch": "pr-iterate/51131-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/977"
       }
     },
     {
@@ -1357,7 +1341,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 953,
@@ -1395,9 +1379,11 @@ window.BOARD_INDEX = {
       "labels": [
         "Ready for review"
       ],
-      "assignees": [],
+      "assignees": [
+        "LegendaryBlair"
+      ],
       "created_at": "2026-10-08T17:59:40Z",
-      "updated_at": "2026-10-08T18:00:07Z",
+      "updated_at": "2026-10-09T06:13:58Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1439,7 +1425,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T17:27:13Z",
-      "updated_at": "2026-10-09T00:07:50Z",
+      "updated_at": "2026-10-09T05:37:30Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1480,7 +1466,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51115",
@@ -1500,7 +1486,7 @@ window.BOARD_INDEX = {
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": false,
-      "agent_status": "none",
+      "agent_status": "mirror",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1515,12 +1501,20 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T07:29:09Z",
-      "updated_at": "2026-10-09T03:00:06Z",
+      "updated_at": "2026-10-09T06:56:51Z",
       "comments": 0,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 978,
+        "fork_title": "[PR 51115] [Runner/Settings] Preserve general settings during startup and shutdown",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51115-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/978"
+      }
     },
     {
       "id": "pr-51114",
@@ -1551,7 +1545,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T07:15:54Z",
-      "updated_at": "2026-10-08T10:40:46Z",
+      "updated_at": "2026-10-09T04:59:46Z",
       "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -1720,7 +1714,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51102",
@@ -1801,53 +1795,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-51099",
-      "kind": "pr",
-      "number": 51099,
-      "url": "https://github.com/microsoft/PowerToys/pull/51099",
-      "title": "[Preview Pane] Enable nullable reference types",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "review_approval",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 4,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post four atomic inline suggestions"
-      },
-      "labels": [
-        "Product-File Explorer",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-07T21:21:37Z",
-      "updated_at": "2026-10-08T21:20:09Z",
-      "comments": 2,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 956,
-        "fork_title": "[PR 51099] [Preview Pane] Enable nullable reference types",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51099",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/956"
-      }
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51098",
@@ -1922,7 +1870,7 @@ window.BOARD_INDEX = {
       "mirror": {
         "kind": "pr",
         "fork_number": 959,
-        "fork_title": "[PR 51097] Runner: remove legacy MSIX uninstall probe and Video Conference Mute cleanup",
+        "fork_title": "Runner: remove legacy MSIX uninstall probe; retain retryable VCM registry cleanup",
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51097",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/959"
@@ -2001,52 +1949,6 @@ window.BOARD_INDEX = {
       "merge_state": "CLEAN"
     },
     {
-      "id": "pr-51090",
-      "kind": "pr",
-      "number": 51090,
-      "url": "https://github.com/microsoft/PowerToys/pull/51090",
-      "title": "Build: fix recurring non-test build warnings (MSB3305, MSB8004, MSB8028, LNK4075, CS1668)",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Shortcut Guide",
-        "Product-Mouse Utilities",
-        "Product-File Locksmith",
-        "Product-Keyboard Manager",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-07T18:06:37Z",
-      "updated_at": "2026-10-08T21:49:32Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 960,
-        "fork_title": "[PR 51090] Build: fix recurring non-test build warnings",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51090",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/960"
-      }
-    },
-    {
       "id": "pr-51088",
       "kind": "pr",
       "number": 51088,
@@ -2097,8 +1999,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T17:43:18Z",
-      "updated_at": "2026-10-08T23:14:51Z",
-      "comments": 3,
+      "updated_at": "2026-10-09T05:57:41Z",
+      "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -2110,49 +2012,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51088",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/951"
-      }
-    },
-    {
-      "id": "pr-51085",
-      "kind": "pr",
-      "number": 51085,
-      "url": "https://github.com/microsoft/PowerToys/pull/51085",
-      "title": "[UI Tests] Make UITestAutomation.Next warning-free and treat warnings as errors",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "none",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-General",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-07T17:30:46Z",
-      "updated_at": "2026-10-08T22:11:53Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 961,
-        "fork_title": "[PR 51085] [UI Tests] Make UITestAutomation.Next warning-free and treat warnings as errors",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51085",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/961"
       }
     },
     {
@@ -2188,7 +2047,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 962,
@@ -2196,48 +2055,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51080-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/962"
-      }
-    },
-    {
-      "id": "pr-51073",
-      "kind": "pr",
-      "number": 51073,
-      "url": "https://github.com/microsoft/PowerToys/pull/51073",
-      "title": "[CodeAnalysis] Treat IL2081 as an error",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "none",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-07T07:21:48Z",
-      "updated_at": "2026-10-08T22:18:50Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 963,
-        "fork_title": "[PR 51073] [CodeAnalysis] Treat IL2081 as an error",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51073",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/963"
       }
     },
     {
@@ -2267,97 +2084,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T06:45:57Z",
-      "updated_at": "2026-10-08T22:39:39Z",
-      "comments": 2,
+      "updated_at": "2026-10-09T07:20:47Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-51067",
-      "kind": "pr",
-      "number": 51067,
-      "url": "https://github.com/microsoft/PowerToys/pull/51067",
-      "title": "[Image Resizer] Use partial properties for [ObservableProperty] and treat MVVMTK0045 as an error",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Image Resizer",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-07T05:34:21Z",
-      "updated_at": "2026-10-08T23:39:33Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 964,
-        "fork_title": "[PR 51067] [Image Resizer] Use partial properties for ObservableProperty and treat MVVMTK0045 as an error",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51067",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/964"
-      }
-    },
-    {
-      "id": "pr-51065",
-      "kind": "pr",
-      "number": 51065,
-      "url": "https://github.com/microsoft/PowerToys/pull/51065",
-      "title": "[CodeAnalysis] Treat CA1824, CA1720 and MVVMTK0049 as errors",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_ready",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-07T05:22:49Z",
-      "updated_at": "2026-10-08T22:34:23Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 966,
-        "fork_title": "[PR 51065] [CodeAnalysis] Treat CA1824, CA1720 and MVVMTK0049 as errors",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51065",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/966"
-      }
     },
     {
       "id": "pr-51063",
@@ -2391,7 +2123,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "DIRTY",
       "mirror": {
         "kind": "pr",
         "fork_number": 967,
@@ -2453,46 +2185,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T04:28:27Z",
-      "updated_at": "2026-10-09T03:16:37Z",
-      "comments": 6,
+      "updated_at": "2026-10-09T07:02:59Z",
+      "comments": 8,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-51061",
-      "kind": "pr",
-      "number": 51061,
-      "url": "https://github.com/microsoft/PowerToys/pull/51061",
-      "title": "[CodeAnalysis] Remove dead Microsoft.Templates global suppressions",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-07T04:15:02Z",
-      "updated_at": "2026-10-08T22:59:31Z",
-      "comments": 2,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
+      "review_decision": "APPROVED",
+      "ci_state": "pending",
+      "merge_state": "UNSTABLE"
     },
     {
       "id": "pr-51060",
@@ -2522,12 +2220,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T04:06:01Z",
-      "updated_at": "2026-10-08T17:53:39Z",
-      "comments": 4,
+      "updated_at": "2026-10-09T06:31:24Z",
+      "comments": 6,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "CLEAN",
       "mirror": {
         "kind": "pr",
         "fork_number": 969,
@@ -2535,48 +2233,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/51060",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/969"
-      }
-    },
-    {
-      "id": "pr-51056",
-      "kind": "pr",
-      "number": 51056,
-      "url": "https://github.com/microsoft/PowerToys/pull/51056",
-      "title": "[Build] Write tools\\build logs to artifacts\\logs so the context-menu projects build",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-06T23:44:26Z",
-      "updated_at": "2026-10-08T23:39:50Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 970,
-        "fork_title": "[PR 51056] [Build] Write tools\\build logs to artifacts\\logs so the context-menu projects build",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/51056",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/970"
       }
     },
     {
@@ -2615,7 +2271,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51041",
@@ -2650,7 +2306,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 971,
@@ -2694,7 +2350,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51033",
@@ -2729,7 +2385,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 972,
@@ -2774,7 +2430,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51022",
@@ -2809,7 +2465,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51017",
@@ -2843,7 +2499,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51013",
@@ -2879,7 +2535,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-51011",
@@ -2952,7 +2608,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50982",
@@ -3025,7 +2681,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50968",
@@ -3093,7 +2749,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50957",
@@ -3128,7 +2784,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50955",
@@ -3164,7 +2820,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50954",
@@ -3200,7 +2856,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50948",
@@ -3236,7 +2892,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 981,
+        "fork_title": "[PR 50948] [Keyboard Manager] Fix duplicate-scope check, classic editor run-program crash, and editor settings backup",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50948",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/981"
+      }
     },
     {
       "id": "pr-50947",
@@ -3271,7 +2935,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50934",
@@ -3341,7 +3005,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50914",
@@ -3376,7 +3040,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 979,
+        "fork_title": "[PR 50914] [Awake] Pick the expiration date and time from the tray menu",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50914",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/979"
+      }
     },
     {
       "id": "pr-50909",
@@ -3411,7 +3083,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 940,
@@ -3458,7 +3130,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 939,
@@ -3504,7 +3176,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 937,
@@ -3544,8 +3216,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-30T03:12:59Z",
-      "updated_at": "2026-09-30T03:13:16Z",
-      "comments": 0,
+      "updated_at": "2026-10-09T07:00:58Z",
+      "comments": 1,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -3630,12 +3302,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-29T18:40:29Z",
-      "updated_at": "2026-10-08T23:52:01Z",
+      "updated_at": "2026-10-09T07:12:51Z",
       "comments": 5,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "DIRTY",
       "mirror": {
         "kind": "pr",
         "fork_number": 935,
@@ -3643,91 +3315,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/50884",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/935"
-      }
-    },
-    {
-      "id": "pr-50883",
-      "kind": "pr",
-      "number": 50883,
-      "url": "https://github.com/microsoft/PowerToys/pull/50883",
-      "title": "[MWB] Replace Microsoft.Windows.Compatibility with the packages actually used",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Mouse Without Borders",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-09-29T18:03:44Z",
-      "updated_at": "2026-10-09T00:01:05Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 974,
-        "fork_title": "[PR 50883] [MWB] Replace Microsoft.Windows.Compatibility with the packages actually used",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50883",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/974"
-      }
-    },
-    {
-      "id": "pr-50880",
-      "kind": "pr",
-      "number": 50880,
-      "url": "https://github.com/microsoft/PowerToys/pull/50880",
-      "title": "[Deps] Remove unused central package pins and document remaining legacy pins",
-      "author": "crutkas",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-09-29T17:38:50Z",
-      "updated_at": "2026-10-09T00:11:30Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 973,
-        "fork_title": "[PR 50880] [Deps] Remove unused central package pins and document remaining legacy pins",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50880",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/973"
       }
     },
     {
@@ -3757,12 +3344,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-29T17:19:17Z",
-      "updated_at": "2026-09-29T20:58:21Z",
-      "comments": 3,
+      "updated_at": "2026-10-09T06:15:32Z",
+      "comments": 4,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50873",
@@ -3798,7 +3385,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50871",
@@ -3835,7 +3422,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50834",
@@ -3860,6 +3447,7 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "Needs-Author-Feedback",
         "Needs-Triage",
         "Needs-Team-Response",
         "Product-Advanced Paste",
@@ -3868,7 +3456,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-28T03:00:55Z",
-      "updated_at": "2026-10-08T08:30:37Z",
+      "updated_at": "2026-10-09T06:59:04Z",
       "comments": 7,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -3916,7 +3504,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 919,
@@ -3961,7 +3549,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 908,
@@ -4006,7 +3594,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 900,
@@ -4049,7 +3637,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 980,
+        "fork_title": "[PR 50757] Registry Preview: Use full-page workspace layout",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/50757",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/980"
+      }
     },
     {
       "id": "pr-50740",
@@ -4083,7 +3679,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50739",
@@ -4117,7 +3713,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50738",
@@ -4152,7 +3748,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50736",
@@ -4186,7 +3782,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50732",
@@ -4211,17 +3807,18 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
+        "DO NOT MERGE",
         "Product-PowerDisplay",
         "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-09-23T05:02:59Z",
-      "updated_at": "2026-10-05T21:20:51Z",
-      "comments": 4,
+      "updated_at": "2026-10-09T05:48:32Z",
+      "comments": 6,
       "priority": null,
-      "review_decision": "CHANGES_REQUESTED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50730",
@@ -4258,7 +3855,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 894,
@@ -4343,7 +3940,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 879,
@@ -4385,7 +3982,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50683",
@@ -4423,7 +4020,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 874,
@@ -4466,7 +4063,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 863,
@@ -4515,7 +4112,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 860,
@@ -4557,7 +4154,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50638",
@@ -4591,7 +4188,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50637",
@@ -4626,7 +4223,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 851,
@@ -4671,7 +4268,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 846,
@@ -4713,7 +4310,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50597",
@@ -4751,7 +4348,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 890,
@@ -4793,54 +4390,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-50551",
-      "kind": "pr",
-      "number": 50551,
-      "url": "https://github.com/microsoft/PowerToys/pull/50551",
-      "title": "feat(dsc): add ZoomIt settings function data",
-      "author": "Gijsreyn",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 3,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post inline review comments"
-      },
-      "labels": [
-        "Ready for review"
-      ],
-      "assignees": [
-        "LegendaryBlair"
-      ],
-      "created_at": "2026-09-13T06:08:24Z",
-      "updated_at": "2026-10-08T06:28:03Z",
-      "comments": 9,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 792,
-        "fork_title": "Review: ZoomIt DSC settings validation (50551)",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/50551-v2",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/792"
-      }
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50545",
@@ -4874,7 +4424,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 785,
@@ -4917,7 +4467,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 811,
@@ -4960,7 +4510,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 809,
@@ -5003,7 +4553,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 781,
@@ -5049,7 +4599,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 829,
@@ -5093,7 +4643,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "passed",
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 789,
@@ -5138,7 +4688,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 870,
@@ -5183,7 +4733,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 752,
@@ -5274,7 +4824,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 716,
@@ -5283,41 +4833,6 @@ window.BOARD_INDEX = {
         "fork_branch": "pr-iterate/50463-v2",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/716"
       }
-    },
-    {
-      "id": "pr-50459",
-      "kind": "pr",
-      "number": 50459,
-      "url": "https://github.com/microsoft/PowerToys/pull/50459",
-      "title": "[Light Switch] Add CLI for status and theme control",
-      "author": "moooyo",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Author-Feedback",
-        "Product-LightSwitch"
-      ],
-      "assignees": [],
-      "created_at": "2026-09-08T09:23:44Z",
-      "updated_at": "2026-10-09T02:18:41Z",
-      "comments": 4,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED"
     },
     {
       "id": "pr-50432",
@@ -5352,7 +4867,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50418",
@@ -5389,7 +4904,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50385",
@@ -5425,7 +4940,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50341",
@@ -5461,7 +4976,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50333",
@@ -5499,7 +5014,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 815,
@@ -5545,7 +5060,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 804,
@@ -5589,7 +5104,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50245",
@@ -5628,7 +5143,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50222",
@@ -5662,7 +5177,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 805,
@@ -5705,7 +5220,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50132",
@@ -5739,7 +5254,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50081",
@@ -5775,7 +5290,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-50029",
@@ -5902,41 +5417,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-49979",
-      "kind": "pr",
-      "number": 49979,
-      "url": "https://github.com/microsoft/PowerToys/pull/49979",
-      "title": "[Keyboard Manager] Add text expansion mappings",
-      "author": "moooyo",
-      "state": "open",
-      "is_draft": true,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Keyboard Manager"
-      ],
-      "assignees": [],
-      "created_at": "2026-08-17T15:20:42Z",
-      "updated_at": "2026-09-04T03:48:01Z",
-      "comments": 0,
-      "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49966",
@@ -5973,7 +5454,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49963",
@@ -6006,12 +5487,12 @@ window.BOARD_INDEX = {
         "moooyo"
       ],
       "created_at": "2026-08-17T02:07:28Z",
-      "updated_at": "2026-10-01T06:53:16Z",
-      "comments": 13,
+      "updated_at": "2026-10-09T06:44:31Z",
+      "comments": 14,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
+      "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 717,
@@ -6053,7 +5534,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49953",
@@ -6088,7 +5569,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49951",
@@ -6125,7 +5606,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49950",
@@ -6159,7 +5640,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49949",
@@ -6191,7 +5672,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49891",
@@ -6226,7 +5707,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49863",
@@ -6262,7 +5743,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49862",
@@ -6301,7 +5782,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49825",
@@ -6336,7 +5817,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 819,
@@ -6378,7 +5859,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49748",
@@ -6410,7 +5891,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49746",
@@ -6442,7 +5923,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49726",
@@ -6476,7 +5957,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49724",
@@ -6560,7 +6041,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 822,
@@ -6600,7 +6081,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 740,
@@ -6642,7 +6123,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49502",
@@ -6676,7 +6157,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49460",
@@ -6714,7 +6195,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49412",
@@ -6751,7 +6232,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 817,
@@ -6843,7 +6324,7 @@ window.BOARD_INDEX = {
       "priority": 10,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49333",
@@ -6877,7 +6358,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49276",
@@ -6912,7 +6393,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 892,
@@ -6958,7 +6439,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 728,
@@ -7000,7 +6481,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49224",
@@ -7035,7 +6516,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49223",
@@ -7075,7 +6556,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49222",
@@ -7109,7 +6590,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49221",
@@ -7147,7 +6628,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49187",
@@ -7183,7 +6664,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49100",
@@ -7218,7 +6699,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-49077",
@@ -7255,7 +6736,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 824,
@@ -7300,7 +6781,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48700",
@@ -7338,7 +6819,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 760,
@@ -7380,44 +6861,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-48627",
-      "kind": "pr",
-      "number": 48627,
-      "url": "https://github.com/microsoft/PowerToys/pull/48627",
-      "title": "Add Keyboard Manager text replacements",
-      "author": "illgitthat",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Needs-Team-Response",
-        "Product-Keyboard Manager"
-      ],
-      "assignees": [
-        "moooyo"
-      ],
-      "created_at": "2026-06-15T04:21:22Z",
-      "updated_at": "2026-08-14T16:56:43Z",
-      "comments": 4,
-      "priority": 60,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48524",
@@ -7457,7 +6901,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48483",
@@ -7489,7 +6933,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-48223",
@@ -7526,7 +6970,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-47888",
@@ -7561,7 +7005,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-47871",
@@ -7598,7 +7042,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 897,
@@ -7641,7 +7085,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-46056",
@@ -7677,7 +7121,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "UNKNOWN",
       "mirror": {
         "kind": "pr",
         "fork_number": 696,
@@ -7722,7 +7166,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-45927",
@@ -7757,7 +7201,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-44624",
@@ -7797,7 +7241,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "CHANGES_REQUESTED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-41656",
@@ -7833,7 +7277,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "pr-41003",
@@ -7873,7 +7317,7 @@ window.BOARD_INDEX = {
       "priority": 60,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY"
+      "merge_state": "UNKNOWN"
     },
     {
       "id": "issue-36350",
@@ -26423,41 +25867,6 @@ window.BOARD_INDEX = {
       "created_at": "2024-09-11T06:33:28Z",
       "updated_at": "2026-08-05T02:34:21Z",
       "comments": 51,
-      "priority": null
-    },
-    {
-      "id": "issue-34796",
-      "kind": "issue",
-      "number": 34796,
-      "url": "https://github.com/microsoft/PowerToys/issues/34796",
-      "title": "Still program not detected by workspace",
-      "author": "dalchina",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Resolution-Duplicate",
-        "Needs-Triage",
-        "Needs-Team-Response",
-        "Product-Workspaces"
-      ],
-      "assignees": [],
-      "created_at": "2024-09-11T06:03:32Z",
-      "updated_at": "2026-04-12T04:45:27Z",
-      "comments": 4,
       "priority": null
     },
     {
@@ -52252,39 +51661,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-31890",
-      "kind": "issue",
-      "number": 31890,
-      "url": "https://github.com/microsoft/PowerToys/issues/31890",
-      "title": "PowerToys Run is flashing white when typing w/ dark mode",
-      "author": "ghost",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Product-PowerToys Run",
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2024-03-13T08:40:40Z",
-      "updated_at": "2026-04-12T07:47:14Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
       "id": "issue-31883",
       "kind": "issue",
       "number": 31883,
@@ -73862,40 +73238,6 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-29556",
-      "kind": "issue",
-      "number": 29556,
-      "url": "https://github.com/microsoft/PowerToys/issues/29556",
-      "title": "Image Resizer isn't respecting an empty height or width field",
-      "author": "patrickmac110",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "feature",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Idea-Enhancement",
-        "Product-Image Resizer",
-        "Needs-Triage"
-      ],
-      "assignees": [],
-      "created_at": "2023-10-31T18:03:27Z",
-      "updated_at": "2026-04-12T07:49:29Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
       "id": "issue-29545",
       "kind": "issue",
       "number": 29545,
@@ -76480,7 +75822,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-10-14T17:37:08Z",
-      "updated_at": "2026-10-08T08:04:54Z",
+      "updated_at": "2026-10-09T05:50:17Z",
       "comments": 1,
       "priority": null
     },
@@ -105349,7 +104691,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-03-08T11:24:20Z",
-      "updated_at": "2026-10-01T17:07:41Z",
+      "updated_at": "2026-10-09T05:50:20Z",
       "comments": 1,
       "priority": null
     },
@@ -129892,8 +129234,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -129908,8 +129250,8 @@ window.BOARD_INDEX = {
         "Copilot"
       ],
       "created_at": "2022-09-04T00:06:31Z",
-      "updated_at": "2026-08-05T03:14:01Z",
-      "comments": 31,
+      "updated_at": "2026-10-09T04:50:10Z",
+      "comments": 32,
       "priority": null
     },
     {
@@ -150001,6 +149343,68 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51137",
+      "kind": "issue",
+      "number": 51137,
+      "url": "https://github.com/microsoft/PowerToys/issues/51137",
+      "title": "Possibility for Power Display profiles to be automatically activated at particular time of a day",
+      "author": "michaelbabich",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-09T06:25:16Z",
+      "updated_at": "2026-10-09T06:26:37Z",
+      "comments": 0,
+      "priority": null
+    },
+    {
+      "id": "issue-51136",
+      "kind": "issue",
+      "number": 51136,
+      "url": "https://github.com/microsoft/PowerToys/issues/51136",
+      "title": "Proposal: Modernized “PowerToys 2026 Pro Edition” Icon (High‑Resolution, Scalable Redesign)",
+      "author": "Edmaker",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Needs-Triage"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-09T04:32:05Z",
+      "updated_at": "2026-10-09T05:46:15Z",
+      "comments": 3,
+      "priority": null
+    },
+    {
       "id": "issue-51135",
       "kind": "issue",
       "number": 51135,
@@ -154743,8 +154147,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-30T13:25:21Z",
-      "updated_at": "2026-09-30T14:53:10Z",
-      "comments": 1,
+      "updated_at": "2026-10-09T07:40:52Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -163505,7 +162909,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/50550",
       "title": "Microsoft DSC v3: `Microsoft.PowerToys/ZoomItSettings` reads and writes a `settings.json` that is never used",
       "author": "Gijsreyn",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -163515,8 +162919,8 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
       "primary_action": null,
@@ -163527,7 +162931,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-13T06:03:13Z",
-      "updated_at": "2026-09-13T06:08:28Z",
+      "updated_at": "2026-10-09T06:06:17Z",
       "comments": 1,
       "priority": null
     },
@@ -168181,8 +167585,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-02T16:45:24Z",
-      "updated_at": "2026-10-09T02:44:10Z",
-      "comments": 246,
+      "updated_at": "2026-10-09T06:34:16Z",
+      "comments": 248,
       "priority": null
     },
     {
@@ -179337,7 +178741,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/49904",
       "title": "[Light Switch] Add CLI for status and theme control",
       "author": "niels9001",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -179359,7 +178763,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-14T15:18:22Z",
-      "updated_at": "2026-08-14T15:29:56Z",
+      "updated_at": "2026-10-09T05:47:22Z",
       "comments": 1,
       "priority": null
     },
@@ -181447,14 +180851,11 @@ window.BOARD_INDEX = {
       "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "fix",
+      "has_artifact": false,
+      "agent_status": "none",
       "issue_type": "bug",
       "proposed_open": 0,
-      "primary_action": {
-        "type": "request_info",
-        "label": "Reply with suggested comments"
-      },
+      "primary_action": null,
       "labels": [
         "Issue-Bug",
         "Needs-Triage",
@@ -181462,8 +180863,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-08-10T18:10:35Z",
-      "updated_at": "2026-09-29T15:01:44Z",
-      "comments": 4,
+      "updated_at": "2026-10-09T06:24:41Z",
+      "comments": 6,
       "priority": null
     },
     {
@@ -360263,7 +359664,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2020-07-18T02:12:12Z",
-      "updated_at": "2026-09-29T17:21:33Z",
+      "updated_at": "2026-10-09T06:18:13Z",
       "comments": 63,
       "priority": null
     },
@@ -402270,42 +401671,6 @@ window.BOARD_INDEX = {
       "created_at": "2025-03-20T11:37:14Z",
       "updated_at": "2026-04-18T11:12:22Z",
       "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-38056",
-      "kind": "issue",
-      "number": 38056,
-      "url": "https://github.com/microsoft/PowerToys/issues/38056",
-      "title": "Image Resizer settings - Delete preset button deletes wrong preset",
-      "author": "dochopeless",
-      "state": "closed",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "bug",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Issue-Bug",
-        "Status-In progress",
-        "Product-Image Resizer"
-      ],
-      "assignees": [
-        "daverayment",
-        "lei9444"
-      ],
-      "created_at": "2025-03-20T11:31:14Z",
-      "updated_at": "2026-04-12T07:49:01Z",
-      "comments": 8,
       "priority": null
     },
     {
