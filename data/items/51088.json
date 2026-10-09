@@ -2,34 +2,182 @@
   "number": 51088,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-09T10:30:31.9488446Z",
-  "evaluated_at": "2026-10-09T10:30:31.9488446Z",
+  "generated_at": "2026-10-09T13:13:00.8006357Z",
+  "evaluated_at": "2026-10-09T12:41:19Z",
   "source_updated_at": "2026-10-09T08:21:17Z",
   "head_sha": "f9c038728e37d65c92b5b327c878ded915a6a0c1",
   "title": "[UI Tests] Fix analyzer warnings and treat warnings as errors in module UI test projects",
   "url": "https://github.com/microsoft/PowerToys/pull/51088",
+  "summary": "4 grounded review comments are available for maintainer selection. The five-round automated limit is reached. Latest cloud coverage was Lite/incomplete; no full-agentic clean review or approval readiness is claimed.",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "The capped review results and prior accepted findings are being grounded against the current head. Final focused validation and review-artifact drafting are in progress; Lite/timeout cloud coverage is not a clean full review."
+    "label": "Validated review drafts ready",
+    "detail": "The five-round automated limit is reached. Latest cloud coverage was Lite/incomplete; no full-agentic clean review or approval readiness is claimed.",
+    "glyph": "!"
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Select the grounded review comments for human approval. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "51088-locking-fixture-powershell-quoting-target",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Escape fixture paths embedded in PowerShell literals",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The target path is interpolated inside a PowerShell single-quoted literal; a valid path containing an apostrophe terminates that literal."
+      },
+      "body": "### Escape fixture paths embedded in PowerShell literals (1/3)\n\n**Severity:** `medium`\n\nA temporary path containing an apostrophe terminates the PowerShell single-quoted argument and prevents the holder process from opening the target. Double embedded apostrophes before inserting `TargetPath`; apply the companion path escapes in this atomic group as well.\n\n```suggestion\n        \"try { $handle = [IO.File]::Open('\" + TargetPath.Replace(\"'\", \"''\") + \"', 'Open', 'Read', 'Read') } \" +\n```",
+      "disposition": "proposed",
+      "path": "src/modules/FileLocksmith/Tests/FileLocksmith.UITests/LockingProcessFixture.cs",
+      "line": 206,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "powershell-path-escaping",
+        "title": "Escape each fixture path before embedding it in a PowerShell single-quoted literal",
+        "position": 1,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51088-locking-fixture-powershell-quoting-error-log",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Escape fixture paths embedded in PowerShell literals",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The error-log path is interpolated inside a PowerShell single-quoted literal; apostrophes can also break this failure-reporting path."
+      },
+      "body": "### Escape fixture paths embedded in PowerShell literals (2/3)\n\n**Severity:** `medium`\n\nIf this valid temporary path contains an apostrophe, PowerShell cannot parse the `Set-Content` target and the fixture loses its diagnostic log when opening the lock fails. Escape `HolderErrorLogPath` using PowerShell's doubled-apostrophe rule and apply the companion path escapes in this atomic group.\n\n```suggestion\n        \"catch { $_.Exception.ToString() | Set-Content '\" + HolderErrorLogPath.Replace(\"'\", \"''\") + \"'; exit 1 } \" +\n```",
+      "disposition": "proposed",
+      "path": "src/modules/FileLocksmith/Tests/FileLocksmith.UITests/LockingProcessFixture.cs",
+      "line": 207,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "powershell-path-escaping",
+        "title": "Escape each fixture path before embedding it in a PowerShell single-quoted literal",
+        "position": 2,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51088-locking-fixture-powershell-quoting-root",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Escape fixture paths embedded in PowerShell literals",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The marker path is formed from RootFolder inside a PowerShell single-quoted expression; apostrophes can make marker creation fail."
+      },
+      "body": "### Escape fixture paths embedded in PowerShell literals (3/3)\n\n**Severity:** `medium`\n\nThe readiness marker path also embeds a filesystem path in a PowerShell single-quoted expression. An apostrophe in `RootFolder` breaks marker creation, so the test reports a holder as not ready even when its file handle opened; escape this value and apply the companion path escapes in this atomic group.\n\n```suggestion\n        \"New-Item -ItemType File -Force -Path ('\" + RootFolder.Replace(\"'\", \"''\") + \"\\\\ready-' + $PID + '.marker') | Out-Null; \" +\n```",
+      "disposition": "proposed",
+      "path": "src/modules/FileLocksmith/Tests/FileLocksmith.UITests/LockingProcessFixture.cs",
+      "line": 208,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "powershell-path-escaping",
+        "title": "Escape each fixture path before embedding it in a PowerShell single-quoted literal",
+        "position": 3,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51088-filelocksmith-reload-wait-result",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Stop retrying when Reload never finishes loading",
+      "severity": "medium",
+      "confidence": {
+        "score": 90,
+        "rationale": "The changed helper discards a boolean load result and proceeds into another bounded row-count retry."
+      },
+      "body": "### Stop retrying when Reload never finishes loading\n\n**Severity:** `medium`\n\nIf Reload does not restore the loaded state, this helper should stop rather than spend another row-count timeout against an unloaded window. Check the load result and return `false` immediately; the next row-count attempt is valid only after a successful load.\n\n```suggestion\n            if (!WaitForLoaded(ui, timeoutMS: 30_000))\n            {\n                return false;\n            }\n```",
+      "disposition": "proposed",
+      "path": "src/modules/FileLocksmith/Tests/FileLocksmith.UITests/FileLocksmithUi.cs",
+      "line": 144,
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "label": "Post 4 inline suggestions",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "f9c038728e37d65c92b5b327c878ded915a6a0c1"
+      },
+      "id": "post-review-51088",
+      "note": "The five-round automated limit is reached. Latest cloud coverage was Lite/incomplete; no full-agentic clean review or approval readiness is claimed.",
+      "type": "post_review"
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "result": "passed",
+      "scope": "Focused validation of the exact upstream head; not a full solution or end-to-end run.",
+      "head_sha": "f9c038728e37d65c92b5b327c878ded915a6a0c1",
+      "commands": [
+        "tools\\build\\build.cmd -Platform x64 -Configuration Release -RestoreOnly (from exact-tree repository root; POWERTOYS_DISABLE_SPECTRE=1)",
+        "tools\\build\\build.cmd -Platform x64 -Configuration Release (from FileLocksmith.UITests project directory; POWERTOYS_DISABLE_SPECTRE=1)"
+      ]
+    },
+    "suggestion_patch": {
+      "head_sha": "f9c038728e37d65c92b5b327c878ded915a6a0c1",
+      "applied_comment_ids": [
+        "51088-locking-fixture-powershell-quoting-target",
+        "51088-locking-fixture-powershell-quoting-error-log",
+        "51088-locking-fixture-powershell-quoting-root",
+        "51088-filelocksmith-reload-wait-result"
+      ],
+      "minimal_ranges_reviewed": true,
+      "scope": "Literal public suggestion blocks applied to the pinned upstream head; focused candidate build.",
+      "commands": [
+        "git local checkout add --detach <candidate-four-f9> f9c038728e37d65c92b5b327c878ded915a6a0c1 (passed)",
+        "Apply the four remaining public suggestion literals only; fifth process-disposal item excluded.",
+        "git -C <candidate-four-f9> diff --check (passed)",
+        "dotnet restore <FileLocksmith.UITests.csproj> -p:Platform=x64 (focused dependency graph, passed)",
+        "tools\\build\\build.cmd -Platform x64 -Configuration Release from FileLocksmith.UITests project directory (passed)"
+      ],
+      "result": "passed"
+    },
+    "line_ending_safety": {
+      "files": [
+        {
+          "line_endings": "lf",
+          "path": "src/modules/FileLocksmith/Tests/FileLocksmith.UITests/FileLocksmithUi.cs",
+          "result": "passed"
+        },
+        {
+          "line_endings": "lf",
+          "path": "src/modules/FileLocksmith/Tests/FileLocksmith.UITests/LockingProcessFixture.cs",
+          "result": "passed"
+        }
+      ],
+      "result": "passed",
+      "checked_comment_ids": [
+        "51088-locking-fixture-powershell-quoting-target",
+        "51088-locking-fixture-powershell-quoting-error-log",
+        "51088-locking-fixture-powershell-quoting-root",
+        "51088-filelocksmith-reload-wait-result"
+      ],
+      "head_sha": "f9c038728e37d65c92b5b327c878ded915a6a0c1"
+    }
+  },
+  "review_coverage": {
+    "automated_round_cap": 5,
+    "approval_ready": false,
+    "cap_reached": true,
+    "cloud_effort": "Lite",
+    "cloud_complete": false
+  },
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-09T10:30:31.9488446Z"
-  },
-  "freshness": {
-    "queued_at": "2026-10-09T10:30:31.9488446Z",
-    "checkpoint_at": "2026-10-09T10:30:31.9488446Z"
-  },
-  "fork_pr": {
-    "number": 951,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/951"
-  },
-  "fork_branch": "pr-iterate/51088"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-09T13:13:00.8006357Z"
+  }
 }

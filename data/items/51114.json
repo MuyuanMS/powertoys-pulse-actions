@@ -2,29 +2,179 @@
   "number": 51114,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T22:26:07.1423168Z",
-  "evaluated_at": "10/08/2026 21:12:37",
-  "source_updated_at": "10/08/2026 10:40:46",
-  "head_sha": "a3923c936526e1a855dba205d6e308e26162ce0a",
+  "generated_at": "2026-10-09T13:14:09.2040004Z",
+  "evaluated_at": "2026-10-09T12:37:39.0807138Z",
+  "source_updated_at": "2026-10-09T09:40:37Z",
+  "head_sha": "fe009eb6675aaff013f8bc187b7b1ffc6fc42ba3",
   "title": "feat(workspaces): add list and launch CLI",
   "url": "https://github.com/microsoft/PowerToys/pull/51114",
+  "summary": "5 grounded review comments are available for maintainer selection. The five-round automated limit is reached. Latest cloud coverage was Lite/incomplete; no full-agentic clean review or approval readiness is claimed.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Fresh Copilot review 5463260411 is clean. Exact-upstream WorkspacesCLI build stopped before compilation because Microsoft.Windows.CppWinRT.props is missing; unit-test and literal-candidate builds/tests did not run. The Win10 CI test failure also still needs maintainer disposition."
+    "glyph": "!",
+    "label": "Validated review drafts ready",
+    "detail": "The five-round automated limit is reached. Latest cloud coverage was Lite/incomplete; no full-agentic clean review or approval readiness is claimed."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Select the grounded review comments for human approval. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "51114-worker-origin-auth",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Authenticate the private worker entry point",
+      "severity": "high",
+      "confidence": {
+        "score": 90,
+        "rationale": "The pinned worker consumes caller-provided handles and PID without peer identity checks; the existing context and pipe-type guards do not bind them to the frontend. The claim is limited to the foreground approval path, not UAC bypass."
+      },
+      "body": "### Authenticate the private worker entry point\n\n**Severity:** `high`\n\nThe direct `--launch-worker` mode calls `Worker(args)` instead of going through the separate `--launch-connect`/`ReceiveWorkerHandles` handoff. It accepts numeric mapping/cancel handles, a caller-supplied `parentPid`, and optional approval-pipe handles. The worker bounds the mapping, checks that those handles are pipes, and enforces medium-integrity/session context, but does not bind the supplied parent or pipe endpoints to the foreground CLI. A same-session process can therefore supply its own workspace snapshot and approval channel and self-satisfy the foreground warning/approval exchange for that snapshot. Please authenticate the actual CLI parent process instance and bind both approval endpoints to it before accepting the snapshot or replies; fail closed if provenance is missing. This does not bypass Windows UAC.",
+      "disposition": "proposed",
+      "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+      "line": 447,
+      "side": "RIGHT"
+    },
+    {
+      "id": "51114-table-workspace-escape",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "(1/2) Escape workspace names before table output",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "Both table cells are emitted directly on the pinned upstream path; the existing sanitizer test covers ESC, newline, and bidi controls, and the literal candidate builds and passes its safe test slice."
+      },
+      "body": "### (1/2) Escape workspace names before table output\n\n**Severity:** `medium`\n\nHuman-readable `list` writes saved workspace names verbatim, so ESC, CR/LF, or bidi controls can alter terminal output or forge rows. Apply the existing sanitizer here and at the application-name cell in the coordinated second suggestion; keep JSON values unchanged.\n\n```suggestion\n                          << winrt::to_string(WorkspacesCli::EscapeApprovalText(project.GetNamedString(L\"name\"))) << '\\t';\n```",
+      "disposition": "proposed",
+      "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+      "line": 95,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "51114-terminal-name-escaping",
+        "title": "Escape both human-readable table name fields",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51114-table-application-escape",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "(2/2) Escape application names before table output",
+      "severity": "medium",
+      "confidence": {
+        "score": 94,
+        "rationale": "The application cell bypasses the sanitizer while the helper already has deterministic control-character coverage; the exact literal edit is in the built suggestion candidate."
+      },
+      "body": "### (2/2) Escape application names before table output\n\n**Severity:** `medium`\n\nApplication display names are also written verbatim to the human-readable table and can contain terminal controls or line separators. Apply the existing sanitizer here as well, atomically with the workspace-name change; leave the JSON output unchanged.\n\n```suggestion\n                    std::cout << winrt::to_string(WorkspacesCli::EscapeApprovalText(app.GetObjectW().GetNamedString(L\"application\")));\n```",
+      "disposition": "proposed",
+      "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+      "line": 101,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "51114-terminal-name-escaping",
+        "title": "Escape both human-readable table name fields",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51114-handoff-test-filter",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Include the handoff tests in the documented filter",
+      "severity": "low",
+      "confidence": {
+        "score": 98,
+        "rationale": "The exact filter omits a test class named in the adjacent documentation; the one-line literal replacement was built in the pinned-head candidate and its raw blob is LF-only."
+      },
+      "body": "### Include the handoff tests in the documented filter\n\n**Severity:** `low`\n\nThe paragraph below describes `CliHandoffTests`, but this documented invocation excludes that class, so readers following the filter do not run those handoff checks. Add it to the filter.\n\n```suggestion\n    \"/TestCaseFilter:FullyQualifiedName~CliApprovalTests|FullyQualifiedName~CliApprovalConsoleTests|FullyQualifiedName~CliContractTests|FullyQualifiedName~CliWorkerTests|FullyQualifiedName~CliHandoffTests|FullyQualifiedName~WorkspaceStoreTests\"\n```",
+      "disposition": "proposed",
+      "path": "src/modules/Workspaces/WorkspacesCLI/README.md",
+      "line": 102,
+      "side": "RIGHT"
+    },
+    {
+      "id": "51114-concurrent-workspace-overwrite",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Preserve concurrent workspace edits during metadata refresh",
+      "severity": "medium",
+      "confidence": {
+        "score": 93,
+        "rationale": "The launcher-to-store trace shows a stale whole-list write under a lock that only preserves launch history. The targeted fork fix passed both concurrency regression tests, though no nondeterministic race was claimed reproduced upstream."
+      },
+      "body": "### Preserve concurrent workspace edits during metadata refresh\n\n**Severity:** `medium`\n\nThe launcher reads the full workspace list, refreshes one workspace's application metadata, and passes that cached list to `Write`. Although `Write` locks and rereads the file, it only merges `last-launched-time` before committing the caller's entire stale list. If the editor saves after the launcher's read, this commit can erase a newly added workspace or restore stale edits. Replace this call path with a lock-held reread/update that changes only the selected workspace's application metadata, preserving unrelated entries and rejecting a conflicting edit to the selected workspace; add deterministic tests for both cases.",
+      "disposition": "proposed",
+      "path": "src/modules/Workspaces/WorkspacesLib/WorkspaceStore.cpp",
+      "line": 109,
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "label": "Post 3 inline suggestions",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "fe009eb6675aaff013f8bc187b7b1ffc6fc42ba3"
+      },
+      "type": "post_review",
+      "id": "post-review-51114",
+      "note": "The five-round automated limit is reached. Latest cloud coverage was Lite/incomplete; no full-agentic clean review or approval readiness is claimed."
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "result": "passed",
+      "commands": [
+        "Applied the two one-line main.cpp terminal-escaping suggestions and the one-line README filter suggestion verbatim to a clean local checkout at fe009eb6675aaff013f8bc187b7b1ffc6fc42ba3; git diff --check passed.",
+        "tools/build/build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\Workspaces\\WorkspacesCLI -ExtraArgs \"/p:SolutionDir=<PowerToysCheckout>\\\"; exit code 0.",
+        "tools/build/build.ps1 -Platform x64 -Configuration Debug -Path .\\src\\modules\\Workspaces\\WorkspacesLib.UnitTests -ExtraArgs @(\"/p:SolutionDir=<PowerToysCheckout>\\\", \"/p:WorkspacesCliLiveTests=true\"); exit code 0.",
+        "vstest.console.exe x64\\Debug\\tests\\Workspaces\\Workspaces.Lib.UnitTests.dll /TestCaseFilter:FullyQualifiedName~CliApprovalTests|FullyQualifiedName~CliContractTests|FullyQualifiedName~WorkspaceStoreTests; 32 passed, 0 failed."
+      ],
+      "head_sha": "fe009eb6675aaff013f8bc187b7b1ffc6fc42ba3",
+      "applied_comment_ids": [
+        "51114-table-workspace-escape",
+        "51114-table-application-escape",
+        "51114-handoff-test-filter"
+      ],
+      "scope": "Literal public suggestion blocks applied to the pinned upstream head; focused candidate build.",
+      "minimal_ranges_reviewed": true
+    },
+    "line_ending_safety": {
+      "head_sha": "fe009eb6675aaff013f8bc187b7b1ffc6fc42ba3",
+      "files": [
+        {
+          "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+          "result": "passed",
+          "line_endings": "lf"
+        },
+        {
+          "path": "src/modules/Workspaces/WorkspacesCLI/README.md",
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ],
+      "result": "passed",
+      "checked_comment_ids": [
+        "51114-table-workspace-escape",
+        "51114-table-application-escape",
+        "51114-handoff-test-filter"
+      ]
+    }
+  },
+  "review_coverage": {
+    "cloud_effort": "Lite",
+    "cloud_complete": false,
+    "approval_ready": false,
+    "automated_round_cap": 5,
+    "cap_reached": true
+  },
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-10-08T22:26:07.1423168Z"
-  },
-  "freshness": {
-    "queued_at": "10/08/2026 21:12:37",
-    "checkpoint_at": "2026-10-08T22:26:07.1423168Z"
+    "checkpoint_at": "2026-10-09T13:14:09.2040004Z",
+    "phase": "awaiting_review_approval"
   }
 }
