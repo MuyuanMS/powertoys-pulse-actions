@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T06:01:04.2323089+08:00",
+  "generated_at": "2026-10-10T06:33:09.1736927+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,16 +88,17 @@ window.BOARD_INDEX = {
     "open_prs": 161,
     "open_issues": 12643,
     "community": 11811,
-    "artifacts": 1128
+    "artifacts": 1129
   },
   "impact": {
-    "as_of": "2026-10-10T06:01:04.2323089+08:00",
+    "as_of": "2026-10-10T06:33:09.1736927+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
     "comments_drafted": 24
   },
   "artifact_numbers": [
+    51162,
     51152,
     51142,
     51131,
@@ -1240,13 +1241,13 @@ window.BOARD_INDEX = {
       "is_community": true,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1261,7 +1262,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 990,
+        "fork_title": "[PR 51162] FancyZones: let new windows settle before restoring zones",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51162",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/990"
+      }
     },
     {
       "id": "pr-51153",
@@ -1725,7 +1734,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T17:27:13Z",
-      "updated_at": "2026-10-09T05:37:30Z",
+      "updated_at": "2026-10-09T22:14:38Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -4796,7 +4805,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-12T10:57:12Z",
-      "updated_at": "2026-10-09T21:44:26Z",
+      "updated_at": "2026-10-09T22:03:54Z",
       "comments": 6,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -149491,8 +149500,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-09T20:53:33Z",
-      "updated_at": "2026-10-09T20:59:07Z",
-      "comments": 1,
+      "updated_at": "2026-10-09T22:13:27Z",
+      "comments": 2,
       "priority": null
     },
     {
