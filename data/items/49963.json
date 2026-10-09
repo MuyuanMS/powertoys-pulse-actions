@@ -2,29 +2,207 @@
   "number": 49963,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-09T14:44:47.0176058Z",
-  "evaluated_at": "10/08/2026 02:53:30",
-  "source_updated_at": "10/09/2026 06:44:31",
+  "generated_at": "2026-10-09T18:30:30.4096586Z",
+  "evaluated_at": "2026-10-09T17:47:37.9Z",
+  "source_updated_at": "2026-10-09T06:44:31Z",
   "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3",
   "title": "[Peek] Enable reusable previewers for Peek to fix flicker",
   "url": "https://github.com/microsoft/PowerToys/pull/49963",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "An independent worker is advancing the current-head review, reconciling durable history and checking supported findings. The five-round cap includes historical requests; final focused validation remains required. This checkpoint is not a completed review or approval."
+    "glyph": "!",
+    "label": "Review actions drafted",
+    "detail": "Four grounded medium inline suggestions keep queued copy operations bound to the original file. All four must be applied together. The exact four-block candidate passed the focused x64 Debug Peek.UI build. Historical review cap is exceeded; the latest Balanced result requested interactive validation, so no full clean review or approval is claimed."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-09T14:44:47.0176058Z"
+  "next_action": "Select all four copy-target suggestions together for a human-approved COMMENT review. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "49963-copy-target-image-capture",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+      "line": 191,
+      "side": "RIGHT",
+      "title": "(1/4) Capture the image item before dispatch",
+      "body": "### (1/4) Capture the image item before dispatch\r\n\r\n**Severity:** `medium`\r\n\r\nThe production dispatcher helper always queues through `TryEnqueue`, so this callback runs later. If copy starts on image A and the reusable previewer is rebound to B before the callback executes, reading mutable `Item` copies B. Capture `Item` before enqueueing and use that snapshot in the callback; apply all four members of this atomic group.\r\n\r\n```suggestion\r\n                var targetItem = Item;\r\n                await Dispatcher.RunOnUiThread(async () =>\r\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "DispatcherExtensions.RunOnUiThread unconditionally calls TryEnqueue, while ImagePreviewer.Rebind replaces the mutable Item property. Capturing before enqueue removes that scheduling race."
+      },
+      "body_sha256": "cc0b1b54bd850b78407e9fcd218882f0a58ecae9e8f22c1ba0171a42eacbf2ee",
+      "selection_group": {
+        "id": "copy-target-capture",
+        "title": "Keep each copy operation bound to its original file",
+        "position": 1,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "49963-copy-target-image-read",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+      "line": 193,
+      "side": "RIGHT",
+      "title": "(2/4) Read the captured image item",
+      "body": "### (2/4) Read the captured image item\r\n\r\n**Severity:** `medium`\r\n\r\nThis callback must use the item captured before `RunOnUiThread` enqueues it. Otherwise an intervening `Rebind` changes the file copied from A to B. Apply this as part of the complete four-location atomic group.\r\n\r\n```suggestion\r\n                    var storageItem = await targetItem.GetStorageItemAsync();\r\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact callback reads the current mutable Item after TryEnqueue; using the captured local makes the queued operation stable."
+      },
+      "body_sha256": "126606a5f7235d3e4bbacae3fc357e8f1a1c8883765b551f165bbefb55833e2c",
+      "selection_group": {
+        "id": "copy-target-capture",
+        "title": "Keep each copy operation bound to its original file",
+        "position": 2,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "49963-copy-target-unsupported-capture",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
+      "line": 204,
+      "side": "RIGHT",
+      "title": "(3/4) Capture the unsupported-file item before dispatch",
+      "body": "### (3/4) Capture the unsupported-file item before dispatch\r\n\r\n**Severity:** `medium`\r\n\r\nIn production `RunOnUIThreadAsync` delegates to the dispatcher helper, which queues through `TryEnqueue`. If copy starts on unsupported item A and the previewer is rebound to B before the callback executes, reading mutable `Item` copies B. Capture `Item` before calling the helper and use that snapshot in the callback; apply all four members of this atomic group.\r\n\r\n```suggestion\r\n            var targetItem = Item;\r\n            await RunOnUIThreadAsync(async () =>\r\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "RunOnUIThreadAsync delegates production work to the always-enqueue dispatcher helper and UnsupportedFilePreviewer.Rebind mutates Item."
+      },
+      "body_sha256": "6087a06ff06b63f11020cb0eaa6d3c8db8f53c4b3e83ecde67c57b0d3ee4ba31",
+      "selection_group": {
+        "id": "copy-target-capture",
+        "title": "Keep each copy operation bound to its original file",
+        "position": 3,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "49963-copy-target-unsupported-read",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "medium",
+      "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
+      "line": 206,
+      "side": "RIGHT",
+      "title": "(4/4) Read the captured unsupported-file item",
+      "body": "### (4/4) Read the captured unsupported-file item\r\n\r\n**Severity:** `medium`\r\n\r\nUse the item captured before `RunOnUIThreadAsync` schedules this callback. Reading `Item` inside it can select B after the operation began for A. Apply this as part of the complete four-location atomic group.\r\n\r\n```suggestion\r\n                var storageItem = await targetItem.GetStorageItemAsync();\r\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current queued callback dereferences Item after the dispatcher gap; the captured local prevents a copy of a later selection."
+      },
+      "body_sha256": "d18f25df4c1d99848f95257fcd37bd5f3821c0ceaef7972f35df7f748ad69e1b",
+      "selection_group": {
+        "id": "copy-target-capture",
+        "title": "Keep each copy operation bound to its original file",
+        "position": 4,
+        "total": 4,
+        "atomic": true
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-49963",
+      "type": "post_review",
+      "label": "Post 4 atomic inline suggestions",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "Four copy-target suggestions form an all-or-none group. Historical automated review cap is reached; this draft does not claim cloud-clean convergence.",
+      "review": {
+        "event": "COMMENT",
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 49963,
+        "pr": 49963,
+        "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3"
+      }
+    }
+  ],
+  "review_coverage": {
+    "round_cap": 5,
+    "historical_reviews_on_latest_saved_series": 6,
+    "cap_reached": true,
+    "latest_saved_review_id": 5162063082,
+    "latest_saved_review_effort": "Balanced",
+    "latest_saved_review_new_comments": 0,
+    "latest_saved_review_requested_human_interactive_validation": true,
+    "unresolved_copilot_threads": 0,
+    "cloud_clean": false,
+    "new_review_request_created": false
   },
-  "freshness": {
-    "queued_at": "10/08/2026 02:53:30",
-    "checkpoint_at": "2026-10-09T14:44:47.0176058Z"
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3",
+      "result": "passed",
+      "applied_comment_ids": [
+        "49963-copy-target-image-capture",
+        "49963-copy-target-image-read",
+        "49963-copy-target-unsupported-capture",
+        "49963-copy-target-unsupported-read"
+      ],
+      "minimal_ranges_reviewed": true,
+      "commands": [
+        "Applied all four public literal suggestion blocks together to a clean candidate at the pinned upstream head; exact patch check passed.",
+        "git diff --cached --check — passed.",
+        "From src/modules/peek/Peek.UI: ..\\..\\..\\..\\tools\\build\\build.cmd -Platform x64 -Configuration Debug — passed; builds Peek.UI and its Peek.FilePreviewer project reference."
+      ],
+      "candidate_tree": "806d7bac91cf155f37ab3e745901cd6402e3a468",
+      "patch_sha256": "53b95eaa73e86dfe80e0c6996463ec9f89e303efe23e14c58784bb2240f7f4fc",
+      "validated_at": "2026-10-09T17:47:37.9Z"
+    },
+    "line_ending_safety": {
+      "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3",
+      "result": "passed",
+      "checked_comment_ids": [
+        "49963-copy-target-image-capture",
+        "49963-copy-target-image-read",
+        "49963-copy-target-unsupported-capture",
+        "49963-copy-target-unsupported-read"
+      ],
+      "files": [
+        {
+          "path": "src/modules/peek/Peek.FilePreviewer/Previewers/MediaPreviewer/ImagePreviewer.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 257,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/peek/Peek.FilePreviewer/Previewers/UnsupportedFilePreviewer/UnsupportedFilePreviewer.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 314,
+          "cr_only_count": 0
+        }
+      ],
+      "validated_at": "2026-10-09T17:47:37.9Z"
+    },
+    "live_checks": {
+      "head_sha": "84671b79a4d286848e6f93c375a5a05932509fb3",
+      "fetched_at": "2026-10-09T17:47:37.9Z",
+      "state": "passed",
+      "total_count": 14,
+      "pending_count": 0,
+      "failed_ids": []
+    }
   }
 }
