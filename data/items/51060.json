@@ -2,29 +2,85 @@
   "number": 51060,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T22:26:08.1690565Z",
-  "evaluated_at": "2026-10-08T22:26:08.1690565Z",
-  "source_updated_at": "10/08/2026 17:53:39",
+  "generated_at": "2026-10-09T17:18:32.3312931Z",
+  "evaluated_at": "2026-10-09T17:04:57Z",
+  "source_updated_at": "2026-10-09T06:31:24Z",
   "head_sha": "55fbfedbb2abd2538f1af45555460e5d9b9c05cf",
   "title": "[Settings] Fix memory leak when navigating between pages",
   "url": "https://github.com/microsoft/PowerToys/pull/51060",
+  "summary": "1 grounded review comments are available for maintainer selection. Two Balanced review rounds; the final reviewed branch returned zero findings and zero unresolved threads after the callback fix. The pinned upstream still has the separately grounded bounded-retention finding. Exact upstream Controls compilation and candidate test-project compilation passed; one focused replacement-safety test passed. This is a drafted COMMENT, not an upstream approval.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Fresh Copilot review 5463261210 is clean. One grounded inline prose finding is drafted; a one-line apply-ready suggestion is unsafe because the fix spans existing Settings callback APIs. Exact-head focused project builds and regression tests remain queued for serialized validation."
+    "label": "Validated review drafts ready",
+    "glyph": "!",
+    "detail": "Two Balanced review rounds; the final reviewed branch returned zero findings and zero unresolved threads after the callback fix. The pinned upstream still has the separately grounded bounded-retention finding. Exact upstream Controls compilation and candidate test-project compilation passed; one focused replacement-safety test passed. This is a drafted COMMENT, not an upstream approval."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Select the grounded review comments for human approval. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "unregister-enabled-module-callback",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Unregister the enabled-module callback",
+      "severity": "medium",
+      "confidence": {
+        "score": 82,
+        "rationale": "The pinned singleton, current settings object, strong Action field, and missing cleanup are directly visible. The single callback slot bounds the retained instances, and no memory profile or local runtime reproduction was run."
+      },
+      "body": "### Unregister the enabled-module callback\n\n**Severity:** `medium`\n\n`SettingsRepository<GeneralSettings>` is process-wide and retains its current settings object; `EnabledModules` stores this callback in a strong, single-slot `Action` field. When navigation disposes the dashboard's `QuickAccessViewModel`, the callback remains registered and keeps that disposed view model (including its quick-access items and launcher state) alive while the app stays on another page. A subsequent Home visit replaces the callback, so this is bounded retention rather than per-visit accumulation; please add a matching removal API in `GeneralSettings`/`EnabledModules` and unregister this delegate in `Dispose`, clearing it only if it still matches this instance.\n",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Controls/QuickAccess/QuickAccessViewModel.cs",
+      "line": 68,
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "type": "post_review",
+      "label": "Post inline review comments",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "55fbfedbb2abd2538f1af45555460e5d9b9c05cf"
+      },
+      "id": "post-review-51060",
+      "note": "Two Balanced review rounds; the final reviewed branch returned zero findings and zero unresolved threads after the callback fix. The pinned upstream still has the separately grounded bounded-retention finding. Exact upstream Controls compilation and candidate test-project compilation passed; one focused replacement-safety test passed. This is a drafted COMMENT, not an upstream approval."
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "result": "passed",
+      "scope": "Exact upstream Settings.UI.Controls x64 Debug compilation; not a full solution or runtime memory profile.",
+      "head_sha": "55fbfedbb2abd2538f1af45555460e5d9b9c05cf",
+      "commands": [
+        "tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\settings-ui\\Settings.UI.Controls: passed on the exact upstream head."
+      ]
+    },
+    "fix_candidate": {
+      "result": "passed",
+      "scope": "Callback-removal remedy plus focused replacement-safety test based on the pinned upstream head; not a literal public suggestion patch.",
+      "head_sha": "55fbfedbb2abd2538f1af45555460e5d9b9c05cf",
+      "commands": [
+        "tools\\build\\build.ps1 -Platform x64 -Configuration Debug -Path src\\settings-ui\\Settings.UI.UnitTests: passed; changed Controls/Library references compiled.",
+        "vstest.console.exe Settings.UI.UnitTests.dll /TestCaseFilter:FullyQualifiedName~RemoveEnabledModuleChangeNotificationOnlyRemovesMatchingCallback: 1/1 passed."
+      ]
+    },
+    "limitations": [
+      "No reviewer-run ETW/gcdump memory reproduction or full interactive navigation run.",
+      "The focused test verifies callback removal and replacement safety; it does not establish an observed heap-growth rate.",
+      "No full solution build was run."
+    ]
+  },
+  "review_coverage": {
+    "cloud_effort": "Balanced",
+    "cap_reached": false,
+    "cloud_complete": true,
+    "approval_ready": false,
+    "automated_round_cap": 5
+  },
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-10-08T22:26:08.1690565Z"
-  },
-  "freshness": {
-    "queued_at": "2026-10-08T22:26:08.1690565Z",
-    "checkpoint_at": "2026-10-08T22:26:08.1690565Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-09T17:18:32.3312931Z"
   }
 }
