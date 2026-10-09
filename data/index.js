@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-09T18:41:57.3964223+08:00",
+  "generated_at": "2026-10-09T19:47:03.1336573+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 155,
+    "open_prs": 154,
     "open_issues": 12637,
     "community": 11800,
-    "artifacts": 1127
+    "artifacts": 1126
   },
   "impact": {
-    "as_of": "2026-10-09T18:41:57.3964223+08:00",
+    "as_of": "2026-10-09T19:47:03.1336573+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -117,7 +117,6 @@ window.BOARD_INDEX = {
     50955,
     50954,
     50948,
-    50934,
     50914,
     50909,
     50907,
@@ -1313,7 +1312,7 @@ window.BOARD_INDEX = {
       "title": "Mouse Jump settings: render preview from Windows wallpaper with acrylic taskbar",
       "author": "niels9001",
       "state": "open",
-      "is_draft": true,
+      "is_draft": false,
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
@@ -1328,12 +1327,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-Settings"
+        "Product-Settings",
+        "Ready for review"
       ],
       "assignees": [],
       "created_at": "2026-10-08T18:31:17Z",
-      "updated_at": "2026-10-08T23:37:01Z",
-      "comments": 1,
+      "updated_at": "2026-10-09T10:55:26Z",
+      "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
@@ -1417,11 +1417,11 @@ window.BOARD_INDEX = {
         "LegendaryBlair"
       ],
       "created_at": "2026-10-08T17:59:40Z",
-      "updated_at": "2026-10-09T09:53:28Z",
+      "updated_at": "2026-10-09T10:50:55Z",
       "comments": 2,
       "priority": null,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
+      "review_decision": "APPROVED",
+      "ci_state": "passed",
       "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
@@ -1876,15 +1876,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post inline review comments"
+      },
       "labels": [
         "Product-General",
         "Ready for review"
@@ -2131,7 +2134,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "review_iteration_cap_reached",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -2963,41 +2966,6 @@ window.BOARD_INDEX = {
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
       "merge_state": "BLOCKED"
-    },
-    {
-      "id": "pr-50934",
-      "kind": "pr",
-      "number": 50934,
-      "url": "https://github.com/microsoft/PowerToys/pull/50934",
-      "title": "Foxmsft/zoomit audio pacing",
-      "author": "foxmsft",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "review_in_progress",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-ZoomIt",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-10-01T15:01:40Z",
-      "updated_at": "2026-10-02T23:17:19Z",
-      "comments": 1,
-      "priority": null,
-      "review_decision": "APPROVED",
-      "ci_state": "passed",
-      "merge_state": "CLEAN"
     },
     {
       "id": "pr-50915",
