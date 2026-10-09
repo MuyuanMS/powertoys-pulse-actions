@@ -2,34 +2,200 @@
   "number": 51102,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-09T10:30:31.7398019Z",
-  "evaluated_at": "2026-10-09T10:30:31.7398019Z",
+  "generated_at": "2026-10-09T13:50:31.6972926Z",
+  "evaluated_at": "2026-10-09T13:50:31.7018862Z",
   "source_updated_at": "2026-10-09T03:16:33Z",
   "head_sha": "7cfa958e09fb23c0fe1a61cef0a38f676685ee72",
   "title": "Installer: generate .wxs into obj\\ with deterministic component GUIDs (INST-4)",
   "url": "https://github.com/microsoft/PowerToys/pull/51102",
   "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "The capped review results and prior accepted findings are being grounded against the current head. Final focused validation and review-artifact drafting are in progress; Lite/timeout cloud coverage is not a clean full review."
+    "glyph": "!",
+    "label": "Capped review findings drafted",
+    "detail": "The capped exact-head Copilot result was Lite/timeout, not a full review; all returned findings were processed and zero Copilot threads remain unresolved. Three current-head findings are drafted. Focused exact-head generator parsing, Unicode default-encoding reproduction, and WiX project evaluation passed; the full installer pipeline separately failed before WiX, so no full installer build is claimed."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Review the two inline documentation suggestions and separate encoding companion before any posting decision. Copilot was capped and incomplete; this is not cloud-clean or approval-ready. Focused script/project validation passed; full installer output was not produced.",
+  "proposed_comments": [
+    {
+      "id": "51102-installer-guide-path",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "low",
+      "path": "doc/devdocs/development/new-powertoy.md",
+      "line": 241,
+      "side": "RIGHT",
+      "title": "Correct the installer project directory",
+      "body": "### Correct the installer project directory\n\n**Severity:** `low`\n\nThe documented directory does not exist in the repository; the installer project is under `installer\\PowerToysSetupVNext`. A contributor following this step cannot create the module template at the documented location.\n\n```suggestion\n2. Inside `installer\\PowerToysSetupVNext` add a new file for your module: `Module.wxs`\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "The exact upstream tree contains the installer project under PowerToysSetupVNext, while the changed instruction names a nonexistent PowerToysInstallerVNext directory."
+      },
+      "body_sha256": "f8ec0208ddbaea2f05bd0cb41218b325e059ac39bf5b0e3c0ac8dc914139e644"
+    },
+    {
+      "id": "51102-installer-guide-infinitive",
+      "kind": "inline",
+      "in_diff": true,
+      "disposition": "proposed",
+      "severity": "low",
+      "path": "doc/devdocs/development/new-powertoy.md",
+      "line": 242,
+      "side": "RIGHT",
+      "title": "Fix the missing infinitive in the setup instructions",
+      "body": "### Fix the missing infinitive in the setup instructions\n\n**Severity:** `low`\n\nThe sentence says “will need copy” instead of “will need to copy,” so the new module instructions contain a grammatical error.\n\n```suggestion\n3. Inside of this file you will need to copy the format from another module (ie: Light Switch) and replace the strings and GUID values. Do not add GUIDs for generated file components; `generateAllFileComponents.ps1` derives them deterministically.\n```",
+      "confidence": {
+        "score": 99,
+        "rationale": "The exact changed sentence omits the infinitive marker, and the one-line replacement changes only that wording."
+      },
+      "body_sha256": "d99d7d7c2d8b855702a3eb07f692576075b5d1a377d92792afa37014f2ac02f1"
+    },
+    {
+      "id": "51102-generated-wxs-encoding",
+      "kind": "companion",
+      "in_diff": false,
+      "disposition": "proposed",
+      "severity": "low",
+      "title": "Make generated WiX output encoding explicit",
+      "out_of_diff_reason": "The four Set-Content write sites are unchanged in the current RIGHT-side diff. The consistent encoding fix spans those unchanged generated-WXS writers, so there is no current changed-line anchor for a safe inline suggestion.",
+      "body": "### Make generated WiX output encoding explicit\n\n**Severity:** `low`\n\n**Affected code:** `installer/PowerToysSetupVNext/generateAllFileComponents.ps1` (`Generate-FileList`, `Generate-FileComponents`, and the BaseApplications/WinUI3Applications rewrites).\n\n**Problem:** The four generated `.wxs` writes use `Set-Content` without an explicit encoding. Windows PowerShell 5.1 uses the machine's system-default encoding, so names containing characters outside that code page may be replaced; the same Unicode content under PowerShell 7 is written as UTF-8. The hardlink manifest already avoids this variability with UTF-8 without a BOM.\n\n**Why it matters:** Installer source can depend on the build agent's host encoding rather than the file list, undermining repeatable generation and potentially corrupting non-ASCII paths before WiX reads them.\n\n**Suggested change:**\n1. Add one helper that writes generated WiX text as UTF-8 without a BOM.\n2. Route the writes in `Generate-FileList`, `Generate-FileComponents`, and the BaseApplications and WinUI3Applications rewrites through it, preserving current line-break behavior for string and line-array inputs.\n\n**Verification:** Generate `.wxs` from the same fixture containing a non-ASCII filename under Windows PowerShell 5.1 and PowerShell 7; compare output bytes and confirm both retain the filename, then compile the generated WiX inputs.",
+      "confidence": {
+        "score": 72,
+        "rationale": "A focused Unicode fixture reproduced different default output bytes across Windows PowerShell 5.1 and PowerShell 7, and the script already uses explicit UTF-8 without BOM for its manifest. Current templates are predominantly ASCII and standard build invocation uses Windows PowerShell, so this remains a low-severity reproducibility risk rather than a demonstrated current build failure."
+      },
+      "body_sha256": "97a62519fc34e6662a51f3411032ea7495cddfba44c9329991cd322dd7fd8f5f"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51102",
+      "type": "post_review",
+      "label": "Post two inline suggestions and one general review note",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "note": "The encoding finding is a general review note posted as a separate PR conversation comment; the two one-line inline suggestions are independent. This is a draft non-blocking COMMENT, not a clean-review result.",
+      "review": {
+        "event": "COMMENT",
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 51102,
+        "pr": 51102,
+        "head_sha": "7cfa958e09fb23c0fe1a61cef0a38f676685ee72"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "7cfa958e09fb23c0fe1a61cef0a38f676685ee72",
+      "result": "failed",
+      "commands": [
+        "tools\\build\\build-installer.ps1 -Platform x64 -Configuration Release -PerUser false -Force (official isolated build; failed in PowerToys.slnx before WiX targets, exit code 1).",
+        "tools\\build\\build-installer.ps1 -Platform x64 -Configuration Release -PerUser false -Force -SkipBuild (supported focused retry; exited at certificate-trust consent before WiX; no MSI produced)."
+      ],
+      "attempts": [
+        {
+          "name": "Official x64 Release installer pipeline",
+          "result": "failed",
+          "exit_code": 1,
+          "detail": "The full PowerToys.slnx build failed before the installer targets, with 95 MSBuild errors (98 error-log entries), including missing generated PRI inputs and CsWinRT/WinRT generation failures. No MSI was produced."
+        },
+        {
+          "name": "Focused installer-only retry",
+          "result": "blocked_at_certificate_trust_warning",
+          "exit_code": -1,
+          "detail": "The supported -SkipBuild retry stalled while importing a temporary certificate into the local root trust store, showing a Windows Security Warning. The warning was dismissed without approving trust; the retry exited with code -1 before the WiX targets, and no MSI was produced."
+        }
+      ],
+      "finished_at": "2026-10-09T13:00:51.5862946Z",
+      "detail": "The full solution-based installer pipeline failed before WiX and did not produce an MSI. Focused exact-head generator parsing, cross-version default-encoding reproduction, and WiX project XML/MSBuild evaluation passed separately; these checks validate script/documentation findings but do not assert a full installer build."
+    },
+    "suggestion_patch": {
+      "head_sha": "7cfa958e09fb23c0fe1a61cef0a38f676685ee72",
+      "result": "passed",
+      "applied_comment_ids": [
+        "51102-installer-guide-path",
+        "51102-installer-guide-infinitive"
+      ],
+      "minimal_ranges_reviewed": true,
+      "commands": [
+        "Applied both literal one-line suggestion replacements to a clean candidate at the pinned upstream head; each replacement was independently checked against the original source.",
+        "git diff --check passed; the candidate contains exactly two minimized line replacements."
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "7cfa958e09fb23c0fe1a61cef0a38f676685ee72",
+      "result": "passed",
+      "checked_comment_ids": [
+        "51102-installer-guide-path",
+        "51102-installer-guide-infinitive"
+      ],
+      "files": [
+        {
+          "path": "doc/devdocs/development/new-powertoy.md",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false
+        }
+      ]
+    },
+    "focused_validation": {
+      "head_sha": "7cfa958e09fb23c0fe1a61cef0a38f676685ee72",
+      "result": "passed",
+      "script_parse": {
+        "result": "passed",
+        "path": "installer/PowerToysSetupVNext/generateAllFileComponents.ps1",
+        "parser_errors": 0,
+        "command": "[System.Management.Automation.Language.Parser]::ParseFile(...)",
+        "powershell_versions": [
+          "Windows PowerShell 5.1",
+          "PowerShell 7"
+        ]
+      },
+      "encoding_reproduction": {
+        "result": "passed",
+        "writer": "Set-Content -LiteralPath $Path -Value $value (no Encoding argument)",
+        "fixture_codepoints": [
+          "U+6F22",
+          "U+5B57",
+          "U+002D",
+          "U+03A9"
+        ],
+        "powershell_51_bytes": "9D68D7D62DA6B80D0A",
+        "powershell_7_bytes": "E6BCA2E5AD972DCEA90D0A",
+        "bytes_differ": true,
+        "fixture_files": [
+          "focused-validation/ps51.txt",
+          "focused-validation/ps7.txt"
+        ]
+      },
+      "installer_project": {
+        "result": "passed",
+        "xml_parse": "passed",
+        "msbuild_evaluation": "passed",
+        "project": "PowerToysInstallerVNext",
+        "platform": "x64",
+        "configuration": "Release",
+        "per_user": false,
+        "generated_wxs_dir": "installer/PowerToysSetupVNext/obj/x64/Generated/",
+        "generated_wxs_compile_items": 22,
+        "command": "MSBuild.exe PowerToysInstallerVNext.wixproj /getProperty:MSBuildProjectName,GeneratedWxsDir,OutputPath,IntermediateOutputPath /getItem:Compile /p:Platform=x64 /p:Configuration=Release /p:PerUser=false /p:CIBuild=true"
+      },
+      "scope": "Focused parse, encoding reproduction, WiX XML parse, and MSBuild evaluation only; no build targets invoked."
+    }
+  },
+  "copilot_status": {
+    "routine_review_cap": 5,
+    "routine_review_cap_reached": true,
+    "latest_result": "Lite/timeout; full agentic review did not start",
+    "new_comments_processed": 3,
+    "unresolved_threads_after_processing": 0,
+    "additional_request_issued": false,
+    "cloud_clean": false
+  },
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-09T10:30:31.7398019Z"
-  },
-  "freshness": {
-    "queued_at": "2026-10-09T10:30:31.7398019Z",
-    "checkpoint_at": "2026-10-09T10:30:31.7398019Z"
-  },
-  "fork_pr": {
-    "number": 950,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/950"
-  },
-  "fork_branch": "pr-iterate/51102-v2"
+    "phase": "validation-complete-with-build-blocker",
+    "checkpoint_at": "2026-10-09T13:50:31.7037698Z"
+  }
 }
