@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T12:00:08.7562037+08:00",
+  "generated_at": "2026-10-10T12:13:11.9676303+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1132
   },
   "impact": {
-    "as_of": "2026-10-10T12:00:08.7562037+08:00",
+    "as_of": "2026-10-10T12:13:11.9676303+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -180791,7 +180791,7 @@ window.BOARD_INDEX = {
       "number": 49841,
       "url": "https://github.com/microsoft/PowerToys/issues/49841",
       "title": "KBM: Different mappings per IME method",
-      "author": "ghnicole",
+      "author": "1n1c",
       "state": "closed",
       "is_draft": false,
       "is_community": true,
