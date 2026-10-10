@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T12:13:11.9676303+08:00",
+  "generated_at": "2026-10-10T12:28:37.0144297+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1132
   },
   "impact": {
-    "as_of": "2026-10-10T12:13:11.9676303+08:00",
+    "as_of": "2026-10-10T12:28:37.0144297+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -2516,12 +2516,12 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T05:06:23Z",
-      "updated_at": "2026-10-08T23:40:51Z",
+      "updated_at": "2026-10-10T04:10:06Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "DIRTY",
+      "merge_state": "BLOCKED",
       "mirror": {
         "kind": "pr",
         "fork_number": 967,
@@ -2588,7 +2588,7 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "pending",
-      "merge_state": "BLOCKED"
+      "merge_state": "UNSTABLE"
     },
     {
       "id": "pr-51060",
@@ -81477,6 +81477,38 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-10347",
+      "kind": "issue",
+      "number": 10347,
+      "url": "https://github.com/microsoft/PowerToys/issues/10347",
+      "title": "Improve small screen UX",
+      "author": "iJahangard",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "other",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Product-PowerToys Run",
+        "Area-User Interface"
+      ],
+      "assignees": [],
+      "created_at": "2021-03-20T17:28:04Z",
+      "updated_at": "2026-04-18T13:58:25Z",
+      "comments": 5,
+      "priority": null
+    },
+    {
       "id": "issue-28377",
       "kind": "issue",
       "number": 28377,
@@ -88727,7 +88759,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-07-08T16:09:50Z",
-      "updated_at": "2026-10-09T12:22:39Z",
+      "updated_at": "2026-10-10T04:24:32Z",
       "comments": 2,
       "priority": null
     },
@@ -153594,7 +153626,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/50965",
       "title": "PowerToys panel opens at bottom right even with vertical taskbar",
       "author": "georgelogosol",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -153617,8 +153649,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-03T00:12:28Z",
-      "updated_at": "2026-10-03T00:18:34Z",
-      "comments": 1,
+      "updated_at": "2026-10-10T04:14:15Z",
+      "comments": 2,
       "priority": null
     },
     {
@@ -256134,17 +256166,17 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
-      "id": "issue-10347",
+      "id": "issue-46700",
       "kind": "issue",
-      "number": 10347,
-      "url": "https://github.com/microsoft/PowerToys/issues/10347",
-      "title": "Improve small screen UX",
-      "author": "iJahangard",
+      "number": 46700,
+      "url": "https://github.com/microsoft/PowerToys/issues/46700",
+      "title": "Progressbars for Dock Bands",
+      "author": "lukas-schwab",
       "state": "open",
       "is_draft": false,
       "is_community": true,
       "mine": false,
-      "is_cmdpal": false,
+      "is_cmdpal": true,
       "track": null,
       "stage": null,
       "owes": "us",
@@ -256156,13 +256188,13 @@ window.BOARD_INDEX = {
       "proposed_open": 0,
       "primary_action": null,
       "labels": [
-        "Product-PowerToys Run",
-        "Area-User Interface"
+        "Product-Command Palette",
+        "CmdPal - Dock"
       ],
       "assignees": [],
-      "created_at": "2021-03-20T17:28:04Z",
-      "updated_at": "2026-04-18T13:58:25Z",
-      "comments": 5,
+      "created_at": "2026-04-01T14:17:49Z",
+      "updated_at": "2026-04-08T11:33:34Z",
+      "comments": 1,
       "priority": null
     },
     {
@@ -408350,38 +408382,6 @@ window.BOARD_INDEX = {
       "assignees": [],
       "created_at": "2025-02-26T09:24:34Z",
       "updated_at": "2026-04-18T15:14:58Z",
-      "comments": 1,
-      "priority": null
-    },
-    {
-      "id": "issue-46700",
-      "kind": "issue",
-      "number": 46700,
-      "url": "https://github.com/microsoft/PowerToys/issues/46700",
-      "title": "Progressbars for Dock Bands",
-      "author": "lukas-schwab",
-      "state": "open",
-      "is_draft": false,
-      "is_community": true,
-      "mine": false,
-      "is_cmdpal": true,
-      "track": null,
-      "stage": null,
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
-      "issue_type": "other",
-      "proposed_open": 0,
-      "primary_action": null,
-      "labels": [
-        "Product-Command Palette",
-        "CmdPal - Dock"
-      ],
-      "assignees": [],
-      "created_at": "2026-04-01T14:17:49Z",
-      "updated_at": "2026-04-08T11:33:34Z",
       "comments": 1,
       "priority": null
     },
