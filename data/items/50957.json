@@ -1,39 +1,225 @@
 {
-  "kind": "pr",
-  "next_action": "Continue source-grounded review and final validation; no maintainer posting action is available from this checkpoint.",
-  "source_updated_at": "2026-10-02T12:21:23Z",
-  "summary": "The saved fork review result has arrived. Its findings and thread history are being assessed against current upstream source. No completed review, validated suggestion, build, or approval is claimed by this progress checkpoint.",
-  "generated_at": "2026-10-10T04:35:00.6015503Z",
-  "track": "review",
-  "freshness": {
-    "needs_revalidation": true,
-    "checkpoint_at": "2026-10-10T04:35:00.6015503Z"
-  },
   "number": 50957,
-  "proposed_comments": [],
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
   "url": "https://github.com/microsoft/PowerToys/pull/50957",
   "title": "ZoomIt: Fix LiveZoom taskbar duplication on Windows 11",
-  "workflow": {
-    "checkpoint_at": "2026-10-10T04:35:00.6015503Z",
-    "phase": "reviewing_findings",
-    "request": {
-      "matching_review_submitted": true,
-      "submitted_review_id": 5477555311,
-      "submitted_at": "2026-10-10T12:25:14+08:00",
-      "requested_at": "2026-10-10T12:09:47+08:00",
-      "after_review_id": 5477498708,
-      "fork_head_sha": "4bc2c7125ff0cb21c42e58d73596efa707950db6"
+  "author": "SecondBrekfast",
+  "head_sha": "fdfd8d57de0cf9d7184d2a223b188212d103023f",
+  "source_updated_at": "2026-10-02T12:21:23Z",
+  "stage": "awaiting_review_approval",
+  "pending_author": false,
+  "proposed_comments": [
+    {
+      "id": "50957-hwnd-cache-query",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "(1/2) Always resolve the current foreground target",
+      "path": "src/modules/ZoomIt/ZoomIt/DemoType.cpp",
+      "start_line": 166,
+      "line": 173,
+      "side": "RIGHT",
+      "confidence": {
+        "score": 90,
+        "rationale": "The actual helper returns its initial false result for a null foreground handle; a stubbed query proves the missing fail-closed comparison. No real input reach claim."
+      },
+      "body": "### (1/2) Always resolve the current foreground target\n\n**Severity:** `medium`\n\nThe cache-hit branch returns before resolving the current PID or querying its token. On the first call with no foreground window, lastHwnd is already nullptr and lastResult is false, so the helper allows instead of taking its documented unknown-target rejection path. The exact helper also keeps a previous result across equal HWND values. Remove the target cache while retaining the process-wide input-integrity limit and fail-closed comparison. Apply both parts together. Controlled API-stub checks cover these helper decisions; actual HWND recycling, UIAccess input, and the complete hook interaction were not reproduced.\n\n```suggestion\n    const HWND hwnd = GetForegroundWindow();\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "50957-remove-hwnd-cache",
+        "title": "Remove the target integrity cache",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "50957-hwnd-cache-result",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "(2/2) Return the freshly queried integrity decision",
+      "path": "src/modules/ZoomIt/ZoomIt/DemoType.cpp",
+      "start_line": 186,
+      "line": 188,
+      "side": "RIGHT",
+      "confidence": {
+        "score": 90,
+        "rationale": "Atomic companion edit removes final references to deleted cache state, preserving zero-query-failure rejection and uiAccess/elevation policy."
+      },
+      "body": "### (2/2) Return the freshly queried integrity decision\n\n**Severity:** `medium`\n\nComplete the paired cache removal by returning the existing fail-closed expression directly. Do not change the medium cap for non-elevated UIAccess processes or the key-up exception. Apply together with part 1.\n\n```suggestion\n    return targetLevel == 0 || ourLevel == 0 || targetLevel > ourLevel;\n```",
+      "in_diff": true,
+      "disposition": "proposed",
+      "selection_group": {
+        "id": "50957-remove-hwnd-cache",
+        "title": "Remove the target integrity cache",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "50957-blocked-injection-marker",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Queue only events that pass the integrity gate",
+      "path": "src/modules/ZoomIt/ZoomIt/DemoType.cpp",
+      "line": 311,
+      "side": "RIGHT",
+      "confidence": {
+        "score": 90,
+        "rationale": "Exact wrappers deterministically enqueue before the introduced gate; controlled dispatch checks show blocked-down markers with zero SendInput calls. Physical-key/hook behavior not claimed."
+      },
+      "body": "### Queue only events that pass the integrity gate\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/ZoomIt/ZoomIt/DemoType.cpp`, `SendKeyInput`, `SendUnicodeKeyDown`, `SendUnicodeKeyUp`, `SendVirtualKeyDown`, and `SendVirtualKeyUp`.\n\n**Problem:** The wrappers call `PushInjection` before entering this new guard. A rejected key-down therefore leaves a queue entry even though `SendInput` was not called. `IsInjected` uses the queue front to classify later hook events. This is a bookkeeping mismatch; actual physical-key pass-through is not reproduced.\n\n**Counterevidence and scope:** Key-ups deliberately pass, focus changes kill the hook, and the controller clears the queue at the start of each session. Those paths do not undo this unsent-event entry within the current session. A pre-existing `SendInput` failure could also leave a marker; that separate failure path is not changed by this remedy.\n\n**Ordered change:** Remove each `PushInjection` call from all four named wrappers. Add exactly one `PushInjection( vK, ch );` in `SendKeyInput` after the integrity guard and before `INPUT` construction/`SendInput`. Keep every wrapper's arguments, including `true` for key-ups. Keep marker-before-dispatch ordering. These edits must be made together; inserting only the central marker would double-queue, and popping an existing queue entry on rejection is unsafe with hook delivery.\n\n**Focused verification:** Check rejected virtual and Unicode key-downs enqueue nothing and call no `SendInput`; allowed key-downs and all key-ups enqueue once before dispatch. Build `src\\modules\\ZoomIt\\ZoomIt\\ZoomIt.vcxproj` and its native references for x64 Debug. Controlled dispatch checks and the exact coordinated native candidate cover that ordering, not signed UIAccess or Explorer/keyboard runtime behavior.",
+      "in_diff": true,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50957",
+      "type": "post_review",
+      "requiresApproval": true,
+      "label": "Post two inline suggestions and one review note",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "fdfd8d57de0cf9d7184d2a223b188212d103023f",
+        "comments": [
+          {
+            "id": "50957-hwnd-cache-query",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "(1/2) Always resolve the current foreground target",
+            "path": "src/modules/ZoomIt/ZoomIt/DemoType.cpp",
+            "start_line": 166,
+            "line": 173,
+            "side": "RIGHT",
+            "confidence": {
+              "score": 90,
+              "rationale": "The actual helper returns its initial false result for a null foreground handle; a stubbed query proves the missing fail-closed comparison. No real input reach claim."
+            },
+            "body": "### (1/2) Always resolve the current foreground target\n\n**Severity:** `medium`\n\nThe cache-hit branch returns before resolving the current PID or querying its token. On the first call with no foreground window, lastHwnd is already nullptr and lastResult is false, so the helper allows instead of taking its documented unknown-target rejection path. The exact helper also keeps a previous result across equal HWND values. Remove the target cache while retaining the process-wide input-integrity limit and fail-closed comparison. Apply both parts together. Controlled API-stub checks cover these helper decisions; actual HWND recycling, UIAccess input, and the complete hook interaction were not reproduced.\n\n```suggestion\n    const HWND hwnd = GetForegroundWindow();\n```",
+            "in_diff": true,
+            "disposition": "proposed",
+            "selection_group": {
+              "id": "50957-remove-hwnd-cache",
+              "title": "Remove the target integrity cache",
+              "position": 1,
+              "total": 2,
+              "atomic": true
+            }
+          },
+          {
+            "id": "50957-hwnd-cache-result",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "(2/2) Return the freshly queried integrity decision",
+            "path": "src/modules/ZoomIt/ZoomIt/DemoType.cpp",
+            "start_line": 186,
+            "line": 188,
+            "side": "RIGHT",
+            "confidence": {
+              "score": 90,
+              "rationale": "Atomic companion edit removes final references to deleted cache state, preserving zero-query-failure rejection and uiAccess/elevation policy."
+            },
+            "body": "### (2/2) Return the freshly queried integrity decision\n\n**Severity:** `medium`\n\nComplete the paired cache removal by returning the existing fail-closed expression directly. Do not change the medium cap for non-elevated UIAccess processes or the key-up exception. Apply together with part 1.\n\n```suggestion\n    return targetLevel == 0 || ourLevel == 0 || targetLevel > ourLevel;\n```",
+            "in_diff": true,
+            "disposition": "proposed",
+            "selection_group": {
+              "id": "50957-remove-hwnd-cache",
+              "title": "Remove the target integrity cache",
+              "position": 2,
+              "total": 2,
+              "atomic": true
+            }
+          },
+          {
+            "id": "50957-blocked-injection-marker",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Queue only events that pass the integrity gate",
+            "path": "src/modules/ZoomIt/ZoomIt/DemoType.cpp",
+            "line": 311,
+            "side": "RIGHT",
+            "confidence": {
+              "score": 90,
+              "rationale": "Exact wrappers deterministically enqueue before the introduced gate; controlled dispatch checks show blocked-down markers with zero SendInput calls. Physical-key/hook behavior not claimed."
+            },
+            "body": "### Queue only events that pass the integrity gate\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/ZoomIt/ZoomIt/DemoType.cpp`, `SendKeyInput`, `SendUnicodeKeyDown`, `SendUnicodeKeyUp`, `SendVirtualKeyDown`, and `SendVirtualKeyUp`.\n\n**Problem:** The wrappers call `PushInjection` before entering this new guard. A rejected key-down therefore leaves a queue entry even though `SendInput` was not called. `IsInjected` uses the queue front to classify later hook events. This is a bookkeeping mismatch; actual physical-key pass-through is not reproduced.\n\n**Counterevidence and scope:** Key-ups deliberately pass, focus changes kill the hook, and the controller clears the queue at the start of each session. Those paths do not undo this unsent-event entry within the current session. A pre-existing `SendInput` failure could also leave a marker; that separate failure path is not changed by this remedy.\n\n**Ordered change:** Remove each `PushInjection` call from all four named wrappers. Add exactly one `PushInjection( vK, ch );` in `SendKeyInput` after the integrity guard and before `INPUT` construction/`SendInput`. Keep every wrapper's arguments, including `true` for key-ups. Keep marker-before-dispatch ordering. These edits must be made together; inserting only the central marker would double-queue, and popping an existing queue entry on rejection is unsafe with hook delivery.\n\n**Focused verification:** Check rejected virtual and Unicode key-downs enqueue nothing and call no `SendInput`; allowed key-downs and all key-ups enqueue once before dispatch. Build `src\\modules\\ZoomIt\\ZoomIt\\ZoomIt.vcxproj` and its native references for x64 Debug. Controlled dispatch checks and the exact coordinated native candidate cover that ordering, not signed UIAccess or Explorer/keyboard runtime behavior.",
+            "in_diff": true,
+            "disposition": "proposed"
+          }
+        ]
+      },
+      "head_sha": "fdfd8d57de0cf9d7184d2a223b188212d103023f",
+      "source_updated_at": "2026-10-02T12:21:23Z"
+    }
+  ],
+  "validation": {
+    "result": "passed",
+    "scope": "Pure atomic cache literal and separate coordinated marker remedy",
+    "limits": "Focused x64 Debug ZoomIt/ZoomItBreak/native reference compile/link and controlled unchanged-function API/queue-stub checks only. No OS input emitted, real HWND reuse, low-level-hook physical-key pass-through, focus/timing/UI/LiveZoom/taskbar behavior, signed UIAccess runtime, secure-location install, elevation, certificate trust, or full-product validation. No signing property enabled. Spectre mitigation disabled invocation-locally; no source/analyzer suppression added.",
+    "warning_note": "Initial native compilation emitted D9030 and a no-vectorization notice; its missing resource failure and successful prerequisite retry are preserved. No blanket zero-warning claim.",
+    "suggestion_patch": {
+      "minimal_ranges_reviewed": true,
+      "result": "passed",
+      "commands": [
+        "MSBuild.exe src\\modules\\ZoomIt\\ZoomIt\\ZoomIt.vcxproj /p:Configuration=Debug /p:Platform=x64 /restore /p:RestorePackagesConfig=true /p:SpectreMitigation=false"
+      ],
+      "head_sha": "fdfd8d57de0cf9d7184d2a223b188212d103023f",
+      "detail": "Independent raw-public reconstruction matches actual before/after compiler snapshots and preserved native output. Only the two cache literals are included.",
+      "applied_comment_ids": [
+        "50957-hwnd-cache-query",
+        "50957-hwnd-cache-result"
+      ]
+    },
+    "line_ending_safety": {
+      "files": [
+        {
+          "path": "src/modules/ZoomIt/ZoomIt/DemoType.cpp",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 1544,
+          "cr_only_count": 0,
+          "lineEndings": "lf"
+        }
+      ],
+      "result": "passed",
+      "head_sha": "fdfd8d57de0cf9d7184d2a223b188212d103023f",
+      "checked_comment_ids": [
+        "50957-hwnd-cache-query",
+        "50957-hwnd-cache-result"
+      ]
+    },
+    "broader_fix": {
+      "result": "passed",
+      "head_sha": "fdfd8d57de0cf9d7184d2a223b188212d103023f",
+      "scope": "Separate compiled and linked coordinated marker remedy; not represented as a literal public suggestion."
     }
   },
-  "actions": [],
-  "status": {
-    "label": "Review result being assessed",
-    "glyph": "...",
-    "detail": "The exact saved request returned a matching result; this is no longer an external cloud wait. The assigned worker is assessing the result before final scoped validation and drafting."
+  "review_coverage": {
+    "requests_used": 5,
+    "cap": 5,
+    "latest_consumed_review_id": 5477555311,
+    "latest_actual_effort": "Lite",
+    "full_agentic_obtained": false,
+    "unresolved_threads": 0,
+    "coverage_source": "saved prior exhaustive receipt",
+    "new_request": false,
+    "cloud_clean": false,
+    "cloud_complete": false,
+    "approval_ready": false
   },
-  "evaluated_at": "2026-10-10T04:35:00.6015503Z",
-  "head_sha": "fdfd8d57de0cf9d7184d2a223b188212d103023f",
-  "pending_author": false,
-  "owes": "us",
-  "stage": "review_in_progress"
+  "schemaVersion": 5,
+  "generated_at": "2026-10-10T06:30:24.9404574Z",
+  "evaluated_at": "2026-10-10T06:30:24.9404574Z",
+  "summary": "Three grounded comments cover two roots: a two-member atomic literal removes the HWND-only integrity cache and an implementation-ready inline note relocates injection markers after the rejection gate with coordinated wrapper edits. Pure cache literals and the separate complete marker remedy were actually compiled and linked. Controlled unchanged-function API/queue stubs demonstrate helper bookkeeping, not real HWND recycling, physical-key pass-through, focus, UIAccess or signed-runtime behavior. Five requests consumed; final actual Lite/startup-timeout is not approval.",
+  "workflow": {
+    "cap_reached": true,
+    "final_requested_result_consumed": true,
+    "checkpoint_at": "2026-10-10T06:30:24.9404574Z",
+    "phase": "awaiting_review_approval"
+  }
 }

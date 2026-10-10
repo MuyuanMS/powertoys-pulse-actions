@@ -1,31 +1,751 @@
 {
-  "actions": [],
-  "track": "review",
-  "proposed_comments": [],
-  "stage": "review_in_progress",
-  "source_updated_at": "2026-10-09T22:55:26Z",
-  "url": "https://github.com/microsoft/PowerToys/pull/50834",
-  "pending_author": false,
-  "summary": "The author pushed a new revision. Earlier suggestion and build evidence is not current; review findings must be reconciled and validated on this head. Previous actions are withheld.",
-  "next_action": "Continue the assigned current-head review; no maintainer posting action is available from this checkpoint.",
-  "kind": "pr",
+  "schemaVersion": 5,
   "number": 50834,
-  "evaluated_at": "2026-10-09T23:47:27.5238719Z",
-  "freshness": {
-    "needs_revalidation": true,
-    "checkpoint_at": "2026-10-09T23:47:27.5238719Z"
-  },
-  "generated_at": "2026-10-09T23:47:27.5238719Z",
-  "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-09T23:47:27.5238719Z"
-  },
-  "owes": "us",
-  "status": {
-    "detail": "The author pushed a new revision. Earlier suggestion and build evidence is not current; review findings must be reconciled and validated on this head. Previous actions are withheld.",
-    "glyph": "...",
-    "label": "New revision being reviewed"
-  },
+  "kind": "pr",
+  "track": "review",
+  "stage": "awaiting_review_approval",
+  "owes": "maintainer",
+  "pending_author": false,
+  "generated_at": "2026-10-10T06:27:00.3430638Z",
+  "evaluated_at": "2026-10-10T06:27:00.3430638Z",
+  "source_updated_at": "2026-10-09T22:55:26Z",
+  "head_sha": "60b7617be093f04eb66680de333bc2b3736c35d8",
   "title": "[Advanced Paste] Add headless CLI for Advanced Paste actions",
-  "head_sha": "60b7617be093f04eb66680de333bc2b3736c35d8"
+  "url": "https://github.com/microsoft/PowerToys/pull/50834",
+  "status": {
+    "glyph": "review",
+    "label": "Current-head COMMENT draft; focused suggestion builds passed",
+    "detail": "Fourteen comments, eleven literal suggestions; corrected actual raw-LF CLI inputs compiled and fresh outputs verified. Three selectable units plus combined proof. No UI/runtime or clean full-suite claim."
+  },
+  "next_action": {
+    "glyph": "review",
+    "label": "Review the COMMENT draft and current CI status",
+    "reason": "The current-head COMMENT draft and literal suggestions are grounded and validated. Three current CI checks failed; a separate maintainer-approved rerun proposal is available."
+  },
+  "confidence": "High",
+  "needs_revalidation": true,
+  "proposed_comments": [
+    {
+      "id": "cli-file-input-classification-1",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify text and malformed UTF-8 inputs atomically",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+      "line": 48,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (1/7) Defer StorageItems until classification\n**Severity:** `medium`\n\nThe reader currently attaches every file as a StorageItem before deciding whether it is text, so text-file AI input can reach the image decoder. Defer that clipboard format until the binary fallback is selected.\n\n```suggestion\n        // Add StorageItems only after classifying the file as binary.\n```",
+      "confidence": {
+        "score": 93,
+        "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+      },
+      "start_line": 46,
+      "selection_group": {
+        "id": "cli-file-input-classification",
+        "title": "Classify file text and malformed UTF-8 inputs atomically",
+        "position": 1,
+        "total": 7,
+        "atomic": true
+      }
+    },
+    {
+      "id": "cli-file-input-classification-2",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify text and malformed UTF-8 inputs atomically",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+      "line": 49,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (2/7) Decode file text strictly\n**Severity:** `medium`\n\nReplacement-fallback decoding makes a valid U+FFFD indistinguishable from malformed bytes. Use strict UTF-8 decoding so valid text stays text and invalid byte sequences take the binary fallback.\n\n```suggestion\n        using var reader = new StreamReader(inputFile.OpenRead(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true), detectEncodingFromByteOrderMarks: true);\n```",
+      "confidence": {
+        "score": 93,
+        "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+      },
+      "start_line": 49,
+      "selection_group": {
+        "id": "cli-file-input-classification",
+        "title": "Classify file text and malformed UTF-8 inputs atomically",
+        "position": 2,
+        "total": 7,
+        "atomic": true
+      }
+    },
+    {
+      "id": "cli-file-input-classification-3",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify text and malformed UTF-8 inputs atomically",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+      "line": 51,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (3/7) Preserve binary fallback for malformed sample bytes\n**Severity:** `medium`\n\nMalformed UTF-8 can be encountered while reading the initial sample. Catch that decoder failure and expose the original file as a StorageItem instead of returning replacement-decoded text.\n\n```suggestion\n        int sampleLength;\n        try\n        {\n            sampleLength = await reader.ReadAsync(sample.AsMemory(), cancellationToken);\n        }\n        catch (DecoderFallbackException)\n        {\n            return await CreateFilePackageViewAsync(package, inputFile);\n        }\n\n```",
+      "confidence": {
+        "score": 93,
+        "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+      },
+      "start_line": 51,
+      "selection_group": {
+        "id": "cli-file-input-classification",
+        "title": "Classify file text and malformed UTF-8 inputs atomically",
+        "position": 3,
+        "total": 7,
+        "atomic": true
+      }
+    },
+    {
+      "id": "cli-file-input-classification-4",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify text and malformed UTF-8 inputs atomically",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+      "line": 54,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (4/7) Keep non-text files on the binary path\n**Severity:** `medium`\n\nWhen the sample contains binary data, the package still needs its StorageItem representation. Route this branch through the shared binary-file package helper after moving StorageItem creation out of the unconditional path.\n\n```suggestion\n            return await CreateFilePackageViewAsync(package, inputFile);\n```",
+      "confidence": {
+        "score": 93,
+        "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+      },
+      "start_line": 54,
+      "selection_group": {
+        "id": "cli-file-input-classification",
+        "title": "Classify file text and malformed UTF-8 inputs atomically",
+        "position": 4,
+        "total": 7,
+        "atomic": true
+      }
+    },
+    {
+      "id": "cli-file-input-classification-5",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify text and malformed UTF-8 inputs atomically",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+      "line": 83,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (5/7) Accept valid U+FFFD characters\n**Severity:** `medium`\n\nU+FFFD is valid Unicode and cannot identify malformed bytes after replacement decoding. Strict UTF-8 decoding now detects malformed sequences, so the text heuristic should retain this character.\n\n```suggestion\n\n                // U+FFFD is valid Unicode; strict UTF-8 decoding handles malformed bytes.\n```",
+      "confidence": {
+        "score": 93,
+        "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+      },
+      "start_line": 83,
+      "selection_group": {
+        "id": "cli-file-input-classification",
+        "title": "Classify file text and malformed UTF-8 inputs atomically",
+        "position": 5,
+        "total": 7,
+        "atomic": true
+      }
+    },
+    {
+      "id": "cli-file-input-classification-6",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify text and malformed UTF-8 inputs atomically",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+      "line": 64,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (6/7) Preserve fallback for malformed bytes after the sample\n**Severity:** `medium`\n\nInvalid UTF-8 can occur after the initial sample as well. Apply the same binary fallback around the bounded remainder read so partial text is not returned for a malformed file.\n\n```suggestion\n        try\n        {\n            textBuilder.Append(await ReadBoundedAsync(reader, maximumTextCharacters - sampleLength, cancellationToken));\n        }\n        catch (DecoderFallbackException)\n        {\n            return await CreateFilePackageViewAsync(package, inputFile);\n        }\n\n```",
+      "confidence": {
+        "score": 93,
+        "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+      },
+      "start_line": 64,
+      "selection_group": {
+        "id": "cli-file-input-classification",
+        "title": "Classify file text and malformed UTF-8 inputs atomically",
+        "position": 6,
+        "total": 7,
+        "atomic": true
+      }
+    },
+    {
+      "id": "cli-file-input-classification-7",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Classify text and malformed UTF-8 inputs atomically",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+      "line": 93,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (7/7) Share the binary-file package fallback\n**Severity:** `medium`\n\nThe non-text and decoder-failure branches need to create the same StorageItem-backed package. Add one helper for that shared behavior and retain the existing bounded reader below it.\n\n```suggestion\n    private static async Task<DataPackageView> CreateFilePackageViewAsync(DataPackage package, FileInfo inputFile)\n    {\n        var storageFile = await StorageFile.GetFileFromPathAsync(inputFile.FullName);\n        package.SetStorageItems([storageFile]);\n        return package.GetView();\n    }\n\n    private static async Task<string> ReadBoundedAsync(TextReader reader, int maximumCharacters, CancellationToken cancellationToken)\n```",
+      "confidence": {
+        "score": 93,
+        "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+      },
+      "start_line": 93,
+      "selection_group": {
+        "id": "cli-file-input-classification",
+        "title": "Classify file text and malformed UTF-8 inputs atomically",
+        "position": 7,
+        "total": 7,
+        "atomic": true
+      }
+    },
+    {
+      "id": "unknown-service-policy",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Apply the OpenAI policy to unknown provider types",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.Engine/AdvancedPastePolicy.cs",
+      "line": 24,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Apply the OpenAI policy to unknown provider types\n**Severity:** `high`\n\n`IsProviderAllowed` leaves `AIServiceType.Unknown` unchanged and the switch falls through to `true`, but provider construction normalizes that value to OpenAI. An unknown-configured provider can therefore pass this policy check while OpenAI is disabled. Normalize before metadata lookup and the provider-specific GPO switch.\n\n```suggestion\n        var serviceType = provider.ServiceType.ToAIServiceType();\n        if (serviceType == AIServiceType.Unknown)\n        {\n            serviceType = AIServiceType.OpenAI;\n        }\n\n```",
+      "confidence": {
+        "score": 95,
+        "rationale": "The policy fallthrough and the existing Unknown-to-OpenAI normalization are both explicit in the pinned source."
+      }
+    },
+    {
+      "id": "cli-policy-before-host-1",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Honor the disabled policy before initializing and listing CLI actions",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+      "line": 63,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (1/3) Check policy before building the CLI host\n**Severity:** `medium`\n\n`Main` constructs the engine host before checking whether Advanced Paste is disabled. Return the stable policy error before host initialization so the disabled CLI does not load the engine.\n\n```suggestion\n        if (TryWritePolicyDisabledError(args, Console.Error, AdvancedPastePolicy.IsAdvancedPasteEnabled))\n        {\n            LogCLITelemetry(GetTelemetryCommandName(args), successful: false, loggerInitialized: false);\n            return RuntimeErrorExitCode;\n        }\n\n        using var cancellationSource = new CancellationTokenSource();\n```",
+      "confidence": {
+        "score": 87,
+        "rationale": "The unguarded startup and list control-flow paths are explicit; direct Program-level behavioral coverage is limited by the local GPO COM registration environment."
+      },
+      "selection_group": {
+        "id": "cli-policy-guards",
+        "title": "Enforce the global CLI policy before host initialization and action listing",
+        "position": 1,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "cli-policy-before-host-2",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Honor the disabled policy before initializing and listing CLI actions",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+      "line": 211,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (2/3) Guard the actions-list path\n**Severity:** `medium`\n\nThe actions-list branch returns descriptors before `ExecuteAsync` applies its policy guard. Use the same stable disabled-policy response before listing action identifiers.\n\n```suggestion\n        if (TryWritePolicyDisabledError(args, stderr, AdvancedPastePolicy.IsAdvancedPasteEnabled))\n        {\n            return RuntimeErrorExitCode;\n        }\n\n        if (parseResult.CommandResult.Command.Name == \"list\")\n```",
+      "confidence": {
+        "score": 87,
+        "rationale": "The unguarded startup and list control-flow paths are explicit; direct Program-level behavioral coverage is limited by the local GPO COM registration environment."
+      },
+      "selection_group": {
+        "id": "cli-policy-guards",
+        "title": "Enforce the global CLI policy before host initialization and action listing",
+        "position": 2,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "cli-policy-before-host-3",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Honor the disabled policy before initializing and listing CLI actions",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+      "line": 359,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### (3/3) Reuse one stable disabled-policy response\n**Severity:** `medium`\n\nBoth entry points need the same JSON-or-human-readable `disabled_by_policy` response. Add one helper so the startup and list guards cannot drift.\n\n```suggestion\n    internal static bool TryWritePolicyDisabledError(string[] args, TextWriter stderr, bool policyEnabled)\n    {\n        if (policyEnabled)\n        {\n            return false;\n        }\n\n        WriteError(stderr, IsJsonRequested(args), \"disabled_by_policy\", \"Advanced Paste is disabled by policy.\");\n        return true;\n    }\n\n    internal static bool TryInitializeLogger(Action initializeLogger)\n```",
+      "confidence": {
+        "score": 87,
+        "rationale": "The unguarded startup and list control-flow paths are explicit; direct Program-level behavioral coverage is limited by the local GPO COM registration environment."
+      },
+      "selection_group": {
+        "id": "cli-policy-guards",
+        "title": "Enforce the global CLI policy before host initialization and action listing",
+        "position": 3,
+        "total": 3,
+        "atomic": true
+      }
+    },
+    {
+      "id": "stale-clipboard-output-cleanup",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Preserve temp files still referenced by the clipboard",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+      "line": 77,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Preserve temp files still referenced by the clipboard\n**Severity:** `medium`\n\nThe CLI runs this one-day cleanup before reading the current clipboard or selected input. File-output actions place generated files in owned temp directories and publish their paths as file-drop items, so an unchanged clipboard can still point to a file the next CLI invocation deletes. Protect paths referenced by the clipboard, selected input, and selected output before deleting old owned files, and cover the age threshold with a regression test.",
+      "confidence": {
+        "score": 94,
+        "rationale": "The new cleanup call, file-output creation, clipboard publication, and age-based deletion are traced in the exact source; the threshold-specific clipboard scenario was not run end-to-end."
+      }
+    },
+    {
+      "id": "html-only-cli-actions",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "Allow HTML-only clipboard input for text-compatible actions",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/AdvancedPasteRuntime.cs",
+      "line": 63,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Allow HTML-only clipboard input for text-compatible actions\n**Severity:** `medium`\n\nThe new CLI can read an HTML-only clipboard package and `GetTextOrHtmlTextAsync` can supply its text, but `PasteFormat.IsEnabled` relies on `SupportedClipboardFormats`: Markdown declares only Text and CustomTextTransformation declares Text|Image. The runtime therefore rejects HTML-only input before those text-compatible actions execute. Add Html to both existing metadata entries and cover Markdown and custom-AI HTML-only input.",
+      "confidence": {
+        "score": 90,
+        "rationale": "The runtime format gate, metadata omissions, and existing HTML-to-text reader are explicit in the pinned source and focused candidate tests cover both actions."
+      }
+    },
+    {
+      "id": "moderation-openai-policy",
+      "kind": "inline",
+      "severity": "high",
+      "title": "Respect OpenAI policy before sending Azure prompts to moderation",
+      "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/AdvancedPasteRuntime.cs",
+      "line": 68,
+      "side": "RIGHT",
+      "in_diff": true,
+      "body": "### Respect OpenAI policy before sending Azure prompts to moderation\n**Severity:** `high`\n\nThis new CLI route reaches `CustomActionTransformService`, which calls `PromptModerationService` for Azure OpenAI when moderation is enabled. The moderation service always submits the prompt to OpenAI, while the Azure provider can be allowed under its Azure GPO when OpenAI is disabled. That sends prompt content to OpenAI despite the OpenAI policy. Check the OpenAI/online-AI policy before refreshing moderation credentials or making the request, and test Azure with moderation enabled while OpenAI is disabled.",
+      "confidence": {
+        "score": 91,
+        "rationale": "The pinned call path and provider-specific policy distinction are explicit; no external moderation request was issued."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-50834",
+      "type": "post_review",
+      "label": "Post grounded inline suggestions and comments",
+      "primary": true,
+      "confirm": true,
+      "requiresApproval": true,
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50834,
+        "event": "COMMENT",
+        "head_sha": "60b7617be093f04eb66680de333bc2b3736c35d8",
+        "comments": [
+          {
+            "id": "cli-file-input-classification-1",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Classify text and malformed UTF-8 inputs atomically",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+            "line": 48,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (1/7) Defer StorageItems until classification\n**Severity:** `medium`\n\nThe reader currently attaches every file as a StorageItem before deciding whether it is text, so text-file AI input can reach the image decoder. Defer that clipboard format until the binary fallback is selected.\n\n```suggestion\n        // Add StorageItems only after classifying the file as binary.\n```",
+            "confidence": {
+              "score": 93,
+              "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+            },
+            "start_line": 46,
+            "selection_group": {
+              "id": "cli-file-input-classification",
+              "title": "Classify file text and malformed UTF-8 inputs atomically",
+              "position": 1,
+              "total": 7,
+              "atomic": true
+            }
+          },
+          {
+            "id": "cli-file-input-classification-2",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Classify text and malformed UTF-8 inputs atomically",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+            "line": 49,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (2/7) Decode file text strictly\n**Severity:** `medium`\n\nReplacement-fallback decoding makes a valid U+FFFD indistinguishable from malformed bytes. Use strict UTF-8 decoding so valid text stays text and invalid byte sequences take the binary fallback.\n\n```suggestion\n        using var reader = new StreamReader(inputFile.OpenRead(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true), detectEncodingFromByteOrderMarks: true);\n```",
+            "confidence": {
+              "score": 93,
+              "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+            },
+            "start_line": 49,
+            "selection_group": {
+              "id": "cli-file-input-classification",
+              "title": "Classify file text and malformed UTF-8 inputs atomically",
+              "position": 2,
+              "total": 7,
+              "atomic": true
+            }
+          },
+          {
+            "id": "cli-file-input-classification-3",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Classify text and malformed UTF-8 inputs atomically",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+            "line": 51,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (3/7) Preserve binary fallback for malformed sample bytes\n**Severity:** `medium`\n\nMalformed UTF-8 can be encountered while reading the initial sample. Catch that decoder failure and expose the original file as a StorageItem instead of returning replacement-decoded text.\n\n```suggestion\n        int sampleLength;\n        try\n        {\n            sampleLength = await reader.ReadAsync(sample.AsMemory(), cancellationToken);\n        }\n        catch (DecoderFallbackException)\n        {\n            return await CreateFilePackageViewAsync(package, inputFile);\n        }\n\n```",
+            "confidence": {
+              "score": 93,
+              "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+            },
+            "start_line": 51,
+            "selection_group": {
+              "id": "cli-file-input-classification",
+              "title": "Classify file text and malformed UTF-8 inputs atomically",
+              "position": 3,
+              "total": 7,
+              "atomic": true
+            }
+          },
+          {
+            "id": "cli-file-input-classification-4",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Classify text and malformed UTF-8 inputs atomically",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+            "line": 54,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (4/7) Keep non-text files on the binary path\n**Severity:** `medium`\n\nWhen the sample contains binary data, the package still needs its StorageItem representation. Route this branch through the shared binary-file package helper after moving StorageItem creation out of the unconditional path.\n\n```suggestion\n            return await CreateFilePackageViewAsync(package, inputFile);\n```",
+            "confidence": {
+              "score": 93,
+              "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+            },
+            "start_line": 54,
+            "selection_group": {
+              "id": "cli-file-input-classification",
+              "title": "Classify file text and malformed UTF-8 inputs atomically",
+              "position": 4,
+              "total": 7,
+              "atomic": true
+            }
+          },
+          {
+            "id": "cli-file-input-classification-5",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Classify text and malformed UTF-8 inputs atomically",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+            "line": 83,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (5/7) Accept valid U+FFFD characters\n**Severity:** `medium`\n\nU+FFFD is valid Unicode and cannot identify malformed bytes after replacement decoding. Strict UTF-8 decoding now detects malformed sequences, so the text heuristic should retain this character.\n\n```suggestion\n\n                // U+FFFD is valid Unicode; strict UTF-8 decoding handles malformed bytes.\n```",
+            "confidence": {
+              "score": 93,
+              "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+            },
+            "start_line": 83,
+            "selection_group": {
+              "id": "cli-file-input-classification",
+              "title": "Classify file text and malformed UTF-8 inputs atomically",
+              "position": 5,
+              "total": 7,
+              "atomic": true
+            }
+          },
+          {
+            "id": "cli-file-input-classification-6",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Classify text and malformed UTF-8 inputs atomically",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+            "line": 64,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (6/7) Preserve fallback for malformed bytes after the sample\n**Severity:** `medium`\n\nInvalid UTF-8 can occur after the initial sample as well. Apply the same binary fallback around the bounded remainder read so partial text is not returned for a malformed file.\n\n```suggestion\n        try\n        {\n            textBuilder.Append(await ReadBoundedAsync(reader, maximumTextCharacters - sampleLength, cancellationToken));\n        }\n        catch (DecoderFallbackException)\n        {\n            return await CreateFilePackageViewAsync(package, inputFile);\n        }\n\n```",
+            "confidence": {
+              "score": 93,
+              "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+            },
+            "start_line": 64,
+            "selection_group": {
+              "id": "cli-file-input-classification",
+              "title": "Classify file text and malformed UTF-8 inputs atomically",
+              "position": 6,
+              "total": 7,
+              "atomic": true
+            }
+          },
+          {
+            "id": "cli-file-input-classification-7",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Classify text and malformed UTF-8 inputs atomically",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+            "line": 93,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (7/7) Share the binary-file package fallback\n**Severity:** `medium`\n\nThe non-text and decoder-failure branches need to create the same StorageItem-backed package. Add one helper for that shared behavior and retain the existing bounded reader below it.\n\n```suggestion\n    private static async Task<DataPackageView> CreateFilePackageViewAsync(DataPackage package, FileInfo inputFile)\n    {\n        var storageFile = await StorageFile.GetFileFromPathAsync(inputFile.FullName);\n        package.SetStorageItems([storageFile]);\n        return package.GetView();\n    }\n\n    private static async Task<string> ReadBoundedAsync(TextReader reader, int maximumCharacters, CancellationToken cancellationToken)\n```",
+            "confidence": {
+              "score": 93,
+              "rationale": "The changed file-reader path, text/image consumers, and both decoder failure points are directly traceable; focused candidate tests exercise the distinct text and malformed-byte cases."
+            },
+            "start_line": 93,
+            "selection_group": {
+              "id": "cli-file-input-classification",
+              "title": "Classify file text and malformed UTF-8 inputs atomically",
+              "position": 7,
+              "total": 7,
+              "atomic": true
+            }
+          },
+          {
+            "id": "unknown-service-policy",
+            "kind": "inline",
+            "severity": "high",
+            "title": "Apply the OpenAI policy to unknown provider types",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.Engine/AdvancedPastePolicy.cs",
+            "line": 24,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### Apply the OpenAI policy to unknown provider types\n**Severity:** `high`\n\n`IsProviderAllowed` leaves `AIServiceType.Unknown` unchanged and the switch falls through to `true`, but provider construction normalizes that value to OpenAI. An unknown-configured provider can therefore pass this policy check while OpenAI is disabled. Normalize before metadata lookup and the provider-specific GPO switch.\n\n```suggestion\n        var serviceType = provider.ServiceType.ToAIServiceType();\n        if (serviceType == AIServiceType.Unknown)\n        {\n            serviceType = AIServiceType.OpenAI;\n        }\n\n```",
+            "confidence": {
+              "score": 95,
+              "rationale": "The policy fallthrough and the existing Unknown-to-OpenAI normalization are both explicit in the pinned source."
+            }
+          },
+          {
+            "id": "cli-policy-before-host-1",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Honor the disabled policy before initializing and listing CLI actions",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+            "line": 63,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (1/3) Check policy before building the CLI host\n**Severity:** `medium`\n\n`Main` constructs the engine host before checking whether Advanced Paste is disabled. Return the stable policy error before host initialization so the disabled CLI does not load the engine.\n\n```suggestion\n        if (TryWritePolicyDisabledError(args, Console.Error, AdvancedPastePolicy.IsAdvancedPasteEnabled))\n        {\n            LogCLITelemetry(GetTelemetryCommandName(args), successful: false, loggerInitialized: false);\n            return RuntimeErrorExitCode;\n        }\n\n        using var cancellationSource = new CancellationTokenSource();\n```",
+            "confidence": {
+              "score": 87,
+              "rationale": "The unguarded startup and list control-flow paths are explicit; direct Program-level behavioral coverage is limited by the local GPO COM registration environment."
+            },
+            "selection_group": {
+              "id": "cli-policy-guards",
+              "title": "Enforce the global CLI policy before host initialization and action listing",
+              "position": 1,
+              "total": 3,
+              "atomic": true
+            }
+          },
+          {
+            "id": "cli-policy-before-host-2",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Honor the disabled policy before initializing and listing CLI actions",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+            "line": 211,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (2/3) Guard the actions-list path\n**Severity:** `medium`\n\nThe actions-list branch returns descriptors before `ExecuteAsync` applies its policy guard. Use the same stable disabled-policy response before listing action identifiers.\n\n```suggestion\n        if (TryWritePolicyDisabledError(args, stderr, AdvancedPastePolicy.IsAdvancedPasteEnabled))\n        {\n            return RuntimeErrorExitCode;\n        }\n\n        if (parseResult.CommandResult.Command.Name == \"list\")\n```",
+            "confidence": {
+              "score": 87,
+              "rationale": "The unguarded startup and list control-flow paths are explicit; direct Program-level behavioral coverage is limited by the local GPO COM registration environment."
+            },
+            "selection_group": {
+              "id": "cli-policy-guards",
+              "title": "Enforce the global CLI policy before host initialization and action listing",
+              "position": 2,
+              "total": 3,
+              "atomic": true
+            }
+          },
+          {
+            "id": "cli-policy-before-host-3",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Honor the disabled policy before initializing and listing CLI actions",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+            "line": 359,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### (3/3) Reuse one stable disabled-policy response\n**Severity:** `medium`\n\nBoth entry points need the same JSON-or-human-readable `disabled_by_policy` response. Add one helper so the startup and list guards cannot drift.\n\n```suggestion\n    internal static bool TryWritePolicyDisabledError(string[] args, TextWriter stderr, bool policyEnabled)\n    {\n        if (policyEnabled)\n        {\n            return false;\n        }\n\n        WriteError(stderr, IsJsonRequested(args), \"disabled_by_policy\", \"Advanced Paste is disabled by policy.\");\n        return true;\n    }\n\n    internal static bool TryInitializeLogger(Action initializeLogger)\n```",
+            "confidence": {
+              "score": 87,
+              "rationale": "The unguarded startup and list control-flow paths are explicit; direct Program-level behavioral coverage is limited by the local GPO COM registration environment."
+            },
+            "selection_group": {
+              "id": "cli-policy-guards",
+              "title": "Enforce the global CLI policy before host initialization and action listing",
+              "position": 3,
+              "total": 3,
+              "atomic": true
+            }
+          },
+          {
+            "id": "stale-clipboard-output-cleanup",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Preserve temp files still referenced by the clipboard",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+            "line": 77,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### Preserve temp files still referenced by the clipboard\n**Severity:** `medium`\n\nThe CLI runs this one-day cleanup before reading the current clipboard or selected input. File-output actions place generated files in owned temp directories and publish their paths as file-drop items, so an unchanged clipboard can still point to a file the next CLI invocation deletes. Protect paths referenced by the clipboard, selected input, and selected output before deleting old owned files, and cover the age threshold with a regression test.",
+            "confidence": {
+              "score": 94,
+              "rationale": "The new cleanup call, file-output creation, clipboard publication, and age-based deletion are traced in the exact source; the threshold-specific clipboard scenario was not run end-to-end."
+            }
+          },
+          {
+            "id": "html-only-cli-actions",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "Allow HTML-only clipboard input for text-compatible actions",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/AdvancedPasteRuntime.cs",
+            "line": 63,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### Allow HTML-only clipboard input for text-compatible actions\n**Severity:** `medium`\n\nThe new CLI can read an HTML-only clipboard package and `GetTextOrHtmlTextAsync` can supply its text, but `PasteFormat.IsEnabled` relies on `SupportedClipboardFormats`: Markdown declares only Text and CustomTextTransformation declares Text|Image. The runtime therefore rejects HTML-only input before those text-compatible actions execute. Add Html to both existing metadata entries and cover Markdown and custom-AI HTML-only input.",
+            "confidence": {
+              "score": 90,
+              "rationale": "The runtime format gate, metadata omissions, and existing HTML-to-text reader are explicit in the pinned source and focused candidate tests cover both actions."
+            }
+          },
+          {
+            "id": "moderation-openai-policy",
+            "kind": "inline",
+            "severity": "high",
+            "title": "Respect OpenAI policy before sending Azure prompts to moderation",
+            "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/AdvancedPasteRuntime.cs",
+            "line": 68,
+            "side": "RIGHT",
+            "in_diff": true,
+            "body": "### Respect OpenAI policy before sending Azure prompts to moderation\n**Severity:** `high`\n\nThis new CLI route reaches `CustomActionTransformService`, which calls `PromptModerationService` for Azure OpenAI when moderation is enabled. The moderation service always submits the prompt to OpenAI, while the Azure provider can be allowed under its Azure GPO when OpenAI is disabled. That sends prompt content to OpenAI despite the OpenAI policy. Check the OpenAI/online-AI policy before refreshing moderation credentials or making the request, and test Azure with moderation enabled while OpenAI is disabled.",
+            "confidence": {
+              "score": 91,
+              "rationale": "The pinned call path and provider-specific policy distinction are explicit; no external moderation request was issued."
+            }
+          }
+        ]
+      },
+      "note": "Draft only. All comments are pinned to the current head; explicit maintainer approval is required. No upstream review has been posted."
+    },
+    {
+      "id": "trigger-ci-50834",
+      "type": "trigger_ci",
+      "label": "Request Azure Pipelines rerun",
+      "primary": false,
+      "confirm": true,
+      "requiresApproval": true,
+      "head_sha": "60b7617be093f04eb66680de333bc2b3736c35d8",
+      "comment": {
+        "body": "/azp run"
+      },
+      "note": "Three current-head CI checks failed. This action is a maintainer-clickable proposal only; no rerun was requested."
+    }
+  ],
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "previous_phase": "building",
+    "checkpoint_at": "2026-10-10T06:27:00.3430638Z",
+    "advancement_evidence": [
+      "Grounded the proposed findings against the current upstream source and pinned the draft to the live head.",
+      "Current CI has 14 checks: 11 succeeded and 3 failed; a maintainer-clickable /azp run proposal is available but has not been posted.",
+      "Built the exact literal suggestion candidate with the repository build scripts for AdvancedPaste.Engine and AdvancedPaste.CLI.",
+      "Recorded the focused test outcomes and environment/runtime limitations without claiming unperformed E2E validation."
+    ]
+  },
+  "freshness": {
+    "headRefOid": "60b7617be093f04eb66680de333bc2b3736c35d8",
+    "updatedAt": "2026-10-09T22:55:26Z",
+    "checkedAt": "2026-10-10T03:33:05Z"
+  },
+  "validation": {
+    "upstream_head": {
+      "head_sha": "60b7617be093f04eb66680de333bc2b3736c35d8",
+      "result": "failed",
+      "evidence": "Live current-head check runs: 14 total, 11 successful, 3 failed (PowerToys CI aggregate and x64 Win10/Win11 test jobs)."
+    },
+    "suggestion_patch": {
+      "head_sha": "60b7617be093f04eb66680de333bc2b3736c35d8",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "cli-file-input-classification-1",
+        "cli-file-input-classification-2",
+        "cli-file-input-classification-3",
+        "cli-file-input-classification-4",
+        "cli-file-input-classification-5",
+        "cli-file-input-classification-6",
+        "cli-file-input-classification-7",
+        "unknown-service-policy",
+        "cli-policy-before-host-1",
+        "cli-policy-before-host-2",
+        "cli-policy-before-host-3"
+      ],
+      "patch_sha256": "9f29935aa3631ba11e6daaac61b63195947f574715b9fb747885bb9c6adc44db",
+      "patch_path": "literal-suggestions-50834-60b7617.patch",
+      "commands": [
+        "MSBuild.exe src\\modules\\AdvancedPaste\\AdvancedPaste.CLI\\AdvancedPaste.CLI.csproj \"/t:ResolveReferences;Compile\" /p:Configuration=Debug /p:Platform=x64 /p:BuildProjectReferences=false /p:BuildTests=false"
+      ],
+      "result_detail": "The exact current-head candidate contains only the literal proposed suggestions. Native CppWinRT and ImplementationLibrary packages.config dependencies were restored before the repository-standard targeted builds.",
+      "broader_candidate_tests": {
+        "cli_unit_tests": "56 passed, 30 failed of 86; all 30 failures are ProgramTests with REGDB_E_CLASSNOTREG during GPO WinRT activation.",
+        "cli_tests_focused": "Relevant CliInputReaderTests, HTML-only runtime tests, and cleanup tests passed in the broader candidate.",
+        "advanced_paste_unit_tests": "58 passed, 14 skipped of 72.",
+        "unvalidated_behavior": "The Program-level disabled-policy test is blocked by unregistered GPO WinRT activation; interactive clipboard E2E and live moderation network behavior were not run."
+      },
+      "detail": "Actual corrected classification and combined CLI compiler inputs and fresh outputs verified; unchanged Engine and separate policy/unknown-unit raw source and outputs retained. Original failed StyleCop attempts preserved. No new Engine or runtime claim.",
+      "independent_selectable_units": [
+        "cli-file-input-classification",
+        "cli-policy-guards",
+        "unknown-service-policy"
+      ]
+    },
+    "line_ending_safety": {
+      "head_sha": "60b7617be093f04eb66680de333bc2b3736c35d8",
+      "result": "passed",
+      "checked_comment_ids": [
+        "cli-file-input-classification-1",
+        "cli-file-input-classification-2",
+        "cli-file-input-classification-3",
+        "cli-file-input-classification-4",
+        "cli-file-input-classification-5",
+        "cli-file-input-classification-6",
+        "cli-file-input-classification-7",
+        "unknown-service-policy",
+        "cli-policy-before-host-1",
+        "cli-policy-before-host-2",
+        "cli-policy-before-host-3"
+      ],
+      "files": [
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/CliInputReader.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 126,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPaste.CLI/Program.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 518,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/AdvancedPaste/AdvancedPaste.Engine/AdvancedPastePolicy.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 43,
+          "cr_only_count": 0
+        }
+      ]
+    },
+    "limits": [
+      "CLI scoped compilation excludes copying unbuilt UI apphost; no UI PRI/package/E2E/moderation execution.",
+      "58 pass/14 skip broader results and 56 pass/30 COM activation failures are older same-head evidence, not new public-literal tests.",
+      "Twenty-one historical requests already exhausted the cap; no reset, new request, transferred cloud convergence or approval.",
+      "Inherited read-only flags caused the first coordinator materialization attempt to stop before compilation. Only the new isolated copies were made writable; old sealed roots and receipts stayed frozen."
+    ]
+  },
+  "upstream_safety": {
+    "public_actions_taken": false,
+    "detail": "No review, comment, CI request, or other write has been made to microsoft/PowerToys."
+  },
+  "summary": "Fourteen source-grounded review comments, including eleven apply-ready blocks in two atomic groups. The actual raw public reader candidate exposed three StyleCop spacing errors; three formatting-only corrections now compile in fresh isolated classification and combined CLI units. Unchanged policy/unknown-service units and Engine source/output proofs are retained from their actual same-head builds. Prior module tests (58 pass/14 skip) and CLI results (56 pass/30 REGDB_E_CLASSNOTREG failures) are separate, not rerun. No runtime activation, clipboard E2E or cloud-convergence claim."
 }
