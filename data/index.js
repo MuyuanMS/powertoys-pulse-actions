@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T15:20:57.6029299+08:00",
+  "generated_at": "2026-10-10T15:43:40.6137608+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 162,
-    "open_issues": 12642,
-    "community": 11811,
+    "open_issues": 12643,
+    "community": 11812,
     "artifacts": 1133
   },
   "impact": {
-    "as_of": "2026-10-10T15:20:57.6029299+08:00",
+    "as_of": "2026-10-10T15:43:40.6137608+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -2595,7 +2595,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "APPROVED",
       "ci_state": "failed",
-      "merge_state": "UNSTABLE"
+      "merge_state": "UNSTABLE",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 995,
+        "fork_title": "[PR 51062] Build: C++ /permissive- by default; fix all projects except Keyboard Manager and installer",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51062",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/995"
+      }
     },
     {
       "id": "pr-51060",
@@ -149549,6 +149557,39 @@ window.BOARD_INDEX = {
       "created_at": "2021-12-03T21:23:26Z",
       "updated_at": "2026-08-16T21:16:19Z",
       "comments": 19,
+      "priority": null
+    },
+    {
+      "id": "issue-51164",
+      "kind": "issue",
+      "number": 51164,
+      "url": "https://github.com/microsoft/PowerToys/issues/51164",
+      "title": "Command Palette blocks typing \"|\"",
+      "author": "3T1C",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-10T07:28:43Z",
+      "updated_at": "2026-10-10T07:33:18Z",
+      "comments": 1,
       "priority": null
     },
     {
