@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T19:17:14.3236145+08:00",
+  "generated_at": "2026-10-10T19:32:07.0741681+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1134
   },
   "impact": {
-    "as_of": "2026-10-10T19:17:14.3236145+08:00",
+    "as_of": "2026-10-10T19:32:07.0741681+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -3522,7 +3522,10 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve Mouse Without Borders action label"
+      },
       "labels": [
         "Product-Settings",
         "Ready for review"
@@ -5840,14 +5843,17 @@ window.BOARD_INDEX = {
       "is_cmdpal": false,
       "track": "review",
       "stage": "review_ready",
-      "owes": "us",
+      "owes": "maintainer",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": null,
+      "primary_action": {
+        "type": "approve",
+        "label": "Approve Peek plain-text fallback"
+      },
       "labels": [
         "Product-Peek",
         "Ready for review"
@@ -149586,7 +149592,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/51167",
       "title": "Crush",
       "author": "pityonother",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -149603,14 +149609,14 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
+        "Resolution-Duplicate",
         "Needs-Author-Feedback",
-        "Needs-Triage",
         "Product-General"
       ],
       "assignees": [],
       "created_at": "2026-10-10T11:05:55Z",
-      "updated_at": "2026-10-10T11:10:22Z",
-      "comments": 1,
+      "updated_at": "2026-10-10T11:22:23Z",
+      "comments": 3,
       "priority": null
     },
     {
