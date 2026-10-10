@@ -2,29 +2,264 @@
   "number": 49394,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-09T22:56:21.6389953Z",
-  "evaluated_at": "2026-10-09T22:56:21.6389953Z",
-  "source_updated_at": "10/09/2026 22:53:29",
+  "generated_at": "2026-10-10T05:55:39.7259919Z",
+  "evaluated_at": "2026-10-10T05:55:39.7259919Z",
+  "source_updated_at": "2026-10-09T22:53:29Z",
   "head_sha": "54a0614e672f82d4899faf1b0aa285cb996be717",
   "title": "[Quick Accent] New character reference guide to show language set contents",
   "url": "https://github.com/microsoft/PowerToys/pull/49394",
   "status": {
     "glyph": "...",
-    "label": "Review in progress",
-    "detail": "The author removed the stale UnicodeInformation NOTICE entry in a new revision. Previous remaining code proposals are withheld until their exact current-head literal candidate and focused validation are rechecked. Old builds and cloud receipts have not been transferred to the new SHA."
+    "label": "Awaiting maintainer review",
+    "detail": "Six validated literal suggestions; one atomic four-member refresh group. Final isolated Settings and PowerAccent Core builds passed. No UI event-ordering, layout or runtime claim."
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Review the pinned COMMENT draft; select every member of each atomic group together.",
+  "proposed_comments": [
+    {
+      "id": "correct-surrogate-pair-documentation",
+      "kind": "inline",
+      "title": "Distinguish surrogate pairs from multi-code-point strings",
+      "body": "### [P3] Distinguish surrogate pairs from multi-code-point strings\n\n**Severity:** `low`\n\nA UTF-16 surrogate pair encodes one Unicode code point, and this method decodes both code units together. The current XML example therefore conflates UTF-16 representation with code-point count. Use a true multi-code-point example such as `°C` and describe surrogate-pair decoding separately.\n\n```suggestion\n    /// For strings containing multiple code points (e.g. combining sequences or \"°C\"),\n```",
+      "severity": "low",
+      "confidence": {
+        "score": 99,
+        "rationale": "UTF-16 surrogate pairs encode one scalar; the exact implementation decodes both code units with ConvertToUtf32."
+      },
+      "path": "src/modules/poweraccent/PowerAccent.Common/UnicodeHelper.cs",
+      "line": 23,
+      "side": "RIGHT",
+      "start_line": 23,
+      "in_diff": true
+    },
+    {
+      "id": "refresh-guide-retain-localizer",
+      "kind": "inline",
+      "title": "Retain the localizer for rebuilding guide groups",
+      "body": "### [P2] (1/4) Retain the localizer for rebuilding guide groups\n\n**Severity:** `medium`\n\nChanging character sets while this non-modal guide remains open leaves its old selected-set group in place. Apply all four members together; preserve the current search, collection identity, and grouped-view notification.\n\n```suggestion\n        private readonly Func<string, string> _getLocalizedString;\n\n        /// <summary>\n        /// The full unfiltered reference data, built from\n        /// <see cref=\"CharacterMappings.All\"/> using the provided selected language codes.\n        /// </summary>\n        private IReadOnlyList<ReferenceGroupModel> _allGroups;\n```",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "The current caller supplies new codes but the existing-window path leaves constructor-built selection groups unchanged; event/collection refresh is traced in exact source."
+      },
+      "path": "src/settings-ui/Settings.UI/ViewModels/PowerAccentReferenceGuideViewModel.cs",
+      "line": 50,
+      "side": "RIGHT",
+      "start_line": 46,
+      "in_diff": true,
+      "selection_group": {
+        "id": "refresh-reference-guide-selection",
+        "title": "Refresh selected-set groups in the existing reference window",
+        "position": 1,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "refresh-guide-initialize-localizer",
+      "kind": "inline",
+      "title": "Initialize the retained localizer",
+      "body": "### [P2] (2/4) Initialize the retained localizer\n\n**Severity:** `medium`\n\nChanging character sets while this non-modal guide remains open leaves its old selected-set group in place. Apply all four members together; preserve the current search, collection identity, and grouped-view notification.\n\n```suggestion\n            _getLocalizedString = getLocalizedString;\n            _allGroups = BuildGroups(selectedLanguageCodes, _getLocalizedString);\n```",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "The current caller supplies new codes but the existing-window path leaves constructor-built selection groups unchanged; event/collection refresh is traced in exact source."
+      },
+      "path": "src/settings-ui/Settings.UI/ViewModels/PowerAccentReferenceGuideViewModel.cs",
+      "line": 88,
+      "side": "RIGHT",
+      "start_line": 88,
+      "in_diff": true,
+      "selection_group": {
+        "id": "refresh-reference-guide-selection",
+        "title": "Refresh selected-set groups in the existing reference window",
+        "position": 2,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "refresh-guide-update-model",
+      "kind": "inline",
+      "title": "Rebuild and notify the guide's selected-set data",
+      "body": "### [P2] (3/4) Rebuild and notify the guide's selected-set data\n\n**Severity:** `medium`\n\nChanging character sets while this non-modal guide remains open leaves its old selected-set group in place. Apply all four members together; preserve the current search, collection identity, and grouped-view notification.\n\n```suggestion\n        /// <summary>\n        /// Refreshes selected sets while preserving the current search.\n        /// </summary>\n        /// <param name=\"selectedLanguageCodes\">The currently selected language codes.</param>\n        public void UpdateSelectedLanguageCodes(IReadOnlyCollection<string> selectedLanguageCodes)\n        {\n            _allGroups = BuildGroups(selectedLanguageCodes, _getLocalizedString);\n            UpdateFilteredGroups(SearchQuery);\n            OnPropertyChanged(nameof(IsEmpty));\n            FilteredGroupsReplaced?.Invoke(this, EventArgs.Empty);\n        }\n\n        private void UpdateFilteredGroups(string query)\n```",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "The current caller supplies new codes but the existing-window path leaves constructor-built selection groups unchanged; event/collection refresh is traced in exact source."
+      },
+      "path": "src/settings-ui/Settings.UI/ViewModels/PowerAccentReferenceGuideViewModel.cs",
+      "line": 95,
+      "side": "RIGHT",
+      "start_line": 95,
+      "in_diff": true,
+      "selection_group": {
+        "id": "refresh-reference-guide-selection",
+        "title": "Refresh selected-set groups in the existing reference window",
+        "position": 3,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "refresh-open-reference-guide-selection",
+      "kind": "inline",
+      "title": "Pass current selections to the existing guide",
+      "body": "### [P2] (4/4) Pass current selections to the existing guide\n\n**Severity:** `medium`\n\nThe button reads current `SelectedLanguageOptions`, but this branch only foregrounds a window whose groups were built from earlier codes. Refresh its model before foregrounding it. Keep all four coordinated members selected.\n\n```suggestion\n                powerAccentReferenceGuideWindow.ViewModel.UpdateSelectedLanguageCodes(selectedLanguageCodes ?? []);\n                WindowHelpers.BringToForeground(powerAccentReferenceGuideWindow.GetWindowHandle());\n```",
+      "severity": "medium",
+      "confidence": {
+        "score": 91,
+        "rationale": "The current caller supplies new codes but the existing-window path leaves constructor-built selection groups unchanged; event/collection refresh is traced in exact source."
+      },
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/App.xaml.cs",
+      "line": 438,
+      "side": "RIGHT",
+      "start_line": 438,
+      "in_diff": true,
+      "selection_group": {
+        "id": "refresh-reference-guide-selection",
+        "title": "Refresh selected-set groups in the existing reference window",
+        "position": 4,
+        "total": 4,
+        "atomic": true
+      }
+    },
+    {
+      "id": "format-multi-codepoint-descriptions-with-dotted-circle",
+      "kind": "inline",
+      "title": "Preserve non-spacing-mark display in multi-code-point descriptions",
+      "body": "### [P2] Preserve non-spacing-mark display in multi-code-point descriptions\n\n**Severity:** `medium`\n\nThe previous formatter used `GetDisplayText()`, which prefixes non-spacing marks with a dotted circle. Formatting `info.Str` instead loses that prefix for existing multi-code-point mappings such as `V` + U+0307. Preserve the old description text without changing the mapped character, Unicode name, or code-point value. This does not add dotted-circle rendering to the main character selector or set preview.\n\n```suggestion\n            string.Format(\n                CultureInfo.InvariantCulture,\n                \"{0}: (U+{1:X4})\",\n                CharUnicodeInfo.GetUnicodeCategory(info.Str, 0) == UnicodeCategory.NonSpacingMark ? \"\\u25CC\" + info.Str : info.Str,\n                info.CodePoint)));\n```",
+      "severity": "medium",
+      "confidence": {
+        "score": 98,
+        "rationale": "The baseline formatter calls GetDisplayText; the cached old API returns dotted-circle + U+0307. Current source formats raw U+0307 for the existing V + U+0307 mapping."
+      },
+      "path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs",
+      "line": 191,
+      "side": "RIGHT",
+      "start_line": 191,
+      "in_diff": true
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-supported-current-diff-findings",
+      "type": "post_review",
+      "label": "Post six inline suggestions",
+      "note": "Approval required. Two complete atomic groups plus standalone documentation and description-format suggestions.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "54a0614e672f82d4899faf1b0aa285cb996be717"
+      }
+    }
+  ],
+  "validation": {
+    "upstream_head": {
+      "head_sha": "54a0614e672f82d4899faf1b0aa285cb996be717",
+      "result": "passed",
+      "detail": "Focused Settings UI dependency-chain build only."
+    },
+    "suggestion_patch": {
+      "head_sha": "54a0614e672f82d4899faf1b0aa285cb996be717",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "correct-surrogate-pair-documentation",
+        "refresh-guide-retain-localizer",
+        "refresh-guide-initialize-localizer",
+        "refresh-guide-update-model",
+        "refresh-open-reference-guide-selection",
+        "format-multi-codepoint-descriptions-with-dotted-circle"
+      ],
+      "literal_patch_sha256": "60b80b478db5073140e4656ada724fe76b1cd80d18ce4fa267f59bccdff8d4f1",
+      "commands": [
+        "call \"C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul && \"C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe\" <PowerToysCheckout>\\src\\settings-ui\\Settings.UI\\PowerToys.Settings.csproj /p:Configuration=Debug /p:Platform=x64 /restore /p:RestorePackagesConfig=true /p:SolutionDir=<PowerToysCheckout>\\ /p:RestoreRepositoryPath=<PowerToysCheckout>\\packages /p:SpectreMitigation=false /p:UseSharedCompilation=false /nr:false /m:4 /nologo /v:minimal /bl:<local-artifact>",
+        "call \"C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul && \"C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe\" <PowerToysCheckout>\\src\\modules\\poweraccent\\PowerAccent.Core\\PowerAccent.Core.csproj /p:Configuration=Debug /p:Platform=x64 /restore /p:RestorePackagesConfig=true /p:SolutionDir=<PowerToysCheckout>\\ /p:RestoreRepositoryPath=<PowerToysCheckout>\\packages /p:SpectreMitigation=false /p:UseSharedCompilation=false /nr:false /m:4 /nologo /v:minimal /bl:<local-artifact>"
+      ],
+      "independent_selectable_units": [
+        "documentation",
+        "description-format",
+        "refresh-reference-guide-selection"
+      ],
+      "detail": "Actual six selected public blocks reconstructed independently against raw author blobs and actual before/after compiler inputs; Settings and Core outputs rehashed with UTC freshness. Original independent documentation/formatter/refresh unit builds retained."
+    },
+    "line_ending_safety": {
+      "head_sha": "54a0614e672f82d4899faf1b0aa285cb996be717",
+      "result": "passed",
+      "checked_comment_ids": [
+        "correct-surrogate-pair-documentation",
+        "refresh-guide-retain-localizer",
+        "refresh-guide-initialize-localizer",
+        "refresh-guide-update-model",
+        "refresh-open-reference-guide-selection",
+        "format-multi-codepoint-descriptions-with-dotted-circle"
+      ],
+      "files": [
+        {
+          "path": "src/modules/poweraccent/PowerAccent.Common/UnicodeHelper.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 111,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/modules/poweraccent/PowerAccent.Core/PowerAccent.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 454,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/settings-ui/Settings.UI/SettingsXAML/App.xaml.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 489,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/settings-ui/Settings.UI/ViewModels/PowerAccentReferenceGuideViewModel.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 223,
+          "cr_only_count": 0
+        }
+      ]
+    },
+    "tests": {
+      "guide": 9,
+      "pure_model_scenarios": 3,
+      "verbatim_description_comparisons": 6
+    },
+    "limits": [
+      "No WinUI interaction, picker-size runtime reproduction, focus/keyboard/timing, clipboard, accessibility or native ICU loader/security test.",
+      "Nine guide tests, three pure-model regression scenarios and six verbatim-method-source comparisons; not Core startup or the earlier revision's test evidence.",
+      "Historical review cap exhausted; prior cloud results do not prove current-head approval or full-cloud convergence.",
+      "The older eight-item Settings run had 16 unattributed token-recognition notices. The new selected-six minimal Settings/Core console logs contain none; neither console observation is a complete XAML warning audit. Settings PRI output is retained but no UI interaction was executed."
+    ]
+  },
   "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-09T22:56:21.6389953Z"
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-10T05:55:39.7259919Z",
+    "review_coverage": {
+      "historical_rounds": 12,
+      "maximum_rounds": 5,
+      "exhausted": true,
+      "new_requests": 0,
+      "request_pending": false,
+      "current_head_cloud_review": false,
+      "full_cloud_convergence": false,
+      "source_grounded_review": true
+    }
   },
-  "freshness": {
-    "queued_at": "2026-10-09T22:56:21.6389953Z",
-    "checkpoint_at": "2026-10-09T22:56:21.6389953Z"
-  }
+  "summary": "Six supported inline suggestions correct Unicode documentation, retain dotted-circle text for multi-codepoint descriptions and refresh selected character-set data when the reference guide is already open. The refresh fix is one atomic four-member group. Each selectable unit and the actual raw-LF six-only combined Settings/Core candidate were compiled. Nine guide tests, three model scenarios and six verbatim-source formatter comparisons are retained from the same-head checks, not rerun. Two speculative dialog-layout changes are withheld; no runtime, Core-startup or approval claim."
 }
