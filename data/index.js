@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T07:57:04.3331414+08:00",
+  "generated_at": "2026-10-10T08:33:46.7698009+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1132
   },
   "impact": {
-    "as_of": "2026-10-10T07:57:04.3331414+08:00",
+    "as_of": "2026-10-10T08:33:46.7698009+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -2406,15 +2406,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 8,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post 8 grounded inline comments (6 literal suggestions)"
+      },
       "labels": [
         "Product-Settings",
         "Ready for review"
@@ -40291,7 +40294,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/13513",
       "title": "lock computer and put display to sleep",
       "author": "flowb",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": true,
       "mine": false,
@@ -40311,7 +40314,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2021-09-29T18:21:37Z",
-      "updated_at": "2021-09-30T17:44:32Z",
+      "updated_at": "2026-10-10T00:00:24Z",
       "comments": 2,
       "priority": null
     },
@@ -243966,8 +243969,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-04-28T08:36:10Z",
-      "updated_at": "2026-05-11T20:33:26Z",
-      "comments": 1,
+      "updated_at": "2026-10-10T00:19:17Z",
+      "comments": 2,
       "priority": null
     },
     {

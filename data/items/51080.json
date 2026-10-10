@@ -2,29 +2,276 @@
   "number": 51080,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-08T22:26:05.0299684Z",
-  "evaluated_at": "2026-10-08T22:26:05.0299684Z",
-  "source_updated_at": "10/08/2026 20:28:53",
+  "generated_at": "2026-10-10T00:19:16.3747358Z",
+  "evaluated_at": "2026-10-09T23:33:43.084Z",
+  "source_updated_at": "2026-10-08T20:28:53Z",
   "head_sha": "b90472a8a7b7a97ddc5aca591ddc662513c082a9",
   "title": "[Settings] Save settings files atomically, retry locked reads, keep unreadable files",
   "url": "https://github.com/microsoft/PowerToys/pull/51080",
+  "summary": "Eight grounded review comments are drafted; six have literal suggestions. Corrected the copied source excerpts for both recovery retry findings and revised the symlink suggestion to preserve direct writes when a reparse point does not resolve as a link. The revised exact six-suggestion candidate compiled. The saved fork-head Copilot result was a completed full Balanced review; it is historical, not a fresh current-head cloud-convergence claim. Focused tests did not execute because generated PRI/WinRT prerequisites were missing.",
   "status": {
-    "glyph": "...",
-    "label": "Local validation running",
-    "detail": "Fresh Copilot review 5462892434 is clean, and four literal suggestions are grounded with passing apply-check and raw-blob EOL checks. Focused upstream tests are blocked because the Visual Studio vcpkg component/props are missing; candidate tests have not started. Resume after restoring the supported vcpkg prerequisite."
+    "label": "Validated inline review drafts ready",
+    "detail": "Eight source-grounded inline drafts include six literal suggestions and a complete two-member metadata group. Exact public bytes match the compiled candidate; scoped builds passed with unchanged reference outputs reused. Focused tests did not execute. Historical Balanced coverage is not fresh current-head convergence or approval.",
+    "glyph": "!"
   },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
+  "next_action": "Select the grounded inline comments for human approval. Nothing has been posted upstream.",
+  "proposed_comments": [
+    {
+      "id": "atomic-symlink-settings-write",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Keep symbolic-link saves atomic",
+      "severity": "high",
+      "confidence": {
+        "score": 91,
+        "rationale": "The exact upstream branch uses direct WriteAllText only for reparse points while ordinary files use a temp file and rename; a disk-full or interrupted write can truncate the link target."
+      },
+      "body": "### Keep symbolic-link saves atomic\n\n**Severity:** `high`\n\nThis reparse-point branch bypasses the temp-file replacement used below. If this is a symbolic link, resolving its target lets the save continue through the atomic replacement path. But the branch checks only `FileAttributes.ReparsePoint`, so it also includes reparse points that are not symbolic links; when resolution returns null, preserve the existing direct-write behavior instead of throwing.\n\n```suggestion\n                var linkTarget = _file.ResolveLinkTarget(path, returnFinalTarget: true);\n                if (linkTarget is null)\n                {\n                    _file.WriteAllText(path, contents);\n                    return;\n                }\n\n                path = linkTarget.FullName;\n```",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+      "line": 340,
+      "side": "RIGHT",
+      "start_line": 339
+    },
+    {
+      "id": "preserve-settings-metadata-call",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "(1/2) Preserve destination metadata during replacement",
+      "severity": "medium",
+      "confidence": {
+        "score": 86,
+        "rationale": "The upstream code overwrites the destination by moving a newly created temp file over it; Windows replacement APIs preserve supported destination metadata and identity."
+      },
+      "body": "### (1/2) Preserve destination metadata during replacement\n\n**Severity:** `medium`\n\n`Move(..., overwrite: true)` replaces the destination with the temporary file's metadata, rather than retaining the existing settings file's security descriptor and attributes as the previous in-place write did. Route this through the metadata-preserving replacement helper in (2/2), with `Move` reserved for initial creation.\n\n```suggestion\n                RetryWhileFileIsInUse(() => ReplaceOrMoveFile(temporaryPath, path));\n```",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+      "line": 354,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "preserve-settings-file-metadata",
+        "title": "Preserve existing settings metadata on atomic replacement",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "preserve-settings-metadata-helper",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "(2/2) Preserve destination metadata during replacement",
+      "severity": "medium",
+      "confidence": {
+        "score": 86,
+        "rationale": "The helper uses the established IFile replacement/move APIs and handles create-versus-replace races; the exact literal candidate compiled successfully with unchanged upstream project-reference outputs."
+      },
+      "body": "### (2/2) Preserve destination metadata during replacement\n\n**Severity:** `medium`\n\nApply together with (1/2): use `IFile.Replace` for an existing target so replacement retains supported destination metadata, and fall back to `Move` only when the target is absent or disappears during the replacement race.\n\n```suggestion\n        private void ReplaceOrMoveFile(string sourcePath, string destinationPath)\n        {\n            if (_file.Exists(destinationPath))\n            {\n                try\n                {\n                    _file.Replace(sourcePath, destinationPath, null);\n                }\n                catch (FileNotFoundException) when (!_file.Exists(destinationPath))\n                {\n                    _file.Move(sourcePath, destinationPath);\n                }\n\n                return;\n            }\n\n            try\n            {\n                _file.Move(sourcePath, destinationPath);\n            }\n            catch (IOException) when (_file.Exists(destinationPath))\n            {\n                _file.Replace(sourcePath, destinationPath, null);\n            }\n        }\n\n        private static void RetryWhileFileIsInUse(Action action)\n```",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+      "line": 375,
+      "side": "RIGHT",
+      "selection_group": {
+        "id": "preserve-settings-file-metadata",
+        "title": "Preserve existing settings metadata on atomic replacement",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "retry-settings-last-write-notification",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Retry the watcher timestamp update",
+      "severity": "medium",
+      "confidence": {
+        "score": 83,
+        "rationale": "The save updates LastWrite after replacing the file, and the same PR states that watchers depend on that timestamp; the call currently has no retry."
+      },
+      "body": "### Retry the watcher timestamp update\n\n**Severity:** `medium`\n\nThe replacement may already have succeeded when a concurrent reader briefly prevents this last-write-time update. Since the settings watchers rely on `LastWrite`, the save can then leave the UI using stale settings. Apply the same bounded transient-lock retry used for the replacement.\n\n```suggestion\n            RetryWhileFileIsInUse(() => _file.SetLastWriteTimeUtc(path, DateTime.UtcNow));\n```",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+      "line": 372,
+      "side": "RIGHT"
+    },
+    {
+      "id": "do-not-treat-legacy-read-io-as-corruption",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Keep transient legacy-format reads out of corruption fallback",
+      "severity": "medium",
+      "confidence": {
+        "score": 84,
+        "rationale": "The exact nested catch handles every exception from the second read/upgrader, then newly continues to the default-save path; IOException and access failures must not be classified as corrupt data."
+      },
+      "body": "### Keep transient legacy-format reads out of corruption fallback\n\n**Severity:** `medium`\n\nThis new preservation/default path runs after the legacy-format attempt catches every `Exception`. If that second settings read fails with a sharing violation or access error, valid settings are treated as corrupt and defaults are written. Narrow the catch around the legacy-format attempt to exclude `IOException` and `UnauthorizedAccessException`, allowing the existing file-in-use retry/exhaustion behavior to propagate instead. The catch itself is unchanged context, so a suggestion cannot safely anchor the required filter at this added call.\n\n**Affected code:** `src/settings-ui/Settings.UI.Library/SettingsUtils.cs`, `GetSettingsOrDefault<T, T2>`.\n\n**Verification:** Inject a transient sharing violation during the legacy-format read and assert the error is retried or propagated without writing defaults or a `.corrupt` copy.",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+      "line": 207,
+      "side": "RIGHT"
+    },
+    {
+      "id": "keep-exact-unreadable-settings-snapshot",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Back up the bytes that actually failed parsing",
+      "severity": "medium",
+      "confidence": {
+        "score": 78,
+        "rationale": "The newly added backup routine performs an independent source read after parse failure, so a concurrent repair can make the copy's bytes differ from the failed parse input. The existing fallback overwrite is pre-existing and is expressly excluded."
+      },
+      "body": "### Back up the bytes that actually failed parsing\n\n**Severity:** `medium`\n\nThis new helper rereads the settings file after deserialization has already failed. If another process repairs the file between those operations, the valid replacement is copied to `.corrupt` even though it was not the content that triggered the `JsonException`. Capture the original bytes used by `GetFile<T>` and pass that snapshot into `KeepUnreadableSettings`; preserve that exact snapshot rather than rereading the source. Add a regression test that replaces the file between the parse failure and backup and verifies `.corrupt` contains the failed snapshot, not the repaired file.\n\n**Affected code:** `src/settings-ui/Settings.UI.Library/SettingsUtils.cs`, `GetFile<T>`, `GetSettingsOrDefault<T>`, and `KeepUnreadableSettings`.\n\n**Verification:** Force a malformed initial read, replace the source with valid JSON before backup, then assert the corrupt copy is byte-for-byte the failed input. This finding is limited to the new backup's content; the existing default-save behavior is not attributed to this PR.",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+      "line": 309,
+      "side": "RIGHT"
+    },
+    {
+      "id": "retry-unreadable-settings-recovery-read",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Retry the unreadable-settings recovery read",
+      "severity": "medium",
+      "confidence": {
+        "score": 80,
+        "rationale": "The upstream recovery helper catches read failures and returns to the default-save path; this direct second read bypasses the retry policy already used for the primary settings read."
+      },
+      "body": "### Retry the unreadable-settings recovery read\n\n**Severity:** `medium`\n\nThis second read happens after the initial settings read has already failed to parse. If a transient sharing violation blocks it, the helper catches and logs the error, then the caller writes defaults over the original without saving a `.corrupt` copy. Apply the existing bounded file-in-use retry to this read, and test a brief sharing violation between parse failure and backup.\n\n```suggestion\n                byte[] contents = Array.Empty<byte>();\n                RetryWhileFileIsInUse(() => contents = _file.ReadAllBytes(path));\n```",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+      "line": 314,
+      "side": "RIGHT"
+    },
+    {
+      "id": "retry-corrupt-copy-on-transient-lock",
+      "kind": "inline",
+      "in_diff": true,
+      "title": "Retry the corrupt-copy write",
+      "severity": "medium",
+      "confidence": {
+        "score": 82,
+        "rationale": "The exact upstream caller proceeds to save defaults after the backup helper returns, and the helper suppresses write exceptions; retrying this one direct write addresses brief sharing violations."
+      },
+      "body": "### Retry the corrupt-copy write\n\n**Severity:** `medium`\n\nIf a brief sharing violation prevents this `.corrupt` write, `KeepUnreadableSettings` catches and logs the failure, then the caller continues to save defaults over the original settings. That loses the unreadable file without creating its backup. Use the same bounded transient-lock retry as the recovery reads and add a test that injects a brief lock on the backup path and verifies the backup is written before defaults replace the original.\n\n```suggestion\n                    RetryWhileFileIsInUse(() => _file.WriteAllBytes(path + UnreadableFileSuffix, contents));\n```",
+      "disposition": "proposed",
+      "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+      "line": 320,
+      "side": "RIGHT"
+    }
+  ],
+  "actions": [
+    {
+      "id": "post-review-51080",
+      "type": "post_review",
+      "review": {
+        "head_sha": "b90472a8a7b7a97ddc5aca591ddc662513c082a9",
+        "event": "COMMENT"
+      },
+      "label": "Post 8 grounded inline comments (6 literal suggestions)",
+      "note": "Seven historical rounds include a completed Balanced result with zero new findings; no routine follow-up was requested at the cap. This is not fresh current-head convergence. Exact public-literal compilation passed; focused tests did not execute."
+    }
+  ],
+  "validation": {
+    "suggestion_patch": {
+      "minimal_ranges_reviewed": true,
+      "scope": "The revised six public literal blocks were applied to the exact pinned upstream head and compiled in Settings.UI.Library. Exact-upstream and revised literal-candidate project builds passed; the candidate reused unchanged reference outputs. A first candidate attempt lacked VCTargetsPath and failed before compilation; the focused retry supplied the installed Visual Studio C++ targets and passed. Focused Settings.UI.UnitTests were attempted but no tests executed because generated PRI/WinRT prerequisites were missing.",
+      "result": "passed",
+      "applied_comment_ids": [
+        "atomic-symlink-settings-write",
+        "preserve-settings-metadata-call",
+        "preserve-settings-metadata-helper",
+        "retry-settings-last-write-notification",
+        "retry-unreadable-settings-recovery-read",
+        "retry-corrupt-copy-on-transient-lock"
+      ],
+      "commands": [
+        "Applied six literal public blocks to the pinned upstream head; combined and independent/atomic apply checks plus git diff --check passed.",
+        "dotnet build .\\src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj --no-restore -p:Platform=x64 -p:Configuration=Debug (exact upstream local checkout; passed).",
+        "dotnet build .\\src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj --no-restore -p:Platform=x64 -p:Configuration=Debug -p:BuildProjectReferences=false -p:VCTargetsPath=\"$env:ProgramFiles\\Microsoft Visual Studio\\18\\Enterprise\\MSBuild\\Microsoft\\VC\\v180\\\" (run from the candidate root in PowerShell; passed with unchanged upstream project-reference outputs reused; zero warnings/errors).",
+        "dotnet test .\\src\\settings-ui\\Settings.UI.UnitTests\\Settings.UI.UnitTests.csproj --filter \"FullyQualifiedName~SettingsUtilsTests|FullyQualifiedName~OriginalFilesModificationTest\" --logger \"console;verbosity=minimal\" (attempted on exact upstream and literal candidate; generated PRI/WinRT prerequisites failed before test execution)."
+      ],
+      "candidate_tree_sha": "40294e9d3e918771d01e6081741c15cf7c72c0c4",
+      "candidate_source_sha256": "594683f5dd73699901c3d3635a4b2254c56441969ec3518500d3a71732578ec8",
+      "patch_sha256": "ba48057d6a9f8498862f05e0af79b7b6e0f11fd719f1854d5bbada53d85a0af8",
+      "head_sha": "b90472a8a7b7a97ddc5aca591ddc662513c082a9"
+    },
+    "builds": {
+      "exact_upstream": {
+        "project": "Settings.UI.Library",
+        "result": "passed",
+        "command": "dotnet build .\\src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj --no-restore -p:Platform=x64 -p:Configuration=Debug",
+        "tree_sha": "fbaf07cbcad74fc453e57528108c31a4ce7240d8",
+        "scope": "Exact upstream head; scoped x64/Debug project compilation only, not a full solution build."
+      },
+      "literal_candidate": {
+        "project": "Settings.UI.Library",
+        "result": "passed",
+        "command": "dotnet build .\\src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj --no-restore -p:Platform=x64 -p:Configuration=Debug -p:BuildProjectReferences=false -p:VCTargetsPath=\"$env:ProgramFiles\\Microsoft Visual Studio\\18\\Enterprise\\MSBuild\\Microsoft\\VC\\v180\\\"",
+        "tree_sha": "40294e9d3e918771d01e6081741c15cf7c72c0c4",
+        "scope": "Exact revised six-suggestion candidate source compiled; unchanged project-reference outputs were reused. The first attempt failed before compile because VCTargetsPath was unset; the focused retry supplied the Visual Studio C++ targets.",
+        "log": "settings-ui-library-build.log",
+        "warnings": 0,
+        "errors": 0
+      }
+    },
+    "focused_tests": {
+      "result": "not_executed_environment_setup_blocked",
+      "filter": "FullyQualifiedName~SettingsUtilsTests|FullyQualifiedName~OriginalFilesModificationTest",
+      "attempted_on": [
+        "exact upstream head b90472a8a7b7a97ddc5aca591ddc662513c082a9",
+        "literal candidate tree 40294e9d3e918771d01e6081741c15cf7c72c0c4"
+      ],
+      "upstream_blocker": "Missing generated CommunityToolkit.WinUI.Controls.SettingsControls.pri.xml during PRI expansion; no tests ran.",
+      "candidate_blocker": "Missing generated winrt/impl/Windows.Foundation.Collections.2.h and CommunityToolkit.WinUI.Controls.MarkdownTextBlock.pri.xml; no tests ran."
+    },
+    "line_ending_safety": {
+      "checked_comment_ids": [
+        "atomic-symlink-settings-write",
+        "preserve-settings-metadata-call",
+        "preserve-settings-metadata-helper",
+        "retry-settings-last-write-notification",
+        "retry-unreadable-settings-recovery-read",
+        "retry-corrupt-copy-on-transient-lock"
+      ],
+      "result": "passed",
+      "files": [
+        {
+          "result": "passed",
+          "path": "src/settings-ui/Settings.UI.Library/SettingsUtils.cs",
+          "line_endings": "lf"
+        }
+      ],
+      "head_sha": "b90472a8a7b7a97ddc5aca591ddc662513c082a9"
+    },
+    "limitations": [
+      "Exact upstream Settings.UI.Library compilation passed; no full solution build.",
+      "Focused upstream and literal-candidate unit tests did not execute: generated WinRT/PRI dependencies failed before test execution.",
+      "Candidate compilation reused unchanged project-reference outputs.",
+      "The first revised candidate compile failed before compilation because VCTargetsPath was unset; the focused retry with the Visual Studio C++ targets passed.",
+      "No runtime test was run for a non-link cloud/provider reparse point; the source and caller do not establish an invariant restricting the generic ReparsePoint branch to symbolic links.",
+      "No disk-full/interrupted-write, ACL retention, sharing-violation, or concurrent-repair runtime fault injection was performed."
+    ]
+  },
+  "review_coverage": {
+    "automated_round_cap": 5,
+    "cap_reached": true,
+    "historical_rounds": 7,
+    "cloud_effort": "Balanced",
+    "saved_review_type": "full",
+    "saved_review_completed": true,
+    "saved_review_head": "d031e4efbe1d2b0f1ac53989d8cf1c88bb2cbead",
+    "saved_review_inline_comments": 0,
+    "saved_review_unresolved_threads": 0,
+    "fresh_current_head_cloud_convergence_claimed": false,
+    "approval_ready": false,
+    "cloud_complete": false
+  },
   "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-10-08T22:26:05.0299684Z"
-  },
-  "freshness": {
-    "queued_at": "2026-10-08T22:26:05.0299684Z",
-    "checkpoint_at": "2026-10-08T22:26:05.0299684Z"
+    "checkpoint_at": "2026-10-10T00:19:16.3747358Z",
+    "phase": "awaiting_review_approval"
   }
 }
