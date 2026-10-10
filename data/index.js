@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T19:32:07.0741681+08:00",
+  "generated_at": "2026-10-10T20:16:21.5299024+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -85,13 +85,13 @@ window.BOARD_INDEX = {
     ]
   },
   "counts": {
-    "open_prs": 163,
+    "open_prs": 162,
     "open_issues": 12643,
     "community": 11812,
-    "artifacts": 1134
+    "artifacts": 1133
   },
   "impact": {
-    "as_of": "2026-10-10T19:32:07.0741681+08:00",
+    "as_of": "2026-10-10T20:16:21.5299024+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -181,7 +181,6 @@ window.BOARD_INDEX = {
     49502,
     49460,
     49412,
-    49394,
     49350,
     49333,
     49276,
@@ -1268,7 +1267,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 996,
+        "fork_title": "[Diagnostic review 51165] Clipboard environment collection and activation comparison",
+        "fork_state": "OPEN",
+        "fork_branch": "diagnostic-review/51165-50174ba-d8465230",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/996"
+      }
     },
     {
       "id": "pr-51163",
@@ -3998,15 +4005,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 2,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post two supported inline suggestions"
+      },
       "labels": [
         "Needs-Triage",
         "Needs-Team-Response",
@@ -6730,53 +6740,6 @@ window.BOARD_INDEX = {
         "fork_state": "OPEN",
         "fork_branch": "pr-iterate/49412-v4",
         "url": "https://github.com/MuyuanMS/PowerToys/pull/817"
-      }
-    },
-    {
-      "id": "pr-49394",
-      "kind": "pr",
-      "number": 49394,
-      "url": "https://github.com/microsoft/PowerToys/pull/49394",
-      "title": "[Quick Accent] New character reference guide to show language set contents",
-      "author": "daverayment",
-      "state": "open",
-      "is_draft": false,
-      "is_community": false,
-      "mine": false,
-      "is_cmdpal": false,
-      "track": "review",
-      "stage": "awaiting_review_approval",
-      "owes": "us",
-      "pending_author": false,
-      "waiting_since": null,
-      "has_artifact": true,
-      "agent_status": "review",
-      "issue_type": null,
-      "proposed_open": 6,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post six inline suggestions"
-      },
-      "labels": [
-        "Product-Quick Accent",
-        "0.102",
-        "Ready for review"
-      ],
-      "assignees": [],
-      "created_at": "2026-07-18T02:45:03Z",
-      "updated_at": "2026-10-09T22:53:29Z",
-      "comments": 18,
-      "priority": 60,
-      "review_decision": "REVIEW_REQUIRED",
-      "ci_state": null,
-      "merge_state": "BLOCKED",
-      "mirror": {
-        "kind": "pr",
-        "fork_number": 823,
-        "fork_title": "[PR 49394] [Quick Accent] New character reference guide to show language set contents",
-        "fork_state": "OPEN",
-        "fork_branch": "pr-iterate/49394-v3",
-        "url": "https://github.com/MuyuanMS/PowerToys/pull/823"
       }
     },
     {
@@ -240341,7 +240304,7 @@ window.BOARD_INDEX = {
       "url": "https://github.com/microsoft/PowerToys/issues/47438",
       "title": "[Quick Accent] Show a reference guide of the available characters across all languages",
       "author": "daverayment",
-      "state": "open",
+      "state": "closed",
       "is_draft": false,
       "is_community": false,
       "mine": false,
@@ -240364,7 +240327,7 @@ window.BOARD_INDEX = {
         "daverayment"
       ],
       "created_at": "2026-04-29T16:13:11Z",
-      "updated_at": "2026-04-29T16:13:11Z",
+      "updated_at": "2026-10-10T11:35:41Z",
       "comments": 0,
       "priority": null
     },

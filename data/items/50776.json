@@ -2,39 +2,84 @@
   "number": 50776,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-09-29T11:10:57.560234+08:00",
-  "evaluated_at": "09/25/2026 07:46:27",
+  "generated_at": "2026-10-10T19:45:53.551738+08:00",
+  "evaluated_at": "2026-10-10T19:45:53.551738+08:00",
   "source_updated_at": "2026-09-24T21:46:16Z",
   "head_sha": "180a6d4d460e1684fe9b4c58875c04a512609b7f",
   "title": "Mouse Without Borders: fix Connect page silently dropping credentials on failure",
   "url": "https://github.com/microsoft/PowerToys/pull/50776",
   "status": {
-    "detail": "Included in the expanded all-open, non-draft, non-CmdPal drain. Existing current-head review history and validation evidence are retained. Recover supported findings or complete final exact-head validation before offering an action; no approval or completed review is claimed.",
-    "glyph": "...",
-    "label": "Action recovery queued"
+    "label": "Two grounded COMMENT findings",
+    "glyph": "!",
+    "detail": "Exact current-head localized fixes validated. Five historical requests consumed; latest review ran Lite with four new comments, all assessed/resolved. Non-converged: no approval or clean-review claim."
   },
-  "next_action": "Resume saved finding/validation work; final isolated builds may run concurrently. Historical requests remain capped at five except independently proven major defects.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "reviewing_findings",
-    "checkpoint_at": "2026-09-29T11:10:57.560234+08:00",
-    "copilot_request": {
-      "fork_head_sha": "3f1abbea9feabc718ca681206b000d56db9adffa",
-      "requested_at": "2026-09-28T10:20:36Z",
-      "after_review_id": 5337172209,
-      "submitted": true,
-      "review_id": 5337211210,
-      "request_pending": false,
-      "reviews_scanned": 14
+  "next_action": "Select the supported COMMENT findings for normal maintainer approval/publication; do not request a sixth review or interpret this as PR approval.",
+  "proposed_comments": [
+    {
+      "id": "trim-pending-device-name",
+      "kind": "inline",
+      "title": "Normalize the name used to track connection success",
+      "severity": "medium",
+      "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/MouseWithoutBordersPage.xaml.cs",
+      "line": 212,
+      "side": "RIGHT",
+      "body": "### Normalize the name used to track connection success\n\n**Severity:** `medium`\n\nWith a device name such as ` PC `, `SubmitConnectionRequestAsync` stores the spaces in `_pendingConnectMachineName`, but `ConnectToMachine` trims the name before adding it to the machine matrix. `CheckPendingConnectStatus` therefore cannot match the resulting `PC` socket state, even when it is `Connected`, and eventually reports a timeout and starts restoring the previous key. Trim the submitted name so the pending lookup and module use the same identifier; the existing case-insensitive lookup can remain unchanged.\n\n```suggestion\n            string pcName = ConnectPCNameTextBox.Text.Trim();\n```\n\nVerify that a name with surrounding spaces recognizes a successful connection instead of timing out.",
+      "confidence": {
+        "score": 95,
+        "rationale": "Exact upstream production-method execution reproduces the failure under controlled inputs and the literal remedy removes it; source callers/guards traced. No physical-PC or live-network claim."
+      },
+      "in_diff": true,
+      "disposition": "proposed"
     },
-    "latest_copilot_review_id": 5337211210,
-    "latest_copilot_review_submitted_at": "2026-09-28T18:24:10+08:00",
-    "latest_copilot_review_commit_sha": "3f1abbea9feabc718ca681206b000d56db9adffa",
-    "unresolved_copilot_threads": 2
+    {
+      "id": "mapped-address-dns-status",
+      "kind": "inline",
+      "title": "Do not fail an active Name-to-IP attempt because DNS misses",
+      "severity": "medium",
+      "path": "src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+      "line": 957,
+      "side": "RIGHT",
+      "body": "### Do not fail an active Name-to-IP attempt because DNS misses\n\n**Severity:** `medium`\n\nA valid Name-to-IP mapping starts its connection thread before `Dns.GetHostEntry` runs, so a DNS miss does not mean that the mapped attempt failed. Setting the earlier dummy socket to `HostNotFound` makes `RequestMachineSocketStateAsync` keep that status instead of a later mapped socket's `Connecting` or `Connected` status; Settings then reports failure and starts restoring the previous key. Use `NA` for the DNS placeholder when mapped attempts were started, allowing their status to be observed, while retaining `HostNotFound` when no mapping is available.\n\n```suggestion\n                    UpdateTcpSockets(dummyTcp, useName2IP ? SocketStatus.NA : SocketStatus.HostNotFound);\n```\n\nVerify both a valid mapped address with an unresolvable name and an unmapped name that cannot resolve.",
+      "confidence": {
+        "score": 95,
+        "rationale": "Exact upstream production-method execution reproduces the failure under controlled inputs and the literal remedy removes it; source callers/guards traced. No physical-PC or live-network claim."
+      },
+      "in_diff": true,
+      "disposition": "proposed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "50776-post-supported-findings",
+      "type": "post_review",
+      "label": "Post two supported inline suggestions",
+      "review": {
+        "head_sha": "180a6d4d460e1684fe9b4c58875c04a512609b7f",
+        "event": "COMMENT"
+      }
+    }
+  ],
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-10T19:45:53.551738+08:00",
+    "historical_total_requests": 5,
+    "latest_copilot_review_id": 5478281688,
+    "latest_copilot_review_commit_sha": "935a1991bc18badda97d78a6b54ef0fd0ad054a5",
+    "actual_review_tier": "Lite; full agentic startup timed out",
+    "requested_preference": "Balanced",
+    "latest_review_new_comments": 4,
+    "unresolved_copilot_threads": 0,
+    "converged": false,
+    "approval_eligible": false,
+    "comment_draft_authorized_at_cap": true,
+    "copilot_request": {
+      "submitted": true,
+      "request_pending": false,
+      "review_id": 5478281688
+    }
   },
   "freshness": {
     "queued_at": "09/25/2026 07:46:27",
@@ -45,12 +90,56 @@
     "url": "https://github.com/MuyuanMS/PowerToys/pull/908"
   },
   "fork_branch": "pr-iterate/50776",
-  "phase": "reviewing_findings",
-  "summary": "Saved review 5337211210 arrived; 2 comments in that review and 2 unresolved Copilot threads. Finding accounting and exact upstream/candidate validation remain; this is not a Copilot wait.",
+  "phase": "awaiting_review_approval",
+  "summary": "Padded pending-name lookup can time out a connected device; DNS placeholder failure can mask an active Name-to-IP socket. Two minimal independently validated inline replacements.",
   "expanded_drain": {
     "queued_at": "2026-10-10T07:34:03.1938747Z",
     "scope": "All open non-draft non-CmdPal PRs, including older unfinished reviews.",
     "recovery_stage": "assigned",
     "head_sha": "180a6d4d460e1684fe9b4c58875c04a512609b7f"
+  },
+  "validation": {
+    "suggestion_patch": {
+      "head_sha": "180a6d4d460e1684fe9b4c58875c04a512609b7f",
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "trim-pending-device-name",
+        "mapped-address-dns-status"
+      ],
+      "commands": [
+        "Debug x64 MouseWithoutBorders App compiler check",
+        "Debug x64 Settings exact trim-name literal compiler check"
+      ],
+      "scope": "Exact independently applied localized literals; controlled production-method behavior checks; no physical-PC test."
+    },
+    "line_ending_safety": {
+      "head_sha": "180a6d4d460e1684fe9b4c58875c04a512609b7f",
+      "result": "passed",
+      "checked_comment_ids": [
+        "trim-pending-device-name",
+        "mapped-address-dns-status"
+      ],
+      "files": [
+        {
+          "path": "src/modules/MouseWithoutBorders/App/Class/SocketStuff.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "crlf_count": 0,
+          "lf_only_count": 2139,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/settings-ui/Settings.UI/SettingsXAML/Views/MouseWithoutBordersPage.xaml.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "crlf_count": 0,
+          "lf_only_count": 258,
+          "cr_only_count": 0
+        }
+      ]
+    }
   }
 }
