@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T19:04:49.3737552+08:00",
+  "generated_at": "2026-10-10T19:17:14.3236145+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 163,
-    "open_issues": 12642,
-    "community": 11811,
+    "open_issues": 12643,
+    "community": 11812,
     "artifacts": 1134
   },
   "impact": {
-    "as_of": "2026-10-10T19:04:49.3737552+08:00",
+    "as_of": "2026-10-10T19:17:14.3236145+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -149577,6 +149577,40 @@ window.BOARD_INDEX = {
       "created_at": "2021-12-03T21:23:26Z",
       "updated_at": "2026-08-16T21:16:19Z",
       "comments": 19,
+      "priority": null
+    },
+    {
+      "id": "issue-51167",
+      "kind": "issue",
+      "number": 51167,
+      "url": "https://github.com/microsoft/PowerToys/issues/51167",
+      "title": "Crush",
+      "author": "pityonother",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": false,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-General"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-10T11:05:55Z",
+      "updated_at": "2026-10-10T11:10:22Z",
+      "comments": 1,
       "priority": null
     },
     {
