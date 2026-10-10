@@ -1,32 +1,256 @@
 {
-  "stage": "review_in_progress",
   "url": "https://github.com/microsoft/PowerToys/pull/51114",
-  "workflow": {
-    "checkpoint_at": "2026-10-10T03:34:13.9332359Z",
-    "phase": "reviewing_findings",
-    "resume_first": true
-  },
-  "evaluated_at": "2026-10-10T03:34:13.9332359Z",
-  "freshness": {
-    "checkpoint_at": "2026-10-10T03:34:13.9332359Z",
-    "needs_revalidation": true
-  },
-  "status": {
-    "glyph": "...",
-    "label": "New author revision under review",
-    "detail": "The prior published outcome no longer covers this head. Existing review history is being resumed; historical request limits are not reset."
-  },
-  "proposed_comments": [],
+  "stage": "awaiting_review_approval",
+  "proposed_comments": [
+    {
+      "id": "51114-table-workspace-escape",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "(1/2) Escape workspace names before table output",
+      "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+      "line": 87,
+      "side": "RIGHT",
+      "body": "### (1/2) Escape workspace names before table output\n\n**Severity:** `medium`\n\nHuman-readable `list` writes saved workspace names verbatim, so ESC, CR/LF, or bidi controls can alter terminal output or forge rows. Apply the existing sanitizer here and at the application-name cell in the coordinated second suggestion; keep JSON values unchanged.\n\n```suggestion\n                          << winrt::to_string(WorkspacesCli::EscapeApprovalText(project.GetNamedString(L\"name\"))) << '\\t';\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "The exact current summary-table path streams the saved workspace name directly; the existing sanitizer and regression test cover ESC, line breaks, and bidi controls. The literal candidate built at the pinned head."
+      },
+      "body_sha256": "2aa2267e6814b5236d5e5b458cb9e7433b5a78dc252c272bfebf9e92d3f4d724",
+      "in_diff": true,
+      "disposition": "proposed",
+      "start_line": 87,
+      "selection_group": {
+        "id": "51114-terminal-name-escaping",
+        "title": "Escape both human-readable table name fields",
+        "position": 1,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51114-table-application-escape",
+      "kind": "inline",
+      "severity": "medium",
+      "title": "(2/2) Escape application names before table output",
+      "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+      "line": 93,
+      "side": "RIGHT",
+      "body": "### (2/2) Escape application names before table output\n\n**Severity:** `medium`\n\nApplication display names are also written verbatim to the human-readable table and can contain terminal controls or line separators. Apply the existing sanitizer here as well, atomically with the workspace-name change; leave the JSON output unchanged.\n\n```suggestion\n                    std::cout << winrt::to_string(WorkspacesCli::EscapeApprovalText(app.GetObjectW().GetNamedString(L\"application\")));\n```",
+      "confidence": {
+        "score": 94,
+        "rationale": "The application cell also bypasses the existing sanitizer; the helper has deterministic coverage and both exact literal changes built together at the pinned head."
+      },
+      "body_sha256": "14690572d3067935b6dbfd0e75e680610093a4e94969268ba6dbbe57f3a97041",
+      "in_diff": true,
+      "disposition": "proposed",
+      "start_line": 93,
+      "selection_group": {
+        "id": "51114-terminal-name-escaping",
+        "title": "Escape both human-readable table name fields",
+        "position": 2,
+        "total": 2,
+        "atomic": true
+      }
+    },
+    {
+      "id": "51114-handoff-test-filter",
+      "kind": "inline",
+      "severity": "low",
+      "title": "Include the handoff tests in the documented filter",
+      "path": "src/modules/Workspaces/WorkspacesCLI/README.md",
+      "line": 109,
+      "side": "RIGHT",
+      "body": "### Include the handoff tests in the documented filter\n\n**Severity:** `low`\n\nThe paragraph below describes `CliHandoffTests`, but this documented invocation excludes that class, so readers following the filter do not run those handoff checks. Add it to the filter.\n\n```suggestion\n    \"/TestCaseFilter:FullyQualifiedName~CliApprovalTests|FullyQualifiedName~CliApprovalConsoleTests|FullyQualifiedName~CliContractTests|FullyQualifiedName~CliWorkerTests|FullyQualifiedName~CliHandoffTests|FullyQualifiedName~WorkspaceStoreTests\"\n```",
+      "confidence": {
+        "score": 98,
+        "rationale": "The current documented filter omits the test class identified in the adjacent paragraph. The one-line candidate was built and the README blob is LF-only with no BOM."
+      },
+      "body_sha256": "ca7518ade0c5a7fbc2f61f10909088803ff043d1560b8ca1c4b25de5f6844f14",
+      "in_diff": true,
+      "disposition": "proposed",
+      "start_line": 109
+    }
+  ],
   "track": "review",
-  "number": 51114,
-  "source_updated_at": "2026-10-10T03:12:52Z",
-  "generated_at": "2026-10-10T03:34:13.9332359Z",
-  "actions": [],
-  "kind": "pr",
-  "pending_author": false,
-  "owes": "us",
+  "next_action": "Review the three inline suggestions; select the complete two-member terminal-name group.",
+  "review_coverage": {
+    "approval_ready": false,
+    "supported_findings": 3,
+    "cap_reached": true,
+    "automated_round_cap": 5,
+    "cloud_complete": false
+  },
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "cap_reached": true,
+    "checkpoint_at": "2026-10-10T05:39:37.6404791Z"
+  },
+  "validation": {
+    "suggestion_patch": {
+      "applied_comment_ids": [
+        "51114-table-workspace-escape",
+        "51114-table-application-escape",
+        "51114-handoff-test-filter"
+      ],
+      "scope": "Actual raw-LF public CLI candidate compiled; unchanged README filter target independently matches the literal block and existing handoff test class. No handoff fixture execution.",
+      "actual_raw_inputs_before_after_verified": true,
+      "minimal_ranges_reviewed": true,
+      "head_sha": "11ce47c696b4196c229f8fe790042175fa118d54",
+      "result": "passed",
+      "independently_selectable_units": [
+        "51114-terminal-name-escaping",
+        "51114-handoff-test-filter"
+      ],
+      "commands": [
+        "MSBuild src\\modules\\Workspaces\\WorkspacesCLI\\WorkspacesCLI.vcxproj /t:Build /p:Platform=x64 /p:Configuration=Debug /p:SolutionDir=$PWD\\ /m /nologo /v:minimal"
+      ],
+      "actual_fresh_main_object_and_cli_verified": true
+    },
+    "line_ending_safety": {
+      "files": [
+        {
+          "utf8_bom": false,
+          "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+          "line_endings": "lf",
+          "cr_only_count": 0,
+          "result": "passed",
+          "lf_only_count": 418,
+          "crlf_count": 0
+        },
+        {
+          "utf8_bom": false,
+          "path": "src/modules/Workspaces/WorkspacesCLI/README.md",
+          "line_endings": "lf",
+          "cr_only_count": 0,
+          "result": "passed",
+          "lf_only_count": 120,
+          "crlf_count": 0
+        }
+      ],
+      "head_sha": "11ce47c696b4196c229f8fe790042175fa118d54",
+      "checked_comment_ids": [
+        "51114-table-workspace-escape",
+        "51114-table-application-escape",
+        "51114-handoff-test-filter"
+      ],
+      "result": "passed"
+    },
+    "limitations": [
+      "No CliHandoffTests fixture execution, interactive terminal output, actual workspace launch, elevated interaction, installer or full product validation.",
+      "The earlier CRLF candidate compile is not used as raw-LF proof; a separate actual raw-LF compilation supplies that evidence.",
+      "An older candidate failure log was overwritten; it is not reconstructed. The new isolated initial failure, targeted restore and passing retry have separate preserved logs.",
+      "Historical cloud cap is exhausted; old-head Lite results do not establish current-head cloud convergence or approval."
+    ],
+    "upstream_head": {
+      "head_sha": "11ce47c696b4196c229f8fe790042175fa118d54",
+      "scope": "Retained exact same-author-head CLI and unit-test project builds; normal checkout source, not a new full product or runtime build.",
+      "result": "passed"
+    },
+    "focused_tests": {
+      "filter": "FullyQualifiedName~CliApprovalTests|FullyQualifiedName~CliContractTests",
+      "retained_same_head": true,
+      "result": "passed",
+      "passed": 27,
+      "rerun_during_raw_remediation": false,
+      "failed": 0
+    }
+  },
   "title": "feat(workspaces): add list and launch CLI",
-  "head_sha": "11ce47c696b4196c229f8fe790042175fa118d54",
-  "summary": "The author pushed a new Workspaces CLI revision. Prior-head proposals and build evidence are withheld while the existing review is resumed and reconciled against the current source. No new completed review, validated suggestion or approval is claimed.",
-  "next_action": "Reconcile remaining supported findings and validate current-head literal candidates before presenting posting actions."
+  "summary": "Three current-head inline suggestions remain: an atomic two-member terminal-name escaping fix and a README test-filter correction. The actual raw-LF public candidate compiled through the CLI reference chain, with fresh main object and executable verified. Exact-head CLI/unit-test builds and 27 approval/contract test results are retained from the same author revision, not rerun during raw-byte remediation. Superseded or unsupported concerns were withdrawn. No current-head cloud convergence, handoff-fixture, interactive terminal, launch, elevation, installer or full-product claim.",
+  "actions": [
+    {
+      "head_sha": "11ce47c696b4196c229f8fe790042175fa118d54",
+      "type": "post_review",
+      "source_updated_at": "2026-10-10T03:12:52Z",
+      "review": {
+        "head_sha": "11ce47c696b4196c229f8fe790042175fa118d54",
+        "comments": [
+          {
+            "id": "51114-table-workspace-escape",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "(1/2) Escape workspace names before table output",
+            "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+            "line": 87,
+            "side": "RIGHT",
+            "body": "### (1/2) Escape workspace names before table output\n\n**Severity:** `medium`\n\nHuman-readable `list` writes saved workspace names verbatim, so ESC, CR/LF, or bidi controls can alter terminal output or forge rows. Apply the existing sanitizer here and at the application-name cell in the coordinated second suggestion; keep JSON values unchanged.\n\n```suggestion\n                          << winrt::to_string(WorkspacesCli::EscapeApprovalText(project.GetNamedString(L\"name\"))) << '\\t';\n```",
+            "confidence": {
+              "score": 94,
+              "rationale": "The exact current summary-table path streams the saved workspace name directly; the existing sanitizer and regression test cover ESC, line breaks, and bidi controls. The literal candidate built at the pinned head."
+            },
+            "body_sha256": "2aa2267e6814b5236d5e5b458cb9e7433b5a78dc252c272bfebf9e92d3f4d724",
+            "in_diff": true,
+            "disposition": "proposed",
+            "start_line": 87,
+            "selection_group": {
+              "id": "51114-terminal-name-escaping",
+              "title": "Escape both human-readable table name fields",
+              "position": 1,
+              "total": 2,
+              "atomic": true
+            }
+          },
+          {
+            "id": "51114-table-application-escape",
+            "kind": "inline",
+            "severity": "medium",
+            "title": "(2/2) Escape application names before table output",
+            "path": "src/modules/Workspaces/WorkspacesCLI/main.cpp",
+            "line": 93,
+            "side": "RIGHT",
+            "body": "### (2/2) Escape application names before table output\n\n**Severity:** `medium`\n\nApplication display names are also written verbatim to the human-readable table and can contain terminal controls or line separators. Apply the existing sanitizer here as well, atomically with the workspace-name change; leave the JSON output unchanged.\n\n```suggestion\n                    std::cout << winrt::to_string(WorkspacesCli::EscapeApprovalText(app.GetObjectW().GetNamedString(L\"application\")));\n```",
+            "confidence": {
+              "score": 94,
+              "rationale": "The application cell also bypasses the existing sanitizer; the helper has deterministic coverage and both exact literal changes built together at the pinned head."
+            },
+            "body_sha256": "14690572d3067935b6dbfd0e75e680610093a4e94969268ba6dbbe57f3a97041",
+            "in_diff": true,
+            "disposition": "proposed",
+            "start_line": 93,
+            "selection_group": {
+              "id": "51114-terminal-name-escaping",
+              "title": "Escape both human-readable table name fields",
+              "position": 2,
+              "total": 2,
+              "atomic": true
+            }
+          },
+          {
+            "id": "51114-handoff-test-filter",
+            "kind": "inline",
+            "severity": "low",
+            "title": "Include the handoff tests in the documented filter",
+            "path": "src/modules/Workspaces/WorkspacesCLI/README.md",
+            "line": 109,
+            "side": "RIGHT",
+            "body": "### Include the handoff tests in the documented filter\n\n**Severity:** `low`\n\nThe paragraph below describes `CliHandoffTests`, but this documented invocation excludes that class, so readers following the filter do not run those handoff checks. Add it to the filter.\n\n```suggestion\n    \"/TestCaseFilter:FullyQualifiedName~CliApprovalTests|FullyQualifiedName~CliApprovalConsoleTests|FullyQualifiedName~CliContractTests|FullyQualifiedName~CliWorkerTests|FullyQualifiedName~CliHandoffTests|FullyQualifiedName~WorkspaceStoreTests\"\n```",
+            "confidence": {
+              "score": 98,
+              "rationale": "The current documented filter omits the test class identified in the adjacent paragraph. The one-line candidate was built and the README blob is LF-only with no BOM."
+            },
+            "body_sha256": "ca7518ade0c5a7fbc2f61f10909088803ff043d1560b8ca1c4b25de5f6844f14",
+            "in_diff": true,
+            "disposition": "proposed",
+            "start_line": 109
+          }
+        ],
+        "event": "COMMENT"
+      },
+      "label": "Post three inline suggestions",
+      "id": "post-review-51114"
+    }
+  ],
+  "kind": "pr",
+  "status": {
+    "glyph": "!",
+    "detail": "Actual raw public sources compiled; same-head 27 focused tests retained with limited scope. Both terminal-name members must be selected together.",
+    "label": "Current-head CLI suggestions ready"
+  },
+  "generated_at": "2026-10-10T05:39:37.6404791Z",
+  "owes": "us",
+  "pending_author": false,
+  "source_updated_at": "2026-10-10T03:12:52Z",
+  "evaluated_at": "2026-10-10T05:39:37.6404791Z",
+  "number": 51114,
+  "head_sha": "11ce47c696b4196c229f8fe790042175fa118d54"
 }
