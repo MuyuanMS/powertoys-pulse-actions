@@ -2,7 +2,7 @@
   "number": 50830,
   "kind": "pr",
   "track": "review",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
   "owes": "us",
   "pending_author": false,
   "generated_at": "2026-10-10T10:01:58.5203436Z",
@@ -17,8 +17,33 @@
     "detail": "No grounded code fix found. Exact upstream app and existing unit tests passed; two-physical-machine clipboard handoff remains untested. A focused validation request is ready for maintainer approval, not posted."
   },
   "next_action": "Approve the focused two-physical-machine validation request; do not mark runtime handoff validated from compilation alone.",
-  "proposed_comments": [],
-  "actions": [],
+  "proposed_comments": [
+    {
+      "id": "50830-physical-validation-note",
+      "kind": "companion",
+      "in_diff": false,
+      "title": "Verify clipboard handoff on two physical PCs",
+      "severity": "medium",
+      "out_of_diff_reason": "The requested change is to the PR Validation Steps Performed evidence, not a source-line replacement. The changed switch paths provide context but no RIGHT-side source edit can supply the missing physical-machine test results.",
+      "body": "### Verify clipboard handoff on two physical PCs\n\n**Severity:** `medium`\n\n**Affected code:** `src/modules/MouseWithoutBorders/App/Core/MachineStuff.cs:SwitchToMachine`, `src/modules/MouseWithoutBorders/App/Core/Event.cs:GetClipboardDataAfterSwitch`, and the `PackageType.MachineSwitched` handler in `src/modules/MouseWithoutBorders/App/Core/Receiver.cs`.\n\n**Problem:** Thanks for the focused fix and the build/test results. The PR validation section explicitly says this has not been tested on two machines, and issue 50829 describes a source-derived diagnosis. The missing evidence is whether the hotkey-triggered handoff actually delivers the announced clipboard data across physical machines; this is not a claim that the new code is defective.\n\n**Why it matters:** Compilation and the existing unit tests do not establish the end-to-end result across the input, socket, and clipboard paths. The repository's Mouse Without Borders guidance requires two or more physical computers, not VMs.\n\n**Suggested change:** Could you run the following checks on two physical PCs with this change and add the observed results to the PR's Validation Steps Performed section? No speculative code change is requested.\n1. On A, copy a file; switch to B with its Ctrl+Alt+F1..F4 hotkey within 30 seconds and paste on B. Record whether the newly copied file arrives rather than B's previous clipboard content.\n2. Repeat with clipboard content over 1 MB, then repeat both checks from B to A. Record the PowerToys version, clipboard payload type/size, transfer settings, elapsed time before switching, and observed paste result.\n3. Repeat the same checks with a mouse-driven switch to confirm the existing path still works. Include a short recording if useful; report any failure and its reproduction steps rather than describing an unrun check as passed.\n\n**Verification:** Successful results should show the new file and large clipboard content arriving in both directions within the existing 30-second window, with mouse-driven switching preserved. The reported Debug x64 build and 25 passed/1 skipped unit tests are acknowledged, but physical-machine handoff remains unverified until these runtime results are supplied.",
+      "confidence": {
+        "score": 96,
+        "rationale": "Explicit author disclosure and source-derived linked issue, confirmed against complete conversation and exact repository physical-hardware guidance. No runtime defect is alleged."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "50830-physical-validation",
+      "type": "post_review",
+      "label": "Post general review notes",
+      "note": "General review notes - separate PR conversation comments requesting two-physical-PC clipboard handoff results.",
+      "review": {
+        "event": "COMMENT",
+        "head_sha": "cfe07da0f8310faba1d5c3b68644680620468f1b"
+      }
+    }
+  ],
   "workflow": {
     "phase": "awaiting_review_approval",
     "checkpoint_at": "2026-10-10T10:01:58.5203436Z"
@@ -44,6 +69,5 @@
       "result": "passed",
       "scope": "Affected app and dependencies; existing unit tests passed 25, skipped 1. No two-physical-machine runtime validation."
     }
-  },
-  "needs_revalidation": true
+  }
 }
