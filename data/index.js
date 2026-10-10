@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-10T10:58:22.7174782+08:00",
+  "generated_at": "2026-10-10T11:14:38.6778743+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -91,7 +91,7 @@ window.BOARD_INDEX = {
     "artifacts": 1132
   },
   "impact": {
-    "as_of": "2026-10-10T10:58:22.7174782+08:00",
+    "as_of": "2026-10-10T11:14:38.6778743+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -4458,15 +4458,18 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_in_progress",
+      "stage": "awaiting_review_approval",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 0,
-      "primary_action": null,
+      "proposed_open": 1,
+      "primary_action": {
+        "type": "post_review",
+        "label": "Post documentation inline suggestion"
+      },
       "labels": [
         "Product-Shortcut Guide",
         "Ready for review"
@@ -79020,8 +79023,8 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2023-09-26T03:37:17Z",
-      "updated_at": "2026-10-07T07:11:00Z",
-      "comments": 465,
+      "updated_at": "2026-10-10T03:04:03Z",
+      "comments": 467,
       "priority": null
     },
     {
