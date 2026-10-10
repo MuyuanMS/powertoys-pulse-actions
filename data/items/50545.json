@@ -1,41 +1,261 @@
 {
-  "number": 50545,
-  "kind": "pr",
-  "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-09-30T12:40:49.4517428Z",
-  "evaluated_at": "09/28/2026 07:40:22",
-  "source_updated_at": "09/16/2026 18:28:47",
-  "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
   "title": "feat: Add Microsoft DSC FancyZonesLayouts resource",
-  "url": "https://github.com/microsoft/PowerToys/pull/50545",
-  "status": {
-    "glyph": "...",
-    "label": "Action recovery queued",
-    "detail": "Included in the expanded all-open, non-draft, non-CmdPal drain. Existing current-head review history and validation evidence are retained. Recover supported findings or complete final exact-head validation before offering an action; no approval or completed review is claimed."
-  },
-  "next_action": "Resume saved finding/validation work; final isolated builds may run concurrently. Historical requests remain capped at five except independently proven major defects.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "building",
-    "checkpoint_at": "2026-09-30T12:40:49.4517428Z"
+  "validation": {
+    "line_ending_safety": {
+      "result": "passed",
+      "files": [
+        {
+          "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 902,
+          "cr_only_count": 0
+        },
+        {
+          "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 366,
+          "cr_only_count": 0
+        }
+      ],
+      "checked_comment_ids": [
+        "stored-grid-validation-suggestion",
+        "percentage-overflow-suggestion",
+        "grid-topology-suggestion",
+        "nested-input-options",
+        "nested-input-deserialize",
+        "malformed-empty-custom-set",
+        "stored-wrapper-check",
+        "stored-wrapper-warning-routing"
+      ],
+      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a"
+    },
+    "suggestion_patch": {
+      "result": "passed",
+      "applied_comment_ids": [
+        "stored-grid-validation-suggestion",
+        "percentage-overflow-suggestion",
+        "grid-topology-suggestion",
+        "nested-input-options",
+        "nested-input-deserialize",
+        "malformed-empty-custom-set",
+        "stored-wrapper-check",
+        "stored-wrapper-warning-routing"
+      ],
+      "minimal_ranges_reviewed": true,
+      "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a"
+    }
   },
   "freshness": {
-    "queued_at": "2026-09-30T12:40:49.4517428Z",
-    "checkpoint_at": "2026-09-30T12:40:49.4517428Z"
+    "updatedAt": "2026-09-16T18:28:47Z",
+    "checkedAt": "2026-10-10T16:33:38.6993751+08:00",
+    "headRefOid": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a"
   },
-  "fork_pr": {
-    "number": 785,
-    "url": "https://github.com/MuyuanMS/PowerToys/pull/785"
+  "next_action": "Maintainer selection and explicit approval are required before posting the review. Apply each coordinated group atomically.",
+  "kind": "pr",
+  "pending_author": false,
+  "source_updated_at": "2026-09-16T18:28:47Z",
+  "stage": "awaiting_review_approval",
+  "workflow": {
+    "checkpoint_at": "2026-10-10T16:33:38.6993751+08:00",
+    "phase": "awaiting_review_approval"
   },
-  "fork_branch": "pr-iterate/50545",
-  "expanded_drain": {
-    "queued_at": "2026-10-10T07:34:03.250956Z",
-    "scope": "All open non-draft non-CmdPal PRs, including older unfinished reviews.",
-    "recovery_stage": "queued",
-    "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a"
-  }
+  "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+  "owes": "us",
+  "proposed_comments": [
+    {
+      "side": "RIGHT",
+      "title": "Skip invalid persisted grid and canvas geometry",
+      "line": 243,
+      "disposition": "proposed",
+      "body": "### Skip invalid persisted grid and canvas geometry\n\n**Severity:** `high`\n\n`FromCustomLayouts` currently returns deserialized entries without checking their geometry. A persisted grid with a missing `cell-child-map` becomes an empty map here, although the native reader rejects it. Validate the converted grid or canvas with the existing validators before adding it; warn and skip invalid entries so `get`/`export` do not report that grid as a usable layout. This targeted block does not address missing names or omitted canvas coordinates; cover those separately. A malformed persisted-grid regression should produce a warning and no returned layout.\n\n```suggestion\n            var validationErrors = new List<string>();\n            if (entry.Grid != null)\n            {\n                ValidateGrid(entry.Grid, \"grid\", validationErrors);\n            }\n            else if (entry.Canvas != null)\n            {\n                ValidateCanvas(entry.Canvas, \"canvas\", validationErrors);\n            }\n\n            if (validationErrors.Count > 0)\n            {\n                warnings?.Add($\"Skipping custom layout '{uuid}' with invalid layout info: {string.Join(\"; \", validationErrors)}\");\n                continue;\n            }\n\n            result.Add(entry);\n```",
+      "id": "stored-grid-validation-suggestion",
+      "kind": "inline",
+      "in_diff": true,
+      "confidence": {
+        "score": 94,
+        "rationale": "The pinned conversion path skips malformed JSON but returns deserialized layouts with invalid geometry; a missing grid cell map is rejected by the native reader and the literal patch passed a focused regression."
+      },
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "severity": "high"
+    },
+    {
+      "side": "RIGHT",
+      "title": "Accumulate grid percentages without Int32 overflow",
+      "line": 660,
+      "disposition": "proposed",
+      "start_line": 647,
+      "body": "### Accumulate grid percentages without Int32 overflow\n\n**Severity:** `medium`\n\n`ValidatePercentages` accumulates positive `int` values into an `int` before comparing to `10000`. For `[2147483647,2147483647,10002]`, unchecked addition wraps to `10000`, so an invalid input can pass. Widen the accumulator and format the widened diagnostic together in this one block: changing the declaration alone does not compile against the existing `Invariant(int)` helper. The focused regression should reject that input and report `4294977296`.\n\n```suggestion\n        long sum = 0;\n        for (var i = 0; i < values.Count; i++)\n        {\n            if (values[i] <= 0)\n            {\n                errors.Add($\"{context}[{Invariant(i)}] must be greater than 0\");\n            }\n\n            sum += values[i];\n        }\n\n        if (sum != PercentageTotal)\n        {\n            errors.Add($\"{context} must sum to {Invariant(PercentageTotal)} (100.00%) but sums to {sum.ToString(CultureInfo.InvariantCulture)}\");\n```",
+      "id": "percentage-overflow-suggestion",
+      "kind": "inline",
+      "in_diff": true,
+      "confidence": {
+        "score": 99,
+        "rationale": "The pinned unchecked Int32 accumulator wraps positive values [2147483647,2147483647,10002] to 10000; one contiguous literal replacement compiled and passed the overflow regression."
+      },
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "severity": "medium"
+    },
+    {
+      "side": "RIGHT",
+      "title": "Reject disconnected grid regions without rejecting gapped IDs",
+      "line": 635,
+      "disposition": "proposed",
+      "body": "### Reject disconnected grid regions without rejecting gapped IDs\n\n**Severity:** `high`\n\n`ValidateGrid` accepts `[[0,1],[1,0]]`, but the native builder encounters the same zone ID at separate top-left positions and `AddZone` rejects the duplicate. Require each used ID to occupy one rectangle after checking row shape. Do not require IDs to be contiguous: `[0,2,2]` is not rejected by the native builder merely because ID 1 is absent. Cover both examples in regression tests.\n\n```suggestion\n        }\n\n        if (cellChildMap.Any(cells => cells == null || cells.Count != grid.Columns))\n        {\n            return;\n        }\n\n        foreach (var zoneIndex in cellChildMap.SelectMany(row => row).Distinct())\n        {\n            var cells = cellChildMap\n                .SelectMany((row, rowIndex) => row.Select((value, columnIndex) => (value, rowIndex, columnIndex)))\n                .Where(cell => cell.value == zoneIndex)\n                .ToList();\n            var minRow = cells.Min(cell => cell.rowIndex);\n            var maxRow = cells.Max(cell => cell.rowIndex);\n            var minColumn = cells.Min(cell => cell.columnIndex);\n            var maxColumn = cells.Max(cell => cell.columnIndex);\n            for (var row = minRow; row <= maxRow; row++)\n            {\n                for (var column = minColumn; column <= maxColumn; column++)\n                {\n                    if (cellChildMap[row][column] != zoneIndex)\n                    {\n                        errors.Add($\"{mapContext}: zone index {Invariant(zoneIndex)} must form a single rectangle\");\n                        return;\n                    }\n                }\n            }\n        }\n```",
+      "id": "grid-topology-suggestion",
+      "kind": "inline",
+      "in_diff": true,
+      "confidence": {
+        "rationale": "Pinned upstream caller/guard trace and focused upstream/candidate regression verification.",
+        "score": 95
+      },
+      "start_line": 635,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "severity": "high"
+    },
+    {
+      "id": "nested-input-options",
+      "selection_group": {
+        "title": "Reject unknown nested input properties",
+        "position": 1,
+        "total": 2,
+        "id": "50545-strict-nested-input",
+        "atomic": true
+      },
+      "in_diff": true,
+      "start_line": 28,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs",
+      "line": 28,
+      "severity": "medium",
+      "side": "RIGHT",
+      "kind": "inline",
+      "confidence": {
+        "rationale": "Pinned upstream caller/guard trace and focused upstream/candidate regression verification.",
+        "score": 95
+      },
+      "disposition": "proposed",
+      "body": "### Reject unknown nested input properties (1/2)\n\n**Severity:** `medium`\n\nApply both parts together. The structural checks validate section names and entry kinds, but default deserialization silently ignores nested typos such as `zoneCounnt`. Cache strict serializer options rather than allocating a new options object for every command; part 2 uses this instance. A valid `zoneCount` must still be accepted.\n\n```suggestion\n    public const string DefaultLayoutsFileName = \"default-layouts.json\";\n\n    private static readonly JsonSerializerOptions _inputSerializerOptions = new()\n    {\n        UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow,\n    };\n```",
+      "title": "Reject unknown nested input properties (1/2)"
+    },
+    {
+      "id": "nested-input-deserialize",
+      "selection_group": {
+        "title": "Reject unknown nested input properties",
+        "position": 2,
+        "total": 2,
+        "id": "50545-strict-nested-input",
+        "atomic": true
+      },
+      "in_diff": true,
+      "start_line": 75,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs",
+      "line": 75,
+      "severity": "medium",
+      "side": "RIGHT",
+      "kind": "inline",
+      "confidence": {
+        "rationale": "Pinned upstream caller/guard trace and focused upstream/candidate regression verification.",
+        "score": 95
+      },
+      "disposition": "proposed",
+      "body": "### Reject unknown nested input properties (2/2)\n\n**Severity:** `medium`\n\nApply both parts together. Deserialize with the cached strict options from part 1 so `{\"layouts\":{\"templates\":[{\"type\":\"focus\",\"zoneCounnt\":4}]}}` fails before any file is written. The existing `CreateFunctionDataWithInput` handler already reports the resulting `JsonException` through the DSC error channel.\n\n```suggestion\n            Input = node.Deserialize<LayoutsResourceObject>(_inputSerializerOptions) ?? new();\n```",
+      "title": "Reject unknown nested input properties (2/2)"
+    },
+    {
+      "side": "RIGHT",
+      "title": "Repair a malformed custom-layout file when managing an empty section",
+      "line": 344,
+      "disposition": "proposed",
+      "body": "### Repair a malformed custom-layout file when managing an empty section\n\n**Severity:** `medium`\n\nA malformed `custom-layouts.json` is warned about and represented as empty state. An explicit `custom: []` then compares equal, so `SetState` is skipped and reports success without replacing the malformed file. Treat the existing custom-file read warning as a difference as well as comparing the canonical data. This is limited to the managed custom section; omitted sections remain untouched. Verify that the first set writes valid empty JSON and a second command has no warning or diff.\n\n```suggestion\n        if (desired.Custom != null &&\n            (Warnings.Any(warning => warning.StartsWith($\"{CustomLayoutsFileName} is malformed\", StringComparison.Ordinal)) ||\n             !AreEqual(SortByUuid(desired.Custom), SortByUuid(current.Custom ?? []))))\n```",
+      "id": "malformed-empty-custom-set",
+      "kind": "inline",
+      "in_diff": true,
+      "confidence": {
+        "rationale": "Pinned upstream caller/guard trace and focused upstream/candidate regression verification.",
+        "score": 95
+      },
+      "start_line": 344,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs",
+      "severity": "medium"
+    },
+    {
+      "id": "stored-wrapper-check",
+      "selection_group": {
+        "title": "Warn for a present custom-layout wrapper missing its required array",
+        "position": 1,
+        "total": 2,
+        "id": "50545-stored-wrapper-warning",
+        "atomic": true
+      },
+      "in_diff": true,
+      "start_line": 175,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FancyZones/FzLayoutsConverter.cs",
+      "line": 175,
+      "severity": "medium",
+      "side": "RIGHT",
+      "kind": "inline",
+      "confidence": {
+        "rationale": "Pinned upstream caller/guard trace and focused upstream/candidate regression verification.",
+        "score": 95
+      },
+      "disposition": "proposed",
+      "body": "### Warn for a missing stored custom-layout array (1/2)\n\n**Severity:** `medium`\n\nApply both parts together. A present `{}` wrapper becomes an empty custom list without a warning, although the native parser requires `custom-layouts`. Report the missing array before returning empty state. Part 2 prevents this check from adding warnings for absent files or duplicating an existing malformed-JSON warning. Literal `null` already follows the malformed-JSON warning path and is not a new defect.\n\n```suggestion\n        var result = new List<FzCustomLayout>();\n        if (stored.CustomLayouts == null)\n        {\n            warnings?.Add(\"custom-layouts.json is malformed and is treated as empty: expected a top-level 'custom-layouts' array\");\n            return result;\n        }\n```",
+      "title": "Warn for a missing stored custom-layout array (1/2)"
+    },
+    {
+      "id": "stored-wrapper-warning-routing",
+      "selection_group": {
+        "title": "Warn for a present custom-layout wrapper missing its required array",
+        "position": 2,
+        "total": 2,
+        "id": "50545-stored-wrapper-warning",
+        "atomic": true
+      },
+      "in_diff": true,
+      "start_line": 97,
+      "path": "src/dsc/v3/PowerToys.DSC/Models/FunctionData/LayoutsFunctionData.cs",
+      "line": 97,
+      "severity": "medium",
+      "side": "RIGHT",
+      "kind": "inline",
+      "confidence": {
+        "rationale": "Pinned upstream caller/guard trace and focused upstream/candidate regression verification.",
+        "score": 95
+      },
+      "disposition": "proposed",
+      "body": "### Warn for a missing stored custom-layout array (2/2)\n\n**Severity:** `medium`\n\nApply both parts together. Read the custom file first, then pass the warning collector only when the file is present and `ReadFile` did not already report malformed JSON. This preserves silent empty state for missing files and exactly one warning for malformed files, while allowing part 1 to warn for a present `{}` wrapper. Existing invalid-entry warnings remain enabled for successfully read files.\n\n```suggestion\n        var customLayouts = ReadFile(new CustomLayouts(), CustomLayoutsFileName);\n        var reportCustomWarnings = File.Exists(Path.Combine(DataFolder(), CustomLayoutsFileName)) &&\n            !Warnings.Any(warning => warning.StartsWith($\"{CustomLayoutsFileName} is malformed\", StringComparison.Ordinal));\n        layouts.Custom = FzLayoutsConverter.FromCustomLayouts(customLayouts, reportCustomWarnings ? Warnings : null);\n```",
+      "title": "Warn for a missing stored custom-layout array (2/2)"
+    }
+  ],
+  "url": "https://github.com/microsoft/PowerToys/pull/50545",
+  "track": "review",
+  "status": {
+    "label": "Six grounded findings; eight suggested replacements",
+    "detail": "Current-head input and stored-state defects have eight validated localized suggestions for six grounded findings. This is a maintainer-selectable comment draft, not an approval or a clean upstream result.",
+    "glyph": "..."
+  },
+  "actions": [
+    {
+      "requiresApproval": true,
+      "id": "post-review-50545-grounded",
+      "primary": true,
+      "confirm": true,
+      "label": "Post eight inline suggestions",
+      "review": {
+        "repository": "microsoft/PowerToys",
+        "pullRequest": 50545,
+        "head_sha": "3a9fc8aa4fb8f970712342bbb3b6a7f5e9d5ef3a",
+        "event": "COMMENT"
+      },
+      "type": "post_review"
+    }
+  ],
+  "evaluated_at": "2026-10-10T16:33:38.6993751+08:00",
+  "generated_at": "2026-10-10T16:33:38.6993751+08:00",
+  "number": 50545
 }
