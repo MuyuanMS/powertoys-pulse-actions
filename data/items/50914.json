@@ -1,39 +1,536 @@
 {
-  "evaluated_at": "2026-10-10T02:48:16.576963Z",
-  "kind": "pr",
-  "pending_author": false,
-  "proposed_comments": [],
-  "title": "[Awake] Pick the expiration date and time from the tray menu",
-  "stage": "review_in_progress",
+  "stage": "awaiting_review_approval",
+  "generated_at": "2026-10-10T06:02:06.1020933Z",
+  "evaluated_at": "2026-10-10T06:02:06.1020933Z",
+  "summary": "Nine supported inline suggestions in two atomic groups fix fixed-size locale-format buffers and seconds-field selection for customized short-time formats. Final R5 was consumed at the five-request cap. Exact unchanged upstream, both independently selectable raw-literal groups and the combined candidate compiled. Unsupported DST-throw and common-control proposals are withdrawn; modern C# native-integer/struct expressions compile unchanged. No runtime locale/UI, full-suite or cloud-convergence claim.",
   "status": {
-    "glyph": "...",
-    "detail": "The exact saved request returned a matching result; this is no longer an external cloud wait. The assigned worker is assessing the result before final scoped validation and drafting.",
-    "label": "Review result being assessed"
+    "glyph": "!",
+    "detail": "Two atomic groups, four final focused builds; actual Lite/startup-timeout R5 and no runtime custom-locale execution.",
+    "label": "Nine validated Awake inline suggestions"
   },
-  "source_updated_at": "2026-10-05T10:40:06Z",
-  "generated_at": "2026-10-10T02:48:16.576963Z",
   "head_sha": "b098345515cbdb9c000fbfd7fe288b85bf7e6dbd",
-  "owes": "us",
   "url": "https://github.com/microsoft/PowerToys/pull/50914",
-  "next_action": "Continue source-grounded review and final validation; no maintainer posting action is available from this checkpoint.",
-  "number": 50914,
-  "freshness": {
-    "needs_revalidation": true,
-    "checkpoint_at": "2026-10-10T02:48:16.576963Z"
-  },
-  "workflow": {
-    "checkpoint_at": "2026-10-10T02:48:16.576963Z",
-    "phase": "reviewing_findings",
-    "request": {
-      "after_review_id": 5477078159,
-      "submitted_at": "2026-10-10T10:40:01+08:00",
-      "matching_review_submitted": true,
-      "fork_head_sha": "b13cfa5d9cbee5c142ebda0e13c0f818d28afb8a",
-      "submitted_review_id": 5477184363,
-      "requested_at": "2026-10-10T10:21:17+08:00"
+  "actions": [
+    {
+      "label": "Post nine inline suggestions",
+      "type": "post_review",
+      "id": "post-review-50914",
+      "source_updated_at": "2026-10-05T10:40:06Z",
+      "review": {
+        "comments": [
+          {
+            "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+            "line": 242,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Query and allocate required locale buffer",
+            "id": "locale-buffer-sizing",
+            "selection_group": {
+              "id": "locale-format-buffer",
+              "title": "Size locale format buffers from GetLocaleInfoEx",
+              "position": 1,
+              "total": 4,
+              "atomic": true
+            },
+            "body": "### [P2] (1/4) Query and allocate the required locale buffer\n**Severity:** `medium`\n\nCustomized short date/time formats are not guaranteed to fit in 80 characters. The API supports a zero-capacity size query; reject a failed query before allocating, then read into the exact capacity. This first step is grouped atomically with the buffer call, failure handling, and nullable P/Invoke changes.\n\n```suggestion\n            int length = Bridge.GetLocaleInfoEx(null, localeFormat, null, 0);\n            if (length <= 0)\n            {\n                Logger.LogError($\"Failed to query locale format {localeFormat}. Error code: {Marshal.GetLastWin32Error()}\");\n                return string.Empty;\n            }\n\n            char[] buffer = new char[length];\n```",
+            "start_line": 242,
+            "in_diff": true,
+            "confidence": {
+              "score": 88,
+              "rationale": "Microsoft documents cchData=0 as the required-size query; the fixed 80-character limit is unsupported for custom locale data."
+            },
+            "kind": "inline"
+          },
+          {
+            "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+            "line": 243,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Read locale format into the allocated buffer",
+            "id": "locale-buffer-read",
+            "selection_group": {
+              "id": "locale-format-buffer",
+              "title": "Size locale format buffers from GetLocaleInfoEx",
+              "position": 2,
+              "total": 4,
+              "atomic": true
+            },
+            "body": "### [P2] (2/4) Use the allocated capacity for the locale read\n**Severity:** `medium`\n\nAfter querying the required size, pass the allocated buffer and capacity to the data call. Keep this with the size-query, failure handling, and P/Invoke members of the atomic fix.\n\n```suggestion\n            length = Bridge.GetLocaleInfoEx(null, localeFormat, buffer, buffer.Length);\n```",
+            "start_line": 243,
+            "in_diff": true,
+            "confidence": {
+              "score": 88,
+              "rationale": "The second API call must use the returned required size and allocated character array; this is the documented two-call pattern."
+            },
+            "kind": "inline"
+          },
+          {
+            "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+            "line": 246,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Log locale format retrieval failure",
+            "id": "locale-buffer-error",
+            "selection_group": {
+              "id": "locale-format-buffer",
+              "title": "Size locale format buffers from GetLocaleInfoEx",
+              "position": 3,
+              "total": 4,
+              "atomic": true
+            },
+            "body": "### [P2] (3/4) Log a failed locale data read\n**Severity:** `medium`\n\nAn undersized or otherwise failed nonzero-buffer read returns 0. Record that API failure before the existing early return so the field map does not silently disappear. Keep this with the atomic size-query change.\n\n```suggestion\n                Logger.LogError($\"Failed to retrieve locale format {localeFormat}. Error code: {Marshal.GetLastWin32Error()}\");\n                return string.Empty;\n```",
+            "start_line": 246,
+            "in_diff": true,
+            "confidence": {
+              "score": 84,
+              "rationale": "The API returns 0 and exposes extended error information for retrieval failures; this exact diagnostic was built in the combined candidate."
+            },
+            "kind": "inline"
+          },
+          {
+            "path": "src/modules/awake/Awake/Core/Native/Bridge.cs",
+            "line": 244,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Permit null output for GetLocaleInfoEx size query",
+            "id": "locale-buffer-signature",
+            "selection_group": {
+              "id": "locale-format-buffer",
+              "title": "Size locale format buffers from GetLocaleInfoEx",
+              "position": 4,
+              "total": 4,
+              "atomic": true
+            },
+            "body": "### [P2] (4/4) Allow the documented size-query call\n**Severity:** `medium`\n\nThe size query passes a null data buffer with `cchData = 0`, as documented for `GetLocaleInfoEx`. Mark the P/Invoke array nullable so the exact-capacity lookup is represented correctly in the nullable C# signature.\n\n```suggestion\n        internal static extern int GetLocaleInfoEx(string? lpLocaleName, uint lcType, [Out] char[]? lpLCData, int cchData);\n```",
+            "start_line": 244,
+            "in_diff": true,
+            "confidence": {
+              "score": 88,
+              "rationale": "The API specifies the buffer is unused when cchData is zero; nullable annotation matches the two-call code and built candidate."
+            },
+            "kind": "inline"
+          },
+          {
+            "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+            "line": 31,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Represent locale-provided seconds in picker field order",
+            "id": "locale-seconds-enum",
+            "selection_group": {
+              "id": "locale-seconds-picker",
+              "title": "Support seconds in customized short-time formats",
+              "position": 1,
+              "total": 5,
+              "atomic": true
+            },
+            "body": "### [P2] (1/5) Include seconds in the field order\n**Severity:** `medium`\n\nA customized short-time pattern may include seconds; `LOCALE_SSHORTTIME` describes their omission as typical, not guaranteed. The parsed field list drives Tab navigation, so an exposed seconds field must be represented there. Keep this insertion atomic with parsing, selected-field detection, stepping, and reading the value.\n\n```suggestion\n            Minute,\n            Second,\n```",
+            "start_line": 31,
+            "in_diff": true,
+            "confidence": {
+              "score": 91,
+              "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+            },
+            "kind": "inline"
+          },
+          {
+            "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+            "line": 273,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Parse seconds from the locale time pattern",
+            "id": "locale-seconds-token",
+            "selection_group": {
+              "id": "locale-seconds-picker",
+              "title": "Support seconds in customized short-time formats",
+              "position": 2,
+              "total": 5,
+              "atomic": true
+            },
+            "body": "### [P2] (2/5) Parse the locale seconds token\n**Severity:** `medium`\n\n`FieldOrder` currently recognizes `h`, `H`, and `m` but not the `s` field token. When a custom short-time pattern exposes seconds, add it to the order so Tab traversal can reach the field; keep this with the remaining seconds support.\n\n```suggestion\n                    'm' => PickerField.Minute,\n                    's' => PickerField.Second,\n```",
+            "start_line": 273,
+            "in_diff": true,
+            "confidence": {
+              "score": 91,
+              "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+            },
+            "kind": "inline"
+          },
+          {
+            "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+            "line": 472,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Step the selected seconds field by one second",
+            "id": "locale-seconds-step",
+            "selection_group": {
+              "id": "locale-seconds-picker",
+              "title": "Support seconds in customized short-time formats",
+              "position": 3,
+              "total": 5,
+              "atomic": true
+            },
+            "body": "### [P2] (3/5) Step the seconds field correctly\n**Severity:** `medium`\n\nWhen a locale exposes a seconds field, `StepSelectedTimeField` must map selection of that field to a one-second change. Without it, wheel input on seconds computes `TimeSpan.Zero` and makes no adjustment. Keep the mapping with the other seconds-field changes.\n\n```suggestion\n                PickerField.Minute => TimeSpan.FromMinutes(1),\n                PickerField.Second => TimeSpan.FromSeconds(1),\n```",
+            "start_line": 472,
+            "in_diff": true,
+            "confidence": {
+              "score": 91,
+              "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+            },
+            "kind": "inline"
+          },
+          {
+            "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+            "line": 502,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Detect the selected seconds field",
+            "id": "locale-seconds-probe",
+            "selection_group": {
+              "id": "locale-seconds-picker",
+              "title": "Support seconds in customized short-time formats",
+              "position": 4,
+              "total": 5,
+              "atomic": true
+            },
+            "body": "### [P2] (4/5) Detect seconds when probing the selected field\n**Severity:** `medium`\n\n`SelectedField` probes the picker by incrementing a field, but currently checks only through minutes. If the selected locale field is seconds, it returns null, preventing the seconds-specific wheel step and custom field navigation. Add the seconds comparison and keep it with the other atomic members.\n\n```suggestion\n                : stepped.Minute != probe.Minute ? PickerField.Minute\n                : stepped.Second != probe.Second ? PickerField.Second\n```",
+            "start_line": 502,
+            "in_diff": true,
+            "confidence": {
+              "score": 91,
+              "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+            },
+            "kind": "inline"
+          },
+          {
+            "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+            "line": 551,
+            "side": "RIGHT",
+            "severity": "medium",
+            "title": "Preserve seconds only when the locale picker displays them",
+            "id": "locale-seconds-value",
+            "selection_group": {
+              "id": "locale-seconds-picker",
+              "title": "Support seconds in customized short-time formats",
+              "position": 5,
+              "total": 5,
+              "atomic": true
+            },
+            "body": "### [P2] (5/5) Preserve displayed seconds in the expiration value\n**Severity:** `medium`\n\n`ReadPickers` always constructs the expiration time with second zero. If the locale format displays seconds, accepting the dialog silently discards the value the user selected. Preserve `time.Second` only when the field is present so formats without seconds retain the existing minute precision; keep this with the other seconds support.\n\n```suggestion\n            int second = _timeFields.Contains(PickerField.Second) ? time.Second : 0;\n            return new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, second, DateTimeKind.Local);\n```",
+            "start_line": 551,
+            "in_diff": true,
+            "confidence": {
+              "score": 93,
+              "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+            },
+            "kind": "inline"
+          }
+        ],
+        "head_sha": "b098345515cbdb9c000fbfd7fe288b85bf7e6dbd",
+        "event": "COMMENT"
+      },
+      "head_sha": "b098345515cbdb9c000fbfd7fe288b85bf7e6dbd"
     }
+  ],
+  "review_coverage": {
+    "recorded_rounds": 5,
+    "supported_findings": 9,
+    "automated_round_cap": 5,
+    "approval_ready": false,
+    "cap_reached": true,
+    "final_review_id": 5477184363,
+    "cloud_complete": false
   },
-  "track": "review",
-  "summary": "The saved fork review result has arrived. Its findings and thread history are being assessed against current upstream source. No completed review, validated suggestion, build, or approval is claimed by this progress checkpoint.",
-  "actions": []
+  "validation": {
+    "upstream_head": {
+      "head_sha": "b098345515cbdb9c000fbfd7fe288b85bf7e6dbd",
+      "result": "passed",
+      "scope": "Exact unchanged Awake and referenced dependency x64 Debug rebuild; no full product/runtime claim."
+    },
+    "line_ending_safety": {
+      "head_sha": "b098345515cbdb9c000fbfd7fe288b85bf7e6dbd",
+      "result": "passed",
+      "files": [
+        {
+          "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": false,
+          "crlf_count": 0,
+          "lf_only_count": 622,
+          "cr_only_count": 0,
+          "lineEndings": "lf"
+        },
+        {
+          "path": "src/modules/awake/Awake/Core/Native/Bridge.cs",
+          "result": "passed",
+          "line_endings": "lf",
+          "utf8_bom": true,
+          "crlf_count": 0,
+          "lf_only_count": 250,
+          "cr_only_count": 0,
+          "lineEndings": "lf"
+        }
+      ],
+      "checked_comment_ids": [
+        "locale-buffer-sizing",
+        "locale-buffer-read",
+        "locale-buffer-error",
+        "locale-buffer-signature",
+        "locale-seconds-enum",
+        "locale-seconds-token",
+        "locale-seconds-step",
+        "locale-seconds-probe",
+        "locale-seconds-value"
+      ]
+    },
+    "suggestion_patch": {
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "locale-buffer-sizing",
+        "locale-buffer-read",
+        "locale-buffer-error",
+        "locale-buffer-signature",
+        "locale-seconds-enum",
+        "locale-seconds-token",
+        "locale-seconds-step",
+        "locale-seconds-probe",
+        "locale-seconds-value"
+      ],
+      "independent_atomic_units": [
+        "locale-format-buffer",
+        "locale-seconds-picker"
+      ],
+      "detail": "All literal raw bytes and actual before/after compiler inputs reverified; each atomic group and combined candidate rebuilt with fresh actual outputs.",
+      "result": "passed",
+      "head_sha": "b098345515cbdb9c000fbfd7fe288b85bf7e6dbd"
+    },
+    "limitations": [
+      "No runtime custom-locale dialog, keyboard/focus/timing, hook behavior or full-suite execution.",
+      "Failed dependency attempts and targeted restore/retries preserved; no source/proof transferred from altered fork.",
+      "Historical-inclusive cap five consumed, final actual Lite/startup-timeout; no zero-comment convergence or approval."
+    ]
+  },
+  "proposed_comments": [
+    {
+      "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+      "line": 242,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Query and allocate required locale buffer",
+      "id": "locale-buffer-sizing",
+      "selection_group": {
+        "id": "locale-format-buffer",
+        "title": "Size locale format buffers from GetLocaleInfoEx",
+        "position": 1,
+        "total": 4,
+        "atomic": true
+      },
+      "body": "### [P2] (1/4) Query and allocate the required locale buffer\n**Severity:** `medium`\n\nCustomized short date/time formats are not guaranteed to fit in 80 characters. The API supports a zero-capacity size query; reject a failed query before allocating, then read into the exact capacity. This first step is grouped atomically with the buffer call, failure handling, and nullable P/Invoke changes.\n\n```suggestion\n            int length = Bridge.GetLocaleInfoEx(null, localeFormat, null, 0);\n            if (length <= 0)\n            {\n                Logger.LogError($\"Failed to query locale format {localeFormat}. Error code: {Marshal.GetLastWin32Error()}\");\n                return string.Empty;\n            }\n\n            char[] buffer = new char[length];\n```",
+      "start_line": 242,
+      "in_diff": true,
+      "confidence": {
+        "score": 88,
+        "rationale": "Microsoft documents cchData=0 as the required-size query; the fixed 80-character limit is unsupported for custom locale data."
+      },
+      "kind": "inline"
+    },
+    {
+      "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+      "line": 243,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Read locale format into the allocated buffer",
+      "id": "locale-buffer-read",
+      "selection_group": {
+        "id": "locale-format-buffer",
+        "title": "Size locale format buffers from GetLocaleInfoEx",
+        "position": 2,
+        "total": 4,
+        "atomic": true
+      },
+      "body": "### [P2] (2/4) Use the allocated capacity for the locale read\n**Severity:** `medium`\n\nAfter querying the required size, pass the allocated buffer and capacity to the data call. Keep this with the size-query, failure handling, and P/Invoke members of the atomic fix.\n\n```suggestion\n            length = Bridge.GetLocaleInfoEx(null, localeFormat, buffer, buffer.Length);\n```",
+      "start_line": 243,
+      "in_diff": true,
+      "confidence": {
+        "score": 88,
+        "rationale": "The second API call must use the returned required size and allocated character array; this is the documented two-call pattern."
+      },
+      "kind": "inline"
+    },
+    {
+      "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+      "line": 246,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Log locale format retrieval failure",
+      "id": "locale-buffer-error",
+      "selection_group": {
+        "id": "locale-format-buffer",
+        "title": "Size locale format buffers from GetLocaleInfoEx",
+        "position": 3,
+        "total": 4,
+        "atomic": true
+      },
+      "body": "### [P2] (3/4) Log a failed locale data read\n**Severity:** `medium`\n\nAn undersized or otherwise failed nonzero-buffer read returns 0. Record that API failure before the existing early return so the field map does not silently disappear. Keep this with the atomic size-query change.\n\n```suggestion\n                Logger.LogError($\"Failed to retrieve locale format {localeFormat}. Error code: {Marshal.GetLastWin32Error()}\");\n                return string.Empty;\n```",
+      "start_line": 246,
+      "in_diff": true,
+      "confidence": {
+        "score": 84,
+        "rationale": "The API returns 0 and exposes extended error information for retrieval failures; this exact diagnostic was built in the combined candidate."
+      },
+      "kind": "inline"
+    },
+    {
+      "path": "src/modules/awake/Awake/Core/Native/Bridge.cs",
+      "line": 244,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Permit null output for GetLocaleInfoEx size query",
+      "id": "locale-buffer-signature",
+      "selection_group": {
+        "id": "locale-format-buffer",
+        "title": "Size locale format buffers from GetLocaleInfoEx",
+        "position": 4,
+        "total": 4,
+        "atomic": true
+      },
+      "body": "### [P2] (4/4) Allow the documented size-query call\n**Severity:** `medium`\n\nThe size query passes a null data buffer with `cchData = 0`, as documented for `GetLocaleInfoEx`. Mark the P/Invoke array nullable so the exact-capacity lookup is represented correctly in the nullable C# signature.\n\n```suggestion\n        internal static extern int GetLocaleInfoEx(string? lpLocaleName, uint lcType, [Out] char[]? lpLCData, int cchData);\n```",
+      "start_line": 244,
+      "in_diff": true,
+      "confidence": {
+        "score": 88,
+        "rationale": "The API specifies the buffer is unused when cchData is zero; nullable annotation matches the two-call code and built candidate."
+      },
+      "kind": "inline"
+    },
+    {
+      "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+      "line": 31,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Represent locale-provided seconds in picker field order",
+      "id": "locale-seconds-enum",
+      "selection_group": {
+        "id": "locale-seconds-picker",
+        "title": "Support seconds in customized short-time formats",
+        "position": 1,
+        "total": 5,
+        "atomic": true
+      },
+      "body": "### [P2] (1/5) Include seconds in the field order\n**Severity:** `medium`\n\nA customized short-time pattern may include seconds; `LOCALE_SSHORTTIME` describes their omission as typical, not guaranteed. The parsed field list drives Tab navigation, so an exposed seconds field must be represented there. Keep this insertion atomic with parsing, selected-field detection, stepping, and reading the value.\n\n```suggestion\n            Minute,\n            Second,\n```",
+      "start_line": 31,
+      "in_diff": true,
+      "confidence": {
+        "score": 91,
+        "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+      },
+      "kind": "inline"
+    },
+    {
+      "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+      "line": 273,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Parse seconds from the locale time pattern",
+      "id": "locale-seconds-token",
+      "selection_group": {
+        "id": "locale-seconds-picker",
+        "title": "Support seconds in customized short-time formats",
+        "position": 2,
+        "total": 5,
+        "atomic": true
+      },
+      "body": "### [P2] (2/5) Parse the locale seconds token\n**Severity:** `medium`\n\n`FieldOrder` currently recognizes `h`, `H`, and `m` but not the `s` field token. When a custom short-time pattern exposes seconds, add it to the order so Tab traversal can reach the field; keep this with the remaining seconds support.\n\n```suggestion\n                    'm' => PickerField.Minute,\n                    's' => PickerField.Second,\n```",
+      "start_line": 273,
+      "in_diff": true,
+      "confidence": {
+        "score": 91,
+        "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+      },
+      "kind": "inline"
+    },
+    {
+      "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+      "line": 472,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Step the selected seconds field by one second",
+      "id": "locale-seconds-step",
+      "selection_group": {
+        "id": "locale-seconds-picker",
+        "title": "Support seconds in customized short-time formats",
+        "position": 3,
+        "total": 5,
+        "atomic": true
+      },
+      "body": "### [P2] (3/5) Step the seconds field correctly\n**Severity:** `medium`\n\nWhen a locale exposes a seconds field, `StepSelectedTimeField` must map selection of that field to a one-second change. Without it, wheel input on seconds computes `TimeSpan.Zero` and makes no adjustment. Keep the mapping with the other seconds-field changes.\n\n```suggestion\n                PickerField.Minute => TimeSpan.FromMinutes(1),\n                PickerField.Second => TimeSpan.FromSeconds(1),\n```",
+      "start_line": 472,
+      "in_diff": true,
+      "confidence": {
+        "score": 91,
+        "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+      },
+      "kind": "inline"
+    },
+    {
+      "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+      "line": 502,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Detect the selected seconds field",
+      "id": "locale-seconds-probe",
+      "selection_group": {
+        "id": "locale-seconds-picker",
+        "title": "Support seconds in customized short-time formats",
+        "position": 4,
+        "total": 5,
+        "atomic": true
+      },
+      "body": "### [P2] (4/5) Detect seconds when probing the selected field\n**Severity:** `medium`\n\n`SelectedField` probes the picker by incrementing a field, but currently checks only through minutes. If the selected locale field is seconds, it returns null, preventing the seconds-specific wheel step and custom field navigation. Add the seconds comparison and keep it with the other atomic members.\n\n```suggestion\n                : stepped.Minute != probe.Minute ? PickerField.Minute\n                : stepped.Second != probe.Second ? PickerField.Second\n```",
+      "start_line": 502,
+      "in_diff": true,
+      "confidence": {
+        "score": 91,
+        "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+      },
+      "kind": "inline"
+    },
+    {
+      "path": "src/modules/awake/Awake/Core/ExpirationDialog.cs",
+      "line": 551,
+      "side": "RIGHT",
+      "severity": "medium",
+      "title": "Preserve seconds only when the locale picker displays them",
+      "id": "locale-seconds-value",
+      "selection_group": {
+        "id": "locale-seconds-picker",
+        "title": "Support seconds in customized short-time formats",
+        "position": 5,
+        "total": 5,
+        "atomic": true
+      },
+      "body": "### [P2] (5/5) Preserve displayed seconds in the expiration value\n**Severity:** `medium`\n\n`ReadPickers` always constructs the expiration time with second zero. If the locale format displays seconds, accepting the dialog silently discards the value the user selected. Preserve `time.Second` only when the field is present so formats without seconds retain the existing minute precision; keep this with the other seconds support.\n\n```suggestion\n            int second = _timeFields.Contains(PickerField.Second) ? time.Second : 0;\n            return new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, second, DateTimeKind.Local);\n```",
+      "start_line": 551,
+      "in_diff": true,
+      "confidence": {
+        "score": 93,
+        "rationale": "Windows permits customized short-time patterns; the current upstream code drops or cannot operate on seconds when the format exposes that field."
+      },
+      "kind": "inline"
+    }
+  ],
+  "author": "Bluejanis",
+  "schemaVersion": 5,
+  "source_updated_at": "2026-10-05T10:40:06Z",
+  "title": "[Awake] Pick the expiration date and time from the tray menu",
+  "kind": "pr",
+  "repository": "microsoft/PowerToys",
+  "number": 50914,
+  "workflow": {
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-10T06:02:06.1020933Z",
+    "final_requested_result_consumed": true,
+    "cap_reached": true
+  }
 }
