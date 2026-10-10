@@ -1,30 +1,381 @@
 {
-  "number": 50081,
-  "kind": "pr",
-  "track": "review",
-  "stage": "review_in_progress",
-  "owes": "us",
-  "pending_author": false,
-  "generated_at": "2026-10-09T14:44:46.8626111Z",
-  "evaluated_at": "09/24/2026 06:35:00",
-  "source_updated_at": "09/30/2026 17:29:01",
-  "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
-  "title": "[AdvancedPaste] Add \"Paste as .jpg file\" action with configurable JPEG quality",
   "url": "https://github.com/microsoft/PowerToys/pull/50081",
-  "status": {
-    "glyph": "...",
-    "label": "Review in progress",
-    "detail": "An independent worker is advancing the current-head review, reconciling durable history and checking supported findings. The five-round cap includes historical requests; final focused validation remains required. This checkpoint is not a completed review or approval."
-  },
-  "next_action": "Resume the saved review stage in the next dashboard update.",
-  "proposed_comments": [],
-  "actions": [],
-  "workflow": {
-    "phase": "review_in_progress",
-    "checkpoint_at": "2026-10-09T14:44:46.8626111Z"
-  },
+  "source_updated_at": "2026-09-30T17:29:01Z",
+  "authorAssociation": "FIRST_TIME_CONTRIBUTOR",
+  "state": "OPEN",
+  "author": "OrionFOTL",
+  "actions": [
+    {
+      "primary": true,
+      "review": {
+        "pullRequest": 50081,
+        "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
+        "event": "COMMENT",
+        "repository": "microsoft/PowerToys",
+        "comments": [
+          {
+            "in_diff": true,
+            "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs",
+            "line": 62,
+            "severity": "medium",
+            "title": "Do not advertise a disabled JPEG shortcut",
+            "body": "### Do not advertise a disabled JPEG shortcut\r\n\r\n**Severity:** `medium`\r\n\r\nTurning off the JPEG action leaves its configured shortcut stored in settings. `UserSettings.UpdateSettings` excludes that action unless both its parent and its own `IsShown` flag are true, but this append checks only the parent and still advertises the inactive shortcut in Shortcut Guide. Check the JPEG action's flag before generating its entry.\r\n\r\n```suggestion\r\n                    if (advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsJpgFile.IsShown)\r\n                    {\r\n                        content.Append(HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsJpgFile.Shortcut, SettingsResourceLoader.GetString(\"AdvancedPaste/ModuleTitle\"), SettingsResourceLoader.GetString(\"PasteAsJpgFile/Header\")));\r\n                    }\r\n\r\n```",
+            "kind": "inline",
+            "side": "RIGHT",
+            "confidence": {
+              "score": 94,
+              "rationale": "The current append is reachable with the parent shown and the JPEG child disabled; the action enablement filter checks both flags."
+            },
+            "disposition": "proposed",
+            "id": "50081-jpeg-shortcut"
+          },
+          {
+            "in_diff": true,
+            "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
+            "line": 94,
+            "severity": "medium",
+            "title": "Preserve the existing paste-format telemetry values",
+            "body": "### Preserve the existing paste-format telemetry values\r\n\r\n**Severity:** `medium`\r\n\r\nInserting this implicit enum member changes HTML from 7 to 8, MP3 from 8 to 9, MP4 from 9 to 10, KernelQuery from 10 to 11, and CustomTextTransformation from 11 to 12. `PasteFormatExecutor.WriteTelemetry` sends this enum through the existing format-click and in-app-shortcut EventSource payloads, so the same numeric identifiers acquire different meanings across versions.\r\n\r\nAssign JPEG the unused value 12 and explicitly preserve HTML=7, MP3=8, MP4=9, KernelQuery=10, and CustomTextTransformation=11 in `PasteFormats.cs`. Setting only JPEG=12 is not sufficient: the following implicit HTML member would then become 13. Add an enum-value regression assertion and verify both existing action telemetry and the new JPEG action; no new telemetry event or generic telemetry-process follow-up is needed for this fix.",
+            "kind": "inline",
+            "side": "RIGHT",
+            "confidence": {
+              "score": 95,
+              "rationale": "The pinned enum and actual telemetry callers establish numeric renumbering; runtime enum assertions fail upstream and pass with the preserved assignments."
+            },
+            "disposition": "proposed",
+            "id": "50081-stable-format-values"
+          },
+          {
+            "in_diff": false,
+            "severity": "medium",
+            "title": "Keep legacy hotkey slots aligned with the settings model",
+            "body": "### Keep legacy hotkey slots aligned with the settings model\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, `AdvancedPaste::process_additional_action` and `get_hotkeys`; `src/settings-ui/Settings.UI.Library/AdvancedPastePasteAsFileAction.cs`, `SubActions`; `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`, `GetAllHotkeyAccessors`; `src/settings-ui/Settings.UI/ViewModels/ShortcutConflictViewModel.cs`, `SetupModuleData` and `UpdateModuleHotkeySettings`.\r\n\r\n**Problem:** An existing settings file has TXT, PNG, and HTML children but no JPEG property. Deserializing that file creates the model's default JPEG child, so the managed traversal includes a JPEG slot before HTML. The native traversal visits only properties present in the raw JSON and therefore omits that slot. It also relies on the JSON object's iteration order rather than the managed order: the current four-child fixture enumerates TXT, JPEG, PNG, HTML, whereas the managed sequence is TXT, PNG, JPEG, HTML.\r\n\r\n**Why it matters:** `get_hotkeys` assigns positional IDs, and the conflict view indexes `GetAllHotkeyAccessors()` with those IDs. Until the configuration is rewritten, an HTML conflict consequently refers to the JPEG accessor, and following action indices are displaced. The application's normal settings migration does not add the missing child: `UpgradeSettingsConfiguration` returns false. This is an index-contract failure, not a claim about focus or keyboard timing.\r\n\r\n**Suggested change:** In the composite-action branch of `process_additional_action`, special-case the `paste-as-file` group. Traverse TXT, PNG, JPEG, then HTML explicitly; recurse normally for each existing child. If JPEG alone is absent, append an `AdditionalAction` with ID `paste-as-jpg-file` and a zero/default hotkey so the missing action is not activated but still reserves its managed slot. Keep the existing group-visibility check and default traversal for other groups. Keep the managed `SubActions` and header-key order unchanged.\r\n\r\n```cpp\r\nelse if (actionName == L\"paste-as-file\")\r\n{\r\n    const std::vector<winrt::hstring> order{\r\n        L\"paste-as-txt-file\", L\"paste-as-png-file\",\r\n        L\"paste-as-jpg-file\", L\"paste-as-html-file\"\r\n    };\r\n    for (const auto& name : order)\r\n    {\r\n        if (action.HasKey(name))\r\n        {\r\n            process_additional_action(name, action.GetNamedValue(name), actionIsShown);\r\n        }\r\n        else if (name == L\"paste-as-jpg-file\")\r\n        {\r\n            m_additional_actions.push_back({ name.c_str(), {} });\r\n        }\r\n    }\r\n}\r\n```\r\n\r\n**Verification:** Load legacy JSON without JPEG and compare the native IDs with the deserialized `GetAllHotkeyAccessors` sequence before saving settings. Repeat with current JSON containing JPEG, and verify the absent JPEG slot has a zero hotkey. Build the native module from `src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface` with `..\\..\\..\\..\\tools\\build\\build.cmd`, then check that editing an HTML conflict selects and updates the HTML accessor. The focused traversal test proves slot ordering; it does not replace an end-to-end conflict-window test.",
+            "out_of_diff_reason": "The required native placeholder and ordered traversal are in unchanged dllmain.cpp; the current diff adds only the managed JPEG child and does not modify this native function.",
+            "kind": "companion",
+            "confidence": {
+              "score": 96,
+              "rationale": "Raw legacy JSON has no JPEG slot while the managed backing-field initializer supplies one; the positional-ID conflict consumer is explicit."
+            },
+            "disposition": "proposed",
+            "id": "50081-legacy-hotkey-slots"
+          }
+        ]
+      },
+      "requiresApproval": true,
+      "confirm": true,
+      "label": "Post 3 grounded comments (1 literal suggestion)",
+      "note": "Explicit approval required. Revalidate upstream head/activity before publication; no approval or submission recorded.",
+      "id": "post-review-50081",
+      "type": "post_review"
+    }
+  ],
+  "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
+  "generated_at": "2026-10-10T01:20:03.6881076Z",
+  "pending_author": false,
+  "processVerdict": "proceed",
+  "proposed_comments": [
+    {
+      "in_diff": true,
+      "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs",
+      "line": 62,
+      "severity": "medium",
+      "title": "Do not advertise a disabled JPEG shortcut",
+      "body": "### Do not advertise a disabled JPEG shortcut\r\n\r\n**Severity:** `medium`\r\n\r\nTurning off the JPEG action leaves its configured shortcut stored in settings. `UserSettings.UpdateSettings` excludes that action unless both its parent and its own `IsShown` flag are true, but this append checks only the parent and still advertises the inactive shortcut in Shortcut Guide. Check the JPEG action's flag before generating its entry.\r\n\r\n```suggestion\r\n                    if (advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsJpgFile.IsShown)\r\n                    {\r\n                        content.Append(HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsJpgFile.Shortcut, SettingsResourceLoader.GetString(\"AdvancedPaste/ModuleTitle\"), SettingsResourceLoader.GetString(\"PasteAsJpgFile/Header\")));\r\n                    }\r\n\r\n```",
+      "kind": "inline",
+      "side": "RIGHT",
+      "confidence": {
+        "score": 94,
+        "rationale": "The current append is reachable with the parent shown and the JPEG child disabled; the action enablement filter checks both flags."
+      },
+      "disposition": "proposed",
+      "id": "50081-jpeg-shortcut"
+    },
+    {
+      "in_diff": true,
+      "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
+      "line": 94,
+      "severity": "medium",
+      "title": "Preserve the existing paste-format telemetry values",
+      "body": "### Preserve the existing paste-format telemetry values\r\n\r\n**Severity:** `medium`\r\n\r\nInserting this implicit enum member changes HTML from 7 to 8, MP3 from 8 to 9, MP4 from 9 to 10, KernelQuery from 10 to 11, and CustomTextTransformation from 11 to 12. `PasteFormatExecutor.WriteTelemetry` sends this enum through the existing format-click and in-app-shortcut EventSource payloads, so the same numeric identifiers acquire different meanings across versions.\r\n\r\nAssign JPEG the unused value 12 and explicitly preserve HTML=7, MP3=8, MP4=9, KernelQuery=10, and CustomTextTransformation=11 in `PasteFormats.cs`. Setting only JPEG=12 is not sufficient: the following implicit HTML member would then become 13. Add an enum-value regression assertion and verify both existing action telemetry and the new JPEG action; no new telemetry event or generic telemetry-process follow-up is needed for this fix.",
+      "kind": "inline",
+      "side": "RIGHT",
+      "confidence": {
+        "score": 95,
+        "rationale": "The pinned enum and actual telemetry callers establish numeric renumbering; runtime enum assertions fail upstream and pass with the preserved assignments."
+      },
+      "disposition": "proposed",
+      "id": "50081-stable-format-values"
+    },
+    {
+      "in_diff": false,
+      "severity": "medium",
+      "title": "Keep legacy hotkey slots aligned with the settings model",
+      "body": "### Keep legacy hotkey slots aligned with the settings model\r\n\r\n**Severity:** `medium`\r\n\r\n**Affected code:** `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`, `AdvancedPaste::process_additional_action` and `get_hotkeys`; `src/settings-ui/Settings.UI.Library/AdvancedPastePasteAsFileAction.cs`, `SubActions`; `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`, `GetAllHotkeyAccessors`; `src/settings-ui/Settings.UI/ViewModels/ShortcutConflictViewModel.cs`, `SetupModuleData` and `UpdateModuleHotkeySettings`.\r\n\r\n**Problem:** An existing settings file has TXT, PNG, and HTML children but no JPEG property. Deserializing that file creates the model's default JPEG child, so the managed traversal includes a JPEG slot before HTML. The native traversal visits only properties present in the raw JSON and therefore omits that slot. It also relies on the JSON object's iteration order rather than the managed order: the current four-child fixture enumerates TXT, JPEG, PNG, HTML, whereas the managed sequence is TXT, PNG, JPEG, HTML.\r\n\r\n**Why it matters:** `get_hotkeys` assigns positional IDs, and the conflict view indexes `GetAllHotkeyAccessors()` with those IDs. Until the configuration is rewritten, an HTML conflict consequently refers to the JPEG accessor, and following action indices are displaced. The application's normal settings migration does not add the missing child: `UpgradeSettingsConfiguration` returns false. This is an index-contract failure, not a claim about focus or keyboard timing.\r\n\r\n**Suggested change:** In the composite-action branch of `process_additional_action`, special-case the `paste-as-file` group. Traverse TXT, PNG, JPEG, then HTML explicitly; recurse normally for each existing child. If JPEG alone is absent, append an `AdditionalAction` with ID `paste-as-jpg-file` and a zero/default hotkey so the missing action is not activated but still reserves its managed slot. Keep the existing group-visibility check and default traversal for other groups. Keep the managed `SubActions` and header-key order unchanged.\r\n\r\n```cpp\r\nelse if (actionName == L\"paste-as-file\")\r\n{\r\n    const std::vector<winrt::hstring> order{\r\n        L\"paste-as-txt-file\", L\"paste-as-png-file\",\r\n        L\"paste-as-jpg-file\", L\"paste-as-html-file\"\r\n    };\r\n    for (const auto& name : order)\r\n    {\r\n        if (action.HasKey(name))\r\n        {\r\n            process_additional_action(name, action.GetNamedValue(name), actionIsShown);\r\n        }\r\n        else if (name == L\"paste-as-jpg-file\")\r\n        {\r\n            m_additional_actions.push_back({ name.c_str(), {} });\r\n        }\r\n    }\r\n}\r\n```\r\n\r\n**Verification:** Load legacy JSON without JPEG and compare the native IDs with the deserialized `GetAllHotkeyAccessors` sequence before saving settings. Repeat with current JSON containing JPEG, and verify the absent JPEG slot has a zero hotkey. Build the native module from `src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface` with `..\\..\\..\\..\\tools\\build\\build.cmd`, then check that editing an HTML conflict selects and updates the HTML accessor. The focused traversal test proves slot ordering; it does not replace an end-to-end conflict-window test.",
+      "out_of_diff_reason": "The required native placeholder and ordered traversal are in unchanged dllmain.cpp; the current diff adds only the managed JPEG child and does not modify this native function.",
+      "kind": "companion",
+      "confidence": {
+        "score": 96,
+        "rationale": "Raw legacy JSON has no JPEG slot while the managed backing-field initializer supplies one; the positional-ID conflict consumer is explicit."
+      },
+      "disposition": "proposed",
+      "id": "50081-legacy-hotkey-slots"
+    }
+  ],
+  "track": "review",
+  "evaluated_at": "2026-10-10T00:39:21.0440883Z",
+  "isCommunity": true,
+  "needs_revalidation": false,
+  "kind": "pr",
+  "number": 50081,
   "freshness": {
-    "queued_at": "10/08/2026 02:53:31",
-    "checkpoint_at": "2026-10-09T14:44:46.8626111Z"
+    "unresolvedForkCopilotThreads": 0,
+    "latestCopilotReviewAt": "2026-10-09T23:30:03+08:00",
+    "headRefOid": "a877c02e63252545404b69398e4521867a1d7a29",
+    "checkedAt": "2026-10-10T00:04:43.2928181Z",
+    "updatedAt": "2026-09-30T17:29:01Z",
+    "forkThreadReconciledAt": "2026-10-10T00:39:21.0440883Z"
+  },
+  "isMine": false,
+  "status": {
+    "detail": "Three supported drafts await approval. Pure public-literal Shortcut Guide compilation passed on the exact head with only one changed path. Broader three-fix validation is separate. Arrived Lite timeout result was assessed; all nine fork threads reconciled. Historical cap reached, no pending request or cloud convergence claim.",
+    "label": "Grounded review drafts ready",
+    "glyph": "Review"
+  },
+  "summary": "Three supported exact-head review drafts await explicit approval: stable telemetry enum values, disabled JPEG Shortcut Guide entry, and native/managed legacy hotkey slot alignment.",
+  "workflow": {
+    "convergence_claimed": false,
+    "phase": "awaiting_review_approval",
+    "checkpoint_at": "2026-10-10T00:39:21.0440883Z",
+    "pending_copilot": false,
+    "review_iteration_cap_reached": true
+  },
+  "validation": {
+    "limits": [
+      "Pure literal build only invokes ShortcutGuide.Ui and its references.",
+      "Separate three-fix candidate supports prose implementations, not suggestionPatch.",
+      "No interactive Shortcut Guide/conflict dialog, timing/focus/accessibility or full Runner validation."
+    ],
+    "commands": [
+      "msbuild src\\modules\\ShortcutGuide\\ShortcutGuide.Ui\\ShortcutGuide.Ui.csproj /restore /p:Platform=x64 /p:Configuration=Debug /p:RestorePackagesConfig=true /p:SpectreMitigation=false /m:4"
+    ],
+    "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
+    "native_test": {
+      "scope": "Extracted exact native process_additional_action body with real WinRT JSON; legacy/current slot ordering and zero missing-JPEG hotkey. Not interactive conflict-window coverage.",
+      "result": "passed"
+    },
+    "candidate_unchanged": [
+      {
+        "sha256": "c4b86dae20709d4bba9d2d971ac4d415308e9aff08eb52dabd22e5ea7d06f1c8",
+        "path": "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
+        "result": "unchanged"
+      },
+      {
+        "sha256": "cab176cafd6c04f9f345e90e9b90800831befdfb0e1280d6d1e34d1b988557b3",
+        "path": "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+        "result": "unchanged"
+      },
+      {
+        "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs",
+        "lineEndings": "lf",
+        "id": "50081-jpeg-shortcut",
+        "body_sha256": "8b21f450757a78e0cb9e14bec53dfdc1c328334678eefac1b123f66531d9ffc7",
+        "utf8Bom": true,
+        "sha256": "b9ba376ce6812bd819a3cf2bb13d150b04f93514d275d7bdf23d145a5fbfd84a",
+        "result": "unchanged_exact_literal"
+      }
+    ],
+    "result": "passed",
+    "focused_tests": [
+      {
+        "passed": 4,
+        "evidence": "fork-current-test-results\\current-ap.trx",
+        "name": "fork",
+        "total": 4,
+        "failed": 0
+      },
+      {
+        "passed": 3,
+        "evidence": "fork-current-settings-results\\settings.trx",
+        "name": "settings",
+        "total": 3,
+        "failed": 0
+      },
+      {
+        "passed": 4,
+        "evidence": "candidate-current-results\\candidate.trx",
+        "name": "candidate",
+        "total": 4,
+        "failed": 0
+      },
+      {
+        "passed": 3,
+        "evidence": "upstream-current-results\\upstream.trx",
+        "name": "upstream",
+        "total": 4,
+        "failed": 1
+      }
+    ],
+    "test_commands": [
+      "vstest.console.exe src\\modules\\AdvancedPaste\\AdvancedPaste.UnitTests\\x64\\Debug\\tests\\AdvancedPaste.UnitTests\\AdvancedPaste.UnitTests.dll /TestCaseFilter:FullyQualifiedName~TransformHelpersTests",
+      "vstest.console.exe Debug\\x64\\tests\\SettingsTests\\net10.0-windows10.0.26100.0\\Settings.UI.UnitTests.dll /TestCaseFilter:FullyQualifiedName~AdvancedPasteSettingsTests"
+    ],
+    "fix_candidate": {
+      "result": "passed",
+      "headSha": "a877c02e63252545404b69398e4521867a1d7a29",
+      "projects": [
+        {
+          "exitCode": 0,
+          "project": "src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface",
+          "log": "<local-artifact>",
+          "environment": "Visual Studio x64 developer command environment, initialized in the same process",
+          "command": "msbuild src\\modules\\AdvancedPaste\\AdvancedPasteModuleInterface\\AdvancedPasteModuleInterface.vcxproj /restore /p:Platform=x64 /p:Configuration=Debug /p:RestorePackagesConfig=true /p:SpectreMitigation=false /m:4"
+        },
+        {
+          "exitCode": 0,
+          "project": "src\\modules\\AdvancedPaste\\AdvancedPaste",
+          "log": "<local-artifact>",
+          "environment": "Visual Studio x64 developer command environment, initialized in the same process",
+          "command": "msbuild src\\modules\\AdvancedPaste\\AdvancedPaste\\AdvancedPaste.csproj /restore /p:Platform=x64 /p:Configuration=Debug /p:RestorePackagesConfig=true /p:SpectreMitigation=false /m:4"
+        },
+        {
+          "exitCode": 0,
+          "project": "src\\modules\\ShortcutGuide\\ShortcutGuide.Ui",
+          "log": "<local-artifact>",
+          "environment": "Visual Studio x64 developer command environment, initialized in the same process",
+          "command": "msbuild src\\modules\\ShortcutGuide\\ShortcutGuide.Ui\\ShortcutGuide.Ui.csproj /restore /p:Platform=x64 /p:Configuration=Debug /p:RestorePackagesConfig=true /p:SpectreMitigation=false /m:4"
+        },
+        {
+          "exitCode": 0,
+          "project": "src\\settings-ui\\Settings.UI.XamlIndexBuilder",
+          "log": "<local-artifact>",
+          "environment": "Visual Studio x64 developer command environment, initialized in the same process",
+          "command": "msbuild src\\settings-ui\\Settings.UI.XamlIndexBuilder\\Settings.UI.XamlIndexBuilder.csproj /restore /p:Platform=x64 /p:Configuration=Debug /p:RestorePackagesConfig=true /p:SpectreMitigation=false /m:4"
+        },
+        {
+          "exitCode": 0,
+          "project": "src\\settings-ui\\Settings.UI",
+          "log": "<local-artifact>",
+          "environment": "Visual Studio x64 developer command environment, initialized in the same process",
+          "command": "msbuild src\\settings-ui\\Settings.UI\\PowerToys.Settings.csproj /restore /p:Platform=x64 /p:Configuration=Debug /p:RestorePackagesConfig=true /p:SpectreMitigation=false /m:4"
+        }
+      ],
+      "completedAt": "2026-10-09T15:18:14.3328516Z",
+      "changedPaths": [
+        "src/modules/AdvancedPaste/AdvancedPaste/Models/PasteFormats.cs",
+        "src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp",
+        "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs"
+      ],
+      "checkout": "<PowerToysCheckout>",
+      "evidenceRole": "fix_candidate_only: includes coordinated prose enum/native remedies; not pure public-literal application evidence"
+    },
+    "pure_literal_candidate": {
+      "compiledOutputSha256": "e39838c5705b7cf8d4986ee3c270436434f72611ea5b24cb7c127a2eb4b9c52c",
+      "platform": "x64",
+      "referenceChain": "ShortcutGuide.Ui project references restored/built transitively; no separate AdvancedPaste/module-interface/SettingsUI/index-builder project invocation",
+      "scope": "Pure literal candidate: only the actual public Shortcut Guide JPEG block. No enum/native prose remedies and no source changes in referenced projects.",
+      "configuration": "Debug",
+      "buildExitCode": 0,
+      "lineEndings": "lf",
+      "headSha": "a877c02e63252545404b69398e4521867a1d7a29",
+      "behaviorLimits": "Compile/style/type/reference-chain proof for literal application; no interactive Shortcut Guide, timing/focus/accessibility or full Runner test.",
+      "minimalRangesReviewed": true,
+      "errors": 0,
+      "warnings": 71,
+      "recovery": "First attempt reported missing checkout-local CppWinRT. Restored repository GPOWrapper and COMUtils packages.config into checkout packages; same project build passed. No source hacks, installer, certificate trust or shared OS changes.",
+      "utf8Bom": true,
+      "log": "pure-literal-shortcut-build-restored.log",
+      "logSha256": "00e4cc7d188a255e41082169594f43aa993715d742cbba1f522825f50d3ba8ba",
+      "sourceSha256": "b9ba376ce6812bd819a3cf2bb13d150b04f93514d275d7bdf23d145a5fbfd84a",
+      "commands": [
+        "msbuild src\\modules\\ShortcutGuide\\ShortcutGuide.Ui\\ShortcutGuide.Ui.csproj /restore /p:Platform=x64 /p:Configuration=Debug /p:RestorePackagesConfig=true /p:SpectreMitigation=false /m:4"
+      ],
+      "changedPaths": [
+        "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs"
+      ],
+      "appliedItemIds": [
+        "50081-jpeg-shortcut"
+      ],
+      "rawBlobSha": "093269730bd683e9d9c5445f95411c17db6913bd",
+      "result": "passed"
+    },
+    "suggestion_patch": {
+      "result": "passed",
+      "minimal_ranges_reviewed": true,
+      "applied_comment_ids": [
+        "50081-jpeg-shortcut"
+      ],
+      "commands": [
+        "msbuild src\\modules\\ShortcutGuide\\ShortcutGuide.Ui\\ShortcutGuide.Ui.csproj /restore /p:Platform=x64 /p:Configuration=Debug /p:RestorePackagesConfig=true /p:SpectreMitigation=false /m:4"
+      ],
+      "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
+      "scope": "Pure literal candidate: only the actual public Shortcut Guide JPEG block. No enum/native prose remedies and no source changes in referenced projects. ShortcutGuide.Ui and its unchanged reference chain compiled; no interactive Shortcut Guide, focus, timing, accessibility or full Runner validation.",
+      "candidate_source_sha256": "b9ba376ce6812bd819a3cf2bb13d150b04f93514d275d7bdf23d145a5fbfd84a"
+    },
+    "line_ending_safety": {
+      "head_sha": "a877c02e63252545404b69398e4521867a1d7a29",
+      "files": [
+        {
+          "path": "src/modules/ShortcutGuide/ShortcutGuide.Ui/Helpers/PowerToysShortcutsPopulator.cs",
+          "utf8_bom": true,
+          "result": "passed",
+          "line_endings": "lf"
+        }
+      ],
+      "checked_comment_ids": [
+        "50081-jpeg-shortcut"
+      ],
+      "result": "passed"
+    }
+  },
+  "stage": "awaiting_review_approval",
+  "cloud_coverage": {
+    "cap": 5,
+    "capExceededHistorically": true,
+    "convergenceClaimed": false,
+    "additionalObservedResult": {
+      "publishedComments": 9,
+      "fullAgenticReview": "runner-start timeout; did not run",
+      "submittedAt": "2026-10-09T23:30:03+08:00",
+      "actualEffort": "Lite",
+      "reviewId": 5472108642,
+      "headSha": "65b0415cd086029a216d308516e68d3674d5e5a2"
+    },
+    "threadAudit": [
+      {
+        "scope": "fork440",
+        "outerExhausted": true,
+        "unresolved": 0,
+        "nestedExhausted": true
+      }
+    ],
+    "detail": "Saved result 5472108642 consumed: nine earlier Balanced rounds plus an additional Lite fallback after full-agentic startup timeout. All nine comments grounded and fork threads replied/resolved. No pending request, no new request, and no clean cloud convergence claim.",
+    "totalSubmittedReviews": 10,
+    "newRequestsThisTurn": 0,
+    "statusCallsThisTurn": 1,
+    "historicalActualEffort": "Balanced",
+    "pending": false,
+    "historicalCompletedRounds": 9
+  },
+  "draft": false,
+  "safe_actions": [
+    "Present the three drafts for explicit approval",
+    "Post nothing without current-head approval"
+  ],
+  "schemaVersion": 4,
+  "next_action": {
+    "label": "Approve, edit, or hold the three pinned drafts",
+    "reason": "No upstream review has been posted."
+  },
+  "title": "[AdvancedPaste] Add \"Paste as .jpg file\" action with configurable JPEG quality",
+  "owes": "us",
+  "source": {
+    "updatedAt": "2026-09-30T17:29:01Z",
+    "headRefOid": "a877c02e63252545404b69398e4521867a1d7a29",
+    "repository": "microsoft/PowerToys"
+  },
+  "id": "pr-50081",
+  "upstream_safety": {
+    "detail": "PRIVATE artifact only. No upstream/dashboard writes.",
+    "public_actions_taken": false
   }
 }
