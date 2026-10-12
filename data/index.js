@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-12T14:05:42.1933547+08:00",
+  "generated_at": "2026-10-12T14:32:05.5136745+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -86,12 +86,12 @@ window.BOARD_INDEX = {
   },
   "counts": {
     "open_prs": 164,
-    "open_issues": 13852,
+    "open_issues": 13853,
     "community": 12931,
     "artifacts": 993
   },
   "impact": {
-    "as_of": "2026-10-12T14:05:42.1933547+08:00",
+    "as_of": "2026-10-12T14:32:05.5136745+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -1124,7 +1124,7 @@ window.BOARD_INDEX = {
       "comments": 1,
       "priority": null,
       "review_decision": "APPROVED",
-      "ci_state": "pending",
+      "ci_state": "failed",
       "merge_state": "BLOCKED"
     },
     {
@@ -3869,7 +3869,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-09-28T03:00:55Z",
-      "updated_at": "2026-10-12T05:45:51Z",
+      "updated_at": "2026-10-12T05:59:43Z",
       "comments": 8,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -172306,6 +172306,40 @@ window.BOARD_INDEX = {
       "priority": null
     },
     {
+      "id": "issue-51193",
+      "kind": "issue",
+      "number": 51193,
+      "url": "https://github.com/microsoft/PowerToys/issues/51193",
+      "title": "Feature Request: Prevent text shifting (\"jumping\") in Dock Panel metrics due to digit count changes",
+      "author": "ivandrii",
+      "state": "open",
+      "is_draft": false,
+      "is_community": true,
+      "mine": false,
+      "is_cmdpal": true,
+      "track": null,
+      "stage": null,
+      "owes": "us",
+      "pending_author": false,
+      "waiting_since": null,
+      "has_artifact": false,
+      "agent_status": "none",
+      "issue_type": "bug",
+      "proposed_open": 0,
+      "primary_action": null,
+      "labels": [
+        "Issue-Bug",
+        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Product-Command Palette"
+      ],
+      "assignees": [],
+      "created_at": "2026-10-12T06:12:16Z",
+      "updated_at": "2026-10-12T06:17:31Z",
+      "comments": 1,
+      "priority": null
+    },
+    {
       "id": "issue-51191",
       "kind": "issue",
       "number": 51191,
@@ -177825,7 +177859,7 @@ window.BOARD_INDEX = {
       "author": "jiripolasek",
       "state": "open",
       "is_draft": false,
-      "is_community": true,
+      "is_community": false,
       "mine": false,
       "is_cmdpal": true,
       "track": null,
