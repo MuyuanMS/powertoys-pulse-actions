@@ -1,5 +1,5 @@
 window.BOARD_INDEX = {
-  "generated_at": "2026-10-12T10:12:52.2756047+08:00",
+  "generated_at": "2026-10-12T10:49:54.1988075+08:00",
   "window_since": "2026-07-30",
   "upstream": "microsoft/PowerToys",
   "fork": "MuyuanMS/PowerToys",
@@ -88,10 +88,10 @@ window.BOARD_INDEX = {
     "open_prs": 164,
     "open_issues": 13852,
     "community": 12930,
-    "artifacts": 990
+    "artifacts": 991
   },
   "impact": {
-    "as_of": "2026-10-12T10:12:52.2756047+08:00",
+    "as_of": "2026-10-12T10:49:54.1988075+08:00",
     "issues_helped": 10,
     "prs_iterated": 16,
     "constructive_comments_posted": 3,
@@ -101,6 +101,7 @@ window.BOARD_INDEX = {
     51162,
     51153,
     51152,
+    51149,
     51148,
     51147,
     51142,
@@ -1408,13 +1409,13 @@ window.BOARD_INDEX = {
       "is_community": false,
       "mine": false,
       "is_cmdpal": false,
-      "track": null,
-      "stage": null,
+      "track": "review",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
-      "has_artifact": false,
-      "agent_status": "none",
+      "has_artifact": true,
+      "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
       "primary_action": null,
@@ -1429,7 +1430,15 @@ window.BOARD_INDEX = {
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
       "ci_state": null,
-      "merge_state": "BLOCKED"
+      "merge_state": "BLOCKED",
+      "mirror": {
+        "kind": "pr",
+        "fork_number": 998,
+        "fork_title": "[PR 51149] [KBM] New editor: warn when a remap leaves a key unreachable",
+        "fork_state": "OPEN",
+        "fork_branch": "pr-iterate/51149-v2",
+        "url": "https://github.com/MuyuanMS/PowerToys/pull/998"
+      }
     },
     {
       "id": "pr-51148",
@@ -1830,18 +1839,15 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "awaiting_review_approval",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
       "has_artifact": true,
       "agent_status": "review",
       "issue_type": null,
-      "proposed_open": 2,
-      "primary_action": {
-        "type": "post_review",
-        "label": "Post 2 grounded inline comments (1 literal suggestion)"
-      },
+      "proposed_open": 0,
+      "primary_action": null,
       "labels": [
         "Product-PowerToys Run",
         "Product-PowerRename",
@@ -1982,7 +1988,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-08T01:52:31Z",
-      "updated_at": "2026-10-09T09:05:42Z",
+      "updated_at": "2026-10-12T02:38:23Z",
       "comments": 2,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -2107,7 +2113,7 @@ window.BOARD_INDEX = {
       ],
       "assignees": [],
       "created_at": "2026-10-07T23:26:56Z",
-      "updated_at": "2026-10-09T03:16:33Z",
+      "updated_at": "2026-10-12T02:24:21Z",
       "comments": 3,
       "priority": null,
       "review_decision": "REVIEW_REQUIRED",
@@ -3581,7 +3587,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_ready",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -3589,10 +3595,7 @@ window.BOARD_INDEX = {
       "agent_status": "review",
       "issue_type": null,
       "proposed_open": 0,
-      "primary_action": {
-        "type": "approve",
-        "label": "Approve reviewed head"
-      },
+      "primary_action": null,
       "labels": [
         "Product-Settings",
         "Area-Runner",
@@ -4019,7 +4022,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_iteration_cap_reached",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -4199,7 +4202,7 @@ window.BOARD_INDEX = {
       "mine": false,
       "is_cmdpal": false,
       "track": "review",
-      "stage": "review_iteration_cap_reached",
+      "stage": "review_in_progress",
       "owes": "us",
       "pending_author": false,
       "waiting_since": null,
@@ -211907,15 +211910,16 @@ window.BOARD_INDEX = {
       "primary_action": null,
       "labels": [
         "Issue-Bug",
-        "Needs-Author-Feedback",
+        "Needs-Triage",
+        "Needs-Team-Response",
         "Product-Awake"
       ],
       "assignees": [
         "dend"
       ],
       "created_at": "2026-07-28T22:43:55Z",
-      "updated_at": "2026-10-11T01:14:34Z",
-      "comments": 1,
+      "updated_at": "2026-10-12T02:36:17Z",
+      "comments": 2,
       "priority": null
     },
     {
