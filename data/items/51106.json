@@ -2,242 +2,34 @@
   "number": 51106,
   "kind": "pr",
   "track": "review",
-  "stage": "awaiting_review_approval",
+  "stage": "review_in_progress",
   "owes": "us",
   "pending_author": false,
-  "generated_at": "2026-10-09T16:32:53.6951284Z",
+  "generated_at": "2026-10-12T03:24:40.2265706Z",
   "evaluated_at": "2026-10-10T07:11:30.0624707Z",
-  "source_updated_at": "2026-10-09T09:05:44Z",
-  "head_sha": "3a8ebc5ff3a5feff53b44a0f3dcaed66dee195ea",
+  "source_updated_at": "2026-10-12T02:38:23Z",
+  "head_sha": "2370631820222b55595a60da3aaa2e0bdb47227e",
   "title": "Runner: startup stage events and a startup benchmark script (PERF-3)",
   "url": "https://github.com/microsoft/PowerToys/pull/51106",
   "status": {
-    "glyph": "…",
-    "label": "Grounded suggestions await approval",
-    "detail": "Five current-head comments: four literal PS/docs suggestions, including a complete median pair, plus an exact-upstream reproduced restore-boundary finding. Both PowerShell runtimes passed focused syntax and behavior checks. Historical Lite/incomplete cloud coverage remains explicit; no clean-review or approval claim."
+    "glyph": "...",
+    "label": "Local validation running",
+    "detail": "Fork review PR 957 is updated to include live upstream head 2370631 and a fresh Copilot round is pending. Acquired build slot next: run build-essentials on both the exact upstream head and the retained fork review tree under the shared exclusive lock."
   },
-  "next_action": "Review the pinned COMMENT drafts and select both members of the median group together.",
-  "proposed_comments": [
-    {
-      "id": "launched-process-disposal",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "path": "tools/performance/Measure-StartupPerformance.ps1",
-      "line": 808,
-      "side": "RIGHT",
-      "title": "Dispose launched process handles during cleanup",
-      "body": "## [P2] Dispose launched process handles during cleanup\n\n`Start-TargetProcess` retains each `Process` in `$script:launched`, but `Stop-LaunchedProcesses` never disposes those objects. Higher iteration counts can accumulate open handles until the script exits. Add the cleanup in `finally` so the handle is released even when stopping fails or the process has already exited.\n\n```suggestion\n        }\n        finally\n        {\n            $process.Dispose()\n        }\n```",
-      "confidence": {
-        "rationale": "The exact upstream cleanup loop retains the process object and has no Dispose path; the inserted finally runs for exit, continue, and caught stop errors.",
-        "score": 88
-      },
-      "body_sha256": "993d8342a3e20ec6fecbe28021617b51e2902df93a8747e80340748239e26ffd"
-    },
-    {
-      "id": "wpr-profile-selection",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "path": "tools/performance/README.md",
-      "line": 81,
-      "side": "RIGHT",
-      "title": "Select the custom WPR profile explicitly",
-      "body": "## [P2] Select the custom WPR profile explicitly\n\nThe WPR command-line syntax requires a `.wprp!ProfileName[.Verbose]` selector for a custom profile. This command supplies only the `.wprp` path, so it does not explicitly select the PowerToys profile. Add the selector and keep `-filemode`.\n\n```suggestion\nwpr -start CPU -start tools\\performance\\PowerToys.Performance.wprp!PowerToysPerformance.Verbose -filemode\n```",
-      "confidence": {
-        "rationale": "Microsoft's WPR command-line documentation requires custom profile selection as filename.wprp!ProfileName[.light|.verbose]; the current README supplies no selector. Duplicate base Names are intentional mode variants.",
-        "score": 95
-      },
-      "body_sha256": "b95d3476d638c427291f5133cf47b17b58bddfdf44be8c7e01e5750a6ad34395"
-    },
-    {
-      "id": "reparse-point-restore-boundary",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "high",
-      "path": "tools/performance/Measure-StartupPerformance.ps1",
-      "line": 1047,
-      "side": "RIGHT",
-      "title": "Keep restore traversal inside the PowerToys data tree",
-      "body": "### [P1] Reject restore destinations that cross a reparse-point boundary\r\n\r\n**Severity:** `high`\r\n\r\nIn `tools/performance/Measure-StartupPerformance.ps1`, `Restore-DataFolder` constructs the destination from each snapshotted relative path, creates its parent, and copies with `-Force`, without checking that the destination still resolves inside the PowerToys data tree. If a snapshotted subdirectory is replaced with a junction before restore, this overwrites the corresponding file outside that tree. An isolated reproduction with the exact script reproduced the external sentinel overwrite in both Windows PowerShell 5.1 and PowerShell 7.\r\n\r\nValidate the data root, every destination parent, and any existing destination leaf for reparse points before restoring; reject paths that resolve outside the data root. Use a shared bounded traversal for snapshot/deletion/folder cleanup rather than relying on version-specific recursive enumeration behavior. Recheck a destination immediately before a destructive operation and preserve the backup on any rejected or failed restore.\r\n\r\nVerify with a nested snapshotted file whose parent is replaced by a junction to an external sentinel directory: restore must leave the external sentinel unchanged, report the rejected destination, and retain its backup. Ordinary nested files must still restore.",
-      "confidence": {
-        "rationale": "All three recursive walks and destination operations are present at the pinned head; combined candidate passed a junction sentinel and restore-path rejection check.",
-        "score": 94
-      },
-      "body_sha256": "83fffb97c4c26a4488369e51df1b2962fa0f1cd7f1a297be44e13cd12d7a0871"
-    },
-    {
-      "id": "median-measure",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "path": "tools/performance/Measure-StartupPerformance.ps1",
-      "line": 1568,
-      "side": "RIGHT",
-      "title": "Average the middle samples for an even count",
-      "body": "### [P2] (1/2) Average the middle samples for an even count\n\n**Severity:** `medium`\n\nThe default run collects 10 measured samples, but nearest-rank p50 returns only the lower middle value. That is not the conventional median for an even-sized sample and can bias the reported benchmark result downward. Average the two middle values for p50 while retaining nearest-rank behavior for p90; apply together with (2/2).\n\n```suggestion\n    if ($Percentile -eq 0.5 -and $sorted.Count % 2 -eq 0)\n    {\n        $middle = [int]($sorted.Count / 2)\n        return [Math]::Round(($sorted[$middle - 1] + $sorted[$middle]) / 2, 1)\n    }\n    $index = [Math]::Max(0, [Math]::Ceiling($Percentile * $sorted.Count) - 1)\n```",
-      "confidence": {
-        "score": 82,
-        "rationale": "Exact pinned upstream source supports the behavior; the saved candidate and remaining runtime/build limits are stated in the private dossier."
-      },
-      "body_sha256": "f7e1df42e661b427a6aead49d177f0a5ad56954d0dc1eee5d5a036bc70afeb6b",
-      "selection_group": {
-        "id": "true-median",
-        "position": 1,
-        "atomic": true,
-        "total": 2,
-        "title": "Use the conventional median for even sample counts"
-      }
-    },
-    {
-      "id": "median-compare",
-      "kind": "inline",
-      "in_diff": true,
-      "disposition": "proposed",
-      "severity": "medium",
-      "path": "tools/performance/Compare-StartupPerformance.ps1",
-      "line": 49,
-      "side": "RIGHT",
-      "title": "Use the same even-sample median in comparisons",
-      "body": "### [P2] (2/2) Use the same even-sample median in comparisons\n\n**Severity:** `medium`\n\nThe comparison script pools the default 10 samples and uses the same lower-middle p50 calculation, so its reported baseline/candidate medians are inconsistent with the conventional median. Average the two middle values for p50 and keep the existing p90 calculation; apply together with (1/2).\n\n```suggestion\n    if ($Percentile -eq 0.5 -and $sorted.Count % 2 -eq 0)\n    {\n        $middle = [int]($sorted.Count / 2)\n        return ($sorted[$middle - 1] + $sorted[$middle]) / 2\n    }\n    $index = [Math]::Max(0, [Math]::Ceiling($Percentile * $sorted.Count) - 1)\n```",
-      "confidence": {
-        "score": 82,
-        "rationale": "Exact pinned upstream source supports the behavior; the saved candidate and remaining runtime/build limits are stated in the private dossier."
-      },
-      "body_sha256": "f63941d6caaa2c4b2c80b230126846a15bd202202fe9a32ce639b09ce1843c42",
-      "selection_group": {
-        "id": "true-median",
-        "position": 2,
-        "atomic": true,
-        "total": 2,
-        "title": "Use the conventional median for even sample counts"
-      }
-    }
-  ],
-  "actions": [
-    {
-      "id": "post-review-51106",
-      "type": "post_review",
-      "label": "Post inline suggestions after approval",
-      "primary": true,
-      "confirm": true,
-      "requiresApproval": true,
-      "note": "Four validated literal suggestions and one grounded inline note. Human approval required; nothing posted upstream.",
-      "review": {
-        "event": "COMMENT",
-        "repository": "microsoft/PowerToys",
-        "pullRequest": 51106,
-        "pr": 51106,
-        "head_sha": "3a8ebc5ff3a5feff53b44a0f3dcaed66dee195ea"
-      }
-    }
-  ],
-  "validation": {
-    "copilot": {
-      "result": "incomplete",
-      "latest_review_at": "2026-10-09T09:42:10Z",
-      "reviewed_head_sha": "4e389edd05c5818ab427076ffa0e355aa45754c9",
-      "new_comments": 3,
-      "unresolved_threads": 0,
-      "request_pending": false,
-      "coverage": "Lite/incomplete; no further review request authorized"
-    },
-    "upstream_head": {
-      "head_sha": "3a8ebc5ff3a5feff53b44a0f3dcaed66dee195ea",
-      "result": "passed",
-      "commands": [
-        "build-essentials.ps1 -Platform x64 -Configuration Release: solution package restore passed; runner.vcxproj and PowerToys.Settings.csproj passed; one existing CsWinRT1028 warning; errors logs empty.",
-        "PowerShell 7 parser passed on exact pinned Measure-StartupPerformance.ps1 and Compare-StartupPerformance.ps1 blobs."
-      ]
-    },
-    "suggestion_patch": {
-      "head_sha": "3a8ebc5ff3a5feff53b44a0f3dcaed66dee195ea",
-      "result": "passed",
-      "candidate_tree_sha": "589a01b9360c7def64049399db0a6c94c3cbafb2",
-      "literal_patch_sha256": "8ca3a99aadbf83c6e5106b59a833651acdf0ae35325be29810f266993a0b485d",
-      "minimal_ranges_reviewed": true,
-      "applied_comment_ids": [
-        "launched-process-disposal",
-        "wpr-profile-selection",
-        "median-measure",
-        "median-compare"
-      ],
-      "commands": [
-        "Applied only the four public literal replacement blocks to the pinned upstream tree; isolated-index git apply and git diff --check passed.",
-        "PowerShell 7 and Windows PowerShell 5.1 AST parsers passed for both literal-result scripts.",
-        "Both runtimes passed actual literal-result Get-Percentile even/odd/singleton/P90 fixtures and launched-process exited-handle disposal fixture.",
-        "No transplanted scripts, native timing edits, or prose-only remediation were included in the literal candidate."
-      ]
-    },
-    "line_ending_safety": {
-      "head_sha": "3a8ebc5ff3a5feff53b44a0f3dcaed66dee195ea",
-      "result": "passed",
-      "checked_comment_ids": [
-        "launched-process-disposal",
-        "wpr-profile-selection",
-        "median-measure",
-        "median-compare"
-      ],
-      "files": [
-        {
-          "path": "tools/performance/Compare-StartupPerformance.ps1",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 103,
-          "cr_only_count": 0
-        },
-        {
-          "path": "tools/performance/Measure-StartupPerformance.ps1",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 1786,
-          "cr_only_count": 0
-        },
-        {
-          "path": "tools/performance/README.md",
-          "result": "passed",
-          "line_endings": "lf",
-          "utf8_bom": false,
-          "crlf_count": 0,
-          "lf_only_count": 84,
-          "cr_only_count": 0
-        }
-      ]
-    },
-    "manual_runtime": {
-      "result": "partially_verified",
-      "detail": "Exact upstream junction-destination overwrite reproduced in isolated fixtures on both PowerShell runtimes. The reparse remediation is prose-only and is not represented as part of the literal candidate. Elevated WPR capture and full interactive benchmark execution were not run."
-    }
-  },
+  "next_action": "Resume the saved review stage in the next dashboard update.",
+  "proposed_comments": [],
+  "actions": [],
   "workflow": {
-    "phase": "awaiting_review_approval",
-    "checkpoint_at": "2026-10-09T16:32:53.6951284Z",
-    "copilot_coverage": "Focused review Lite/incomplete; request cap exhausted; zero unresolved Copilot threads."
+    "phase": "building",
+    "checkpoint_at": "2026-10-12T03:24:40.2265706Z"
   },
-  "author": "crutkas",
-  "disposition": "Draft non-blocking review comments",
-  "phase0Note": "Proceed: member-authored PR; CLA and listed CI checks passed; validation was described. No visual evidence ask applies. Author did not run an elevated WPR capture.",
-  "schemaVersion": 5,
-  "testInstructions": [
-    "Verify even and odd medians, singleton values, and unchanged nearest-rank P90 in both scripts.",
-    "Confirm cleanup disposes a launched process handle even when its process has already exited.",
-    "Use an isolated data tree: snapshot a nested file, replace its parent with a junction to an external sentinel directory, then restore. The external sentinel must remain unchanged after the proposed restore-boundary fix.",
-    "Record an elevated WPR trace using the explicit PowerToysPerformance.Verbose profile selector and open it in WPA; this end-to-end recording was not run."
-  ],
-  "context_revalidation": {
-    "requested_change": "Reject mismatched benchmark scenarios/metric sets and empty measured values instead of silently omitting them.",
-    "disposition": "The request remains outstanding at the current head. It does not duplicate the five still-unposted drafts; those remain owed by the maintainer. No cloud-loop or build reset was performed.",
-    "head_sha": "3a8ebc5ff3a5feff53b44a0f3dcaed66dee195ea",
-    "discussion_url": "https://github.com/microsoft/PowerToys/pull/51106#discussion_r4228462840",
-    "evaluated_at": "2026-10-10T07:11:30.0624707Z",
-    "result": "Existing posted maintainer request reconciled; no new author revision or response."
-  }
+  "freshness": {
+    "queued_at": "2026-10-12T03:15:54.9436018Z",
+    "checkpoint_at": "2026-10-12T03:24:40.2265706Z"
+  },
+  "fork_pr": {
+    "number": 957,
+    "url": "https://github.com/MuyuanMS/PowerToys/pull/957"
+  },
+  "fork_branch": "pr-iterate/51106"
 }
